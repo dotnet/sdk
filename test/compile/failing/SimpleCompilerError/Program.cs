@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace TestApp
 {
@@ -7,7 +6,7 @@ namespace TestApp
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("This is a test app");
+            this will not compile!
         }
     }
 }
