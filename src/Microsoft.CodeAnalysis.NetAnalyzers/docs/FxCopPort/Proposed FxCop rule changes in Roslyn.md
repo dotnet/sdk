@@ -32,3 +32,26 @@ At present, the Roslyn analyzer for CA1034 follows the FxCop implementation. Do 
 Yes, this is a good change. The .NET team would mark `Environment.SpecialFolders` to suppress this warning.
 That has the advantage of making it clear that this wasn't a good design choice,
 and will discourage others from emulating it.
+
+## CA1716: Identifiers should not match keywords
+
+@sharwell made the following suggestions:
+
+> 1. The rule is defined according to "reserved identifiers". I believe it makes sense to expand this to include context-sensitive keywords where the identifier is visible in that context. For example, this rule should report a field named value as a violation because fields are visible in property setters, but it should not report a violation for a parameter or local variable named value because they can never be visible in the same scope where value is a keyword.
+>
+> 2. The set of languages and keywords are not defined. This makes expanding the rule in the future difficult. For example, some users may want new languages (e.g. Boo) for interoperability reasons while other users will not. I encourage this rule to be split into one rule for each programming language.
+>
+> 3. It makes sense to check publicly-exposed identifiers against multiple programming languages, but identifiers which are only internally visible only need to be checked against the current programming language. This separation should apply whether or not the advice from the second item is taken.
+
+These are good suggestions.
+
+With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-us/library/ms182248.aspx) for the rule actually does define the set of languages to which it applies:
+
+> This rule checks against keywords in the following languages:
+>
+> * Visual Basic
+> * C#
+> * C++
+
+... and of course the Roslyn replacements would only apply to the Roslyn languages C# and VB.
+C++/CLI
