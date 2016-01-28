@@ -11,7 +11,7 @@ Nonetheless, the porting effort raises questions about certain implementation ch
 To be clear: In the first release of the FxCop analyzer equivalents, their behavior will be identical to FxCop as far as possible.
 We would make changes only in subsequent releases.
 
-## CA1304: Nested types should not be visible
+## CA1034: Nested types should not be visible
 
 The .NET Framework Design Guidelines for [nested types](https://msdn.microsoft.com/en-us/library/ms229027(v=vs.110).aspx) specifically mentions enumerations:
 
