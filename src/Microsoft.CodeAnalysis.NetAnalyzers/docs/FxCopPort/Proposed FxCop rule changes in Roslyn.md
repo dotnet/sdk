@@ -52,6 +52,6 @@ With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-u
 > * Visual Basic
 > * C#
 > * C++
+> * C++/CLI
 
 ... and of course the Roslyn replacements would only apply to the Roslyn languages C# and VB.
-C++/CLI
