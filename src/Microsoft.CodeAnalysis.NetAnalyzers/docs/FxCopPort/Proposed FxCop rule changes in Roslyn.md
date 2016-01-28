@@ -8,6 +8,9 @@ As we reimplement a subset of the existing FxCop rules as Roslyn analyzers, we f
 
 Nonetheless, the porting effort raises questions about certain implementation choices in the FxCop rules. We will capture those questions here and review them with the framework API designers to decide whether to allow Roslyn analyzers to behave differently from their FxCop counterparts.
 
+To be clear: In the first release of the FxCop analyzer equivalents, their behavior will be identical to FxCop as far as possible.
+We would make changes only in subsequent releases.
+
 ## CA1304: Nested types should not be visible
 
 The .NET Framework Design Guidelines for [nested types](https://msdn.microsoft.com/en-us/library/ms229027(v=vs.110).aspx) specifically mentions enumerations:
@@ -23,3 +26,9 @@ But the [MSDN documentation](https://msdn.microsoft.com/en-us/library/ms182162.a
 @michaelcfanning explains that this exemption was made for the sake of the `Environment.SpecialFolders` enumeration.
 
 At present, the Roslyn analyzer for CA1034 follows the FxCop implementation. Do we want to change it (and the documentation) to prohibit nested public enums?
+
+### Conclusion
+
+Yes, this is a good change. The .NET team would mark `Environment.SpecialFolders` to suppress this warning.
+That has the advantage of making it clear that this wasn't a good design choice,
+and will discourage others from emulating it.
