@@ -59,6 +59,10 @@ With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-u
 
 * @nguerrera: Consider adding `stackalloc` to the list of C# keywords we check.
 
+* @nguerrera, @lgolding, @srivatsn: Why did FxCop CA1716 limit itself to virtual/interface members? The error message says
+that it will be hard to implement a virtual method if you name it with a keyword. But it's just as hard to _invoke_ it.
+Why shouldn't all publicly visible methods follow this rule?
+
 ## CA2213: Disposable fields should be disposed
 
 We decided not to port this because of a high false positive rate, and our opinion that it was not of high value. We have had the following pushback on this decision:
