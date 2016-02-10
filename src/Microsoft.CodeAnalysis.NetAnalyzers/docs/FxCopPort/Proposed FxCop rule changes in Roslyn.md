@@ -57,9 +57,7 @@ With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-u
 
 ... and of course the Roslyn replacements would only apply to the Roslyn languages C# and VB.
 
-* @nguerrera
-
-Considering `stackalloc` to the list of C# keywords we check.
+* @nguerrera: Consider adding `stackalloc` to the list of C# keywords we check.
 
 ## CA2213: Disposable fields should be disposed
 
