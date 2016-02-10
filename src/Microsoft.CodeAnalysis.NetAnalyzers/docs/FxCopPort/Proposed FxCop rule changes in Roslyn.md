@@ -37,7 +37,7 @@ and will discourage others from emulating it.
 
 ## CA1716: Identifiers should not match keywords
 
-@sharwell made the following suggestions:
+* @sharwell made the following suggestions:
 
 > 1. The rule is defined according to "reserved identifiers". I believe it makes sense to expand this to include context-sensitive keywords where the identifier is visible in that context. For example, this rule should report a field named value as a violation because fields are visible in property setters, but it should not report a violation for a parameter or local variable named value because they can never be visible in the same scope where value is a keyword.
 >
@@ -56,6 +56,10 @@ With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-u
 > * C++/CLI
 
 ... and of course the Roslyn replacements would only apply to the Roslyn languages C# and VB.
+
+* @nguerrera
+
+Considering `stackalloc` to the list of C# keywords we check.
 
 ## CA2213: Disposable fields should be disposed
 
