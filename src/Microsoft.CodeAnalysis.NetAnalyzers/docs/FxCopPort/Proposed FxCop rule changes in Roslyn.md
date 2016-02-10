@@ -11,6 +11,8 @@ Nonetheless, the porting effort raises questions about certain implementation ch
 To be clear: In the first release of the FxCop analyzer equivalents, their behavior will be identical to FxCop as far as possible.
 We would make changes only in subsequent releases.
 
+In addition to implementation details of the analyzers we have decided to port, there will be some feedback from the community regarding the rules we have decided _not_ to port. We will track that here as well, and consider this feedback as we revisit our decisions about rules to cut.
+
 ## CA1034: Nested types should not be visible
 
 The .NET Framework Design Guidelines for [nested types](https://msdn.microsoft.com/en-us/library/ms229027(v=vs.110).aspx) specifically mentions enumerations:
@@ -54,3 +56,9 @@ With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-u
 > * C++/CLI
 
 ... and of course the Roslyn replacements would only apply to the Roslyn languages C# and VB.
+
+## CA2213: Disposable fields should be disposed
+
+We decided not to port this because of a high false positive rate, and our opinion that it was not of high value. We have had the following pushback on this decision:
+
+> @stilgarSCA: :-1: on this decision. Despite the fact that this causes a lot of false positives, I think it's worth keeping the rule for the correctly identified issues. End users always have the option of disabling rules for which they find no value.
