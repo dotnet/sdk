@@ -63,6 +63,12 @@ With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-u
 that it will be hard to implement a virtual method if you name it with a keyword. But it's just as hard to _invoke_ it.
 Why shouldn't all publicly visible methods follow this rule?
 
+## CA1812: Avoid uninstantiated internal classes
+
+* @mavasani suggests:
+
+> ... you probably want to ignore types with the MEF export attributes - they wouldn't have an explicit instantiation. And Roslyn code is full of such types.
+
 ## CA2213: Disposable fields should be disposed
 
 We decided not to port this because of a high false positive rate, and our opinion that it was not of high value. We have had the following pushback on this decision:
