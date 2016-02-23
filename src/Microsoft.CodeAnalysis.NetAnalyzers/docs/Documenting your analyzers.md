@@ -20,3 +20,5 @@ We recommend that you provide reference documentation for each of your analyzers
 
 4. Fill in the template with information about your analyzer.
 
+**Note**: Some analyzers produce more diagnostics with more than one rule id. For example, the [`EquatableAnalyzer`](https://github.com/dotnet/roslyn-analyzers/blob/master/src/Microsoft.ApiDesignGuidelines.Analyzers/Core/EquatableAnalyzer.cs) in [`Microsoft.ApiDesignGuidelines.Analyzers`](https://github.com/dotnet/roslyn-analyzers/tree/master/src/Microsoft.ApiDesignGuidelines.Analyzers) produces diagnostics with two rule ids: `CA1066` ("Implement IEquatable<T> when overriding Object.Equals") and `CA1067` ("Override Object.Equals when implementing IEquatable<T>"). In such a case, create a separate reference page for each rule id. In this case, we would have `CA1066_ImplementIEquatableOfTWhenOverridingObjectEquals.md` and `CA1077_OverrideObjectEqualsWhenImplementingIEquatableOfT.md`.
+
