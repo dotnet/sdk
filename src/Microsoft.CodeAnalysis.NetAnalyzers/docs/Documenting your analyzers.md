@@ -8,7 +8,7 @@ We recommend that you provide reference documentation for each of your analyzers
 
     The rationale for this suggestion is that you might have other documents you want to put in your `docs` directory. Keeping the reference pages together in their own subdirectory makes them easier to distinguish from your other documentation. The more analyzer project authors that follow this convention, the easier it will be for analyzer users to find the documentation they need. It will also make it easier for tools that want to search,  aggregate, or otherwise process the documentation pages from multiple analyzer projects.  
 
-3. Make a copy of the [Analyzer reference page template](https://github.com/dotnet/roslyn-analyzers/blob/master/docs/Analyzer%20Reference%20Page%20Template.md) in your `docs/reference` directory, and name it according to the following convention:
+3. Make a copy of the [Rule reference page template](https://github.com/Microsoft/sarif-sdk/blob/master/docs/Rule%20reference%20page%20template.md) in your `docs/reference` directory, and name it according to the following convention:
 
     `<MessageId>_<Name>.md`
 
