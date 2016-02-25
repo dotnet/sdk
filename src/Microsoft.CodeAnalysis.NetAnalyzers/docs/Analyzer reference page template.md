@@ -28,4 +28,4 @@
 
 ## Related rules
 
-[RULEID: Friendly related rule name](https://github.com/your-account/your-analyzer-project/blob/master/docs/reference/RULEID_FriendlyRelatedRuleName.md)
+[RULEID: Friendly related rule name](https://stable-uris-r-us.com/MyRuleId_MyFriendlyRuleName.md)
