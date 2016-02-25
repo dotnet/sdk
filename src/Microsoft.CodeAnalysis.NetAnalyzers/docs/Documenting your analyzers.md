@@ -25,10 +25,10 @@ If you use a URI that points directly into your GitHub repo, then the URI will
 change whenever you rearrange your source tree, or rename your repo.
 Remember that this URI will be baked into your analyzer (see Step 6 below).
 
-Use the stable URI everywhere, both in your analyzer (Step 6) and in any
+    Use the stable URI everywhere, both in your analyzer (Step 6) and in any
 cross-references you create in the **Related rules** sections of your reference pages.
 
-Commercial providers of stable URIs include bit.ly and tinyurl.com,
+    Commercial providers of stable URIs include bit.ly and tinyurl.com,
 but you can use any source for the stable URI, including (for example)
 any facility your company might provide for registering URIs.
 
