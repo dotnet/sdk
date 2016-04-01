@@ -1,18 +1,9 @@
 ﻿[
-    {
-        "type": "replacement",
-        "find": "test",
-        "replaceWith": "value"
-    },
-    {
-        "type": "replacement",
-        "find": " a ",
-        "replaceWith": " the "
-    },
-    {
-        "type": "region",
-        "include": true,
-        "start": "\r\n<region>",
-        "end": "</region>"
-    }
+  {
+    "type": "condition",
+    "if": "$if$",
+    "else": "$else$",
+    "elseif": "$elseif$",
+    "endif": "$endif$"
+  }
 ]

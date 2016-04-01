@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace N3P.StreamReplacer
 {
     public interface IProcessorState
@@ -8,6 +10,10 @@ namespace N3P.StreamReplacer
 
         int CurrentBufferLength { get; }
 
+        Encoding Encoding { get; }
+
         void AdvanceBuffer(int bufferPosition);
+
+        SimpleTrie EOLMarkers { get; }
     }
 }

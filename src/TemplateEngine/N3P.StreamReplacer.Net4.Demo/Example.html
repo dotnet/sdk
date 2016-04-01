@@ -6,9 +6,27 @@
     <title></title>
 </head>
 <body>
-This is a test
-<region>
-    This will only show up if "include": true in the region definition
-</region>
+$if$ STEVE == "Cheeseburger"
+    $if$ C2  || !C1     
+        $if$ C1
+value1
+        $elseif$ !C1
+value1.5
+        $else$
+value2
+        $endif$
+    $else$
+        $if$ C3
+value3
+        $else$
+value4
+        $endif$
+    $endif$
+    $if$ C1 && C2
+value5
+    $endif$
+$else$
+alternative
+$endif$
 </body>
 </html>

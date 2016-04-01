@@ -11,6 +11,7 @@ namespace N3P.StreamReplacer
         private readonly int _flushThreshold;
         private readonly Stream _target;
         private readonly Trie _trie;
+        private Encoding _encoding;
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IReadOnlyList<IOperationProvider> operationProviders)
         {
@@ -22,6 +23,7 @@ namespace N3P.StreamReplacer
 
             byte[] bom;
             Encoding encoding = DetectEncoding(CurrentBuffer, CurrentBufferLength, out bom);
+            Encoding = encoding;
             CurrentBufferPosition = bom.Length;
 
             IOperation[] operations = new IOperation[operationProviders.Count];
@@ -99,6 +101,16 @@ namespace N3P.StreamReplacer
 
         public int CurrentBufferLength { get; private set; }
 
+        public Encoding Encoding
+        {
+            get { return _encoding; }
+            set
+            {
+                _encoding = value;
+                CalculateEOLMarkers();
+            }
+        }
+
         public void AdvanceBuffer(int bufferPosition)
         {
             if (CurrentBufferLength == 0)
@@ -117,6 +129,17 @@ namespace N3P.StreamReplacer
             CurrentBufferLength = _source.Read(CurrentBuffer, offset, CurrentBuffer.Length - offset) + offset;
             CurrentBufferPosition = 0;
         }
+
+        private void CalculateEOLMarkers()
+        {
+            SimpleTrie t = new SimpleTrie();
+            t.AddToken(Encoding.GetBytes("\r\n"), 0);
+            t.AddToken(Encoding.GetBytes("\n"), 1);
+            t.AddToken(Encoding.GetBytes("\r"), 2);
+            EOLMarkers = t;
+        }
+
+        public SimpleTrie EOLMarkers { get; private set; }
 
         public bool Run()
         {

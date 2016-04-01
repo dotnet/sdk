@@ -1,0 +1,29 @@
+namespace N3P.StreamReplacer
+{
+    internal enum BinaryOperator
+    {
+        Equals,
+        NotEqualTo,
+        GreaterThan,
+        GreaterThanOrEqualTo,
+        LessThan,
+        LessThanOrEqualTo,
+        Add,
+        Subtract,
+        Multiply,
+        Divide,
+        Modulus,
+        Power,
+        Log,
+        Contains,
+        StartsWith,
+        IndexOf,
+        EndsWith,
+        LogicalAnd,
+        LogicalOr,
+        LogicalXor,
+        BitwiseAnd,
+        BitwiseOr,
+        BitwiseXor
+    }
+}
