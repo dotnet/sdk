@@ -5,5 +5,16 @@
     "else": "$else$",
     "elseif": "$elseif$",
     "endif": "$endif$"
+  },
+  {
+    "type": "replacement",
+    "find": "value1",
+    "replaceWith": "HELLLOOOO!"
+  },
+  {
+    "type": "region",
+    "start": "<region>",
+    "end": "</region>",
+    "include": false
   }
 ]

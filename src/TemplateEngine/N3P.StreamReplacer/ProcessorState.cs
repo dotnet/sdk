@@ -7,8 +7,8 @@ namespace N3P.StreamReplacer
 {
     internal class ProcessorState : IProcessorState
     {
-        private readonly Stream _source;
         private readonly int _flushThreshold;
+        private readonly Stream _source;
         private readonly Stream _target;
         private readonly Trie _trie;
         private Encoding _encoding;
@@ -36,70 +36,11 @@ namespace N3P.StreamReplacer
             _trie = Trie.Create(operations);
         }
 
-        /// <remarks>http://www.unicode.org/faq/utf_bom.html</remarks>
-        private static Encoding DetectEncoding(byte[] buffer, int currentBufferLength, out byte[] bom)
-        {
-            if (currentBufferLength == 0)
-            {
-                //File is zero length - pick something
-                bom = new byte[0];
-                return Encoding.UTF8;
-            }
-
-            if (currentBufferLength >= 4)
-            {
-                if (buffer[0] == 0x00 && buffer[1] == 0x00 && buffer[2] == 0xFE && buffer[3] == 0xFF)
-                {
-                    //Big endian UTF-32
-                    bom = new byte[] { 0x00, 0x00, 0xFE, 0xFF };
-                    return Encoding.GetEncoding(12001);
-                }
-
-                if (buffer[0] == 0xFF && buffer[1] == 0xFE && buffer[2] == 0x00 && buffer[3] == 0x00)
-                {
-                    //Little endian UTF-32
-                    bom = new byte[] { 0xFF, 0xFE, 0x00, 0x00 };
-                    return Encoding.UTF32;
-                }
-            }
-
-            if (currentBufferLength >= 3)
-            {
-                if (buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF)
-                {
-                    //UTF-8
-                    bom = new byte[] { 0xEF, 0xBB, 0xBF };
-                    return Encoding.UTF8;
-                }
-            }
-
-            if (currentBufferLength >= 2)
-            {
-                if (buffer[0] == 0xFE && buffer[1] == 0xFF)
-                {
-                    //Big endian UTF-16
-                    bom = new byte[] { 0xFE, 0xFF };
-                    return Encoding.BigEndianUnicode;
-                }
-
-                if (buffer[0] == 0xFF && buffer[1] == 0xFE)
-                {
-                    //Little endian UTF-16
-                    bom = new byte[] { 0xFF, 0xFE };
-                    return Encoding.Unicode;
-                }
-            }
-
-            //Fallback to UTF-8
-            bom = new byte[0];
-            return Encoding.UTF8;
-        }
-
         public byte[] CurrentBuffer { get; }
 
-        public int CurrentBufferPosition { get; private set; }
-
         public int CurrentBufferLength { get; private set; }
+
+        public int CurrentBufferPosition { get; private set; }
 
         public Encoding Encoding
         {
@@ -110,6 +51,12 @@ namespace N3P.StreamReplacer
                 CalculateEOLMarkers();
             }
         }
+
+        public SimpleTrie EOLMarkers { get; private set; }
+
+        public IReadOnlyList<byte[]> EOLTails { get; private set; }
+
+        public int MaxEOLTailLength { get; private set; }
 
         public void AdvanceBuffer(int bufferPosition)
         {
@@ -130,16 +77,30 @@ namespace N3P.StreamReplacer
             CurrentBufferPosition = 0;
         }
 
-        private void CalculateEOLMarkers()
+        public void ConsumeToEndOfLine(ref int bufferLength, ref int currentBufferPosition)
         {
-            SimpleTrie t = new SimpleTrie();
-            t.AddToken(Encoding.GetBytes("\r\n"), 0);
-            t.AddToken(Encoding.GetBytes("\n"), 1);
-            t.AddToken(Encoding.GetBytes("\r"), 2);
-            EOLMarkers = t;
-        }
+            while (bufferLength > EOLMarkers.Length)
+            {
+                for (; currentBufferPosition < bufferLength - EOLMarkers.Length + 1; ++currentBufferPosition)
+                {
+                    if (bufferLength == 0)
+                    {
+                        currentBufferPosition = 0;
+                        return;
+                    }
 
-        public SimpleTrie EOLMarkers { get; private set; }
+                    int token;
+                    if (EOLMarkers.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                    {
+                        return;
+                    }
+                }
+
+                AdvanceBuffer(bufferLength - EOLMarkers.Length + 1);
+                currentBufferPosition = CurrentBufferPosition;
+                bufferLength = CurrentBufferLength;
+            }
+        }
 
         public bool Run()
         {
@@ -223,6 +184,120 @@ namespace N3P.StreamReplacer
 
             _target.Flush();
             return modified;
+        }
+
+        public void TrimBackToPreviousEOL()
+        {
+            while (_target.Position > 0)
+            {
+                byte[] buffer = new byte[MaxEOLTailLength];
+                _target.Position -= MaxEOLTailLength;
+                _target.Read(buffer, 0, buffer.Length);
+
+                for (int i = 0; i < EOLTails.Count; ++i)
+                {
+                    for (int j = 0; j <= buffer.Length - EOLTails[i].Length; ++j)
+                    {
+                        bool allMatch = true;
+                        for (int k = 0; allMatch && k < EOLTails[i].Length; ++k)
+                        {
+                            if (EOLTails[i][k] != buffer[j + k])
+                            {
+                                allMatch = false;
+                            }
+                        }
+
+                        if (allMatch)
+                        {
+                            _target.Position -= j;
+                            _target.SetLength(_target.Position);
+                            return;
+                        }
+                    }
+                }
+
+                //Back up the amount we already read to get a new window of data in
+                _target.Position -= MaxEOLTailLength;
+            }
+        }
+
+        /// <remarks>http://www.unicode.org/faq/utf_bom.html</remarks>
+        private static Encoding DetectEncoding(byte[] buffer, int currentBufferLength, out byte[] bom)
+        {
+            if (currentBufferLength == 0)
+            {
+                //File is zero length - pick something
+                bom = new byte[0];
+                return Encoding.UTF8;
+            }
+
+            if (currentBufferLength >= 4)
+            {
+                if (buffer[0] == 0x00 && buffer[1] == 0x00 && buffer[2] == 0xFE && buffer[3] == 0xFF)
+                {
+                    //Big endian UTF-32
+                    bom = new byte[] { 0x00, 0x00, 0xFE, 0xFF };
+                    return Encoding.GetEncoding(12001);
+                }
+
+                if (buffer[0] == 0xFF && buffer[1] == 0xFE && buffer[2] == 0x00 && buffer[3] == 0x00)
+                {
+                    //Little endian UTF-32
+                    bom = new byte[] { 0xFF, 0xFE, 0x00, 0x00 };
+                    return Encoding.UTF32;
+                }
+            }
+
+            if (currentBufferLength >= 3)
+            {
+                if (buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF)
+                {
+                    //UTF-8
+                    bom = new byte[] { 0xEF, 0xBB, 0xBF };
+                    return Encoding.UTF8;
+                }
+            }
+
+            if (currentBufferLength >= 2)
+            {
+                if (buffer[0] == 0xFE && buffer[1] == 0xFF)
+                {
+                    //Big endian UTF-16
+                    bom = new byte[] { 0xFE, 0xFF };
+                    return Encoding.BigEndianUnicode;
+                }
+
+                if (buffer[0] == 0xFF && buffer[1] == 0xFE)
+                {
+                    //Little endian UTF-16
+                    bom = new byte[] { 0xFF, 0xFE };
+                    return Encoding.Unicode;
+                }
+            }
+
+            //Fallback to UTF-8
+            bom = new byte[0];
+            return Encoding.UTF8;
+        }
+
+        private void CalculateEOLMarkers()
+        {
+            SimpleTrie t = new SimpleTrie();
+            t.AddToken(Encoding.GetBytes("\r\n"), 0);
+            t.AddToken(Encoding.GetBytes("\n"), 1);
+            t.AddToken(Encoding.GetBytes("\r"), 2);
+            EOLMarkers = t;
+
+            byte[] carriageReturn = Encoding.GetBytes("\r");
+            byte[] newLine = Encoding.GetBytes("\n");
+
+            EOLTails = new[]
+            {
+                carriageReturn,
+                newLine
+            };
+
+            MaxEOLTailLength = Math.Max(carriageReturn.Length, newLine.Length);
         }
     }
 }

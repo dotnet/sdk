@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <title></title>
 </head>
-<body>
+            <region>
 $if$ STEVE == "Cheeseburger"
     $if$ C2  || !C1     
         $if$ C1
@@ -22,11 +22,11 @@ value3
 value4
         $endif$
     $endif$
-    $if$ C1 && C2
+    $if$ !C1 && C2
 value5
     $endif$
 $else$
 alternative
 $endif$
-</body>
+</region>
 </html>

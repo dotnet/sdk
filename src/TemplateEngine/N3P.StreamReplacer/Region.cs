@@ -10,6 +10,7 @@ namespace N3P.StreamReplacer
         private readonly bool _include;
         private readonly string _start;
         private readonly bool _toggle;
+
         public Region(string start, string end, bool include)
         {
             _start = start;
@@ -48,10 +49,14 @@ namespace N3P.StreamReplacer
             }
 
             public IOperationProvider Definition { get; }
+
             public IReadOnlyList<byte[]> Tokens { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
+                processor.TrimBackToPreviousEOL();
+                processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+
                 if (_startAndEndAreSame)
                 {
                     token = _waitingForEnd ? 1 : 0;
@@ -69,7 +74,7 @@ namespace N3P.StreamReplacer
                 {
                     return 0;
                 }
-                
+
                 //If we're including the region, set that we're waiting for the end and return
                 //  control to the processor
                 if (_includeRegion)

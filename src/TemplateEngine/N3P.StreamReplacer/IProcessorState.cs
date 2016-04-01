@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 
 namespace N3P.StreamReplacer
@@ -6,14 +7,22 @@ namespace N3P.StreamReplacer
     {
         byte[] CurrentBuffer { get; }
 
-        int CurrentBufferPosition { get; }
-
         int CurrentBufferLength { get; }
+
+        int CurrentBufferPosition { get; }
 
         Encoding Encoding { get; }
 
+        SimpleTrie EOLMarkers { get; }
+
+        IReadOnlyList<byte[]> EOLTails { get; }
+
+        int MaxEOLTailLength { get; }
+
         void AdvanceBuffer(int bufferPosition);
 
-        SimpleTrie EOLMarkers { get; }
+        void ConsumeToEndOfLine(ref int bufferLength, ref int currentBufferPosition);
+
+        void TrimBackToPreviousEOL();
     }
 }

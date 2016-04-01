@@ -57,11 +57,7 @@ namespace N3P.StreamReplacer
                 tokens.Add(elseIfToken);
             }
 
-            byte[][] eolMarkers = new byte[2][];
-            eolMarkers[0] = encoding.GetBytes("\r");
-            eolMarkers[1] = encoding.GetBytes("\n");
-
-            return new Impl(this, tokens, elseIfTokenIndex, trie, eolMarkers);
+            return new Impl(this, tokens, elseIfTokenIndex, trie);
         }
 
         private class Impl : IOperation
@@ -71,15 +67,13 @@ namespace N3P.StreamReplacer
             private readonly int _elseIfTokenIndex;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly SimpleTrie _trie;
-            private readonly byte[][] _eolMarkers;
 
-            public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, int elseIfTokenIndex, SimpleTrie trie, byte[][] eolMarkers)
+            public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, int elseIfTokenIndex, SimpleTrie trie)
             {
                 _trie = trie;
                 _elseIfTokenIndex = elseIfTokenIndex;
                 _definition = definition;
                 Tokens = tokens;
-                _eolMarkers = eolMarkers;
             }
 
             public IOperationProvider Definition => _definition;
@@ -88,7 +82,7 @@ namespace N3P.StreamReplacer
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
-                TrimBackToPreviousEOL(target);
+                processor.TrimBackToPreviousEOL();
 BEGIN:
                 //Got the "if" token...
                 if (token == 0)
@@ -155,7 +149,7 @@ BEGIN:
                         _current = _pendingCompletion.Pop();
                     }
 
-                    ConsumeToEndOfLine(processor, ref bufferLength, ref currentBufferPosition);
+                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
                     return 0;
                 }
 
@@ -199,77 +193,8 @@ BEGIN:
                 //We have an "else" token and haven't taken any other branches, return control
                 //  after setting that a branch has been taken
                 _current.BranchTaken = true;
-                ConsumeToEndOfLine(processor, ref bufferLength, ref currentBufferPosition);
+                processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
                 return 0;
-            }
-
-            private static void ConsumeToEndOfLine(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
-            {
-                while (bufferLength > processor.EOLMarkers.Length)
-                {
-                    for (; currentBufferPosition < bufferLength - processor.EOLMarkers.Length + 1; ++currentBufferPosition)
-                    {
-                        if (bufferLength == 0)
-                        {
-                            currentBufferPosition = 0;
-                            return;
-                        }
-
-                        int token;
-                        if (processor.EOLMarkers.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
-                        {
-                            return;
-                        }
-                    }
-
-                    processor.AdvanceBuffer(bufferLength - processor.EOLMarkers.Length + 1);
-                    currentBufferPosition = processor.CurrentBufferPosition;
-                    bufferLength = processor.CurrentBufferLength;
-                }
-            }
-
-            private void TrimBackToPreviousEOL(Stream target)
-            {
-                int maxEOLLength = 0;
-                for (int i = 0; i < _eolMarkers.Length; ++i)
-                {
-                    if (_eolMarkers[i].Length > maxEOLLength)
-                    {
-                        maxEOLLength = _eolMarkers[i].Length;
-                    }
-                }
-
-                while (target.Position > 0)
-                {
-                    byte[] buffer = new byte[maxEOLLength];
-                    target.Position -= maxEOLLength;
-                    target.Read(buffer, 0, buffer.Length);
-
-                    for (int i = 0; i < _eolMarkers.Length; ++i)
-                    {
-                        for (int j = 0; j <= buffer.Length - _eolMarkers[i].Length; ++j)
-                        {
-                            bool allMatch = true;
-                            for (int k = 0; allMatch && k < _eolMarkers[i].Length; ++k)
-                            {
-                                if (_eolMarkers[i][k] != buffer[j + k])
-                                {
-                                    allMatch = false;
-                                }
-                            }
-
-                            if (allMatch)
-                            {
-                                target.Position -= j;
-                                target.SetLength(target.Position);
-                                return;
-                            }
-                        }
-                    }
-
-                    //Back up the amount we already read to get a new window of data in
-                    target.Position -= maxEOLLength;
-                }
             }
 
             private bool SeekToTerminator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out int token)

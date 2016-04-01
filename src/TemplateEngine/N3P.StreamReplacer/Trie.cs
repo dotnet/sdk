@@ -54,21 +54,31 @@ namespace N3P.StreamReplacer
         {
             int i = currentBufferPosition;
             Trie current = this;
+            IOperation operation = null;
+            int index = -1;
 
-            while (current.End == null && i < bufferLength)
+            while (i < bufferLength)
             {
                 if (!current._map.TryGetValue(buffer[i], out current))
                 {
-                    token = 0;
+                    token = index;
+
+                    if (index != -1)
+                    {
+                        currentBufferPosition = i;
+                        return operation;
+                    }
+
                     return null;
                 }
 
+                index = current.HandlerTokenIndex;
+                operation = current.End;
                 ++i;
             }
 
-            token = current.HandlerTokenIndex;
-            currentBufferPosition = i;
-            return current.End;
+            token = -1;
+            return null;
         }
     }
 }
