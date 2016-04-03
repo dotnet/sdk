@@ -1,6 +1,6 @@
 using System;
 
-namespace N3P.StreamReplacer.Expressions.Cpp
+namespace Mutant.Chicken.Expressions.Cpp
 {
     [Flags]
     internal enum TokenFamily

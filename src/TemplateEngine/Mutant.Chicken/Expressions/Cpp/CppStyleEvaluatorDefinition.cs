@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace N3P.StreamReplacer.Expressions.Cpp
+namespace Mutant.Chicken.Expressions.Cpp
 {
     public static class CppStyleEvaluatorDefinition
     {
@@ -251,7 +251,7 @@ namespace N3P.StreamReplacer.Expressions.Cpp
                             expectingRightHandSide = true;
                         }
 
-                        if (current.Operator == Operator.Not)
+                        while (current.Operator == Operator.Not)
                         {
                             current = parents.Pop();
                         }
@@ -339,7 +339,7 @@ namespace N3P.StreamReplacer.Expressions.Cpp
                             expectingRightHandSide = true;
                         }
 
-                        if (current.Operator == Operator.Not)
+                        while (current.Operator == Operator.Not)
                         {
                             current = parents.Pop();
                         }
@@ -372,6 +372,15 @@ namespace N3P.StreamReplacer.Expressions.Cpp
                 if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
+                }
+
+                if (literal.Contains("."))
+                {
+                    double literalDouble;
+                    if (double.TryParse(literal, out literalDouble))
+                    {
+                        return literalDouble;
+                    }
                 }
 
                 long literalLong;

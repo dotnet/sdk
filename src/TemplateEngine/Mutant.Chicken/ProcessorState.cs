@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     internal class ProcessorState : IProcessorState
     {
@@ -48,7 +48,7 @@ namespace N3P.StreamReplacer
             set
             {
                 _encoding = value;
-                CalculateEOLMarkers();
+                CalculateMarkers();
             }
         }
 
@@ -56,7 +56,13 @@ namespace N3P.StreamReplacer
 
         public IReadOnlyList<byte[]> EOLTails { get; private set; }
 
+        public IReadOnlyList<byte[]> WhitespaceTails { get; private set; }
+
+        public SimpleTrie WhitespaceMarkers { get; private set; }
+
         public int MaxEOLTailLength { get; private set; }
+
+        public int MaxWhitespaceTailLength { get; private set; }
 
         public void AdvanceBuffer(int bufferPosition)
         {
@@ -100,6 +106,9 @@ namespace N3P.StreamReplacer
                 currentBufferPosition = CurrentBufferPosition;
                 bufferLength = CurrentBufferLength;
             }
+
+            //Ran out of places to check and haven't reached the actual EOL, consume all the way to the end
+            currentBufferPosition = bufferLength;
         }
 
         public bool Run()
@@ -219,6 +228,21 @@ namespace N3P.StreamReplacer
                 //Back up the amount we already read to get a new window of data in
                 _target.Position -= MaxEOLTailLength;
             }
+
+            if (_target.Position == 0)
+            {
+                _target.SetLength(0);
+            }
+        }
+
+        public void TrimBackWhitespace()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TrimForwardWhitespace()
+        {
+            throw new NotImplementedException();
         }
 
         /// <remarks>http://www.unicode.org/faq/utf_bom.html</remarks>
@@ -280,6 +304,20 @@ namespace N3P.StreamReplacer
             return Encoding.UTF8;
         }
 
+        private void TrimBackUntil(IReadOnlyList<byte[]> tailMarkers, int maxTailLength)
+        {
+        }
+
+        private void TrimBackWhile(IReadOnlyList<byte[]> tailMarkers, int maxTailLength)
+        {
+        }
+
+        private void CalculateMarkers()
+        {
+            CalculateEOLMarkers();
+            CalculateWhitespaceMarkers();
+        }
+
         private void CalculateEOLMarkers()
         {
             SimpleTrie t = new SimpleTrie();
@@ -298,6 +336,25 @@ namespace N3P.StreamReplacer
             };
 
             MaxEOLTailLength = Math.Max(carriageReturn.Length, newLine.Length);
+        }
+
+        private void CalculateWhitespaceMarkers()
+        {
+            SimpleTrie t = new SimpleTrie();
+            t.AddToken(Encoding.GetBytes("\t"), 0);
+            t.AddToken(Encoding.GetBytes(" "), 1);
+            WhitespaceMarkers = t;
+
+            byte[] space = Encoding.GetBytes(" ");
+            byte[] tab = Encoding.GetBytes("\t");
+
+            WhitespaceTails = new[]
+            {
+                space,
+                tab
+            };
+
+            MaxWhitespaceTailLength = Math.Max(space.Length, tab.Length);
         }
     }
 }

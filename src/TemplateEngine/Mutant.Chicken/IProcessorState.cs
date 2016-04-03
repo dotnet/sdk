@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public interface IProcessorState
     {
@@ -15,14 +15,24 @@ namespace N3P.StreamReplacer
 
         SimpleTrie EOLMarkers { get; }
 
+        SimpleTrie WhitespaceMarkers { get; }
+
         IReadOnlyList<byte[]> EOLTails { get; }
 
+        IReadOnlyList<byte[]> WhitespaceTails { get; }
+
         int MaxEOLTailLength { get; }
+
+        int MaxWhitespaceTailLength { get; }
 
         void AdvanceBuffer(int bufferPosition);
 
         void ConsumeToEndOfLine(ref int bufferLength, ref int currentBufferPosition);
 
         void TrimBackToPreviousEOL();
+
+        void TrimBackWhitespace();
+
+        void TrimForwardWhitespace();
     }
 }

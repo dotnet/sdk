@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public class SimpleTrie
     {
@@ -54,6 +54,7 @@ namespace N3P.StreamReplacer
                     if (index != -1)
                     {
                         currentBufferPosition = i;
+                        token = index;
                         return true;
                     }
 
@@ -62,6 +63,13 @@ namespace N3P.StreamReplacer
 
                 index = current.Index;
                 ++i;
+            }
+
+            if (index != -1)
+            {
+                currentBufferPosition = i;
+                token = index;
+                return true;
             }
 
             token = -1;

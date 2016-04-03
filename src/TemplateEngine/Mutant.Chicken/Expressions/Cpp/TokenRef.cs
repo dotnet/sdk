@@ -1,4 +1,4 @@
-namespace N3P.StreamReplacer.Expressions.Cpp
+namespace Mutant.Chicken.Expressions.Cpp
 {
     internal class TokenRef
     {

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public delegate bool ConditionEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, IReadOnlyDictionary<string, object> args);
 
@@ -14,9 +14,13 @@ namespace N3P.StreamReplacer
         private readonly string _endIfToken;
         private readonly string _ifToken;
         private readonly ConditionEvaluator _evaluator;
+        private readonly bool _wholeLine;
+        private readonly bool _trimWhitespace;
 
-        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, ConditionEvaluator evaluator, IReadOnlyDictionary<string, object> args)
+        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, IReadOnlyDictionary<string, object> args)
         {
+            _trimWhitespace = trimWhitespace;
+            _wholeLine = wholeLine;
             _evaluator = evaluator;
             _ifToken = ifToken;
             _elseToken = elseToken;
@@ -82,7 +86,15 @@ namespace N3P.StreamReplacer
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
-                processor.TrimBackToPreviousEOL();
+                if (_definition._wholeLine)
+                {
+                    processor.TrimBackToPreviousEOL();
+                }
+                else if (_definition._trimWhitespace)
+                {
+                    processor.TrimBackWhitespace();
+                }
+
 BEGIN:
                 //Got the "if" token...
                 if (token == 0)
@@ -149,7 +161,15 @@ BEGIN:
                         _current = _pendingCompletion.Pop();
                     }
 
-                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+                    if (_definition._wholeLine)
+                    {
+                        processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+                    }
+                    else if (_definition._trimWhitespace)
+                    {
+                        processor.TrimForwardWhitespace();
+                    }
+
                     return 0;
                 }
 
@@ -193,7 +213,16 @@ BEGIN:
                 //We have an "else" token and haven't taken any other branches, return control
                 //  after setting that a branch has been taken
                 _current.BranchTaken = true;
-                processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+
+                if (_definition._wholeLine)
+                {
+                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+                }
+                else if (_definition._trimWhitespace)
+                {
+                    processor.TrimBackWhitespace();
+                }
+
                 return 0;
             }
 

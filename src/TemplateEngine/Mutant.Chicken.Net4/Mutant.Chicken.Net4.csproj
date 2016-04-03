@@ -7,8 +7,8 @@
     <ProjectGuid>{46922F20-1842-4B76-A775-EACF40BD770B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>N3P.StreamReplacer</RootNamespace>
-    <AssemblyName>N3P.StreamReplacer</AssemblyName>
+    <RootNamespace>Mutant.Chicken</RootNamespace>
+    <AssemblyName>Mutant.Chicken</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -34,7 +34,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\N3P.StreamReplacer\**\*.cs" Exclude="..\N3P.StreamReplacer\obj\**;..\N3P.StreamReplacer\bin\**">
+    <Compile Include="..\Mutant.Chicken\**\*.cs" Exclude="..\Mutant.Chicken\obj\**;..\Mutant.Chicken\bin\**">
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>

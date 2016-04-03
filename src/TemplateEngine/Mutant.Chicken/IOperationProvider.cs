@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public interface IOperationProvider
     {

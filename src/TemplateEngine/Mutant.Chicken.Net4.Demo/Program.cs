@@ -2,13 +2,45 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using N3P.StreamReplacer.Expressions.Cpp;
+using Mutant.Chicken.Expressions.Cpp;
 using Newtonsoft.Json.Linq;
 
-namespace N3P.StreamReplacer.Net4.Demo
+namespace Mutant.Chicken.Demo
 {
     class Program
     {
+        private static IOperationProvider CreateCondition(JObject jObject)
+        {
+            string ifToken = jObject["if"].Value<string>();
+            string elseToken = jObject["else"]?.Value<string>();
+            string elseIfToken = jObject["elseif"]?.Value<string>();
+            string endIfToken = jObject["endif"].Value<string>();
+            bool wholeLine = jObject["wholeLine"].Value<bool>();
+            bool trimWhitespace = jObject["trimWhitespace"].Value<bool>();
+            return new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, !wholeLine && trimWhitespace, CppStyleEvaluatorDefinition.CppStyleEvaluator,
+                new Dictionary<string, object>
+                {
+                    {"val", true }
+                });
+        }
+
+        private static IOperationProvider CreateRegion(JObject jObject)
+        {
+            bool include = jObject["include"].Value<bool>();
+            string start = jObject["start"].Value<string>();
+            string end = jObject["end"].Value<string>();
+            bool wholeLine = jObject["wholeLine"].Value<bool>();
+            bool trimWhitespace = jObject["trimWhitespace"].Value<bool>();
+            return new Region(start, end, include, wholeLine, !wholeLine && trimWhitespace);
+        }
+
+        private static IOperationProvider CreateReplacement(JObject jObject)
+        {
+            string find = jObject["find"].Value<string>();
+            string replaceWith = jObject["replaceWith"].Value<string>();
+            return new Replacment(find, replaceWith);
+        }
+
         static void Main(string[] args)
         {
             string defininitionsFile = args[0];
@@ -52,38 +84,6 @@ namespace N3P.StreamReplacer.Net4.Demo
             }
 
             return operations.ToArray();
-        }
-
-        private static IOperationProvider CreateCondition(JObject jObject)
-        {
-            string ifToken = jObject["if"].Value<string>();
-            string elseToken = jObject["else"]?.Value<string>();
-            string elseIfToken = jObject["elseif"]?.Value<string>();
-            string endIfToken = jObject["endif"].Value<string>();
-            return new Conditional(ifToken, elseToken, elseIfToken, endIfToken, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                new Dictionary<string, object>
-                {
-                    {"C1", true},
-                    {"C2", true},
-                    {"C3", true},
-                    {"N", 2 },
-                    {"STEVE", "Cheeseburger" }
-                });
-        }
-
-        private static IOperationProvider CreateRegion(JObject jObject)
-        {
-            bool include = jObject["include"].Value<bool>();
-            string start = jObject["start"].Value<string>();
-            string end = jObject["end"].Value<string>();
-            return new Region(start, end, include);
-        }
-
-        private static IOperationProvider CreateReplacement(JObject jObject)
-        {
-            string find = jObject["find"].Value<string>();
-            string replaceWith = jObject["replaceWith"].Value<string>();
-            return new Replacment(find, replaceWith);
         }
     }
 }

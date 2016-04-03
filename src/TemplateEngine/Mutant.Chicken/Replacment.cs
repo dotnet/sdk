@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public class Replacment : IOperationProvider
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace N3P.StreamReplacer.Expressions.Cpp
+namespace Mutant.Chicken.Expressions.Cpp
 {
     internal class Scope
     {
@@ -29,13 +29,13 @@ namespace N3P.StreamReplacer.Expressions.Cpp
                 case Operator.NotEqualTo:
                     return !Equals((Left as Scope)?.Evaluate() ?? Left, (Right as Scope)?.Evaluate() ?? Right);
                 case Operator.GreaterThan:
-                    return Convert.ToInt64((Left as Scope)?.Evaluate() ?? Left) > Convert.ToInt64((Right as Scope)?.Evaluate() ?? Right);
+                    return Convert.ToDouble((Left as Scope)?.Evaluate() ?? Left) > Convert.ToDouble((Right as Scope)?.Evaluate() ?? Right);
                 case Operator.GreaterThanOrEqualTo:
-                    return Convert.ToInt64((Left as Scope)?.Evaluate() ?? Left) >= Convert.ToInt64((Right as Scope)?.Evaluate() ?? Right);
+                    return Convert.ToDouble((Left as Scope)?.Evaluate() ?? Left) >= Convert.ToDouble((Right as Scope)?.Evaluate() ?? Right);
                 case Operator.LessThan:
-                    return Convert.ToInt64((Left as Scope)?.Evaluate() ?? Left) < Convert.ToInt64((Right as Scope)?.Evaluate() ?? Right);
+                    return Convert.ToDouble((Left as Scope)?.Evaluate() ?? Left) < Convert.ToDouble((Right as Scope)?.Evaluate() ?? Right);
                 case Operator.LessThanOrEqualTo:
-                    return Convert.ToInt64((Left as Scope)?.Evaluate() ?? Left) <= Convert.ToInt64((Right as Scope)?.Evaluate() ?? Right);
+                    return Convert.ToDouble((Left as Scope)?.Evaluate() ?? Left) <= Convert.ToDouble((Right as Scope)?.Evaluate() ?? Right);
                 case Operator.LeftShift:
                     return Convert.ToInt64((Left as Scope)?.Evaluate() ?? Left) << Convert.ToInt32((Right as Scope)?.Evaluate() ?? Right);
                 case Operator.RightShift:

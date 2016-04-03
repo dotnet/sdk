@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     internal class Trie
     {
@@ -75,6 +75,13 @@ namespace N3P.StreamReplacer
                 index = current.HandlerTokenIndex;
                 operation = current.End;
                 ++i;
+            }
+
+            if (index != -1)
+            {
+                currentBufferPosition = i;
+                token = index;
+                return operation;
             }
 
             token = -1;

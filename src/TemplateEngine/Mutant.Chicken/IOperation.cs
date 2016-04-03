@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public interface IOperation
     {

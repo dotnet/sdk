@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public class Processor : IProcessor
     {

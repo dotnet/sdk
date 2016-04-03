@@ -7,8 +7,8 @@
     <ProjectGuid>{58610E92-8900-489F-8962-805B3A74FF5A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>N3P.StreamReplacer.Net4.Demo</RootNamespace>
-    <AssemblyName>N3P.StreamReplacer.Net4.Demo</AssemblyName>
+    <RootNamespace>Mutant.Chicken.Demo</RootNamespace>
+    <AssemblyName>Mutant.Chicken.Demo</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -58,9 +58,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\N3P.StreamReplacer.Net4\N3P.StreamReplacer.Net4.csproj">
+    <ProjectReference Include="..\Mutant.Chicken.Net4\Mutant.Chicken.Net4.csproj">
       <Project>{46922f20-1842-4b76-a775-eacf40bd770b}</Project>
-      <Name>N3P.StreamReplacer.Net4</Name>
+      <Name>Mutant.Chicken.Net4</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace N3P.StreamReplacer
+namespace Mutant.Chicken
 {
     public class Region : IOperationProvider
     {
@@ -10,9 +10,13 @@ namespace N3P.StreamReplacer
         private readonly bool _include;
         private readonly string _start;
         private readonly bool _toggle;
+        private readonly bool _wholeLine;
+        private readonly bool _trimWhitespace;
 
-        public Region(string start, string end, bool include)
+        public Region(string start, string end, bool include, bool wholeLine, bool trimWhitespace)
         {
+            _wholeLine = wholeLine;
+            _trimWhitespace = trimWhitespace;
             _start = start;
             _end = end;
             _include = include;
@@ -37,10 +41,11 @@ namespace N3P.StreamReplacer
             private readonly bool _includeRegion;
             private readonly bool _startAndEndAreSame;
             private bool _waitingForEnd;
+            private readonly Region _definition;
 
-            public Impl(IOperationProvider owner, byte[] startToken, byte[] endToken, bool include, bool toggle)
+            public Impl(Region owner, byte[] startToken, byte[] endToken, bool include, bool toggle)
             {
-                Definition = owner;
+                _definition = owner;
                 _endToken = endToken;
                 _includeRegion = include;
                 _startAndEndAreSame = toggle;
@@ -48,14 +53,21 @@ namespace N3P.StreamReplacer
                 Tokens = toggle ? new[] {startToken} : new[] {startToken, endToken};
             }
 
-            public IOperationProvider Definition { get; }
+            public IOperationProvider Definition => _definition;
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
-                processor.TrimBackToPreviousEOL();
-                processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+                if (_definition._wholeLine)
+                {
+                    processor.TrimBackToPreviousEOL();
+                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+                }
+                else if (_definition._trimWhitespace)
+                {
+                    processor.TrimBackWhitespace();
+                }
 
                 if (_startAndEndAreSame)
                 {
@@ -112,6 +124,16 @@ namespace N3P.StreamReplacer
                 }
 
                 i += j;
+
+                if (_definition._wholeLine)
+                {
+                    processor.TrimBackToPreviousEOL();
+                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+                }
+                else if (_definition._trimWhitespace)
+                {
+                    processor.TrimBackWhitespace();
+                }
 
                 currentBufferPosition = i;
                 return 0;
