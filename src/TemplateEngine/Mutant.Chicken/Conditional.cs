@@ -4,11 +4,10 @@ using System.Text;
 
 namespace Mutant.Chicken
 {
-    public delegate bool ConditionEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, IReadOnlyDictionary<string, object> args);
+    public delegate bool ConditionEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition);
 
     public class Conditional : IOperationProvider
     {
-        private readonly IReadOnlyDictionary<string, object> _args;
         private readonly string _elseIfToken;
         private readonly string _elseToken;
         private readonly string _endIfToken;
@@ -17,7 +16,7 @@ namespace Mutant.Chicken
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
 
-        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, IReadOnlyDictionary<string, object> args)
+        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator)
         {
             _trimWhitespace = trimWhitespace;
             _wholeLine = wholeLine;
@@ -26,10 +25,9 @@ namespace Mutant.Chicken
             _elseToken = elseToken;
             _elseIfToken = elseIfToken;
             _endIfToken = endIfToken;
-            _args = args;
         }
 
-        public IOperation GetOperation(Encoding encoding)
+        public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
             byte[] ifToken = encoding.GetBytes(_ifToken);
             byte[] endToken = encoding.GetBytes(_endIfToken);
@@ -88,11 +86,11 @@ namespace Mutant.Chicken
             {
                 if (_definition._wholeLine)
                 {
-                    processor.TrimBackToPreviousEOL();
+                    processor.SeekBackUntil(processor.EncodingConfig.LineEndings);
                 }
                 else if (_definition._trimWhitespace)
                 {
-                    processor.TrimBackWhitespace();
+                    processor.TrimWhitespace(false, true, ref bufferLength, ref currentBufferPosition);
                 }
 
 BEGIN:
@@ -163,11 +161,11 @@ BEGIN:
 
                     if (_definition._wholeLine)
                     {
-                        processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
+                        processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
                     }
                     else if (_definition._trimWhitespace)
                     {
-                        processor.TrimForwardWhitespace();
+                        processor.TrimWhitespace(true, false, ref bufferLength, ref currentBufferPosition);
                     }
 
                     return 0;
@@ -213,24 +211,15 @@ BEGIN:
                 //We have an "else" token and haven't taken any other branches, return control
                 //  after setting that a branch has been taken
                 _current.BranchTaken = true;
-
-                if (_definition._wholeLine)
-                {
-                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
-                }
-                else if (_definition._trimWhitespace)
-                {
-                    processor.TrimBackWhitespace();
-                }
-
+                processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
                 return 0;
             }
 
             private bool SeekToTerminator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out int token)
             {
-                while (bufferLength > _trie.Length)
+                while (bufferLength > _trie.MaxLength)
                 {
-                    for (; currentBufferPosition < bufferLength - _trie.Length + 1; ++currentBufferPosition)
+                    for (; currentBufferPosition < bufferLength - _trie.MaxLength + 1; ++currentBufferPosition)
                     {
                         if (bufferLength == 0)
                         {
@@ -245,7 +234,7 @@ BEGIN:
                         }
                     }
 
-                    processor.AdvanceBuffer(bufferLength - _trie.Length + 1);
+                    processor.AdvanceBuffer(bufferLength - _trie.MaxLength + 1);
                     currentBufferPosition = processor.CurrentBufferPosition;
                     bufferLength = processor.CurrentBufferLength;
                 }
@@ -266,7 +255,7 @@ BEGIN:
 
                 internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
                 {
-                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, _impl._definition._args);
+                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition);
                     return BranchTaken;
                 }
 

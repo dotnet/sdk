@@ -8,19 +8,22 @@ namespace Mutant.Chicken
         private const int DefaultFlushThreshold = 8 * 1024 * 1024;
         private readonly IOperationProvider[] _operations;
 
-        private Processor(IOperationProvider[] operations)
+        private Processor(EngineConfig config, IOperationProvider[] operations)
         {
+            Config = config;
             _operations = operations;
         }
 
-        public static IProcessor Create(params IOperationProvider[] operations)
+        public EngineConfig Config { get; }
+
+        public static IProcessor Create(EngineConfig config, params IOperationProvider[] operations)
         {
-            return new Processor(operations);
+            return new Processor(config, operations);
         }
 
         public bool Run(Stream source, Stream target)
         {
-            ProcessorState state = new ProcessorState(source, target, DefaultBufferSize, DefaultFlushThreshold, _operations);
+            ProcessorState state = new ProcessorState(source, target, DefaultBufferSize, DefaultFlushThreshold, Config, _operations);
             return state.Run();
         }
     }

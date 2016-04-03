@@ -13,10 +13,11 @@ namespace Mutant.Chicken
         private readonly Trie _trie;
         private Encoding _encoding;
 
-        public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IReadOnlyList<IOperationProvider> operationProviders)
+        public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, EngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
             _source = source;
             _target = target;
+            Config = config;
             _flushThreshold = flushThreshold;
             CurrentBuffer = new byte[bufferSize];
             CurrentBufferLength = source.Read(CurrentBuffer, 0, CurrentBuffer.Length);
@@ -30,11 +31,13 @@ namespace Mutant.Chicken
 
             for (int i = 0; i < operations.Length; ++i)
             {
-                operations[i] = operationProviders[i].GetOperation(encoding);
+                operations[i] = operationProviders[i].GetOperation(encoding, this);
             }
 
             _trie = Trie.Create(operations);
         }
+
+        public EngineConfig Config { get; }
 
         public byte[] CurrentBuffer { get; }
 
@@ -44,25 +47,18 @@ namespace Mutant.Chicken
 
         public Encoding Encoding
         {
-            get { return _encoding; }
+            get
+            {
+                return _encoding;
+            }
             set
             {
                 _encoding = value;
-                CalculateMarkers();
+                EncodingConfig = new EncodingConfig(Config, _encoding);
             }
         }
 
-        public SimpleTrie EOLMarkers { get; private set; }
-
-        public IReadOnlyList<byte[]> EOLTails { get; private set; }
-
-        public IReadOnlyList<byte[]> WhitespaceTails { get; private set; }
-
-        public SimpleTrie WhitespaceMarkers { get; private set; }
-
-        public int MaxEOLTailLength { get; private set; }
-
-        public int MaxWhitespaceTailLength { get; private set; }
+        public EncodingConfig EncodingConfig { get; private set; }
 
         public void AdvanceBuffer(int bufferPosition)
         {
@@ -83,34 +79,6 @@ namespace Mutant.Chicken
             CurrentBufferPosition = 0;
         }
 
-        public void ConsumeToEndOfLine(ref int bufferLength, ref int currentBufferPosition)
-        {
-            while (bufferLength > EOLMarkers.Length)
-            {
-                for (; currentBufferPosition < bufferLength - EOLMarkers.Length + 1; ++currentBufferPosition)
-                {
-                    if (bufferLength == 0)
-                    {
-                        currentBufferPosition = 0;
-                        return;
-                    }
-
-                    int token;
-                    if (EOLMarkers.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
-                    {
-                        return;
-                    }
-                }
-
-                AdvanceBuffer(bufferLength - EOLMarkers.Length + 1);
-                currentBufferPosition = CurrentBufferPosition;
-                bufferLength = CurrentBufferLength;
-            }
-
-            //Ran out of places to check and haven't reached the actual EOL, consume all the way to the end
-            currentBufferPosition = bufferLength;
-        }
-
         public bool Run()
         {
             bool modified = false;
@@ -122,7 +90,7 @@ namespace Mutant.Chicken
                 int token;
                 int posedPosition = CurrentBufferPosition;
 
-                if (CurrentBufferLength == CurrentBuffer.Length && CurrentBufferLength - CurrentBufferPosition < _trie.Length)
+                if (CurrentBufferLength == CurrentBuffer.Length && CurrentBufferLength - CurrentBufferPosition < _trie.MinLength)
                 {
                     int writeCount = CurrentBufferPosition - lastWritten;
 
@@ -195,56 +163,6 @@ namespace Mutant.Chicken
             return modified;
         }
 
-        public void TrimBackToPreviousEOL()
-        {
-            while (_target.Position > 0)
-            {
-                byte[] buffer = new byte[MaxEOLTailLength];
-                _target.Position -= MaxEOLTailLength;
-                _target.Read(buffer, 0, buffer.Length);
-
-                for (int i = 0; i < EOLTails.Count; ++i)
-                {
-                    for (int j = 0; j <= buffer.Length - EOLTails[i].Length; ++j)
-                    {
-                        bool allMatch = true;
-                        for (int k = 0; allMatch && k < EOLTails[i].Length; ++k)
-                        {
-                            if (EOLTails[i][k] != buffer[j + k])
-                            {
-                                allMatch = false;
-                            }
-                        }
-
-                        if (allMatch)
-                        {
-                            _target.Position -= j;
-                            _target.SetLength(_target.Position);
-                            return;
-                        }
-                    }
-                }
-
-                //Back up the amount we already read to get a new window of data in
-                _target.Position -= MaxEOLTailLength;
-            }
-
-            if (_target.Position == 0)
-            {
-                _target.SetLength(0);
-            }
-        }
-
-        public void TrimBackWhitespace()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void TrimForwardWhitespace()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <remarks>http://www.unicode.org/faq/utf_bom.html</remarks>
         private static Encoding DetectEncoding(byte[] buffer, int currentBufferLength, out byte[] bom)
         {
@@ -304,57 +222,152 @@ namespace Mutant.Chicken
             return Encoding.UTF8;
         }
 
-        private void TrimBackUntil(IReadOnlyList<byte[]> tailMarkers, int maxTailLength)
+        public void SeekBackUntil(SimpleTrie match)
         {
-        }
-
-        private void TrimBackWhile(IReadOnlyList<byte[]> tailMarkers, int maxTailLength)
-        {
-        }
-
-        private void CalculateMarkers()
-        {
-            CalculateEOLMarkers();
-            CalculateWhitespaceMarkers();
-        }
-
-        private void CalculateEOLMarkers()
-        {
-            SimpleTrie t = new SimpleTrie();
-            t.AddToken(Encoding.GetBytes("\r\n"), 0);
-            t.AddToken(Encoding.GetBytes("\n"), 1);
-            t.AddToken(Encoding.GetBytes("\r"), 2);
-            EOLMarkers = t;
-
-            byte[] carriageReturn = Encoding.GetBytes("\r");
-            byte[] newLine = Encoding.GetBytes("\n");
-
-            EOLTails = new[]
+            byte[] buffer = new byte[match.MaxLength];
+            while (_target.Position > 0)
             {
-                carriageReturn,
-                newLine
-            };
+                if (_target.Position < buffer.Length)
+                {
+                    _target.Position = 0;
+                }
+                else
+                {
+                    _target.Position -= buffer.Length;
+                }
 
-            MaxEOLTailLength = Math.Max(carriageReturn.Length, newLine.Length);
+                int nRead = _target.Read(buffer, 0, buffer.Length);
+
+                for (int i = nRead - match.MinLength; i >= 0; --i)
+                {
+                    int token;
+                    if (match.GetOperation(buffer, nRead, ref i, out token))
+                    {
+                        _target.Position -= nRead - i;
+                        _target.SetLength(_target.Position);
+                        return;
+                    }
+                }
+
+                //Back up the amount we already read to get a new window of data in
+                if (_target.Position < buffer.Length)
+                {
+                    _target.Position = 0;
+                }
+                else
+                {
+                    _target.Position -= buffer.Length;
+                }
+            }
+
+            if (_target.Position == 0)
+            {
+                _target.SetLength(0);
+            }
         }
 
-        private void CalculateWhitespaceMarkers()
+        public void SeekBackWhile(SimpleTrie match)
         {
-            SimpleTrie t = new SimpleTrie();
-            t.AddToken(Encoding.GetBytes("\t"), 0);
-            t.AddToken(Encoding.GetBytes(" "), 1);
-            WhitespaceMarkers = t;
-
-            byte[] space = Encoding.GetBytes(" ");
-            byte[] tab = Encoding.GetBytes("\t");
-
-            WhitespaceTails = new[]
+            byte[] buffer = new byte[match.MaxLength];
+            while (_target.Position > 0)
             {
-                space,
-                tab
-            };
+                if (_target.Position < buffer.Length)
+                {
+                    _target.Position = 0;
+                }
+                else
+                {
+                    _target.Position -= buffer.Length;
+                }
 
-            MaxWhitespaceTailLength = Math.Max(space.Length, tab.Length);
+                int nRead = _target.Read(buffer, 0, buffer.Length);
+                bool anyMatch = false;
+                int token = -1;
+                int i = nRead - match.MinLength;
+
+                for (; i >= 0; --i)
+                {
+                    if (match.GetOperation(buffer, nRead, ref i, out token))
+                    {
+                        i -= match.TokenLength[token];
+                        anyMatch = true;
+                        break;
+                    }
+                }
+
+                if (!anyMatch || (token != -1 && i + match.TokenLength[token] != nRead))
+                {
+                    return;
+                }
+
+                //Back up the amount we already read to get a new window of data in
+                if (_target.Position < buffer.Length)
+                {
+                    _target.Position = 0;
+                }
+                else
+                {
+                    _target.Position -= buffer.Length;
+                }
+            }
+
+            if (_target.Position == 0)
+            {
+                _target.SetLength(0);
+            }
+        }
+
+        public void SeekForwardThrough(SimpleTrie match, ref int bufferLength, ref int currentBufferPosition)
+        {
+            while (bufferLength > match.MinLength)
+            {
+                for (; currentBufferPosition < bufferLength - match.MinLength + 1; ++currentBufferPosition)
+                {
+                    if (bufferLength == 0)
+                    {
+                        currentBufferPosition = 0;
+                        return;
+                    }
+
+                    int token;
+                    if (match.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                    {
+                        return;
+                    }
+                }
+
+                AdvanceBuffer(bufferLength - match.MaxLength + 1);
+                currentBufferPosition = CurrentBufferPosition;
+                bufferLength = CurrentBufferLength;
+            }
+
+            //Ran out of places to check and haven't reached the actual match, consume all the way to the end
+            currentBufferPosition = bufferLength;
+        }
+
+        public void SeekForwardWhile(SimpleTrie match, ref int bufferLength, ref int currentBufferPosition)
+        {
+            while (bufferLength > match.MinLength)
+            {
+                while(currentBufferPosition < bufferLength - match.MinLength + 1)
+                {
+                    if (bufferLength == 0)
+                    {
+                        currentBufferPosition = 0;
+                        return;
+                    }
+
+                    int token;
+                    if (!match.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                    {
+                        return;
+                    }
+                }
+
+                AdvanceBuffer(currentBufferPosition);
+                currentBufferPosition = CurrentBufferPosition;
+                bufferLength = CurrentBufferLength;
+            }
         }
     }
 }

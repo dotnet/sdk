@@ -3,22 +3,22 @@
     "wholeLine": true,
     "trimWhitespace": true,
     "type": "condition",
-    "if": "$if$",
-    "else": "$else$",
-    "elseif": "$elseif$",
-    "endif": "$endif$"
+    "if": "#if",
+    "else": "#else",
+    "elseif": "#elseif",
+    "endif": "#endif"
   },
   {
     "type": "replacement",
-    "find": "value1",
+    "find": "value11113",
     "replaceWith": "HELLLOOOO!"
   },
   {
-    "wholeLine": false,
+    "wholeLine": true,
     "trimWhitespace": true,
     "type": "region",
     "start": "<region>",
     "end": "</region>",
-    "include": false
+    "include": true
   }
 ]

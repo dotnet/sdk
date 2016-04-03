@@ -9,9 +9,12 @@ namespace Mutant.Chicken
 
         private Trie()
         {
+            HandlerTokenIndex = -1;
         }
 
-        public int Length { get; private set; }
+        public int MaxLength { get; private set; }
+
+        public int MinLength { get; private set; }
 
         public IOperation End { get; private set; }
 
@@ -20,12 +23,23 @@ namespace Mutant.Chicken
             Trie root = new Trie();
             Trie current = root;
             int length = 0;
+            int minLength = 0;
 
             for (int i = 0; i < modifiers.Length; ++i)
             {
                 for (int k = 0; k < modifiers[i].Tokens.Count; ++k)
                 {
                     length = Math.Max(length, modifiers[i].Tokens[k].Length);
+
+                    if (minLength == 0)
+                    {
+                        minLength = modifiers[i].Tokens[k].Length;
+                    }
+                    else
+                    {
+                        minLength = Math.Min(minLength, modifiers[i].Tokens[k].Length);
+                    }
+
                     for (int j = 0; j < modifiers[i].Tokens[k].Length; ++j)
                     {
                         Trie child;
@@ -44,7 +58,8 @@ namespace Mutant.Chicken
                 }
             }
 
-            root.Length = length;
+            root.MaxLength = length;
+            root.MinLength = minLength;
             return root;
         }
 
@@ -56,8 +71,9 @@ namespace Mutant.Chicken
             Trie current = this;
             IOperation operation = null;
             int index = -1;
+            int offsetToMatch = 0;
 
-            while (i < bufferLength)
+            while (i <= bufferLength - MinLength)
             {
                 if (!current._map.TryGetValue(buffer[i], out current))
                 {
@@ -65,15 +81,24 @@ namespace Mutant.Chicken
 
                     if (index != -1)
                     {
-                        currentBufferPosition = i;
+                        currentBufferPosition = i - offsetToMatch;
                         return operation;
                     }
 
                     return null;
                 }
 
-                index = current.HandlerTokenIndex;
-                operation = current.End;
+                if (current.HandlerTokenIndex != -1)
+                {
+                    index = current.HandlerTokenIndex;
+                    operation = current.End;
+                    offsetToMatch = 0;
+                }
+                else
+                {
+                    ++offsetToMatch;
+                }
+
                 ++i;
             }
 

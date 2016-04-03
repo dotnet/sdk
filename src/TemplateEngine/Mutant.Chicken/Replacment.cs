@@ -15,7 +15,7 @@ namespace Mutant.Chicken
             _replaceWith = replaceWith;
         }
 
-        public IOperation GetOperation(Encoding encoding)
+        public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
             byte[] token = encoding.GetBytes(_match);
             return new Impl(this, token, encoding.GetBytes(_replaceWith));

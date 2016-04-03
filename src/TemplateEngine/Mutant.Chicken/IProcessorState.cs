@@ -1,38 +1,29 @@
-using System.Collections.Generic;
 using System.Text;
 
 namespace Mutant.Chicken
 {
     public interface IProcessorState
     {
+        EngineConfig Config { get; }
+
         byte[] CurrentBuffer { get; }
 
         int CurrentBufferLength { get; }
 
         int CurrentBufferPosition { get; }
 
-        Encoding Encoding { get; }
+        EncodingConfig EncodingConfig { get; }
 
-        SimpleTrie EOLMarkers { get; }
-
-        SimpleTrie WhitespaceMarkers { get; }
-
-        IReadOnlyList<byte[]> EOLTails { get; }
-
-        IReadOnlyList<byte[]> WhitespaceTails { get; }
-
-        int MaxEOLTailLength { get; }
-
-        int MaxWhitespaceTailLength { get; }
+        Encoding Encoding { get; set; }
 
         void AdvanceBuffer(int bufferPosition);
 
-        void ConsumeToEndOfLine(ref int bufferLength, ref int currentBufferPosition);
+        void SeekForwardThrough(SimpleTrie trie, ref int bufferLength, ref int currentBufferPosition);
 
-        void TrimBackToPreviousEOL();
+        void SeekForwardWhile(SimpleTrie trie, ref int bufferLength, ref int currentBufferPosition);
 
-        void TrimBackWhitespace();
+        void SeekBackUntil(SimpleTrie match);
 
-        void TrimForwardWhitespace();
+        void SeekBackWhile(SimpleTrie match);
     }
 }

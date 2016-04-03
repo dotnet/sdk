@@ -5,9 +5,8 @@ namespace Mutant.Chicken.Expressions.Cpp
 {
     public static class CppStyleEvaluatorDefinition
     {
-        public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, IReadOnlyDictionary<string, object> args)
+        public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
         {
-            object[] values = new object[args.Count];
             SimpleTrie trie = new SimpleTrie();
 
             //Logic
@@ -42,12 +41,7 @@ namespace Mutant.Chicken.Expressions.Cpp
             trie.AddToken(processor.Encoding.GetBytes("\r"), 20);
 
             //Tokens
-            int tokenIndex = 21;
-            foreach (KeyValuePair<string, object> pair in args)
-            {
-                trie.AddToken(processor.Encoding.GetBytes(pair.Key), tokenIndex);
-                values[tokenIndex++ - 21] = pair.Value;
-            }
+            trie.Append(processor.EncodingConfig.Variables);
 
             //Run forward to EOL and collect args
             TokenFamily currentTokenFamily;
@@ -80,18 +74,18 @@ namespace Mutant.Chicken.Expressions.Cpp
                 }
                 else
                 {
-                    return EvaluateCondition(tokens, values);
+                    return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
                 }
             }
 
-            while (bufferLength > trie.Length)
+            while (bufferLength > trie.MinLength)
             {
-                for (; currentBufferPosition < bufferLength - trie.Length + 1;)
+                for (; currentBufferPosition < bufferLength - trie.MinLength + 1;)
                 {
                     if (bufferLength == 0)
                     {
                         currentBufferPosition = 0;
-                        return EvaluateCondition(tokens, values);
+                        return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
                     }
 
                     if (trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
@@ -131,7 +125,7 @@ namespace Mutant.Chicken.Expressions.Cpp
                             }
                             else
                             {
-                                return EvaluateCondition(tokens, values);
+                                return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
                             }
                         }
                     }
@@ -142,19 +136,19 @@ namespace Mutant.Chicken.Expressions.Cpp
                     }
                 }
 
-                processor.AdvanceBuffer(bufferLength - trie.Length + 1);
+                processor.AdvanceBuffer(bufferLength - trie.MaxLength + 1);
                 currentBufferPosition = processor.CurrentBufferPosition;
                 bufferLength = processor.CurrentBufferLength;
             }
 
-            return EvaluateCondition(tokens, values);
+            return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
         }
 
-        private static bool EvaluateCondition(List<TokenRef> tokens, object[] values)
+        private static bool EvaluateCondition(List<TokenRef> tokens, IReadOnlyList<Func<object>> values)
         {
             //Skip over all leading whitespace
             int i = 0;
-            for (; tokens.Count > 0 && (tokens[i].Family == TokenFamily.Whitespace || tokens[i].Family == TokenFamily.Tab); ++i)
+            for (; i < tokens.Count && (tokens[i].Family == TokenFamily.Whitespace || tokens[i].Family == TokenFamily.Tab); ++i)
             {
             }
 
@@ -395,7 +389,7 @@ namespace Mutant.Chicken.Expressions.Cpp
             return literal.Substring(1, literal.Length - 2);
         }
 
-        private static object ResolveToken(TokenRef tokenRef, object[] values)
+        private static object ResolveToken(TokenRef tokenRef, IReadOnlyList<Func<object>> values)
         {
             if (tokenRef.Family == TokenFamily.Literal)
             {
@@ -404,7 +398,7 @@ namespace Mutant.Chicken.Expressions.Cpp
 
             if ((tokenRef.Family & TokenFamily.Reference) == TokenFamily.Reference)
             {
-                return values[(int)(tokenRef.Family & ~TokenFamily.Reference) - 21];
+                return values[(int)(tokenRef.Family & ~TokenFamily.Reference) - 21]();
             }
 
             throw new Exception($"Token type {tokenRef.Family} does not have a representation as a value");

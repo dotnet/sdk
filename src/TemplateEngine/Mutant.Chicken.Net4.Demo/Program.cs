@@ -17,11 +17,7 @@ namespace Mutant.Chicken.Demo
             string endIfToken = jObject["endif"].Value<string>();
             bool wholeLine = jObject["wholeLine"].Value<bool>();
             bool trimWhitespace = jObject["trimWhitespace"].Value<bool>();
-            return new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, !wholeLine && trimWhitespace, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                new Dictionary<string, object>
-                {
-                    {"val", true }
-                });
+            return new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, !wholeLine && trimWhitespace, CppStyleEvaluatorDefinition.CppStyleEvaluator);
         }
 
         private static IOperationProvider CreateRegion(JObject jObject)
@@ -48,8 +44,15 @@ namespace Mutant.Chicken.Demo
             string targetFile = args[2];
 
             IOperationProvider[] operations = ParseOperations(defininitionsFile);
+            VariableCollection cfg = VariableCollection.Root();
 
-            IProcessor processor = Processor.Create(operations);
+            cfg["test"] = false;
+            cfg["value"] = "cheeseburger3";
+
+            VariableCollection composedCfg = VariableCollection.Environment(cfg);
+            EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, composedCfg);
+
+            IProcessor processor = Processor.Create(config, operations);
 
             using (Stream source = File.OpenRead(sourceFile))
             using (Stream target = File.Create(targetFile))
@@ -62,7 +65,10 @@ namespace Mutant.Chicken.Demo
         {
             string definitionsText = File.ReadAllText(defininitionsFile);
             JArray definitionList = JArray.Parse(definitionsText);
-            List<IOperationProvider> operations = new List<IOperationProvider>();
+            List<IOperationProvider> operations = new List<IOperationProvider>
+            {
+                new ExpandVariables()
+            };
 
             foreach (JObject obj in definitionList.OfType<JObject>())
             {

@@ -23,7 +23,7 @@ namespace Mutant.Chicken
             _toggle = _start == _end;
         }
 
-        public IOperation GetOperation(Encoding encoding)
+        public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
             byte[] startToken = encoding.GetBytes(_start);
             byte[] endToken = encoding.GetBytes(_end);
@@ -59,15 +59,7 @@ namespace Mutant.Chicken
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
-                if (_definition._wholeLine)
-                {
-                    processor.TrimBackToPreviousEOL();
-                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
-                }
-                else if (_definition._trimWhitespace)
-                {
-                    processor.TrimBackWhitespace();
-                }
+                processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
 
                 if (_startAndEndAreSame)
                 {
@@ -125,15 +117,7 @@ namespace Mutant.Chicken
 
                 i += j;
 
-                if (_definition._wholeLine)
-                {
-                    processor.TrimBackToPreviousEOL();
-                    processor.ConsumeToEndOfLine(ref bufferLength, ref currentBufferPosition);
-                }
-                else if (_definition._trimWhitespace)
-                {
-                    processor.TrimBackWhitespace();
-                }
+                processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
 
                 currentBufferPosition = i;
                 return 0;
