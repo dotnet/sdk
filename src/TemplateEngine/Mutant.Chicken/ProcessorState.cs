@@ -15,6 +15,19 @@ namespace Mutant.Chicken
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, EngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
+            try
+            {
+                if (_source.Length < bufferSize)
+                {
+                    bufferSize = (int) _source.Length;
+                }
+            }
+            catch
+            {
+                //The stream may not support getting the length property (in NetworkStream for instance, which throw a NotSupportedException), suppress any errors in
+                //  accessing the property and continue with the specified buffer size
+            }
+
             _source = source;
             _target = target;
             Config = config;
