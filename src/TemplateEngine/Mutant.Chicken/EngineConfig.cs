@@ -8,6 +8,11 @@ namespace Mutant.Chicken
 
         public static IReadOnlyList<string> DefaultWhitespaces = new[] {" ", "\t"};
 
+        public EngineConfig(VariableCollection variables, string variableFormatString = "{0}")
+            : this(DefaultWhitespaces, DefaultLineEndings, variables, variableFormatString)
+        {
+        }
+
         public EngineConfig(IReadOnlyList<string> whitespaces, IReadOnlyList<string> lineEndings, VariableCollection variables, string variableFormatString = "{0}")
         {
             Whitespaces = whitespaces;

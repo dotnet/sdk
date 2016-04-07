@@ -21,9 +21,13 @@ namespace Mutant.Chicken
             return new Processor(config, operations);
         }
 
-        public bool Run(Stream source, Stream target)
+        public bool Run(Stream source, Stream target) => Run(source, target, DefaultBufferSize);
+
+        public bool Run(Stream source, Stream target, int bufferSize) => Run(source, target, bufferSize, DefaultFlushThreshold);
+
+        public bool Run(Stream source, Stream target, int bufferSize, int flushThreshold)
         {
-            ProcessorState state = new ProcessorState(source, target, DefaultBufferSize, DefaultFlushThreshold, Config, _operations);
+            ProcessorState state = new ProcessorState(source, target, bufferSize, flushThreshold, Config, _operations);
             return state.Run();
         }
     }

@@ -67,13 +67,20 @@ namespace Mutant.Chicken
 
         public IOperation GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token)
         {
+            //If a match couldn't fit in what's left of the buffer
+            if (MinLength > bufferLength - currentBufferPosition)
+            {
+                token = -1;
+                return null;
+            }
+
             int i = currentBufferPosition;
             Trie current = this;
             IOperation operation = null;
             int index = -1;
             int offsetToMatch = 0;
 
-            while (i <= bufferLength - MinLength)
+            while (i < bufferLength)
             {
                 if (!current._map.TryGetValue(buffer[i], out current))
                 {

@@ -21,6 +21,7 @@
 
         public static void ConsumeWholeLine(this IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
         {
+            processor.SeekBackWhile(processor.EncodingConfig.Whitespace);
             processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
         }
 

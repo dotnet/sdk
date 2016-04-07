@@ -15,17 +15,28 @@ namespace Mutant.Chicken
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, EngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
-            try
+            bool sizedToStream = false;
+
+            //Buffer has to be at least as large as the largest BOM we could expect
+            if (bufferSize < 4)
             {
-                if (_source.Length < bufferSize)
-                {
-                    bufferSize = (int) _source.Length;
-                }
+                bufferSize = 4;
             }
-            catch
+            else
             {
-                //The stream may not support getting the length property (in NetworkStream for instance, which throw a NotSupportedException), suppress any errors in
-                //  accessing the property and continue with the specified buffer size
+                try
+                {
+                    if (source.Length < bufferSize)
+                    {
+                        sizedToStream = true;
+                        bufferSize = (int) source.Length;
+                    }
+                }
+                catch
+                {
+                    //The stream may not support getting the length property (in NetworkStream for instance, which throw a NotSupportedException), suppress any errors in
+                    //  accessing the property and continue with the specified buffer size
+                }
             }
 
             _source = source;
@@ -39,6 +50,7 @@ namespace Mutant.Chicken
             Encoding encoding = DetectEncoding(CurrentBuffer, CurrentBufferLength, out bom);
             Encoding = encoding;
             CurrentBufferPosition = bom.Length;
+            target.Write(bom, 0, bom.Length);
 
             IOperation[] operations = new IOperation[operationProviders.Count];
 
@@ -48,6 +60,16 @@ namespace Mutant.Chicken
             }
 
             _trie = Trie.Create(operations);
+
+            if (bufferSize < _trie.MaxLength && !sizedToStream)
+            {
+                byte[] tmp = new byte[_trie.MaxLength];
+                Buffer.BlockCopy(CurrentBuffer, CurrentBufferPosition, tmp, 0, CurrentBufferLength - CurrentBufferPosition);
+                int nRead = _source.Read(tmp, CurrentBufferLength - CurrentBufferPosition, tmp.Length - CurrentBufferLength);
+                CurrentBuffer = tmp;
+                CurrentBufferLength += nRead;
+                CurrentBufferPosition = 0;
+            }
         }
 
         public EngineConfig Config { get; }
@@ -60,10 +82,7 @@ namespace Mutant.Chicken
 
         public Encoding Encoding
         {
-            get
-            {
-                return _encoding;
-            }
+            get { return _encoding; }
             set
             {
                 _encoding = value;
@@ -103,7 +122,7 @@ namespace Mutant.Chicken
                 int token;
                 int posedPosition = CurrentBufferPosition;
 
-                if (CurrentBufferLength == CurrentBuffer.Length && CurrentBufferLength - CurrentBufferPosition < _trie.MinLength)
+                if (CurrentBufferLength == CurrentBuffer.Length && CurrentBufferLength - CurrentBufferPosition < _trie.MaxLength)
                 {
                     int writeCount = CurrentBufferPosition - lastWritten;
 
@@ -310,6 +329,7 @@ namespace Mutant.Chicken
 
                 if (!anyMatch || (token != -1 && i + match.TokenLength[token] != nRead))
                 {
+                    _target.SetLength(_target.Position);
                     return;
                 }
 
@@ -332,9 +352,19 @@ namespace Mutant.Chicken
 
         public void SeekForwardThrough(SimpleTrie match, ref int bufferLength, ref int currentBufferPosition)
         {
-            while (bufferLength > match.MinLength)
+            while (bufferLength >= match.MinLength)
             {
-                for (; currentBufferPosition < bufferLength - match.MinLength + 1; ++currentBufferPosition)
+                //Try to get at least the max length of the tree into the buffer
+                if (bufferLength - currentBufferPosition < match.MaxLength)
+                {
+                    AdvanceBuffer(bufferLength - match.MaxLength + 1);
+                    currentBufferPosition = CurrentBufferPosition;
+                    bufferLength = CurrentBufferLength;
+                }
+
+                int sz = bufferLength == CurrentBuffer.Length ? match.MaxLength : match.MinLength;
+
+                for (; currentBufferPosition < bufferLength - sz + 1; ++currentBufferPosition)
                 {
                     if (bufferLength == 0)
                     {
@@ -348,10 +378,6 @@ namespace Mutant.Chicken
                         return;
                     }
                 }
-
-                AdvanceBuffer(bufferLength - match.MaxLength + 1);
-                currentBufferPosition = CurrentBufferPosition;
-                bufferLength = CurrentBufferLength;
             }
 
             //Ran out of places to check and haven't reached the actual match, consume all the way to the end
@@ -362,7 +388,7 @@ namespace Mutant.Chicken
         {
             while (bufferLength > match.MinLength)
             {
-                while(currentBufferPosition < bufferLength - match.MinLength + 1)
+                while (currentBufferPosition < bufferLength - match.MinLength + 1)
                 {
                     if (bufferLength == 0)
                     {
