@@ -51,9 +51,15 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AssertEx.cs" />
+    <Compile Include="ConditionalTests.cs" />
+    <Compile Include="EncodingTests.cs" />
     <Compile Include="RegionTests.cs" />
     <Compile Include="ReplacementTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleTrieTests.cs" />
+    <Compile Include="TestBase.cs" />
+    <Compile Include="TrieTests.cs" />
+    <Compile Include="VariablesTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mutant.Chicken.Net4\Mutant.Chicken.Net4.csproj">

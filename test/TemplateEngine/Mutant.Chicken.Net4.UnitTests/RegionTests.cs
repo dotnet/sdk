@@ -1,11 +1,12 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mutant.Chicken.Net4.UnitTests
 {
-    [TestClass]
-    public class RegionTests
+    [TestClass, ExcludeFromCodeCoverage]
+    public class RegionTests : TestBase
     {
         [TestMethod]
         public void VerifyRegionExclude()
@@ -22,13 +23,8 @@ namespace Mutant.Chicken.Net4.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -46,13 +42,65 @@ namespace Mutant.Chicken.Net4.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output));
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
 
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+        [TestMethod]
+        public void VerifyRegionStrayEnd()
+        {
+            string value = @"test foo value bar foo";
+            string expected = @"test   bar ";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            IOperationProvider[] operations = { new Region("value", "foo", true, false, false) };
+            EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
+            IProcessor processor = Processor.Create(cfg, operations);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
+        [TestMethod]
+        public void VerifyRegionIncludeToggle()
+        {
+            string value = @"test region value x test region bar";
+            string expected = @"test  value x test  bar";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            IOperationProvider[] operations = { new Region("region", "region", true, false, false) };
+            EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
+            IProcessor processor = Processor.Create(cfg, operations);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
+        [TestMethod]
+        public void VerifyRegionExcludeToggle()
+        {
+            string value = @"test region value x test region bar";
+            string expected = @"test  bar";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            IOperationProvider[] operations = { new Region("region", "region", false, false, false) };
+            EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
+            IProcessor processor = Processor.Create(cfg, operations);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -70,13 +118,8 @@ namespace Mutant.Chicken.Net4.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -101,13 +144,8 @@ There";
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -131,13 +169,8 @@ There";
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -163,13 +196,8 @@ There";
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsFalse(processor.Run(input, output));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -193,13 +221,8 @@ There";
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output, 14));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output, 14);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -223,13 +246,8 @@ There";
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output, 36));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output, 36);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -253,13 +271,8 @@ There";
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output, 28));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -283,13 +296,39 @@ There";
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output, 1));
+            bool changed = processor.Run(input, output, 1);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
 
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+        [TestMethod]
+        public void VerifyTornPageInCloseSeekRegion()
+        {
+            string value = @"Hello
+    #begin foo
+value
+value
+value
+value
+value
+value
+value
+value
+    #end
+There";
+            string expected = @"Hello
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            IOperationProvider[] operations = { new Region("#begin", "#end", false, true, true) };
+            EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
+            IProcessor processor = Processor.Create(cfg, operations);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
     }
 }

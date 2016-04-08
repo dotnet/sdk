@@ -1,11 +1,12 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mutant.Chicken.Net4.UnitTests
 {
-    [TestClass]
-    public class ReplacementTests
+    [TestClass, ExcludeFromCodeCoverage]
+    public class ReplacementTests : TestBase
     {
         [TestMethod]
         public void VerifyReplacement()
@@ -22,13 +23,8 @@ namespace Mutant.Chicken.Net4.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
             
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -46,13 +42,8 @@ namespace Mutant.Chicken.Net4.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsFalse(processor.Run(input, output));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -70,13 +61,8 @@ namespace Mutant.Chicken.Net4.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output, 6));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output, 6);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
         [TestMethod]
@@ -94,13 +80,8 @@ namespace Mutant.Chicken.Net4.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
-            Assert.IsTrue(processor.Run(input, output, 1));
-
-            output.Position = 0;
-            byte[] resultBytes = new byte[output.Length];
-            output.Read(resultBytes, 0, resultBytes.Length);
-            string actual = Encoding.UTF8.GetString(resultBytes);
-            AssertEx.AreEqual(expected, actual);
+            bool changed = processor.Run(input, output, 1);
+            Verify(Encoding.UTF8, output, changed, value, expected);
         }
     }
 }

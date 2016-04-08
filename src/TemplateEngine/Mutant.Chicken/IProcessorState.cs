@@ -24,6 +24,8 @@ namespace Mutant.Chicken
 
         void SeekBackUntil(SimpleTrie match);
 
+        void SeekBackUntil(SimpleTrie match, bool consume);
+
         void SeekBackWhile(SimpleTrie match);
     }
 }

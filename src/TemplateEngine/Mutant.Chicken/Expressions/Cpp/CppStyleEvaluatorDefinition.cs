@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace Mutant.Chicken.Expressions.Cpp
 {
@@ -78,16 +80,11 @@ namespace Mutant.Chicken.Expressions.Cpp
                 }
             }
 
-            while (bufferLength > trie.MinLength)
+            while (bufferLength > 0)
             {
-                for (; currentBufferPosition < bufferLength - trie.MinLength + 1;)
+                int targetLen = bufferLength == processor.CurrentBuffer.Length ? trie.MaxLength : trie.MinLength;
+                for (; currentBufferPosition < bufferLength - targetLen + 1;)
                 {
-                    if (bufferLength == 0)
-                    {
-                        currentBufferPosition = 0;
-                        return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
-                    }
-
                     if (trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                     {
                         //We matched an item, so whatever this is, it's not a literal, end the current literal if that's
@@ -136,12 +133,40 @@ namespace Mutant.Chicken.Expressions.Cpp
                     }
                 }
 
-                processor.AdvanceBuffer(bufferLength - trie.MaxLength + 1);
+                processor.AdvanceBuffer(currentBufferPosition);
                 currentBufferPosition = processor.CurrentBufferPosition;
                 bufferLength = processor.CurrentBufferLength;
             }
 
             return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
+        }
+
+        private static bool IsLogicalOperator(Operator op)
+        {
+            return op == Operator.And || op == Operator.Or || op == Operator.Xor || op == Operator.Not;
+        }
+
+        private static void CombineExpressionOperator(ref Scope current, Stack<Scope> parents)
+        {
+            if (current.Operator == Operator.None)
+            {
+                return;
+            }
+
+            Scope tmp = new Scope();
+
+            if (!IsLogicalOperator(current.Operator))
+            {
+                tmp.Value = current;
+            }
+            else
+            {
+                tmp.Value = current.Right;
+                current.Right = tmp;
+                parents.Push(current);
+            }
+
+            current = tmp;
         }
 
         private static bool EvaluateCondition(List<TokenRef> tokens, IReadOnlyList<Func<object>> values)
@@ -211,7 +236,6 @@ namespace Mutant.Chicken.Expressions.Cpp
             Scope root = new Scope();
             Scope current = root;
             Stack<Scope> parents = new Stack<Scope>();
-            bool expectingRightHandSide = false;
 
             for (i = 0; i < outputTokens.Count; ++i)
             {
@@ -219,133 +243,130 @@ namespace Mutant.Chicken.Expressions.Cpp
                 {
                     case TokenFamily.Not:
                         {
-                            Scope nextScope = new Scope();
-                            if (expectingRightHandSide)
+                            Scope nextScope = new Scope
                             {
-                                current.Right = nextScope;
-                            }
-                            else
-                            {
-                                current.Left = nextScope;
-                            }
+                                TargetPlacement = Scope.NextPlacement.Right
+                            };
+
+                            current.Value = nextScope;
                             parents.Push(current);
                             current = nextScope;
-                            expectingRightHandSide = false;
                             current.Operator = Operator.Not;
                             break;
                         }
                     case TokenFamily.Literal:
-                        if (expectingRightHandSide)
-                        {
-                            current.Right = InferTypeAndConvertLiteral(outputTokens[i].Literal);
-                        }
-                        else
-                        {
-                            current.Left = InferTypeAndConvertLiteral(outputTokens[i].Literal);
-                            expectingRightHandSide = true;
-                        }
+                        current.Value = InferTypeAndConvertLiteral(outputTokens[i].Literal);
 
-                        while (current.Operator == Operator.Not)
+                        while (parents.Count > 0 && current.TargetPlacement == Scope.NextPlacement.None)
                         {
                             current = parents.Pop();
                         }
                         break;
                     case TokenFamily.And:
+                        if (current.Operator != Operator.None)
+                        {
+                            Scope s = new Scope
+                            {
+                                Value = current
+                            };
+
+                            current = s;
+                        }
+
                         current.Operator = Operator.And;
-                        expectingRightHandSide = true;
+                        current.TargetPlacement = Scope.NextPlacement.Right;
                         break;
                     case TokenFamily.BitwiseAnd:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.BitwiseAnd;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.BitwiseOr:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.BitwiseOr;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.CloseBrace:
-                        current = parents.Pop();
-                        expectingRightHandSide = true;
+                        //If the grouping is valid, the grouping has already been closed
+                        //  due to argument fulfillment, do nothing.
                         break;
                     case TokenFamily.EqualTo:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.EqualTo;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.GreaterThan:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.GreaterThan;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.GreaterThanOrEqualTo:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.GreaterThanOrEqualTo;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.LeftShift:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.LeftShift;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.LessThan:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.LessThan;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.LessThanOrEqualTo:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.LessThanOrEqualTo;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.NotEqualTo:
+                        CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.NotEqualTo;
-                        expectingRightHandSide = true;
                         break;
                     case TokenFamily.OpenBrace:
                         {
                             Scope nextScope = new Scope();
-                            if (expectingRightHandSide)
-                            {
-                                current.Right = nextScope;
-                            }
-                            else
-                            {
-                                current.Left = nextScope;
-                            }
+                            current.Value = nextScope;
                             parents.Push(current);
                             current = nextScope;
-                            expectingRightHandSide = false;
                             break;
                         }
                     case TokenFamily.Or:
-                        current.Operator = Operator.Or;
-                        expectingRightHandSide = true;
-                        break;
-                    case TokenFamily.RightShift:
-                        current.Operator = Operator.RightShift;
-                        expectingRightHandSide = true;
-                        break;
-                    case TokenFamily.Xor:
-                        current.Operator = Operator.Xor;
-                        expectingRightHandSide = true;
-                        break;
-                    default:
-                        if (expectingRightHandSide)
+                        if (current.Operator != Operator.None)
                         {
-                            current.Right = ResolveToken(outputTokens[i], values);
-                        }
-                        else
-                        {
-                            current.Left = ResolveToken(outputTokens[i], values);
-                            expectingRightHandSide = true;
+                            Scope s = new Scope
+                            {
+                                Value = current
+                            };
+
+                            current = s;
                         }
 
-                        while (current.Operator == Operator.Not)
+                        current.Operator = Operator.Or;
+                        break;
+                    case TokenFamily.RightShift:
+                        CombineExpressionOperator(ref current, parents);
+                        current.Operator = Operator.RightShift;
+                        break;
+                    case TokenFamily.Xor:
+                        if (current.Operator != Operator.None)
+                        {
+                            Scope s = new Scope
+                            {
+                                Value = current
+                            };
+
+                            current = s;
+                        }
+
+                        current.Operator = Operator.Xor;
+                        break;
+                    default:
+                        current.Value = ResolveToken(outputTokens[i], values);
+
+                        while (parents.Count > 0 && current.TargetPlacement == Scope.NextPlacement.None)
                         {
                             current = parents.Pop();
                         }
+
                         break;
                 }
             }
 
-            if (parents.Count > 0)
-            {
-                throw new Exception("Unbalanced condition");
-            }
-
+            Debug.Assert(parents.Count == 0, "Unbalanced condition");
             return (bool)current.Evaluate();
         }
 
@@ -368,17 +389,20 @@ namespace Mutant.Chicken.Expressions.Cpp
                     return null;
                 }
 
-                if (literal.Contains("."))
+                double literalDouble;
+                if (literal.Contains(".") && double.TryParse(literal, out literalDouble))
                 {
-                    double literalDouble;
-                    if (double.TryParse(literal, out literalDouble))
-                    {
-                        return literalDouble;
-                    }
+                    return literalDouble;
                 }
 
                 long literalLong;
                 if (long.TryParse(literal, out literalLong))
+                {
+                    return literalLong;
+                }
+
+                if (literal.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    && long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out literalLong))
                 {
                     return literalLong;
                 }
@@ -391,17 +415,7 @@ namespace Mutant.Chicken.Expressions.Cpp
 
         private static object ResolveToken(TokenRef tokenRef, IReadOnlyList<Func<object>> values)
         {
-            if (tokenRef.Family == TokenFamily.Literal)
-            {
-                return tokenRef.Literal;
-            }
-
-            if ((tokenRef.Family & TokenFamily.Reference) == TokenFamily.Reference)
-            {
-                return values[(int)(tokenRef.Family & ~TokenFamily.Reference) - 21]();
-            }
-
-            throw new Exception($"Token type {tokenRef.Family} does not have a representation as a value");
+            return values[(int) (tokenRef.Family & ~TokenFamily.Reference) - 21]();
         }
     }
 }

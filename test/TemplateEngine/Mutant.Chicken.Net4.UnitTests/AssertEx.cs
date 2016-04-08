@@ -1,7 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mutant.Chicken.Net4.UnitTests
 {
+    [ExcludeFromCodeCoverage]
     public static class AssertEx
     {
         public static void AreEqual(string expected, string actual)
@@ -28,8 +31,9 @@ namespace Mutant.Chicken.Net4.UnitTests
 {actual}
 
 {leadUp}
-Position: {diffPos}
-'{expected[diffPos]}'!='{actual[diffPos]}'");
+Position: {diffPos}" +
+                        (diffPos < actual.Length && diffPos < expected.Length ?
+                            $"'{expected[diffPos]}'!='{actual[diffPos]}'" : ""));
         }
     }
 }

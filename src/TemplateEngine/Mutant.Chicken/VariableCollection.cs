@@ -93,7 +93,7 @@ namespace Mutant.Chicken
 
             foreach (string key in variables.Keys.OfType<string>())
             {
-                vc[key] = variables[key];
+                vc[key.ToUpperInvariant()] = variables[key];
             }
 
             return vc;

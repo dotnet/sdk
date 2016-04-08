@@ -71,12 +71,18 @@ namespace Mutant.Chicken
 
         public bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token)
         {
+            if (bufferLength < MinLength)
+            {
+                token = -1;
+                return false;
+            }
+
             int i = currentBufferPosition;
             SimpleTrie current = this;
             int index = -1;
             int offsetToMatch = 0;
 
-            while (i <= bufferLength - MinLength)
+            while (i < bufferLength)
             {
                 if (!current._map.TryGetValue(buffer[i], out current))
                 {
@@ -108,12 +114,10 @@ namespace Mutant.Chicken
             if (index != -1)
             {
                 currentBufferPosition = i;
-                token = index;
-                return true;
             }
 
-            token = -1;
-            return false;
+            token = index;
+            return index != -1;
         }
 
         public void Append(SimpleTrie trie)

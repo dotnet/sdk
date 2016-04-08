@@ -18,12 +18,7 @@ namespace Mutant.Chicken
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
             byte[] token = encoding.GetBytes(_match);
-            return new Impl(this, token, encoding.GetBytes(_replaceWith));
-        }
-
-        public override string ToString()
-        {
-            return $"{_match} => {_replaceWith}";
+            return new Impl(token, encoding.GetBytes(_replaceWith));
         }
 
         private class Impl : IOperation
@@ -31,15 +26,12 @@ namespace Mutant.Chicken
             private readonly byte[] _replacement;
             private readonly byte[] _token;
 
-            public Impl(IOperationProvider owner, byte[] token, byte[] replaceWith)
+            public Impl(byte[] token, byte[] replaceWith)
             {
-                Definition = owner;
                 _replacement = replaceWith;
                 _token = token;
                 Tokens = new[] {token};
             }
-
-            public IOperationProvider Definition { get; }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 

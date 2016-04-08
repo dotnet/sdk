@@ -8,34 +8,26 @@ namespace Mutant.Chicken
     {
         public IOperation GetOperation(Encoding encoding, IProcessorState processor)
         {
-            return new Impl(this, processor);
+            return new Impl(processor);
         }
 
         private class Impl : IOperation
         {
-            public Impl(IOperationProvider definition, IProcessorState processor)
+            public Impl(IProcessorState processor)
             {
-                Definition = definition;
                 Tokens = processor.EncodingConfig.VariableKeys;
             }
-
-            public IOperationProvider Definition { get; }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 object result = processor.EncodingConfig[token];
-                string output = result?.ToString();
+                string output = result?.ToString() ?? "null";
 
-                if (output != null)
-                {
-                    byte[] outputBytes = processor.Encoding.GetBytes(output);
-                    target.Write(outputBytes, 0, outputBytes.Length);
-                    return outputBytes.Length;
-                }
-
-                return 0;
+                byte[] outputBytes = processor.Encoding.GetBytes(output);
+                target.Write(outputBytes, 0, outputBytes.Length);
+                return outputBytes.Length;
             }
         }
     }

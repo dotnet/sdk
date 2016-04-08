@@ -112,12 +112,10 @@ namespace Mutant.Chicken
             if (index != -1)
             {
                 currentBufferPosition = i;
-                token = index;
-                return operation;
             }
 
-            token = -1;
-            return null;
+            token = index;
+            return operation;
         }
     }
 }

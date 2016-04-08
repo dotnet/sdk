@@ -30,11 +30,6 @@ namespace Mutant.Chicken
             return new Impl(this, startToken, endToken, _include, _toggle);
         }
 
-        public override string ToString()
-        {
-            return $"[{_start} ... {_end}]";
-        }
-
         private class Impl : IOperation
         {
             private readonly byte[] _endToken;
@@ -52,8 +47,6 @@ namespace Mutant.Chicken
 
                 Tokens = toggle ? new[] {startToken} : new[] {startToken, endToken};
             }
-
-            public IOperationProvider Definition => _definition;
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
@@ -98,12 +91,6 @@ namespace Mutant.Chicken
                     if (i + j == bufferLength)
                     {
                         processor.AdvanceBuffer(i + j);
-
-                        if (processor.CurrentBufferLength == 0)
-                        {
-                            return 0;
-                        }
-
                         bufferLength = processor.CurrentBufferLength;
                         i = -j;
                     }
@@ -117,7 +104,7 @@ namespace Mutant.Chicken
 
                 i += j;
 
-                processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
+                processor.WhitespaceHandler(ref bufferLength, ref i, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
 
                 currentBufferPosition = i;
                 return 0;

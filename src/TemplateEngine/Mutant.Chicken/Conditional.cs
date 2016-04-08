@@ -78,19 +78,20 @@ namespace Mutant.Chicken
                 Tokens = tokens;
             }
 
-            public IOperationProvider Definition => _definition;
-
             public IReadOnlyList<byte[]> Tokens { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
-                if (_definition._wholeLine)
+                if (_current != null || token == 0)
                 {
-                    processor.SeekBackUntil(processor.EncodingConfig.LineEndings);
-                }
-                else if (_definition._trimWhitespace)
-                {
-                    processor.TrimWhitespace(false, true, ref bufferLength, ref currentBufferPosition);
+                    if (_definition._wholeLine)
+                    {
+                        processor.SeekBackUntil(processor.EncodingConfig.LineEndings);
+                    }
+                    else if (_definition._trimWhitespace)
+                    {
+                        processor.TrimWhitespace(false, true, ref bufferLength, ref currentBufferPosition);
+                    }
                 }
 
 BEGIN:
@@ -115,23 +116,7 @@ BEGIN:
                         return 0;
                     }
 
-                    while (SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token) && token == 0)
-                    {
-                        int balance = 1;
-
-                        //We're in a nested if branch, wait until it balances closed
-                        while (balance > 0 && SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
-                        {
-                            if (token == 0)
-                            {
-                                ++balance;
-                            }
-                            else if (token == 1)
-                            {
-                                --balance;
-                            }
-                        }
-                    }
+                    SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
 
                     if (token >= 0)
                     {
@@ -173,38 +158,23 @@ BEGIN:
 
                 if (_current.BranchTaken)
                 {
-                    int depth = 0;
+                    processor.SeekBackUntil(processor.EncodingConfig.LineEndings, true);
                     //A previous branch was taken. Skip to the endif token.
-                    while (SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token) && (depth > 0 || token != 1))
-                    {
-                        if (token == 0)
-                        {
-                            ++depth;
-                        }
-                        else if (token == 1)
-                        {
-                            --depth;
-                        }
-                    }
-
-                    goto BEGIN;
+                    SkipToMatchingEndif(processor, ref bufferLength, ref currentBufferPosition, ref token);
+                    return 0;
                 }
 
                 //We have an "elseif" and haven't taken a previous branch
                 if (token == _elseIfTokenIndex)
                 {
                     //If the elseif branch is taken, return control for replacements to be done as usual
-                    if (_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition))
-                    {
-                        return 0;
-                    }
-
-                    //The "elseif" branch was not taken. Skip to the following else, elseif or endif token
-                    if (SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
+                    if (!_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition) 
+                        && SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
                     {
                         goto BEGIN;
                     }
 
+                    //The "elseif" branch was not taken. Skip to the following else, elseif or endif token
                     return 0;
                 }
 
@@ -215,19 +185,33 @@ BEGIN:
                 return 0;
             }
 
+            private void SkipToMatchingEndif(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, ref int token)
+            {
+                while (token != 1 && SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token) && token != 1)
+                {
+                    int balance = 1;
+
+                    //We're in a nested if branch, wait until it balances closed
+                    while (balance > 0 && SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
+                    {
+                        if (token == 0)
+                        {
+                            ++balance;
+                        }
+                        else if (token == 1)
+                        {
+                            --balance;
+                        }
+                    }
+                }
+            }
+
             private bool SeekToTerminator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out int token)
             {
-                while (bufferLength > _trie.MaxLength)
+                while (bufferLength >= _trie.MinLength)
                 {
-                    for (; currentBufferPosition < bufferLength - _trie.MaxLength + 1; ++currentBufferPosition)
+                    for (; currentBufferPosition < bufferLength - _trie.MinLength + 1; ++currentBufferPosition)
                     {
-                        if (bufferLength == 0)
-                        {
-                            token = -1;
-                            currentBufferPosition = 0;
-                            return false;
-                        }
-
                         if (_trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                         {
                             return true;
@@ -239,8 +223,10 @@ BEGIN:
                     bufferLength = processor.CurrentBufferLength;
                 }
 
-                token = -1;
-                return false;
+                //If we run out of places to look, assert that the end of the buffer is the end
+                token = 1;
+                currentBufferPosition = bufferLength;
+                return true;
             }
 
             private class EvaluationState

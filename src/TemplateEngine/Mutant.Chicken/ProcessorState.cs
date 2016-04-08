@@ -256,6 +256,11 @@ namespace Mutant.Chicken
 
         public void SeekBackUntil(SimpleTrie match)
         {
+            SeekBackUntil(match, false);
+        }
+
+        public void SeekBackUntil(SimpleTrie match, bool consume)
+        {
             byte[] buffer = new byte[match.MaxLength];
             while (_target.Position > 0)
             {
@@ -269,16 +274,24 @@ namespace Mutant.Chicken
                 }
 
                 int nRead = _target.Read(buffer, 0, buffer.Length);
-
-                for (int i = nRead - match.MinLength; i >= 0; --i)
+                int best = -1;
+                int bestPos = -1;
+                for (int i = nRead - match.MaxLength; i >= 0; --i)
                 {
                     int token;
-                    if (match.GetOperation(buffer, nRead, ref i, out token))
+                    int ic = i;
+                    if (match.GetOperation(buffer, nRead, ref ic, out token))
                     {
-                        _target.Position -= nRead - i;
-                        _target.SetLength(_target.Position);
-                        return;
+                        bestPos = ic;
+                        best = token;
                     }
+                }
+
+                if (best != -1)
+                {
+                    _target.Position -= nRead - bestPos + (consume ? match.TokenLength[best] : 0);
+                    _target.SetLength(_target.Position);
+                    return;
                 }
 
                 //Back up the amount we already read to get a new window of data in
@@ -357,7 +370,7 @@ namespace Mutant.Chicken
                 //Try to get at least the max length of the tree into the buffer
                 if (bufferLength - currentBufferPosition < match.MaxLength)
                 {
-                    AdvanceBuffer(bufferLength - match.MaxLength + 1);
+                    AdvanceBuffer(currentBufferPosition);
                     currentBufferPosition = CurrentBufferPosition;
                     bufferLength = CurrentBufferLength;
                 }
