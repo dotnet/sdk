@@ -80,13 +80,37 @@ namespace Mutant.Chicken.Expressions.Cpp
                 }
             }
 
-            while (bufferLength > 0)
+            bool first = true;
+            int braceDepth = 0;
+            while ((first || braceDepth > 0) && bufferLength > 0)
             {
                 int targetLen = bufferLength == processor.CurrentBuffer.Length ? trie.MaxLength : trie.MinLength;
                 for (; currentBufferPosition < bufferLength - targetLen + 1;)
                 {
+                    int oldBufferPos = currentBufferPosition;
                     if (trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                     {
+                        if(braceDepth == 0)
+                        {
+                            switch(tokens[tokens.Count - 1].Family)
+                            {
+                                case TokenFamily.Whitespace:
+                                case TokenFamily.Tab:
+                                case TokenFamily.WindowsEOL:
+                                case TokenFamily.UnixEOL:
+                                case TokenFamily.LegacyMacEOL:
+                                    break;
+                                default:
+                                    first = false;
+                                    break;
+                            }
+
+                            if(!first)
+                            {
+                                break;
+                            }
+                        }
+
                         //We matched an item, so whatever this is, it's not a literal, end the current literal if that's
                         //  what we currently have
                         if (currentTokenFamily == TokenFamily.Literal)
@@ -115,6 +139,15 @@ namespace Mutant.Chicken.Expressions.Cpp
                             currentTokenFamily = (TokenFamily)token;
                             if (currentTokenFamily != TokenFamily.WindowsEOL && currentTokenFamily != TokenFamily.LegacyMacEOL && currentTokenFamily != TokenFamily.UnixEOL)
                             {
+                                if(currentTokenFamily == TokenFamily.OpenBrace)
+                                {
+                                    ++braceDepth;
+                                }
+                                else if (currentTokenFamily == TokenFamily.CloseBrace)
+                                {
+                                    --braceDepth;
+                                }
+
                                 tokens.Add(new TokenRef
                                 {
                                     Family = currentTokenFamily
@@ -150,6 +183,19 @@ namespace Mutant.Chicken.Expressions.Cpp
         {
             if (current.Operator == Operator.None)
             {
+                Scope leftScope = current.Left as Scope;
+                if (current.TargetPlacement != Scope.NextPlacement.Right 
+                    || leftScope == null
+                    || !IsLogicalOperator(leftScope.Operator))
+                {
+                    return;
+                }
+
+                Scope tmp2 = new Scope();
+                tmp2.Value = leftScope.Right;
+                leftScope.Right = tmp2;
+                parents.Push(leftScope);
+                current = tmp2;
                 return;
             }
 
@@ -287,6 +333,12 @@ namespace Mutant.Chicken.Expressions.Cpp
                     case TokenFamily.CloseBrace:
                         //If the grouping is valid, the grouping has already been closed
                         //  due to argument fulfillment, do nothing.
+                        // -- OR --
+                        //This is a grouping around a unary operator
+                        if (parents.Count > 0 && current.TargetPlacement == Scope.NextPlacement.Right)
+                        {
+                            current = parents.Pop();
+                        }
                         break;
                     case TokenFamily.EqualTo:
                         CombineExpressionOperator(ref current, parents);

@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Minimatch, Version=1.1.0.0, Culture=neutral, PublicKeyToken=0cadeb0b849c27c0, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Minimatch.1.1.0.0\lib\portable-net40+sl50+win+wp80\Minimatch.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -47,12 +51,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DemoGlobalRunSpec.cs" />
+    <Compile Include="DemoOrchestrator.cs" />
+    <Compile Include="DemoRunSpec.cs" />
+    <Content Include="Files\NotTest.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\Test.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\Test.Generated.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\Test.notGenerated.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\mlorbe.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="MinimatchShim.cs" />
+    <Compile Include="OperationProviderConverter.cs" />
+    <Compile Include="PathMatcherConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RunSpecConverter.cs" />
+    <Compile Include="VariableCollectionConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <Content Include="Spec.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Replacements.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -61,6 +91,10 @@
     <ProjectReference Include="..\Mutant.Chicken.Net4\Mutant.Chicken.Net4.csproj">
       <Project>{46922f20-1842-4b76-a775-eacf40bd770b}</Project>
       <Name>Mutant.Chicken.Net4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mutant.Chicken.Runner.Net4\Mutant.Chicken.Runner.Net4.csproj">
+      <Project>{a3fc214f-4383-45b0-8524-45beab907834}</Project>
+      <Name>Mutant.Chicken.Runner.Net4</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

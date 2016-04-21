@@ -8,10 +8,8 @@ namespace Mutant.Chicken
     public class VariableCollection : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {
         private static readonly IEnumerable<string> NoKeys = new string[0];
-
-        private readonly VariableCollection _parent;
-
         private readonly IDictionary<string, object> _values;
+        private VariableCollection _parent;
 
         public VariableCollection()
             : this(null)
@@ -44,15 +42,25 @@ namespace Mutant.Chicken
 
         public int Count => Keys.Count;
 
+        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
+
+        IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
+
         public bool IsReadOnly => false;
 
         public ICollection<string> Keys => _values.Keys.Union(_parent?.Keys ?? NoKeys).ToList();
 
-        IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
+        public VariableCollection Parent
+        {
+            get { return _parent; }
+            set
+            {
+                _parent = value;
+                OnKeysChanged();
+            }
+        }
 
-        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
-
-        public ICollection<object> Values => Keys.Select(x => this[x]).ToList();
+        public ICollection<object> Values => System.Linq.Enumerable.Select(Keys, x => this[x]).ToList();
 
         public object this[string key]
         {
@@ -155,7 +163,7 @@ namespace Mutant.Chicken
             }
         }
 
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => Keys.Select(x => new KeyValuePair<string, object>(x, this[x])).GetEnumerator();
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => System.Linq.Enumerable.Select(Keys, x => new KeyValuePair<string, object>(x, this[x])).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_values).GetEnumerator();
 

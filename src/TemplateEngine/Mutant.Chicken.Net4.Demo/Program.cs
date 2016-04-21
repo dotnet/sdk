@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Mutant.Chicken.Expressions.Cpp;
@@ -37,7 +38,35 @@ namespace Mutant.Chicken.Demo
             return new Replacment(find, replaceWith);
         }
 
-        static void Main(string[] args)
+        static void Main()
+        {
+            string dir = Environment.CurrentDirectory;
+            string spec = Path.Combine(dir, "Spec.json");
+            string sourceDir = Path.Combine(dir, "files");
+            string targetDir = Path.Combine(dir, "outputs");
+
+            VariableCollection c = new VariableCollection
+            {
+                {"TEST", false},
+                {"CHEESE", "something else" },
+                //{"PATH", "Not the path" }
+            };
+
+            DemoOrchestrator orchestrator = new DemoOrchestrator(x =>
+            {
+                c.Parent = x;
+                return c;
+            });
+
+            Stopwatch s = Stopwatch.StartNew();
+            orchestrator.Run(spec, sourceDir, targetDir);
+            s.Stop();
+            Console.WriteLine(s.Elapsed.TotalMilliseconds);
+            Console.WriteLine("Done");
+            Console.ReadLine();
+        }
+
+        static void Main2(string[] args)
         {
             string defininitionsFile = args[0];
             string sourceFile = args[1];

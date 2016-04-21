@@ -67,7 +67,7 @@ There";
         public void VerifyIfElseEndifTrueConditionContainsTabs()
         {
             string value = @"Hello
-    #if " + "\t" + @" VALUE
+    #if " + "\t" + @" (VALUE)
 value
     #else
 other
@@ -95,7 +95,7 @@ There";
         public void VerifyIfElseEndifTrueConditionQuotedString()
         {
             string value = @"Hello
-    #if ""Hello" + "\t" + @"There"" == VALUE
+    #if (""Hello" + "\t" + @"There"" == VALUE)
 value
     #else
 other
@@ -123,7 +123,7 @@ There";
         public void VerifyIfElseEndifTrueConditionLiteralFirst()
         {
             string value = @"Hello
-    #if 3 > VALUE
+    #if (3 > VALUE)
 value
     #else
 other
@@ -154,7 +154,7 @@ There";
         public void VerifyIfElseEndifTrueConditionLiteralAgainst()
         {
             string value = @"Hello
-    #if3 > VALUE
+    #if (3 > VALUE)
 value
     #else
 other
@@ -716,7 +716,7 @@ There";
         public void VerifyIfEndifTrueEqualsCondition()
         {
             string value = @"Hello
-    #if VALUE == 2
+    #if (VALUE == 2)
 value
     #endif
 There";
@@ -745,7 +745,7 @@ There";
         public void VerifyIfEndifTrueNotEqualsCondition()
         {
             string value = @"Hello
-    #if VALUE != 3
+    #if (VALUE != 3)
 value
     #endif
 There";
@@ -774,7 +774,7 @@ There";
         public void VerifyIfEndifTrueGreaterThanCondition()
         {
             string value = @"Hello
-    #if VALUE > 3
+    #if (VALUE > 3)
 value
     #endif
 There";
@@ -803,7 +803,7 @@ There";
         public void VerifyIfEndifOperandStealing()
         {
             string value = @"Hello
-    #if VALUE == 3 == true
+    #if ((VALUE == 3) == true)
 value
     #endif
 There";
@@ -832,7 +832,7 @@ There";
         public void VerifyIfEndifOperandStealing2()
         {
             string value = @"Hello
-    #if !VALUE == true
+    #if (!VALUE == true)
 value
     #endif
 There";
@@ -861,7 +861,7 @@ There";
         public void VerifyIfEndifTrueGreaterThanOrEqualToCondition()
         {
             string value = @"Hello
-    #if VALUE >= 3
+    #if (VALUE >= 3)
 value
     #endif
 There";
@@ -890,7 +890,7 @@ There";
         public void VerifyIfEndifFalseGreaterThanOrEqualToCondition()
         {
             string value = @"Hello
-    #if VALUE >= 3
+    #if (VALUE >= 3)
 value
     #endif
 There";
@@ -918,7 +918,7 @@ There";
         public void VerifyIfEndifTrueLessThanCondition()
         {
             string value = @"Hello
-    #if VALUE < 3
+    #if (VALUE < 3)
 value
     #endif
 There";
@@ -947,7 +947,7 @@ There";
         public void VerifyIfEndifTrueLessThanOrEqualToCondition()
         {
             string value = @"Hello
-    #if VALUE <= 3
+    #if (VALUE <= 3)
 value
     #endif
 There";
@@ -976,7 +976,7 @@ There";
         public void VerifyIfEndifTrueNotCondition()
         {
             string value = @"Hello
-    #if !VALUE
+    #if (!VALUE)
 value
     #endif
 There";
@@ -1005,7 +1005,7 @@ There";
         public void VerifyIfEndifTrueNotNotCondition()
         {
             string value = @"Hello
-    #if !!VALUE
+    #if (!!VALUE)
 value
     #endif
 There";
@@ -1034,7 +1034,7 @@ There";
         public void VerifyIfEndifTrueAndCondition()
         {
             string value = @"Hello
-    #if VALUE < 3 && VALUE > 0
+    #if (VALUE < 3 && VALUE > 0)
 value
     #endif
 There";
@@ -1063,7 +1063,7 @@ There";
         public void VerifyIfEndifTrueXorCondition()
         {
             string value = @"Hello
-    #if VALUE < 3 ^ VALUE == 7
+    #if (VALUE < 3 ^ VALUE == 7)
 value
     #endif
 There";
@@ -1092,7 +1092,7 @@ There";
         public void VerifyIfEndifTrueAndAndCondition()
         {
             string value = @"Hello
-    #if VALUE < 3 && VALUE < 4 && VALUE < 5
+    #if (VALUE < 3 && VALUE < 4 && VALUE < 5)
 value
     #endif
 There";
@@ -1121,7 +1121,7 @@ There";
         public void VerifyIfEndifTrueOrCondition()
         {
             string value = @"Hello
-    #if VALUE == 6 || VALUE < 3
+    #if (VALUE == 6 || VALUE < 3)
 value
     #endif
 There";
@@ -1150,7 +1150,7 @@ There";
         public void VerifyIfEndifTrueOrOrCondition()
         {
             string value = @"Hello
-    #if VALUE == 6 || VALUE == 7 || VALUE < 3
+    #if (VALUE == 6 || VALUE == 7 || VALUE < 3)
 value
     #endif
 There";
@@ -1179,7 +1179,7 @@ There";
         public void VerifyIfEndifTrueOrAndCondition()
         {
             string value = @"Hello
-    #if VALUE == 6 || (VALUE != 7 && VALUE < 3)
+    #if (VALUE == 6 || (VALUE != 7 && VALUE < 3))
 value
     #endif
 There";
@@ -1208,7 +1208,7 @@ There";
         public void VerifyIfEndifTrueAndOrCondition()
         {
             string value = @"Hello
-    #if (VALUE != 7 && VALUE < 3) || VALUE == 6
+    #if ((VALUE != 7 && VALUE < 3) || VALUE == 6)
 value
     #endif
 There";
@@ -1237,7 +1237,7 @@ There";
         public void VerifyIfEndifTrueBitwiseAndEqualsCondition()
         {
             string value = @"Hello
-    #if VALUE & 0xFFFF == 2
+    #if (VALUE & 0xFFFF == 2)
 value
     #endif
 There";
@@ -1266,7 +1266,7 @@ There";
         public void VerifyIfEndifTrueBitwiseOrEqualsCondition()
         {
             string value = @"Hello
-    #if VALUE | 0xFFFD == 0xFFFF
+    #if (VALUE | 0xFFFD == 0xFFFF)
 value
     #endif
 There";
@@ -1295,7 +1295,7 @@ There";
         public void VerifyIfEndifTrueShlCondition()
         {
             string value = @"Hello
-    #if VALUE << 1 == 8
+    #if (VALUE << 1 == 8)
 value
     #endif
 There";
@@ -1324,7 +1324,7 @@ There";
         public void VerifyIfEndifTrueShrCondition()
         {
             string value = @"Hello
-    #if VALUE >> 1 == 2
+    #if (VALUE >> 1 == 2)
 value
     #endif
 There";
@@ -1353,7 +1353,7 @@ There";
         public void VerifyIfEndifTrueGroupedCondition()
         {
             string value = @"Hello
-    #if (VALUE == 2) && (VALUE2 == 3)
+    #if ((VALUE == 2) && (VALUE2 == 3))
 value
     #endif
 There";
@@ -1383,7 +1383,7 @@ There";
         public void VerifyIfElseEndifConditionUsesNull()
         {
             string value = @"Hello
-    #if VALUE2 == null
+    #if (VALUE2 == null)
 value
     #endif
 There";
@@ -1409,7 +1409,7 @@ There";
         public void VerifyIfElseEndifConditionUsesFalse()
         {
             string value = @"Hello
-    #if !false
+    #if (!false)
 value
     #endif
 There";
@@ -1435,7 +1435,7 @@ There";
         public void VerifyIfElseEndifConditionUsesDouble()
         {
             string value = @"Hello
-    #if 1.2 < 2.5
+    #if (1.2 < 2.5)
 value
     #endif
 There";
@@ -1461,8 +1461,7 @@ There";
         public void VerifyIfElseEndifConditionUsesFalsePositiveHex()
         {
             string value = @"Hello
-    #if 0xChicken == null
-value
+    #if (0xChicken == null) value
     #endif
 There";
             string expected = @"Hello
@@ -1512,7 +1511,7 @@ There";
         public void VerifyConditionAtEnd()
         {
             string value = @"Hello
-    #if 1.2 < 2.5";
+    #if (1.2 < 2.5)";
             string expected = @"Hello
 ";
 

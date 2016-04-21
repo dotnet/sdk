@@ -1,0 +1,22 @@
+﻿{
+  "include": [
+    "**/*t.cs",
+    "**/*d.cs",
+    "**/USERNAME.cs"
+  ],
+  "exclude": [
+    "**/*.generated.cs",
+    "**/*.designer.cs",
+    "**/*.xaml.cs"
+  ],
+  "operations": [
+    { },
+    { }
+  ],
+  "rootVariableCollection": { },
+  "special": {
+    "**/Test.cs": {
+
+    }
+  }
+}

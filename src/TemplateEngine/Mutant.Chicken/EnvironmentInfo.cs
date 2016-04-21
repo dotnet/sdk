@@ -3,13 +3,9 @@ using System.Collections.Generic;
 
 namespace Mutant.Chicken
 {
-    public interface IEnvironmentInfo : IReadOnlyDictionary<string, object>
-    {
-    }
-
     internal class EnvironmentInfo : IEnvironmentInfo
     {
-        private IReadOnlyDictionary<string, object> _source;
+        private readonly IReadOnlyDictionary<string, object> _source;
 
         public EnvironmentInfo(IReadOnlyDictionary<string, object> source)
         {

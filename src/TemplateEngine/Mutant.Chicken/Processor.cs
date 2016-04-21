@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace Mutant.Chicken
 {
@@ -6,9 +7,9 @@ namespace Mutant.Chicken
     {
         private const int DefaultBufferSize = 8 * 1024 * 1024;
         private const int DefaultFlushThreshold = 8 * 1024 * 1024;
-        private readonly IOperationProvider[] _operations;
+        private readonly IReadOnlyList<IOperationProvider> _operations;
 
-        private Processor(EngineConfig config, IOperationProvider[] operations)
+        private Processor(EngineConfig config, IReadOnlyList<IOperationProvider> operations)
         {
             Config = config;
             _operations = operations;
@@ -17,6 +18,11 @@ namespace Mutant.Chicken
         public EngineConfig Config { get; }
 
         public static IProcessor Create(EngineConfig config, params IOperationProvider[] operations)
+        {
+            return new Processor(config, operations);
+        }
+
+        public static IProcessor Create(EngineConfig config, IReadOnlyList<IOperationProvider> operations)
         {
             return new Processor(config, operations);
         }
