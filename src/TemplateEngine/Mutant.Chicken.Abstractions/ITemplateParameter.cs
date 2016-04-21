@@ -11,5 +11,7 @@
         string Type { get; }
 
         bool IsName { get; }
+
+        string DefaultValue { get; }
     }
 }

@@ -13,5 +13,7 @@ namespace Mutant.Chicken.Runner
         VariableCollection RootVariableCollection { get; }
 
         IReadOnlyDictionary<IPathMatcher, IRunSpec> Special { get; }
+
+        bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath);
     }
 }

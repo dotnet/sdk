@@ -10,6 +10,8 @@ namespace Mutant.Chicken.Abstractions
 
         IConfiguredTemplateSource Source { get; }
 
+        string DefaultName { get; }
+
         bool TryGetProperty(string name, out string value);
     }
 }

@@ -63,9 +63,11 @@ namespace Mutant.Chicken.Runner
 
             foreach (string filePath in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
+                string sourceRel = filePath.Substring(sourceDir.Length).TrimStart(Path.DirectorySeparatorChar);
+
                 foreach (IPathMatcher include in spec.Include)
                 {
-                    if (include.IsMatch(filePath))
+                    if (include.IsMatch(sourceRel))
                     {
                         bool excluded = false;
                         foreach (IPathMatcher exclude in spec.Exclude)
@@ -79,7 +81,7 @@ namespace Mutant.Chicken.Runner
 
                         if (!excluded)
                         {
-                            ProcessFile(self, filePath, sourceDir, targetDir, fallback, specializations);
+                            ProcessFile(self, filePath, sourceRel, targetDir, spec, fallback, specializations);
                         }
 
                         break;
@@ -88,12 +90,19 @@ namespace Mutant.Chicken.Runner
             }
         }
 
-        private static void ProcessFile(Orchestrator self, string filePath, string sourceDir, string targetDir, IProcessor fallback, IReadOnlyDictionary<IPathMatcher, IProcessor> specializations)
+        private static void ProcessFile(Orchestrator self, string filePath, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IReadOnlyDictionary<IPathMatcher, IProcessor> specializations)
         {
-            string sourceRel = filePath.Substring(sourceDir.Length).TrimStart(Path.DirectorySeparatorChar);
-            string targetRel = sourceRel;
             IProcessor runner = specializations.FirstOrDefault(x => x.Key.IsMatch(filePath)).Value ?? fallback;
+
+            string targetRel;
+            if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))
+            {
+                targetRel = sourceRel;
+            }
+
             string targetPath = Path.Combine(targetDir, targetRel);
+
+            //TODO: Update context with the current file & such here
 
             int bufferSize,
                 flushThreshold;

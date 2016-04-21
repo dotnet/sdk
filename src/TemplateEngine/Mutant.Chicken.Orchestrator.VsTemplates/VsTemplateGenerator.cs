@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Mutant.Chicken.Abstractions;
 
 namespace Mutant.Chicken.Orchestrator.VsTemplates
@@ -15,23 +16,70 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
         {
             ProcessParameters(parameters);
             VsTemplate tmplt = (VsTemplate)template;
-            //XElement defaultName = tmplt.VsTemplateFile.Root.Descendants().FirstOrDefault(x => x.Name.LocalName == "DefaultName");
-            //IEnumerable<XElement> projects = tmplt.VsTemplateFile.Root.Descendants().Where(x => x.Name.LocalName == "Project");
-            
+            IEnumerable<XElement> projects = tmplt.VsTemplateFile.Root.Descendants().Where(x => x.Name.LocalName == "Project");
+            IEnumerable<XElement> items = tmplt.VsTemplateFile.Root.Descendants().Where(y => y.Name.LocalName == "ProjectItem");
+
+            ParameterSet p = (ParameterSet) parameters;
+
+            ITemplateParameter projectNameParameter;
+            p.TryGetParameter("projectname", out projectNameParameter);
+
+            Dictionary<string, string> fileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            List<string> copyOnly = new List<string>();
+            foreach (XElement project in projects)
+            {
+                string sourceName = project.Attributes().First(x => x.Name.LocalName == "File").Value;
+                string targetFileName = project.Attributes().FirstOrDefault(x => x.Name.LocalName == "TargetFileName")?.Value ?? sourceName;
+                bool processReplacements = bool.Parse(project.Attributes().FirstOrDefault(x => x.Name.LocalName == "ReplaceParameters")?.Value ?? "False");
+
+                targetFileName = targetFileName.Replace(tmplt.DefaultName, parameters.ParameterValues[projectNameParameter]);
+
+                if (!processReplacements)
+                {
+                    copyOnly.Add(sourceName);
+                }
+
+                fileMap[sourceName] = targetFileName;
+            }
+
+            foreach (XElement file in items)
+            {
+                string sourceName = file.Value;
+                string targetFileName = file.Attributes().FirstOrDefault(x => x.Name.LocalName == "TargetFileName")?.Value ?? sourceName;
+                bool processReplacements = bool.Parse(file.Attributes().FirstOrDefault(x => x.Name.LocalName == "ReplaceParameters")?.Value ?? "False");
+
+                targetFileName = targetFileName.Replace(tmplt.DefaultName, parameters.ParameterValues[projectNameParameter]);
+
+                if (!processReplacements)
+                {
+                    copyOnly.Add(sourceName);
+                }
+
+                fileMap[sourceName] = targetFileName;
+            }
+
             VsTemplateOrchestrator o = new VsTemplateOrchestrator();
             string dir = Path.GetDirectoryName(tmplt.SourceFile.FullPath);
-            o.Run(new VsTemplateGlobalRunSpec(parameters), dir, Directory.GetCurrentDirectory());
+            o.Run(new VsTemplateGlobalRunSpec(parameters, fileMap, copyOnly), dir, Directory.GetCurrentDirectory());
             return Task.FromResult(true);
         }
 
         public IParameterSet GetParametersForTemplate(ITemplate template)
         {
-            return new ParameterSet();
+            ParameterSet result = new ParameterSet();
+            VsTemplate tmplt = (VsTemplate) template;
+
+            foreach (CustomParameter param in tmplt.CustomParameters)
+            {
+                result.AddParameter(new Parameter(param.Name.ToLowerInvariant(), TemplateParameterPriority.Optional, "string", defaultValue: param.DefaultValue));
+            }
+
+            return result;
         }
 
         public IEnumerable<ITemplate> GetTemplatesFromSource(IConfiguredTemplateSource source)
         {
-            foreach (var entry in source.Entries)
+            foreach (ITemplateSourceEntry entry in source.Entries)
             {
                 if (entry.Kind == TemplateSourceEntryKind.File && entry.FullPath.EndsWith(".vstemplate"))
                 {
@@ -104,20 +152,24 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             p.TryGetParameter("projectname", out projectName);
             p.ParameterValues[safeProjectName] = p.ParameterValues[projectName];
         }
+
         private class Parameter : ITemplateParameter
         {
-            public Parameter(string name, TemplateParameterPriority priority, string type, bool isName = false, string documentation = null)
+            public Parameter(string name, TemplateParameterPriority priority, string type, bool isName = false, string documentation = null, string defaultValue = null)
             {
                 Name = name;
                 Priority = priority;
                 Type = type;
                 IsName = isName;
                 Documentation = documentation;
+                DefaultValue = defaultValue;
             }
 
             public string Documentation { get; }
 
             public bool IsName { get; }
+
+            public string DefaultValue { get; }
 
             public string Name { get; }
 

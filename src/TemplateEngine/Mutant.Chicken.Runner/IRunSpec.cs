@@ -4,7 +4,7 @@ namespace Mutant.Chicken.Runner
 {
     public interface IRunSpec
     {
-        string GetTargetRelativePath(string sourcePath, string sourceFile);
+        bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath);
 
         IReadOnlyList<IOperationProvider> GetOperations(IReadOnlyList<IOperationProvider> sourceOperations);
 

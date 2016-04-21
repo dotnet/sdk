@@ -6,9 +6,10 @@ namespace Mutant.Chicken.Demo
 {
     internal class DemoRunSpec : IRunSpec
     {
-        public string GetTargetRelativePath(string sourcePath, string sourceFile)
+        public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
-            throw new NotImplementedException();
+            targetRelPath = null;
+            return false;
         }
 
         public IReadOnlyList<IOperationProvider> GetOperations(IReadOnlyList<IOperationProvider> sourceOperations)

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Mutant.Chicken.Abstractions;
@@ -16,7 +17,24 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             using(Stream src = source.OpenRead())
             {
                 XDocument doc = XDocument.Load(src);
+                DefaultName = doc.Root.Descendants().FirstOrDefault(x => x.Name.LocalName == "DefaultName")?.Value;
                 XElement idElement = doc.Root.Descendants().FirstOrDefault(x => x.Name.LocalName == "TemplateID");
+                IEnumerable<XElement> customParameters = doc.Root.Descendants().Where(x => x.Name.LocalName == "CustomParameter");
+                List<CustomParameter> declaredParams = new List<CustomParameter>();
+
+                foreach (XElement parameter in customParameters)
+                {
+                    string name = parameter.Attributes().First(x => x.Name.LocalName == "Name").Value;
+                    name = name.Substring(1, name.Length - 2);
+
+                    declaredParams.Add(new CustomParameter
+                    {
+                        Name = name,
+                        DefaultValue = parameter.Attributes().First(x => x.Name.LocalName == "Value").Value
+                    });
+                }
+
+                CustomParameters = declaredParams;
                 Name = idElement.Value;
                 VsTemplateFile = doc;
             }
@@ -27,9 +45,14 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
         public string Name { get; }
 
         public IConfiguredTemplateSource Source { get; }
+
+        public string DefaultName { get; }
+
         public TemplateSourceFile SourceFile { get; }
 
         public XDocument VsTemplateFile { get; }
+
+        public IReadOnlyList<CustomParameter> CustomParameters { get; }
 
         public bool TryGetProperty(string name, out string value)
         {
@@ -43,5 +66,12 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             value = null;
             return false;
         }
+    }
+
+    internal class CustomParameter
+    {
+        public string Name { get; set; }
+
+        public string DefaultValue { get; set; }
     }
 }
