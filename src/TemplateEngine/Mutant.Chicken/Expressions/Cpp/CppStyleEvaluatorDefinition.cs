@@ -101,6 +101,7 @@ namespace Mutant.Chicken.Expressions.Cpp
                                 case TokenFamily.LegacyMacEOL:
                                     break;
                                 default:
+                                    currentBufferPosition = oldBufferPos;
                                     first = false;
                                     break;
                             }
@@ -159,10 +160,15 @@ namespace Mutant.Chicken.Expressions.Cpp
                             }
                         }
                     }
-                    else
+                    else if (braceDepth > 0)
                     {
                         currentTokenFamily = TokenFamily.Literal;
                         currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
+                    }
+                    else
+                    {
+                        first = false;
+                        break;
                     }
                 }
 
