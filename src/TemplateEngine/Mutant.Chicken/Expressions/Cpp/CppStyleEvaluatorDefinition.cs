@@ -7,6 +7,9 @@ namespace Mutant.Chicken.Expressions.Cpp
 {
     public static class CppStyleEvaluatorDefinition
     {
+        private const int ReservedTokenCount = 22;
+        private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
+
         public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
         {
             SimpleTrie trie = new SimpleTrie();
@@ -21,26 +24,27 @@ namespace Mutant.Chicken.Expressions.Cpp
             trie.AddToken(processor.Encoding.GetBytes("<"), 6);
             trie.AddToken(processor.Encoding.GetBytes("<="), 7);
             trie.AddToken(processor.Encoding.GetBytes("=="), 8);
-            trie.AddToken(processor.Encoding.GetBytes("!="), 9);
+            trie.AddToken(processor.Encoding.GetBytes("="), 9);
+            trie.AddToken(processor.Encoding.GetBytes("!="), 10);
 
             //Bitwise
-            trie.AddToken(processor.Encoding.GetBytes("&"), 10);
-            trie.AddToken(processor.Encoding.GetBytes("|"), 11);
-            trie.AddToken(processor.Encoding.GetBytes("<<"), 12);
-            trie.AddToken(processor.Encoding.GetBytes(">>"), 13);
+            trie.AddToken(processor.Encoding.GetBytes("&"), 11);
+            trie.AddToken(processor.Encoding.GetBytes("|"), 12);
+            trie.AddToken(processor.Encoding.GetBytes("<<"), 13);
+            trie.AddToken(processor.Encoding.GetBytes(">>"), 14);
 
             //Braces
-            trie.AddToken(processor.Encoding.GetBytes("("), 14);
-            trie.AddToken(processor.Encoding.GetBytes(")"), 15);
+            trie.AddToken(processor.Encoding.GetBytes("("), 15);
+            trie.AddToken(processor.Encoding.GetBytes(")"), 16);
 
             //Whitespace
-            trie.AddToken(processor.Encoding.GetBytes(" "), 16);
-            trie.AddToken(processor.Encoding.GetBytes("\t"), 17);
+            trie.AddToken(processor.Encoding.GetBytes(" "), 17);
+            trie.AddToken(processor.Encoding.GetBytes("\t"), 18);
 
             //EOLs
-            trie.AddToken(processor.Encoding.GetBytes("\r\n"), 18);
-            trie.AddToken(processor.Encoding.GetBytes("\n"), 19);
-            trie.AddToken(processor.Encoding.GetBytes("\r"), 20);
+            trie.AddToken(processor.Encoding.GetBytes("\r\n"), 19);
+            trie.AddToken(processor.Encoding.GetBytes("\n"), 20);
+            trie.AddToken(processor.Encoding.GetBytes("\r"), 21);
 
             //Tokens
             trie.Append(processor.EncodingConfig.Variables);
@@ -55,7 +59,7 @@ namespace Mutant.Chicken.Expressions.Cpp
                 currentTokenFamily = TokenFamily.Literal;
                 currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
             }
-            else if (token > 20)
+            else if (token > ReservedTokenMaxIndex)
             {
                 currentTokenFamily = TokenFamily.Reference | (TokenFamily)token;
                 tokens.Add(new TokenRef
@@ -80,8 +84,13 @@ namespace Mutant.Chicken.Expressions.Cpp
                 }
             }
 
-            bool first = true;
             int braceDepth = 0;
+            if(tokens[0].Family == TokenFamily.OpenBrace)
+            {
+                ++braceDepth;
+            }
+
+            bool first = true;
             while ((first || braceDepth > 0) && bufferLength > 0)
             {
                 int targetLen = bufferLength == processor.CurrentBuffer.Length ? trie.MaxLength : trie.MinLength;
@@ -99,6 +108,7 @@ namespace Mutant.Chicken.Expressions.Cpp
                                 case TokenFamily.WindowsEOL:
                                 case TokenFamily.UnixEOL:
                                 case TokenFamily.LegacyMacEOL:
+                                case TokenFamily.CloseBrace:
                                     break;
                                 default:
                                     currentBufferPosition = oldBufferPos;
@@ -126,7 +136,7 @@ namespace Mutant.Chicken.Expressions.Cpp
                         }
 
                         //If we have a token from the args...
-                        if (token > 20)
+                        if (token > ReservedTokenMaxIndex)
                         {
                             currentTokenFamily = TokenFamily.Reference | (TokenFamily)token;
                             tokens.Add(new TokenRef
@@ -347,6 +357,7 @@ namespace Mutant.Chicken.Expressions.Cpp
                         }
                         break;
                     case TokenFamily.EqualTo:
+                    case TokenFamily.EqualToShort:
                         CombineExpressionOperator(ref current, parents);
                         current.Operator = Operator.EqualTo;
                         break;
@@ -473,7 +484,7 @@ namespace Mutant.Chicken.Expressions.Cpp
 
         private static object ResolveToken(TokenRef tokenRef, IReadOnlyList<Func<object>> values)
         {
-            return values[(int) (tokenRef.Family & ~TokenFamily.Reference) - 21]();
+            return values[(int) (tokenRef.Family & ~TokenFamily.Reference) - ReservedTokenCount]();
         }
     }
 }

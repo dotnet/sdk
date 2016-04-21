@@ -14,6 +14,7 @@ namespace Mutant.Chicken.Expressions.Cpp
         LessThan,
         LessThanOrEqualTo,
         EqualTo,
+        EqualToShort,
         NotEqualTo,
         BitwiseAnd,
         BitwiseOr,

@@ -13,7 +13,7 @@ namespace Mutant.Chicken.Net4.UnitTests
         public void VerifyIfEndifTrueCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
     #endif
 There";
@@ -39,7 +39,7 @@ There";
         public void VerifyIfElseEndifTrueCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
     #else
 other
@@ -154,7 +154,7 @@ There";
         public void VerifyIfElseEndifTrueConditionLiteralAgainst()
         {
             string value = @"Hello
-    #if (3 > VALUE)
+    #if(3 > VALUE)
 value
     #else
 other
@@ -185,7 +185,7 @@ There";
         public void VerifyIfElseEndifTrueConditionAgainstIf()
         {
             string value = @"Hello
-    #ifVALUE
+    #if(VALUE)
 value
     #else
 other
@@ -241,9 +241,9 @@ There";
         public void VerifyIfElseifEndifTrueFalseCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
     #endif
 There";
@@ -273,9 +273,9 @@ There";
         public void VerifyIfElseifEndifTrueTrueCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
     #endif
 There";
@@ -305,9 +305,9 @@ There";
         public void VerifyIfElseifEndifFalseTrueCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
     #endif
 There";
@@ -337,9 +337,9 @@ There";
         public void VerifyIfElseifElseEndifTrueFalseCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
     #else
 other2
@@ -371,9 +371,9 @@ There";
         public void VerifyIfElseifElseEndifFalseTrueCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
     #else
 other2
@@ -439,8 +439,8 @@ There";
         public void VerifyNestedIfTrueTrue()
         {
             string value = @"Hello
-    #if VALUE
-        #if VALUE2
+    #if (VALUE)
+        #if (VALUE2)
 value
         #else
 other
@@ -475,9 +475,9 @@ There";
         public void VerifyIfElseifElseifElseEndifTrueTrueCondition()
         {
             string value = @"Hello
-        #if VALUE
+        #if (VALUE)
 value
-        #elseif VALUE2
+        #elseif (VALUE2)
 other
         #else
 other2
@@ -509,9 +509,9 @@ There";
         public void VerifyIfElseifElseifElseEndifTrueFalseCondition()
         {
             string value = @"Hello
-        #if VALUE
+        #if (VALUE)
 value
-        #elseif VALUE2
+        #elseif (VALUE2)
 other
         #else
 other2
@@ -543,9 +543,9 @@ There";
         public void VerifyIfElseifElseifElseEndifFalseTrueCondition()
         {
             string value = @"Hello
-        #if VALUE
+        #if (VALUE)
 value
-        #elseif VALUE2
+        #elseif (VALUE2)
 other
         #else
 other2
@@ -611,11 +611,11 @@ There";
         public void VerifyIfElseifElseifEndifTrueFalseFalseCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
-    #elseif VALUE3
+    #elseif (VALUE3)
 other2
     #endif
 There";
@@ -646,11 +646,11 @@ There";
         public void VerifyIfElseifElseifEndifFalseTrueFalseCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
-    #elseif VALUE3
+    #elseif (VALUE3)
 other2
     #endif
 There";
@@ -681,11 +681,11 @@ There";
         public void VerifyIfElseifElseifEndifFalseFalseTrueCondition()
         {
             string value = @"Hello
-    #if VALUE
+    #if (VALUE)
 value
-    #elseif VALUE2
+    #elseif (VALUE2)
 other
-    #elseif VALUE3
+    #elseif (VALUE3)
 other2
     #endif
 There";
@@ -1461,7 +1461,8 @@ There";
         public void VerifyIfElseEndifConditionUsesFalsePositiveHex()
         {
             string value = @"Hello
-    #if (0xChicken == null) value
+    #if (0xChicken == null)
+value
     #endif
 There";
             string expected = @"Hello
