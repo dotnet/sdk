@@ -75,6 +75,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunSpecConverter.cs" />
+    <Compile Include="SpecialConverter.cs" />
     <Compile Include="VariableCollectionConverter.cs" />
   </ItemGroup>
   <ItemGroup>

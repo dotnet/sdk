@@ -9,8 +9,8 @@ namespace Mutant.Chicken.Demo
 {
     public class DemoOrchestrator : Orchestrator
     {
-        private JsonSerializer _serializer;
-        private Func<VariableCollection, VariableCollection> _root;
+        private readonly JsonSerializer _serializer;
+        private readonly Func<VariableCollection, VariableCollection> _root;
 
         private JsonSerializer CreateSerializer()
         {

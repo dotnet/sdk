@@ -60,7 +60,7 @@ namespace Mutant.Chicken
             }
         }
 
-        public ICollection<object> Values => System.Linq.Enumerable.Select(Keys, x => this[x]).ToList();
+        public ICollection<object> Values => Keys.Select(x => this[x]).ToList();
 
         public object this[string key]
         {
@@ -163,7 +163,7 @@ namespace Mutant.Chicken
             }
         }
 
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => System.Linq.Enumerable.Select(Keys, x => new KeyValuePair<string, object>(x, this[x])).GetEnumerator();
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => Keys.Select(x => new KeyValuePair<string, object>(x, this[x])).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_values).GetEnumerator();
 

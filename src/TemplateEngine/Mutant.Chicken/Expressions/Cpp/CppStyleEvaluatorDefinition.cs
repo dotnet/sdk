@@ -207,8 +207,11 @@ namespace Mutant.Chicken.Expressions.Cpp
                     return;
                 }
 
-                Scope tmp2 = new Scope();
-                tmp2.Value = leftScope.Right;
+                Scope tmp2 = new Scope
+                {
+                    Value = leftScope.Right
+                };
+
                 leftScope.Right = tmp2;
                 parents.Push(leftScope);
                 current = tmp2;

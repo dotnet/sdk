@@ -33,6 +33,13 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 
         public bool TryGetProperty(string name, out string value)
         {
+            switch (name.ToLowerInvariant())
+            {
+                case "diskpath":
+                    value = SourceFile.FullPath;
+                    return true;
+            }
+
             value = null;
             return false;
         }

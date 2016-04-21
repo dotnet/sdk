@@ -21,10 +21,7 @@ namespace Mutant.Chicken.Demo
         [JsonProperty("special"), JsonConverter(typeof(SpecialConverter))]
         public Dictionary<IPathMatcher, IRunSpec> Special { get; set; }
 
-        IReadOnlyDictionary<IPathMatcher, IRunSpec> IGlobalRunSpec.Special
-        {
-            get { return this.Special; }
-        }
+        IReadOnlyDictionary<IPathMatcher, IRunSpec> IGlobalRunSpec.Special => Special;
 
         public DemoGlobalRunSpec()
         {

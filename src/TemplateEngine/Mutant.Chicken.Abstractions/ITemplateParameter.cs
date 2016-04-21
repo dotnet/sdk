@@ -12,12 +12,4 @@
 
         bool IsName { get; }
     }
-
-    public enum TemplateParameterPriority
-    {
-        Required,
-        Suggested,
-        Optional,
-        AddOn
-    }
 }

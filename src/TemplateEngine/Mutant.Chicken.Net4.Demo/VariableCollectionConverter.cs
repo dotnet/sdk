@@ -5,7 +5,7 @@ namespace Mutant.Chicken.Demo
 {
     internal class VariableCollectionConverter : JsonConverter
     {
-        private Func<VariableCollection, VariableCollection> _variableInstall;
+        private readonly Func<VariableCollection, VariableCollection> _variableInstall;
 
         public VariableCollectionConverter(Func<VariableCollection, VariableCollection> variableInstall)
         {

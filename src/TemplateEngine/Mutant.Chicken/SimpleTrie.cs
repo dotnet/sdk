@@ -42,14 +42,9 @@ namespace Mutant.Chicken
 
             MaxLength = Math.Max(MaxLength, token.Length);
 
-            if (MinLength == 0)
-            {
-                MinLength = token.Length;
-            }
-            else
-            {
-                MinLength = Math.Min(MinLength, token.Length);
-            }
+            MinLength = MinLength == 0
+                ? token.Length
+                : Math.Min(MinLength, token.Length);
 
             for (int i = 0; i < token.Length; ++i)
             {
