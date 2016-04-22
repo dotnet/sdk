@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Microsoft.Win32;
 using Mutant.Chicken.Abstractions;
 using Mutant.Chicken.Expressions.Cpp;
 using Mutant.Chicken.Runner;
@@ -18,17 +20,30 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 
             foreach (string copyOnlyFile in copyOnly)
             {
-                _special[new SpecificFilesMatcher(new[] {copyOnlyFile})] = new NoOpRunSpec();
+                _special[new SpecificFilesMatcher(new[] { copyOnlyFile })] = new NoOpRunSpec();
             }
 
-            VariableCollection sys = new VariableCollection(VariableCollection.Environment())
+            string registeredOrganization;
+
+            using (RegistryKey key = Registry.LocalMachine?.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion"))
+            {
+                registeredOrganization = key?.GetValue("RegisteredOrganization", "")?.ToString() ?? "";
+            }
+
+            VariableCollection sys = new VariableCollection(VariableCollection.Environment(true, false, "${0}$"))
             {
                 ["$year$"] = DateTime.Now.Year.ToString(),
-                ["$registeredorganization$"] = "",
-                ["$targetframeworkversion$"] = "4.6"
+                ["$registeredorganization$"] = registeredOrganization,
+                ["$targetframeworkversion$"] = "4.6",
+                ["$machinename$"] = Environment.MachineName,
+                ["$clrVersion$"] = typeof(VsTemplateGenerator).GetTypeInfo().Assembly.ImageRuntimeVersion,
+                ["$registeredorganization$"] = registeredOrganization,
+                ["$time$"] = DateTime.Now.ToString("G"),
+                ["$specificsolutionname$"] = "",
+                ["$webnamespace$"] = ""
             };
 
-            for (int i = 0; i < 10; ++i)
+            for (int i = 0; i < 11; ++i)
             {
                 sys[$"$guid{i}$"] = Guid.NewGuid();
             }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Mutant.Chicken.Abstractions;
@@ -20,6 +21,18 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             IEnumerable<XElement> items = tmplt.VsTemplateFile.Root.Descendants().Where(y => y.Name.LocalName == "ProjectItem");
 
             ParameterSet p = (ParameterSet) parameters;
+
+            foreach (CustomParameter parameter in tmplt.CustomParameters)
+            {
+                ITemplateParameter target;
+                if (p.TryGetParameter(parameter.Name, out target))
+                {
+                    if (!p.ParameterValues.ContainsKey(target))
+                    {
+                        p.ParameterValues[target] = parameter.DefaultValue;
+                    }
+                }
+            }
 
             ITemplateParameter projectNameParameter;
             p.TryGetParameter("projectname", out projectNameParameter);
@@ -49,6 +62,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
                 bool processReplacements = bool.Parse(file.Attributes().FirstOrDefault(x => x.Name.LocalName == "ReplaceParameters")?.Value ?? "False");
 
                 targetFileName = targetFileName.Replace(tmplt.DefaultName, parameters.ParameterValues[projectNameParameter]);
+                targetFileName = targetFileName.Replace("$fileinputname$", Path.GetFileNameWithoutExtension(parameters.ParameterValues[projectNameParameter]));
 
                 if (!processReplacements)
                 {
@@ -71,7 +85,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 
             foreach (CustomParameter param in tmplt.CustomParameters)
             {
-                result.AddParameter(new Parameter(param.Name.ToLowerInvariant(), TemplateParameterPriority.Optional, "string", defaultValue: param.DefaultValue));
+                result.AddParameter(new Parameter(param.Name, TemplateParameterPriority.Optional, "string", defaultValue: param.DefaultValue));
             }
 
             return result;
@@ -148,9 +162,20 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             ParameterSet p = (ParameterSet)parameters;
             ITemplateParameter safeProjectName = new Parameter("safeprojectname", TemplateParameterPriority.Required, "string");
             p.AddParameter(safeProjectName);
+            ITemplateParameter itemName = new Parameter("itemname", TemplateParameterPriority.Required, "string");
+            p.AddParameter(itemName);
+            ITemplateParameter safeItemName = new Parameter("safeitemname", TemplateParameterPriority.Required, "string");
+            p.AddParameter(safeItemName);
+            ITemplateParameter fileInputName = new Parameter("fileinputname", TemplateParameterPriority.Required, "string");
+            p.AddParameter(fileInputName);
+
             ITemplateParameter projectName;
             p.TryGetParameter("projectname", out projectName);
+
             p.ParameterValues[safeProjectName] = p.ParameterValues[projectName];
+            p.ParameterValues[itemName] = p.ParameterValues[projectName];
+            p.ParameterValues[safeItemName] = p.ParameterValues[projectName];
+            p.ParameterValues[fileInputName] = p.ParameterValues[projectName];
         }
 
         private class Parameter : ITemplateParameter
@@ -185,6 +210,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             public ParameterSet()
             {
                 AddParameter(new Parameter("projectname", TemplateParameterPriority.Implicit, "string", true));
+                AddParameter(new Parameter("rootnamespace", TemplateParameterPriority.Optional, "string", documentation: "The root namespace of the current project. This parameter applies only to item templates."));
             }
 
             public IEnumerable<ITemplateParameter> Parameters => _parameters.Values;

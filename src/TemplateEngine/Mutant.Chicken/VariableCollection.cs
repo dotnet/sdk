@@ -92,16 +92,27 @@ namespace Mutant.Chicken
             }
         }
 
-        public static VariableCollection Environment() => Environment(null);
+        public static VariableCollection Environment() => Environment(null, true, true, "{0}");
 
-        public static VariableCollection Environment(VariableCollection parent)
+        public static VariableCollection Environment(string formatString) => Environment(null, true, true, formatString);
+
+        public static VariableCollection Environment(VariableCollection parent) => Environment(parent, true, true, "{0}");
+
+        public static VariableCollection Environment(VariableCollection parent, string formatString) => Environment(parent, true, true, formatString);
+
+        public static VariableCollection Environment(bool changeCase, bool upperCase) => Environment(null, changeCase, upperCase, "{0}");
+
+        public static VariableCollection Environment(bool changeCase, bool upperCase, string formatString) => Environment(null, changeCase, upperCase, formatString);
+
+        public static VariableCollection Environment(VariableCollection parent, bool changeCase, bool upperCase, string formatString)
         {
             VariableCollection vc = new VariableCollection(parent);
             IDictionary variables = System.Environment.GetEnvironmentVariables();
 
             foreach (string key in variables.Keys.OfType<string>())
             {
-                vc[key.ToUpperInvariant()] = variables[key];
+                string name = string.Format(formatString, !changeCase ? key : upperCase ? key.ToUpperInvariant() : key.ToLowerInvariant());
+                vc[name] = variables[key];
             }
 
             return vc;
