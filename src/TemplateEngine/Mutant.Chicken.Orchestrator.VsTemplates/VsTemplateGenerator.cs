@@ -12,12 +12,59 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
     {
         public string Name => "VS Templates";
 
+        private void RecurseContent(XElement parentNode, string sourcePath, string targetPath, string defaultName, string useName, IDictionary<string, string> fileMap, IList<string> copyOnly)
+        {
+            IEnumerable<XElement> projects = parentNode.Elements().Where(x => x.Name.LocalName == "Project");
+            IEnumerable<XElement> items = parentNode.Elements().Where(y => y.Name.LocalName == "ProjectItem");
+            IEnumerable<XElement> folders = parentNode.Elements().Where(y => y.Name.LocalName == "Folder");
+
+            foreach (XElement project in projects)
+            {
+                string sourceName = project.Attributes().First(x => x.Name.LocalName == "File").Value;
+                string targetFileName = project.Attributes().FirstOrDefault(x => x.Name.LocalName == "TargetFileName")?.Value ?? sourceName;
+                bool processReplacements = bool.Parse(project.Attributes().FirstOrDefault(x => x.Name.LocalName == "ReplaceParameters")?.Value ?? "False");
+
+                targetFileName = targetFileName.Replace(defaultName, useName);
+
+                if (!processReplacements)
+                {
+                    copyOnly.Add(sourceName);
+                }
+
+                fileMap[sourceName] = targetPath + targetFileName;
+                RecurseContent(project, sourcePath, targetPath, defaultName, useName, fileMap, copyOnly);
+            }
+
+            foreach (XElement file in items)
+            {
+                string sourceName = file.Value;
+                string targetFileName = file.Attributes().FirstOrDefault(x => x.Name.LocalName == "TargetFileName")?.Value ?? sourceName;
+                bool processReplacements = bool.Parse(file.Attributes().FirstOrDefault(x => x.Name.LocalName == "ReplaceParameters")?.Value ?? "False");
+
+                targetFileName = targetFileName.Replace(defaultName, useName);
+                targetFileName = targetFileName.Replace("$fileinputname$", Path.GetFileNameWithoutExtension(useName));
+
+                if (!processReplacements)
+                {
+                    copyOnly.Add(sourceName);
+                }
+
+                fileMap[sourceName] = targetPath + targetFileName;
+            }
+
+            foreach (XElement folder in folders)
+            {
+                string sourceName = folder.Attributes().FirstOrDefault(x => x.Name.LocalName == "Name")?.Value;
+                string targetName = folder.Attributes().FirstOrDefault(x => x.Name.LocalName == "TargetFolderName")?.Value;
+                RecurseContent(folder, sourcePath + sourceName + "\\", targetPath + targetName + "\\", defaultName, useName, fileMap, copyOnly);
+            }
+        }
+
         public Task Create(ITemplate template, IParameterSet parameters)
         {
             ProcessParameters(parameters);
             VsTemplate tmplt = (VsTemplate)template;
-            IEnumerable<XElement> projects = tmplt.VsTemplateFile.Root.Descendants().Where(x => x.Name.LocalName == "Project");
-            IEnumerable<XElement> items = tmplt.VsTemplateFile.Root.Descendants().Where(y => y.Name.LocalName == "ProjectItem");
+            XElement templateContent = tmplt.VsTemplateFile.Root.Descendants().First(x => x.Name.LocalName == "TemplateContent");
 
             ParameterSet p = (ParameterSet) parameters;
 
@@ -38,38 +85,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 
             Dictionary<string, string> fileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             List<string> copyOnly = new List<string>();
-            foreach (XElement project in projects)
-            {
-                string sourceName = project.Attributes().First(x => x.Name.LocalName == "File").Value;
-                string targetFileName = project.Attributes().FirstOrDefault(x => x.Name.LocalName == "TargetFileName")?.Value ?? sourceName;
-                bool processReplacements = bool.Parse(project.Attributes().FirstOrDefault(x => x.Name.LocalName == "ReplaceParameters")?.Value ?? "False");
-
-                targetFileName = targetFileName.Replace(tmplt.DefaultName, parameters.ParameterValues[projectNameParameter]);
-
-                if (!processReplacements)
-                {
-                    copyOnly.Add(sourceName);
-                }
-
-                fileMap[sourceName] = targetFileName;
-            }
-
-            foreach (XElement file in items)
-            {
-                string sourceName = file.Value;
-                string targetFileName = file.Attributes().FirstOrDefault(x => x.Name.LocalName == "TargetFileName")?.Value ?? sourceName;
-                bool processReplacements = bool.Parse(file.Attributes().FirstOrDefault(x => x.Name.LocalName == "ReplaceParameters")?.Value ?? "False");
-
-                targetFileName = targetFileName.Replace(tmplt.DefaultName, parameters.ParameterValues[projectNameParameter]);
-                targetFileName = targetFileName.Replace("$fileinputname$", Path.GetFileNameWithoutExtension(parameters.ParameterValues[projectNameParameter]));
-
-                if (!processReplacements)
-                {
-                    copyOnly.Add(sourceName);
-                }
-
-                fileMap[sourceName] = targetFileName;
-            }
+            RecurseContent(templateContent, "", "", tmplt.DefaultName, parameters.ParameterValues[projectNameParameter], fileMap, copyOnly);
 
             VsTemplateOrchestrator o = new VsTemplateOrchestrator();
             o.Run(new VsTemplateGlobalRunSpec(parameters, fileMap, copyOnly), tmplt.SourceFile.Parent, Directory.GetCurrentDirectory());

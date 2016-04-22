@@ -37,7 +37,7 @@ namespace Mutant.Chicken.Abstractions
             while (current != null)
             {
                 sourceSegments[current] = ++index;
-                current = relTo.Parent;
+                current = current.Parent;
             }
 
             current = Parent;
