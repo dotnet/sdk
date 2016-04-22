@@ -59,7 +59,7 @@ namespace Mutant.Chicken.Demo
             });
 
             Stopwatch s = Stopwatch.StartNew();
-            orchestrator.Run(spec, sourceDir, targetDir);
+            //orchestrator.Run(spec, sourceDir, targetDir);
             s.Stop();
             Console.WriteLine(s.Elapsed.TotalMilliseconds);
             Console.WriteLine("Done");

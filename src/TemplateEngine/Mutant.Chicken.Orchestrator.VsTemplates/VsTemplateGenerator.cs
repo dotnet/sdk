@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Mutant.Chicken.Abstractions;
@@ -73,8 +72,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             }
 
             VsTemplateOrchestrator o = new VsTemplateOrchestrator();
-            string dir = Path.GetDirectoryName(tmplt.SourceFile.FullPath);
-            o.Run(new VsTemplateGlobalRunSpec(parameters, fileMap, copyOnly), dir, Directory.GetCurrentDirectory());
+            o.Run(new VsTemplateGlobalRunSpec(parameters, fileMap, copyOnly), tmplt.SourceFile.Parent, Directory.GetCurrentDirectory());
             return Task.FromResult(true);
         }
 

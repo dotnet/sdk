@@ -89,6 +89,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Mutant.Chicken.Abstractions.Net4\Mutant.Chicken.Abstractions.Net4.csproj">
+      <Project>{7052658b-5fde-4b13-b60d-a10eff979b19}</Project>
+      <Name>Mutant.Chicken.Abstractions.Net4</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Mutant.Chicken.Net4\Mutant.Chicken.Net4.csproj">
       <Project>{46922f20-1842-4b76-a775-eacf40bd770b}</Project>
       <Name>Mutant.Chicken.Net4</Name>

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A3FC214F-4383-45B0-8524-45BEAB907834}</ProjectGuid>
+    <ProjectGuid>{7052658B-5FDE-4B13-B60D-A10EFF979B19}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Mutant.Chicken.Runner.Net4</RootNamespace>
-    <AssemblyName>Mutant.Chicken.Runner.Net4</AssemblyName>
+    <RootNamespace>Mutant.Chicken.Abstractions</RootNamespace>
+    <AssemblyName>Mutant.Chicken.Abstractions</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -34,19 +34,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Mutant.Chicken.Runner\**\*.cs" Exclude="..\Mutant.Chicken.Runner\obj\**;..\Mutant.Chicken.Runner\bin\**">
+    <Compile Include="..\Mutant.Chicken.Abstractions\**\*.cs" Exclude="..\Mutant.Chicken.Abstractions\obj\**;..\Mutant.Chicken.Abstractions\bin\**">
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Mutant.Chicken.Abstractions.Net4\Mutant.Chicken.Abstractions.Net4.csproj">
-      <Project>{7052658b-5fde-4b13-b60d-a10eff979b19}</Project>
-      <Name>Mutant.Chicken.Abstractions.Net4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Mutant.Chicken.Net4\Mutant.Chicken.Net4.csproj">
-      <Project>{46922f20-1842-4b76-a775-eacf40bd770b}</Project>
-      <Name>Mutant.Chicken.Net4</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
