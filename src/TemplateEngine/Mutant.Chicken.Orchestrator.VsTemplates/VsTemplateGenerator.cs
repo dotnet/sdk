@@ -66,7 +66,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             VsTemplate tmplt = (VsTemplate)template;
             XElement templateContent = tmplt.VsTemplateFile.Root.Descendants().First(x => x.Name.LocalName == "TemplateContent");
 
-            ParameterSet p = (ParameterSet) parameters;
+            ParameterSet p = (ParameterSet)parameters;
 
             foreach (CustomParameter parameter in tmplt.CustomParameters)
             {
@@ -95,7 +95,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
         public IParameterSet GetParametersForTemplate(ITemplate template)
         {
             ParameterSet result = new ParameterSet();
-            VsTemplate tmplt = (VsTemplate) template;
+            VsTemplate tmplt = (VsTemplate)template;
 
             foreach (CustomParameter param in tmplt.CustomParameters)
             {
@@ -107,31 +107,9 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 
         public IEnumerable<ITemplate> GetTemplatesFromSource(IConfiguredTemplateSource source)
         {
-            foreach (ITemplateSourceEntry entry in source.Entries)
+            using (IDisposable<ITemplateSourceFolder> root = source.Root)
             {
-                if (entry.Kind == TemplateSourceEntryKind.File && entry.FullPath.EndsWith(".vstemplate"))
-                {
-                    VsTemplate tmp = null;
-                    try
-                    {
-                        tmp = new VsTemplate((TemplateSourceFile)entry, source, this);
-                    }
-                    catch
-                    {
-                    }
-
-                    if (tmp != null)
-                    {
-                        yield return tmp;
-                    }
-                }
-                else if (entry.Kind == TemplateSourceEntryKind.Folder)
-                {
-                    foreach (ITemplate template in GetTemplatesFromDir(source, (TemplateSourceFolder)entry))
-                    {
-                        yield return template;
-                    }
-                }
+                return GetTemplatesFromDir(source, root.Value).ToList();
             }
         }
 
@@ -141,7 +119,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             return template != null;
         }
 
-        private IEnumerable<ITemplate> GetTemplatesFromDir(IConfiguredTemplateSource source, TemplateSourceFolder folder)
+        private IEnumerable<ITemplate> GetTemplatesFromDir(IConfiguredTemplateSource source, ITemplateSourceFolder folder)
         {
             foreach (ITemplateSourceEntry entry in folder.Children)
             {
@@ -150,7 +128,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
                     VsTemplate tmp = null;
                     try
                     {
-                        tmp = new VsTemplate((TemplateSourceFile)entry, source, this);
+                        tmp = new VsTemplate((ITemplateSourceFile)entry, source, this);
                     }
                     catch
                     {
@@ -163,7 +141,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
                 }
                 else if (entry.Kind == TemplateSourceEntryKind.Folder)
                 {
-                    foreach (ITemplate template in GetTemplatesFromDir(source, (TemplateSourceFolder)entry))
+                    foreach (ITemplate template in GetTemplatesFromDir(source, (ITemplateSourceFolder)entry))
                     {
                         yield return template;
                     }
@@ -240,7 +218,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 
             public bool TryGetParameter(string name, out ITemplateParameter parameter)
             {
-                if(_parameters.TryGetValue(name, out parameter))
+                if (_parameters.TryGetValue(name, out parameter))
                 {
                     return true;
                 }

@@ -6,7 +6,7 @@ namespace Mutant.Chicken.Abstractions
     {
         ITemplateSource Source { get; }
 
-        IEnumerable<ITemplateSourceEntry> Entries { get; }
+        IDisposable<ITemplateSourceFolder> Root { get; }
 
         string Alias { get; }
 

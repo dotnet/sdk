@@ -8,7 +8,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 {
     internal class VsTemplate : ITemplate
     {
-        public VsTemplate(TemplateSourceFile source, IConfiguredTemplateSource templateSource, IGenerator generator)
+        public VsTemplate(ITemplateSourceFile source, IConfiguredTemplateSource templateSource, IGenerator generator)
         {
             SourceFile = source;
             Source = templateSource;
@@ -48,7 +48,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
 
         public string DefaultName { get; }
 
-        public TemplateSourceFile SourceFile { get; }
+        public ITemplateSourceFile SourceFile { get; }
 
         public XDocument VsTemplateFile { get; }
 
