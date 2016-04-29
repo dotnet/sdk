@@ -124,7 +124,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             return result;
         }
 
-        private VariableCollection HandleVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result)
+        private VariableCollection HandleVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
         {
             VariableCollection vc = VariableCollection.Root();
             JToken expandToken;
@@ -153,11 +153,11 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                         }
                         break;
                     case "user":
-                        c = ProduceUserVariablesCollection(parameters, format);
+                        c = ProduceUserVariablesCollection(parameters, format, allParameters);
 
                         if (fallbackFormat != null)
                         {
-                            VariableCollection d = ProduceUserVariablesCollection(parameters, fallbackFormat);
+                            VariableCollection d = ProduceUserVariablesCollection(parameters, fallbackFormat, allParameters);
                             d.Parent = c;
                             c = d;
                         }
@@ -239,7 +239,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
         private void HandleEvaluateAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
         {
             ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
-            VariableCollection vars = HandleVariables(parameters, variablesSection, null);
+            VariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
             switch (def["evaluator"]?.ToString() ?? "C++")
             {
                 case "C++":
@@ -337,13 +337,13 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             }
         }
 
-        private VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format)
+        private VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
         {
             VariableCollection vc = new VariableCollection();
             foreach (ITemplateParameter parameter in parameters.Parameters)
             {
                 Parameter param = (Parameter)parameter;
-                if (param.IsVariable)
+                if (allParameters || param.IsVariable)
                 {
                     string value = null;
                     if (parameters.ParameterValues.TryGetValue(param, out value))
