@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mutant.Chicken.Abstractions;
@@ -73,7 +74,7 @@ namespace Mutant.Chicken.Runner
                         bool excluded = false;
                         foreach (IPathMatcher exclude in spec.Exclude)
                         {
-                            if (exclude.IsMatch(file.FullPath))
+                            if (exclude.IsMatch(sourceRel))
                             {
                                 excluded = true;
                                 break;
@@ -113,24 +114,31 @@ namespace Mutant.Chicken.Runner
             string fullTargetDir = Path.GetDirectoryName(targetPath);
             Directory.CreateDirectory(fullTargetDir);
 
-            using (Stream source = sourceFile.OpenRead())
-            using (FileStream target = File.Create(targetPath))
+            try
             {
-                if (!customBufferSize)
+                using (Stream source = sourceFile.OpenRead())
+                using (FileStream target = File.Create(targetPath))
                 {
-                    runner.Run(source, target);
-                }
-                else
-                {
-                    if (!customFlushThreshold)
+                    if (!customBufferSize)
                     {
-                        runner.Run(source, target, bufferSize);
+                        runner.Run(source, target);
                     }
                     else
                     {
-                        runner.Run(source, target, bufferSize, flushThreshold);
+                        if (!customFlushThreshold)
+                        {
+                            runner.Run(source, target, bufferSize);
+                        }
+                        else
+                        {
+                            runner.Run(source, target, bufferSize, flushThreshold);
+                        }
                     }
                 }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Error while processing file {sourceFile.FullPath}.\nCheck InnerException for details", ex);
             }
         }
     }

@@ -116,6 +116,8 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             _files = new HashSet<string>(files, StringComparer.OrdinalIgnoreCase);
         }
 
+        public string Pattern => string.Join(",", _files);
+
         public bool IsMatch(string path)
         {
             return _files.Contains(path);

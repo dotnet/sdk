@@ -48,6 +48,7 @@ namespace Mutant.Chicken.Abstractions
             while (current != null && !sourceSegments.TryGetValue(current, out revIndex))
             {
                 segments.Insert(0, current.Name);
+                current = current.Parent;
             }
 
             //Now that we've found our common point (and the index of the common segment _from the end_ of the source's parent chain)

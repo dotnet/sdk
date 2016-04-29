@@ -66,7 +66,7 @@ namespace Mutant.Chicken.Expressions.Cpp
             switch (Operator)
             {
                 case Operator.Not:
-                    return !EvaluateSide(Right, x => (bool) x);
+                    return !EvaluateSide(Right, x => Convert.ToBoolean(x ?? "False"));
                 case Operator.And:
                     return EvaluateSides(Left, Right, x => (bool) x, (x, y) => x && y);
                 case Operator.Or:
@@ -96,7 +96,7 @@ namespace Mutant.Chicken.Expressions.Cpp
                 default:
                     if (Left != null)
                     {
-                        return EvaluateSide(Left, x => (bool) x);
+                        return EvaluateSide(Left, x => Convert.ToBoolean(x ?? "False"));
                     }
 
                     return false;

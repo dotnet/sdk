@@ -3,8 +3,17 @@ using Mutant.Chicken.Runner;
 
 namespace Mutant.Chicken.Orchestrator.RunnableProjects
 {
-    internal class DemoRunSpec : IRunSpec
+    internal class RunSpec : IRunSpec
     {
+        private IReadOnlyList<IOperationProvider> _overrides;
+        private VariableCollection _vars;
+
+        public RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, VariableCollection vars)
+        {
+            _overrides = operationOverrides;
+            _vars = vars ?? new VariableCollection();
+        }
+
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             targetRelPath = null;
@@ -13,15 +22,12 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IOperationProvider> GetOperations(IReadOnlyList<IOperationProvider> sourceOperations)
         {
-            return sourceOperations;
+            return _overrides ?? sourceOperations;
         }
 
         public VariableCollection ProduceCollection(VariableCollection parent)
         {
-            return new VariableCollection(parent, new Dictionary<string, object>
-            {
-                {"CHEESE", true}
-            });
+            return _vars;
         }
     }
 }

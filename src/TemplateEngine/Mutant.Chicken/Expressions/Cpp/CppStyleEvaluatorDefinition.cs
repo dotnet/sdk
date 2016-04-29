@@ -93,7 +93,7 @@ namespace Mutant.Chicken.Expressions.Cpp
             bool first = true;
             while ((first || braceDepth > 0) && bufferLength > 0)
             {
-                int targetLen = bufferLength == processor.CurrentBuffer.Length ? trie.MaxLength : trie.MinLength;
+                int targetLen = Math.Min(bufferLength, trie.MaxLength);
                 for (; currentBufferPosition < bufferLength - targetLen + 1;)
                 {
                     int oldBufferPos = currentBufferPosition;

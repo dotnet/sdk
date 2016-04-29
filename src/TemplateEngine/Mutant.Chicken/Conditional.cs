@@ -14,6 +14,20 @@ namespace Mutant.Chicken
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
 
+        public string IfToken => _ifToken;
+
+        public string ElseIfToken => _elseIfToken;
+
+        public string ElseToken => _elseToken;
+
+        public string EndIfToken => _endIfToken;
+
+        public bool WholeLine => _wholeLine;
+
+        public bool TrimWhitespace => _trimWhitespace;
+
+        public ConditionEvaluator Evaluator => _evaluator;
+
         public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator)
         {
             _trimWhitespace = trimWhitespace;
@@ -116,12 +130,27 @@ BEGIN:
 
                     SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
 
-                    if (token >= 0)
+                    //Keep on scanning until we've hit a balancing token that belongs to us
+                    while(token == 0)
                     {
-                        goto BEGIN;
+                        int open = 1;
+                        while(open != 0)
+                        {
+                            SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
+                            if(token == 0)
+                            {
+                                ++open;
+                            }
+                            else if(token == 1)
+                            {
+                                --open;
+                            }
+                        }
+
+                        SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
                     }
 
-                    return 0;
+                    goto BEGIN;
                 }
 
                 //If we've got an unbalanced statement, emit the token

@@ -1,0 +1,68 @@
+﻿{
+  "$schema": "./ConfigSchema.json#",
+  "sources": [
+    {
+      "include": [
+        "**/*"
+      ],
+      "exclude": [
+        ".netnew.config",
+        //if !orgAuthMode
+        "**/orgauthspecificthing.cs"
+        //endif
+      ]
+    }
+  ],
+  "parameters": {
+    "name": {
+      "description": "The name of the project or item",
+      "isName": true,
+      "requirement": "implicit",
+      "isVariable": false
+    },
+    "context": {
+      "description": "Valid values: webDesktop, webCore, blah",
+      "isVariable": true,
+      "type": "string",
+      "requirement": "required"
+    },
+    "orgAuthMode": {
+      "type": "bool",
+      "isVariable": true,
+      "defaultValue": "false"
+    }
+  },
+  "config": {
+    "conditionals": {
+      "if": "#if",
+      "else": "#else",
+      "elseif": "#elseif",
+      "endif": "#endif",
+      "evaluator": "C++"
+    },
+    "variables": {
+      "sourceOrder": [ "environment", "user", "executor" ],
+      "pattern": "{0}",
+      "expand": true
+    },
+    "replacements": {
+      "MyProjectName": "name"
+    }
+  },
+  "special": {
+    "**/*.css": {
+      "config": {
+        "conditionals": {
+          "if": "//if",
+          "else": "//else",
+          "elseif": "//elseif",
+          "endif": "//endif",
+          "evaluator": "C++"
+        },
+        "replacements": {
+          "MySelector": "name"
+        }
+      }
+    }
+  }
+}

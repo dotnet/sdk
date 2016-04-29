@@ -117,6 +117,12 @@ namespace Mutant.Chicken
             int lastWritten = CurrentBufferPosition;
             int writtenSinceFlush = lastWritten;
 
+            if(CurrentBufferPosition == CurrentBufferLength)
+            {
+                AdvanceBuffer(CurrentBufferPosition);
+                lastWritten = 0;
+            }
+
             while (CurrentBufferLength > 0)
             {
                 int token;
@@ -150,7 +156,16 @@ namespace Mutant.Chicken
                     }
 
                     CurrentBufferPosition = posedPosition;
-                    writtenSinceFlush += op.HandleMatch(this, CurrentBufferLength, ref posedPosition, token, _target);
+
+                    try
+                    {
+                        writtenSinceFlush += op.HandleMatch(this, CurrentBufferLength, ref posedPosition, token, _target);
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new Exception($"Error running handler {op} at position {CurrentBufferPosition} in {Encoding.EncodingName} bytes of {Encoding.GetString(CurrentBuffer, 0, CurrentBufferLength)}.\n\nStart: {Encoding.GetString(CurrentBuffer, CurrentBufferPosition, CurrentBufferLength - CurrentBufferPosition)} \n\nCheck InnerException for details.", ex);
+                    }
+
                     CurrentBufferPosition = posedPosition;
                     lastWritten = posedPosition;
                     modified = true;

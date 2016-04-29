@@ -31,7 +31,7 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
                     copyOnly.Add(sourceName);
                 }
 
-                fileMap[sourceName] = targetPath + targetFileName;
+                fileMap[sourcePath + sourceName] = targetPath + targetFileName;
                 RecurseContent(project, sourcePath, targetPath, defaultName, useName, fileMap, copyOnly);
             }
 

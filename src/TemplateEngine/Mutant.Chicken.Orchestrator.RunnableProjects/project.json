@@ -6,7 +6,7 @@
     "Mutant.Chicken": "1.0.0-*",
     "Mutant.Chicken.Abstractions": "1.0.0-*",
     "Mutant.Chicken.Runner": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.3"
+    "Newtonsoft.Json": "7.0.1"
   },
 
   "frameworks": {

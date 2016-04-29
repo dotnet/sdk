@@ -7,11 +7,13 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
     internal class ExtensionPathMatcher : IPathMatcher
     {
         private readonly string _extension;
-
+                
         public ExtensionPathMatcher(string extension)
         {
             _extension = extension;
         }
+
+        public string Pattern => _extension;
 
         public bool IsMatch(string path)
         {

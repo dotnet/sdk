@@ -2,7 +2,7 @@
 
 namespace Mutant.Chicken.Abstractions
 {
-    public interface IDisposable<T> : IDisposable
+    public interface IDisposable<out T> : IDisposable
     {
         T Value { get; }
     }
