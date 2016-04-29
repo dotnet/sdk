@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Mutant.Chicken.Abstractions;
 using Mutant.Chicken.Expressions.Cpp;
@@ -194,6 +195,9 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 case "guid":
                     HandleGuidAction(variableName, def, set, result);
                     break;
+                case "now":
+                    HandleNowAction(variableName, def, set, result);
+                    break;
                 case "evaluate":
                     HandleEvaluateAction(variableName, variablesSection, def, set, result);
                     break;
@@ -201,6 +205,22 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                     HandleConstantAction(variableName, def, set, result);
                     break;
             }
+        }
+
+        private void HandleNowAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        {
+            string format = def["action"]?.ToString();
+            bool utc = bool.Parse(def["utc"]?.ToString() ?? "False");
+            DateTime time = utc ? DateTime.UtcNow : DateTime.Now;
+            string value = time.ToString(format);
+            Parameter p = new Parameter
+            {
+                IsVariable = true,
+                Name = variableName
+            };
+
+            parameters.AddParameter(p);
+            parameters.ParameterValues[p] = value;
         }
 
         private void HandleConstantAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
@@ -326,18 +346,68 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 if (param.IsVariable)
                 {
                     string value = null;
-
-                    if (!parameters.ParameterValues.TryGetValue(param, out value))
+                    if (parameters.ParameterValues.TryGetValue(param, out value))
                     {
-                        value = param.DefaultValue;
+                        string key = string.Format(format ?? "{0}", param.Name);
+                        vc[key] = InferTypeAndConvertLiteral(value);
                     }
-
-                    string key = string.Format(format ?? "{0}", param.Name);
-                    vc[key] = value;
                 }
             }
 
             return vc;
+        }
+
+        private static object InferTypeAndConvertLiteral(string literal)
+        {
+            if(literal == null)
+            {
+                return null;
+            }
+
+            if (!literal.Contains("\""))
+            {
+                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                double literalDouble;
+                if (literal.Contains(".") && double.TryParse(literal, out literalDouble))
+                {
+                    return literalDouble;
+                }
+
+                long literalLong;
+                if (long.TryParse(literal, out literalLong))
+                {
+                    return literalLong;
+                }
+
+                if (literal.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    && long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out literalLong))
+                {
+                    return literalLong;
+                }
+
+                if(string.Equals("null", literal, StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                return literal;
+            }
+
+            return literal.Substring(1, literal.Length - 2);
         }
     }
 }
