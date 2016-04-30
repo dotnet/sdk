@@ -1,5 +1,7 @@
 ﻿{
-  "$schema": "./ConfigSchema.json#",
+  "$schema": "./runnableproject-volatile.json",
+  "name": "Basic Console App",
+  "defaultName": "ConsoleApp1",
   "sources": [
     {
       "include": [
@@ -7,61 +9,86 @@
       ],
       "exclude": [
         ".netnew.config",
-        //if !orgAuthMode
-        "**/orgauthspecificthing.cs"
-        //endif
-      ]
+        "**/[Bb]in/",
+        "**/[Oo]bj/"
+      ],
+      "source": "./",
+      "target": "./"
     }
   ],
   "parameters": {
     "name": {
-      "description": "The name of the project or item",
       "isName": true,
+      "description": "The name of your project",
+      "defaultValue": "ConsoleApp1",
       "requirement": "implicit",
+      "type": "string",
       "isVariable": false
     },
-    "context": {
-      "description": "Valid values: webDesktop, webCore, blah",
-      "isVariable": true,
-      "type": "string",
-      "requirement": "required"
+    "repeat": {
+      "description": "The number of times to repeat the message",
+      "defaultValue": "1",
+      "requirement": "optional",
+      "type": "int",
+      "isVariable": true
     },
-    "orgAuthMode": {
-      "type": "bool",
-      "isVariable": true,
-      "defaultValue": "false"
+    "Message": {
+      "description": "The message to print",
+      "requirement": "required",
+      "type": "string",
+      "isVariable": true
+    },
+    "USERNAME": {
+      "description": "Pretend path",
+      "requirement": "optional",
+      "type": "string",
+      "isVariable": true
     }
   },
   "config": {
+    "variables": {
+      "sources": {
+        "environment": "env_{0}",
+        "user": "usr_{0}"
+      },
+      "order": [ "environment", "user" ],
+      "fallbackFormat": "{0}",
+      "expand": true
+    },
     "conditionals": {
       "if": "#if",
       "else": "#else",
       "elseif": "#elseif",
       "endif": "#endif",
-      "evaluator": "C++"
-    },
-    "variables": {
-      "sourceOrder": [ "environment", "user", "executor" ],
-      "pattern": "{0}",
-      "expand": true
+      "evaluator": "C++",
+      "wholeLine": true,
+      "trim": true
     },
     "replacements": {
-      "MyProjectName": "name"
-    }
-  },
-  "special": {
-    "**/*.css": {
-      "config": {
-        "conditionals": {
-          "if": "//if",
-          "else": "//else",
-          "elseif": "//elseif",
-          "endif": "//endif",
-          "evaluator": "C++"
-        },
-        "replacements": {
-          "MySelector": "name"
-        }
+      "ConsoleAppTemplate": "name",
+      "messageCount": "repeat"
+    },
+    "macros": {
+      "{98048C9C-BF28-46BA-A98E-63767EE5E3A8}": {
+        "type": "guid",
+        "action": "new",
+        "format": "B"
+      },
+      "RepeatOnce": {
+        "type": "evaluate",
+        "action": "(repeat == 1)"
+      },
+      "RepeatNone": {
+        "type": "evaluate",
+        "action": "(repeat == 0)"
+      },
+      "#define AUTHORING\r\n": {
+        "type": "constant",
+        "action": ""
+      },
+      "CURRENT_YEAR": {
+        "type": "now",
+        "action": "yyyy"
       }
     }
   }
