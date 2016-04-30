@@ -8,8 +8,8 @@ namespace Mutant.Chicken.Abstractions
 
         IEnumerable<IConfiguredTemplateSource> GetConfiguredSources();
 
-        void AddConfiguredSource(string alias, string sourceName, string location);
+        bool AddConfiguredSource(string alias, string sourceName, string location);
 
-        void RemoveConfiguredSource(string alias);
+        bool RemoveConfiguredSource(string alias);
     }
 }
