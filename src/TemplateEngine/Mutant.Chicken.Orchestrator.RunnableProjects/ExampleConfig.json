@@ -8,7 +8,7 @@
         "**/*"
       ],
       "exclude": [
-        ".netnew.config",
+        ".netnew.json",
         "**/[Bb]in/",
         "**/[Oo]bj/"
       ],

@@ -65,7 +65,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
         {
             foreach (ITemplateSourceEntry entry in folder.Children)
             {
-                if (entry.Kind == TemplateSourceEntryKind.File && entry.FullPath.EndsWith(".netnew.config"))
+                if (entry.Kind == TemplateSourceEntryKind.File && entry.FullPath.EndsWith(".netnew.json"))
                 {
                     RunnableProjectTemplate tmp = null;
                     try

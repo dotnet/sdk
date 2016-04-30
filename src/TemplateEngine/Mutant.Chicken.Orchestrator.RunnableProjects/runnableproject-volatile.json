@@ -30,7 +30,7 @@
         "exclude": { "$ref": "#/definitions/excludePatterns" },
         "source": {
           "type": "string",
-          "description": "The location, relative to the .netnew.config file, that the files to process should come from."
+          "description": "The location, relative to the .netnew.json file, that the files to process should come from."
         },
         "target": {
           "type": "string",
