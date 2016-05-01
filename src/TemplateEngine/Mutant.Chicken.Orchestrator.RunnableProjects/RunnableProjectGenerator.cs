@@ -31,7 +31,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             {
                 GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.Source, p, tmplt.Config.Config, tmplt.Config.Special);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
-                o.Run(runSpec, tmplt.ConfigFile.Parent, target);
+                o.Run(runSpec, tmplt.ConfigFile.Parent.GetDirectoryAtRelativePath(source.Source), target);
             }
 
             return Task.FromResult(true);

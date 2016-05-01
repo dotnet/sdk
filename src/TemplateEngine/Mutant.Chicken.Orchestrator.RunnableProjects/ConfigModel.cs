@@ -41,6 +41,9 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
         public string[] Exclude { get; set; }
 
         [JsonProperty]
+        public Dictionary<string, string> Rename { get; set; }
+
+        [JsonProperty]
         public string Source { get; set; }
 
         [JsonProperty]

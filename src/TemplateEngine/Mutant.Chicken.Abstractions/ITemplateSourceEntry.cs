@@ -21,6 +21,8 @@ namespace Mutant.Chicken.Abstractions
         IEnumerable<ITemplateSourceEntry> Children { get; }
 
         IEnumerable<ITemplateSourceFile> EnumerateFiles(string pattern, SearchOption searchOption);
+
+        ITemplateSourceFolder GetDirectoryAtRelativePath(string source);
     }
 
     public interface ITemplateSourceFile : ITemplateSourceEntry

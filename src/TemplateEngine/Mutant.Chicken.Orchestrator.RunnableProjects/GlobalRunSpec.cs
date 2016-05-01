@@ -24,10 +24,11 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
 
+        public IReadOnlyDictionary<string, string> Rename { get; private set; }
+
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
-            targetRelPath = null;
-            return false;
+            return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
         public GlobalRunSpec(FileSource source, IConfiguredTemplateSource templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
@@ -52,6 +53,15 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 excludes.Add(new GlobbingPatternMatcher(exclude));
             }
             Exclude = excludes;
+
+            if (source.Rename != null)
+            {
+                Rename = new Dictionary<string, string>(source.Rename, StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                Rename = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
 
             VariableCollection variables;
             Operations = ProcessOperations(parameters, templateRoot, operations, null, out variables);
@@ -116,7 +126,6 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                     case "replacements":
                         foreach (JProperty property in data.Properties())
                         {
-                            //TODO: Handle macros
                             ITemplateParameter param;
                             if (parameters.TryGetParameter(property.Value.ToString(), out param))
                             {
