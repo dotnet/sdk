@@ -33,24 +33,36 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
         public GlobalRunSpec(FileSource source, IConfiguredTemplateSource templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
         {
-            List<IPathMatcher> includes = new List<IPathMatcher>(source.Include.Length);
-            foreach (string include in source.Include)
+            int expect = source.Include?.Length ?? 0;
+            List<IPathMatcher> includes = new List<IPathMatcher>(expect);
+            if (expect > 0)
             {
-                includes.Add(new GlobbingPatternMatcher(include));
+                foreach (string include in source.Include)
+                {
+                    includes.Add(new GlobbingPatternMatcher(include));
+                }
             }
             Include = includes;
 
-            List<IPathMatcher> copyOnlys = new List<IPathMatcher>(source.Include.Length);
-            foreach (string copyOnly in source.CopyOnly)
+            expect = source.CopyOnly?.Length ?? 0;
+            List<IPathMatcher> copyOnlys = new List<IPathMatcher>(expect);
+            if (expect > 0)
             {
-                copyOnlys.Add(new GlobbingPatternMatcher(copyOnly));
+                foreach (string copyOnly in source.CopyOnly)
+                {
+                    copyOnlys.Add(new GlobbingPatternMatcher(copyOnly));
+                }
             }
             CopyOnly = copyOnlys;
 
-            List<IPathMatcher> excludes = new List<IPathMatcher>(source.Exclude.Length);
-            foreach (string exclude in source.Exclude)
+            expect = source.Exclude?.Length ?? 0;
+            List<IPathMatcher> excludes = new List<IPathMatcher>(expect);
+            if (expect > 0)
             {
-                excludes.Add(new GlobbingPatternMatcher(exclude));
+                foreach (string exclude in source.Exclude)
+                {
+                    excludes.Add(new GlobbingPatternMatcher(exclude));
+                }
             }
             Exclude = excludes;
 
