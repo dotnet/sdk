@@ -16,6 +16,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             Config = config;
             DefaultName = config.DefaultName ?? config.Name;
             Name = config.Name;
+            ShortName = config.ShortName;
             _raw = raw;
         }
 
@@ -28,6 +29,8 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
         public IGenerator Generator { get; }
 
         public string Name { get; }
+
+        public string ShortName { get; }
 
         public IConfiguredTemplateSource Source { get; }
 

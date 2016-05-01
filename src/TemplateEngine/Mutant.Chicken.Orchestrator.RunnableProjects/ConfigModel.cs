@@ -11,6 +11,9 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
         public string Name { get; set; }
 
         [JsonProperty]
+        public string ShortName { get; set; }
+
+        [JsonProperty]
         public string DefaultName { get; set; }
 
         [JsonProperty]

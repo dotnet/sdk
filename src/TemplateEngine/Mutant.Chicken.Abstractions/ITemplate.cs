@@ -6,6 +6,8 @@ namespace Mutant.Chicken.Abstractions
     {
         string Name { get; }
 
+        string ShortName { get; }
+
         IGenerator Generator { get; }
 
         IConfiguredTemplateSource Source { get; }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -53,6 +54,8 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
         public XDocument VsTemplateFile { get; }
 
         public IReadOnlyList<CustomParameter> CustomParameters { get; }
+
+        public string ShortName => Name;
 
         public bool TryGetProperty(string name, out string value)
         {
