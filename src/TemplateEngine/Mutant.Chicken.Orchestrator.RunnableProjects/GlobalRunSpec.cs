@@ -125,8 +125,8 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                             string start = setting["start"].ToString();
                             string end = setting["end"].ToString();
                             bool include = setting["include"]?.ToObject<bool>() ?? false;
-                            bool regionTrim = data["trim"]?.ToObject<bool>() ?? false;
-                            bool regionWholeLine = data["wholeLine"]?.ToObject<bool>() ?? false;
+                            bool regionTrim = setting["trim"]?.ToObject<bool>() ?? false;
+                            bool regionWholeLine = setting["wholeLine"]?.ToObject<bool>() ?? false;
                             result.Add(new Region(start, end, include, regionWholeLine, regionTrim));
                         }
                         break;
@@ -149,13 +149,14 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
                         result.Add(new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, trim, evaluator));
                         break;
-                    case "flag":
+                    case "flags":
                         foreach (JProperty property in data.Properties())
                         {
+                            JObject innerData = (JObject)property.Value;
                             string flag = property.Name;
-                            string on = data["on"].ToString();
-                            string off = data["off"].ToString();
-                            string defaultStr = data["default"]?.ToString();
+                            string on = innerData["on"].ToString();
+                            string off = innerData["off"].ToString();
+                            string defaultStr = innerData["default"]?.ToString();
                             bool? @default = null;
 
                             if (defaultStr != null)
