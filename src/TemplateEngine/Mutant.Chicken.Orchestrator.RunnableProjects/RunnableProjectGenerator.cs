@@ -29,7 +29,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
             foreach (FileSource source in tmplt.Config.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, p, tmplt.Config.Config, tmplt.Config.Special);
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.Source, p, tmplt.Config.Config, tmplt.Config.Special);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 o.Run(runSpec, tmplt.ConfigFile.Parent, target);
             }

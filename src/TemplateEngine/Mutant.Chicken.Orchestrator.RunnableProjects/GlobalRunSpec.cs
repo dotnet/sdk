@@ -27,7 +27,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             return false;
         }
 
-        public GlobalRunSpec(FileSource source, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
+        public GlobalRunSpec(FileSource source, IConfiguredTemplateSource templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
         {
             List<IPathMatcher> includes = new List<IPathMatcher>(source.Include.Length);
             foreach (string include in source.Include)
@@ -44,7 +44,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             Exclude = excludes;
 
             VariableCollection variables;
-            Operations = ProcessOperations(parameters, operations, null, out variables);
+            Operations = ProcessOperations(parameters, templateRoot, operations, null, out variables);
             RootVariableCollection = variables;
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
 
@@ -57,7 +57,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = ProcessOperations(parameters, specialEntry.Value, variables, out specialVariables);
+                        specialOps = ProcessOperations(parameters, templateRoot, specialEntry.Value, variables, out specialVariables);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
@@ -68,7 +68,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, VariableCollection parentVars, out VariableCollection variables)
+        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, IConfiguredTemplateSource templateRoot, IReadOnlyDictionary<string, JObject> operations, VariableCollection parentVars, out VariableCollection variables)
         {
             List<IOperationProvider> result = new List<IOperationProvider>();
             VariableCollection vc = VariableCollection.Root();
@@ -79,6 +79,11 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 JObject data = config.Value;
                 switch (config.Key)
                 {
+                    case "include":
+                        string startToken = data["start"].ToString();
+                        string endToken = data["end"].ToString();
+                        Include inc = new Include(startToken, endToken, templateRoot.OpenFile);
+                        break;
                     case "conditionals":
                         string ifToken = data["if"].ToString();
                         string elseToken = data["else"].ToString();

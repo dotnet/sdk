@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace Mutant.Chicken.Abstractions
 {
@@ -11,5 +12,7 @@ namespace Mutant.Chicken.Abstractions
         string Alias { get; }
 
         string Location { get; }
+
+        Stream OpenFile(string path);
     }
 }
