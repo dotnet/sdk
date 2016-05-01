@@ -22,6 +22,8 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<IPathMatcher, IRunSpec> Special { get; }
 
+        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
+
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             targetRelPath = null;
@@ -36,6 +38,13 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 includes.Add(new GlobbingPatternMatcher(include));
             }
             Include = includes;
+
+            List<IPathMatcher> copyOnlys = new List<IPathMatcher>(source.Include.Length);
+            foreach (string copyOnly in source.CopyOnly)
+            {
+                copyOnlys.Add(new GlobbingPatternMatcher(copyOnly));
+            }
+            CopyOnly = copyOnlys;
 
             List<IPathMatcher> excludes = new List<IPathMatcher>(source.Exclude.Length);
             foreach (string exclude in source.Exclude)

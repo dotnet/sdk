@@ -45,6 +45,9 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
         [JsonProperty]
         public string Target { get; set; }
+
+        [JsonProperty]
+        public string[] CopyOnly { get; set; }
     }
 
     public class Parameter : ITemplateParameter

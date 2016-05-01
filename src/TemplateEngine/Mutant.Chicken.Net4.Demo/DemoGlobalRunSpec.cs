@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Mutant.Chicken.Runner;
 using Newtonsoft.Json;
@@ -28,6 +29,9 @@ namespace Mutant.Chicken.Demo
         }
 
         IReadOnlyDictionary<IPathMatcher, IRunSpec> IGlobalRunSpec.Special => Special;
+
+        [JsonProperty]
+        public IReadOnlyList<IPathMatcher> CopyOnly { get; set; }
 
         public DemoGlobalRunSpec()
         {

@@ -12,6 +12,9 @@
         "**/[Bb]in/",
         "**/[Oo]bj/"
       ],
+      "copyOnly": [
+        "**/*.css"
+      ],
       "source": "./",
       "target": "./"
     }

@@ -12,7 +12,13 @@
     },
     "excludePatterns": {
       "type": "array",
-      "description": "A set of globbing patterns that, when matched, exclude files from processing, these supersede any include patterns",
+      "description": "A set of globbing patterns that, when matched, exclude files from the output, these supersede any include or copyOnly patterns",
+      "items": { "$ref": "#/definitions/globbingPattern" },
+      "default": [ ]
+    },
+    "copyOnlyPatterns": {
+      "type": "array",
+      "description": "A set of globbing patterns that, when matched, exclude files from processing but include them in the output, these supersede any include patterns",
       "items": { "$ref": "#/definitions/globbingPattern" },
       "default": [ ]
     },
@@ -28,6 +34,7 @@
       "properties": {
         "include": { "$ref": "#/definitions/includePatterns" },
         "exclude": { "$ref": "#/definitions/excludePatterns" },
+        "copyOnly": { "$ref": "#/definitions/copyOnlyPatterns" },
         "source": {
           "type": "string",
           "description": "The location, relative to the .netnew.json file, that the files to process should come from."
@@ -249,7 +256,7 @@
         },
         "action": {
           "type": "string",
-          "enum": ["new"],
+          "enum": [ "new" ],
           "description": "The action to perform."
         },
         "format": {
@@ -289,8 +296,7 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "config": { "$ref": "#/definitions/config" },
-          "exclude": { "$ref": "#/definitions/excludePatterns" }
+          "config": { "$ref": "#/definitions/config" }
         }
       }
     }

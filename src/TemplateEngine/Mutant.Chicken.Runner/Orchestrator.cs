@@ -83,7 +83,38 @@ namespace Mutant.Chicken.Runner
 
                         if (!excluded)
                         {
-                            ProcessFile(self, file, sourceRel, targetDir, spec, fallback, specializations);
+                            bool copy = false;
+                            foreach(IPathMatcher copyOnly in spec.CopyOnly)
+                            {
+                                if (copyOnly.IsMatch(sourceRel))
+                                {
+                                    copy = true;
+                                    break;
+                                }
+                            }
+
+                            if (!copy)
+                            {
+                                ProcessFile(self, file, sourceRel, targetDir, spec, fallback, specializations);
+                            }
+                            else
+                            {
+                                string targetRel;
+                                if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))
+                                {
+                                    targetRel = sourceRel;
+                                }
+
+                                string targetPath = Path.Combine(targetDir, targetRel);
+                                string fullTargetDir = Path.GetDirectoryName(targetPath);
+                                Directory.CreateDirectory(fullTargetDir);
+
+                                using (Stream sourceStream = file.OpenRead())
+                                using (Stream targetStream = File.Create(targetPath))
+                                {
+                                    sourceStream.CopyTo(targetStream);
+                                }
+                            }
                         }
 
                         break;

@@ -8,6 +8,8 @@ namespace Mutant.Chicken.Runner
 
         IReadOnlyList<IPathMatcher> Include { get; }
 
+        IReadOnlyList<IPathMatcher> CopyOnly { get; }
+
         IReadOnlyList<IOperationProvider> Operations { get; }
 
         VariableCollection RootVariableCollection { get; }

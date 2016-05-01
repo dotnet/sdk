@@ -66,6 +66,15 @@ namespace Mutant.Chicken.Orchestrator.VsTemplates
             RootVariableCollection = vc;
         }
 
+        public IReadOnlyList<IPathMatcher> CopyOnly
+        {
+            get
+            {
+                //TODO: Make this the set of files from the vstemplate that aren't supposed to have replacements processed
+                return new IPathMatcher[0];
+            }
+        }
+
         public IReadOnlyList<IPathMatcher> Exclude => new List<IPathMatcher> { new ExtensionPathMatcher(".vstemplate") };
 
         public IReadOnlyList<IPathMatcher> Include => new List<IPathMatcher> { new SpecificFilesMatcher(_pathMap.Keys) };
