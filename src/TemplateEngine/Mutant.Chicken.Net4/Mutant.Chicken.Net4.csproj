@@ -7,8 +7,8 @@
     <ProjectGuid>{46922F20-1842-4B76-A775-EACF40BD770B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Mutant.Chicken</RootNamespace>
-    <AssemblyName>Mutant.Chicken</AssemblyName>
+    <RootNamespace>Mutant.Chicken.Core</RootNamespace>
+    <AssemblyName>Mutant.Chicken.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

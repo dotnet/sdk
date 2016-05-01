@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     internal class ProcessorState : IProcessorState
     {

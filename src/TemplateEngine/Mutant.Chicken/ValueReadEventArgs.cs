@@ -1,6 +1,6 @@
 using System;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class ValueReadEventArgs : EventArgs
     {

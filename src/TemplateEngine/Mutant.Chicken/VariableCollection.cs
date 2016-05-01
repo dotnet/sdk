@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class VariableCollection : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {

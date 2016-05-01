@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class EncodingUtil
     {

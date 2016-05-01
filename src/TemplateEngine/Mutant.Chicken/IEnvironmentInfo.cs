@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public interface IEnvironmentInfo : IReadOnlyDictionary<string, object>
     {

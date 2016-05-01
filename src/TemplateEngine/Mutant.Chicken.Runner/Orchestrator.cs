@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Mutant.Chicken.Core;
 using Mutant.Chicken.Abstractions;
 
 namespace Mutant.Chicken.Runner

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using Mutant.Chicken.Core;
 using Mutant.Chicken.Runner;
 
 namespace Mutant.Chicken.Orchestrator.RunnableProjects

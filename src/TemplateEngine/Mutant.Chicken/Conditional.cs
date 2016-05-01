@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class Conditional : IOperationProvider
     {
@@ -94,6 +94,14 @@ namespace Mutant.Chicken
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
+                bool flag;
+                if (processor.Config.Flags.TryGetValue("conditionals", out flag) && !flag)
+                {
+                    byte[] tokenValue = Tokens[token];
+                    target.Write(tokenValue, 0, tokenValue.Length);
+                    return tokenValue.Length;
+                }
+
                 if (_current != null || token == 0)
                 {
                     if (_definition._wholeLine)

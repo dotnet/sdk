@@ -14,13 +14,13 @@
       "type": "array",
       "description": "A set of globbing patterns that, when matched, exclude files from the output, these supersede any include or copyOnly patterns",
       "items": { "$ref": "#/definitions/globbingPattern" },
-      "default": [ ]
+      "default": []
     },
     "copyOnlyPatterns": {
       "type": "array",
       "description": "A set of globbing patterns that, when matched, exclude files from processing but include them in the output, these supersede any include patterns",
       "items": { "$ref": "#/definitions/globbingPattern" },
-      "default": [ ]
+      "default": []
     },
     "rename": {
       "type": "object",
@@ -97,7 +97,77 @@
       "properties": {
         "conditionals": { "$ref": "#/definitions/conditionals" },
         "variables": { "$ref": "#/definitions/variables" },
-        "replacements": { "$ref": "#/definitions/replacements" }
+        "replacements": { "$ref": "#/definitions/replacements" },
+        "flags": { "$ref": "#/definitions/flags" },
+        "include": { "$ref": "#/definitions/include" },
+        "regions": { "$ref": "#/definitions/regions" }
+      }
+    },
+    "flagsSetting": {
+      "type": "object",
+      "description": "Configuration for the flag's behavior.",
+      "properties": {
+        "on": { "type": "string" },
+        "off": { "type": "string" },
+        "default": { "type": "boolean" }
+      },
+      "required": [ "on", "off" ]
+    },
+    "flags": {
+      "type": "object",
+      "description": "Flags that can by dynamically set during processing.",
+      "properties": {
+        "conditionals": { "$ref": "#/definitions/flagsSetting" },
+        "variables": { "$ref": "#/definitions/flagsSetting" },
+        "replacements": { "$ref": "#/definitions/flagsSetting" },
+        "include": { "$ref": "#/definitions/flagsSetting" },
+        "regions": { "$ref": "#/definitions/flagsSetting" }
+      },
+      "additionalProperties": { "$ref": "#/definitions/flagsSetting" }
+    },
+    "include": {
+      "type": "object",
+      "description": "Files that can be dynamically included (but not processed, apart from changing the encoding to match the target file).",
+      "properties": {
+        "start": { "type": "string" },
+        "end": { "type": "string" }
+      },
+      "required": [ "start", "end" ]
+    },
+    "regions": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "type": "array",
+          "items": {
+            "description": "Configuration for regions.",
+            "properties": {
+              "start": {
+                "type": "string",
+                "description": "The start token for the region."
+              },
+              "end": {
+                "type": "string",
+                "description": "The end token for the region."
+              },
+              "include": {
+                "type": "string",
+                "description": "Whether or not the region should be included"
+              },
+              "wholeLine": {
+                "description": "Whether or not the whole line that an expression is found on should be consumed or just the portion from the starting token to the end of the expression.",
+                "type": "boolean",
+                "default": false
+              },
+              "trim": {
+                "description": "Whether or not to trim whitespace following an expression, leading up to the next non-whitespace character after the expression.",
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [ "start", "end", "include" ]
+          }
+        }
       }
     },
     "conditionals": {
@@ -282,6 +352,7 @@
       "pattern": "^.*/runnableproject-volatile.json(?:#?)$"
     },
     "name": { "type": "string" },
+    "shortName": { "type": "string" },
     "defaultName": {
       "type": "string",
       "description": "The default name for this template."

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     internal class EnvironmentInfo : IEnvironmentInfo
     {

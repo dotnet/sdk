@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Mutant.Chicken.Core;
 
 namespace Mutant.Chicken.Runner
 {

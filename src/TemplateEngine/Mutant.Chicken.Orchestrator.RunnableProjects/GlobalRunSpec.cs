@@ -4,7 +4,8 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Mutant.Chicken.Abstractions;
-using Mutant.Chicken.Expressions.Cpp;
+using Mutant.Chicken.Core;
+using Mutant.Chicken.Core.Expressions.Cpp;
 using Mutant.Chicken.Runner;
 using Newtonsoft.Json.Linq;
 
@@ -116,6 +117,19 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                         string endToken = data["end"].ToString();
                         Include inc = new Include(startToken, endToken, templateRoot.OpenFile);
                         break;
+                    case "regions":
+                        JArray regionSettings = (JArray)data["settings"];
+                        foreach(JToken child in regionSettings.Children())
+                        {
+                            JObject setting = (JObject)child;
+                            string start = setting["start"].ToString();
+                            string end = setting["end"].ToString();
+                            bool include = setting["include"]?.ToObject<bool>() ?? false;
+                            bool regionTrim = data["trim"]?.ToObject<bool>() ?? false;
+                            bool regionWholeLine = data["wholeLine"]?.ToObject<bool>() ?? false;
+                            result.Add(new Region(start, end, include, regionWholeLine, regionTrim));
+                        }
+                        break;
                     case "conditionals":
                         string ifToken = data["if"].ToString();
                         string elseToken = data["else"].ToString();
@@ -134,6 +148,23 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                         }
 
                         result.Add(new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, trim, evaluator));
+                        break;
+                    case "flag":
+                        foreach (JProperty property in data.Properties())
+                        {
+                            string flag = property.Name;
+                            string on = data["on"].ToString();
+                            string off = data["off"].ToString();
+                            string defaultStr = data["default"]?.ToString();
+                            bool? @default = null;
+
+                            if (defaultStr != null)
+                            {
+                                @default = bool.Parse(defaultStr);
+                            }
+
+                            result.Add(new SetFlag(flag, on, off, @default));
+                        }
                         break;
                     case "replacements":
                         foreach (JProperty property in data.Properties())

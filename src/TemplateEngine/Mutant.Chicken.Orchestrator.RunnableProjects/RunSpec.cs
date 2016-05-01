@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Mutant.Chicken.Core;
 using Mutant.Chicken.Runner;
 
 namespace Mutant.Chicken.Orchestrator.RunnableProjects

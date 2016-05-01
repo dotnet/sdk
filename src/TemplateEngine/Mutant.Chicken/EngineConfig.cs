@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class EngineConfig
     {
@@ -19,6 +19,7 @@ namespace Mutant.Chicken
             LineEndings = lineEndings;
             Variables = variables;
             VariableFormatString = variableFormatString;
+            Flags = new Dictionary<string, bool>();
         }
 
         public IReadOnlyList<string> LineEndings { get; }
@@ -28,5 +29,7 @@ namespace Mutant.Chicken
         public VariableCollection Variables { get; }
 
         public IReadOnlyList<string> Whitespaces { get; }
+
+        public IDictionary<string, bool> Flags { get; }
     }
 }

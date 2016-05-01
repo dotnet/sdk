@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class Replacment : IOperationProvider
     {
@@ -37,6 +37,14 @@ namespace Mutant.Chicken
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
+                bool flag;
+                if (processor.Config.Flags.TryGetValue("replacements", out flag) && !flag)
+                {
+                    byte[] tokenValue = Tokens[token];
+                    target.Write(tokenValue, 0, tokenValue.Length);
+                    return tokenValue.Length;
+                }
+
                 target.Write(_replacement, 0, _replacement.Length);
                 return _token.Length;
             }

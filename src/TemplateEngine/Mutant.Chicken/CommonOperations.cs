@@ -1,4 +1,4 @@
-﻿namespace Mutant.Chicken
+﻿namespace Mutant.Chicken.Core
 {
     public static class CommonOperations
     {

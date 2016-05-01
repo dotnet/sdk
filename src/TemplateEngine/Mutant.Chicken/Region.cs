@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class Region : IOperationProvider
     {
@@ -52,6 +52,14 @@ namespace Mutant.Chicken
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
+                bool flag;
+                if (processor.Config.Flags.TryGetValue("regions", out flag) && !flag)
+                {
+                    byte[] tokenValue = Tokens[token];
+                    target.Write(tokenValue, 0, tokenValue.Length);
+                    return tokenValue.Length;
+                }
+
                 processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
 
                 if (_startAndEndAreSame)

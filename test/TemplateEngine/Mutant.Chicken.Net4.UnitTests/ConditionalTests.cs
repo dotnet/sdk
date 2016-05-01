@@ -2,7 +2,8 @@
 using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mutant.Chicken.Expressions.Cpp;
+using Mutant.Chicken.Core;
+using Mutant.Chicken.Core.Expressions.Cpp;
 
 namespace Mutant.Chicken.Net4.UnitTests
 {

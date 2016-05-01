@@ -2,6 +2,8 @@
   "$schema": "./runnableproject-volatile.json",
   "name": "Basic Console App",
   "defaultName": "ConsoleApp1",
+  "shortName": "cons",
+  "description": "A basic console application",
   "sources": [
     {
       "include": [
@@ -57,6 +59,13 @@
       "order": [ "environment", "user" ],
       "fallbackFormat": "{0}",
       "expand": true
+    },
+    "flags": {
+      "conditionals": {
+        "on": "/*conditionals_on*/",
+        "off": "/*conditionals_off*/",
+        "default": true
+      }
     },
     "conditionals": {
       "if": "#if",

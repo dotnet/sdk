@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class SimpleTrie
     {

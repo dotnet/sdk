@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public class ExpandVariables : IOperationProvider
     {

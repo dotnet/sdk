@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Win32;
 using Mutant.Chicken.Abstractions;
-using Mutant.Chicken.Expressions.Cpp;
+using Mutant.Chicken.Core;
+using Mutant.Chicken.Core.Expressions.Cpp;
 using Mutant.Chicken.Runner;
 
 namespace Mutant.Chicken.Orchestrator.VsTemplates

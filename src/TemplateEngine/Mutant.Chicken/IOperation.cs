@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Mutant.Chicken
+namespace Mutant.Chicken.Core
 {
     public interface IOperation
     {

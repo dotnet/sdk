@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mutant.Chicken.Core;
 
 namespace Mutant.Chicken.Net4.UnitTests
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Mutant.Chicken.Expressions.Cpp
+namespace Mutant.Chicken.Core.Expressions.Cpp
 {
     public static class CppStyleEvaluatorDefinition
     {

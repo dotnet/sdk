@@ -1,6 +1,6 @@
 using System;
 
-namespace Mutant.Chicken.Expressions.Cpp
+namespace Mutant.Chicken.Core.Expressions.Cpp
 {
     [Flags]
     internal enum TokenFamily
