@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using Mutant.Chicken.Abstractions;
 using Mutant.Chicken.Expressions.Cpp;
 using Mutant.Chicken.Runner;
@@ -209,7 +210,56 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 case "constant":
                     HandleConstantAction(variableName, def, set, result);
                     break;
+                case "regex":
+                    HandleRegexAction(variableName, variablesSection, def, set, result);
+                    break;
             }
+        }
+
+        private void HandleRegexAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        {
+            VariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
+            string action = def["action"]?.ToString();
+            string value = null;
+
+            switch (action)
+            {
+                case "replace":
+                    string sourceVar = def["source"]?.ToString();
+                    JArray steps = def["steps"] as JArray;
+                    object working;
+                    if(!vars.TryGetValue(sourceVar, out working))
+                    {
+                        ITemplateParameter param;
+                        if(!parameters.TryGetParameter(sourceVar, out param) || !parameters.ParameterValues.TryGetValue(param, out value))
+                        {
+                            value = string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        value = working?.ToString() ?? "";
+                    }
+
+                    foreach(JToken child in steps)
+                    {
+                        JObject map = (JObject)child;
+                        string regex = map["regex"]?.ToString();
+                        string replaceWith = map["replacement"]?.ToString();
+
+                        value = Regex.Replace(value, regex, replaceWith);
+                    }
+                    break;
+            }
+
+            Parameter p = new Parameter
+            {
+                IsVariable = true,
+                Name = variableName
+            };
+
+            parameters.AddParameter(p);
+            parameters.ParameterValues[p] = value;
         }
 
         private void HandleNowAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
