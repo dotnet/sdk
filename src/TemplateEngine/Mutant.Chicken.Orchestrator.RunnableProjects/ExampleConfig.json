@@ -18,13 +18,19 @@
       "source": "./",
       "target": "./",
       "rename": {
+        //if (Message == "test")
+        "Program.cs": "ItsATrap.cs",
+        //endif
         /*-:replacements*/
         "ConsoleAppTemplate.csproj": "SAFE_PROJECT_NAME.csproj"
         /*+:replacements*/
       }
     }
   ],
-  /*-:vars*/ /*-:cnd*/ /*-:replacements*/ /*-:flags*/
+  /*-:vars*/
+  /*-:cnd*/
+  /*-:replacements*/
+  /*-:flags*/
   "parameters": {
     "name": {
       "isName": true,
@@ -121,6 +127,84 @@
             "replacement": "_"
           }
         ]
+      }
+    }
+  },
+  "special": {
+    ".netnew.json": {
+      "variables": {
+        "sources": {
+          "environment": "env_{0}",
+          "user": "usr_{0}"
+        },
+        "order": [ "environment", "user" ],
+        "fallbackFormat": "{0}",
+        "expand": true
+      },
+      "flags": {
+        "conditionals": {
+          "on": "/*+:cnd*/",
+          "off": "/*-:cnd*/"
+        },
+        "replacements": {
+          "on": "/*+:replacements*/",
+          "off": "/*-:replacements*/"
+        },
+        "expandVariables": {
+          "on": "/*+:vars*/",
+          "off": "/*-:vars*/"
+        },
+        "flags": {
+          "off": "/*-:flags*/"
+        }
+      },
+      "conditionals": {
+        "if": "//if",
+        "else": "//else",
+        "elseif": "//elseif",
+        "endif": "//endif",
+        "evaluator": "C++",
+        "wholeLine": true,
+        "trim": true
+      },
+      "replacements": {
+        "ConsoleAppTemplate": "name",
+        "messageCount": "repeat"
+      },
+      "macros": {
+        "{98048C9C-BF28-46BA-A98E-63767EE5E3A8}": {
+          "type": "guid",
+          "action": "new",
+          "isVariable": true,
+          "format": "B"
+        },
+        "RepeatOnce": {
+          "type": "evaluate",
+          "action": "(repeat == 1)"
+        },
+        "RepeatNone": {
+          "type": "evaluate",
+          "action": "(repeat == 0)"
+        },
+        "#define AUTHORING\r\n": {
+          "type": "constant",
+          "action": ""
+        },
+        "CURRENT_YEAR": {
+          "type": "now",
+          "action": "yyyy"
+        },
+        "SAFE_PROJECT_NAME": {
+          "type": "regex",
+          "action": "replace",
+          "source": "name",
+          "steps": [
+            {
+              "regex": "\\W",
+              "replacement": "_"
+            }
+          ]
+        }
       }
     }
   }

@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Mutant.Chicken.Abstractions;
+using Mutant.Chicken.Core;
+using Mutant.Chicken.Runner;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -24,7 +26,18 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator();
             GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.Source, p, tmplt.Config.Config, tmplt.Config.Special);
-            Core.IProcessor processor = Core.Processor.Create(new Core.EngineConfig(configRunSpec.RootVariableCollection), configRunSpec.Operations.ToArray());
+            IOperationProvider[] providers = configRunSpec.Operations.ToArray();
+            
+            foreach(KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
+            {
+                if(special.Key.IsMatch(".netnew.json"))
+                {
+                    providers = special.Value.GetOperations(providers).ToArray();
+                    break;
+                }
+            }
+
+            Core.IProcessor processor = Core.Processor.Create(new Core.EngineConfig(configRunSpec.RootVariableCollection), providers);
 
             ConfigModel m = tmplt.Config;
             using (Stream configStream = tmplt.ConfigFile.OpenRead())
