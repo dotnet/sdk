@@ -154,8 +154,8 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                         {
                             JObject innerData = (JObject)property.Value;
                             string flag = property.Name;
-                            string on = innerData["on"].ToString();
-                            string off = innerData["off"].ToString();
+                            string on = innerData["on"]?.ToString() ?? string.Empty;
+                            string off = innerData["off"]?.ToString() ?? string.Empty;
                             string defaultStr = innerData["default"]?.ToString();
                             bool? @default = null;
 

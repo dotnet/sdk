@@ -52,6 +52,15 @@ namespace Mutant.Chicken.Core
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
+                bool flag;
+                if (processor.Config.Flags.TryGetValue("flags", out flag) && !flag)
+                {
+                    byte[] tokenValue = Tokens[token];
+                    target.Write(tokenValue, 0, tokenValue.Length);
+                    processor.Config.Flags[_owner.Name] = token == 0;
+                    return tokenValue.Length;
+                }
+
                 processor.Config.Flags[_owner.Name] = token == 0;
                 return 0;
             }

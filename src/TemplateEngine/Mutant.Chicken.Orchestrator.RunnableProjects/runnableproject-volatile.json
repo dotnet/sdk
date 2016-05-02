@@ -8,13 +8,14 @@
     "includePatterns": {
       "type": "array",
       "description": "A set of globbing patterns that, when matched, include a file for processing",
-      "items": { "$ref": "#/definitions/globbingPattern" }
+      "items": { "$ref": "#/definitions/globbingPattern" },
+      "default": [ "**/*" ]
     },
     "excludePatterns": {
       "type": "array",
       "description": "A set of globbing patterns that, when matched, exclude files from the output, these supersede any include or copyOnly patterns",
       "items": { "$ref": "#/definitions/globbingPattern" },
-      "default": []
+      "default": [ ".netnew3.json" ]
     },
     "copyOnlyPatterns": {
       "type": "array",
@@ -39,6 +40,7 @@
       "description": "A mapping from a file source to a target.",
       "type": "object",
       "properties": {
+        "rename": { "$ref": "#/definitions/rename" },
         "include": { "$ref": "#/definitions/includePatterns" },
         "exclude": { "$ref": "#/definitions/excludePatterns" },
         "copyOnly": { "$ref": "#/definitions/copyOnlyPatterns" },

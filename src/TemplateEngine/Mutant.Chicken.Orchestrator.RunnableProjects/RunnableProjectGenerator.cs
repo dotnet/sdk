@@ -23,13 +23,27 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             List<string> copyOnly = new List<string>();
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator();
+            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.Source, p, tmplt.Config.Config, tmplt.Config.Special);
+            Core.IProcessor processor = Core.Processor.Create(new Core.EngineConfig(configRunSpec.RootVariableCollection), configRunSpec.Operations.ToArray());
 
-            //TODO: Reprocess config, reload, use when configuring the global specs below
-            //o.Run(new ReprocessConfigGlobalRunSpec(tmplt.Config,))
-
-            foreach (FileSource source in tmplt.Config.Sources)
+            ConfigModel m = tmplt.Config;
+            using (Stream configStream = tmplt.ConfigFile.OpenRead())
+            using (Stream targetStream = new MemoryStream())
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.Source, p, tmplt.Config.Config, tmplt.Config.Special);
+                processor.Run(configStream, targetStream);
+                targetStream.Position = 0;
+
+                using (TextReader tr = new StreamReader(targetStream, true))
+                using (JsonReader r = new JsonTextReader(tr))
+                {
+                    JObject model = JObject.Load(r);
+                    m = model.ToObject<ConfigModel>();
+                }
+            }
+
+            foreach (FileSource source in m.Sources)
+            {
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.Source, p, m.Config, m.Special);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 o.Run(runSpec, tmplt.ConfigFile.Parent.GetDirectoryAtRelativePath(source.Source), target);
             }

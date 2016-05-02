@@ -22,6 +22,14 @@ namespace Mutant.Chicken.Core
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
+                bool flag;
+                if (processor.Config.Flags.TryGetValue("expandVariables", out flag) && !flag)
+                {
+                    byte[] tokenValue = Tokens[token];
+                    target.Write(tokenValue, 0, tokenValue.Length);
+                    return tokenValue.Length;
+                }
+
                 object result = processor.EncodingConfig[token];
                 string output = result?.ToString() ?? "null";
 
