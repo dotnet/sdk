@@ -112,8 +112,7 @@
         "on": { "type": "string" },
         "off": { "type": "string" },
         "default": { "type": "boolean" }
-      },
-      "required": [ "on", "off" ]
+      }
     },
     "flags": {
       "type": "object",

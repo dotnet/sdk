@@ -1,8 +1,8 @@
 ﻿{
-  "$schema": "./runnableproject-volatile.json",
+  "$schema": "./runnableproject-volatile.json#",
   "name": "Basic Console App",
   "defaultName": "ConsoleApp1",
-  "shortName": "cons",
+  "shortName": "consoleapp",
   "description": "A basic console application",
   "sources": [
     {
@@ -12,15 +12,19 @@
       "exclude": [
         ".netnew.json",
         "**/[Bb]in/",
-        "**/[Oo]bj/"
-      ],
-      "copyOnly": [
-        "**/*.css"
+        "**/[Oo]bj/",
+        "**/*.user"
       ],
       "source": "./",
-      "target": "./"
+      "target": "./",
+      "rename": {
+        /*-:replacements*/
+        "ConsoleAppTemplate.csproj": "SAFE_PROJECT_NAME.csproj"
+        /*+:replacements*/
+      }
     }
   ],
+  /*-:vars*/ /*-:cnd*/ /*-:replacements*/ /*-:flags*/
   "parameters": {
     "name": {
       "isName": true,
@@ -42,12 +46,6 @@
       "requirement": "required",
       "type": "string",
       "isVariable": true
-    },
-    "USERNAME": {
-      "description": "Pretend path",
-      "requirement": "optional",
-      "type": "string",
-      "isVariable": true
     }
   },
   "config": {
@@ -62,9 +60,19 @@
     },
     "flags": {
       "conditionals": {
-        "on": "/*conditionals_on*/",
-        "off": "/*conditionals_off*/",
-        "default": true
+        "on": "/*+:cnd*/",
+        "off": "/*-:cnd*/"
+      },
+      "replacements": {
+        "on": "/*+:replacements*/",
+        "off": "/*-:replacements*/"
+      },
+      "expandVariables": {
+        "on": "/*+:vars*/",
+        "off": "/*-:vars*/"
+      },
+      "flags": {
+        "off": "/*-:flags*/"
       }
     },
     "conditionals": {
@@ -84,6 +92,7 @@
       "{98048C9C-BF28-46BA-A98E-63767EE5E3A8}": {
         "type": "guid",
         "action": "new",
+        "isVariable": true,
         "format": "B"
       },
       "RepeatOnce": {
@@ -101,6 +110,17 @@
       "CURRENT_YEAR": {
         "type": "now",
         "action": "yyyy"
+      },
+      "SAFE_PROJECT_NAME": {
+        "type": "regex",
+        "action": "replace",
+        "source": "name",
+        "steps": [
+          {
+            "regex": "\\W",
+            "replacement": "_"
+          }
+        ]
       }
     }
   }
