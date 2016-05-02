@@ -34,7 +34,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Mutant.Chicken\**\*.cs" Exclude="..\Mutant.Chicken\obj\**;..\Mutant.Chicken\bin\**">
+    <Compile Include="..\Mutant.Chicken.Core\**\*.cs" Exclude="..\Mutant.Chicken.Core\obj\**;..\Mutant.Chicken.Core\bin\**">
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>
