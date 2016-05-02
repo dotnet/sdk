@@ -23,5 +23,7 @@
         bool CanHandle(IConfiguredTemplateSource source, string location);
 
         bool IsEmbeddable { get; }
+
+        bool CanHostEmbeddedSources { get; }
     }
 }
