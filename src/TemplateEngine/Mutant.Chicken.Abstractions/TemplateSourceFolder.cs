@@ -111,5 +111,38 @@ namespace Mutant.Chicken.Abstractions
 
             return current;
         }
+
+        public Stream OpenFile(string path)
+        {
+            int lastSep = path.IndexOfAny(new[] { '/', '\\' });
+            ITemplateSourceFolder rootFolder = this;
+
+            if (lastSep == -1)
+            {
+                ITemplateSourceFile sourceFile = (ITemplateSourceFile)rootFolder.Children.FirstOrDefault(x => string.Equals(path, x.Name, StringComparison.OrdinalIgnoreCase));
+                return sourceFile.OpenRead();
+            }
+
+            string part = path.Substring(0, lastSep);
+            ITemplateSourceFolder sourceFolder = (ITemplateSourceFolder)rootFolder.Children.FirstOrDefault(x => string.Equals(part, x.Name, StringComparison.OrdinalIgnoreCase));
+
+            while (lastSep > 0)
+            {
+                int start = lastSep + 1;
+                lastSep = path.IndexOfAny(new[] { '/', '\\' }, lastSep + 1);
+
+                if (lastSep < 0)
+                {
+                    part = path.Substring(start);
+                    ITemplateSourceFile sourceFile = (ITemplateSourceFile)sourceFolder.Children.FirstOrDefault(x => string.Equals(part, x.Name, StringComparison.OrdinalIgnoreCase));
+                    return sourceFile.OpenRead();
+                }
+
+                part = path.Substring(start, lastSep - start);
+                sourceFolder = (ITemplateSourceFolder)sourceFolder.Children.FirstOrDefault(x => string.Equals(part, x.Name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            throw new FileNotFoundException("Unable to find file", path);
+        }
     }
 }

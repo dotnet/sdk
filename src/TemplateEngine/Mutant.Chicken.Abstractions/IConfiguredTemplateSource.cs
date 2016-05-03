@@ -11,7 +11,5 @@ namespace Mutant.Chicken.Abstractions
         string Alias { get; }
 
         string Location { get; }
-
-        Stream OpenFile(string path);
     }
 }

@@ -25,7 +25,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             List<string> copyOnly = new List<string>();
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator();
-            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.Source, p, tmplt.Config.Config, tmplt.Config.Special);
+            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, p, tmplt.Config.Config, tmplt.Config.Special);
             IOperationProvider[] providers = configRunSpec.Operations.ToArray();
             
             foreach(KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
@@ -37,7 +37,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 }
             }
 
-            Core.IProcessor processor = Core.Processor.Create(new Core.EngineConfig(configRunSpec.RootVariableCollection), providers);
+            IProcessor processor = Processor.Create(new Core.EngineConfig(configRunSpec.RootVariableCollection), providers);
 
             ConfigModel m = tmplt.Config;
             using (Stream configStream = tmplt.ConfigFile.OpenRead())
@@ -56,7 +56,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
 
             foreach (FileSource source in m.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.Source, p, m.Config, m.Special);
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, p, m.Config, m.Special);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 o.Run(runSpec, tmplt.ConfigFile.Parent.GetDirectoryAtRelativePath(source.Source), target);
             }

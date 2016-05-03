@@ -101,9 +101,10 @@ namespace Mutant.Chicken.Core
                 if (!Equals(realEncoding, processor.Encoding))
                 {
                     composite = Encoding.Convert(realEncoding, processor.Encoding, composite, bom.Length, totalLength - bom.Length);
+                    totalLength = composite.Length;
                 }
 
-                target.Write(composite, 0, composite.Length);
+                target.Write(composite, 0, totalLength - bom.Length);
                 return composite.Length;
             }
         }

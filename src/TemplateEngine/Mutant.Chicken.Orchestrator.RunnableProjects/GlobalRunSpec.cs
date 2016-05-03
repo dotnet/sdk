@@ -32,7 +32,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(FileSource source, IConfiguredTemplateSource templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
+        public GlobalRunSpec(FileSource source, ITemplateSourceFolder templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
         {
             int expect = source.Include?.Length ?? 0;
             List<IPathMatcher> includes = new List<IPathMatcher>(expect);
@@ -101,7 +101,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, IConfiguredTemplateSource templateRoot, IReadOnlyDictionary<string, JObject> operations, VariableCollection parentVars, out VariableCollection variables)
+        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, ITemplateSourceFolder templateRoot, IReadOnlyDictionary<string, JObject> operations, VariableCollection parentVars, out VariableCollection variables)
         {
             List<IOperationProvider> result = new List<IOperationProvider>();
             VariableCollection vc = VariableCollection.Root();
@@ -115,7 +115,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                     case "include":
                         string startToken = data["start"].ToString();
                         string endToken = data["end"].ToString();
-                        Include inc = new Include(startToken, endToken, templateRoot.OpenFile);
+                        result.Add(new Include(startToken, endToken, path => templateRoot.OpenFile(path)));
                         break;
                     case "regions":
                         JArray regionSettings = (JArray)data["settings"];
