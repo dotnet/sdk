@@ -67,7 +67,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 }
             }
 
-            StringBuilder rx = new StringBuilder();
+            StringBuilder rx = new StringBuilder("^");
             int literalBegin = 0;
             GlobbingPatternToken lastToken = GlobbingPatternToken.AnyNumberOfPathParts;
 

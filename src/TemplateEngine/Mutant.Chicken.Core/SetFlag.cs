@@ -57,7 +57,6 @@ namespace Mutant.Chicken.Core
                 {
                     byte[] tokenValue = Tokens[token];
                     target.Write(tokenValue, 0, tokenValue.Length);
-                    processor.Config.Flags[_owner.Name] = token == 0;
                     return tokenValue.Length;
                 }
 

@@ -92,7 +92,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
         {
             foreach (ITemplateSourceEntry entry in folder.Children)
             {
-                if (entry.Kind == TemplateSourceEntryKind.File && entry.FullPath.EndsWith(".netnew.json"))
+                if (entry.Kind == TemplateSourceEntryKind.File && entry.Name.Equals(".netnew.json", StringComparison.OrdinalIgnoreCase))
                 {
                     RunnableProjectTemplate tmp = null;
                     try

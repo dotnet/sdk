@@ -173,7 +173,16 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                             ITemplateParameter param;
                             if (parameters.TryGetParameter(property.Value.ToString(), out param))
                             {
-                                string val = parameters.ParameterValues[param];
+                                string val = string.Empty;
+                                try
+                                {
+                                    val = parameters.ParameterValues[param];
+                                }
+                                catch (KeyNotFoundException ex)
+                                {
+                                    throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
+                                }
+
                                 Replacment r = new Replacment(property.Name, val);
                                 result.Add(r);
                             }
