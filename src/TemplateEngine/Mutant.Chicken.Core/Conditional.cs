@@ -133,7 +133,17 @@ BEGIN:
                     //  this block will not be terminated until the corresponding endif is found
                     if (_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition))
                     {
+                        if (_definition.WholeLine)
+                        {
+                            processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                        }
+
                         return 0;
+                    }
+
+                    if (_definition.WholeLine)
+                    {
+                        processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
                     }
 
                     SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
@@ -203,10 +213,22 @@ BEGIN:
                 if (token == _elseIfTokenIndex)
                 {
                     //If the elseif branch is taken, return control for replacements to be done as usual
-                    if (!_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition) 
-                        && SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
+                    if (!_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition))
                     {
-                        goto BEGIN;
+                        if (_definition.WholeLine)
+                        {
+                            processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                        }
+
+                        if (SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
+                        {
+                            goto BEGIN;
+                        }
+                    }
+
+                    if (_definition.WholeLine)
+                    {
+                        processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
                     }
 
                     //The "elseif" branch was not taken. Skip to the following else, elseif or endif token

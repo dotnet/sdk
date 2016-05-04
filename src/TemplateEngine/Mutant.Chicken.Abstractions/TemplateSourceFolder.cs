@@ -80,7 +80,7 @@ namespace Mutant.Chicken.Abstractions
                         current = current.Parent;
                         break;
                     default:
-                        current = (ITemplateSourceFolder)current.Children.FirstOrDefault(x => string.Equals(x.Name, source, StringComparison.OrdinalIgnoreCase));
+                        current = (ITemplateSourceFolder)current.Children.FirstOrDefault(x => string.Equals(x.Name, part, StringComparison.OrdinalIgnoreCase));
                         break;
                 }
 
@@ -99,7 +99,7 @@ namespace Mutant.Chicken.Abstractions
                             current = current.Parent;
                             break;
                         default:
-                            current = (ITemplateSourceFolder)current.Children.FirstOrDefault(x => string.Equals(x.Name, source, StringComparison.OrdinalIgnoreCase));
+                            current = (ITemplateSourceFolder)current.Children.FirstOrDefault(x => string.Equals(x.Name, part, StringComparison.OrdinalIgnoreCase));
                             break;
                     }
                 }

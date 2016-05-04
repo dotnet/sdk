@@ -105,10 +105,16 @@ namespace Mutant.Chicken.Core.Expressions.Cpp
                             {
                                 case TokenFamily.Whitespace:
                                 case TokenFamily.Tab:
+                                case TokenFamily.CloseBrace:
                                 case TokenFamily.WindowsEOL:
                                 case TokenFamily.UnixEOL:
                                 case TokenFamily.LegacyMacEOL:
-                                case TokenFamily.CloseBrace:
+                                    TokenFamily thisFamily = (TokenFamily)token;
+                                    if(thisFamily == TokenFamily.WindowsEOL || thisFamily == TokenFamily.UnixEOL || thisFamily == TokenFamily.LegacyMacEOL)
+                                    {
+                                        currentBufferPosition = oldBufferPos;
+                                    }
+
                                     break;
                                 default:
                                     currentBufferPosition = oldBufferPos;
