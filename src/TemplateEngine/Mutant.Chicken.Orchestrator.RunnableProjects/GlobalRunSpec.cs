@@ -156,6 +156,8 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                             string flag = property.Name;
                             string on = innerData["on"]?.ToString() ?? string.Empty;
                             string off = innerData["off"]?.ToString() ?? string.Empty;
+                            string onNoEmit = innerData["onNoEmit"]?.ToString() ?? string.Empty;
+                            string offNoEmit = innerData["offNoEmit"]?.ToString() ?? string.Empty;
                             string defaultStr = innerData["default"]?.ToString();
                             bool? @default = null;
 
@@ -164,7 +166,7 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                                 @default = bool.Parse(defaultStr);
                             }
 
-                            result.Add(new SetFlag(flag, on, off, @default));
+                            result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, @default));
                         }
                         break;
                     case "replacements":
