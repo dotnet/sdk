@@ -14,11 +14,17 @@ namespace Mutant.Chicken.Core
 
         public bool? Default { get; }
 
-        public SetFlag(string name, string on, string off, bool? @default = null)
+        public string OnNoEmit { get; private set; }
+
+        public string OffNoEmit { get; private set; }
+
+        public SetFlag(string name, string on, string off, string onNoEmit, string offNoEmit, bool? @default = null)
         {
             Name = name;
             On = on;
             Off = off;
+            OnNoEmit = onNoEmit;
+            OffNoEmit = offNoEmit;
             Default = @default;
         }
 
@@ -27,7 +33,9 @@ namespace Mutant.Chicken.Core
             byte[][] tokens = new byte[][]
             {
                 encoding.GetBytes(On),
-                encoding.GetBytes(Off)
+                encoding.GetBytes(Off),
+                encoding.GetBytes(OnNoEmit),
+                encoding.GetBytes(OffNoEmit)
             };
 
             if (Default.HasValue)
@@ -52,16 +60,36 @@ namespace Mutant.Chicken.Core
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
-                bool flag;
-                if (processor.Config.Flags.TryGetValue("flags", out flag) && !flag)
+                bool flagsOn;
+                if(!processor.Config.Flags.TryGetValue("flags", out flagsOn))
+                {
+                    flagsOn = true;
+                }
+
+                bool emit = token < 2 || !flagsOn;
+                bool turnOn = (token % 2) == 0;
+                int written = 0;
+
+                if (emit)
                 {
                     byte[] tokenValue = Tokens[token];
                     target.Write(tokenValue, 0, tokenValue.Length);
-                    return tokenValue.Length;
+                    written = tokenValue.Length;
                 }
 
-                processor.Config.Flags[_owner.Name] = token == 0;
-                return 0;
+                //Only turn the flag in question back on if it's the "flags" flag.
+                //  Yes, we still need to emit it as the common case is for this 
+                //  to be done in the template definition file
+                if (flagsOn)
+                {
+                    processor.Config.Flags[_owner.Name] = token == 0;
+                }
+                else if (_owner.Name == "flags" && turnOn)
+                {
+                    processor.Config.Flags["flags"] = true;
+                }
+
+                return written;
             }
         }
     }
