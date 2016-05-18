@@ -25,6 +25,8 @@ namespace Mutant.Chicken.Abstractions
         ITemplateSourceFolder GetDirectoryAtRelativePath(string source);
 
         Stream OpenFile(string location);
+
+        bool Exists(string location);
     }
 
     public interface ITemplateSourceFile : ITemplateSourceEntry

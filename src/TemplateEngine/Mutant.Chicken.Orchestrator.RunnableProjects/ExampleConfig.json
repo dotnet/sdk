@@ -44,7 +44,7 @@
       "description": "The number of times to repeat the message",
       "defaultValue": "1",
       "requirement": "optional",
-      "type": "int",
+      "type": "integer",
       "isVariable": true
     },
     "Message": {
@@ -172,28 +172,6 @@
         "messageCount": "repeat"
       },
       "macros": {
-        "{98048C9C-BF28-46BA-A98E-63767EE5E3A8}": {
-          "type": "guid",
-          "action": "new",
-          "isVariable": true,
-          "format": "B"
-        },
-        "RepeatOnce": {
-          "type": "evaluate",
-          "action": "(repeat == 1)"
-        },
-        "RepeatNone": {
-          "type": "evaluate",
-          "action": "(repeat == 0)"
-        },
-        "#define AUTHORING\r\n": {
-          "type": "constant",
-          "action": ""
-        },
-        "CURRENT_YEAR": {
-          "type": "now",
-          "action": "yyyy"
-        },
         "SAFE_PROJECT_NAME": {
           "type": "regex",
           "action": "replace",

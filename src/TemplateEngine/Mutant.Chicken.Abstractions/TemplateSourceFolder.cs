@@ -120,7 +120,12 @@ namespace Mutant.Chicken.Abstractions
             if (lastSep == -1)
             {
                 ITemplateSourceFile sourceFile = (ITemplateSourceFile)rootFolder.Children.FirstOrDefault(x => string.Equals(path, x.Name, StringComparison.OrdinalIgnoreCase));
-                return sourceFile.OpenRead();
+                if (sourceFile != null)
+                {
+                    return sourceFile.OpenRead();
+                }
+
+                throw new FileNotFoundException("Unable to find file", path);
             }
 
             string part = path.Substring(0, lastSep);
@@ -135,7 +140,13 @@ namespace Mutant.Chicken.Abstractions
                 {
                     part = path.Substring(start);
                     ITemplateSourceFile sourceFile = (ITemplateSourceFile)sourceFolder.Children.FirstOrDefault(x => string.Equals(part, x.Name, StringComparison.OrdinalIgnoreCase));
-                    return sourceFile.OpenRead();
+
+                    if (sourceFile != null)
+                    {
+                        return sourceFile.OpenRead();
+                    }
+
+                    break;
                 }
 
                 part = path.Substring(start, lastSep - start);
@@ -143,6 +154,37 @@ namespace Mutant.Chicken.Abstractions
             }
 
             throw new FileNotFoundException("Unable to find file", path);
+        }
+
+        public bool Exists(string path)
+        {
+            int lastSep = path.IndexOfAny(new[] { '/', '\\' });
+            ITemplateSourceFolder rootFolder = this;
+
+            if (lastSep == -1)
+            {
+                return rootFolder.Children.Any(x => string.Equals(path, x.Name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            string part = path.Substring(0, lastSep);
+            ITemplateSourceFolder sourceFolder = (ITemplateSourceFolder)rootFolder.Children.FirstOrDefault(x => string.Equals(part, x.Name, StringComparison.OrdinalIgnoreCase));
+
+            while (lastSep > 0)
+            {
+                int start = lastSep + 1;
+                lastSep = path.IndexOfAny(new[] { '/', '\\' }, lastSep + 1);
+
+                if (lastSep < 0)
+                {
+                    part = path.Substring(start);
+                    return sourceFolder.Children.Any(x => string.Equals(part, x.Name, StringComparison.OrdinalIgnoreCase));
+                }
+
+                part = path.Substring(start, lastSep - start);
+                sourceFolder = (ITemplateSourceFolder)sourceFolder.Children.FirstOrDefault(x => string.Equals(part, x.Name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return false;
         }
     }
 }
