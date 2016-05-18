@@ -274,6 +274,9 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                 case "guid":
                     HandleGuidAction(variableName, def, set, result);
                     break;
+                case "random":
+                    HandleRandomAction(variableName, def, set, result);
+                    break;
                 case "now":
                     HandleNowAction(variableName, def, set, result);
                     break;
@@ -285,6 +288,28 @@ namespace Mutant.Chicken.Orchestrator.RunnableProjects
                     break;
                 case "regex":
                     HandleRegexAction(variableName, variablesSection, def, set, result);
+                    break;
+            }
+        }
+
+        private void HandleRandomAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        {
+            switch (def["action"].ToString())
+            {
+                case "new":
+                    int low = int.Parse(def["low"]?.ToString() ?? "0");
+                    int high = int.Parse(def["high"]?.ToString() ?? int.MaxValue.ToString());
+                    Random rnd = new Random();
+                    int val = rnd.Next(low, high);
+                    string value = val.ToString();
+                    Parameter p = new Parameter
+                    {
+                        IsVariable = true,
+                        Name = variableName
+                    };
+
+                    parameters.AddParameter(p);
+                    parameters.ParameterValues[p] = value;
                     break;
             }
         }
