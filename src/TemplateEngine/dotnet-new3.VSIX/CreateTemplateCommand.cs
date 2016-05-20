@@ -9,6 +9,9 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using dotnet_new3.VSIX.Properties;
 using EnvDTE;
 using EnvDTE80;
@@ -27,6 +30,7 @@ namespace dotnet_new3.VSIX
         /// Command ID.
         /// </summary>
         public const int CommandId = 0x0100;
+        public const int CommandId2 = 0x0101;
 
         /// <summary>
         /// Command menu group (command set GUID).
@@ -62,6 +66,10 @@ namespace dotnet_new3.VSIX
             CommandID menuCommandID = new CommandID(CommandSet, CommandId);
             MenuCommand menuItem = new OleMenuCommand(Invoke, ChangeHandler, QueryStatus, menuCommandID);
             commandService.AddCommand(menuItem);
+
+            CommandID menuCommandID2 = new CommandID(CommandSet, CommandId2);
+            MenuCommand menuItem2 = new OleMenuCommand(Invoke, ChangeHandler, QueryStatus, menuCommandID2);
+            commandService.AddCommand(menuItem2);
         }
 
         private void ChangeHandler(object sender, EventArgs e)
@@ -79,11 +87,22 @@ namespace dotnet_new3.VSIX
                 UIHierarchy hierarchy = dte.ToolWindows.SolutionExplorer;
                 Array items = hierarchy.SelectedItems as Array;
                 Project proj = items?.OfType<UIHierarchyItem>().Select(x => x.Object).OfType<Project>().FirstOrDefault();
-                on = proj != null;
+                Solution sln = items?.OfType<UIHierarchyItem>().Select(x => x.Object).OfType<Solution>().FirstOrDefault();
+                on = proj != null || sln != null;
 
                 if (on)
                 {
-                    string dir = proj.Properties.Item("FullPath").Value.ToString();
+                    string dir;
+
+                    if (proj != null)
+                    {
+                        dir = proj.Properties.Item("FullPath").Value.ToString();
+                    }
+                    else
+                    {
+                        dir = sln.Properties.Item("Path").Value.ToString();
+                    }
+
                     on = !File.Exists(Path.Combine(dir, ".netnew.json"));
                 }
             }
@@ -106,35 +125,88 @@ namespace dotnet_new3.VSIX
                 UIHierarchy hierarchy = dte.ToolWindows.SolutionExplorer;
                 Array items = hierarchy.SelectedItems as Array;
                 Project proj = items?.OfType<UIHierarchyItem>().Select(x => x.Object).OfType<Project>().FirstOrDefault();
+                Solution sln = items?.OfType<UIHierarchyItem>().Select(x => x.Object).OfType<Solution>().FirstOrDefault();
 
                 if (proj != null)
                 {
-                    string fullPath = proj.FullName;
-                    string dir = Path.GetDirectoryName(fullPath);
-                    string name = Path.GetFileNameWithoutExtension(fullPath);
-                    string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
-                    string guid = proj.Properties.Item("AssemblyGuid").Value.ToString();
-
-                    InfoCollectorDialog win = new InfoCollectorDialog(name);
-                    if (win.ShowDialog().GetValueOrDefault())
-                    {
-                        string friendlyName = win.FriendlyName;
-                        string defaultName = win.DefaultName;
-                        string shortName = win.ShortName;
-
-                        string output = Resources.TemplateFile;
-                        output = output.Replace("{FriendlyName}", friendlyName);
-                        output = output.Replace("{DefaultName}", defaultName);
-                        output = output.Replace("{ShortName}", shortName);
-                        output = output.Replace("{ProjectName}", name);
-                        output = output.Replace("{Extension}", ext);
-                        output = output.Replace("{ProjectGuid}", guid);
-                        output = output.Replace("{UpperProjectGuid}", $"{{{guid}}}".ToUpperInvariant());
-
-                        File.WriteAllText(Path.Combine(dir, ".netnew.json"), output);
-                    }
+                    CreateProjectTemplate(proj);
+                }
+                else if(sln != null)
+                {
+                    CreateSolutionTemplate(sln);
                 }
             }
+        }
+
+        private void CreateSolutionTemplate(Solution solution)
+        {
+            MessageBox.Show("Solution template path");
+            //string fullPath = solution.FullName;
+            //string dir = Path.GetDirectoryName(fullPath);
+            //string name = Path.GetFileNameWithoutExtension(fullPath);
+            //string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
+            //string guid = solution.Properties.Item("AssemblyGuid").Value.ToString();
+
+            //InfoCollectorDialog win = new InfoCollectorDialog(name);
+            //if (win.ShowDialog().GetValueOrDefault())
+            //{
+            //    string friendlyName = win.FriendlyName;
+            //    string defaultName = win.DefaultName;
+            //    string shortName = win.ShortName;
+
+            //    string output = Resources.TemplateFile;
+            //    output = output.Replace("{FriendlyName}", friendlyName);
+            //    output = output.Replace("{DefaultName}", defaultName);
+            //    output = output.Replace("{ShortName}", shortName);
+            //    output = output.Replace("{ProjectName}", name);
+            //    output = output.Replace("{Extension}", ext);
+            //    output = output.Replace("{ProjectGuid}", guid);
+            //    output = output.Replace("{UpperProjectGuid}", $"{{{guid}}}".ToUpperInvariant());
+
+            //    File.WriteAllText(Path.Combine(dir, ".netnew.json"), output);
+            //}
+        }
+
+        private void CreateProjectTemplate(Project proj)
+        {
+            string fullPath = proj.FullName;
+            string dir = Path.GetDirectoryName(fullPath);
+            string name = Path.GetFileNameWithoutExtension(fullPath);
+            string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
+            string guid = proj.Properties.Item("AssemblyGuid").Value.ToString();
+
+            string projectDeclaredGuid = ExtractProjectGuid(fullPath);
+
+            if (string.IsNullOrEmpty(guid))
+            {
+                guid = projectDeclaredGuid;
+            }
+
+            InfoCollectorDialog win = new InfoCollectorDialog(name);
+            if (win.ShowDialog().GetValueOrDefault())
+            {
+                string friendlyName = win.FriendlyName;
+                string defaultName = win.DefaultName;
+                string shortName = win.ShortName;
+
+                string output = Resources.TemplateFile;
+                output = output.Replace("{FriendlyName}", friendlyName);
+                output = output.Replace("{DefaultName}", defaultName);
+                output = output.Replace("{ShortName}", shortName);
+                output = output.Replace("{ProjectName}", name);
+                output = output.Replace("{Extension}", ext);
+                output = output.Replace("{ProjectGuid}", guid);
+                output = output.Replace("{ProjectDeclaredGuid}", projectDeclaredGuid);
+
+                File.WriteAllText(Path.Combine(dir, ".netnew.json"), output);
+            }
+        }
+
+        private string ExtractProjectGuid(string fullPath)
+        {
+            XDocument doc = XDocument.Load(fullPath);
+            XElement element = doc.Descendants().First(x => x.Name.LocalName == "ProjectGuid");
+            return element.Value;
         }
 
         /// <summary>

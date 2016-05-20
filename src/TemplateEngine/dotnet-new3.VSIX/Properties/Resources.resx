@@ -157,7 +157,7 @@
         "**/*.lock.json"
       ],
       "source": "./",
-      "target": "./",
+      "target": "./{ProjectName}/",
       "rename": {
         /*-:replacements*/
         "{ProjectName}.{Extension}": "SAFE_NAME.{Extension}"
@@ -232,7 +232,7 @@
     "replacements": {
       "{ProjectName}": "SAFE_NAME",
       "{ProjectGuid}": "PROJECT_GUID",
-      "{UpperProjectGuid}": "PROJECT_GUID"
+      "{ProjectDeclaredGuid}": "PROJECT_GUID"
     },
     "variables": {
       "sources": {

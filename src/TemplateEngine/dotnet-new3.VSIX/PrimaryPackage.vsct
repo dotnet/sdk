@@ -36,9 +36,7 @@
          group as the part of a menu contained between two lines. The parent of a group
          must be a menu. -->
     <Groups>
-      <Group guid="guidPrimaryPackageCmdSet" id="MyMenuGroup" priority="0x0600">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
-      </Group>
+      <Group guid="guidPrimaryPackageCmdSet" id="MyMenuGroup" priority="0x0600" />
     </Groups>
 
     <!--Buttons section. -->
@@ -74,6 +72,15 @@
     </Bitmaps>
   </Commands>
 
+  <CommandPlacements>
+    <CommandPlacement guid="guidPrimaryPackageCmdSet" id="MyMenuGroup" priority="0x0600">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidPrimaryPackageCmdSet" id="MyMenuGroup" priority="0x0600">
+      <Parent guid="guidSHLMainMenu2" id="IDM_VS_CTXT_SLNNODE"/>
+    </CommandPlacement>
+  </CommandPlacements>
+
   <Symbols>
     <!-- This is the package guid. -->
     <GuidSymbol name="guidPrimaryPackage" value="{2a73a40e-64af-4590-98c4-ba98e4960c68}" />
@@ -82,6 +89,10 @@
     <GuidSymbol name="guidPrimaryPackageCmdSet" value="{89acd9aa-d946-458d-8ad9-f0fd6db0b67c}">
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="CreateTemplateCommandId" value="0x0100" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidSHLMainMenu2" value="{d309f791-903f-11d0-9efc-00a0c911004f}">
+      <IDSymbol name="IDM_VS_CTXT_SLNNODE" value="0x413" />
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{0c79fea9-e506-4de8-b5c7-0bbee83904cc}" >
