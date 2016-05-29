@@ -15,6 +15,7 @@ namespace dotnet_new3.VSIX
         public InfoCollectorDialog(string name)
             : this()
         {
+            AuthorTextBox.Text = "Me";
             FriendlyNameTextBox.Text = name;
             DefaultNameTextBox.Text = name;
             ShortNameTextBox.Text = name;

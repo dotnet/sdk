@@ -168,7 +168,7 @@ namespace dotnet_new3.VSIX
                 o["author"] = win.AuthorTextBox.Text;
                 o["displayName"] = win.FriendlyNameTextBox.Text;
                 o["name"] = win.FriendlyNameTextBox.Text;
-                o["defaultName"] = Path.GetFileNameWithoutExtension(solution.FullName);
+                o["defaultName"] = win.DefaultNameTextBox.Text;
                 o["sourceName"] = Path.GetFileNameWithoutExtension(solution.FullName);
                 o["shortName"] = win.ShortNameTextBox.Text;
                 JArray guids = (JArray)o["guids"];
@@ -182,7 +182,14 @@ namespace dotnet_new3.VSIX
                     distinctGuids.Add(Guid.Parse(match.Value));
                 }
 
-                foreach(Guid g in distinctGuids)
+                rx = new Regex(@"(?<=\("")\{?[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}?(?=""\))", RegexOptions.IgnoreCase);
+
+                foreach (Match match in rx.Matches(contents))
+                {
+                    distinctGuids.Remove(Guid.Parse(match.Value));
+                }
+
+                foreach (Guid g in distinctGuids)
                 {
                     guids.Add(g);
                 }
@@ -222,7 +229,7 @@ namespace dotnet_new3.VSIX
                 o["author"] = win.AuthorTextBox.Text;
                 o["displayName"] = win.FriendlyNameTextBox.Text;
                 o["name"] = win.FriendlyNameTextBox.Text;
-                o["defaultName"] = Path.GetFileNameWithoutExtension(proj.FullName);
+                o["defaultName"] = win.DefaultNameTextBox.Text;
                 o["sourceName"] = Path.GetFileNameWithoutExtension(proj.FullName);
                 o["shortName"] = win.ShortNameTextBox.Text;
                 JArray guids = (JArray)o["guids"];
