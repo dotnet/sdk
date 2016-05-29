@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             {
                 EngineConfig cfg = new EngineConfig(variables);
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, new IOperationProvider[0]);
-                int len = 0;
+                int len = (int)ms.Length;
                 int pos = 0;
                 return CppStyleEvaluator(state, ref len, ref pos);
             }
@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
 
             int braceDepth = 0;
-            if(tokens[0].Family == TokenFamily.OpenBrace)
+            if (tokens[0].Family == TokenFamily.OpenBrace)
             {
                 ++braceDepth;
             }
@@ -114,9 +114,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                     int oldBufferPos = currentBufferPosition;
                     if (trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                     {
-                        if(braceDepth == 0)
+                        if (braceDepth == 0)
                         {
-                            switch(tokens[tokens.Count - 1].Family)
+                            switch (tokens[tokens.Count - 1].Family)
                             {
                                 case TokenFamily.Whitespace:
                                 case TokenFamily.Tab:
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                                 case TokenFamily.UnixEOL:
                                 case TokenFamily.LegacyMacEOL:
                                     TokenFamily thisFamily = (TokenFamily)token;
-                                    if(thisFamily == TokenFamily.WindowsEOL || thisFamily == TokenFamily.UnixEOL || thisFamily == TokenFamily.LegacyMacEOL)
+                                    if (thisFamily == TokenFamily.WindowsEOL || thisFamily == TokenFamily.UnixEOL || thisFamily == TokenFamily.LegacyMacEOL)
                                     {
                                         currentBufferPosition = oldBufferPos;
                                     }
@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                                     break;
                             }
 
-                            if(!first)
+                            if (!first)
                             {
                                 break;
                             }
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             currentTokenFamily = (TokenFamily)token;
                             if (currentTokenFamily != TokenFamily.WindowsEOL && currentTokenFamily != TokenFamily.LegacyMacEOL && currentTokenFamily != TokenFamily.UnixEOL)
                             {
-                                if(currentTokenFamily == TokenFamily.OpenBrace)
+                                if (currentTokenFamily == TokenFamily.OpenBrace)
                                 {
                                     ++braceDepth;
                                 }
@@ -221,7 +221,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             if (current.Operator == Operator.None)
             {
                 Scope leftScope = current.Left as Scope;
-                if (current.TargetPlacement != Scope.NextPlacement.Right 
+                if (current.TargetPlacement != Scope.NextPlacement.Right
                     || leftScope == null
                     || !IsLogicalOperator(leftScope.Operator))
                 {
@@ -508,7 +508,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static object ResolveToken(TokenRef tokenRef, IReadOnlyList<Func<object>> values)
         {
-            return values[(int) (tokenRef.Family & ~TokenFamily.Reference) - ReservedTokenCount]();
+            return values[(int)(tokenRef.Family & ~TokenFamily.Reference) - ReservedTokenCount]();
         }
     }
 }

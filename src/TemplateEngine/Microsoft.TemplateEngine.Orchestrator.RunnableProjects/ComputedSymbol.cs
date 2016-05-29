@@ -5,7 +5,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     public class ComputedSymbol : ISymbolModel
     {
         [JsonProperty]
-        public string Condition { get; internal set; }
+        public string Value { get; internal set; }
 
         [JsonProperty]
         public string Type { get; set; }

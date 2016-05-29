@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public RunnableProjectTemplate(JObject raw, IGenerator generator, IConfiguredTemplateSource source, ITemplateSourceFile configFile, IRunnableProjectConfig config)
         {
-            config.SourceFile = ConfigFile;
+            config.SourceFile = configFile;
             ConfigFile = configFile;
             Generator = generator;
             Source = source;

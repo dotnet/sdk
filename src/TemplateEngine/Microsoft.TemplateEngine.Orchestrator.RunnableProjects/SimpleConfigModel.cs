@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 DefaultValue = param.DefaultValue ?? (!param.IsRequired ? param.Replaces : null),
                                 Description = param.Description,
                                 IsName = isName,
-                                IsVariable = false,
+                                IsVariable = true,
                                 Name = symbol.Key,
                                 Requirement = param.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
                                 Type = param.Type
@@ -109,7 +109,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             IsName = true,
                             Requirement = TemplateParameterPriority.Implicit,
                             Name = "name",
-                            DefaultValue = DefaultName ?? SourceName
+                            DefaultValue = DefaultName ?? SourceName,
+                            IsVariable = true
                         };
                     }
 
@@ -167,7 +168,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     foreach (ExtendedFileSource source in Sources)
                     {
                         string[] includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" });
-                        string[] excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json" });
+                        string[] excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" });
                         string[] copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new string[0]);
 
                         sources.Add(new FileSource
@@ -211,6 +212,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _special;
             }
         }
+
+        [JsonIgnore]
+        private Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
         [JsonIgnore]
         IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//", true);
@@ -303,11 +307,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     macro["type"] = "guid";
                     macro["action"] = "new";
 
-                    foreach (char fmt in "ndbpxNDPBX")
-                    {
-                        string rplc = char.IsUpper(fmt) ? guid.ToString(fmt.ToString()).ToUpperInvariant() : guid.ToString(fmt.ToString()).ToLowerInvariant();
-                        cfg["replacements"][rplc] = "guid" + id + "-" + fmt;
-                    }
+                    _guidToGuidPrefixMap[guid] = "guid" + id;
+                }
+            }
+
+            foreach (KeyValuePair<Guid, string> map in _guidToGuidPrefixMap)
+            {
+                foreach (char fmt in "ndbpxNDPBX")
+                {
+                    string rplc = char.IsUpper(fmt) ? map.Key.ToString(fmt.ToString()).ToUpperInvariant() : map.Key.ToString(fmt.ToString()).ToLowerInvariant();
+                    cfg["replacements"][rplc] = map.Value + "-" + fmt;
                 }
             }
 
@@ -325,7 +334,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         JObject cmp = new JObject();
                         cfg["macros"][symbol.Key] = cmp;
                         cmp["type"] = "evaluate";
-                        cmp["action"] = ((ComputedSymbol)symbol.Value).Condition;
+                        cmp["action"] = ((ComputedSymbol)symbol.Value).Value;
                         cmp["evaluator"] = "C++";
                     }
                     else if (symbol.Value.Type == "generated" && generateMacros)
@@ -444,10 +453,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (symbol.Value.Type == "computed")
                         {
                             ComputedSymbol sym = (ComputedSymbol)symbol.Value;
-                            bool value = CppStyleEvaluatorDefinition.EvaluateFromString(sym.Condition, rootVariableCollection);
+                            bool value = CppStyleEvaluatorDefinition.EvaluateFromString(sym.Value, rootVariableCollection);
                             bool currentValue;
-                            stable &= !computed.TryGetValue(symbol.Key, out currentValue) || currentValue != value;
+                            stable &= computed.TryGetValue(symbol.Key, out currentValue) && currentValue == value;
                             rootVariableCollection[symbol.Key] = value;
+                            computed[symbol.Key] = value;
                         }
                     }
                 }
@@ -455,7 +465,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 foreach (ExtendedFileSource source in _simpleConfigModel.Sources)
                 {
                     List<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" }).ToList();
-                    List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json" }).ToList();
+                    List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" }).ToList();
                     List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new string[0]).ToList();
 
                     if (source.Modifiers != null)
