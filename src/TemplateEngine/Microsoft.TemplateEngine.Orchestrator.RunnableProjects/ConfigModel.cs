@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class ConfigModel
+    public class ConfigModel : IRunnableProjectConfig
     {
         [JsonProperty]
         public string Name { get; set; }
@@ -30,62 +32,50 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         [JsonProperty]
         public Dictionary<string, Dictionary<string, JObject>> Special { get; set; }
-    }
 
-    public class FileSource
-    {
-        [JsonProperty]
-        public string[] Include { get; set; }
+        IReadOnlyDictionary<string, Parameter> IRunnableProjectConfig.Parameters => Parameters;
 
-        [JsonProperty]
-        public string[] Exclude { get; set; }
+        IReadOnlyDictionary<string, Dictionary<string, JObject>> IRunnableProjectConfig.Special => Special;
 
-        [JsonProperty]
-        public Dictionary<string, string> Rename { get; set; }
+        IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => Config;
+
+        IReadOnlyList<FileSource> IRunnableProjectConfig.Sources => Sources;
 
         [JsonProperty]
-        public string Source { get; set; }
+        public string Author { get; set; }
 
         [JsonProperty]
-        public string Target { get; set; }
+        public IReadOnlyDictionary<string, string> Tags { get; set; }
 
         [JsonProperty]
-        public string[] CopyOnly { get; set; }
-    }
-
-    public class Parameter : ITemplateParameter
-    {
-        [JsonProperty]
-        public string Description { get; set; }
+        public IReadOnlyList<string> Classifications { get; set; }
 
         [JsonProperty]
-        public string DefaultValue { get; set; }
+        public string GroupIdentity { get; set; }
 
         [JsonIgnore]
-        public string Name { get; set; }
+        public ITemplateSourceFile SourceFile { get; set; }
 
-        [JsonProperty]
-        public bool IsName { get; set; }
+        public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
+        {
+            IProcessor processor = Processor.Create(new EngineConfig(rootVariableCollection), operations);
+            IRunnableProjectConfig m;
 
-        [JsonProperty]
-        public TemplateParameterPriority Requirement { get; set; }
+            using (Stream configStream = configFile.OpenRead())
+            using (Stream targetStream = new MemoryStream())
+            {
+                processor.Run(configStream, targetStream);
+                targetStream.Position = 0;
 
-        [JsonProperty]
-        public string Type { get; set; }
+                using (TextReader tr = new StreamReader(targetStream, true))
+                using (JsonReader r = new JsonTextReader(tr))
+                {
+                    JObject model = JObject.Load(r);
+                    m = model.ToObject<ConfigModel>();
+                }
+            }
 
-        [JsonProperty]
-        public bool IsVariable { get; set; }
-
-        string ITemplateParameter.Documentation => Description;
-
-        string ITemplateParameter.Name => Name;
-
-        TemplateParameterPriority ITemplateParameter.Priority => Requirement;
-
-        string ITemplateParameter.Type => Type;
-
-        bool ITemplateParameter.IsName => IsName;
-
-        string ITemplateParameter.DefaultValue => DefaultValue;
+            return m;
+        }
     }
 }

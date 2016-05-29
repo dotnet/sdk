@@ -107,95 +107,100 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             VariableCollection vc = VariableCollection.Root();
             JObject variablesSection = operations["variables"];
 
-            foreach (KeyValuePair<string, JObject> config in operations)
+            JObject data;
+            if (operations.TryGetValue("macros", out data))
             {
-                JObject data = config.Value;
-                switch (config.Key)
+                foreach (JProperty property in data.Properties())
                 {
-                    case "include":
-                        string startToken = data["start"].ToString();
-                        string endToken = data["end"].ToString();
-                        result.Add(new Include(startToken, endToken, path => templateRoot.OpenFile(path)));
-                        break;
-                    case "regions":
-                        JArray regionSettings = (JArray)data["settings"];
-                        foreach(JToken child in regionSettings.Children())
-                        {
-                            JObject setting = (JObject)child;
-                            string start = setting["start"].ToString();
-                            string end = setting["end"].ToString();
-                            bool include = setting["include"]?.ToObject<bool>() ?? false;
-                            bool regionTrim = setting["trim"]?.ToObject<bool>() ?? false;
-                            bool regionWholeLine = setting["wholeLine"]?.ToObject<bool>() ?? false;
-                            result.Add(new Region(start, end, include, regionWholeLine, regionTrim));
-                        }
-                        break;
-                    case "conditionals":
-                        string ifToken = data["if"].ToString();
-                        string elseToken = data["else"].ToString();
-                        string elseIfToken = data["elseif"].ToString();
-                        string endIfToken = data["endif"].ToString();
-                        string evaluatorName = data["evaluator"].ToString();
-                        bool trim = data["trim"]?.ToObject<bool>() ?? false;
-                        bool wholeLine = data["wholeLine"]?.ToObject<bool>() ?? false;
-                        ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
+                    RunMacros(property, variablesSection, parameters, result);
+                }
+            }
 
-                        switch (evaluatorName)
+            if (operations.TryGetValue("include", out data))
+            {
+                string startToken = data["start"].ToString();
+                string endToken = data["end"].ToString();
+                result.Add(new Include(startToken, endToken, path => templateRoot.OpenFile(path)));
+            }
+
+            if (operations.TryGetValue("regions", out data))
+            {
+                JArray regionSettings = (JArray)data["settings"];
+                foreach (JToken child in regionSettings.Children())
+                {
+                    JObject setting = (JObject)child;
+                    string start = setting["start"].ToString();
+                    string end = setting["end"].ToString();
+                    bool include = setting["include"]?.ToObject<bool>() ?? false;
+                    bool regionTrim = setting["trim"]?.ToObject<bool>() ?? false;
+                    bool regionWholeLine = setting["wholeLine"]?.ToObject<bool>() ?? false;
+                    result.Add(new Region(start, end, include, regionWholeLine, regionTrim));
+                }
+            }
+
+            if (operations.TryGetValue("conditionals", out data))
+            {
+                string ifToken = data["if"].ToString();
+                string elseToken = data["else"].ToString();
+                string elseIfToken = data["elseif"].ToString();
+                string endIfToken = data["endif"].ToString();
+                string evaluatorName = data["evaluator"].ToString();
+                bool trim = data["trim"]?.ToObject<bool>() ?? false;
+                bool wholeLine = data["wholeLine"]?.ToObject<bool>() ?? false;
+                ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
+
+                switch (evaluatorName)
+                {
+                    case "C++":
+                        evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
+                        break;
+                }
+
+                result.Add(new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, trim, evaluator));
+            }
+
+            if (operations.TryGetValue("flags", out data))
+            {
+                foreach (JProperty property in data.Properties())
+                {
+                    JObject innerData = (JObject)property.Value;
+                    string flag = property.Name;
+                    string on = innerData["on"]?.ToString() ?? string.Empty;
+                    string off = innerData["off"]?.ToString() ?? string.Empty;
+                    string onNoEmit = innerData["onNoEmit"]?.ToString() ?? string.Empty;
+                    string offNoEmit = innerData["offNoEmit"]?.ToString() ?? string.Empty;
+                    string defaultStr = innerData["default"]?.ToString();
+                    bool? @default = null;
+
+                    if (defaultStr != null)
+                    {
+                        @default = bool.Parse(defaultStr);
+                    }
+
+                    result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, @default));
+                }
+            }
+
+            if (operations.TryGetValue("replacements", out data))
+            {
+                foreach (JProperty property in data.Properties())
+                {
+                    ITemplateParameter param;
+                    if (parameters.TryGetParameter(property.Value.ToString(), out param))
+                    {
+                        string val = string.Empty;
+                        try
                         {
-                            case "C++":
-                                evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
-                                break;
+                            val = parameters.ParameterValues[param];
+                        }
+                        catch (KeyNotFoundException ex)
+                        {
+                            throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
                         }
 
-                        result.Add(new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, trim, evaluator));
-                        break;
-                    case "flags":
-                        foreach (JProperty property in data.Properties())
-                        {
-                            JObject innerData = (JObject)property.Value;
-                            string flag = property.Name;
-                            string on = innerData["on"]?.ToString() ?? string.Empty;
-                            string off = innerData["off"]?.ToString() ?? string.Empty;
-                            string onNoEmit = innerData["onNoEmit"]?.ToString() ?? string.Empty;
-                            string offNoEmit = innerData["offNoEmit"]?.ToString() ?? string.Empty;
-                            string defaultStr = innerData["default"]?.ToString();
-                            bool? @default = null;
-
-                            if (defaultStr != null)
-                            {
-                                @default = bool.Parse(defaultStr);
-                            }
-
-                            result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, @default));
-                        }
-                        break;
-                    case "replacements":
-                        foreach (JProperty property in data.Properties())
-                        {
-                            ITemplateParameter param;
-                            if (parameters.TryGetParameter(property.Value.ToString(), out param))
-                            {
-                                string val = string.Empty;
-                                try
-                                {
-                                    val = parameters.ParameterValues[param];
-                                }
-                                catch (KeyNotFoundException ex)
-                                {
-                                    throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
-                                }
-
-                                Replacment r = new Replacment(property.Name, val);
-                                result.Add(r);
-                            }
-                        }
-                        break;
-                    case "macros":
-                        foreach (JProperty property in data.Properties())
-                        {
-                            RunMacros(property, variablesSection, parameters, result);
-                        }
-                        break;
+                        Replacment r = new Replacment(property.Name, val);
+                        result.Add(r);
+                    }
                 }
             }
 
@@ -326,10 +331,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     string sourceVar = def["source"]?.ToString();
                     JArray steps = def["steps"] as JArray;
                     object working;
-                    if(!vars.TryGetValue(sourceVar, out working))
+                    if (!vars.TryGetValue(sourceVar, out working))
                     {
                         ITemplateParameter param;
-                        if(!parameters.TryGetParameter(sourceVar, out param) || !parameters.ParameterValues.TryGetValue(param, out value))
+                        if (!parameters.TryGetParameter(sourceVar, out param) || !parameters.ParameterValues.TryGetValue(param, out value))
                         {
                             value = string.Empty;
                         }
@@ -339,7 +344,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         value = working?.ToString() ?? "";
                     }
 
-                    foreach(JToken child in steps)
+                    foreach (JToken child in steps)
                     {
                         JObject map = (JObject)child;
                         string regex = map["regex"]?.ToString();
@@ -477,15 +482,47 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             switch (def["action"].ToString())
             {
                 case "new":
-                    string value = Guid.NewGuid().ToString(def["format"]?.ToString() ?? "D");
-                    Parameter p = new Parameter
+                    string fmt = def["format"]?.ToString();
+                    if (fmt != null)
                     {
-                        IsVariable = true,
-                        Name = variableName
-                    };
+                        Guid g = Guid.NewGuid();
+                        string value = char.IsUpper(fmt[0]) ? g.ToString(fmt[0].ToString()).ToUpperInvariant() : g.ToString(fmt[0].ToString()).ToLowerInvariant();
+                        Parameter p = new Parameter
+                        {
+                            IsVariable = true,
+                            Name = variableName
+                        };
 
-                    parameters.AddParameter(p);
-                    parameters.ParameterValues[p] = value;
+                        parameters.AddParameter(p);
+                        parameters.ParameterValues[p] = value;
+                    }
+                    else
+                    {
+                        Guid g = Guid.NewGuid();
+                        const string guidFormats = "ndbpxNDPBX";
+                        for (int i = 0; i < guidFormats.Length; ++i)
+                        {
+                            Parameter p = new Parameter
+                            {
+                                IsVariable = true,
+                                Name = variableName + "-" + guidFormats[i]
+                            };
+
+                            string rplc = char.IsUpper(guidFormats[i]) ? g.ToString(guidFormats[i].ToString()).ToUpperInvariant() : g.ToString(guidFormats[i].ToString()).ToLowerInvariant();
+                            parameters.AddParameter(p);
+                            parameters.ParameterValues[p] = rplc;
+                        }
+
+                        Parameter pd = new Parameter
+                        {
+                            IsVariable = true,
+                            Name = variableName
+                        };
+
+                        parameters.AddParameter(pd);
+                        parameters.ParameterValues[pd] = g.ToString("D");
+                    }
+
                     break;
             }
         }
@@ -512,7 +549,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private static object InferTypeAndConvertLiteral(string literal)
         {
-            if(literal == null)
+            if (literal == null)
             {
                 return null;
             }
@@ -552,7 +589,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return literalLong;
                 }
 
-                if(string.Equals("null", literal, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals("null", literal, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }

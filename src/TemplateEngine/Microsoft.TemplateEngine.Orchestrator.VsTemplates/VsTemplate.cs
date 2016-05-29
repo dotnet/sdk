@@ -43,9 +43,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 
         public IGenerator Generator { get; }
 
+        public string GroupIdentity => null;
+
+        public string Author => null;
+
         public string Name { get; }
 
+        public IReadOnlyDictionary<string, string> Tags => new Dictionary<string, string>();
+
         public IConfiguredTemplateSource Source { get; }
+
+        public IReadOnlyList<string> Classifications => new List<string>();
 
         public string DefaultName { get; }
 

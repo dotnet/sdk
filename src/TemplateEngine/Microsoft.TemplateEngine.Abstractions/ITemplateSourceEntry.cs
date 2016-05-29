@@ -22,6 +22,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IEnumerable<ITemplateSourceFile> EnumerateFiles(string pattern, SearchOption searchOption);
 
+        IEnumerable<ITemplateSourceEntry> EnumerateFileSystemInfos(string pattern, SearchOption searchOption);
+
         ITemplateSourceFolder GetDirectoryAtRelativePath(string source);
 
         Stream OpenFile(string location);

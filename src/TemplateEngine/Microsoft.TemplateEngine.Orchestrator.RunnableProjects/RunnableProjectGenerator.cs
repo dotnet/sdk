@@ -18,14 +18,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public Task Create(ITemplate template, IParameterSet parameters)
         {
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
-            ParameterSet p = (ParameterSet)parameters;
-            ITemplateParameter projectNameParameter = p.Parameters.FirstOrDefault(x => x.IsName);
-
-            Dictionary<string, string> fileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            List<string> copyOnly = new List<string>();
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator();
-            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, p, tmplt.Config.Config, tmplt.Config.Special);
+            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special);
             IOperationProvider[] providers = configRunSpec.Operations.ToArray();
             
             foreach(KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
@@ -37,26 +32,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            IProcessor processor = Processor.Create(new Core.EngineConfig(configRunSpec.RootVariableCollection), providers);
-
-            ConfigModel m = tmplt.Config;
-            using (Stream configStream = tmplt.ConfigFile.OpenRead())
-            using (Stream targetStream = new MemoryStream())
-            {
-                processor.Run(configStream, targetStream);
-                targetStream.Position = 0;
-
-                using (TextReader tr = new StreamReader(targetStream, true))
-                using (JsonReader r = new JsonTextReader(tr))
-                {
-                    JObject model = JObject.Load(r);
-                    m = model.ToObject<ConfigModel>();
-                }
-            }
+            IRunnableProjectConfig m = tmplt.Config.ReprocessWithParameters(parameters, configRunSpec.RootVariableCollection, tmplt.ConfigFile, providers);
 
             foreach (FileSource source in m.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, p, m.Config, m.Special);
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 o.Run(runSpec, tmplt.ConfigFile.Parent.GetDirectoryAtRelativePath(source.Source), target);
             }
@@ -66,8 +46,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IParameterSet GetParametersForTemplate(ITemplate template)
         {
-            RunnableProjectTemplate t = (RunnableProjectTemplate)template;
-            return new ParameterSet(t.Config);
+            RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
+            return new ParameterSet(tmplt.Config);
         }
 
         public IEnumerable<ITemplate> GetTemplatesFromSource(IConfiguredTemplateSource source)
@@ -100,7 +80,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         ITemplateSourceFile file = (ITemplateSourceFile)entry;
                         JObject srcObject = ReadConfigModel(file);
 
-                        tmp = new RunnableProjectTemplate(srcObject, this, source, file, srcObject.ToObject<ConfigModel>());
+                        tmp = new RunnableProjectTemplate(srcObject, this, source, file, srcObject.ToObject<IRunnableProjectConfig>(new JsonSerializer
+                        {
+                            Converters =
+                            {
+                                new RunnableProjectConfigConverter()
+                            }
+                        }));
                     }
                     catch
                     {
@@ -131,7 +117,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             private readonly IDictionary<string, ITemplateParameter> _parameters = new Dictionary<string, ITemplateParameter>(StringComparer.OrdinalIgnoreCase);
 
-            public ParameterSet(ConfigModel config)
+            public ParameterSet(IRunnableProjectConfig config)
             {
                 foreach(KeyValuePair<string, Parameter> p in config.Parameters)
                 {

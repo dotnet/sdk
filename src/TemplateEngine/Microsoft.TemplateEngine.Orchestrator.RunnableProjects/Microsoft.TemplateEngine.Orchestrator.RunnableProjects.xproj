@@ -18,7 +18,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties />
+      <UserProperties __JSONSchema="SimpleConfigSchema.json" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

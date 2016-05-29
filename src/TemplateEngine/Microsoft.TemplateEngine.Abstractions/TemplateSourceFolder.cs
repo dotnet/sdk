@@ -42,7 +42,26 @@ namespace Microsoft.TemplateEngine.Abstractions
             }
         }
 
-        protected virtual bool IsMatch(ITemplateSourceFile entry, string pattern)
+        public virtual IEnumerable<ITemplateSourceEntry> EnumerateFileSystemInfos(string pattern, SearchOption searchOption)
+        {
+            foreach (ITemplateSourceEntry child in Children)
+            {
+                if (IsMatch(child, pattern))
+                {
+                    yield return child;
+                }
+
+                if (searchOption == SearchOption.AllDirectories && child.Kind == TemplateSourceEntryKind.Folder)
+                {
+                    foreach (ITemplateSourceEntry entry in ((ITemplateSourceFolder)child).EnumerateFileSystemInfos(pattern, SearchOption.AllDirectories))
+                    {
+                        yield return entry;
+                    }
+                }
+            }
+        }
+
+        protected virtual bool IsMatch(ITemplateSourceEntry entry, string pattern)
         {
             string rx = Regex.Escape(pattern);
             rx = rx.Replace("\\*", ".*").Replace("\\?", ".?");

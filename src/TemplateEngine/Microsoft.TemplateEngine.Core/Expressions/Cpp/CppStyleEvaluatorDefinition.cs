@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Text;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 {
@@ -9,6 +11,19 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
     {
         private const int ReservedTokenCount = 22;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
+
+        public static bool EvaluateFromString(string text, VariableCollection variables)
+        {
+            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
+            using (MemoryStream res = new MemoryStream())
+            {
+                EngineConfig cfg = new EngineConfig(variables);
+                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, new IOperationProvider[0]);
+                int len = 0;
+                int pos = 0;
+                return CppStyleEvaluator(state, ref len, ref pos);
+            }
+        }
 
         public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
         {

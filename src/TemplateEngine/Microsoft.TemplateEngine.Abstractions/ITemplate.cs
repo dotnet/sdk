@@ -4,15 +4,23 @@ namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ITemplate
     {
+        string Author { get; }
+
+        IReadOnlyList<string> Classifications { get; }
+
+        string DefaultName { get; }
+
+        IGenerator Generator { get; }
+
+        string GroupIdentity { get; }
+
         string Name { get; }
 
         string ShortName { get; }
 
-        IGenerator Generator { get; }
-
         IConfiguredTemplateSource Source { get; }
 
-        string DefaultName { get; }
+        IReadOnlyDictionary<string, string> Tags { get; }
 
         bool TryGetProperty(string name, out string value);
     }
