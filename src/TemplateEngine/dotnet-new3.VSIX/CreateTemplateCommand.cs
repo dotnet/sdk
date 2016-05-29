@@ -5,10 +5,12 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -18,6 +20,7 @@ using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Newtonsoft.Json.Linq;
 
 namespace dotnet_new3.VSIX
 {
@@ -78,7 +81,7 @@ namespace dotnet_new3.VSIX
 
         private void QueryStatus(object sender, EventArgs e)
         {
-            OleMenuCommand s = (OleMenuCommand) sender;
+            OleMenuCommand s = (OleMenuCommand)sender;
             DTE2 dte = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
 
             bool on;
@@ -131,7 +134,7 @@ namespace dotnet_new3.VSIX
                 {
                     CreateProjectTemplate(proj);
                 }
-                else if(sln != null)
+                else if (sln != null)
                 {
                     CreateSolutionTemplate(sln);
                 }
@@ -140,31 +143,52 @@ namespace dotnet_new3.VSIX
 
         private void CreateSolutionTemplate(Solution solution)
         {
-            MessageBox.Show("Solution template path");
-            //string fullPath = solution.FullName;
-            //string dir = Path.GetDirectoryName(fullPath);
-            //string name = Path.GetFileNameWithoutExtension(fullPath);
-            //string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
-            //string guid = solution.Properties.Item("AssemblyGuid").Value.ToString();
+            string fullPath = solution.FullName;
+            string dir = Path.GetDirectoryName(fullPath);
+            string name = Path.GetFileNameWithoutExtension(fullPath);
+            string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
 
-            //InfoCollectorDialog win = new InfoCollectorDialog(name);
-            //if (win.ShowDialog().GetValueOrDefault())
-            //{
-            //    string friendlyName = win.FriendlyName;
-            //    string defaultName = win.DefaultName;
-            //    string shortName = win.ShortName;
+            InfoCollectorDialog win = new InfoCollectorDialog(name);
+            if (win.ShowDialog().GetValueOrDefault())
+            {
+                const string solutionTemplate = @"{
+    ""author"": """",
+    ""classifications"": """",
+    ""displayName"": """",
+    ""name"": """",
+    ""defaultName"": """",
+    ""groupIdentity"": """",
+    ""tags"": { },
+    ""shortName"": """",
+    ""sourceName"": """",
+    ""guids"": [ ]
+}";
+                
+                JObject o = JObject.Parse(solutionTemplate);
+                o["author"] = win.AuthorTextBox.Text;
+                o["displayName"] = win.FriendlyNameTextBox.Text;
+                o["name"] = win.FriendlyNameTextBox.Text;
+                o["defaultName"] = Path.GetFileNameWithoutExtension(solution.FullName);
+                o["sourceName"] = Path.GetFileNameWithoutExtension(solution.FullName);
+                o["shortName"] = win.ShortNameTextBox.Text;
+                JArray guids = (JArray)o["guids"];
 
-            //    string output = Resources.TemplateFile;
-            //    output = output.Replace("{FriendlyName}", friendlyName);
-            //    output = output.Replace("{DefaultName}", defaultName);
-            //    output = output.Replace("{ShortName}", shortName);
-            //    output = output.Replace("{ProjectName}", name);
-            //    output = output.Replace("{Extension}", ext);
-            //    output = output.Replace("{ProjectGuid}", guid);
-            //    output = output.Replace("{UpperProjectGuid}", $"{{{guid}}}".ToUpperInvariant());
+                Regex rx = new Regex(@"\{?[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}?", RegexOptions.IgnoreCase);
+                string contents = File.ReadAllText(solution.FullName);
+                HashSet<Guid> distinctGuids = new HashSet<Guid>();
 
-            //    File.WriteAllText(Path.Combine(dir, ".netnew.json"), output);
-            //}
+                foreach(Match match in rx.Matches(contents))
+                {
+                    distinctGuids.Add(Guid.Parse(match.Value));
+                }
+
+                foreach(Guid g in distinctGuids)
+                {
+                    guids.Add(g);
+                }
+
+                File.WriteAllText(Path.Combine(dir, ".netnew.json"), o.ToString());
+            }
         }
 
         private void CreateProjectTemplate(Project proj)
@@ -173,14 +197,6 @@ namespace dotnet_new3.VSIX
             string dir = Path.GetDirectoryName(fullPath);
             string name = Path.GetFileNameWithoutExtension(fullPath);
             string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
-            string guid = proj.Properties.Item("AssemblyGuid").Value.ToString();
-
-            string projectDeclaredGuid = ExtractProjectGuid(fullPath);
-
-            if (string.IsNullOrEmpty(guid))
-            {
-                guid = projectDeclaredGuid;
-            }
 
             InfoCollectorDialog win = new InfoCollectorDialog(name);
             if (win.ShowDialog().GetValueOrDefault())
@@ -189,16 +205,30 @@ namespace dotnet_new3.VSIX
                 string defaultName = win.DefaultName;
                 string shortName = win.ShortName;
 
-                string output = Resources.TemplateFile;
-                output = output.Replace("{FriendlyName}", friendlyName);
-                output = output.Replace("{DefaultName}", defaultName);
-                output = output.Replace("{ShortName}", shortName);
-                output = output.Replace("{ProjectName}", name);
-                output = output.Replace("{Extension}", ext);
-                output = output.Replace("{ProjectGuid}", guid);
-                output = output.Replace("{ProjectDeclaredGuid}", projectDeclaredGuid);
+                const string solutionTemplate = @"{
+    ""author"": """",
+    ""classifications"": """",
+    ""displayName"": """",
+    ""name"": """",
+    ""defaultName"": """",
+    ""groupIdentity"": """",
+    ""tags"": { },
+    ""shortName"": """",
+    ""sourceName"": """",
+    ""guids"": [ ]
+}";
 
-                File.WriteAllText(Path.Combine(dir, ".netnew.json"), output);
+                JObject o = JObject.Parse(solutionTemplate);
+                o["author"] = win.AuthorTextBox.Text;
+                o["displayName"] = win.FriendlyNameTextBox.Text;
+                o["name"] = win.FriendlyNameTextBox.Text;
+                o["defaultName"] = Path.GetFileNameWithoutExtension(proj.FullName);
+                o["sourceName"] = Path.GetFileNameWithoutExtension(proj.FullName);
+                o["shortName"] = win.ShortNameTextBox.Text;
+                JArray guids = (JArray)o["guids"];
+                guids.Add(ExtractProjectGuid(fullPath));
+
+                File.WriteAllText(Path.Combine(dir, ".netnew.json"), o.ToString());
             }
         }
 

@@ -14,18 +14,22 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.Column="0">Friendly Name</Label>
-        <TextBox Grid.Row="0" Grid.Column="1" x:Name="FriendlyNameTextBox" />
+        <Label Grid.Row="0" Grid.Column="0">Author</Label>
+        <TextBox Grid.Row="0" Grid.Column="1" x:Name="AuthorTextBox" />
+        
+        <Label Grid.Row="1" Grid.Column="0">Friendly Name</Label>
+        <TextBox Grid.Row="1" Grid.Column="1" x:Name="FriendlyNameTextBox" />
 
-        <Label Grid.Row="1" Grid.Column="0">Default Name</Label>
-        <TextBox Grid.Row="1" Grid.Column="1" x:Name="DefaultNameTextBox" />
+        <Label Grid.Row="2" Grid.Column="0">Default Name</Label>
+        <TextBox Grid.Row="2" Grid.Column="1" x:Name="DefaultNameTextBox" />
 
-        <Label Grid.Row="2" Grid.Column="0">Short Name</Label>
-        <TextBox Grid.Row="2" Grid.Column="1" x:Name="ShortNameTextBox" />
+        <Label Grid.Row="3" Grid.Column="0">Short Name</Label>
+        <TextBox Grid.Row="3" Grid.Column="1" x:Name="ShortNameTextBox" />
 
-        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Grid.Column="0" Grid.ColumnSpan="2">
+        <StackPanel Orientation="Horizontal" Grid.Row="4" HorizontalAlignment="Right" Grid.Column="0" Grid.ColumnSpan="2">
             <Button Click="OnOk" Width="100" Margin="3" IsDefault="True">OK</Button>
             <Button Click="OnCancel" Width="100" Margin="3" IsCancel="True">Cancel</Button>
         </StackPanel>

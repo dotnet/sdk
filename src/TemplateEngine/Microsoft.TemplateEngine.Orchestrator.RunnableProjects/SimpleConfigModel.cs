@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         string[] includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" });
                         string[] excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" });
-                        string[] copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new string[0]);
+                        string[] copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" });
 
                         sources.Add(new FileSource
                         {
@@ -442,7 +442,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             internal void Evaluate(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
             {
                 List<FileSource> sources = new List<FileSource>();
-                bool stable = false;
+                bool stable = _simpleConfigModel.Symbols == null;
                 Dictionary<string, bool> computed = new Dictionary<string, bool>();
 
                 while (!stable)
@@ -466,7 +466,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     List<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" }).ToList();
                     List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" }).ToList();
-                    List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new string[0]).ToList();
+                    List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" }).ToList();
 
                     if (source.Modifiers != null)
                     {
@@ -487,7 +487,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     string val;
                     if (parameters.TryGetParameter(_simpleConfigModel._safeNameName, out param) && parameters.ParameterValues.TryGetValue(param, out val))
                     {
-                        foreach(ITemplateSourceEntry entry in configFile.Parent.EnumerateFileSystemInfos($"{_simpleConfigModel.SourceName}.*", SearchOption.AllDirectories))
+                        foreach(ITemplateSourceEntry entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
                             renames[tmpltRel] = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
