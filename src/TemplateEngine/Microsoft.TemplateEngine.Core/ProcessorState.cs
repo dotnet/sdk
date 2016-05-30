@@ -12,6 +12,7 @@ namespace Microsoft.TemplateEngine.Core
         private readonly Stream _target;
         private readonly Trie _trie;
         private Encoding _encoding;
+        private static readonly Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>> _trieLookup = new Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>>();
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, EngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
@@ -52,14 +53,27 @@ namespace Microsoft.TemplateEngine.Core
             CurrentBufferPosition = bom.Length;
             target.Write(bom, 0, bom.Length);
 
-            IOperation[] operations = new IOperation[operationProviders.Count];
-
-            for (int i = 0; i < operations.Length; ++i)
+            Dictionary<Encoding, Trie> byEncoding;
+            if(!_trieLookup.TryGetValue(operationProviders, out byEncoding))
             {
-                operations[i] = operationProviders[i].GetOperation(encoding, this);
+                _trieLookup[operationProviders] = byEncoding = new Dictionary<Encoding, Trie>();
             }
 
-            _trie = Trie.Create(operations);
+            if (!byEncoding.TryGetValue(encoding, out _trie))
+            {
+                List<IOperation> operations = new List<IOperation>(operationProviders.Count);
+
+                for (int i = 0; i < operationProviders.Count; ++i)
+                {
+                    IOperation op = operationProviders[i].GetOperation(encoding, this);
+                    if (op != null)
+                    {
+                        operations.Add(op);
+                    }
+                }
+
+                byEncoding[encoding] = _trie = Trie.Create(operations);
+            }
 
             if (bufferSize < _trie.MaxLength && !sizedToStream)
             {

@@ -74,9 +74,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 case Operator.Xor:
                     return EvaluateSides(Left, Right, x => (bool)x, (x, y) => x ^ y);
                 case Operator.EqualTo:
-                    return EvaluateSides(Left, Right, x => x, Equals);
+                    return EvaluateSides(Left, Right, x => x, LenientEquals);
                 case Operator.NotEqualTo:
-                    return EvaluateSides(Left, Right, x => x, (x, y) => !Equals(x, y));
+                    return EvaluateSides(Left, Right, x => x, (x, y) => !LenientEquals(x, y));
                 case Operator.GreaterThan:
                     return EvaluateSides(Left, Right, Convert.ToDouble, (x, y) => x > y);
                 case Operator.GreaterThanOrEqualTo:
@@ -101,6 +101,18 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                     return false;
             }
+        }
+
+        private static bool LenientEquals(object x, object y)
+        {
+            string sx = x as string, sy = y as string;
+
+            if(sx != null && sy != null)
+            {
+                return string.Equals(sx, sy, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return Equals(x, y);
         }
     }
 }

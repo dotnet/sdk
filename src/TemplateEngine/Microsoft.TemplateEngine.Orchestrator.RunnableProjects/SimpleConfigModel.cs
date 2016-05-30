@@ -196,8 +196,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (_special == null)
                 {
                     Dictionary<string, Dictionary<string, JObject>> specials = new Dictionary<string, Dictionary<string, JObject>>();
+                    specials["**/*.css"] = ProduceConfig("/* ", "/* ", false);
+                    specials["**/*.css.min"] = ProduceConfig("/* ", "/* ", false);
+
                     specials["**/*.cs"] = ProduceConfig("//", "#", false);
                     specials["**/*.cpp"] = ProduceConfig("//", "#", false);
+                    specials["**/*.hpp"] = ProduceConfig("//", "#", false);
                     specials["**/*.h"] = ProduceConfig("//", "#", false);
 
                     specials["**/*.*proj"] = ProduceConfig("<!--/", "<!--#", false);
@@ -206,6 +210,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     specials["**/*.jsp"] = ProduceConfig("<!--", "<!--#", false);
                     specials["**/*.asp"] = ProduceConfig("<!--", "<!--#", false);
                     specials["**/*.aspx"] = ProduceConfig("<!--", "<!--#", false);
+
                     _special = specials;
                 }
 
@@ -412,7 +417,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyDictionary<string, JObject> Config => ((IRunnableProjectConfig)_simpleConfigModel).Config;
 
-            public string DefaultName => _simpleConfigModel.DefaultName;
+            public string DefaultName => _simpleConfigModel.DefaultName ?? _simpleConfigModel.SourceName;
 
             public string GroupIdentity => _simpleConfigModel.GroupIdentity;
 
@@ -483,9 +488,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     Dictionary<string, string> renames = new Dictionary<string, string>();
 
-                    ITemplateParameter param;
                     string val;
-                    if (parameters.TryGetParameter(_simpleConfigModel._safeNameName, out param) && parameters.ParameterValues.TryGetValue(param, out val))
+                    if (parameters.ParameterValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
                     {
                         foreach(ITemplateSourceEntry entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {

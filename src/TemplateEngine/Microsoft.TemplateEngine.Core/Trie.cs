@@ -18,22 +18,25 @@ namespace Microsoft.TemplateEngine.Core
 
         public IOperation End { get; private set; }
 
-        public static Trie Create(IOperation[] modifiers)
+        public static Trie Create(IReadOnlyList<IOperation> modifiers)
         {
             Trie root = new Trie();
             Trie current = root;
             int length = 0;
             int minLength = 0;
 
-            for (int i = 0; i < modifiers.Length; ++i)
+            for (int i = 0; i < modifiers.Count; ++i)
             {
                 for (int k = 0; k < modifiers[i].Tokens.Count; ++k)
                 {
                     length = Math.Max(length, modifiers[i].Tokens[k].Length);
 
-                    minLength = minLength == 0
-                        ? modifiers[i].Tokens[k].Length
-                        : Math.Min(minLength, modifiers[i].Tokens[k].Length);
+                    if (modifiers[i].Tokens[k].Length > 0)
+                    {
+                        minLength = minLength == 0
+                            ? modifiers[i].Tokens[k].Length
+                            : Math.Min(minLength, modifiers[i].Tokens[k].Length);
+                    }
 
                     for (int j = 0; j < modifiers[i].Tokens[k].Length; ++j)
                     {

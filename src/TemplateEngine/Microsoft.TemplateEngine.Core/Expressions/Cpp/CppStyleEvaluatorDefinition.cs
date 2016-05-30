@@ -11,6 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
     {
         private const int ReservedTokenCount = 22;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
+        private static readonly IOperationProvider[] NoOperationProviders = new IOperationProvider[0];
 
         public static bool EvaluateFromString(string text, VariableCollection variables)
         {
@@ -18,7 +19,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             using (MemoryStream res = new MemoryStream())
             {
                 EngineConfig cfg = new EngineConfig(variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, new IOperationProvider[0]);
+                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
                 return CppStyleEvaluator(state, ref len, ref pos);

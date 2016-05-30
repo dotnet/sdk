@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Generator = generator;
             Source = source;
             Config = config;
-            DefaultName = config.DefaultName ?? config.Name;
+            DefaultName = config.DefaultName;
             Name = config.Name;
             ShortName = config.ShortName;
             Author = config.Author;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.TemplateEngine.Core
@@ -18,7 +19,14 @@ namespace Microsoft.TemplateEngine.Core
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
             byte[] token = encoding.GetBytes(_match);
-            return new Impl(token, encoding.GetBytes(_replaceWith));
+            byte[] replaceWith = encoding.GetBytes(_replaceWith);
+
+            if(token.SequenceEqual(replaceWith))
+            {
+                return null;
+            }
+
+            return new Impl(token, replaceWith);
         }
 
         private class Impl : IOperation
