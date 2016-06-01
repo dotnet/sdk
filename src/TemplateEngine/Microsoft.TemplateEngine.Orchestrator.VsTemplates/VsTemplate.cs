@@ -65,6 +65,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 
         public string ShortName => Name;
 
+        public string Identity => Name;
+
         public bool TryGetProperty(string name, out string value)
         {
             switch (name.ToLowerInvariant())

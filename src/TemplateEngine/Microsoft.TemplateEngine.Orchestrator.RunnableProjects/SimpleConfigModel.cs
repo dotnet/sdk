@@ -230,6 +230,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         [JsonIgnore]
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
+        [JsonProperty]
+        public string Identity { get; set; }
+
         public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
         {
             EvaluatedSimpleConfig config = new EvaluatedSimpleConfig(this);
@@ -420,6 +423,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             public string DefaultName => _simpleConfigModel.DefaultName ?? _simpleConfigModel.SourceName;
 
             public string GroupIdentity => _simpleConfigModel.GroupIdentity;
+
+            public string Identity => _simpleConfigModel.Identity;
 
             public string Name => _simpleConfigModel.Name;
 

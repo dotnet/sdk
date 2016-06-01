@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TemplateEngine.Abstractions
+﻿using System.Threading.Tasks;
+
+namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ITemplateSource : IComponent
     {
@@ -25,5 +27,13 @@
         bool IsEmbeddable { get; }
 
         bool CanHostEmbeddedSources { get; }
+
+        Task<bool> CheckForUpdatesAsync(string location);
+
+        string GetInstallPackageId(string location);
+
+        Task<bool> CheckForUpdatesAsync(IConfiguredTemplateSource source, string location);
+
+        string GetInstallPackageId(IConfiguredTemplateSource source, string location);
     }
 }

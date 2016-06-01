@@ -7,7 +7,10 @@
       "items": { "type": "string" },
       "minItems": 1
     },
-    "displayName": { "type": "string" },
+    "identity": {
+      "type": "string",
+      "minLength": 1
+    },
     "groupIdentity": { "type": "string" },
     "shortName": { "type": "string" },
     "tags": {
@@ -201,5 +204,5 @@
       }
     }
   },
-  "required": [ "author", "classifications", "displayName", "shortName" ]
+  "required": [ "author", "classifications", "name", "shortName", "identity" ]
 }

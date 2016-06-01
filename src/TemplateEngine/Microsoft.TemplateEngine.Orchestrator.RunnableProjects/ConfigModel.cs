@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
@@ -55,6 +56,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         [JsonIgnore]
         public ITemplateSourceFile SourceFile { get; set; }
+
+        [JsonProperty]
+        public string Identity { get; set; }
 
         public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
         {

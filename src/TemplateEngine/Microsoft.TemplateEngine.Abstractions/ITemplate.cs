@@ -10,6 +10,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string DefaultName { get; }
 
+        string Identity { get; }
+
         IGenerator Generator { get; }
 
         string GroupIdentity { get; }

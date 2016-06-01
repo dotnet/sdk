@@ -18,6 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Config = config;
             DefaultName = config.DefaultName;
             Name = config.Name;
+            Identity = config.Identity ?? config.Name;
             ShortName = config.ShortName;
             Author = config.Author;
             Tags = config.Tags;
@@ -25,6 +26,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             GroupIdentity = config.GroupIdentity;
             _raw = raw;
         }
+
+        public string Identity { get; }
 
         public string Author { get; }
 

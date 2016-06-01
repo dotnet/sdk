@@ -31,6 +31,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         ITemplateSourceFile SourceFile { set; }
 
+        string Identity { get; }
+
         IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations);
     }
 }

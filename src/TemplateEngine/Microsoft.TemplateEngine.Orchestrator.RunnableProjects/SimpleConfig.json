@@ -1,4 +1,5 @@
 ﻿{
+  "identity": "Microsoft.WebAndCloud.QuickStarts.Mvc.CSharp",
   "author": "Microsoft",
   "classifications": [ "Web & Cloud>>Quick Starts" ],
   "displayName": "My Template",

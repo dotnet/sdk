@@ -1,4 +1,4 @@
-using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -11,5 +11,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         string Alias { get; }
 
         string Location { get; }
+
+        IConfiguredTemplateSource ParentSource { get; }
     }
 }
