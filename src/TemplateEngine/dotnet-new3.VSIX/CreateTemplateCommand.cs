@@ -144,6 +144,7 @@ namespace dotnet_new3.VSIX
             string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
 
             InfoCollectorDialog win = new InfoCollectorDialog(name);
+            win.CenterInVs();
             if (win.ShowDialog().GetValueOrDefault())
             {
                 const string solutionTemplate = @"{
@@ -201,6 +202,7 @@ namespace dotnet_new3.VSIX
             string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
 
             InfoCollectorDialog win = new InfoCollectorDialog(name);
+            win.CenterInVs();
             if (win.ShowDialog().GetValueOrDefault())
             {
                 string friendlyName = win.FriendlyName;
