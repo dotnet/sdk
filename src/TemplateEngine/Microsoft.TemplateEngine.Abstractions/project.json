@@ -10,7 +10,7 @@
 
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": "dotnet5.5"
+      "imports": "portable-dnxcore50+net45+win8+wp8+wpa81"
     }
   }
 }

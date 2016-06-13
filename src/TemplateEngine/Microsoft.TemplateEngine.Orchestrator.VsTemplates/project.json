@@ -1,19 +1,21 @@
 ﻿{
-  "version": "1.0.0.0",
+  "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.NETCore.App": {
-      "version": "1.0.0-rc2-3002702",
-      "type": "platform"
-    },
     "Microsoft.TemplateEngine.Core": "1.0.0-*",
     "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
     "Microsoft.TemplateEngine.Runner": "1.0.0-*",
     "System.Xml.XPath.XDocument": "4.0.1-rc2-24103",
-    "Microsoft.Win32.Registry": "4.0.0-rc2-24103"
+    "Microsoft.Win32.Registry": "4.0.0-rc2-24103",
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0-rc2-3002702",
+      "type": "platform"
+    }
   },
 
   "frameworks": {
-    "netcoreapp1.0": {}
+    "netcoreapp1.0": {
+      "imports": "portable-dnxcore50+net45+win8+wp8+wpa81"
+    }
   }
 }
