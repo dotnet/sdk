@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Abstractions
             //Now that we've found our common point (and the index of the common segment _from the end_ of the source's parent chain)
             //  the number of levels up we need to go is the value of revIndex
             segments.InsertRange(0, Enumerable.Repeat("..", revIndex));
-            return string.Join("\\", segments);
+            return string.Join("/", segments);
         }
     }
 
