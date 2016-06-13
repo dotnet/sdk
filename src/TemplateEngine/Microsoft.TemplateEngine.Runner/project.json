@@ -4,14 +4,14 @@
   "dependencies": {
     "Microsoft.TemplateEngine.Core": "1.0.0-*",
     "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
-    "NETStandard.Library": {
-      "version": "1.5.0-rc2-24103",
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0-rc2-3002702",
       "type": "platform"
     }
   },
 
   "frameworks": {
-    "netstandard1.5": {
+    "netcoreapp1.0": {
       "imports": "dotnet5.5"
     }
   }
