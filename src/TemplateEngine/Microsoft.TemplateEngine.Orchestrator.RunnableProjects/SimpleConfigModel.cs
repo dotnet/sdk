@@ -488,7 +488,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
 
                     Dictionary<string, string> renames = new Dictionary<string, string>();
-                    Console.WriteLine(_simpleConfigModel.NameParameter);
+                    // Console.WriteLine(_simpleConfigModel.NameParameter);
 
                     string val;
                     if (parameters.ParameterValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
@@ -498,7 +498,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
                             string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
                             renames[tmpltRel] = outRel;
-                            Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
+                            // Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
                         }
                     }
 
