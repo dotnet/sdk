@@ -60,43 +60,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (_parameters == null)
                 {
-                    if (Symbols == null)
-                    {
-                        return new Dictionary<string, Parameter>
-                        {
-                            {
-                                "name",
-                                new Parameter
-                                {
-                                    IsName = true,
-                                    Requirement = TemplateParameterPriority.Implicit,
-                                    Name = "name",
-                                    DefaultValue = DefaultName ?? SourceName
-                                }
-                            }
-                        };
-                    }
-
                     Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
                     bool nameFound = false;
 
-                    foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                    if (Symbols == null)
                     {
-                        if (symbol.Value.Type == "parameter")
+                        parameters["name"] = new Parameter
                         {
-                            ParameterSymbol param = (ParameterSymbol)symbol.Value;
-                            bool isName = param.Binding == "name";
-                            nameFound |= isName;
-                            parameters[symbol.Key] = new Parameter
+                            IsName = true,
+                            Requirement = TemplateParameterPriority.Implicit,
+                            Name = "name",
+                            DefaultValue = DefaultName ?? SourceName
+                        };
+                    }
+                    else
+                    {
+                        foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                        {
+                            if (symbol.Value.Type == "parameter")
                             {
-                                DefaultValue = param.DefaultValue ?? (!param.IsRequired ? param.Replaces : null),
-                                Description = param.Description,
-                                IsName = isName,
-                                IsVariable = true,
-                                Name = symbol.Key,
-                                Requirement = param.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
-                                Type = param.Type
-                            };
+                                ParameterSymbol param = (ParameterSymbol)symbol.Value;
+                                bool isName = param.Binding == "name";
+                                nameFound |= isName;
+                                parameters[symbol.Key] = new Parameter
+                                {
+                                    DefaultValue = param.DefaultValue ?? (!param.IsRequired ? param.Replaces : null),
+                                    Description = param.Description,
+                                    IsName = isName,
+                                    IsVariable = true,
+                                    Name = symbol.Key,
+                                    Requirement = param.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
+                                    Type = param.Type
+                                };
+                            }
                         }
                     }
 
@@ -492,6 +488,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
 
                     Dictionary<string, string> renames = new Dictionary<string, string>();
+                    Console.WriteLine(_simpleConfigModel.NameParameter);
 
                     string val;
                     if (parameters.ParameterValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
@@ -499,7 +496,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         foreach(ITemplateSourceEntry entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
-                            renames[tmpltRel] = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
+                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
+                            renames[tmpltRel] = outRel;
+                            Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
                         }
                     }
 
