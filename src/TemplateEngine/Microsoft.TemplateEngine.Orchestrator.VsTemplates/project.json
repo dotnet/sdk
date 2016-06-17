@@ -5,10 +5,10 @@
     "Microsoft.TemplateEngine.Core": "1.0.0-*",
     "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
     "Microsoft.TemplateEngine.Runner": "1.0.0-*",
-    "System.Xml.XPath.XDocument": "4.0.1-rc2-24103",
-    "Microsoft.Win32.Registry": "4.0.0-rc2-24103",
+    "System.Xml.XPath.XDocument": "4.0.1",
+    "Microsoft.Win32.Registry": "4.0.0",
     "Microsoft.NETCore.App": {
-      "version": "1.0.0-rc2-3002702",
+      "version": "1.0.0",
       "type": "platform"
     }
   },
