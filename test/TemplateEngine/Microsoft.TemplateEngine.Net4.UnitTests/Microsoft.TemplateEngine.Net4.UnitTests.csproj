@@ -61,12 +61,6 @@
     <Compile Include="TrieTests.cs" />
     <Compile Include="VariablesTests.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Net4\Microsoft.TemplateEngine.Net4.csproj">
-      <Project>{46922f20-1842-4b76-a775-eacf40bd770b}</Project>
-      <Name>Microsoft.TemplateEngine.Net4</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

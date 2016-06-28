@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 
     internal class SpecificFilesMatcher : IPathMatcher
     {
-        private HashSet<string> _files;
+        private readonly HashSet<string> _files;
 
         public SpecificFilesMatcher(IEnumerable<string> files)
         {

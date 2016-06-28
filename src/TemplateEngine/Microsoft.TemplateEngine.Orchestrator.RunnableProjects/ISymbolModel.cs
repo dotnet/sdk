@@ -1,6 +1,3 @@
-using System.IO;
-using Newtonsoft.Json;
-
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public interface ISymbolModel

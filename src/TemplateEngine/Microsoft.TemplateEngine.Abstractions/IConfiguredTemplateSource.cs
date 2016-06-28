@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IConfiguredTemplateSource

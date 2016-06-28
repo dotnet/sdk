@@ -43,10 +43,6 @@
       <Project>{7052658b-5fde-4b13-b60d-a10eff979b19}</Project>
       <Name>Microsoft.TemplateEngine.Abstractions.Net4</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Net4\Microsoft.TemplateEngine.Net4.csproj">
-      <Project>{46922f20-1842-4b76-a775-eacf40bd770b}</Project>
-      <Name>Microsoft.TemplateEngine.Net4</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -22,10 +22,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator();
             GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special);
             IOperationProvider[] providers = configRunSpec.Operations.ToArray();
-            
-            foreach(KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
+
+            foreach (KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
             {
-                if(special.Key.IsMatch(".netnew.json"))
+                if (special.Key.IsMatch(".netnew.json"))
                 {
                     providers = special.Value.GetOperations(providers).ToArray();
                     break;
@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public ParameterSet(IRunnableProjectConfig config)
             {
-                foreach(KeyValuePair<string, Parameter> p in config.Parameters)
+                foreach (KeyValuePair<string, Parameter> p in config.Parameters)
                 {
                     p.Value.Name = p.Key;
                     _parameters[p.Key] = p.Value;

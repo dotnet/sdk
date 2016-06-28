@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class RunnableProjectTemplate : ITemplate
     {
-        private JObject _raw;
+        private readonly JObject _raw;
 
         public RunnableProjectTemplate(JObject raw, IGenerator generator, IConfiguredTemplateSource source, ITemplateSourceFile configFile, IRunnableProjectConfig config)
         {

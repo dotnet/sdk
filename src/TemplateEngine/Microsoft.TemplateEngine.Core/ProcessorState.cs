@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core
         private readonly Stream _target;
         private readonly Trie _trie;
         private Encoding _encoding;
-        private static readonly Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>> _trieLookup = new Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>>();
+        private static readonly Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>> TrieLookup = new Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>>();
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, EngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
@@ -54,9 +54,9 @@ namespace Microsoft.TemplateEngine.Core
             target.Write(bom, 0, bom.Length);
 
             Dictionary<Encoding, Trie> byEncoding;
-            if(!_trieLookup.TryGetValue(operationProviders, out byEncoding))
+            if(!TrieLookup.TryGetValue(operationProviders, out byEncoding))
             {
-                _trieLookup[operationProviders] = byEncoding = new Dictionary<Encoding, Trie>();
+                TrieLookup[operationProviders] = byEncoding = new Dictionary<Encoding, Trie>();
             }
 
             if (!byEncoding.TryGetValue(encoding, out _trie))
@@ -223,7 +223,7 @@ namespace Microsoft.TemplateEngine.Core
             _target.Flush();
             return modified;
         }
-        
+
         public void SeekBackUntil(SimpleTrie match)
         {
             SeekBackUntil(match, false);

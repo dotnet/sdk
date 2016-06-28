@@ -6,8 +6,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class RunSpec : IRunSpec
     {
-        private IReadOnlyList<IOperationProvider> _overrides;
-        private VariableCollection _vars;
+        private readonly IReadOnlyList<IOperationProvider> _overrides;
+        private readonly VariableCollection _vars;
 
         public RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, VariableCollection vars)
         {

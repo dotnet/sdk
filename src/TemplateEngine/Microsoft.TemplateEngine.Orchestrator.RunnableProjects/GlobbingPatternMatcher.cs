@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     public class GlobbingPatternMatcher : IPathMatcher
     {
         private readonly Regex _regex;
-        private static SimpleTrie _trie;
+        private static readonly SimpleTrie Trie;
 
         private enum GlobbingPatternToken
         {
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         static GlobbingPatternMatcher()
         {
-            _trie = new SimpleTrie();
+            Trie = new SimpleTrie();
             byte[] anyNumberOfPathParts = Encoding.UTF8.GetBytes("**/");
             byte[] onePathPart = Encoding.UTF8.GetBytes("*");
             byte[] wildcard = Encoding.UTF8.GetBytes("?");
@@ -34,13 +34,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             byte[] closeCharSet = Encoding.UTF8.GetBytes("]");
             byte[] separatorChar = Encoding.UTF8.GetBytes("/");
             byte[] separatorChar2 = Encoding.UTF8.GetBytes("\\");
-            _trie.AddToken(anyNumberOfPathParts);
-            _trie.AddToken(onePathPart);
-            _trie.AddToken(wildcard);
-            _trie.AddToken(openCharSet);
-            _trie.AddToken(closeCharSet);
-            _trie.AddToken(separatorChar);
-            _trie.AddToken(separatorChar2);
+            Trie.AddToken(anyNumberOfPathParts);
+            Trie.AddToken(onePathPart);
+            Trie.AddToken(wildcard);
+            Trie.AddToken(openCharSet);
+            Trie.AddToken(closeCharSet);
+            Trie.AddToken(separatorChar);
+            Trie.AddToken(separatorChar2);
         }
 
 
@@ -57,14 +57,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 int token;
                 int originalBufferPosition = currentBufferPosition;
-                if (!_trie.GetOperation(patternBytes, patternBytes.Length, ref currentBufferPosition, out token))
-                {
-                    tokens.Add(Tuple.Create(currentBufferPosition++, GlobbingPatternToken.Literal));
-                }
-                else
-                {
-                    tokens.Add(Tuple.Create(originalBufferPosition, (GlobbingPatternToken)token));
-                }
+                tokens.Add(!Trie.GetOperation(patternBytes, patternBytes.Length, ref currentBufferPosition, out token)
+                    ? Tuple.Create(currentBufferPosition++, GlobbingPatternToken.Literal)
+                    : Tuple.Create(originalBufferPosition, (GlobbingPatternToken) token));
             }
 
             StringBuilder rx = new StringBuilder("^");
@@ -84,7 +79,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (lastToken != GlobbingPatternToken.Literal)
                         {
                             literalBegin = tokens[i].Item1;
-                            lastToken = GlobbingPatternToken.Literal;
                         }
                         break;
                     case GlobbingPatternToken.AnyNumberOfPathParts:

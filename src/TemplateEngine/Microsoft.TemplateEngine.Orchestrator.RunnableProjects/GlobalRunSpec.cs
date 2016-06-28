@@ -23,9 +23,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<IPathMatcher, IRunSpec> Special { get; }
 
-        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
+        public IReadOnlyList<IPathMatcher> CopyOnly { get; }
 
-        public IReadOnlyDictionary<string, string> Rename { get; private set; }
+        public IReadOnlyDictionary<string, string> Rename { get; }
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             int expect = source.Include?.Length ?? 0;
             List<IPathMatcher> includes = new List<IPathMatcher>(expect);
-            if (expect > 0)
+            if (source.Include != null && expect > 0)
             {
                 foreach (string include in source.Include)
                 {
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             expect = source.CopyOnly?.Length ?? 0;
             List<IPathMatcher> copyOnlys = new List<IPathMatcher>(expect);
-            if (expect > 0)
+            if (source.CopyOnly != null && expect > 0)
             {
                 foreach (string copyOnly in source.CopyOnly)
                 {
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             expect = source.Exclude?.Length ?? 0;
             List<IPathMatcher> excludes = new List<IPathMatcher>(expect);
-            if (expect > 0)
+            if (source.Exclude != null && expect > 0)
             {
                 foreach (string exclude in source.Exclude)
                 {
@@ -67,17 +67,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             Exclude = excludes;
 
-            if (source.Rename != null)
-            {
-                Rename = new Dictionary<string, string>(source.Rename, StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                Rename = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            }
+            Rename = source.Rename != null
+                ? new Dictionary<string, string>(source.Rename, StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             VariableCollection variables;
-            Operations = ProcessOperations(parameters, templateRoot, operations, null, out variables);
+            Operations = ProcessOperations(parameters, templateRoot, operations, out variables);
             RootVariableCollection = variables;
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
 
@@ -90,7 +85,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = ProcessOperations(parameters, templateRoot, specialEntry.Value, variables, out specialVariables);
+                        specialOps = ProcessOperations(parameters, templateRoot, specialEntry.Value, out specialVariables);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
@@ -101,10 +96,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, ITemplateSourceFolder templateRoot, IReadOnlyDictionary<string, JObject> operations, VariableCollection parentVars, out VariableCollection variables)
+        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, ITemplateSourceFolder templateRoot, IReadOnlyDictionary<string, JObject> operations, out VariableCollection variables)
         {
             List<IOperationProvider> result = new List<IOperationProvider>();
-            VariableCollection vc = VariableCollection.Root();
             JObject variablesSection = operations["variables"];
 
             JObject data;
@@ -112,7 +106,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (JProperty property in data.Properties())
                 {
-                    RunMacros(property, variablesSection, parameters, result);
+                    RunMacros(property, variablesSection, parameters);
                 }
             }
 
@@ -120,7 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 string startToken = data["start"].ToString();
                 string endToken = data["end"].ToString();
-                result.Add(new Include(startToken, endToken, path => templateRoot.OpenFile(path)));
+                result.Add(new Include(startToken, endToken, templateRoot.OpenFile));
             }
 
             if (operations.TryGetValue("regions", out data))
@@ -188,7 +182,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     ITemplateParameter param;
                     if (parameters.TryGetParameter(property.Value.ToString(), out param))
                     {
-                        string val = string.Empty;
+                        string val;
                         try
                         {
                             val = parameters.ParameterValues[param];
@@ -268,7 +262,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return vc;
         }
 
-        private void RunMacros(JProperty macro, JObject variablesSection, IParameterSet parameters, List<IOperationProvider> result)
+        private void RunMacros(JProperty macro, JObject variablesSection, IParameterSet parameters)
         {
             RunnableProjectGenerator.ParameterSet set = (RunnableProjectGenerator.ParameterSet)parameters;
             string variableName = macro.Name;
@@ -277,27 +271,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             switch (def["type"].ToString())
             {
                 case "guid":
-                    HandleGuidAction(variableName, def, set, result);
+                    HandleGuidAction(variableName, def, set);
                     break;
                 case "random":
-                    HandleRandomAction(variableName, def, set, result);
+                    HandleRandomAction(variableName, def, set);
                     break;
                 case "now":
-                    HandleNowAction(variableName, def, set, result);
+                    HandleNowAction(variableName, def, set);
                     break;
                 case "evaluate":
-                    HandleEvaluateAction(variableName, variablesSection, def, set, result);
+                    HandleEvaluateAction(variableName, variablesSection, def, set);
                     break;
                 case "constant":
-                    HandleConstantAction(variableName, def, set, result);
+                    HandleConstantAction(variableName, def, set);
                     break;
                 case "regex":
-                    HandleRegexAction(variableName, variablesSection, def, set, result);
+                    HandleRegexAction(variableName, variablesSection, def, set);
                     break;
             }
         }
 
-        private void HandleRandomAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        private static void HandleRandomAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
             switch (def["action"].ToString())
             {
@@ -319,7 +313,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private void HandleRegexAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        private void HandleRegexAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
             VariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
             string action = def["action"]?.ToString();
@@ -344,13 +338,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         value = working?.ToString() ?? "";
                     }
 
-                    foreach (JToken child in steps)
+                    if (steps != null)
                     {
-                        JObject map = (JObject)child;
-                        string regex = map["regex"]?.ToString();
-                        string replaceWith = map["replacement"]?.ToString();
+                        foreach (JToken child in steps)
+                        {
+                            JObject map = (JObject) child;
+                            string regex = map["regex"]?.ToString();
+                            string replaceWith = map["replacement"]?.ToString();
 
-                        value = Regex.Replace(value, regex, replaceWith);
+                            value = Regex.Replace(value, regex, replaceWith);
+                        }
                     }
                     break;
             }
@@ -365,7 +362,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             parameters.ParameterValues[p] = value;
         }
 
-        private void HandleNowAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        private static void HandleNowAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
             string format = def["action"]?.ToString();
             bool utc = bool.Parse(def["utc"]?.ToString() ?? "False");
@@ -381,7 +378,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             parameters.ParameterValues[p] = value;
         }
 
-        private void HandleConstantAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        private static void HandleConstantAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
             string value = def["action"].ToString();
             Parameter p = new Parameter
@@ -394,7 +391,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             parameters.ParameterValues[p] = value;
         }
 
-        private void HandleEvaluateAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        private void HandleEvaluateAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
             ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
             VariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
@@ -438,7 +435,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public int CurrentBufferLength => CurrentBuffer.Length;
 
-            public int CurrentBufferPosition { get; private set; }
+            public int CurrentBufferPosition { get; }
 
             public Encoding Encoding { get; set; }
 
@@ -477,7 +474,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private void HandleGuidAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters, List<IOperationProvider> result)
+        private static void HandleGuidAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
             switch (def["action"].ToString())
             {
@@ -527,7 +524,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
+        private static VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
         {
             VariableCollection vc = new VariableCollection();
             foreach (ITemplateParameter parameter in parameters.Parameters)
@@ -535,7 +532,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Parameter param = (Parameter)parameter;
                 if (allParameters || param.IsVariable)
                 {
-                    string value = null;
+                    string value;
                     if (parameters.ParameterValues.TryGetValue(param, out value))
                     {
                         string key = string.Format(format ?? "{0}", param.Name);

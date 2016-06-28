@@ -14,9 +14,9 @@ namespace Microsoft.TemplateEngine.Core
 
         public bool? Default { get; }
 
-        public string OnNoEmit { get; private set; }
+        public string OnNoEmit { get; }
 
-        public string OffNoEmit { get; private set; }
+        public string OffNoEmit { get; }
 
         public SetFlag(string name, string on, string off, string onNoEmit, string offNoEmit, bool? @default = null)
         {
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core
                 }
 
                 //Only turn the flag in question back on if it's the "flags" flag.
-                //  Yes, we still need to emit it as the common case is for this 
+                //  Yes, we still need to emit it as the common case is for this
                 //  to be done in the template definition file
                 if (flagsOn)
                 {

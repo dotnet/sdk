@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         public SimpleConfigModel()
         {
-            Sources = new ExtendedFileSource[] { new ExtendedFileSource() };
+            Sources = new[] { new ExtendedFileSource() };
         }
 
         [JsonIgnore]
@@ -61,7 +61,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (_parameters == null)
                 {
                     Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
-                    bool nameFound = false;
 
                     if (Symbols == null)
                     {
@@ -81,7 +80,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             {
                                 ParameterSymbol param = (ParameterSymbol)symbol.Value;
                                 bool isName = param.Binding == "name";
-                                nameFound |= isName;
                                 parameters[symbol.Key] = new Parameter
                                 {
                                     DefaultValue = param.DefaultValue ?? (!param.IsRequired ? param.Replaces : null),
@@ -191,21 +189,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (_special == null)
                 {
-                    Dictionary<string, Dictionary<string, JObject>> specials = new Dictionary<string, Dictionary<string, JObject>>();
-                    specials["**/*.css"] = ProduceConfig("/* ", "/* ", false);
-                    specials["**/*.css.min"] = ProduceConfig("/* ", "/* ", false);
+                    Dictionary<string, Dictionary<string, JObject>> specials =
+                        new Dictionary<string, Dictionary<string, JObject>>
+                        {
+                            ["**/*.css"] = ProduceConfig("/* ", "/* ", false),
+                            ["**/*.css.min"] = ProduceConfig("/* ", "/* ", false),
+                            ["**/*.cs"] = ProduceConfig("//", "#", false),
+                            ["**/*.cpp"] = ProduceConfig("//", "#", false),
+                            ["**/*.hpp"] = ProduceConfig("//", "#", false),
+                            ["**/*.h"] = ProduceConfig("//", "#", false),
+                            ["**/*.*proj"] = ProduceConfig("<!--/", "<!--#", false),
+                            ["**/*.*html"] = ProduceConfig("<!--", "<!--#", false),
+                            ["**/*.*htm"] = ProduceConfig("<!--", "<!--#", false),
+                            ["**/*.jsp"] = ProduceConfig("<!--", "<!--#", false),
+                            ["**/*.asp"] = ProduceConfig("<!--", "<!--#", false),
+                            ["**/*.aspx"] = ProduceConfig("<!--", "<!--#", false)
+                        };
 
-                    specials["**/*.cs"] = ProduceConfig("//", "#", false);
-                    specials["**/*.cpp"] = ProduceConfig("//", "#", false);
-                    specials["**/*.hpp"] = ProduceConfig("//", "#", false);
-                    specials["**/*.h"] = ProduceConfig("//", "#", false);
 
-                    specials["**/*.*proj"] = ProduceConfig("<!--/", "<!--#", false);
-                    specials["**/*.*html"] = ProduceConfig("<!--", "<!--#", false);
-                    specials["**/*.*htm"] = ProduceConfig("<!--", "<!--#", false);
-                    specials["**/*.jsp"] = ProduceConfig("<!--", "<!--#", false);
-                    specials["**/*.asp"] = ProduceConfig("<!--", "<!--#", false);
-                    specials["**/*.aspx"] = ProduceConfig("<!--", "<!--#", false);
 
                     _special = specials;
                 }
@@ -215,7 +216,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         [JsonIgnore]
-        private Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
+        private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
         [JsonIgnore]
         IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//", true);
@@ -232,7 +233,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
         {
             EvaluatedSimpleConfig config = new EvaluatedSimpleConfig(this);
-            config.Evaluate(parameters, rootVariableCollection, configFile, operations);
+            config.Evaluate(parameters, rootVariableCollection, configFile);
             return config;
         }
 
@@ -402,7 +403,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class EvaluatedSimpleConfig : IRunnableProjectConfig
         {
-            private SimpleConfigModel _simpleConfigModel;
+            private readonly SimpleConfigModel _simpleConfigModel;
             private IReadOnlyList<FileSource> _sources;
 
             public EvaluatedSimpleConfig(SimpleConfigModel simpleConfigModel)
@@ -430,7 +431,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public ITemplateSourceFile SourceFile
             {
-                get { return _simpleConfigModel.SourceFile; }
+                private get { return _simpleConfigModel.SourceFile; }
                 set { _simpleConfigModel.SourceFile = value; }
             }
 
@@ -445,7 +446,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _simpleConfigModel.ReprocessWithParameters(parameters, rootVariableCollection, configFile, providers);
             }
 
-            internal void Evaluate(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
+            internal void Evaluate(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile)
             {
                 List<FileSource> sources = new List<FileSource>();
                 bool stable = _simpleConfigModel.Symbols == null;

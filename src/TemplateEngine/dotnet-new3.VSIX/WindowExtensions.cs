@@ -8,8 +8,8 @@ namespace dotnet_new3.VSIX
     {
         public static void CenterInVs(this Window window)
         {
-            var hwnd = new IntPtr(PrimaryPackage.DTE.MainWindow.HWnd);
-            var vs = (Window)HwndSource.FromHwnd(hwnd).RootVisual;
+            IntPtr hwnd = new IntPtr(PrimaryPackage.DTE.MainWindow.HWnd);
+            Window vs = HwndSource.FromHwnd(hwnd)?.RootVisual as Window;
             window.Owner = vs;
         }
     }

@@ -1,4 +1,3 @@
-using System;
 using Microsoft.TemplateEngine.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates

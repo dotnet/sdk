@@ -70,7 +70,7 @@ namespace dotnet_new3.VSIX
             commandService.AddCommand(menuItem2);
         }
 
-        private void ChangeHandler(object sender, EventArgs e)
+        private static void ChangeHandler(object sender, EventArgs e)
         {
         }
 
@@ -90,17 +90,8 @@ namespace dotnet_new3.VSIX
 
                 if (on)
                 {
-                    string dir;
-
-                    if (proj != null)
-                    {
-                        dir = proj.Properties.Item("FullPath").Value.ToString();
-                    }
-                    else
-                    {
-                        dir = sln.Properties.Item("Path").Value.ToString();
-                    }
-
+                    string dir = proj?.Properties.Item("FullPath").Value.ToString() ??
+                                 sln.Properties.Item("Path").Value.ToString();
                     on = !File.Exists(Path.Combine(dir, ".netnew.json"));
                 }
             }
@@ -141,7 +132,6 @@ namespace dotnet_new3.VSIX
             string fullPath = solution.FullName;
             string dir = Path.GetDirectoryName(fullPath);
             string name = Path.GetFileNameWithoutExtension(fullPath);
-            string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
 
             InfoCollectorDialog win = new InfoCollectorDialog(name);
             win.CenterInVs();
@@ -159,7 +149,7 @@ namespace dotnet_new3.VSIX
     ""sourceName"": """",
     ""guids"": [ ]
 }";
-                
+
                 JObject o = JObject.Parse(solutionTemplate);
                 o["author"] = win.AuthorTextBox.Text;
                 o["displayName"] = win.FriendlyNameTextBox.Text;
@@ -199,16 +189,11 @@ namespace dotnet_new3.VSIX
             string fullPath = proj.FullName;
             string dir = Path.GetDirectoryName(fullPath);
             string name = Path.GetFileNameWithoutExtension(fullPath);
-            string ext = Path.GetExtension(fullPath).TrimStart('.').ToLowerInvariant();
 
             InfoCollectorDialog win = new InfoCollectorDialog(name);
             win.CenterInVs();
             if (win.ShowDialog().GetValueOrDefault())
             {
-                string friendlyName = win.FriendlyName;
-                string defaultName = win.DefaultName;
-                string shortName = win.ShortName;
-
                 const string solutionTemplate = @"{
     ""author"": """",
     ""classifications"": """",
@@ -236,7 +221,7 @@ namespace dotnet_new3.VSIX
             }
         }
 
-        private string ExtractProjectGuid(string fullPath)
+        private static string ExtractProjectGuid(string fullPath)
         {
             XDocument doc = XDocument.Load(fullPath);
             XElement element = doc.Descendants().First(x => x.Name.LocalName == "ProjectGuid");

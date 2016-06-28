@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.TemplateEngine
+namespace Microsoft.TemplateEngine.Core
 {
     public static class HappyPath
     {
@@ -29,15 +29,10 @@ namespace Microsoft.TemplateEngine
             {
                 if(_userProfileDir == null)
                 {
-                    string profileDir;
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        profileDir = Environment.GetEnvironmentVariable("USERPROFILE");
-                    }
-                    else
-                    {
-                        profileDir = Environment.GetEnvironmentVariable("HOME");
-                    }
+                    string profileDir =
+                        Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                            ? "USERPROFILE"
+                            : "HOME");
 
                     _userProfileDir = profileDir;
                 }
