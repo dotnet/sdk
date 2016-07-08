@@ -4,7 +4,6 @@
   "dependencies": {
     "Microsoft.TemplateEngine.Core": "1.0.0-*",
     "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
-    "Microsoft.TemplateEngine.Runner": "1.0.0-*",
     "Newtonsoft.Json": "9.0.1",
     "Microsoft.NETCore.App": {
       "version": "1.0.0",

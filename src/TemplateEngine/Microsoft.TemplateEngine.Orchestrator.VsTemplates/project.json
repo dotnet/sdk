@@ -4,7 +4,6 @@
   "dependencies": {
     "Microsoft.TemplateEngine.Core": "1.0.0-*",
     "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
-    "Microsoft.TemplateEngine.Runner": "1.0.0-*",
     "System.Xml.XPath.XDocument": "4.0.1",
     "Microsoft.Win32.Registry": "4.0.0",
     "Microsoft.NETCore.App": {
