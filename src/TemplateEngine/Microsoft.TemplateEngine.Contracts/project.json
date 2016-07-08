@@ -2,11 +2,15 @@
   "version": "1.0.0-*",
 
   "dependencies": {
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0",
       "type": "platform"
     }
   },
 
   "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "portable-dnxcore50+net45+win8+wp8+wpa81"
     }
   }
 }
