@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {
@@ -10,11 +11,11 @@ namespace Microsoft.TemplateEngine.Core
         private readonly int _flushThreshold;
         private readonly Stream _source;
         private readonly Stream _target;
-        private readonly Trie _trie;
+        private readonly OperationTrie _trie;
         private Encoding _encoding;
-        private static readonly Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>> TrieLookup = new Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie>>();
+        private static readonly Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>> TrieLookup = new Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>>();
 
-        public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, EngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
+        public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IEngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
             bool sizedToStream = false;
 
@@ -53,10 +54,10 @@ namespace Microsoft.TemplateEngine.Core
             CurrentBufferPosition = bom.Length;
             target.Write(bom, 0, bom.Length);
 
-            Dictionary<Encoding, Trie> byEncoding;
+            Dictionary<Encoding, OperationTrie> byEncoding;
             if(!TrieLookup.TryGetValue(operationProviders, out byEncoding))
             {
-                TrieLookup[operationProviders] = byEncoding = new Dictionary<Encoding, Trie>();
+                TrieLookup[operationProviders] = byEncoding = new Dictionary<Encoding, OperationTrie>();
             }
 
             if (!byEncoding.TryGetValue(encoding, out _trie))
@@ -72,7 +73,7 @@ namespace Microsoft.TemplateEngine.Core
                     }
                 }
 
-                byEncoding[encoding] = _trie = Trie.Create(operations);
+                byEncoding[encoding] = _trie = OperationTrie.Create(operations);
             }
 
             if (bufferSize < _trie.MaxLength && !sizedToStream)
@@ -86,7 +87,7 @@ namespace Microsoft.TemplateEngine.Core
             }
         }
 
-        public EngineConfig Config { get; }
+        public IEngineConfig Config { get; }
 
         public byte[] CurrentBuffer { get; }
 
@@ -104,7 +105,7 @@ namespace Microsoft.TemplateEngine.Core
             }
         }
 
-        public EncodingConfig EncodingConfig { get; private set; }
+        public IEncodingConfig EncodingConfig { get; private set; }
 
         public void AdvanceBuffer(int bufferPosition)
         {
@@ -224,12 +225,12 @@ namespace Microsoft.TemplateEngine.Core
             return modified;
         }
 
-        public void SeekBackUntil(SimpleTrie match)
+        public void SeekBackUntil(ITokenTrie match)
         {
             SeekBackUntil(match, false);
         }
 
-        public void SeekBackUntil(SimpleTrie match, bool consume)
+        public void SeekBackUntil(ITokenTrie match, bool consume)
         {
             byte[] buffer = new byte[match.MaxLength];
             while (_target.Position > 0)
@@ -281,7 +282,7 @@ namespace Microsoft.TemplateEngine.Core
             }
         }
 
-        public void SeekBackWhile(SimpleTrie match)
+        public void SeekBackWhile(ITokenTrie match)
         {
             byte[] buffer = new byte[match.MaxLength];
             while (_target.Position > 0)
@@ -333,7 +334,7 @@ namespace Microsoft.TemplateEngine.Core
             }
         }
 
-        public void SeekForwardThrough(SimpleTrie match, ref int bufferLength, ref int currentBufferPosition)
+        public void SeekForwardThrough(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition)
         {
             while (bufferLength >= match.MinLength)
             {
@@ -367,7 +368,7 @@ namespace Microsoft.TemplateEngine.Core
             currentBufferPosition = bufferLength;
         }
 
-        public void SeekForwardWhile(SimpleTrie match, ref int bufferLength, ref int currentBufferPosition)
+        public void SeekForwardWhile(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition)
         {
             while (bufferLength > match.MinLength)
             {

@@ -3,12 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 {
     internal class VsTemplate : ITemplate
     {
-        public VsTemplate(ITemplateSourceFile source, IConfiguredTemplateSource templateSource, IGenerator generator)
+        public VsTemplate(IFile source, IMountPoint templateSource, IGenerator generator)
         {
             SourceFile = source;
             Source = templateSource;
@@ -50,13 +51,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 
         public IReadOnlyDictionary<string, string> Tags => new Dictionary<string, string>();
 
-        public IConfiguredTemplateSource Source { get; }
+        public IMountPoint Source { get; }
 
         public IReadOnlyList<string> Classifications => new List<string>();
 
         public string DefaultName { get; }
 
-        public ITemplateSourceFile SourceFile { get; }
+        public IFile SourceFile { get; }
 
         public XDocument VsTemplateFile { get; }
 
@@ -78,12 +79,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
             value = null;
             return false;
         }
-    }
-
-    internal class CustomParameter
-    {
-        public string Name { get; set; }
-
-        public string DefaultValue { get; set; }
     }
 }

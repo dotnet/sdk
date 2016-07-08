@@ -4,9 +4,11 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
-using Microsoft.TemplateEngine.Runner;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -19,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IOperationProvider> Operations { get; }
 
-        public VariableCollection RootVariableCollection { get; }
+        public IVariableCollection RootVariableCollection { get; }
 
         public IReadOnlyDictionary<IPathMatcher, IRunSpec> Special { get; }
 
@@ -32,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(FileSource source, ITemplateSourceFolder templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
+        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
         {
             int expect = source.Include?.Length ?? 0;
             List<IPathMatcher> includes = new List<IPathMatcher>(expect);
@@ -71,7 +73,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 ? new Dictionary<string, string>(source.Rename, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            VariableCollection variables;
+            IVariableCollection variables;
             Operations = ProcessOperations(parameters, templateRoot, operations, out variables);
             RootVariableCollection = variables;
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
@@ -81,7 +83,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 foreach (KeyValuePair<string, Dictionary<string, JObject>> specialEntry in special)
                 {
                     IReadOnlyList<IOperationProvider> specialOps = null;
-                    VariableCollection specialVariables = variables;
+                    IVariableCollection specialVariables = variables;
 
                     if (specialEntry.Value != null)
                     {
@@ -96,7 +98,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, ITemplateSourceFolder templateRoot, IReadOnlyDictionary<string, JObject> operations, out VariableCollection variables)
+        private IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operations, out IVariableCollection variables)
         {
             List<IOperationProvider> result = new List<IOperationProvider>();
             JObject variablesSection = operations["variables"];
@@ -114,7 +116,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 string startToken = data["start"].ToString();
                 string endToken = data["end"].ToString();
-                result.Add(new Include(startToken, endToken, templateRoot.OpenFile));
+                result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead()));
             }
 
             if (operations.TryGetValue("regions", out data))
@@ -202,9 +204,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return result;
         }
 
-        private VariableCollection HandleVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
+        private static IVariableCollection HandleVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
         {
-            VariableCollection vc = VariableCollection.Root();
+            IVariableCollection vc = VariableCollection.Root();
             JToken expandToken;
             if (data.TryGetValue("expand", out expandToken) && expandToken.Type == JTokenType.Boolean && expandToken.ToObject<bool>())
             {
@@ -247,9 +249,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (JToken order in ((JArray)data["order"]).Children())
             {
-                VariableCollection current = collections[order.ToString()];
+                IVariableCollection current = collections[order.ToString()];
 
-                VariableCollection tmp = current;
+                IVariableCollection tmp = current;
                 while (tmp.Parent != null)
                 {
                     tmp = tmp.Parent;
@@ -315,7 +317,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private void HandleRegexAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
-            VariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
+            IVariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
             string action = def["action"]?.ToString();
             string value = null;
 
@@ -394,7 +396,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private void HandleEvaluateAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters)
         {
             ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
-            VariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
+            IVariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
             switch (def["evaluator"]?.ToString() ?? "C++")
             {
                 case "C++":
@@ -420,7 +422,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class ProcessorState : IProcessorState
         {
-            public ProcessorState(VariableCollection vars, byte[] buffer, Encoding encoding)
+            public ProcessorState(IVariableCollection vars, byte[] buffer, Encoding encoding)
             {
                 Config = new EngineConfig(vars);
                 CurrentBuffer = buffer;
@@ -429,7 +431,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 EncodingConfig = new EncodingConfig(Config, encoding);
             }
 
-            public EngineConfig Config { get; }
+            public IEngineConfig Config { get; }
 
             public byte[] CurrentBuffer { get; private set; }
 
@@ -439,7 +441,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public Encoding Encoding { get; set; }
 
-            public EncodingConfig EncodingConfig { get; }
+            public IEncodingConfig EncodingConfig { get; }
 
             public void AdvanceBuffer(int bufferPosition)
             {
@@ -448,27 +450,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 CurrentBuffer = tmp;
             }
 
-            public void SeekBackUntil(SimpleTrie match)
+            public void SeekBackUntil(ITokenTrie match)
             {
                 throw new NotImplementedException();
             }
 
-            public void SeekBackUntil(SimpleTrie match, bool consume)
+            public void SeekBackUntil(ITokenTrie match, bool consume)
             {
                 throw new NotImplementedException();
             }
 
-            public void SeekBackWhile(SimpleTrie match)
+            public void SeekBackWhile(ITokenTrie match)
             {
                 throw new NotImplementedException();
             }
 
-            public void SeekForwardThrough(SimpleTrie trie, ref int bufferLength, ref int currentBufferPosition)
+            public void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
             {
                 throw new NotImplementedException();
             }
 
-            public void SeekForwardWhile(SimpleTrie trie, ref int bufferLength, ref int currentBufferPosition)
+            public void SeekForwardWhile(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
             {
                 throw new NotImplementedException();
             }

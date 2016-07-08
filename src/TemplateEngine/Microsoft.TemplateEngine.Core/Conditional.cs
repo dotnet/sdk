@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {
@@ -50,7 +51,7 @@ namespace Microsoft.TemplateEngine.Core
                 endToken
             };
 
-            SimpleTrie trie = new SimpleTrie();
+            TokenTrie trie = new TokenTrie();
             trie.AddToken(ifToken, 0);
             trie.AddToken(endToken, 1);
 
@@ -80,9 +81,9 @@ namespace Microsoft.TemplateEngine.Core
             private EvaluationState _current;
             private readonly int _elseIfTokenIndex;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
-            private readonly SimpleTrie _trie;
+            private readonly TokenTrie _trie;
 
-            public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, int elseIfTokenIndex, SimpleTrie trie)
+            public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, int elseIfTokenIndex, TokenTrie trie)
             {
                 _trie = trie;
                 _elseIfTokenIndex = elseIfTokenIndex;

@@ -1,38 +1,38 @@
-using System.Collections.Generic;
-using System.IO;
+//using System.Collections.Generic;
+//using System.IO;
 
-namespace Microsoft.TemplateEngine.Abstractions
-{
-    public interface ITemplateSourceEntry
-    {
-        string Name { get; }
+//namespace Microsoft.TemplateEngine.Abstractions
+//{
+//    public interface ITemplateSourceEntry
+//    {
+//        string Name { get; }
 
-        string FullPath { get; }
+//        string FullPath { get; }
 
-        TemplateSourceEntryKind Kind { get; }
+//        TemplateSourceEntryKind Kind { get; }
 
-        ITemplateSourceFolder Parent { get; }
+//        ITemplateSourceFolder Parent { get; }
 
-        string PathRelativeTo(ITemplateSourceEntry source);
-    }
+//        string PathRelativeTo(ITemplateSourceEntry source);
+//    }
 
-    public interface ITemplateSourceFolder : ITemplateSourceEntry
-    {
-        IEnumerable<ITemplateSourceEntry> Children { get; }
+//    public interface ITemplateSourceFolder : ITemplateSourceEntry
+//    {
+//        IEnumerable<ITemplateSourceEntry> Children { get; }
 
-        IEnumerable<ITemplateSourceFile> EnumerateFiles(string pattern, SearchOption searchOption);
+//        IEnumerable<ITemplateSourceFile> EnumerateFiles(string pattern, SearchOption searchOption);
 
-        IEnumerable<ITemplateSourceEntry> EnumerateFileSystemInfos(string pattern, SearchOption searchOption);
+//        IEnumerable<ITemplateSourceEntry> EnumerateFileSystemInfos(string pattern, SearchOption searchOption);
 
-        ITemplateSourceFolder GetDirectoryAtRelativePath(string source);
+//        ITemplateSourceFolder GetDirectoryAtRelativePath(string source);
 
-        Stream OpenFile(string location);
+//        Stream OpenFile(string location);
 
-        bool Exists(string location);
-    }
+//        bool Exists(string location);
+//    }
 
-    public interface ITemplateSourceFile : ITemplateSourceEntry
-    {
-        Stream OpenRead();
-    }
-}
+//    public interface ITemplateSourceFile : ITemplateSourceEntry
+//    {
+//        Stream OpenRead();
+//    }
+//}

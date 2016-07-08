@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests

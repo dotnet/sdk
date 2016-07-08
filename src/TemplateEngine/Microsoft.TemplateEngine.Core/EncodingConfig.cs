@@ -1,22 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {
-    public class EncodingConfig
+    public class EncodingConfig : IEncodingConfig
     {
         private readonly Func<object>[] _values;
         private readonly List<byte[]> _variableKeys;
 
-        public EncodingConfig(EngineConfig config, Encoding encoding)
+        public EncodingConfig(IEngineConfig config, Encoding encoding)
         {
             _variableKeys = new List<byte[]>();
             Encoding = encoding;
-            LineEndings = new SimpleTrie();
-            Whitespace = new SimpleTrie();
-            WhitespaceOrLineEnding = new SimpleTrie();
-            Variables = new SimpleTrie();
+            LineEndings = new TokenTrie();
+            Whitespace = new TokenTrie();
+            WhitespaceOrLineEnding = new TokenTrie();
+            Variables = new TokenTrie();
 
             foreach (string token in config.LineEndings)
             {
@@ -38,21 +39,21 @@ namespace Microsoft.TemplateEngine.Core
 
         public Encoding Encoding { get; }
 
-        public SimpleTrie LineEndings { get; }
+        public ITokenTrie LineEndings { get; }
 
         public IReadOnlyList<byte[]> VariableKeys => _variableKeys;
 
         public IReadOnlyList<Func<object>> VariableValues => _values;
 
-        public SimpleTrie Variables { get; }
+        public ITokenTrie Variables { get; }
 
-        public SimpleTrie Whitespace { get; }
+        public ITokenTrie Whitespace { get; }
 
-        public SimpleTrie WhitespaceOrLineEnding { get; }
+        public ITokenTrie WhitespaceOrLineEnding { get; }
 
         public object this[int index] => _values[index]();
 
-        private void ExpandVariables(EngineConfig config, Encoding encoding)
+        private void ExpandVariables(IEngineConfig config, Encoding encoding)
         {
             foreach (string key in config.Variables.Keys)
             {

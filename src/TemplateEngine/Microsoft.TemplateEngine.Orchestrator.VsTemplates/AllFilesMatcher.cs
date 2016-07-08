@@ -1,4 +1,4 @@
-using Microsoft.TemplateEngine.Runner;
+using Microsoft.TemplateEngine.Abstractions.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 {

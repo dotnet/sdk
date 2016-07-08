@@ -6,18 +6,13 @@
   "dependencies": {
     "System.Runtime.Serialization.Primitives": "4.1.1",
     "xunit": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-rc2-build10015",
-    "Microsoft.TemplateEngine.Core": "1.0.0-*"
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Microsoft.TemplateEngine.Core": "1.0.0-*",
+    }
   },
   "testRunner": "xunit",
   "frameworks": {
     "netcoreapp1.0": {
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0"
-        }
-      },
       "imports": [
         "dotnet5.4",
         "portable-net451+win8"

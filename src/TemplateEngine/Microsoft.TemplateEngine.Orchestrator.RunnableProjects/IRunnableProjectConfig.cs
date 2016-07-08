@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -29,10 +30,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string GroupIdentity { get; }
 
-        ITemplateSourceFile SourceFile { set; }
+        IFile SourceFile { set; }
 
         string Identity { get; }
 
-        IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations);
+        IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations);
     }
 }

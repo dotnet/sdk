@@ -9,19 +9,19 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Runner", "src\Microsoft.TemplateEngine.Runner\Microsoft.TemplateEngine.Runner.xproj", "{72FC510D-1142-4ACA-958F-521EC71F6B72}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-new3", "src\dotnet-new3\dotnet-new3.xproj", "{76D8C970-B5CA-4364-B1E3-45D771922F74}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Abstractions", "src\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.xproj", "{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Orchestrator.VsTemplates", "src\Microsoft.TemplateEngine.Orchestrator.VsTemplates\Microsoft.TemplateEngine.Orchestrator.VsTemplates.xproj", "{8C7865CE-7038-4D34-B0A6-75B907848995}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Orchestrator.RunnableProjects", "src\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.xproj", "{578CE255-E412-4CC7-9A03-1EDCA522DA27}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-new3.VSIX", "src\dotnet-new3.VSIX\dotnet-new3.VSIX.csproj", "{848010BF-F566-4EE1-9CA8-F3B8DFFF3411}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Core.UnitTests", "test\Microsoft.TemplateEngine.Core.UnitTests\Microsoft.TemplateEngine.Core.UnitTests.xproj", "{62BD1600-18A2-400E-94F5-C33BBD67CA97}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Edge", "src\Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.xproj", "{E22B59BD-A658-4E32-9407-C8D9570B9FDF}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Orchestrator.VsTemplates", "src\Microsoft.TemplateEngine.Orchestrator.VsTemplates\Microsoft.TemplateEngine.Orchestrator.VsTemplates.xproj", "{8C7865CE-7038-4D34-B0A6-75B907848995}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +33,6 @@ Global
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{72FC510D-1142-4ACA-958F-521EC71F6B72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{72FC510D-1142-4ACA-958F-521EC71F6B72}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{72FC510D-1142-4ACA-958F-521EC71F6B72}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{72FC510D-1142-4ACA-958F-521EC71F6B72}.Release|Any CPU.Build.0 = Release|Any CPU
 		{76D8C970-B5CA-4364-B1E3-45D771922F74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{76D8C970-B5CA-4364-B1E3-45D771922F74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76D8C970-B5CA-4364-B1E3-45D771922F74}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,10 +41,6 @@ Global
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C7865CE-7038-4D34-B0A6-75B907848995}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C7865CE-7038-4D34-B0A6-75B907848995}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C7865CE-7038-4D34-B0A6-75B907848995}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C7865CE-7038-4D34-B0A6-75B907848995}.Release|Any CPU.Build.0 = Release|Any CPU
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -61,18 +53,26 @@ Global
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E22B59BD-A658-4E32-9407-C8D9570B9FDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E22B59BD-A658-4E32-9407-C8D9570B9FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E22B59BD-A658-4E32-9407-C8D9570B9FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E22B59BD-A658-4E32-9407-C8D9570B9FDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C7865CE-7038-4D34-B0A6-75B907848995}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C7865CE-7038-4D34-B0A6-75B907848995}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C7865CE-7038-4D34-B0A6-75B907848995}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C7865CE-7038-4D34-B0A6-75B907848995}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
-		{72FC510D-1142-4ACA-958F-521EC71F6B72} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{76D8C970-B5CA-4364-B1E3-45D771922F74} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
-		{8C7865CE-7038-4D34-B0A6-75B907848995} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{848010BF-F566-4EE1-9CA8-F3B8DFFF3411} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
+		{E22B59BD-A658-4E32-9407-C8D9570B9FDF} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
+		{8C7865CE-7038-4D34-B0A6-75B907848995} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 	EndGlobalSection
 EndGlobal

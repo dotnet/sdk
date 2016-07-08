@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates

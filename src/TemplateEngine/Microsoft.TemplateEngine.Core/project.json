@@ -6,6 +6,7 @@
       "version": "1.0.0",
       "type": "platform"
     },
+    "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0"
   },
 

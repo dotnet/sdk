@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {

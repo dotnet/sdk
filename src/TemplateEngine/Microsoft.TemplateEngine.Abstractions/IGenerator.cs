@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -9,8 +10,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IParameterSet GetParametersForTemplate(ITemplate template);
 
-        IEnumerable<ITemplate> GetTemplatesFromSource(IConfiguredTemplateSource source);
+        IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source);
 
-        bool TryGetTemplateFromSource(IConfiguredTemplateSource target, string name, out ITemplate template);
+        bool TryGetTemplateFromSource(IMountPoint target, string name, out ITemplate template);
     }
 }

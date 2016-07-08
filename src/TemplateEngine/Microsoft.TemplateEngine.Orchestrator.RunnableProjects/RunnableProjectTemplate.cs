@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -9,12 +10,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly JObject _raw;
 
-        public RunnableProjectTemplate(JObject raw, IGenerator generator, IConfiguredTemplateSource source, ITemplateSourceFile configFile, IRunnableProjectConfig config)
+        public RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config)
         {
             config.SourceFile = configFile;
             ConfigFile = configFile;
             Generator = generator;
-            Source = source;
+            Source = configFile.MountPoint;
             Config = config;
             DefaultName = config.DefaultName;
             Name = config.Name;
@@ -35,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IRunnableProjectConfig Config { get; private set; }
 
-        public ITemplateSourceFile ConfigFile { get; private set; }
+        public IFile ConfigFile { get; private set; }
 
         public string DefaultName { get; }
 
@@ -47,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string ShortName { get; }
 
-        public IConfiguredTemplateSource Source { get; }
+        public IMountPoint Source { get; }
 
         public IReadOnlyDictionary<string, string> Tags { get; }
 

@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Newtonsoft.Json;
@@ -34,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private string _safeNameName;
 
         [JsonIgnore]
-        public ITemplateSourceFile SourceFile { get; set; }
+        public IFile SourceFile { get; set; }
 
         [JsonProperty]
         public string Author { get; set; }
@@ -230,7 +232,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         [JsonProperty]
         public string Identity { get; set; }
 
-        public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
+        public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations)
         {
             EvaluatedSimpleConfig config = new EvaluatedSimpleConfig(this);
             config.Evaluate(parameters, rootVariableCollection, configFile);
@@ -381,7 +383,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return cfg;
         }
 
-        private static string[] JTokenToCollection(JToken token, ITemplateSourceFile sourceFile, string[] defaultSet)
+        private static string[] JTokenToCollection(JToken token, IFile sourceFile, string[] defaultSet)
         {
             if (token == null)
             {
@@ -389,7 +391,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (token.Type == JTokenType.String)
             {
-                using (Stream excludeList = sourceFile.Parent.OpenFile(token.ToObject<string>()))
+                using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToObject<string>()).OpenRead())
                 using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
                 {
                     return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -429,7 +431,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public string ShortName => _simpleConfigModel.ShortName;
 
-            public ITemplateSourceFile SourceFile
+            public IFile SourceFile
             {
                 private get { return _simpleConfigModel.SourceFile; }
                 set { _simpleConfigModel.SourceFile = value; }
@@ -441,12 +443,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyDictionary<string, string> Tags => _simpleConfigModel.Tags;
 
-            public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] providers)
+            public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] providers)
             {
                 return _simpleConfigModel.ReprocessWithParameters(parameters, rootVariableCollection, configFile, providers);
             }
 
-            internal void Evaluate(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile)
+            internal void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
             {
                 List<FileSource> sources = new List<FileSource>();
                 bool stable = _simpleConfigModel.Symbols == null;
@@ -494,7 +496,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     string val;
                     if (parameters.ParameterValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
                     {
-                        foreach(ITemplateSourceEntry entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                        foreach(IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
                             string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, val);

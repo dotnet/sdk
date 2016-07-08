@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 {
@@ -13,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
         private static readonly IOperationProvider[] NoOperationProviders = new IOperationProvider[0];
 
-        public static bool EvaluateFromString(string text, VariableCollection variables)
+        public static bool EvaluateFromString(string text, IVariableCollection variables)
         {
             using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
             using (MemoryStream res = new MemoryStream())
@@ -28,7 +29,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
         {
-            SimpleTrie trie = new SimpleTrie();
+            TokenTrie trie = new TokenTrie();
 
             //Logic
             trie.AddToken(processor.Encoding.GetBytes("&&"), 0);

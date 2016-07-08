@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {
@@ -24,7 +25,7 @@ namespace Microsoft.TemplateEngine.Core
         {
             byte[] tokenBytes = encoding.GetBytes(StartToken);
             byte[] endTokenBytes = encoding.GetBytes(EndToken);
-            SimpleTrie endTokenMatcher = new SimpleTrie();
+            TokenTrie endTokenMatcher = new TokenTrie();
             endTokenMatcher.AddToken(endTokenBytes);
             return new Impl(tokenBytes, endTokenMatcher, this);
         }
@@ -32,9 +33,9 @@ namespace Microsoft.TemplateEngine.Core
         private class Impl : IOperation
         {
             private readonly Include _source;
-            private readonly SimpleTrie _endTokenMatcher;
+            private readonly TokenTrie _endTokenMatcher;
 
-            public Impl(byte[] token, SimpleTrie endTokenMatcher, Include source)
+            public Impl(byte[] token, TokenTrie endTokenMatcher, Include source)
             {
                 Tokens = new[] {token};
                 _source = source;

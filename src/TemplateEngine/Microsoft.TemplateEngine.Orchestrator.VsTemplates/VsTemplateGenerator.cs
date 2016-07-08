@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 {
@@ -105,46 +106,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
             return result;
         }
 
-        public IEnumerable<ITemplate> GetTemplatesFromSource(IConfiguredTemplateSource source)
+        public IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source)
         {
-            using (IDisposable<ITemplateSourceFolder> root = source.Root)
-            {
-                return GetTemplatesFromDir(source, root.Value).ToList();
-            }
+            return GetTemplatesFromDir(source.Root).ToList();
         }
 
-        public bool TryGetTemplateFromSource(IConfiguredTemplateSource target, string name, out ITemplate template)
+        public bool TryGetTemplateFromSource(IMountPoint target, string name, out ITemplate template)
         {
             template = GetTemplatesFromSource(target).FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
             return template != null;
         }
 
-        private IEnumerable<ITemplate> GetTemplatesFromDir(IConfiguredTemplateSource source, ITemplateSourceFolder folder)
+        private IEnumerable<ITemplate> GetTemplatesFromDir(IDirectory folder)
         {
-            foreach (ITemplateSourceEntry entry in folder.Children)
+            foreach (IFile file in folder.EnumerateFiles(".vstemplate", SearchOption.AllDirectories))
             {
-                if (entry.Kind == TemplateSourceEntryKind.File && entry.FullPath.EndsWith(".vstemplate"))
+                VsTemplate tmp = null;
+                try
                 {
-                    VsTemplate tmp = null;
-                    try
-                    {
-                        tmp = new VsTemplate((ITemplateSourceFile)entry, source, this);
-                    }
-                    catch
-                    {
-                    }
-
-                    if (tmp != null)
-                    {
-                        yield return tmp;
-                    }
+                    tmp = new VsTemplate(file, file.MountPoint, this);
                 }
-                else if (entry.Kind == TemplateSourceEntryKind.Folder)
+                catch
                 {
-                    foreach (ITemplate template in GetTemplatesFromDir(source, (ITemplateSourceFolder)entry))
-                    {
-                        yield return template;
-                    }
+                }
+
+                if (tmp != null)
+                {
+                    yield return tmp;
                 }
             }
         }

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {

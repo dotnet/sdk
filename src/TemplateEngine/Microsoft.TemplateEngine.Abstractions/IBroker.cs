@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -6,7 +7,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     {
         IComponentRegistry ComponentRegistry { get; }
 
-        IEnumerable<IConfiguredTemplateSource> GetConfiguredSources();
+        IEnumerable<IMountPoint> GetConfiguredSources();
 
         bool AddConfiguredSource(string alias, string sourceName, string location);
 

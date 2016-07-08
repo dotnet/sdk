@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -54,12 +56,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string GroupIdentity { get; set; }
 
         [JsonIgnore]
-        public ITemplateSourceFile SourceFile { get; set; }
+        public IFile SourceFile { get; set; }
 
         [JsonProperty]
         public string Identity { get; set; }
 
-        public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, VariableCollection rootVariableCollection, ITemplateSourceFile configFile, IOperationProvider[] operations)
+        public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations)
         {
             IProcessor processor = Processor.Create(new EngineConfig(rootVariableCollection), operations);
             IRunnableProjectConfig m;

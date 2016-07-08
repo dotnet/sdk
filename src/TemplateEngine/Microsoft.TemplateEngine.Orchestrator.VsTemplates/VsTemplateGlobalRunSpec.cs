@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Win32;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
-using Microsoft.TemplateEngine.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 {
@@ -86,51 +87,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
             new Conditional("$if$", "$else$", "$elseif$", "$endif$", false, false, CppStyleEvaluatorDefinition.CppStyleEvaluator)
         };
 
-        public VariableCollection RootVariableCollection { get; }
+        public IVariableCollection RootVariableCollection { get; }
 
         public IReadOnlyDictionary<IPathMatcher, IRunSpec> Special => _special;
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             return _pathMap.TryGetValue(sourceRelPath, out targetRelPath);
-        }
-    }
-
-    internal class NoOpRunSpec : IRunSpec
-    {
-        private static readonly IReadOnlyList<IOperationProvider> NoOperations = new IOperationProvider[0];
-
-        public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
-        {
-            targetRelPath = null;
-            return false;
-        }
-
-        public IReadOnlyList<IOperationProvider> GetOperations(IReadOnlyList<IOperationProvider> sourceOperations)
-        {
-            return NoOperations;
-        }
-
-        public VariableCollection ProduceCollection(VariableCollection parent)
-        {
-            return new VariableCollection();
-        }
-    }
-
-    internal class SpecificFilesMatcher : IPathMatcher
-    {
-        private readonly HashSet<string> _files;
-
-        public SpecificFilesMatcher(IEnumerable<string> files)
-        {
-            _files = new HashSet<string>(files, StringComparer.OrdinalIgnoreCase);
-        }
-
-        public string Pattern => string.Join(",", _files);
-
-        public bool IsMatch(string path)
-        {
-            return _files.Contains(path);
         }
     }
 }

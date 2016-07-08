@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TemplateEngine.Core
+﻿using Microsoft.TemplateEngine.Abstractions.Engine;
+
+namespace Microsoft.TemplateEngine.Core
 {
     public static class CommonOperations
     {

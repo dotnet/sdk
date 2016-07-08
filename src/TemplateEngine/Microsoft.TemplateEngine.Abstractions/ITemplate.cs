@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -20,7 +21,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string ShortName { get; }
 
-        IConfiguredTemplateSource Source { get; }
+        IMountPoint Source { get; }
 
         IReadOnlyDictionary<string, string> Tags { get; }
 

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Xunit;
 

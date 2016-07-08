@@ -1,15 +1,16 @@
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Core;
-using Microsoft.TemplateEngine.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class RunSpec : IRunSpec
     {
         private readonly IReadOnlyList<IOperationProvider> _overrides;
-        private readonly VariableCollection _vars;
+        private readonly IVariableCollection _vars;
 
-        public RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, VariableCollection vars)
+        public RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, IVariableCollection vars)
         {
             _overrides = operationOverrides;
             _vars = vars ?? new VariableCollection();
@@ -26,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return _overrides ?? sourceOperations;
         }
 
-        public VariableCollection ProduceCollection(VariableCollection parent)
+        public IVariableCollection ProduceCollection(IVariableCollection parent)
         {
             return _vars;
         }

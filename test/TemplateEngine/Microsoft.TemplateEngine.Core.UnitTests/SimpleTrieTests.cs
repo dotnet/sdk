@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] helloBang = Encoding.UTF8.GetBytes("hello!");
             byte[] hi = Encoding.UTF8.GetBytes("hi");
 
-            SimpleTrie t = new SimpleTrie();
+            TokenTrie t = new TokenTrie();
             t.AddToken(hello);
             t.AddToken(helloBang);
             t.AddToken(hi);
@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] hello = Encoding.UTF8.GetBytes("hello");
             byte[] helloBang = Encoding.UTF8.GetBytes("hello!");
 
-            SimpleTrie t = new SimpleTrie();
+            TokenTrie t = new TokenTrie();
             t.AddToken(hello);
             t.AddToken(helloBang);
 
@@ -85,15 +85,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] hi = Encoding.UTF8.GetBytes("hi");
             byte[] there = Encoding.UTF8.GetBytes("there!");
 
-            SimpleTrie t = new SimpleTrie();
+            TokenTrie t = new TokenTrie();
             t.AddToken(hello);
             t.AddToken(helloBang);
 
-            SimpleTrie t2 = new SimpleTrie();
+            TokenTrie t2 = new TokenTrie();
             t.AddToken(hi);
             t.AddToken(there);
 
-            SimpleTrie combined = new SimpleTrie();
+            TokenTrie combined = new TokenTrie();
             combined.Append(t);
             combined.Append(t2);
 

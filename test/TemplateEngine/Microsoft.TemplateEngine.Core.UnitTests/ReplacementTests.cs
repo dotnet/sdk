@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Text;
-using Microsoft.TemplateEngine.Net4.UnitTests;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests

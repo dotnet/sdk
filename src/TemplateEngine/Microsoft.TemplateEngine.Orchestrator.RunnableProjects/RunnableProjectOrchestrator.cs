@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Microsoft.TemplateEngine.Runner;
+using Microsoft.TemplateEngine.Abstractions.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {

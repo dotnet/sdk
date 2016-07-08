@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Core;
-using Microsoft.TemplateEngine.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GlobbingPatternMatcher : IPathMatcher
     {
         private readonly Regex _regex;
-        private static readonly SimpleTrie Trie;
+        private static readonly TokenTrie Trie;
 
         private enum GlobbingPatternToken
         {
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         static GlobbingPatternMatcher()
         {
-            Trie = new SimpleTrie();
+            Trie = new TokenTrie();
             byte[] anyNumberOfPathParts = Encoding.UTF8.GetBytes("**/");
             byte[] onePathPart = Encoding.UTF8.GetBytes("*");
             byte[] wildcard = Encoding.UTF8.GetBytes("?");
@@ -42,7 +42,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Trie.AddToken(separatorChar);
             Trie.AddToken(separatorChar2);
         }
-
 
         public string Pattern { get; }
 

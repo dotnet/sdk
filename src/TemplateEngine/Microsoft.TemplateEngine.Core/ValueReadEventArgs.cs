@@ -1,8 +1,9 @@
 using System;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {
-    public class ValueReadEventArgs : EventArgs
+    public class ValueReadEventArgs : EventArgs, IValueReadEventArgs
     {
         public ValueReadEventArgs(string key, object value)
         {

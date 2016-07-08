@@ -2,14 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.TemplateEngine.Abstractions.Engine;
 
 namespace Microsoft.TemplateEngine.Core
 {
-    public class VariableCollection : IDictionary<string, object>, IReadOnlyDictionary<string, object>
+    public class VariableCollection : IVariableCollection
     {
         private static readonly IEnumerable<string> NoKeys = new string[0];
         private readonly IDictionary<string, object> _values;
-        private VariableCollection _parent;
+        private IVariableCollection _parent;
 
         public VariableCollection()
             : this(null)
@@ -21,7 +22,7 @@ namespace Microsoft.TemplateEngine.Core
         {
         }
 
-        public VariableCollection(VariableCollection parent, IDictionary<string, object> values)
+        public VariableCollection(IVariableCollection parent, IDictionary<string, object> values)
         {
             _parent = parent;
             _values = values ?? new Dictionary<string, object>();
@@ -32,25 +33,17 @@ namespace Microsoft.TemplateEngine.Core
             }
         }
 
-        public delegate void KeysChangedEventHander(object sender, KeysChangedEventArgs args);
-
-        public delegate void ValueReadEventHander(object sender, ValueReadEventArgs args);
-
         public event KeysChangedEventHander KeysChanged;
 
         public event ValueReadEventHander ValueRead;
 
         public int Count => Keys.Count;
 
-        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
-
-        IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
-
         public bool IsReadOnly => false;
 
         public ICollection<string> Keys => _values.Keys.Union(_parent?.Keys ?? NoKeys).ToList();
 
-        public VariableCollection Parent
+        public IVariableCollection Parent
         {
             get { return _parent; }
             set
@@ -216,12 +209,12 @@ namespace Microsoft.TemplateEngine.Core
             OnValueRead(new ValueReadEventArgs(key, value));
         }
 
-        private void OnValueRead(ValueReadEventArgs args)
+        private void OnValueRead(IValueReadEventArgs args)
         {
             ValueRead?.Invoke(this, args);
         }
 
-        private void RelayKeysChanged(object sender, KeysChangedEventArgs args)
+        private void RelayKeysChanged(object sender, IKeysChangedEventArgs args)
         {
             OnKeysChanged();
         }
