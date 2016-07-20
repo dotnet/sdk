@@ -38,7 +38,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             IRunnableProjectConfig m = tmplt.Config.ReprocessWithParameters(parameters, configRunSpec.RootVariableCollection, tmplt.ConfigFile, providers);
 
-            Console.ReadLine();
             foreach (FileSource source in m.Sources)
             {
                 GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special);
