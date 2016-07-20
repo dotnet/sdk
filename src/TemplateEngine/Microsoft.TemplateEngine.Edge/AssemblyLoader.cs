@@ -4,13 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 
-namespace dotnet_new3
+namespace Microsoft.TemplateEngine.Edge
 {
     public static class AssemblyLoader
     {
-        public static void Load(string path)
+        public static Assembly Load(string path)
         {
-            AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
         }
 
         public static IEnumerable<Assembly> LoadAllAssemblies(out IEnumerable<string> loadFailures, string componentsDir, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)

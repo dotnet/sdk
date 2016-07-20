@@ -7,7 +7,10 @@
       "type": "platform"
     },
     "Microsoft.TemplateEngine.Core": "1.0.0-*",
-    "Microsoft.TemplateEngine.Abstractions": "1.0.0-*"
+    "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
+    "Newtonsoft.Json": "9.0.1",
+    "System.Runtime.Loader": "4.0.0",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121"
   },
 
   "frameworks": {

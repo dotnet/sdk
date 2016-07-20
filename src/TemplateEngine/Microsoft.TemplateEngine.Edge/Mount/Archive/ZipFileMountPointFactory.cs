@@ -2,12 +2,13 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 {
     public class ZipFileMountPointFactory : IMountPointFactory
     {
-        private static readonly Guid FactoryId = new Guid("94E92610-CF4C-4F6D-AEB6-9E42DDE1899D");
+        internal static readonly Guid FactoryId = new Guid("94E92610-CF4C-4F6D-AEB6-9E42DDE1899D");
 
         public Guid Id => FactoryId;
 
@@ -70,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
             if (info.ParentMountPointId != Guid.Empty)
             {
-                if (!manager.TryDemandMountPointById(info.ParentMountPointId, out parent))
+                if (!manager.TryDemandMountPoint(info.ParentMountPointId, out parent))
                 {
                     mountPoint = null;
                     return false;
@@ -83,11 +84,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
         public void DisposeMountPoint(IMountPoint mountPoint)
         {
             ZipFileMountPoint mp = mountPoint as ZipFileMountPoint;
-
-            if (mp != null)
-            {
-                mp.Archive.Dispose();
-            }
+            mp?.Archive?.Dispose();
         }
     }
 }

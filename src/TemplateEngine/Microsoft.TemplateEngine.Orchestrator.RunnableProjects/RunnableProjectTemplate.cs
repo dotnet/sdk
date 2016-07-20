@@ -52,6 +52,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Tags { get; }
 
+        public IFileSystemInfo Configuration => ConfigFile;
+
         public bool TryGetProperty(string name, out string value)
         {
             JToken token;

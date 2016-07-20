@@ -51,6 +51,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 
         public IReadOnlyDictionary<string, string> Tags => new Dictionary<string, string>();
 
+        public IFileSystemInfo Configuration => SourceFile;
+
         public IMountPoint Source { get; }
 
         public IReadOnlyList<string> Classifications => new List<string>();

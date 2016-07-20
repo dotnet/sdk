@@ -17,26 +17,29 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public IFile FileInfo(string fullPath)
         {
-            FileInfo info = new FileInfo(fullPath);
-            return new FileSystemFile(this, fullPath, info.Name, info);
+            string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
+            FileInfo info = new FileInfo(realPath);
+            return new FileSystemFile(this, realPath, info.Name, info);
         }
 
         public IDirectory DirectoryInfo(string fullPath)
         {
-            DirectoryInfo info = new DirectoryInfo(fullPath);
+            string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
+            DirectoryInfo info = new DirectoryInfo(realPath);
             return new FileSystemDirectory(this, fullPath, info.Name, info);
         }
 
         public IFileSystemInfo FileSystemInfo(string fullPath)
         {
-            if (Directory.Exists(fullPath))
+            string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
+            if (Directory.Exists(realPath))
             {
-                DirectoryInfo info = new DirectoryInfo(fullPath);
+                DirectoryInfo info = new DirectoryInfo(realPath);
                 return new FileSystemDirectory(this, fullPath, info.Name, info);
             }
             else
             {
-                FileInfo info = new FileInfo(fullPath);
+                FileInfo info = new FileInfo(realPath);
                 return new FileSystemFile(this, fullPath, info.Name, info);
             }
         }

@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Core;
 
 namespace Microsoft.TemplateEngine.Edge.Runner
 {
-    public abstract class Orchestrator
+    public class Orchestrator : IOrchestrator
     {
         public void Run(string runSpecPath, IDirectory sourceDir, string targetDir)
         {
@@ -36,7 +36,10 @@ namespace Microsoft.TemplateEngine.Edge.Runner
             RunInternal(this, sourceDir, targetDir, spec);
         }
 
-        protected abstract IGlobalRunSpec RunSpecLoader(Stream runSpec);
+        protected virtual IGlobalRunSpec RunSpecLoader(Stream runSpec)
+        {
+            return null;
+        }
 
         protected virtual bool TryGetBufferSize(IFile sourceFile, out int bufferSize)
         {

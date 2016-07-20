@@ -15,13 +15,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class RunnableProjectGenerator : IGenerator
     {
-        public string Name => "Runnable Project";
+        private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
 
-        public Task Create(ITemplate template, IParameterSet parameters)
+        public Guid Id => GeneratorId;
+
+        public Task Create(IOrchestrator basicOrchestrator, ITemplate template, IParameterSet parameters)
         {
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
 
-            RunnableProjectOrchestrator o = new RunnableProjectOrchestrator();
+            RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
             GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special);
             IOperationProvider[] providers = configRunSpec.Operations.ToArray();
 
@@ -36,6 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             IRunnableProjectConfig m = tmplt.Config.ReprocessWithParameters(parameters, configRunSpec.RootVariableCollection, tmplt.ConfigFile, providers);
 
+            Console.ReadLine();
             foreach (FileSource source in m.Sources)
             {
                 GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special);
@@ -57,6 +60,38 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return GetTemplatesFromDir(source.Root).ToList();
         }
 
+        public bool TryGetTemplateFromConfig(IFileSystemInfo config, out ITemplate template)
+        {
+            IFile file = config as IFile;
+
+            if (file == null)
+            {
+                template = null;
+                return false;
+            }
+
+            try
+            {
+                JObject srcObject = ReadConfigModel(file);
+
+                template = new RunnableProjectTemplate(srcObject, this, file, srcObject.ToObject<IRunnableProjectConfig>(new JsonSerializer
+                {
+                    Converters =
+                    {
+                        new RunnableProjectConfigConverter()
+                    }
+                }));
+
+                return true;
+            }
+            catch
+            {
+            }
+
+            template = null;
+            return false;
+        }
+
         private JObject ReadConfigModel(IFile file)
         {
             using (Stream s = file.OpenRead())
@@ -71,24 +106,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             foreach (IFile file in folder.EnumerateFiles(".netnew.json", SearchOption.AllDirectories))
             {
-                RunnableProjectTemplate tmp = null;
-                try
-                {
-                    JObject srcObject = ReadConfigModel(file);
-
-                    tmp = new RunnableProjectTemplate(srcObject, this, file, srcObject.ToObject<IRunnableProjectConfig>(new JsonSerializer
-                    {
-                        Converters =
-                        {
-                            new RunnableProjectConfigConverter()
-                        }
-                    }));
-                }
-                catch
-                {
-                }
-
-                if (tmp != null)
+                ITemplate tmp;
+                if (TryGetTemplateFromConfig(file, out tmp))
                 {
                     yield return tmp;
                 }

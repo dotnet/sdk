@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
-namespace dotnet_new3
+namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public static class AliasRegistry
     {
@@ -20,13 +20,13 @@ namespace dotnet_new3
                 return;
             }
 
-            if (!Paths.AliasesFile.Exists())
+            if (!Paths.User.AliasesFile.Exists())
             {
                 _source = new JObject();
                 return;
             }
 
-            string sourcesText = Paths.AliasesFile.ReadAllText("{}");
+            string sourcesText = Paths.User.AliasesFile.ReadAllText("{}");
             _source = JObject.Parse(sourcesText);
 
             foreach (JProperty child in _source.Properties())
@@ -109,7 +109,7 @@ namespace dotnet_new3
         {
             Load();
             _source[alias] = template.Name;
-            File.WriteAllText(Paths.AliasesFile, _source.ToString());
+            File.WriteAllText(Paths.User.AliasesFile, _source.ToString());
         }
     }
 }

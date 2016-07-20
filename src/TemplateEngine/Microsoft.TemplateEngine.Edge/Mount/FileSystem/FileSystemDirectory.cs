@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _dir.EnumerateFileSystemInfos(pattern, searchOption).Select(x =>
             {
-                string baseName = x.FullName.Substring(FullPath.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.FullName.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = "/" + baseName;
                 }
 
-                if (baseName[baseName.Length - 1] != '/')
+                if (x is DirectoryInfo && baseName[baseName.Length - 1] != '/')
                 {
                     baseName = baseName + "/";
                 }
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _dir.EnumerateDirectories(pattern, searchOption).Select(x =>
             {
-                string baseName = x.FullName.Substring(FullPath.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.FullName.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _dir.EnumerateFiles(pattern, searchOption).Select(x =>
             {
-                string baseName = x.FullName.Substring(FullPath.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.FullName.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -81,11 +81,6 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                 if (baseName[0] != '/')
                 {
                     baseName = "/" + baseName;
-                }
-
-                if (baseName[baseName.Length - 1] != '/')
-                {
-                    baseName = baseName + "/";
                 }
 
                 return new FileSystemFile(MountPoint, baseName, x.Name, x);

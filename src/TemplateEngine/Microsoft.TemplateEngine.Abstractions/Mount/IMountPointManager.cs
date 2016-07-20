@@ -6,7 +6,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
     {
         bool TryDemandMountPoint(MountPointInfo info, out IMountPoint mountPoint);
 
-        bool TryDemandMountPointById(Guid mountPointId, out IMountPoint parent);
+        bool TryDemandMountPoint(Guid mountPointId, out IMountPoint mountPoint);
 
         void ReleaseMountPoint(IMountPoint mountPoint);
     }

@@ -87,12 +87,12 @@ namespace Microsoft.TemplateEngine.Core
             }
 
             //Get all the path segments for the thing we're relative to
-            Dictionary<IDirectory, int> sourceSegments = new Dictionary<IDirectory, int> { { relTo, 0 } };
+            Dictionary<string, int> sourceSegments = new Dictionary<string, int> { { relTo.FullPath, 0 } };
             IDirectory current = relTo.Parent;
             int index = 0;
             while (current != null)
             {
-                sourceSegments[current] = ++index;
+                sourceSegments[current.FullPath] = ++index;
                 current = current.Parent;
             }
 
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Core
 
             //Walk back the set of parents of this item until one is contained by our source, building up a list as we go
             int revIndex = 0;
-            while (current != null && !sourceSegments.TryGetValue(current, out revIndex))
+            while (current != null && !sourceSegments.TryGetValue(current.FullPath, out revIndex))
             {
                 segments.Insert(0, current.Name);
                 current = current.Parent;

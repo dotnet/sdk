@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
-namespace dotnet_new3
+namespace Microsoft.TemplateEngine.Edge.Template
 {
-    internal class TemplateEqualityComparer : IEqualityComparer<ITemplate>
+    public class TemplateEqualityComparer : IEqualityComparer<ITemplate>
     {
         public static IEqualityComparer<ITemplate> Default { get; } = new TemplateEqualityComparer();
 

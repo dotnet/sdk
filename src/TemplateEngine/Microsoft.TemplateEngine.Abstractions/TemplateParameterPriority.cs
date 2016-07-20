@@ -5,7 +5,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         Required,
         Suggested,
         Optional,
-        AddOn,
         Implicit
     }
 }

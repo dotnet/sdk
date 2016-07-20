@@ -21,9 +21,9 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string ShortName { get; }
 
-        IMountPoint Source { get; }
-
         IReadOnlyDictionary<string, string> Tags { get; }
+
+        IFileSystemInfo Configuration { get; }
 
         bool TryGetProperty(string name, out string value);
     }

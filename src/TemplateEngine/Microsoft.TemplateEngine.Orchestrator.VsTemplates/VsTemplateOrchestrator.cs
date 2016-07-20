@@ -1,14 +1,25 @@
-using System.IO;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Runner;
-using Microsoft.TemplateEngine.Runner;
 
 namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 {
-    internal class VsTemplateOrchestrator : Runner.Orchestrator
+    internal class VsTemplateOrchestrator : IOrchestrator
     {
-        protected override IGlobalRunSpec RunSpecLoader(Stream runSpec)
+        private readonly IOrchestrator _basicOrchestrator;
+
+        public VsTemplateOrchestrator(IOrchestrator basicOrchestrator)
         {
-            return null;
+            _basicOrchestrator = basicOrchestrator;
+        }
+
+        public void Run(string runSpecPath, IDirectory sourceDir, string targetDir)
+        {
+            _basicOrchestrator.Run(runSpecPath, sourceDir, targetDir);
+        }
+
+        public void Run(IGlobalRunSpec runSpec, IDirectory directoryInfo, string target)
+        {
+            _basicOrchestrator.Run(runSpec, directoryInfo, target);
         }
     }
 }
