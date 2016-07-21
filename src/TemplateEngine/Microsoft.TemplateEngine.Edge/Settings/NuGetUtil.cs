@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public static void InstallPackage(IReadOnlyList<string> packages, bool global, bool quiet)
+        public static void InstallPackage(IReadOnlyList<string> packages, bool quiet)
         {
             Init();
             RemoteWalkContext context = new RemoteWalkContext();
