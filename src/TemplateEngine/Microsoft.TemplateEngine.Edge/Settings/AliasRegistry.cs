@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return null;
         }
 
-        public static IReadOnlyCollection<ITemplate> GetTemplatesForAlias(string alias, IReadOnlyCollection<ITemplate> templates)
+        public static IReadOnlyCollection<ITemplateInfo> GetTemplatesForAlias(string alias, IReadOnlyCollection<ITemplateInfo> templates)
         {
             if(alias == null)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             string templateName;
             if(AliasesToTemplates.TryGetValue(alias, out templateName))
             {
-                ITemplate match = templates.FirstOrDefault(x => string.Equals(x.Name, templateName, StringComparison.Ordinal));
+                ITemplateInfo match = templates.FirstOrDefault(x => string.Equals(x.Name, templateName, StringComparison.Ordinal));
 
                 if (match != null)
                 {
@@ -77,9 +77,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 HashSet<string> matchedAliases = new HashSet<string>(AliasesToTemplates.Where(x => x.Key.IndexOf(alias, StringComparison.OrdinalIgnoreCase) > -1).Select(x => x.Value));
 
-                List<ITemplate> results = new List<ITemplate>();
+                List<ITemplateInfo> results = new List<ITemplateInfo>();
 
-                foreach (ITemplate template in templates)
+                foreach (ITemplateInfo template in templates)
                 {
                     if (matchedAliases.Contains(template.Name))
                     {
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return templates;
         }
 
-        public static string GetAliasForTemplate(ITemplate template)
+        public static string GetAliasForTemplate(ITemplateInfo template)
         {
             Load();
             string alias;
@@ -105,7 +105,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return alias;
         }
 
-        public static void SetTemplateAlias(string alias, ITemplate template)
+        public static void SetTemplateAlias(string alias, ITemplateInfo template)
         {
             Load();
             _source[alias] = template.Name;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -43,6 +44,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 
         public IGenerator Generator { get; }
 
+        public Guid GeneratorId => Generator.Id;
+
         public string GroupIdentity => null;
 
         public string Author => null;
@@ -50,6 +53,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
         public string Name { get; }
 
         public IReadOnlyDictionary<string, string> Tags => new Dictionary<string, string>();
+
+        public Guid ConfigMountPointId => Configuration.MountPoint.Info.MountPointId;
+
+        public string ConfigPlace => Configuration.FullPath;
 
         public IFileSystemInfo Configuration => SourceFile;
 

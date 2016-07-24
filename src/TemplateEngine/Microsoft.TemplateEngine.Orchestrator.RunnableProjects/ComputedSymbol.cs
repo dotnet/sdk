@@ -1,27 +1,34 @@
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class ComputedSymbol : ISymbolModel
     {
-        [JsonProperty]
         public string Value { get; internal set; }
 
-        [JsonProperty]
-        public string Type { get; set; }
+        public string Type { get; private set; }
 
-        [JsonIgnore]
         string ISymbolModel.Binding
         {
             get { return null; }
             set { }
         }
 
-        [JsonIgnore]
         string ISymbolModel.Replaces
         {
             get { return null; }
             set { }
+        }
+
+        public static ISymbolModel FromJObject(JObject jObject)
+        {
+            ComputedSymbol sym = new ComputedSymbol
+            {
+                Value = jObject.ToString(nameof(Value)),
+                Type = jObject.ToString(nameof(Type))
+            };
+
+            return sym;
         }
     }
 }

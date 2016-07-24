@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Edge.Template;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -15,6 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private static IComponentManager _componentManager;
         private static bool _isLoaded;
         private static Dictionary<Guid, MountPointInfo> _mountPoints;
+        private static bool _templatesLoaded;
 
         public static void Save(this SettingsStore store)
         {
@@ -29,28 +32,57 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            string userSettings = Paths.User.SettingsFile.ReadAllText("{}");
-            _userSettings = JObject.Parse(userSettings).ToObject<SettingsStore>();
+            string userSettings;
+            using (Timing.Over("Read settings"))
+                userSettings = Paths.User.SettingsFile.ReadAllText("{}");
+            JObject parsed;
+            using (Timing.Over("Parse settings"))
+                parsed = JObject.Parse(userSettings);
+            using (Timing.Over("Deserialize user settings"))
+                _userSettings = new SettingsStore(parsed);
 
-            if (_userSettings.ProbingPaths.Count == 0)
+            using (Timing.Over("Init probing paths"))
+                if (_userSettings.ProbingPaths.Count == 0)
             {
                 _userSettings.ProbingPaths.Add(Paths.User.Content);
             }
 
-            _componentManager = new ComponentManager(_userSettings);
+            using (Timing.Over("Init Component manager"))
+                _componentManager = new ComponentManager(_userSettings);
+            using (Timing.Over("Init Mount Point manager"))
             _mountPointManager = new MountPointManager(_componentManager);
 
-            string userTemplateCache = Paths.User.TemplateCacheFile.ReadAllText("{}");
-            _userTemplateCache = JObject.Parse(userTemplateCache).ToObject<TemplateCache>();
+            using (Timing.Over("Demand template load"))
+                EnsureTemplatesLoaded();
 
             _mountPoints = new Dictionary<Guid, MountPointInfo>();
 
-            foreach (MountPointInfo info in _userSettings.MountPoints)
+            using (Timing.Over("Load mount points"))
+                foreach (MountPointInfo info in _userSettings.MountPoints)
             {
                 _mountPoints[info.MountPointId] = info;
             }
 
             _isLoaded = true;
+        }
+
+        private static void EnsureTemplatesLoaded()
+        {
+            if (_templatesLoaded)
+            {
+                return;
+            }
+
+            string userTemplateCache;
+            using (Timing.Over("Read template cache"))
+                userTemplateCache = Paths.User.TemplateCacheFile.ReadAllText("{}");
+            JObject parsed;
+            using (Timing.Over("Parse template cache"))
+                parsed = JObject.Parse(userTemplateCache);
+            using (Timing.Over("Init template cache"))
+                _userTemplateCache = new TemplateCache(parsed);
+
+            _templatesLoaded = true;
         }
 
         public static void Reload()
@@ -59,36 +91,41 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             EnsureLoaded();
         }
 
-        private static void LoadTemplates(TemplateCache cache, ISet<ITemplate> templates)
+        private static void LoadTemplates(TemplateCache cache, ISet<ITemplateInfo> templates)
         {
-            foreach (TemplateInfo info in cache.TemplateInfo)
-            {
-                IGenerator generator;
-                if (!_componentManager.TryGetComponent(info.GeneratorId, out generator))
-                {
-                    //TODO: Log the failure to load the generator
-                    continue;
-                }
+            using (Timing.Over("Enumerate infos"))
+                templates.UnionWith(cache.TemplateInfo);
+        }
 
-                IMountPoint mountPoint;
-                if (_mountPointManager.TryDemandMountPoint(info.MountPointId, out mountPoint))
+        public static ITemplate LoadTemplate(ITemplateInfo info)
+        {
+
+            IGenerator generator;
+            if (!Components.TryGetComponent(info.GeneratorId, out generator))
+            {
+                return null;
+            }
+
+            IMountPoint mountPoint;
+            if (!_mountPointManager.TryDemandMountPoint(info.ConfigMountPointId, out mountPoint))
+            {
+                return null;
+            }
+
+            IFileSystemInfo config = mountPoint.FileSystemInfo(info.ConfigPlace);
+
+            ITemplate template;
+            using (Timing.Over("Template from config"))
+                if (generator.TryGetTemplateFromConfig(config, out template))
                 {
-                    IFileSystemInfo config = mountPoint.FileSystemInfo(info.Path);
-                    ITemplate template;
-                    if (generator.TryGetTemplateFromConfig(config, out template))
-                    {
-                        templates.Add(template);
-                    }
-                    else
-                    {
-                        //TODO: Log the failure to read the template info
-                    }
+                    return template;
                 }
                 else
                 {
-                    //TODO: Log the failure to mount the template config location
+                    //TODO: Log the failure to read the template info
                 }
-            }
+
+            return null;
         }
 
         public static IComponentManager Components
@@ -109,25 +146,33 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public static IEnumerable<ITemplate> GetTemplates()
+        public static void GetTemplates(HashSet<ITemplateInfo> templates)
         {
-            EnsureLoaded();
-            HashSet<ITemplate> templates = new HashSet<ITemplate>(TemplateEqualityComparer.Default);
-            LoadTemplates(_userTemplateCache, templates);
-            return templates;
+            using (Timing.Over("Settings init"))
+                EnsureLoaded();
+            using (Timing.Over("Template load"))
+                LoadTemplates(_userTemplateCache, templates);
         }
 
         public static void AddTemplate(ITemplate template)
         {
             EnsureLoaded();
-            HashSet<ITemplate> templates = new HashSet<ITemplate>(TemplateEqualityComparer.Default);
+            HashSet<ITemplateInfo> templates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
             LoadTemplates(_userTemplateCache, templates);
 
             TemplateInfo info = new TemplateInfo
             {
                 GeneratorId = template.Generator.Id,
-                Path = template.Configuration.FullPath,
-                MountPointId = template.Configuration.MountPoint.Info.MountPointId
+                ConfigPlace = template.Configuration.FullPath,
+                ConfigMountPointId = template.Configuration.MountPoint.Info.MountPointId,
+                Name = template.Name,
+                Tags = template.Tags,
+                ShortName = template.ShortName,
+                Classifications = template.Classifications,
+                Author = template.Author,
+                GroupIdentity = template.GroupIdentity,
+                Identity = template.Identity,
+                DefaultName = template.DefaultName
             };
 
             _userTemplateCache.TemplateInfo.Add(info);
@@ -149,6 +194,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public static bool TryGetMountPoint(Guid mountPointId, out MountPointInfo info)
         {
             EnsureLoaded();
+            using(Timing.Over("Mount point lookup"))
             return _mountPoints.TryGetValue(mountPointId, out info);
         }
 

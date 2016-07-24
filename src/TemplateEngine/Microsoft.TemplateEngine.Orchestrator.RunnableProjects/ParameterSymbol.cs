@@ -1,25 +1,35 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class ParameterSymbol : ISymbolModel
     {
-        [JsonProperty]
         public string Binding { get; set; }
 
-        [JsonProperty]
         public string DefaultValue { get; set; }
 
-        [JsonProperty]
         public string Description { get; set; }
 
-        [JsonProperty]
         public bool IsRequired { get; set; }
 
-        [JsonProperty]
-        public string Type { get; set; }
+        public string Type { get; private set; }
 
-        [JsonProperty]
         public string Replaces { get; set; }
+
+        public static ISymbolModel FromJObject(JObject jObject)
+        {
+            ParameterSymbol sym = new ParameterSymbol
+            {
+                Binding = jObject.ToString(nameof(Binding)),
+                DefaultValue = jObject.ToString(nameof(DefaultValue)),
+                Description = jObject.ToString(nameof(Description)),
+                IsRequired = jObject.ToBool(nameof(IsRequired)),
+                Type = jObject.ToString(nameof(Type)),
+                Replaces = jObject.ToString(nameof(Replaces))
+            };
+
+            return sym;
+        }
     }
 }

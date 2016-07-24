@@ -1,36 +1,22 @@
-using System;
-using System.Reflection;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class SymbolModelConverter : JsonConverter
+    internal class SymbolModelConverter
     {
-        public override bool CanConvert(Type objectType)
+        public static ISymbolModel GetModelForObject(JObject jObject)
         {
-            return typeof(ISymbolModel).GetTypeInfo().IsAssignableFrom(objectType);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            JObject model = JObject.Load(reader);
-            switch (model["type"].ToObject<string>())
+            switch (jObject.ToString(nameof(ISymbolModel.Type)))
             {
                 case "parameter":
-                    return model.ToObject<ParameterSymbol>();
+                    return ParameterSymbol.FromJObject(jObject);
                 case "computed":
-                    return model.ToObject<ComputedSymbol>();
+                    return ComputedSymbol.FromJObject(jObject);
                 case "generated":
-                    return model.ToObject<GeneratedSymbol>();
+                    return GeneratedSymbol.FromJObject(jObject);
                 default:
                     return null;
             }
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
         }
     }
 }

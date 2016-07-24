@@ -21,6 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Task Create(IOrchestrator basicOrchestrator, ITemplate template, IParameterSet parameters)
         {
+            //Console.ReadLine();
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
@@ -73,13 +74,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 JObject srcObject = ReadConfigModel(file);
 
-                template = new RunnableProjectTemplate(srcObject, this, file, srcObject.ToObject<IRunnableProjectConfig>(new JsonSerializer
-                {
-                    Converters =
-                    {
-                        new RunnableProjectConfigConverter()
-                    }
-                }));
+                template = new RunnableProjectTemplate(srcObject, this, file, RunnableProjectConfigConverter.FromJObject(srcObject));
 
                 return true;
             }

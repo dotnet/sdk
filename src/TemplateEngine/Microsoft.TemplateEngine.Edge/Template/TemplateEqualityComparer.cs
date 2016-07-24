@@ -4,16 +4,16 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
-    public class TemplateEqualityComparer : IEqualityComparer<ITemplate>
+    public class TemplateEqualityComparer : IEqualityComparer<ITemplateInfo>
     {
-        public static IEqualityComparer<ITemplate> Default { get; } = new TemplateEqualityComparer();
+        public static IEqualityComparer<ITemplateInfo> Default { get; } = new TemplateEqualityComparer();
 
-        public bool Equals(ITemplate x, ITemplate y)
+        public bool Equals(ITemplateInfo x, ITemplateInfo y)
         {
             return ReferenceEquals(x, y) || (x != null && y != null && string.Equals(x.Identity, y.Identity, StringComparison.Ordinal));
         }
 
-        public int GetHashCode(ITemplate obj)
+        public int GetHashCode(ITemplateInfo obj)
         {
             return obj?.Identity?.GetHashCode() ?? 0;
         }

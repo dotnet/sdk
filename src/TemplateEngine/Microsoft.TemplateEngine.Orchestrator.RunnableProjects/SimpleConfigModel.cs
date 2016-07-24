@@ -8,7 +8,6 @@ using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -20,40 +19,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Sources = new[] { new ExtendedFileSource() };
         }
 
-        [JsonIgnore]
         private IReadOnlyDictionary<string, Parameter> _parameters;
-
-        [JsonIgnore]
         private IReadOnlyList<FileSource> _sources;
-
-        [JsonIgnore]
         private Dictionary<string, Dictionary<string, JObject>> _special;
-
-        [JsonIgnore]
         private Parameter _nameParameter;
-
-        [JsonIgnore]
         private string _safeNameName;
 
-        [JsonIgnore]
         public IFile SourceFile { get; set; }
 
-        [JsonProperty]
         public string Author { get; set; }
 
-        [JsonProperty]
-        public List<string> Classifications { get; set; }
+        public IReadOnlyList<string> Classifications { get; set; }
 
-        [JsonProperty]
         public string DefaultName { get; set; }
 
-        [JsonProperty]
         public string GroupIdentity { get; set; }
 
-        [JsonProperty]
-        public List<Guid> Guids { get; set; }
+        public IReadOnlyList<Guid> Guids { get; set; }
 
-        [JsonProperty]
         public string Name { get; set; }
 
         IReadOnlyDictionary<string, Parameter> IRunnableProjectConfig.Parameters
@@ -117,20 +100,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        [JsonProperty]
         public string ShortName { get; set; }
 
-        [JsonProperty]
         public string SourceName { get; set; }
 
-        [JsonProperty]
-        public ExtendedFileSource[] Sources { get; set; }
+        public IReadOnlyList<ExtendedFileSource> Sources { get; set; }
 
-        [JsonProperty(ItemConverterType = typeof(SymbolModelConverter))]
-        public Dictionary<string, ISymbolModel> Symbols { get; set; }
+        public IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
 
-        [JsonProperty]
-        public Dictionary<string, string> Tags { get; set; }
+        public IReadOnlyDictionary<string, string> Tags { get; set; }
 
         private Parameter NameParameter
         {
@@ -163,9 +141,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     foreach (ExtendedFileSource source in Sources)
                     {
-                        string[] includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" });
-                        string[] excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" });
-                        string[] copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" });
+                        IReadOnlyList<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" });
+                        IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" });
+                        IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" });
 
                         sources.Add(new FileSource
                         {
@@ -174,6 +152,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Include = includePattern,
                             Source = source.Source ?? "./",
                             Target = source.Target ?? "./",
+                            Rename = null
+                        });
+                    }
+
+                    if (sources.Count == 0)
+                    {
+                        IReadOnlyList<string> includePattern = new[] { "**/*" };
+                        IReadOnlyList<string> excludePattern = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
+                        IReadOnlyList<string> copyOnlyPattern = new[] { "**/node_modules/**/*" };
+
+                        sources.Add(new FileSource
+                        {
+                            CopyOnly = copyOnlyPattern,
+                            Exclude = excludePattern,
+                            Include = includePattern,
+                            Source = "./",
+                            Target = "./",
                             Rename = null
                         });
                     }
@@ -217,19 +212,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        [JsonIgnore]
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
-        [JsonIgnore]
         IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//", true);
 
-        [JsonIgnore]
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
 
-        [JsonIgnore]
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
-        [JsonProperty]
         public string Identity { get; set; }
 
         public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations)
@@ -383,24 +373,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return cfg;
         }
 
-        private static string[] JTokenToCollection(JToken token, IFile sourceFile, string[] defaultSet)
+        private static IReadOnlyList<string> JTokenToCollection(JToken token, IFile sourceFile, string[] defaultSet)
         {
             if (token == null)
             {
                 return defaultSet;
             }
-            else if (token.Type == JTokenType.String)
+
+            if (token.Type == JTokenType.String)
             {
-                using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToObject<string>()).OpenRead())
+                using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToString()).OpenRead())
                 using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
                 {
                     return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
-            else
-            {
-                return token.ToObject<string[]>();
-            }
+
+            return token.ArrayAsStrings();
         }
 
         private class EvaluatedSimpleConfig : IRunnableProjectConfig
@@ -501,7 +490,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
                             string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
                             renames[tmpltRel] = outRel;
-                            // Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
+                            //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
                         }
                     }
 
@@ -516,8 +505,104 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     });
                 }
 
+                if (_simpleConfigModel.Sources.Count == 0)
+                {
+                    IReadOnlyList<string> includePattern = new[] { "**/*" };
+                    IReadOnlyList<string> excludePattern = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
+                    IReadOnlyList<string> copyOnlyPattern = new[] { "**/node_modules/**/*" };
+
+                    Dictionary<string, string> renames = new Dictionary<string, string>();
+                    // Console.WriteLine(_simpleConfigModel.NameParameter);
+
+                    string val;
+                    if (parameters.ParameterValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
+                    {
+                        foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                        {
+                            string tmpltRel = entry.PathRelativeTo(configFile.Parent);
+                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
+                            renames[tmpltRel] = outRel;
+                            //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
+                        }
+                    }
+
+                    sources.Add(new FileSource
+                    {
+                        CopyOnly = copyOnlyPattern,
+                        Exclude = excludePattern,
+                        Include = includePattern,
+                        Source = "./",
+                        Target = "./",
+                        Rename = renames
+                    });
+                }
+
                 _sources = sources;
             }
+        }
+
+        public static SimpleConfigModel FromJObject(JObject source)
+        {
+            SimpleConfigModel tmp = new SimpleConfigModel();
+            tmp.Author = source.ToString(nameof(tmp.Author));
+            tmp.Classifications = source.ArrayAsStrings(nameof(tmp.Classifications));
+            tmp.DefaultName = source.ToString(nameof(DefaultName));
+            tmp.GroupIdentity = source.ToString(nameof(GroupIdentity));
+            tmp.Guids = source.ArrayAsGuids(nameof(tmp.Guids));
+            tmp.Identity = source.ToString(nameof(tmp.Identity));
+            tmp.Name = source.ToString(nameof(tmp.Name));
+            tmp.ShortName = source.ToString(nameof(tmp.ShortName));
+            tmp.SourceName = source.ToString(nameof(tmp.SourceName));
+
+            List<ExtendedFileSource> sources = new List<ExtendedFileSource>();
+            tmp.Sources = sources;
+
+            foreach (JObject item in source.Items<JObject>(nameof(tmp.Sources)))
+            {
+                ExtendedFileSource src = new ExtendedFileSource();
+                sources.Add(src);
+                src.CopyOnly = item.Get<JToken>(nameof(src.CopyOnly));
+                src.Exclude = item.Get<JToken>(nameof(src.Exclude));
+                src.Include = item.Get<JToken>(nameof(src.Include));
+
+                List<SourceModifier> modifiers = new List<SourceModifier>();
+                src.Modifiers = modifiers;
+                foreach (JObject entry in item.Items<JObject>(nameof(src.Modifiers)))
+                {
+                    SourceModifier modifier = new SourceModifier();
+                    modifier.Condition = entry.ToString(nameof(modifier.Condition));
+                    modifier.CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly));
+                    modifier.Exclude = entry.Get<JToken>(nameof(modifier.Exclude));
+                    modifier.Include = entry.Get<JToken>(nameof(modifier.Include));
+                    modifiers.Add(modifier);
+                }
+
+                src.Source = item.ToString(nameof(src.Source));
+                src.Target = item.ToString(nameof(src.Target));
+            }
+
+            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
+            tmp.Symbols = symbols;
+            foreach (JProperty prop in source.PropertiesOf(nameof(tmp.Symbols)))
+            {
+                JObject obj = prop.Value as JObject;
+
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj);
+
+                if (model != null)
+                {
+                    symbols[prop.Name] = model;
+                }
+            }
+
+            tmp.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(tmp.Tags));
+
+            return tmp;
         }
     }
 }

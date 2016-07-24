@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                     string source = Path.Combine(Paths.User.PackageCache, match.Library.Name, match.Library.Version.ToString());
 
-                    if (!source.Exists())
+                    if (!source.Exists() && match.Provider != null)
                     {
                         PackageExtractor.InstallFromSourceAsync(
                             stream => match.Provider.CopyToAsync(match.Library, stream, CancellationToken.None),

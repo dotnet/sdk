@@ -30,6 +30,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Identity { get; }
 
+        public Guid GeneratorId => Generator.Id;
+
         public string Author { get; }
 
         public IReadOnlyList<string> Classifications { get; }
@@ -51,6 +53,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IMountPoint Source { get; }
 
         public IReadOnlyDictionary<string, string> Tags { get; }
+
+        public Guid ConfigMountPointId => Configuration.MountPoint.Info.MountPointId;
+
+        public string ConfigPlace => Configuration.FullPath;
 
         public IFileSystemInfo Configuration => ConfigFile;
 
