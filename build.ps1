@@ -26,7 +26,12 @@ $DotnetCLIVersion = Get-Content "$RepoRoot\DotnetCLIVersion.txt"
 # Use a repo-local install directory (but not the bin directory because that gets cleaned a lot)
 if (!$env:DOTNET_INSTALL_DIR)
 {
-    $env:DOTNET_INSTALL_DIR="$RepoRoot\.dotnet_cli\"
+    # If running on microbuild, use the auto-cleaned staging directory.
+    $env:DOTNET_INSTALL_DIR=$env:BUILD_STAGINGDIRECTORY
+    if (!$env:DOTNET_INSTALL_DIR)
+    {
+        $env:DOTNET_INSTALL_DIR="$RepoRoot\.dotnet_cli\"
+    }
 }
 
 if (!(Test-Path $env:DOTNET_INSTALL_DIR))
