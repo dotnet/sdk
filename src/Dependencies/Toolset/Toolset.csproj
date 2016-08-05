@@ -1,10 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <IsPortable>false</IsPortable>
+  </PropertyGroup>
+  <Import Project="..\..\..\build\Targets\Settings.targets" />
+  <PropertyGroup>
     <ProjectGuid>{3899F789-E072-476D-B9D6-79E641611648}</ProjectGuid>
     <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkIdentifier>NETStandard</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier>.NETStandard</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v1.3</TargetFrameworkVersion>
+    <UseCommonOutputDirectory>true</UseCommonOutputDirectory>
+    <OutputPath>bin</OutputPath>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />

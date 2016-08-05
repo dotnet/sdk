@@ -1,5 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Choose>
+    <When Condition="'$(ProjectLanguage)' == 'VB'">
+      <PropertyGroup>
+        <MSBuildTargetsLanguageName>VisualBasic</MSBuildTargetsLanguageName>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(ProjectLanguage)' == 'CSharp'">
+      <PropertyGroup>
+        <MSBuildTargetsLanguageName>CSharp</MSBuildTargetsLanguageName>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <Choose>
+    <When Condition="'$(ProjectLanguage)' == 'C++'">
+      <PropertyGroup>
+        <MSBuildTargetsFilePath>$(VCTargetsPath)\Microsoft.Cpp.targets</MSBuildTargetsFilePath>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETPortable'">
+      <PropertyGroup>
+        <MSBuildTargetsFilePath>$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.$(MSBuildTargetsLanguageName).targets</MSBuildTargetsFilePath>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <MSBuildTargetsFilePath>$(MSBuildToolsPath)\Microsoft.$(MSBuildTargetsLanguageName).targets</MSBuildTargetsFilePath>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <Import Project="$(MSBuildTargetsFilePath)" />
 
   <PropertyGroup>
     <TargetPath></TargetPath>    <!-- Prevent projects referencing this from trying to pass us to the compiler -->
