@@ -3,7 +3,7 @@
   <PropertyGroup>
     <IsPortable>false</IsPortable>
   </PropertyGroup>
-  <Import Project="..\..\..\build\Targets\Settings.targets" />
+  <Import Project="..\..\..\Directory.Build.props" />
   <PropertyGroup>
     <ProjectGuid>{3899F789-E072-476D-B9D6-79E641611648}</ProjectGuid>
     <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
