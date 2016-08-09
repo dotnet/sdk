@@ -14,7 +14,11 @@
     <OutDir Condition="'$(OutDir)' == ''">$([System.IO.Path]::GetFullPath('$(RepositoryRootDirectory)bin\$(Configuration)'))\</OutDir>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$([System.IO.Path]::GetFullPath('$(RepositoryRootDirectory)bin\obj\$(MSBuildProjectName)'))\</BaseIntermediateOutputPath>
 
+    <SignAssembly Condition="'$(SignAssembly)' == ''">true</SignAssembly>
+
     <VersionPrefix Condition="'$(VersionPrefix)' == ''">1.0.0</VersionPrefix>
+    <!-- When running on Microbuild, this is set to "ymmdd.n". -->
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''">$(BuildVersion)</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''">alpha-00001</VersionSuffix>
     <Version Condition="'$(Version)' == ''">$(VersionPrefix)-$(VersionSuffix)</Version>
 

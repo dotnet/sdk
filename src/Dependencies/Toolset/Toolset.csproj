@@ -14,6 +14,7 @@
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <OutputType>Library</OutputType>
+    <Nonshipping>true</Nonshipping>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
