@@ -1,0 +1,9 @@
+{
+    "supports" : {},
+    "dependencies": {
+        "MicroBuild.Core": "0.2.0"
+    },
+    "frameworks": {
+        "netstandard1.3": {}
+    }
+}
