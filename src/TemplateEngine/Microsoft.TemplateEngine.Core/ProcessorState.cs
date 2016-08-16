@@ -107,12 +107,12 @@ namespace Microsoft.TemplateEngine.Core
 
         public IEncodingConfig EncodingConfig { get; private set; }
 
-        public void AdvanceBuffer(int bufferPosition)
+        public bool AdvanceBuffer(int bufferPosition)
         {
             if (CurrentBufferLength == 0)
             {
                 CurrentBufferPosition = 0;
-                return;
+                return false;
             }
 
             int offset = 0;
@@ -122,8 +122,11 @@ namespace Microsoft.TemplateEngine.Core
                 Array.Copy(CurrentBuffer, bufferPosition, CurrentBuffer, 0, offset);
             }
 
-            CurrentBufferLength = _source.Read(CurrentBuffer, offset, CurrentBuffer.Length - offset) + offset;
+            int bytesRead = _source.Read(CurrentBuffer, offset, CurrentBuffer.Length - offset);
+            CurrentBufferLength = bytesRead + offset;
             CurrentBufferPosition = 0;
+
+            return bytesRead != 0;
         }
 
         public bool Run()

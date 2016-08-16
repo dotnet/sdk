@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Engine
 
         Encoding Encoding { get; set; }
 
-        void AdvanceBuffer(int bufferPosition);
+        bool AdvanceBuffer(int bufferPosition);
 
         void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition);
 

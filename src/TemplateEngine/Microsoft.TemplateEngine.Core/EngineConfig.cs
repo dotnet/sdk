@@ -32,5 +32,10 @@ namespace Microsoft.TemplateEngine.Core
         public IReadOnlyList<string> Whitespaces { get; }
 
         public IDictionary<string, bool> Flags { get; }
+
+        public string OperationIdFlag(int operationId)
+        {
+            return "id:" + operationId;
+        }
     }
 }

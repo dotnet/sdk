@@ -30,6 +30,11 @@ namespace Microsoft.TemplateEngine.Core
             {
                 for (int k = 0; k < modifiers[i].Tokens.Count; ++k)
                 {
+                    if (modifiers[i].Tokens[k] == null)
+                    {
+                        continue;
+                    }
+
                     length = Math.Max(length, modifiers[i].Tokens[k].Length);
 
                     if (modifiers[i].Tokens[k].Length > 0)
@@ -82,20 +87,21 @@ namespace Microsoft.TemplateEngine.Core
             while (i < bufferLength)
             {
                 if (!current._map.TryGetValue(buffer[i], out current))
-                {
+                {   // the current byte doesn't match in the context of the current trie state
                     token = index;
 
                     if (index != -1)
-                    {
+                    {   // a full token match was encountered along the way - return its operation
                         currentBufferPosition = i - offsetToMatch;
                         return operation;
                     }
 
+                    // no token match
                     return null;
                 }
 
                 if (current.HandlerTokenIndex != -1)
-                {
+                {   // a full token was matched, note its operation
                     index = current.HandlerTokenIndex;
                     operation = current.End;
                     offsetToMatch = 0;
@@ -109,10 +115,11 @@ namespace Microsoft.TemplateEngine.Core
             }
 
             if (index != -1)
-            {
+            {   // matched to the end of the buffer
                 currentBufferPosition = i;
             }
 
+            // end of buffer, but a full token matched along the way - return its operation
             token = index;
             return operation;
         }

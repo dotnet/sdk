@@ -134,6 +134,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (operations.TryGetValue("conditionals", out data))
             {
+                // TODO (scp): add getting the special tokens and the disable operation
                 string ifToken = data.ToString("if");
                 string elseToken = data.ToString("else");
                 string elseIfToken = data.ToString("elseif");
@@ -441,11 +442,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IEncodingConfig EncodingConfig { get; }
 
-            public void AdvanceBuffer(int bufferPosition)
+            public bool AdvanceBuffer(int bufferPosition)
             {
                 byte[] tmp = new byte[CurrentBufferLength - bufferPosition];
                 Buffer.BlockCopy(CurrentBuffer, bufferPosition, tmp, 0, CurrentBufferLength - bufferPosition);
                 CurrentBuffer = tmp;
+
+                return true;
             }
 
             public void SeekBackUntil(ITokenTrie match)
