@@ -1,1 +1,1 @@
-# dotnet sdk
+# Sdk for .NET projects
