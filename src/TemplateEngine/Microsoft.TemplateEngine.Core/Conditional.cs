@@ -2,42 +2,50 @@
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
+using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.TemplateEngine.Core
 {
     public class Conditional : IOperationProvider
     {
-        private readonly string _elseIfToken;
-        private readonly string _elseToken;
-        private readonly string _endIfToken;
-        private readonly string _ifToken;
         private readonly ConditionEvaluator _evaluator;
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
 
-        // for comment / uncomment handling
-        private readonly string _ifTokenFlagged;
-        private readonly string _elseTokenFlagged;
-        private readonly string _elseIfTokenFlagged;
-        private readonly int? _operationToDisable;
+        private readonly IList<string> _ifTokens = new List<string>();
+        private readonly IList<string> _elseIfTokens = new List<string>();
+        private readonly IList<string> _elseTokens = new List<string>();
+        private readonly IList<string> _endIfTokens = new List<string>();
+
+        private readonly IList<string> _ifTokensActionable = new List<string>();
+        private readonly IList<string> _elseIfTokensActionable = new List<string>();
+        private readonly IList<string> _elseTokensActionable = new List<string>();
+
+        private readonly IList<string> _actionableOnlyTokens = new List<string>();
 
         // the unusual order of these is historical, no special meaning
-        private const int IfTokenIndex = 0;
-        private const int EndTokenIndex = 1;
-        private const int ElseIfTokenIndex = 2;
-        private const int ElseTokenIndex = 3;
+        // if actual_token_index % 10 == baseTokenIndex
+        // then actual_token_index is of the baseTokenIndex type
+        // these are now "Base indexes"
+        private const int IfTokenBaseIndex = 0;
+        private const int EndTokenBaseIndex = 1;
+        private const int ElseIfTokenBaseIndex = 2;
+        private const int ElseTokenBaseIndex = 3;
 
-        private const int IfTokenFlaggedIndex = 4;
-        private const int ElseIfTokenFlaggedIndex = 5;
-        private const int ElseTokenFlaggedIndex = 6;
+        private const int IfTokenActionableBaseIndex = 4;
+        private const int ElseIfTokenActionableBaseIndex = 5;
+        private const int ElseTokenActionableBaseIndex = 6;
 
-        public string IfToken => _ifToken;
+        // must be > the highest token type index
+        private const int TokenTypeModulus = 10;
 
-        public string ElseIfToken => _elseIfToken;
-
-        public string ElseToken => _elseToken;
-
-        public string EndIfToken => _endIfToken;
+        // The other operations to toggle when the actionable tokens get handled
+        // They're disabled during initial setup of conditional.
+        // When the actionable token start is encountered, these are enabled.
+        // When the actionable token end is encountered, they're disabled.
+        //  it gets a bit more complex with embedded actionables.
+        private readonly IList<int> _actionableOperations;
 
         public bool WholeLine => _wholeLine;
 
@@ -45,137 +53,182 @@ namespace Microsoft.TemplateEngine.Core
 
         public ConditionEvaluator Evaluator => _evaluator;
 
+        // standard versions of the tokens.
+        public IList<string> IfTokens => _ifTokens;
+
+        public IList<string> ElseIfTokens => _elseIfTokens;
+
+        public IList<string> ElseTokens => _elseTokens;
+
+        public IList<string> EndIfTokens => _endIfTokens;
+
         // for comment / uncomment handling
-        public string IfTokenFlagged => _ifTokenFlagged;
+        public IList<string> IfTokensActionable => _ifTokensActionable;
 
-        public string ElseTokenFlagged => _elseTokenFlagged;
+        public IList<string> ElseTokensActionable => _elseTokensActionable;
 
-        public string ElseIfTokenFlagged => _elseIfTokenFlagged;
+        public IList<string> ElseIfTokensActionable => _elseIfTokensActionable;
 
-        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator)
-            : this(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, trimWhitespace, evaluator, null, null, null, null)
+        // lists of regular conditionals
+        // no special conditionals
+        public Conditional(IEnumerable<string> ifTokens, IEnumerable<string> elseTokens, IEnumerable<string> elseIfTokens, IEnumerable<string> endIfTokens,
+                bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator)
+            :this(ifTokens, elseTokens, elseIfTokens, endIfTokens, wholeLine, trimWhitespace, evaluator, new List<string>(), new List<string>(), new List<string>(), new List<int>())
         {
-            //_trimWhitespace = trimWhitespace;
-            //_wholeLine = wholeLine;
-            //_evaluator = evaluator;
-            //_ifToken = ifToken;
-            //_elseToken = elseToken;
-            //_elseIfToken = elseIfToken;
-            //_endIfToken = endIfToken;
         }
 
-        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, 
-            string ifTokenFlagged, string elseTokenFlagged, string elseIfTokenFlagged, int? operationToDisable)
+        // lists of regular conditionals
+        // lists of specials conditionals
+        // single operation to toggle
+        public Conditional(IEnumerable<string> ifTokens, IEnumerable<string> elseTokens, IEnumerable<string> elseIfTokens, IEnumerable<string> endIfTokens,
+            bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator,
+            IEnumerable<string> ifTokensActionable, IEnumerable<string> elseTokensActionable, IEnumerable<string> elseIfTokensActionable, IList<int> actionableOperations)
         {
             _trimWhitespace = trimWhitespace;
             _wholeLine = wholeLine;
             _evaluator = evaluator;
-            _ifToken = ifToken;
-            _elseToken = elseToken;
-            _elseIfToken = elseIfToken;
-            _endIfToken = endIfToken;
-            _ifTokenFlagged = ifTokenFlagged;
-            _elseTokenFlagged = elseTokenFlagged;
-            _elseIfTokenFlagged = elseIfTokenFlagged;
-            _operationToDisable = operationToDisable;
+
+            _ifTokens = new List<string>(ifTokens);
+            _elseTokens = new List<string>(elseTokens);
+            _elseIfTokens = new List<string>(elseIfTokens);
+            _endIfTokens = new List<string>(endIfTokens);
+            _ifTokensActionable = new List<string>(ifTokensActionable);
+            _elseTokensActionable = new List<string>(elseTokensActionable);
+            _elseIfTokensActionable = new List<string>(elseIfTokensActionable);
+
+            _actionableOperations = actionableOperations;
+        }
+
+        // Probably need to hold onto these original constructors for backwards compatibility as this is developed.
+        //
+        // single regular conditionals
+        // no special conditionals
+        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator)
+            : this(new List<string>() { ifToken },
+                  new List<string>() { elseToken },
+                  new List<string>() { elseIfToken },
+                  new List<string>() { endIfToken },
+                  wholeLine,
+                  trimWhitespace,
+                  evaluator,
+                  new List<string>(),
+                  new List<string>(),
+                  new List<string>(),
+                  new List<int>())
+        {
+        }
+
+        // single regular conditionals
+        // single special conditionals
+        // single operation to toggle
+        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator,
+            string ifTokenActionable, string elseTokenActionable, string elseIfTokenActionable, IList<int> actionableOperations)
+            : this(new List<string>() { ifToken },
+                  new List<string>() { elseToken },
+                  new List<string>() { elseIfToken },
+                  new List<string>() { endIfToken },
+                  wholeLine,
+                  trimWhitespace,
+                  evaluator,
+                  new List<string>() { ifTokenActionable },
+                  new List<string>() { elseTokenActionable },
+                  new List<string>() { elseIfTokenActionable },
+                  actionableOperations)
+        {
+        }
+
+        /// <summary>
+        /// Returns the numner of elements in the longest of the token variant lists.
+        /// </summary>
+        private int LongestTokenVariantListSize
+        {
+            get
+            {
+                int maxListSize = Math.Max(_ifTokens.Count, _elseTokens.Count);
+                maxListSize = Math.Max(maxListSize, _elseIfTokens.Count);
+                maxListSize = Math.Max(maxListSize, _endIfTokens.Count);
+                maxListSize = Math.Max(maxListSize, _ifTokensActionable.Count);
+                maxListSize = Math.Max(maxListSize, _elseTokensActionable.Count);
+                maxListSize = Math.Max(maxListSize, _elseIfTokensActionable.Count);
+
+                return maxListSize;
+            }
         }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
-            byte[] ifToken = encoding.GetBytes(_ifToken);
-            byte[] endToken = encoding.GetBytes(_endIfToken);
+            TokenTrie trie = new TokenTrie();
 
-            List<byte[]> tokens = new List<byte[]>(ElseTokenFlaggedIndex + 1);
-            //{
-            //    ifToken,
-            //    endToken
-            //};
+            List<byte[]> tokens = new List<byte[]>(TokenTypeModulus * LongestTokenVariantListSize);
             for (int i = 0; i < tokens.Capacity; i++)
             {
                 tokens.Add(null);
             }
 
-            tokens[IfTokenIndex] = ifToken;
-            tokens[EndTokenIndex] = endToken;
+            AddTokensOfTypeToTokenListAndTrie(trie, tokens, _ifTokens, IfTokenBaseIndex, encoding);
+            AddTokensOfTypeToTokenListAndTrie(trie, tokens, _elseTokens, ElseTokenBaseIndex, encoding);
+            AddTokensOfTypeToTokenListAndTrie(trie, tokens, _elseIfTokens, ElseIfTokenBaseIndex, encoding);
+            AddTokensOfTypeToTokenListAndTrie(trie, tokens, _endIfTokens, EndTokenBaseIndex, encoding);
+            AddTokensOfTypeToTokenListAndTrie(trie, tokens, _ifTokensActionable, IfTokenActionableBaseIndex, encoding);
+            AddTokensOfTypeToTokenListAndTrie(trie, tokens, _elseTokensActionable, ElseTokenActionableBaseIndex, encoding);
+            AddTokensOfTypeToTokenListAndTrie(trie, tokens, _elseIfTokensActionable, ElseIfTokenActionableBaseIndex, encoding);
 
-            TokenTrie trie = new TokenTrie();
-            trie.AddToken(ifToken, IfTokenIndex);
-            trie.AddToken(endToken, EndTokenIndex);
-
-            //int elseIfTokenIndex = -1;
-
-            if (!string.IsNullOrEmpty(_elseToken))
+            // disable the actionable operations if there are any
+            foreach (int operationId in _actionableOperations)
             {
-                byte[] elseToken = encoding.GetBytes(_elseToken);
-                //trie.AddToken(elseToken, tokens.Count);
-                //tokens.Add(elseToken);
-                trie.AddToken(elseToken, ElseTokenIndex);
-                tokens[ElseTokenIndex] = elseToken;
-            }
-
-            if (!string.IsNullOrEmpty(_elseIfToken))
-            {
-                byte[] elseIfToken = encoding.GetBytes(_elseIfToken);
-                //elseIfTokenIndex = tokens.Count;
-                //trie.AddToken(elseIfToken, elseIfTokenIndex);
-                //tokens.Add(elseIfToken);
-                trie.AddToken(elseIfToken, ElseIfTokenIndex);
-                tokens[ElseIfTokenIndex] = elseIfToken;
-            }
-
-            // setup the flagged versions
-            // The ifTokenFlag must be defined for any to be defined
-            // There is no reason to have a flagged end.
-            //int elseIfTokenFlaggedIndex = -1;
-
-            if (!string.IsNullOrEmpty(_ifTokenFlagged))
-            {
-                byte[] ifTokenFlagged = encoding.GetBytes(_ifTokenFlagged);
-                tokens[IfTokenFlaggedIndex] = ifTokenFlagged;
-                trie.AddToken(ifTokenFlagged, IfTokenFlaggedIndex);
-
-                if (!string.IsNullOrEmpty(_elseIfTokenFlagged))
-                {
-                    byte[] elseIfTokenFlagged = encoding.GetBytes(_elseIfTokenFlagged);
-                    tokens[ElseIfTokenFlaggedIndex] = elseIfTokenFlagged;
-                    trie.AddToken(elseIfTokenFlagged, ElseIfTokenFlaggedIndex);
-                }
-
-                if (!string.IsNullOrEmpty(_elseTokenFlagged))
-                {
-                    byte[] elseTokenFlagged = encoding.GetBytes(_elseTokenFlagged);
-                    tokens[ElseTokenFlaggedIndex] = elseTokenFlagged;
-                    trie.AddToken(elseTokenFlagged, ElseTokenFlaggedIndex);
-                }
-            }
-
-            // disable the flag operation if its defined
-            if (_operationToDisable.HasValue)
-            {
-                string otherOptionDisableFlag = processorState.Config.OperationIdFlag(_operationToDisable.GetValueOrDefault());
+                string otherOptionDisableFlag = processorState.Config.OperationIdFlag(operationId);
                 processorState.Config.Flags.Add(otherOptionDisableFlag, false);
             }
 
-            //return new Impl(this, tokens, elseIfTokenIndex, trie);
             return new Impl(this, tokens, trie);
+        }
+
+        /// <summary>
+        /// Puts the tokensOfType into the tokenMasterList at indexes which are congruent to typeRemainder mod TokenTypeModulus
+        /// </summary>
+        /// <param name="trie"></param>
+        /// <param name="tokenMasterList"></param>
+        /// <param name="tokensOfType"></param>
+        /// <param name="typeRemainder"></param>
+        /// <param name="encoding"></param>
+        private void AddTokensOfTypeToTokenListAndTrie(TokenTrie trie, List<byte[]> tokenMasterList, IList<string> tokensOfType, int typeRemainder, Encoding encoding)
+        {
+            int tokenIndex = typeRemainder;
+
+            for (int i = 0; i < tokensOfType.Count; i++)
+            {
+                byte[] byteToken = encoding.GetBytes(tokensOfType[i]);
+                tokenMasterList[tokenIndex] = byteToken;
+                trie.AddToken(byteToken, typeRemainder);
+                tokenIndex += TokenTypeModulus;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the tokenIndex indicates the token is a variant of its base type,
+        /// false otherwise.
+        /// </summary>
+        /// <param name="tokenIndex"></param>
+        /// <param name="baseTypeIndex"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsTokenIndexOfType(int tokenIndex, int baseTypeIndex)
+        {
+            return (tokenIndex % TokenTypeModulus) == baseTypeIndex;
         }
 
         private class Impl : IOperation
         {
             private readonly Conditional _definition;
             private EvaluationState _current;
-            //private readonly int _elseIfTokenIndex;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly TokenTrie _trie;
 
-            //public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, int elseIfTokenIndex, TokenTrie trie)
             public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, TokenTrie trie)
             {
                 _trie = trie;
-                //_elseIfTokenIndex = elseIfTokenIndex;
                 _definition = definition;
                 Tokens = tokens;
-
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
@@ -191,7 +244,7 @@ namespace Microsoft.TemplateEngine.Core
                 }
 
                 // conditional has not started, or this is the "if"
-                if (_current != null || token == IfTokenIndex || token == IfTokenFlaggedIndex)
+                if (_current != null || IsTokenIndexOfType(token, IfTokenBaseIndex) || IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
                 {
                     if (_definition._wholeLine)
                     {
@@ -203,9 +256,9 @@ namespace Microsoft.TemplateEngine.Core
                     }
                 }
 
-BEGIN:
+            BEGIN:
                 //Got the "if" token...
-                if (token == IfTokenIndex || token == IfTokenFlaggedIndex)
+                if (IsTokenIndexOfType(token, IfTokenBaseIndex) || IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
                 {
                     if (_current == null)
                     {
@@ -227,44 +280,19 @@ BEGIN:
                             processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
                         }
 
-                        if (token == IfTokenFlaggedIndex)
-                        {   // "flagged" if token, so enable the flag operation
-                            // this may be wrong
-                            _current.ToggleFlagOperation(true, processor);
+                        if (IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
+                        {   // "Actionable" if token, so enable the flag operation
+                            _current.ToggleActionableOperations(true, processor);
                         }
 
                         // this is an endif return ???
                         return 0;
                     }
-
-                    if (_definition.WholeLine)
+                    else
                     {
-                        processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                        SeekToNextTokenAtSameLevel(processor, ref bufferLength, ref currentBufferPosition, out token);
+                        goto BEGIN;
                     }
-
-                    SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
-
-                    //Keep on scanning until we've hit a balancing token that belongs to us
-                    while(token == IfTokenIndex || token == IfTokenFlaggedIndex)
-                    {
-                        int open = 1;
-                        while(open != 0)
-                        {
-                            SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
-                            if(token == IfTokenIndex || token == IfTokenFlaggedIndex)
-                            {
-                                ++open;
-                            }
-                            else if(token == EndTokenIndex)
-                            {
-                                --open;
-                            }
-                        }
-
-                        SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token);
-                    }
-
-                    goto BEGIN;
                 }
 
                 //If we've got an unbalanced statement, emit the token
@@ -276,17 +304,17 @@ BEGIN:
                 }
 
                 //Got the endif token, exit to the parent "if" scope if it exists
-                if (token == EndTokenIndex)
+                if (IsTokenIndexOfType(token, EndTokenBaseIndex))
                 {
                     if (_pendingCompletion.Count > 0)
                     {
                         _current = _pendingCompletion.Pop();
-                        _current.ToggleFlagOperation(_current.FlagOperationEnabled, processor);
+                        _current.ToggleActionableOperations(_current.ActionableOperationsEnabled, processor);
                     }
                     else
                     {
                         // disable the special case operation (note: it may already be disabled, but cheaper to do than check)
-                        _current.ToggleFlagOperation(false, processor);
+                        _current.ToggleActionableOperations(false, processor);
                         _current = null;
                     }
 
@@ -306,57 +334,61 @@ BEGIN:
                 {
                     processor.SeekBackUntil(processor.EncodingConfig.LineEndings, true);
                     //A previous branch was taken. Skip to the endif token.
+                    // NOTE: this can probably use the new method SeekToNextTokenAtSameLevel() - they do almost the same thing.
                     SkipToMatchingEndif(processor, ref bufferLength, ref currentBufferPosition, ref token);
-                    _current.ToggleFlagOperation(false, processor);
+
+                    if (_pendingCompletion.Count > 0)
+                    {
+                        _current = _pendingCompletion.Pop();
+                        _current.ToggleActionableOperations(_current.ActionableOperationsEnabled, processor);
+                    }
+                    else
+                    {
+                        // disable the special case operation (note: it may already be disabled, but cheaper to do than check)
+                        _current.ToggleActionableOperations(false, processor);
+                        _current = null;
+                    }
+
                     return 0;
                 }
 
                 //We have an "elseif" and haven't taken a previous branch
-                if (token == ElseIfTokenIndex || token == ElseIfTokenFlaggedIndex)
+                if (IsTokenIndexOfType(token, ElseIfTokenBaseIndex) || IsTokenIndexOfType(token, ElseIfTokenActionableBaseIndex))
                 {
-                    //If the elseif branch is taken, return control for replacements to be done as usual
-                    if (!_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition))
+                    // 8-19 attempt to make the same as if() handling
+                    //
+                    if (_current.Evaluate(processor, ref bufferLength, ref currentBufferPosition))
                     {
                         if (_definition.WholeLine)
                         {
                             processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
                         }
 
-                        if (SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
+                        if (IsTokenIndexOfType(token, ElseIfTokenActionableBaseIndex))
                         {
-                            goto BEGIN;
+                            // the elseif branch is taken. 
+                            _current.ToggleActionableOperations(true, processor);
                         }
+
+                        return 0;
                     }
                     else
                     {
-                        if (token == ElseIfTokenFlaggedIndex)
-                        {
-                            // the elseif branch is taken. 
-                            _current.ToggleFlagOperation(true, processor);
-                        }
-                    }
+                        SeekToNextTokenAtSameLevel(processor, ref bufferLength, ref currentBufferPosition, out token);
 
-                    if (_definition.WholeLine)
-                    {
-                        processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                        // In the original version this was conditional on SeekToToken() succeeding.
+                        // Not sure if it should be conditional. It should never fail, unless the template is malformed.
+                        goto BEGIN;
                     }
-
-                    // SCP 2016-08-15: The elseif branch may have been taken here. The original comment below is probably inaccurate.
-                    //  if the elseif is not taken, and seek to terminator is true, we don't get here
-                    //  if the elseif is taken, we get to here.
-                    //
-                    // Original comment:
-                    //The "elseif" branch was not taken. Skip to the following else, elseif or endif token
-                    return 0;
                 }
 
                 //We have an "else" token and haven't taken any other branches, return control
                 //  after setting that a branch has been taken
-                if (token == ElseTokenIndex || token == ElseTokenFlaggedIndex)
+                if (IsTokenIndexOfType(token, ElseTokenBaseIndex) || IsTokenIndexOfType(token, ElseTokenActionableBaseIndex))
                 {
-                    if (token == ElseTokenFlaggedIndex)
+                    if (IsTokenIndexOfType(token, ElseTokenActionableBaseIndex))
                     {
-                        _current.ToggleFlagOperation(true, processor);
+                        _current.ToggleActionableOperations(true, processor);
                     }
 
                     _current.BranchTaken = true;
@@ -369,30 +401,72 @@ BEGIN:
                 }
             }
 
-            private void SkipToMatchingEndif(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, ref int token)
+            // moves the buffer to the next token at the same level.
+            // Returns false if no end token can be found at the same level. 
+            //      this is probably indicative of a template authoring problem, or possibly a buffer problem.
+            private bool SkipToMatchingEndif(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, ref int token)
             {
-                while (token != EndTokenIndex
-                    && SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token) 
-                    && token != EndTokenIndex)
+                while (!IsTokenIndexOfType(token, EndTokenBaseIndex))
                 {
-                    int balance = 1;
+                    bool seekSucceeded = SeekToNextTokenAtSameLevel(processor, ref bufferLength, ref currentBufferPosition, out token);
 
-                    //We're in a nested if branch, wait until it balances closed
-                    while (balance > 0 && SeekToTerminator(processor, ref bufferLength, ref currentBufferPosition, out token))
+                    if (! seekSucceeded)
                     {
-                        if (token == IfTokenIndex || token == IfTokenFlaggedIndex)
-                        {
-                            ++balance;
-                        }
-                        else if (token == EndTokenIndex)
-                        {
-                            --balance;
-                        }
+                        return false;
                     }
                 }
+
+                return true;
             }
 
-            private bool SeekToTerminator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out int token)
+            // Moves the buffer to the next token at the same level of nesting as the current token.
+            // Should never be called if we're on an end token!!!
+            // Returns false if no next token can be found at the same level. 
+            //      this is probably indicative of a template authoring problem, or possibly a buffer problem.
+            private bool SeekToNextTokenAtSameLevel(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out int token)
+            {
+                if (_definition.WholeLine)
+                {
+                    processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                }
+
+                bool seekSucceeded = SeekToToken(processor, ref bufferLength, ref currentBufferPosition, out token);
+
+                //Keep on scanning until we've hit a balancing token that belongs to us
+                // each "if" found opens a new level of nesting
+                while (IsTokenIndexOfType(token, IfTokenBaseIndex) || IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
+                {
+                    int open = 1;
+                    while (open != 0)
+                    {
+                        seekSucceeded &= SeekToToken(processor, ref bufferLength, ref currentBufferPosition, out token);
+
+                        if (IsTokenIndexOfType(token, IfTokenBaseIndex) || IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
+                        {
+                            ++open;
+                        }
+                        else if (IsTokenIndexOfType(token, EndTokenBaseIndex))
+                        {
+                            --open;
+                        }
+                    }
+
+                    seekSucceeded &= SeekToToken(processor, ref bufferLength, ref currentBufferPosition, out token);
+                }
+
+                // temporary for debugging.
+                if (! seekSucceeded)
+                {
+                    Console.WriteLine("seek to token failed in SeekToNextBalancedToken()");
+                }
+
+                // this may be irrelevant. If it happens, the template is malformed (i think)
+                return seekSucceeded;
+            }
+
+            // moves to the next token
+            // returns false if the end of the buffer was reached without finding a token.
+            private bool SeekToToken(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out int token)
             {
                 bool bufferAdvanceFailed = false;
 
@@ -415,7 +489,7 @@ BEGIN:
                 }
 
                 //If we run out of places to look, assert that the end of the buffer is the end
-                token = EndTokenIndex;
+                token = EndTokenBaseIndex;
                 currentBufferPosition = bufferLength;
                 return false;   // no terminator found
             }
@@ -428,7 +502,7 @@ BEGIN:
                 public EvaluationState(Impl impl)
                 {
                     _impl = impl;
-                    FlagOperationEnabled = false;
+                    ActionableOperationsEnabled = false;
                 }
 
                 internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
@@ -443,15 +517,15 @@ BEGIN:
                     set { _branchTaken |= value; }
                 }
 
-                public bool FlagOperationEnabled { get; private set; }
+                public bool ActionableOperationsEnabled { get; private set; }
 
-                public void ToggleFlagOperation(bool enabled, IProcessorState processor)
+                public void ToggleActionableOperations(bool enabled, IProcessorState processor)
                 {
-                    FlagOperationEnabled = enabled;
+                    ActionableOperationsEnabled = enabled;
 
-                    if (_impl._definition._operationToDisable.HasValue)
+                    foreach (int operationId in _impl._definition._actionableOperations)
                     {
-                        string otherOptionDisableFlag = processor.Config.OperationIdFlag(_impl._definition._operationToDisable.GetValueOrDefault());
+                        string otherOptionDisableFlag = processor.Config.OperationIdFlag(operationId);
 
                         if (!processor.Config.Flags.ContainsKey(otherOptionDisableFlag))
                         {
