@@ -326,11 +326,12 @@ namespace Microsoft.DotNet.Core.Build.Tasks
         {
             foreach (var packagesFolder in _packageFolders)
             {
-                string packagePath = Path.Combine(packagesFolder, packageId, packageVersion);
+                string packagePath = Path.Combine(packagesFolder, packageId, packageVersion).ToLower();
+                string packageHashFile = Path.Combine(packagePath, $"{packageId}.{packageVersion}.nupkg.sha512").ToLower();
 
                 // The proper way to check if a package is available is to look for the hash file, since that's the last
                 // file written as a part of the restore process. If it's not there, it means something failed part way through.
-                if (File.Exists(Path.Combine(packagePath, $"{packageId}.{packageVersion}.nupkg.sha512")))
+                if (File.Exists(packageHashFile))
                 {
                     return packagePath;
                 }
