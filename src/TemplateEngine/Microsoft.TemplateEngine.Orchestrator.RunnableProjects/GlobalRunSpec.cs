@@ -114,6 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 string startToken = data.ToString("start");
                 string endToken = data.ToString("end");
+
                 result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead()));
             }
 
@@ -128,6 +129,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     bool include = setting.ToBool("include");
                     bool regionTrim = setting.ToBool("trim");
                     bool regionWholeLine = setting.ToBool("wholeLine");
+
                     result.Add(new Region(start, end, include, regionWholeLine, regionTrim));
                 }
             }
@@ -151,7 +153,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         break;
                 }
 
-                result.Add(new Conditional(ifToken, elseToken, elseIfToken, endIfToken, wholeLine, trim, evaluator));
+                ConditionalTokens tokenVariants = new ConditionalTokens();
+                tokenVariants.IfTokens.Add(ifToken);
+                tokenVariants.ElseTokens.Add(elseToken);
+                tokenVariants.ElseIfTokens.Add(elseIfToken);
+                tokenVariants.EndIfTokens.Add(endIfToken);
+                result.Add(new Conditional(tokenVariants, wholeLine, trim, evaluator));
             }
 
             if (operations.TryGetValue("flags", out data))

@@ -10,14 +10,9 @@ namespace Microsoft.TemplateEngine.Core
     {
         private readonly string _match;
         private readonly string _replaceWith;
-        private readonly int? _id;
+        private string _id;
 
-        public Replacment(string match, string replaceWith)
-            : this(match, replaceWith, null)
-        {
-        }
-
-        public Replacment(string match, string replaceWith, int? id)
+        public Replacment(string match, string replaceWith, string id = null)
         {
             _match = match;
             _replaceWith = replaceWith;
@@ -41,32 +36,23 @@ namespace Microsoft.TemplateEngine.Core
         {
             private readonly byte[] _replacement;
             private readonly byte[] _token;
-            private readonly int? _id;
 
-            public Impl(byte[] token, byte[] replaceWith, int? id)
+            public Impl(byte[] token, byte[] replaceWith, string id)
             {
                 _replacement = replaceWith;
                 _token = token;
-                _id = id;
+                Id = id;
                 Tokens = new[] {token};
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
+            public string Id { get; private set; }
+
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;
                 if (processor.Config.Flags.TryGetValue("replacements", out flag) && !flag)
-                {
-                    byte[] tokenValue = Tokens[token];
-                    target.Write(tokenValue, 0, tokenValue.Length);
-                    return tokenValue.Length;
-                }
-
-                bool opFlag;
-                if (_id.HasValue 
-                    && processor.Config.Flags.TryGetValue(processor.Config.OperationIdFlag(_id.GetValueOrDefault()), out opFlag) 
-                    && !opFlag)
                 {
                     byte[] tokenValue = Tokens[token];
                     target.Write(tokenValue, 0, tokenValue.Length);

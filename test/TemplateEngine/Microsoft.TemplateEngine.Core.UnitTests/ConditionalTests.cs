@@ -29,6 +29,18 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return SetupTestProcessor(operations, vc);
         }
 
+        private IProcessor SetupCStyleWithCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = CStyleWithCommentsConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        private IProcessor SetupCStyleNoCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
         ///
         /// Sets up a processor with the input params.
         ///
@@ -40,14 +52,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         /// <summary>
         /// Second attempt at xml comment processing.
-        /// There are no specials because we never need to comment strip.
+        ///
+        /// TODO: determine if the specials with "-- >" are needed.
         /// </summary>
         private IOperationProvider[] XmlStyleCommentConditionalsOperations
         {
             get
             {
-                //int trailingCommentOperationId = 111;
-                //int trailingPseduoCommentOperationId = 112;
+                string trailingCommentOperationId = "Remove -->";
+                string trailingPseudoCommentOperationId = "Remove -- >";
 
                 IList<string> ifTokens = new List<string>() { };
                 IList<string> elseTokens = new List<string>() {  };
@@ -58,13 +71,23 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 IList<string> elseTokensActionable = new List<string>() { "#else", "<!--#else", "#else-->", "<!--#else-->" }; //, "<!--#else-- >", "#else-- >" };
                 IList<string> elseifTokensActionable = new List<string>() { "#elseif", "<!--#elseif", "#elseif-->", "<!--#elseif-->" }; //, "<!--#elseif-- >", "#elseif-- >" };
 
-                IList<int> actionableOperations = new List<int>(); // { trailingPseduoCommentOperationId };
+                IList<string> actionableOperations = new List<string>() { trailingCommentOperationId, trailingPseudoCommentOperationId };
 
-                IOperationProvider[] operations = { new Conditional(ifTokens, elseTokens, elseifTokens, endIfTokens,
-                                                                true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                ifTokensActionable, elseTokensActionable, elseifTokensActionable, actionableOperations),
-                                                //new Replacment("-->", string.Empty, trailingCommentOperationId),
-                                                //new Replacment("-->", string.Empty, trailingPseduoCommentOperationId),
+                ConditionalTokens tokenVariants = new ConditionalTokens();
+                tokenVariants.IfTokens = ifTokens;
+                tokenVariants.ElseTokens = elseTokens;
+                tokenVariants.ElseIfTokens = elseifTokens;
+                tokenVariants.EndIfTokens = endIfTokens;
+                tokenVariants.ActionableIfTokens = ifTokensActionable;
+                tokenVariants.ActionableElseTokens = elseTokensActionable;
+                tokenVariants.ActionableElseIfTokens = elseifTokensActionable;
+                tokenVariants.ActionableOperations = actionableOperations;
+
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
+                    new Replacment("-->", string.Empty, trailingCommentOperationId),
+                    new Replacment("-- >", string.Empty, trailingPseudoCommentOperationId),
                 };
 
                 /*
@@ -88,10 +111,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                //int leadCommentOperationId = 101;
-                int trailingCommentOperationId = 102;
-                //IList<int> actionableOperations = new List<int>() { leadCommentOperationId, trailingCommentOperationId };
-                IList<int> actionableOperations = new List<int>() { trailingCommentOperationId };
+                string trailingCommentOperationId = "Remove: *@";
+                string trailingPseudoCommentToperationId = "Remove: * @";
 
                 IList<string> ifTokens = new List<string>() { };
                 IList<string> elseTokens = new List<string>() { };
@@ -102,11 +123,25 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 IList<string> elseTokensActionable = new List<string>() { "#else", "@*#else", "#else*@", "@*#else*@" };
                 IList<string> elseifTokensActionable = new List<string>() { "#elseif", "@*#elseif", "#elseif*@", @"#elseif*@" };
 
-                IOperationProvider[] operations = { new Conditional(ifTokens, elseTokens, elseifTokens, endIfTokens,
-                                                                true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                ifTokensActionable, elseTokensActionable, elseifTokensActionable, actionableOperations),
-                                                //new Replacment("@*", string.Empty, leadCommentOperationId),
-                                                new Replacment("*@", string.Empty, trailingCommentOperationId),
+                IList<string> actionableOperations = new List<string>() { trailingCommentOperationId, trailingPseudoCommentToperationId };
+
+
+                ConditionalTokens tokenVariants = new ConditionalTokens();
+                tokenVariants.IfTokens = ifTokens;
+                tokenVariants.ElseTokens = elseTokens;
+                tokenVariants.ElseIfTokens = elseifTokens;
+                tokenVariants.EndIfTokens = endIfTokens;
+                tokenVariants.ActionableIfTokens = ifTokensActionable;
+                tokenVariants.ActionableElseTokens = elseTokensActionable;
+                tokenVariants.ActionableElseIfTokens = elseifTokensActionable;
+                tokenVariants.ActionableOperations = actionableOperations;
+
+                //TODO: figure out the replacements that will need toggling
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
+                    new Replacment("*@", string.Empty, trailingCommentOperationId),
+                    new Replacment("* @", string.Empty, trailingPseudoCommentToperationId),
                 };
 
                 return operations;
@@ -117,31 +152,86 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                int replaceOperationId = 99;    // this is normally handled in the config setup
+                string replaceOperationId = "Replacement (//) ()";    // this is normally handled in the config setup
 
                 IList<string> ifTokens = new List<string>() { "//#if", "//#check" };
                 IList<string> elseTokens = new List<string>() { "//#else", "//#otherwise" };
                 IList<string> elseifTokens = new List<string>() { "//#elseif", "//#nextcheck" };
                 IList<string> endIfTokens = new List<string>() { "//#endif", "//#stop", "//#done", "//#nomore" };
 
-                IList<string> ifTokensSpecial = new List<string>() { "////#if", "////#check", "//#Z_if" };
-                IList<string> elseTokensSpecial = new List<string>() { "////#else", "////#otherwise", "//#Z_else" };
-                IList<string> elseifTokensSpecial = new List<string>() { "////#elseif", "////#nextcheck", "//#Z_elseif" };
+                IList<string> ifTokensActionable = new List<string>() { "////#if", "////#check", "//#Z_if" };
+                IList<string> elseTokensActionable = new List<string>() { "////#else", "////#otherwise", "//#Z_else" };
+                IList<string> elseifTokensActionable = new List<string>() { "////#elseif", "////#nextcheck", "//#Z_elseif" };
 
-                IList<int> actionableOperations = new List<int>() { replaceOperationId };
+                IList<string> actionableOperations = new List<string>() { replaceOperationId };
 
-                IOperationProvider[] operations = { new Conditional(ifTokens, elseTokens, elseifTokens, endIfTokens,
-                                                                true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                ifTokensSpecial, elseTokensSpecial, elseifTokensSpecial,
-                                                                actionableOperations),
-                                                new Replacment("//", string.Empty, replaceOperationId)
+                ConditionalTokens tokenVariants = new ConditionalTokens();
+                tokenVariants.IfTokens = ifTokens;
+                tokenVariants.ElseTokens = elseTokens;
+                tokenVariants.ElseIfTokens = elseifTokens;
+                tokenVariants.EndIfTokens = endIfTokens;
+                tokenVariants.ActionableIfTokens = ifTokensActionable;
+                tokenVariants.ActionableElseTokens = elseTokensActionable;
+                tokenVariants.ActionableElseIfTokens = elseifTokensActionable;
+                tokenVariants.ActionableOperations = actionableOperations;
+
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
+                    new Replacment("//", string.Empty, replaceOperationId)
                 };
 
                 return operations;
             }
         }
 
-#endregion initialization & support
+        private IOperationProvider[] CStyleWithCommentsConditionalOperations
+        {
+            get
+            {
+                string replaceOperationId = "Replacement: (//) ()";    // this is normally handled in the config setup
+
+                ConditionalTokens tokenVariants = new ConditionalTokens();
+                tokenVariants.IfTokens.Add("//#if");
+                tokenVariants.ElseTokens.Add("//#else");
+                tokenVariants.ElseIfTokens.Add("//#elseif");
+                tokenVariants.EndIfTokens.Add("//#endif");
+
+                tokenVariants.ActionableIfTokens.Add("////#if");
+                tokenVariants.ActionableElseIfTokens.Add("////#elseif");
+                tokenVariants.ActionableElseTokens.Add("////#else");
+                tokenVariants.ActionableOperations.Add(replaceOperationId);
+
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
+                    new Replacment("//", string.Empty, replaceOperationId)
+                };
+
+                return operations;
+            }
+        }
+
+        private IOperationProvider[] CStyleNoCommentsConditionalOperations
+        {
+            get
+            {
+                ConditionalTokens tokenVariants = new ConditionalTokens();
+                tokenVariants.IfTokens.Add("#if");
+                tokenVariants.ElseTokens.Add("#else");
+                tokenVariants.ElseIfTokens.Add("#elseif");
+                tokenVariants.EndIfTokens.Add("#endif");
+
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator)
+                };
+
+                return operations;
+            }
+        }
+
+        #endregion initialization & support
 
         [Fact]
         public void XmlBlockCommentBasicTest()
@@ -887,68 +977,6 @@ Trailing stuff
 
         #region Razor style tests
 
-        // this  test fails
-        [Fact]
-        public void Temp_XmlStyleEquivalentOfFailedRazorTest()
-        {
-//            string nestedIfsTest = @"Start
-//<!--#if (OUTER_IF_CLAUSE)
-//    content: outer-if
-//    #if (INNER_IF_CLAUSE)
-//        content: inner-if
-//    <!--#elseif (INNER_ELSEIF_CLAUSE) -->
-//        content: inner-elseif
-//    <!--#else
-//        content: inner-else
-//    #endif
-//#elseif (OUTER_ELSEIF_CLAUSE)
-//    content: outer-elseif
-//#else 
-//    content: outer-else
-//#endif-->
-//Trailing stuff
-//<!-- trailing comment -->";
-
-//            string outerIfTrueExpectedValue = @"Start
-//    content: outer-if
-//Trailing stuff
-//<!-- trailing comment -->";
-
-            // this one failed. Trying a similar one above
-            string innerElseifDefaultValue = @"Start
-<!--#if (OUTER_IF_CLAUSE)
-    content: outer-if
-#elseif (OUTER_ELSEIF_CLAUSE)
-    content: outer-elseif
-#else 
-    content: outer-else
-    <!--#if (INNER_IF_CLAUSE)
-        content: inner-if
-    <!--#elseif (INNER_ELSEIF_CLAUSE) -->
-        content: inner-elseif
-    <!--#else
-        content: inner-else
-    #endif-->
-#endif-->
-Trailing stuff
-<!-- trailing comment -->";
-
-            string outerIfTrueExpectedValue = @"Start
-    content: outer-if
-Trailing stuff
-<!-- trailing comment -->";
-            VariableCollection vc = new VariableCollection
-            {
-                ["OUTER_IF_CLAUSE"] = true,
-                ["OUTER_ELSEIF_CLAUSE"] = false,
-                ["INNER_IF_CLAUSE"] = false,
-                ["INNER_ELSEIF_CLAUSE"] = false,
-            };
-            IProcessor processor = SetupXmlStyleProcessor(vc);
-            RunAndVerify(innerElseifDefaultValue, outerIfTrueExpectedValue, processor, 9999);
-        }
-
-        // this test fails
         [Fact]
         public void VerifyRazorBlockCommentEmbeddedInElseTest()
         {
@@ -1056,7 +1084,7 @@ Trailing stuff
     content: outer-elseif
 #else 
     content: outer-else
-    #if (INNER_IF_CLAUSE)
+    @*#if (INNER_IF_CLAUSE)
         content: inner-if
     @*#elseif (INNER_ELSEIF_CLAUSE) *@
         content: inner-elseif
@@ -1075,7 +1103,7 @@ Trailing stuff
     content: outer-elseif
 #else 
     content: outer-else
-    #if (INNER_IF_CLAUSE)
+    @*#if (INNER_IF_CLAUSE)
         content: inner-if
     #elseif (INNER_ELSEIF_CLAUSE)
         content: inner-elseif
@@ -1465,12 +1493,6 @@ Past endif
 // commented trailing content
 moar trailing content";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif", new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
-
             // outer if & inner if get uncommented
             string expectedValue = @"Lead content
       outer if content
@@ -1484,8 +1506,7 @@ moar trailing content";
                 ["INNER_IF"] = true,
                 ["INNER_ELSEIF"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
 
             // outer if & inner elseif
@@ -1501,8 +1522,7 @@ moar trailing content";
                 ["INNER_IF"] = false,
                 ["INNER_ELSEIF"] = true
             };
-            cfg = new EngineConfig(vc);
-            processor = Processor.Create(cfg, operations);
+            processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
 
             // outer if & inner else
@@ -1518,8 +1538,7 @@ moar trailing content";
                 ["INNER_IF"] = false,
                 ["INNER_ELSEIF"] = false
             };
-            cfg = new EngineConfig(vc);
-            processor = Processor.Create(cfg, operations);
+            processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
 
             // outer else - nothing from the inner if should get processed
@@ -1534,8 +1553,7 @@ moar trailing content";
                 ["INNER_IF"] = true,   // irrelevant
                 ["INNER_ELSEIF"] = true // ireelevant
             };
-            cfg = new EngineConfig(vc);
-            processor = Processor.Create(cfg, operations);
+            processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -1567,12 +1585,6 @@ moar trailing content";
 // commented trailing content
 moar trailing content";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
-
             // outer if & inner if get uncommented
             string expectedValue = @"Lead content
     content: level-1 if
@@ -1589,8 +1601,7 @@ moar trailing content";
                 ["LEVEL_3_ELSEIF"] = true,  // irrelevant
                 ["LEVEL_2_ELSEIF"] = true,  // irrelevant
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -1732,19 +1743,12 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
-
             // setup for the if being true - always take the if
             VariableCollection vc = new VariableCollection {
                 ["VALUE_IF"] = true,            // should be true to get the if to process
                 ["VALUE_ELSEIF"] = false        // shouldn't matter, since the if is always true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 
             foreach (string test in testCases)
             {
@@ -1875,20 +1879,13 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
-
             // setup for the if being true - always take the if
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,           // must be false, to get the elseif to process
                 ["VALUE_ELSEIF"] = true         // must be true to get the elseif to process
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 
             foreach (string test in testCases)
             {
@@ -2019,20 +2016,13 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
-
             // setup for the if being true - always take the if
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,       // must be false for the else to process
                 ["VALUE_ELSEIF"] = false    // must be false for the else to process
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 
             foreach (string test in testCases)
             {
@@ -2060,17 +2050,11 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,    // should be true to get the if to process
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 
             // Test with just an if condition
             RunAndVerify(ifOnlyValue, expectedValue, processor, 28);
@@ -2102,17 +2086,11 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,    // should be true to get the if to process
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 
             // Test with just an if condition
             RunAndVerify(ifElseValue, expectedValue, processor, 28);
@@ -2161,18 +2139,12 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,
                 ["VALUE_ELSEIF"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
 
             // test with an if-else condition
             RunAndVerify(ifElseValue, expectedValue, processor, 28);
@@ -2214,19 +2186,13 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,
                 ["VALUE_ELSEIF_ONE"] = true,
                 ["VALUE_ELSEIF_TWO"] = true // value should not matter
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupMadeUpStyleProcessor(vc);
 
             // test with an if-else condition
             RunAndVerify(ifElseifElseValue, expectedValue, processor, 28);
@@ -2265,19 +2231,13 @@ Past endif
     ...uncommented in original
 // dont uncomment";
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE_IF"] = false,
                 ["VALUE_ELSEIF_ONE"] = false,
                 ["VALUE_ELSEIF_TWO"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupMadeUpStyleProcessor(vc);
 
             // test with an if-else condition
             RunAndVerify(ifElseifElseValue, expectedValue, processor, 28);
@@ -2310,18 +2270,11 @@ Past the endif
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            int replaceOperationId = 99;    // this is normally handled in the config setup
-            IOperationProvider[] operations = { new Conditional("//#if", "//#else", "//#elseif", "//#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator,
-                                                                "////#if", "////#else", "////#elseif",  new List<int>() { replaceOperationId } ),
-                                                new Replacment("//", string.Empty, replaceOperationId)
-            };
-
             VariableCollection vc = new VariableCollection {
                 ["VALUE"] = false,
                 ["ELSEIF_VALUE"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupMadeUpStyleProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2347,10 +2300,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
-            VariableCollection vc = new VariableCollection {["VALUE"] = true};
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            VariableCollection vc = new VariableCollection { ["VALUE"] = true };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2375,10 +2326,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection { ["VALUE"] = true };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2403,10 +2352,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection { ["VALUE"] = true };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2431,10 +2378,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection { ["VALUE"] = "Hello\tThere" };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2459,13 +2404,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2490,13 +2433,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2521,10 +2462,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection { ["VALUE"] = true };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2549,10 +2488,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection { ["VALUE"] = false };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2577,14 +2514,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true,
                 ["VALUE2"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2609,14 +2544,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true,
                 ["VALUE2"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2641,14 +2574,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false,
                 ["VALUE2"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2675,14 +2606,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true,
                 ["VALUE2"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2709,14 +2638,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false,
                 ["VALUE2"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2743,14 +2670,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false,
                 ["VALUE2"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2779,14 +2704,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true,
                 ["VALUE2"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2813,14 +2736,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true,
                 ["VALUE2"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2847,14 +2768,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true,
                 ["VALUE2"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2881,14 +2800,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false,
                 ["VALUE2"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2915,14 +2832,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false,
                 ["VALUE2"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2949,15 +2864,13 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true,
                 ["VALUE2"] = false,
                 ["VALUE3"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -2984,15 +2897,13 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false,
                 ["VALUE2"] = true,
                 ["VALUE3"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3019,15 +2930,13 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false,
                 ["VALUE2"] = false,
                 ["VALUE3"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3050,13 +2959,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2L
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3079,13 +2986,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 4
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3108,13 +3013,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 4
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3137,13 +3040,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 3L
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3166,13 +3067,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3195,13 +3094,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 3
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3223,13 +3120,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3252,13 +3147,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3281,13 +3174,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 3
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3310,13 +3201,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = false
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3339,13 +3228,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = true
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3368,13 +3255,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3397,13 +3282,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3426,13 +3309,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3455,13 +3336,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3484,13 +3363,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3513,13 +3390,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3542,13 +3417,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3571,13 +3444,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3600,13 +3471,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3629,13 +3498,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 4
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3658,13 +3525,11 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 4
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3687,14 +3552,12 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection
             {
                 ["VALUE"] = 2L,
                 ["VALUE2"] = 3L
             };
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3717,10 +3580,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3743,10 +3604,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3769,10 +3628,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3795,10 +3652,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3820,10 +3675,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", false, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3842,10 +3695,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3873,10 +3724,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3905,10 +3754,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             bool changed = processor.Run(input, output, 28);
@@ -3931,10 +3778,8 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Conditional("#if", "#else", "#elseif", "#endif", true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator) };
             VariableCollection vc = new VariableCollection();
-            EngineConfig cfg = new EngineConfig(vc);
-            IProcessor processor = Processor.Create(cfg, operations);
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
 
             //Changes should be made
             processor.Run(input, output, 28);

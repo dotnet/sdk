@@ -21,6 +21,12 @@ namespace Microsoft.TemplateEngine.Core
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
+            // Note: It's possible this may need a value at some point, but probably not.
+            public string Id
+            {
+                get { return null; }
+            }
+
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;

@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Core
         private readonly IList<string> _elseIfTokensActionable = new List<string>();
         private readonly IList<string> _elseTokensActionable = new List<string>();
 
-        private readonly IList<string> _actionableOnlyTokens = new List<string>();
+        //private readonly IList<string> _actionableOnlyTokens = new List<string>();
 
         // the unusual order of these is historical, no special meaning
         // if actual_token_index % 10 == baseTokenIndex
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Core
         // When the actionable token start is encountered, these are enabled.
         // When the actionable token end is encountered, they're disabled.
         //  it gets a bit more complex with embedded actionables.
-        private readonly IList<int> _actionableOperations;
+        private readonly IList<string> _actionableOperations;
 
         public bool WholeLine => _wholeLine;
 
@@ -69,72 +69,25 @@ namespace Microsoft.TemplateEngine.Core
 
         public IList<string> ElseIfTokensActionable => _elseIfTokensActionable;
 
-        // lists of regular conditionals
-        // no special conditionals
-        public Conditional(IEnumerable<string> ifTokens, IEnumerable<string> elseTokens, IEnumerable<string> elseIfTokens, IEnumerable<string> endIfTokens,
-                bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator)
-            :this(ifTokens, elseTokens, elseIfTokens, endIfTokens, wholeLine, trimWhitespace, evaluator, new List<string>(), new List<string>(), new List<string>(), new List<int>())
-        {
-        }
+        private string _id;
 
-        // lists of regular conditionals
-        // lists of specials conditionals
-        // single operation to toggle
-        public Conditional(IEnumerable<string> ifTokens, IEnumerable<string> elseTokens, IEnumerable<string> elseIfTokens, IEnumerable<string> endIfTokens,
-            bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator,
-            IEnumerable<string> ifTokensActionable, IEnumerable<string> elseTokensActionable, IEnumerable<string> elseIfTokensActionable, IList<int> actionableOperations)
+
+        public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id = null)
         {
             _trimWhitespace = trimWhitespace;
             _wholeLine = wholeLine;
             _evaluator = evaluator;
 
-            _ifTokens = new List<string>(ifTokens);
-            _elseTokens = new List<string>(elseTokens);
-            _elseIfTokens = new List<string>(elseIfTokens);
-            _endIfTokens = new List<string>(endIfTokens);
-            _ifTokensActionable = new List<string>(ifTokensActionable);
-            _elseTokensActionable = new List<string>(elseTokensActionable);
-            _elseIfTokensActionable = new List<string>(elseIfTokensActionable);
+            _ifTokens = tokenVariants.IfTokens;
+            _elseTokens = tokenVariants.ElseTokens;
+            _elseIfTokens = tokenVariants.ElseIfTokens;
+            _endIfTokens = tokenVariants.EndIfTokens;
+            _ifTokensActionable = tokenVariants.ActionableIfTokens;
+            _elseTokensActionable = tokenVariants.ActionableElseTokens;
+            _elseIfTokensActionable = tokenVariants.ActionableElseIfTokens;
 
-            _actionableOperations = actionableOperations;
-        }
-
-        // Probably need to hold onto these original constructors for backwards compatibility as this is developed.
-        //
-        // single regular conditionals
-        // no special conditionals
-        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator)
-            : this(new List<string>() { ifToken },
-                  new List<string>() { elseToken },
-                  new List<string>() { elseIfToken },
-                  new List<string>() { endIfToken },
-                  wholeLine,
-                  trimWhitespace,
-                  evaluator,
-                  new List<string>(),
-                  new List<string>(),
-                  new List<string>(),
-                  new List<int>())
-        {
-        }
-
-        // single regular conditionals
-        // single special conditionals
-        // single operation to toggle
-        public Conditional(string ifToken, string elseToken, string elseIfToken, string endIfToken, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator,
-            string ifTokenActionable, string elseTokenActionable, string elseIfTokenActionable, IList<int> actionableOperations)
-            : this(new List<string>() { ifToken },
-                  new List<string>() { elseToken },
-                  new List<string>() { elseIfToken },
-                  new List<string>() { endIfToken },
-                  wholeLine,
-                  trimWhitespace,
-                  evaluator,
-                  new List<string>() { ifTokenActionable },
-                  new List<string>() { elseTokenActionable },
-                  new List<string>() { elseIfTokenActionable },
-                  actionableOperations)
-        {
+            _actionableOperations = tokenVariants.ActionableOperations;
+            _id = id;
         }
 
         /// <summary>
@@ -174,13 +127,13 @@ namespace Microsoft.TemplateEngine.Core
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, _elseIfTokensActionable, ElseIfTokenActionableBaseIndex, encoding);
 
             // disable the actionable operations if there are any
-            foreach (int operationId in _actionableOperations)
+            foreach (string operationId in _actionableOperations)
             {
-                string otherOptionDisableFlag = processorState.Config.OperationIdFlag(operationId);
-                processorState.Config.Flags.Add(otherOptionDisableFlag, false);
+                //string otherOptionDisableFlag = processorState.Config.OperationIdFlag(operationId);
+                processorState.Config.Flags.Add(operationId, false);
             }
 
-            return new Impl(this, tokens, trie);
+            return new Impl(this, tokens, trie, _id);
         }
 
         /// <summary>
@@ -224,12 +177,15 @@ namespace Microsoft.TemplateEngine.Core
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly TokenTrie _trie;
 
-            public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, TokenTrie trie)
+            public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, TokenTrie trie, string id)
             {
                 _trie = trie;
                 _definition = definition;
                 Tokens = tokens;
+                Id = id;
             }
+
+            public string Id { get; private set; }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
@@ -523,10 +479,8 @@ namespace Microsoft.TemplateEngine.Core
                 {
                     ActionableOperationsEnabled = enabled;
 
-                    foreach (int operationId in _impl._definition._actionableOperations)
+                    foreach (string otherOptionDisableFlag in _impl._definition._actionableOperations)
                     {
-                        string otherOptionDisableFlag = processor.Config.OperationIdFlag(operationId);
-
                         if (!processor.Config.Flags.ContainsKey(otherOptionDisableFlag))
                         {
                             processor.Config.Flags.Add(otherOptionDisableFlag, enabled);

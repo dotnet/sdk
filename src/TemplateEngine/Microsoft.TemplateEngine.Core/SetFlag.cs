@@ -7,6 +7,8 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class SetFlag : IOperationProvider
     {
+        private readonly string _id;
+
         public string Name { get; }
 
         public string On { get; }
@@ -19,7 +21,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public string OffNoEmit { get; }
 
-        public SetFlag(string name, string on, string off, string onNoEmit, string offNoEmit, bool? @default = null)
+        public SetFlag(string name, string on, string off, string onNoEmit, string offNoEmit, bool? @default = null, string id = null)
         {
             Name = name;
             On = on;
@@ -27,6 +29,7 @@ namespace Microsoft.TemplateEngine.Core
             OnNoEmit = onNoEmit;
             OffNoEmit = offNoEmit;
             Default = @default;
+            _id = id;
         }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
@@ -44,20 +47,23 @@ namespace Microsoft.TemplateEngine.Core
                 processorState.Config.Flags[Name] = Default.Value;
             }
 
-            return new Impl(this, tokens);
+            return new Impl(this, tokens, _id);
         }
 
         private class Impl : IOperation
         {
             private readonly SetFlag _owner;
 
-            public Impl(SetFlag owner, IReadOnlyList<byte[]> tokens)
+            public Impl(SetFlag owner, IReadOnlyList<byte[]> tokens, string id)
             {
                 _owner = owner;
                 Tokens = tokens;
+                Id = id;
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
+
+            public string Id { get; private set; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

@@ -8,5 +8,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Engine
         IReadOnlyList<byte[]> Tokens { get; }
 
         int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
+
+        string Id { get; }
     }
 }
