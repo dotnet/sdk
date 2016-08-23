@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class Include : IOperationProvider
     {
-        public Include(string startToken, string endToken, Func<string, Stream> sourceStreamOpener, string id = null)
+        public Include(string startToken, string endToken, Func<string, Stream> sourceStreamOpener, string id)
         {
             SourceStreamOpener = sourceStreamOpener;
             StartToken = startToken;

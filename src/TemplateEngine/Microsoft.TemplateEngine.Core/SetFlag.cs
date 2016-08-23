@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public string OffNoEmit { get; }
 
-        public SetFlag(string name, string on, string off, string onNoEmit, string offNoEmit, bool? @default = null, string id = null)
+        public SetFlag(string name, string on, string off, string onNoEmit, string offNoEmit, string id, bool? @default = null)
         {
             Name = name;
             On = on;

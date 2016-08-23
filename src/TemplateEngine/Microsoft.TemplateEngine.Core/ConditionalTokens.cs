@@ -7,13 +7,35 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class ConditionalTokens
     {
-        public IList<string> IfTokens = new List<string>();
-        public IList<string> ElseTokens = new List<string>();
-        public IList<string> ElseIfTokens = new List<string>();
-        public IList<string> EndIfTokens = new List<string>();
-        public IList<string> ActionableIfTokens = new List<string>();
-        public IList<string> ActionableElseTokens = new List<string>();
-        public IList<string> ActionableElseIfTokens = new List<string>();
-        public IList<string> ActionableOperations = new List<string>();
+        private static readonly IReadOnlyList<string> _NoTokens = new string[0];
+
+        public ConditionalTokens()
+        {
+            IfTokens = _NoTokens;
+            ElseTokens = _NoTokens;
+            ElseIfTokens = _NoTokens;
+            EndIfTokens = _NoTokens;
+            ActionableIfTokens = _NoTokens;
+            ActionableElseTokens = _NoTokens;
+            ActionableElseIfTokens = _NoTokens;
+            ActionableOperations = _NoTokens;
+        }
+
+        public static IReadOnlyList<string> NoTokens
+        {
+            get
+            {
+                return _NoTokens;
+            }
+        }
+
+        public IReadOnlyList<string> IfTokens { get; set; }
+        public IReadOnlyList<string> ElseTokens { get; set; }
+        public IReadOnlyList<string> ElseIfTokens { get; set; }
+        public IReadOnlyList<string> EndIfTokens { get; set; }
+        public IReadOnlyList<string> ActionableIfTokens { get; set; }
+        public IReadOnlyList<string> ActionableElseTokens { get; set; }
+        public IReadOnlyList<string> ActionableElseIfTokens { get; set; }
+        public IReadOnlyList<string> ActionableOperations { get; set; }
     }
 }

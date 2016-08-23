@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = {new Replacment("value", "foo")};
+            IOperationProvider[] operations = {new Replacment("value", "foo", "ReplacementOperationId")};
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Replacment("value2", "foo") };
+            IOperationProvider[] operations = { new Replacment("value2", "foo", "ReplacementOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Replacment("value", "foo") };
+            IOperationProvider[] operations = { new Replacment("value", "foo", "ReplacementOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Replacment("value", "foo") };
+            IOperationProvider[] operations = { new Replacment("value", "foo", "ReplacementOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 

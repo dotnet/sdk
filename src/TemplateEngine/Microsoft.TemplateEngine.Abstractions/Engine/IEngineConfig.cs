@@ -13,7 +13,5 @@ namespace Microsoft.TemplateEngine.Abstractions.Engine
         IReadOnlyList<string> Whitespaces { get; }
 
         IDictionary<string, bool> Flags { get; }
-
-        string OperationIdFlag(int operationId);
     }
 }

@@ -1,9 +1,9 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Xunit;
-using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
@@ -59,35 +59,23 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                string trailingCommentOperationId = "Remove -->";
-                string trailingPseudoCommentOperationId = "Remove -- >";
-
-                IList<string> ifTokens = new List<string>() { };
-                IList<string> elseTokens = new List<string>() {  };
-                IList<string> elseifTokens = new List<string>() {  };
-                IList<string> endIfTokens = new List<string>() { "#endif", "<!--#endif", "#endif-->", "<!--#endif-->" }; //, "<!--#endif-- >", "#endif-- >" };
-
-                IList<string> ifTokensActionable = new List<string>() { "<!--#if" };
-                IList<string> elseTokensActionable = new List<string>() { "#else", "<!--#else", "#else-->", "<!--#else-->" }; //, "<!--#else-- >", "#else-- >" };
-                IList<string> elseifTokensActionable = new List<string>() { "#elseif", "<!--#elseif", "#elseif-->", "<!--#elseif-->" }; //, "<!--#elseif-- >", "#elseif-- >" };
-
-                IList<string> actionableOperations = new List<string>() { trailingCommentOperationId, trailingPseudoCommentOperationId };
+                //string trailingCommentOperationId = "Remove -->";
+                //string trailingPseudoCommentOperationId = "Remove -- >";
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens = ifTokens;
-                tokenVariants.ElseTokens = elseTokens;
-                tokenVariants.ElseIfTokens = elseifTokens;
-                tokenVariants.EndIfTokens = endIfTokens;
-                tokenVariants.ActionableIfTokens = ifTokensActionable;
-                tokenVariants.ActionableElseTokens = elseTokensActionable;
-                tokenVariants.ActionableElseIfTokens = elseifTokensActionable;
-                tokenVariants.ActionableOperations = actionableOperations;
+                tokenVariants.EndIfTokens = new[] { "#endif", "<!--#endif", "#endif-->", "<!--#endif-->", "<!--#endif-- >", "#endif-- >" };
+                tokenVariants.ActionableIfTokens = new[] { "<!--#if" };
+                tokenVariants.ActionableElseTokens = new[] { "#else", "<!--#else", "#else-->", "<!--#else-->", "<!--#else-- >", "#else-- >" };
+                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif", "#elseif-->", "<!--#elseif-->", "<!--#elseif-- >", "#elseif-- >" };
+                tokenVariants.ActionableOperations = ConditionalTokens.NoTokens;    // superfluous, but might get some value(s)
+
+                string conditionalOperationId = "XmlConditional";
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
-                    new Replacment("-->", string.Empty, trailingCommentOperationId),
-                    new Replacment("-- >", string.Empty, trailingPseudoCommentOperationId),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
+                    //new Replacment("-->", string.Empty, trailingCommentOperationId),
+                    //new Replacment("-- >", string.Empty, trailingPseudoCommentOperationId),
                 };
 
                 /*
@@ -111,37 +99,26 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                string trailingCommentOperationId = "Remove: *@";
-                string trailingPseudoCommentToperationId = "Remove: * @";
-
-                IList<string> ifTokens = new List<string>() { };
-                IList<string> elseTokens = new List<string>() { };
-                IList<string> elseifTokens = new List<string>() {  };
-                IList<string> endIfTokens = new List<string>() { "#endif", "@*#endif", "#endif*@", "@*#endif*@" };
-
-                IList<string> ifTokensActionable = new List<string>() { "@*#if" };
-                IList<string> elseTokensActionable = new List<string>() { "#else", "@*#else", "#else*@", "@*#else*@" };
-                IList<string> elseifTokensActionable = new List<string>() { "#elseif", "@*#elseif", "#elseif*@", @"#elseif*@" };
-
-                IList<string> actionableOperations = new List<string>() { trailingCommentOperationId, trailingPseudoCommentToperationId };
-
+                //string trailingCommentOperationId = "Remove: *@";
+                //string trailingPseudoCommentToperationId = "Remove: * @";
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens = ifTokens;
-                tokenVariants.ElseTokens = elseTokens;
-                tokenVariants.ElseIfTokens = elseifTokens;
-                tokenVariants.EndIfTokens = endIfTokens;
-                tokenVariants.ActionableIfTokens = ifTokensActionable;
-                tokenVariants.ActionableElseTokens = elseTokensActionable;
-                tokenVariants.ActionableElseIfTokens = elseifTokensActionable;
-                tokenVariants.ActionableOperations = actionableOperations;
+                tokenVariants.EndIfTokens = new[] { "#endif", "@*#endif", "#endif*@", "@*#endif*@", "@*#endif* @", "#endif* @" };
+                tokenVariants.ActionableIfTokens = new[] { "@*#if" }; ;
+                tokenVariants.ActionableElseTokens = new[] { "#else", "@*#else", "#else*@", "@*#else*@", "@*#else* @", "#else* @" };
+                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "@*#elseif", "#elseif*@", "@*#elseif*@", "@*#elseif* @", "#elseif* @" };
+                tokenVariants.ActionableOperations = ConditionalTokens.NoTokens;    // superfluous, but might get some value(s)
+
+                //tokenVariants.ActionableOperations = new[] { trailingCommentOperationId, trailingPseudoCommentToperationId };
+
+                string conditionalOperationId = "RazorConditional";
 
                 //TODO: figure out the replacements that will need toggling
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
-                    new Replacment("*@", string.Empty, trailingCommentOperationId),
-                    new Replacment("* @", string.Empty, trailingPseudoCommentToperationId),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
+                    //new Replacment("*@", string.Empty, trailingCommentOperationId),
+                    //new Replacment("* @", string.Empty, trailingPseudoCommentToperationId),
                 };
 
                 return operations;
@@ -154,30 +131,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 string replaceOperationId = "Replacement (//) ()";    // this is normally handled in the config setup
 
-                IList<string> ifTokens = new List<string>() { "//#if", "//#check" };
-                IList<string> elseTokens = new List<string>() { "//#else", "//#otherwise" };
-                IList<string> elseifTokens = new List<string>() { "//#elseif", "//#nextcheck" };
-                IList<string> endIfTokens = new List<string>() { "//#endif", "//#stop", "//#done", "//#nomore" };
-
-                IList<string> ifTokensActionable = new List<string>() { "////#if", "////#check", "//#Z_if" };
-                IList<string> elseTokensActionable = new List<string>() { "////#else", "////#otherwise", "//#Z_else" };
-                IList<string> elseifTokensActionable = new List<string>() { "////#elseif", "////#nextcheck", "//#Z_elseif" };
-
-                IList<string> actionableOperations = new List<string>() { replaceOperationId };
-
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens = ifTokens;
-                tokenVariants.ElseTokens = elseTokens;
-                tokenVariants.ElseIfTokens = elseifTokens;
-                tokenVariants.EndIfTokens = endIfTokens;
-                tokenVariants.ActionableIfTokens = ifTokensActionable;
-                tokenVariants.ActionableElseTokens = elseTokensActionable;
-                tokenVariants.ActionableElseIfTokens = elseifTokensActionable;
-                tokenVariants.ActionableOperations = actionableOperations;
+                tokenVariants.IfTokens = new[] { "//#if", "//#check" };
+                tokenVariants.ElseTokens = new[] { "//#else", "//#otherwise" };
+                tokenVariants.ElseIfTokens = new[] { "//#elseif", "//#nextcheck" };
+                tokenVariants.EndIfTokens = new[] { "//#endif", "//#stop", "//#done", "//#nomore" };
+                tokenVariants.ActionableIfTokens = new[] { "////#if", "////#check", "//#Z_if" };
+                tokenVariants.ActionableElseTokens = new[] { "////#else", "////#otherwise", "//#Z_else" };
+                tokenVariants.ActionableElseIfTokens = new[] { "////#elseif", "////#nextcheck", "//#Z_elseif" };
+                tokenVariants.ActionableOperations = new[] { replaceOperationId };
+
+                string conditionalOperationId = "MadeUpConditional";
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
                     new Replacment("//", string.Empty, replaceOperationId)
                 };
 
@@ -192,19 +160,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 string replaceOperationId = "Replacement: (//) ()";    // this is normally handled in the config setup
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens.Add("//#if");
-                tokenVariants.ElseTokens.Add("//#else");
-                tokenVariants.ElseIfTokens.Add("//#elseif");
-                tokenVariants.EndIfTokens.Add("//#endif");
+                tokenVariants.IfTokens = new[] { "//#if" };
+                tokenVariants.ElseTokens = new[] { "//#else" };
+                tokenVariants.ElseIfTokens = new[] { "//#elseif" };
+                tokenVariants.EndIfTokens = new[] { "//#endif" };
+                tokenVariants.ActionableIfTokens = new[] { "////#if" };
+                tokenVariants.ActionableElseIfTokens = new[] { "////#elseif" };
+                tokenVariants.ActionableElseTokens = new[] { "////#else" };
+                tokenVariants.ActionableOperations = new[] { replaceOperationId };
 
-                tokenVariants.ActionableIfTokens.Add("////#if");
-                tokenVariants.ActionableElseIfTokens.Add("////#elseif");
-                tokenVariants.ActionableElseTokens.Add("////#else");
-                tokenVariants.ActionableOperations.Add(replaceOperationId);
+                string conditionalOperationId = "CStyleConditional";
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
                     new Replacment("//", string.Empty, replaceOperationId)
                 };
 
@@ -217,14 +186,16 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             get
             {
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens.Add("#if");
-                tokenVariants.ElseTokens.Add("#else");
-                tokenVariants.ElseIfTokens.Add("#elseif");
-                tokenVariants.EndIfTokens.Add("#endif");
+                tokenVariants.IfTokens = new[] { "#if" };
+                tokenVariants.ElseTokens = new[] { "#else" };
+                tokenVariants.ElseIfTokens = new[] { "#elseif" };
+                tokenVariants.EndIfTokens = new[] { "#endif" };
+
+                string conditionalOperationId = "CStyleNoCommentsConditional";
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId)
                 };
 
                 return operations;
@@ -232,6 +203,533 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         }
 
         #endregion initialization & support
+
+        #region XmlBlockComments
+
+        /// <summary>
+        /// Temporary test, experimenting with block comments
+        /// </summary>
+        [Fact]
+        public void VerifyMultipleConsecutiveTrailingCommentsWithinContent()
+        {
+            string originalValue = @"Start
+<!--#if (IF_VALUE) -->
+    <!-- content: outer-if -- > -->
+#endif-->
+End";
+            string expectedValue = @"Start
+    <!-- content: outer-if -- > -->
+End";
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["IF_VALUE"] = true,
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyMultipleEndCommentsOnEndif()
+        {
+            string originalValue = @"Start
+<!--#if (OUTER_IF)
+    Content: Outer if
+    <!--#if (INNER_IF)
+        Content: Inner if
+    #endif
+#endif-- > -->
+End";
+            string expectedValue = @"Start
+    Content: Outer if
+        Content: Inner if
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = true
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // test for 3 levels deep
+            string threePartOriginalValue = @"Start
+<!--#if (OUTER_IF)
+    Content: Outer if
+    <!--#if (INNER_IF)
+        Content: Inner if
+        <!--#if (THIRD_IF)
+            Content: Third if
+        #endif
+    #endif
+#endif-- > -- > -->
+End";
+            string threePartExpectedValue = @"Start
+    Content: Outer if
+        Content: Inner if
+            Content: Third if
+End";
+
+            vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = true,
+                ["THIRD_IF"] = true
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(threePartOriginalValue, threePartExpectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyMultipleEndCommentsOnElseif()
+        {
+            string originalValue = @"Start
+<!--#if (OUTER_IF)
+    Content: Outer if
+    <!--#if (INNER_IF)
+        Content: Inner if
+    #elseif (INNER_ELSEIF) -- > -->
+        Content: Inner elseif (default)
+    <!--#else
+        Content: Inner else
+    #endif
+#endif-->
+End";
+            string ifIfExpectedValue = @"Start
+    Content: Outer if
+        Content: Inner if
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = true,
+                ["INNER_ELSEIF"] = false
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, ifIfExpectedValue, processor, 9999);
+
+            string ifElseifExpectedValue = @"Start
+    Content: Outer if
+        Content: Inner elseif (default)
+End";
+            vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = false,
+                ["INNER_ELSEIF"] = true
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, ifElseifExpectedValue, processor, 9999);
+
+            string ifElseExpectedValue = @"Start
+    Content: Outer if
+        Content: Inner else
+End";
+            vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = false,
+                ["INNER_ELSEIF"] = false
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, ifElseExpectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyThreeLevelNestedBlockComments()
+        {
+            string originalValue = @"Start
+<!--#if (IF_LEVEL_1)
+    Content: If Level 1
+    <!--#if (IF_IF_LEVEL_2)
+        Content: If IF Level 2
+        <!--#if (IF_IF_IF_LEVEL_3)
+            Content: If IF If Level 3
+        #elseif (IF_IF_ELSEIF_LEVEL_3)
+            Content: If If Elseif Level 3
+        #elseif (IF_IF_ELSEIF_TWO_LEVEL_3)
+            Content: If If Elseif Two Level 3
+        #else
+            Content: If If Else Level 3
+        #endif-->
+    #elseif (IF_ELSEIF_LEVEL_2)
+        Content: If Elseif Level 2
+        <!--#if (IF_ELSEIF_IF_LEVEL_3)
+            Content: If Elseif If Level 3
+        #elseif (IF_ELSEIF_ELSEIF_LEVEL_3)
+            Content: If Elseif Elseif Level 3
+        #else
+            Content: If Elseif Else Level 3
+        #endif-->
+    #elseif (IF_ELSEIF_TWO_LEVEL_2)
+        Content: If Elseif Two Level 2
+        <!--#if (IF_ELSEIF_TWO_IF_LEVEL_3)
+            Content: If Elseif Two If Level 3
+        #elseif (IF_ELSEIF_TWO_ELSEIF_LEVEL_3)
+            Content: If Elseif Two Elseif Level 3
+        #else
+            Content: If Elseif Two Else Level 3
+        #endif-->
+    #else
+        Content: If Else Level 2
+        <!--#if (IF_ELSE_IF_LEVEL_3)
+            Content: If Else If Level 3
+        #elseif (IF_ELSE_ELSEIF_LEVEL_3)
+            Content: If Else Elseif Level 3
+        #else
+            Content: If Else Else Level 3
+        #endif-->
+    #endif-->
+#elseif (ELSEIF_LEVEL_1)
+    Content: Elseif Level 1
+#else
+    Content: Else Level 1
+#endif-->
+End";
+            // if-if-if
+            string expectedValue = @"Start
+    Content: If Level 1
+        Content: If IF Level 2
+            Content: If IF If Level 3
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = true,
+                ["IF_IF_IF_LEVEL_3"] = true,
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-if-elseif
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If IF Level 2
+            Content: If If Elseif Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = true,
+                ["IF_IF_IF_LEVEL_3"] = false,
+                ["IF_IF_ELSEIF_LEVEL_3"] = true
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-if-elseif2
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If IF Level 2
+            Content: If If Elseif Two Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = true,
+                ["IF_IF_IF_LEVEL_3"] = false,
+                ["IF_IF_ELSEIF_LEVEL_3"] = false,
+                ["IF_IF_ELSEIF_TWO_LEVEL_3"] = true
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-if-else
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If IF Level 2
+            Content: If If Else Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = true,
+                ["IF_IF_IF_LEVEL_3"] = false,
+                ["IF_IF_ELSEIF_LEVEL_3"] = false,
+                ["IF_IF_ELSEIF_TWO_LEVEL_3"] = false
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-elseif-if
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Elseif Level 2
+            Content: If Elseif If Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = true,
+                ["IF_ELSEIF_IF_LEVEL_3"] = true,
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-elseif-elseif
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Elseif Level 2
+            Content: If Elseif Elseif Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = true,
+                ["IF_ELSEIF_IF_LEVEL_3"] = false,
+                ["IF_ELSEIF_ELSEIF_LEVEL_3"] = true,
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-elseif-else
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Elseif Level 2
+            Content: If Elseif Else Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = true,
+                ["IF_ELSEIF_IF_LEVEL_3"] = false,
+                ["IF_ELSEIF_ELSEIF_LEVEL_3"] = false,
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-elseif two-if
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Elseif Two Level 2
+            Content: If Elseif Two If Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = false,
+                ["IF_ELSEIF_TWO_LEVEL_2"] = true,
+                ["IF_ELSEIF_TWO_IF_LEVEL_3"] = true,
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-elseif two-elseif
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Elseif Two Level 2
+            Content: If Elseif Two Elseif Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = false,
+                ["IF_ELSEIF_TWO_LEVEL_2"] = true,
+                ["IF_ELSEIF_TWO_IF_LEVEL_3"] = false,
+                ["IF_ELSEIF_TWO_ELSEIF_LEVEL_3"] = true
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-elseif two-else
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Elseif Two Level 2
+            Content: If Elseif Two Else Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = false,
+                ["IF_ELSEIF_TWO_LEVEL_2"] = true,
+                ["IF_ELSEIF_TWO_IF_LEVEL_3"] = false,
+                ["IF_ELSEIF_TWO_ELSEIF_LEVEL_3"] = false
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-else-if
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Else Level 2
+            Content: If Else If Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = false,
+                ["IF_ELSEIF_TWO_LEVEL_2"] = false,
+                ["IF_ELSE_IF_LEVEL_3"] = true,
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-else-elseif
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Else Level 2
+            Content: If Else Elseif Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = false,
+                ["IF_ELSEIF_TWO_LEVEL_2"] = false,
+                ["IF_ELSE_IF_LEVEL_3"] = false,
+                ["IF_ELSE_ELSEIF_LEVEL_3"] = true
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // if-else-else
+            expectedValue = @"Start
+    Content: If Level 1
+        Content: If Else Level 2
+            Content: If Else Else Level 3
+End";
+            vc = new VariableCollection
+            {
+                ["IF_LEVEL_1"] = true,
+                ["IF_IF_LEVEL_2"] = false,
+                ["IF_ELSEIF_LEVEL_2"] = false,
+                ["IF_ELSEIF_TWO_LEVEL_2"] = false,
+                ["IF_ELSE_IF_LEVEL_3"] = false,
+                ["IF_ELSE_ELSEIF_LEVEL_3"] = false
+            };
+            processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        /// <summary>
+        /// Temporary test, experimenting with block comments.
+        /// </summary>
+        [Fact]
+        public void VerifyMultipleNestedBlockComments()
+        {
+            // the actual tests for OUTER_IF_CLAUSE = true (inner else also happens because the other inners are false)
+            string expectedValue = @"Start
+    content: outer-if
+        content: inner-else
+Trailing stuff
+<!- trailing comment -->";
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["OUTER_IF_CLAUSE"] = true,
+                ["INNER_IF_CLAUSE"] = false,
+                ["INNER_ELSEIF_CLAUSE"] = false,
+                ["OUTER_ELSEIF_CLAUSE"] = false,
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+
+            // comment spans from inner if to outer endif
+            // comments are unbalanced
+            // invalid ???
+            string inputValue = @"Start
+<!--#if (OUTER_IF_CLAUSE) -->
+    content: outer-if
+    <!--#if (INNER_IF_CLAUSE)
+        content: inner-if
+    #elseif (INNER_ELSEIF_CLAUSE)
+        content: inner-elseif
+    #else
+        content: inner-else
+    #endif-- >
+#elseif (OUTER_ELSEIF_CLAUSE)
+    content: outer-elseif
+#else
+    content: outer-else
+#endif-->
+Trailing stuff
+<!- trailing comment -->";
+            RunAndVerify(inputValue, expectedValue, processor, 9999);
+
+            // comments are balanced
+            string inputValue2 = @"Start
+<!--#if (OUTER_IF_CLAUSE) -->
+    content: outer-if
+    <!--#if (INNER_IF_CLAUSE)
+        content: inner-if
+    #elseif (INNER_ELSEIF_CLAUSE)
+        content: inner-elseif
+    #else
+        content: inner-else
+    #endif-- >
+<!--#elseif (OUTER_ELSEIF_CLAUSE)
+    content: outer-elseif
+#else
+    content: outer-else
+#endif-->
+Trailing stuff
+<!- trailing comment -->";
+
+            RunAndVerify(inputValue2, expectedValue, processor, 9999);
+
+            // inner elseif is default, comments are balanced and nesting-balanced.
+            string inputValue3 = @"Start
+<!--#if (OUTER_IF_CLAUSE)
+    content: outer-if
+    <!--#if (INNER_IF_CLAUSE)
+        content: inner-if
+    #elseif (INNER_ELSEIF_CLAUSE) -->
+        content: inner-elseif
+    <!--#else
+        content: inner-else
+    #endif-->
+<!--#elseif (OUTER_ELSEIF_CLAUSE)
+    content: outer-elseif
+#else
+    content: outer-else
+#endif-->
+Trailing stuff
+<!- trailing comment -->";
+            RunAndVerify(inputValue3, expectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyXmlBlockCommentsNestedInIf_ProperComments()
+        {
+            string originalValue = @"Start
+<!--#if (OUTER_IF_VALUE)
+    content: outer if
+    <!--#if (INNER_IF_VALUE)
+        content: inner if
+    #elseif (INNER_ELSEIF_VALUE)
+        content: inner elseif
+    #endif-- >
+#elseif (OUTER_ELSEIF_VALUE)
+    content: outer elseif
+#else
+    content: outer else
+#endif-->
+<!-- Trailing Comment -->
+End";
+
+            string expectedValue = @"Start
+    content: outer if
+        content: inner if
+<!-- Trailing Comment -->
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["OUTER_IF_VALUE"] = true,
+                ["INNER_IF_VALUE"] = true,    
+                ["INNER_ELSEIF_VALUE"] = true,    // irrelevant
+                ["OUTER_ELSEIF_VALUE"] = true,    // irrelevant
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        // Below tests may not have properly formatted comments, but still work
 
         [Fact]
         public void XmlBlockCommentBasicTest()
@@ -319,7 +817,8 @@ Trailing stuff";
         {
             IList<string> testCases = new List<string>();
 
-            string originalValue = @"Start
+            // this is wrong, the one below is how it should be
+            string BLAH_originalValue = @"Start
 <!--#if (IF_CLAUSE)
     content: if stuff, line 1
     content: if stuff line 2-->
@@ -331,6 +830,21 @@ Trailing stuff";
     content: default stuff in the else
     content: trailing else stuff, not default-->
 <!--#endif-->
+Trailing stuff
+<!-- trailing comment -->";
+
+            string originalValue = @"Start
+<!--#if (IF_CLAUSE)
+    content: if stuff, line 1
+    content: if stuff line 2
+#elseif (ELSEIF_CLAUSE) -->
+    content: default stuff in the elseif
+    content: default line 2 (elseif)
+<!--#else
+    content: else stuff, line 1
+    content: default stuff in the else
+    content: trailing else stuff, not default
+#endif-->
 Trailing stuff
 <!-- trailing comment -->";
             testCases.Add(originalValue);
@@ -435,7 +949,7 @@ Trailing stuff
         content: inner-elseif
     #else
         content: inner-else
-    #endif
+    #endif-- >
 #elseif (OUTER_ELSEIF_CLAUSE)
     content: outer-elseif
 #else
@@ -656,44 +1170,6 @@ Trailing stuff
             {
                 RunAndVerify(test, outerElseTrueExpectedValue, processor, 9999);
             }
-        }
-
-        /// <summary>
-        /// Temporary test for isolating bugs
-        /// </summary>
-        [Fact]
-        public void MinimalCStyleElseifEmbeddingTest()
-        {
-            string testValue = @"Start
-////#if (OUTER_IF_CLAUSE)
-//    content: outer-if
-////#elseif (OUTER_ELSEIF_CLAUSE)
-//    content: outer-elseif
-    ////#if (INNER_IF_CLAUSE)
-//        content: inner-if
-    ////#else
-//        content: inner-else
-    //#endif
-////#else
-//    content: outer-else
-//#endif
-Trailing stuff
-<!- trailing comment -->";
-
-            string expectedValue = @"Start
-    content: outer-else
-Trailing stuff
-<!- trailing comment -->";
-
-            VariableCollection vc = new VariableCollection
-            {
-                ["OUTER_IF_CLAUSE"] = false,
-                ["OUTER_ELSEIF_CLAUSE"] = false,
-                ["INNER_IF_CLAUSE"] = false,
-                ["INNER_ELSEIF_CLAUSE"] = false,
-            };
-            IProcessor processor = SetupMadeUpStyleProcessor(vc);
-            RunAndVerify(testValue, expectedValue, processor, 9999);
         }
 
         /// <summary>
@@ -974,6 +1450,8 @@ Trailing stuff
                 RunAndVerify(test, outerElseHappensExpectedValue, processor, 9999);
             }
         }
+
+        #endregion XmlBlockComments
 
         #region Razor style tests
 
@@ -2283,6 +2761,7 @@ Past the endif
 
         #endregion commenting / uncommenting parts of conditionals
 
+        #region Original Tests
 
         [Fact]
         public void VerifyIfEndifTrueCondition()
@@ -3787,5 +4266,7 @@ There";
             //  pretend it's false because the inputs and outputs are the same
             Verify(Encoding.UTF8, output, false, value, expected);
         }
+
+        #endregion Original Tests
     }
 }

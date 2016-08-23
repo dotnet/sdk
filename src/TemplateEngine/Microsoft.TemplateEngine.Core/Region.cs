@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core
         private readonly bool _trimWhitespace;
         private readonly string _id;
 
-        public Region(string start, string end, bool include, bool wholeLine, bool trimWhitespace, string id = null)
+        public Region(string start, string end, bool include, bool wholeLine, bool trimWhitespace, string id)
         {
             _wholeLine = wholeLine;
             _trimWhitespace = trimWhitespace;

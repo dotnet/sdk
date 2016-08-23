@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new ExpandVariables() };
+            IOperationProvider[] operations = { new ExpandVariables("ExpandVariablesOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "%{0}%");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new ExpandVariables() };
+            IOperationProvider[] operations = { new ExpandVariables("ExpandVariablesOperationId") };
             VariableCollection vc = new VariableCollection
             {
                 ["NULL"] = null

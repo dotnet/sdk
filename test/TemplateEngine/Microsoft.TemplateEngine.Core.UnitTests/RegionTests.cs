@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("value", "foo", false, false, false)  };
+            IOperationProvider[] operations = { new Region("value", "foo", false, false, false, "RegionOperationId")  };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("value", "foo", true, false, false) };
+            IOperationProvider[] operations = { new Region("value", "foo", true, false, false, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("value", "foo", true, false, false) };
+            IOperationProvider[] operations = { new Region("value", "foo", true, false, false, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("region", "region", true, false, false) };
+            IOperationProvider[] operations = { new Region("region", "region", true, false, false, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("region", "region", false, false, false) };
+            IOperationProvider[] operations = { new Region("region", "region", false, false, false, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("value", "foo", true, false, true) };
+            IOperationProvider[] operations = { new Region("value", "foo", true, false, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -138,7 +138,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin", "#end", true, false, true) };
+            IOperationProvider[] operations = { new Region("#begin", "#end", true, false, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -163,7 +163,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true) };
+            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -190,7 +190,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin2", "#end2", true, true, true) };
+            IOperationProvider[] operations = { new Region("#begin2", "#end2", true, true, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -215,7 +215,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true) };
+            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -240,7 +240,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true) };
+            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -265,7 +265,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true) };
+            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -290,7 +290,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true) };
+            IOperationProvider[] operations = { new Region("#begin", "#end", true, true, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
@@ -321,7 +321,7 @@ There";
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
-            IOperationProvider[] operations = { new Region("#begin", "#end", false, true, true) };
+            IOperationProvider[] operations = { new Region("#begin", "#end", false, true, true, "RegionOperationId") };
             EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 

@@ -115,7 +115,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string startToken = data.ToString("start");
                 string endToken = data.ToString("end");
 
-                result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead()));
+                // TODO: setup the config with the operation id, and read it here:
+                string operationId = "TEMP_IncludeOperationId";
+                result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead(), operationId));
             }
 
             if (operations.TryGetValue("regions", out data))
@@ -130,7 +132,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     bool regionTrim = setting.ToBool("trim");
                     bool regionWholeLine = setting.ToBool("wholeLine");
 
-                    result.Add(new Region(start, end, include, regionWholeLine, regionTrim));
+                    // TODO: setup the config with the operation id, and read it here
+                    result.Add(new Region(start, end, include, regionWholeLine, regionTrim, null));
                 }
             }
 
@@ -154,11 +157,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens.Add(ifToken);
-                tokenVariants.ElseTokens.Add(elseToken);
-                tokenVariants.ElseIfTokens.Add(elseIfToken);
-                tokenVariants.EndIfTokens.Add(endIfToken);
-                result.Add(new Conditional(tokenVariants, wholeLine, trim, evaluator));
+                tokenVariants.IfTokens = new[] { ifToken };
+                tokenVariants.ElseTokens = new[] { elseToken };
+                tokenVariants.ElseIfTokens = new[] { elseIfToken };
+                tokenVariants.EndIfTokens = new[] { endIfToken };
+
+                // TODO: setup the config with the operation id, and read it here
+                result.Add(new Conditional(tokenVariants, wholeLine, trim, evaluator, null));
             }
 
             if (operations.TryGetValue("flags", out data))
@@ -179,7 +184,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         @default = bool.Parse(defaultStr);
                     }
 
-                    result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, @default));
+                    // TODO: setup the config with the operation id, and read it here
+                    result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, null, @default));
                 }
             }
 
@@ -200,7 +206,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
                         }
 
-                        Replacment r = new Replacment(property.Name, val);
+                        // TODO: setup the config with the operation id, and read it here
+                        Replacment r = new Replacment(property.Name, val, null);
                         result.Add(r);
                     }
                 }
@@ -216,7 +223,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             JToken expandToken;
             if (data.TryGetValue("expand", out expandToken) && expandToken.Type == JTokenType.Boolean && expandToken.ToObject<bool>())
             {
-                result?.Add(new ExpandVariables());
+                result?.Add(new ExpandVariables(null));
             }
 
             JObject sources = (JObject)data["sources"];

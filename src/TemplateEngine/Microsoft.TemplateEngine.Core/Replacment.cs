@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core
         private readonly string _replaceWith;
         private string _id;
 
-        public Replacment(string match, string replaceWith, string id = null)
+        public Replacment(string match, string replaceWith, string id)
         {
             _match = match;
             _replaceWith = replaceWith;
