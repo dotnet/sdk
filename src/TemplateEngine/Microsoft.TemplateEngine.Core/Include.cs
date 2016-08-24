@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public Func<string, Stream> SourceStreamOpener { get; }
 
-        private string _id;
+        private readonly string _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -37,18 +37,19 @@ namespace Microsoft.TemplateEngine.Core
         {
             private readonly Include _source;
             private readonly TokenTrie _endTokenMatcher;
+            private readonly string _id;
 
             public Impl(byte[] token, TokenTrie endTokenMatcher, Include source, string id)
             {
                 Tokens = new[] {token};
                 _source = source;
                 _endTokenMatcher = endTokenMatcher;
-                Id = id;
+                _id = id;
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
-            public string Id { get; private set; }
+            public string Id => _id;
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

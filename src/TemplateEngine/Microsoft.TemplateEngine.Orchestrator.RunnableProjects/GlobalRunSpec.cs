@@ -115,9 +115,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string startToken = data.ToString("start");
                 string endToken = data.ToString("end");
 
-                // TODO: setup the config with the operation id, and read it here:
-                string operationId = "TEMP_IncludeOperationId";
-                result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead(), operationId));
+                // TODO: check the config for an operationId to pass to the constructor.
+                result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead(), null));
             }
 
             if (operations.TryGetValue("regions", out data))
@@ -132,14 +131,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     bool regionTrim = setting.ToBool("trim");
                     bool regionWholeLine = setting.ToBool("wholeLine");
 
-                    // TODO: setup the config with the operation id, and read it here
+                    // TODO: check the config for an operationId to pass to the constructor.
                     result.Add(new Region(start, end, include, regionWholeLine, regionTrim, null));
                 }
             }
 
             if (operations.TryGetValue("conditionals", out data))
             {
-                // TODO (scp): add getting the special tokens and the disable operation
+                // TODO (scp): 
+                // - allow for multiple tokens of each type.
+                // - getting & setting the actionable tokens.
                 string ifToken = data.ToString("if");
                 string elseToken = data.ToString("else");
                 string elseIfToken = data.ToString("elseif");
@@ -162,7 +163,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 tokenVariants.ElseIfTokens = new[] { elseIfToken };
                 tokenVariants.EndIfTokens = new[] { endIfToken };
 
-                // TODO: setup the config with the operation id, and read it here
+                // TODO: check the config for an operationId to pass to the constructor.
                 result.Add(new Conditional(tokenVariants, wholeLine, trim, evaluator, null));
             }
 
@@ -184,7 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         @default = bool.Parse(defaultStr);
                     }
 
-                    // TODO: setup the config with the operation id, and read it here
+                    // TODO: check the config for an operationId to pass to the constructor.
                     result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, null, @default));
                 }
             }
@@ -206,7 +207,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
                         }
 
-                        // TODO: setup the config with the operation id, and read it here
+                        // TODO: check the config for an operationId to pass to the constructor.
                         Replacment r = new Replacment(property.Name, val, null);
                         result.Add(r);
                     }
@@ -223,6 +224,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             JToken expandToken;
             if (data.TryGetValue("expand", out expandToken) && expandToken.Type == JTokenType.Boolean && expandToken.ToObject<bool>())
             {
+                // TODO: check the config for an operationId to pass to the constructor.
+                // If there is an operationId, check the config for an initial on/off value and set it appropriately.
                 result?.Add(new ExpandVariables(null));
             }
 

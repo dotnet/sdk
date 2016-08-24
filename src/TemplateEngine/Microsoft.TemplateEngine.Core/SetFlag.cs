@@ -53,17 +53,18 @@ namespace Microsoft.TemplateEngine.Core
         private class Impl : IOperation
         {
             private readonly SetFlag _owner;
+            private readonly string _id;
 
             public Impl(SetFlag owner, IReadOnlyList<byte[]> tokens, string id)
             {
                 _owner = owner;
                 Tokens = tokens;
-                Id = id;
+                _id = id;
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
-            public string Id { get; private set; }
+            public string Id => _id;
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

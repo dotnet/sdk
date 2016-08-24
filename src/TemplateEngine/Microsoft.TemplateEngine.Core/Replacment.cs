@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core
     {
         private readonly string _match;
         private readonly string _replaceWith;
-        private string _id;
+        private readonly string _id;
 
         public Replacment(string match, string replaceWith, string id)
         {
@@ -36,18 +36,19 @@ namespace Microsoft.TemplateEngine.Core
         {
             private readonly byte[] _replacement;
             private readonly byte[] _token;
+            private readonly string _id;
 
             public Impl(byte[] token, byte[] replaceWith, string id)
             {
                 _replacement = replaceWith;
                 _token = token;
-                Id = id;
+                _id = id;
                 Tokens = new[] {token};
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
-            public string Id { get; private set; }
+            public string Id => _id;
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

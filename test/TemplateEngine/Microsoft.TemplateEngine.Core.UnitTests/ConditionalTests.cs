@@ -52,16 +52,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         /// <summary>
         /// Second attempt at xml comment processing.
-        ///
-        /// TODO: determine if the specials with "-- >" are needed.
         /// </summary>
         private IOperationProvider[] XmlStyleCommentConditionalsOperations
         {
             get
             {
-                //string trailingCommentOperationId = "Remove -->";
-                //string trailingPseudoCommentOperationId = "Remove -- >";
-
                 ConditionalTokens tokenVariants = new ConditionalTokens();
                 tokenVariants.EndIfTokens = new[] { "#endif", "<!--#endif", "#endif-->", "<!--#endif-->", "<!--#endif-- >", "#endif-- >" };
                 tokenVariants.ActionableIfTokens = new[] { "<!--#if" };
@@ -69,24 +64,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif", "#elseif-->", "<!--#elseif-->", "<!--#elseif-- >", "#elseif-- >" };
                 tokenVariants.ActionableOperations = ConditionalTokens.NoTokens;    // superfluous, but might get some value(s)
 
-                string conditionalOperationId = "XmlConditional";
-
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
-                    //new Replacment("-->", string.Empty, trailingCommentOperationId),
-                    //new Replacment("-- >", string.Empty, trailingPseudoCommentOperationId),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
                 };
-
-                /*
-                This input:
-
-                <!-- #if (OUTER_IF_CLAUSE) -->
-                    <!-- content: outer-if -- > -->
-
-                 Needs to produce this output:
-                    <!-- content: outer-if -- > -->
-                */
 
                 return operations;
             }
@@ -99,26 +80,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                //string trailingCommentOperationId = "Remove: *@";
-                //string trailingPseudoCommentToperationId = "Remove: * @";
-
                 ConditionalTokens tokenVariants = new ConditionalTokens();
                 tokenVariants.EndIfTokens = new[] { "#endif", "@*#endif", "#endif*@", "@*#endif*@", "@*#endif* @", "#endif* @" };
                 tokenVariants.ActionableIfTokens = new[] { "@*#if" }; ;
                 tokenVariants.ActionableElseTokens = new[] { "#else", "@*#else", "#else*@", "@*#else*@", "@*#else* @", "#else* @" };
                 tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "@*#elseif", "#elseif*@", "@*#elseif*@", "@*#elseif* @", "#elseif* @" };
-                tokenVariants.ActionableOperations = ConditionalTokens.NoTokens;    // superfluous, but might get some value(s)
 
-                //tokenVariants.ActionableOperations = new[] { trailingCommentOperationId, trailingPseudoCommentToperationId };
-
-                string conditionalOperationId = "RazorConditional";
-
-                //TODO: figure out the replacements that will need toggling
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
-                    //new Replacment("*@", string.Empty, trailingCommentOperationId),
-                    //new Replacment("* @", string.Empty, trailingPseudoCommentToperationId),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
                 };
 
                 return operations;
@@ -141,11 +111,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ActionableElseIfTokens = new[] { "////#elseif", "////#nextcheck", "//#Z_elseif" };
                 tokenVariants.ActionableOperations = new[] { replaceOperationId };
 
-                string conditionalOperationId = "MadeUpConditional";
-
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
                     new Replacment("//", string.Empty, replaceOperationId)
                 };
 
@@ -169,11 +137,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ActionableElseTokens = new[] { "////#else" };
                 tokenVariants.ActionableOperations = new[] { replaceOperationId };
 
-                string conditionalOperationId = "CStyleConditional";
-
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
                     new Replacment("//", string.Empty, replaceOperationId)
                 };
 
@@ -191,11 +157,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ElseIfTokens = new[] { "#elseif" };
                 tokenVariants.EndIfTokens = new[] { "#endif" };
 
-                string conditionalOperationId = "CStyleNoCommentsConditional";
-
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, conditionalOperationId)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null)
                 };
 
                 return operations;

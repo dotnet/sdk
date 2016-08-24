@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class ExpandVariables : IOperationProvider
     {
-        private string _id;
+        private readonly string _id;
 
         public ExpandVariables(string id)
         {
@@ -21,15 +21,17 @@ namespace Microsoft.TemplateEngine.Core
 
         private class Impl : IOperation
         {
+            private readonly string _id;
+
             public Impl(IProcessorState processor, string id)
             {
                 Tokens = processor.EncodingConfig.VariableKeys;
-                Id = id;
+                _id = id;
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
-            public string Id { get; private set; }
+            public string Id => _id;
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

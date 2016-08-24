@@ -13,8 +13,8 @@ namespace Microsoft.TemplateEngine.Core
         private readonly ConditionEvaluator _evaluator;
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
-        private readonly ConditionalTokens _Tokens;
-        private string _id;
+        private readonly ConditionalTokens _tokens;
+        private readonly string _id;
 
         // the unusual order of these is historical, no special meaning
         // if actual_token_index % 10 == baseTokenIndex
@@ -38,16 +38,14 @@ namespace Microsoft.TemplateEngine.Core
 
         public ConditionEvaluator Evaluator => _evaluator;
 
-        public ConditionalTokens Tokens => _Tokens;
-
+        public ConditionalTokens Tokens => _tokens;
 
         public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id)
         {
             _trimWhitespace = trimWhitespace;
             _wholeLine = wholeLine;
             _evaluator = evaluator;
-
-            _Tokens = tokenVariants;
+            _tokens = tokenVariants;
             _id = id;
         }
 
@@ -86,12 +84,6 @@ namespace Microsoft.TemplateEngine.Core
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.ActionableIfTokens, IfTokenActionableBaseIndex, encoding);
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.ActionableElseTokens, ElseTokenActionableBaseIndex, encoding);
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.ActionableElseIfTokens, ElseIfTokenActionableBaseIndex, encoding);
-
-            // disable the actionable operations if there are any
-            foreach (string operationId in Tokens.ActionableOperations)
-            {
-                processorState.Config.Flags.Add(operationId, false);
-            }
 
             return new Impl(this, tokens, trie, _id);
         }
@@ -136,16 +128,17 @@ namespace Microsoft.TemplateEngine.Core
             private EvaluationState _current;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly TokenTrie _trie;
+            private readonly string _id;
 
             public Impl(Conditional definition, IReadOnlyList<byte[]> tokens, TokenTrie trie, string id)
             {
                 _trie = trie;
                 _definition = definition;
                 Tokens = tokens;
-                Id = id;
+                _id = id;
             }
 
-            public string Id { get; private set; }
+            public string Id => _id;
 
             public IReadOnlyList<byte[]> Tokens { get; }
 

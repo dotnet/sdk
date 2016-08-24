@@ -40,6 +40,7 @@ namespace Microsoft.TemplateEngine.Core
             private readonly bool _startAndEndAreSame;
             private bool _waitingForEnd;
             private readonly Region _definition;
+            private readonly string _id;
 
             public Impl(Region owner, byte[] startToken, byte[] endToken, bool include, bool toggle, string id)
             {
@@ -49,12 +50,12 @@ namespace Microsoft.TemplateEngine.Core
                 _startAndEndAreSame = toggle;
 
                 Tokens = toggle ? new[] {startToken} : new[] {startToken, endToken};
-                Id = id;
+                _id = id;
             }
 
             public IReadOnlyList<byte[]> Tokens { get; }
 
-            public string Id { get; private set; }
+            public string Id => _id;
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

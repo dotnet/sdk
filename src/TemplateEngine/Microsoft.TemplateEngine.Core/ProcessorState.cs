@@ -164,16 +164,15 @@ namespace Microsoft.TemplateEngine.Core
                 IOperation op = _trie.GetOperation(CurrentBuffer, CurrentBufferLength, ref posedPosition, out token);
                 bool opEnabledFlag;
 
-                if ((op != null) &&
-                    (op.Id == null
-                        || !Config.Flags.TryGetValue(op.Id, out opEnabledFlag)
-                        || opEnabledFlag))
+                if ((op != null) 
+                        && ((op.Id == null)
+                            || (Config.Flags.TryGetValue(op.Id, out opEnabledFlag) && opEnabledFlag))
+                    )
                 {
-                    // the operation flag didn't exist, or it was true, meaning the operation is enabled. So do the usual.
-                    // (else do nothing, act as if there was no token).
+                    // The operation will be processed because one of these conditions are met:
+                    // - The operation doesn't have an id (thus can't be disabled)
+                    // - The flag for the Id exists and is true.
 
-                    // Below here was everything before ignoring disabled operations.
-                    // If the operation is diabled, it's as if the token were just arbitrary text, so do nothing special with it.
                     int writeCount = CurrentBufferPosition - lastWritten;
 
                     if (writeCount > 0)
@@ -199,6 +198,7 @@ namespace Microsoft.TemplateEngine.Core
                 }
                 else
                 {
+                    // If the operation is diabled, it's as if the token were just arbitrary text, so do nothing special with it.
                     ++CurrentBufferPosition;
                 }
 
