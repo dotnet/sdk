@@ -208,7 +208,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         }
 
                         // TODO: check the config for an operationId to pass to the constructor.
-                        Replacment r = new Replacment(property.Name, val, null);
+                        Replacement r = new Replacement(property.Name, val, null);
                         result.Add(r);
                     }
                 }

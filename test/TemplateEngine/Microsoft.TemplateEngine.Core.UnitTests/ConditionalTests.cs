@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
-                    new Replacment("//", string.Empty, replaceOperationId)
+                    new Replacement("//", string.Empty, replaceOperationId)
                 };
 
                 return operations;
@@ -140,7 +140,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
-                    new Replacment("//", string.Empty, replaceOperationId)
+                    new Replacement("//", string.Empty, replaceOperationId)
                 };
 
                 return operations;
