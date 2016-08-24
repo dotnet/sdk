@@ -299,6 +299,8 @@ End";
             RunAndVerify(originalValue, ifElseExpectedValue, processor, 9999);
         }
 
+        // Tests 3-level nesting of if blocks
+        // Tests multiple elseif's in the same block
         [Fact]
         public void VerifyThreeLevelNestedBlockComments()
         {
