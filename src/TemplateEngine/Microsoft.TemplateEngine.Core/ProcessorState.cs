@@ -348,6 +348,16 @@ namespace Microsoft.TemplateEngine.Core
 
         public void SeekForwardThrough(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition)
         {
+            BaseSeekForward(match, ref bufferLength, ref currentBufferPosition, true);
+        }
+
+        public void SeekForwardUntil(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition)
+        {
+            BaseSeekForward(match, ref bufferLength, ref currentBufferPosition, false);
+        }
+
+        private void BaseSeekForward(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken)
+        {
             while (bufferLength >= match.MinLength)
             {
                 //Try to get at least the max length of the tree into the buffer
@@ -371,6 +381,11 @@ namespace Microsoft.TemplateEngine.Core
                     int token;
                     if (match.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                     {
+                        if (!consumeToken)
+                        {
+                            currentBufferPosition -= match.Tokens[token].Length;
+                        }
+
                         return;
                     }
                 }

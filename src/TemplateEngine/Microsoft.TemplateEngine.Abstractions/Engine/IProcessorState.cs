@@ -18,6 +18,8 @@ namespace Microsoft.TemplateEngine.Abstractions.Engine
 
         bool AdvanceBuffer(int bufferPosition);
 
+        void SeekForwardUntil(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition);
+
         void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition);
 
         void SeekForwardWhile(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition);

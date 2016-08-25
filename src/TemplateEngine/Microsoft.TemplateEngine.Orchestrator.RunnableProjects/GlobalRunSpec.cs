@@ -483,6 +483,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 throw new NotImplementedException();
             }
 
+            public void SeekForwardUntil(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
+            {
+                throw new NotImplementedException();
+            }
+
             public void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
             {
                 throw new NotImplementedException();

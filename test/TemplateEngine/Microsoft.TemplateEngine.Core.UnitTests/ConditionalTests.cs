@@ -58,10 +58,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             get
             {
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.EndIfTokens = new[] { "#endif", "<!--#endif", "#endif-->", "<!--#endif-->", "<!--#endif-- >", "#endif-- >" };
+                tokenVariants.EndIfTokens = new[] { "#endif", "<!--#endif" };
                 tokenVariants.ActionableIfTokens = new[] { "<!--#if" };
-                tokenVariants.ActionableElseTokens = new[] { "#else", "<!--#else", "#else-->", "<!--#else-->", "<!--#else-- >", "#else-- >" };
-                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif", "#elseif-->", "<!--#elseif-->", "<!--#elseif-- >", "#elseif-- >" };
+                tokenVariants.ActionableElseTokens = new[] { "#else", "<!--#else" };
+                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" };
                 tokenVariants.ActionableOperations = ConditionalTokens.NoTokens;    // superfluous, but might get some value(s)
 
                 IOperationProvider[] operations =
@@ -81,10 +81,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             get
             {
                 ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.EndIfTokens = new[] { "#endif", "@*#endif", "#endif*@", "@*#endif*@", "@*#endif* @", "#endif* @" };
-                tokenVariants.ActionableIfTokens = new[] { "@*#if" }; ;
-                tokenVariants.ActionableElseTokens = new[] { "#else", "@*#else", "#else*@", "@*#else*@", "@*#else* @", "#else* @" };
-                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "@*#elseif", "#elseif*@", "@*#elseif*@", "@*#elseif* @", "#elseif* @" };
+                tokenVariants.EndIfTokens = new[] { "#endif", "@*#endif" };
+                tokenVariants.ActionableIfTokens = new[] { "@*#if" };
+                tokenVariants.ActionableElseTokens = new[] { "#else", "@*#else" };
+                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "@*#elseif" };
 
                 IOperationProvider[] operations =
                 {
@@ -99,7 +99,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                string replaceOperationId = "Replacement (//) ()";    // this is normally handled in the config setup
+                // this is normally handled in the config setup
+                string replaceOperationId = "Replacement (//) ()";    
+                string uncommentOperationId = "Uncomment (////) -> (//)";
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
                 tokenVariants.IfTokens = new[] { "//#if", "//#check" };
@@ -109,11 +111,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ActionableIfTokens = new[] { "////#if", "////#check", "//#Z_if" };
                 tokenVariants.ActionableElseTokens = new[] { "////#else", "////#otherwise", "//#Z_else" };
                 tokenVariants.ActionableElseIfTokens = new[] { "////#elseif", "////#nextcheck", "//#Z_elseif" };
-                tokenVariants.ActionableOperations = new[] { replaceOperationId };
+                tokenVariants.ActionableOperations = new[] { replaceOperationId, uncommentOperationId };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Replacement("////", "//", uncommentOperationId),
                     new Replacement("//", string.Empty, replaceOperationId)
                 };
 
@@ -125,7 +128,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                string replaceOperationId = "Replacement: (//) ()";    // this is normally handled in the config setup
+                // this is normally handled in the config setup
+                string replaceOperationId = "Replacement: (//) ()";    
+                string uncommentOperationId = "Uncomment (////) -> (//)";
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
                 tokenVariants.IfTokens = new[] { "//#if" };
@@ -135,11 +140,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ActionableIfTokens = new[] { "////#if" };
                 tokenVariants.ActionableElseIfTokens = new[] { "////#elseif" };
                 tokenVariants.ActionableElseTokens = new[] { "////#else" };
-                tokenVariants.ActionableOperations = new[] { replaceOperationId };
+                tokenVariants.ActionableOperations = new[] { replaceOperationId, uncommentOperationId };
 
+                // TODO: add replacing //// -> //
+                // so that it doesn't get double reolaced by // -> ""
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Replacement("////", "//", uncommentOperationId),
                     new Replacement("//", string.Empty, replaceOperationId)
                 };
 
@@ -782,22 +790,6 @@ Trailing stuff";
         public void XmlBlockCommentIfElseifElseTestWithCommentStripping()
         {
             IList<string> testCases = new List<string>();
-
-            // this is wrong, the one below is how it should be
-            string BLAH_originalValue = @"Start
-<!--#if (IF_CLAUSE)
-    content: if stuff, line 1
-    content: if stuff line 2-->
-<!--#elseif (ELSEIF_CLAUSE) -->
-    content: default stuff in the elseif
-    content: default line 2 (elseif)
-<!--#else
-    content: else stuff, line 1
-    content: default stuff in the else
-    content: trailing else stuff, not default-->
-<!--#endif-->
-Trailing stuff
-<!-- trailing comment -->";
 
             string originalValue = @"Start
 <!--#if (IF_CLAUSE)

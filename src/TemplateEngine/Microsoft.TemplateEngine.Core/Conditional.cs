@@ -259,6 +259,15 @@ namespace Microsoft.TemplateEngine.Core
                         _current = null;
                     }
 
+                    if (_definition._wholeLine)
+                    {
+                        processor.SeekForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                    }
+                    else if (_definition._trimWhitespace)
+                    {
+                        processor.TrimWhitespace(true, false, ref bufferLength, ref currentBufferPosition);
+                    }
+
                     return 0;
                 }
 
