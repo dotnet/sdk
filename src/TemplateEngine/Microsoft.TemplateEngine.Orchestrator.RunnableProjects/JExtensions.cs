@@ -46,26 +46,59 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public static bool ToBool(this JToken token, string key = null, bool defaultValue = false)
         {
-            string val = token.ToString(key);
-            bool result;
-            if (val == null || !bool.TryParse(val, out result))
+            if (key == null)
+            {
+                if (token == null || token.Type != JTokenType.Boolean)
+                {
+                    return defaultValue;
+                }
+
+                return string.Equals(token.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+            }
+
+            JObject obj = token as JObject;
+
+            if (obj == null)
             {
                 return defaultValue;
             }
 
-            return result;
+            JToken element;
+            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element) || element.Type != JTokenType.Boolean)
+            {
+                return defaultValue;
+            }
+
+            return string.Equals(element.ToString(), "true", StringComparison.OrdinalIgnoreCase);
         }
 
         public static int ToInt32(this JToken token, string key = null, int defaultValue = 0)
         {
-            string val = token.ToString(key);
-            int result;
-            if (val == null || !int.TryParse(val, out result))
+            int value;
+            if (key == null)
+            {
+                if (token == null || token.Type != JTokenType.Integer || !int.TryParse(token.ToString(), out value))
+                {
+                    return defaultValue;
+                }
+
+                return value;
+            }
+
+            JObject obj = token as JObject;
+
+            if (obj == null)
             {
                 return defaultValue;
             }
 
-            return result;
+            JToken element;
+            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element) || element.Type != JTokenType.Integer || !int.TryParse(element.ToString(), out value))
+            {
+                return defaultValue;
+            }
+
+            return value;
         }
 
         public static T ToEnum<T>(this JToken token, string key = null, T defaultValue = default(T))
