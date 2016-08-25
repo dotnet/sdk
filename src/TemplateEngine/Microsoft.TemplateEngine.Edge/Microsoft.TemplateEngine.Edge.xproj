@@ -9,8 +9,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>e22b59bd-a658-4e32-9407-c8d9570b9fdf</ProjectGuid>
     <RootNamespace>Microsoft.TemplateEngine.Edge</RootNamespace>
-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
-    <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">..\..\artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+    <OutputPath Condition="'$(OutputPath)'=='' ">..\..\artifacts\</OutputPath>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
   </PropertyGroup>
 

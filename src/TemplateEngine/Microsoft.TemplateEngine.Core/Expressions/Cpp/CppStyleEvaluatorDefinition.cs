@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 
@@ -161,11 +162,21 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                         //If we have a token from the args...
                         if (token > ReservedTokenMaxIndex)
                         {
-                            currentTokenFamily = TokenFamily.Reference | (TokenFamily)token;
-                            tokens.Add(new TokenRef
+                            if (currentTokenFamily == TokenFamily.Literal)
                             {
-                                Family = currentTokenFamily
-                            });
+                                TokenRef previous = tokens[tokens.Count - 1];
+                                previous.Literal += processor.Encoding.GetString(currentTokenBytes.ToArray());
+                                currentTokenBytes = processor.Encoding.GetBytes(previous.Literal).ToList();
+                                tokens.RemoveAt(tokens.Count - 1);
+                            }
+                            else
+                            {
+                                currentTokenFamily = TokenFamily.Reference | (TokenFamily) token;
+                                tokens.Add(new TokenRef
+                                {
+                                    Family = currentTokenFamily
+                                });
+                            }
                         }
                         //If we have a normal token...
                         else

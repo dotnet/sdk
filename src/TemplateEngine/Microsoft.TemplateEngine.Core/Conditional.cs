@@ -276,7 +276,7 @@ namespace Microsoft.TemplateEngine.Core
 
                         if (IsTokenIndexOfType(token, ElseIfTokenActionableBaseIndex))
                         {
-                            // the elseif branch is taken. 
+                            // the elseif branch is taken.
                             _current.ToggleActionableOperations(true, processor);
                         }
 
@@ -313,7 +313,7 @@ namespace Microsoft.TemplateEngine.Core
             }
 
             // moves the buffer to the next token at the same level.
-            // Returns false if no end token can be found at the same level. 
+            // Returns false if no end token can be found at the same level.
             //      this is probably indicative of a template authoring problem, or possibly a buffer problem.
             private bool SkipToMatchingEndif(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, ref int token)
             {
@@ -332,7 +332,7 @@ namespace Microsoft.TemplateEngine.Core
 
             // Moves the buffer to the next token at the same level of nesting as the current token.
             // Should never be called if we're on an end token!!!
-            // Returns false if no next token can be found at the same level. 
+            // Returns false if no next token can be found at the same level.
             //      this is probably indicative of a template authoring problem, or possibly a buffer problem.
             private bool SeekToNextTokenAtSameLevel(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out int token)
             {
@@ -386,6 +386,11 @@ namespace Microsoft.TemplateEngine.Core
                                 return true;
                             }
                         }
+                    }
+
+                    if (bufferAdvanceFailed)
+                    {
+                        break;
                     }
 
                     bufferAdvanceFailed = !processor.AdvanceBuffer(bufferLength - _trie.MaxLength + 1);

@@ -114,9 +114,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 string startToken = data.ToString("start");
                 string endToken = data.ToString("end");
+                string id = data.ToString("id");
 
-                // TODO: check the config for an operationId to pass to the constructor.
-                result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead(), null));
+                result.Add(new Include(startToken, endToken, x => templateRoot.FileInfo(x).OpenRead(), id));
             }
 
             if (operations.TryGetValue("regions", out data))
@@ -125,27 +125,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 foreach (JToken child in regionSettings.Children())
                 {
                     JObject setting = (JObject)child;
+                    string id = setting.ToString("id");
                     string start = setting.ToString("start");
                     string end = setting.ToString("end");
                     bool include = setting.ToBool("include");
                     bool regionTrim = setting.ToBool("trim");
                     bool regionWholeLine = setting.ToBool("wholeLine");
 
-                    // TODO: check the config for an operationId to pass to the constructor.
-                    result.Add(new Region(start, end, include, regionWholeLine, regionTrim, null));
+                    result.Add(new Region(start, end, include, regionWholeLine, regionTrim, id));
                 }
             }
 
             if (operations.TryGetValue("conditionals", out data))
             {
-                // TODO (scp): 
-                // - allow for multiple tokens of each type.
-                // - getting & setting the actionable tokens.
-                string ifToken = data.ToString("if");
-                string elseToken = data.ToString("else");
-                string elseIfToken = data.ToString("elseif");
-                string endIfToken = data.ToString("endif");
+                IReadOnlyList<string> ifToken = data.ArrayAsStrings("if");
+                IReadOnlyList<string> elseToken = data.ArrayAsStrings("else");
+                IReadOnlyList<string> elseIfToken = data.ArrayAsStrings("elseif");
+                IReadOnlyList<string> actionableIfToken = data.ArrayAsStrings("actionableIf");
+                IReadOnlyList<string> actionableElseToken = data.ArrayAsStrings("actionableElse");
+                IReadOnlyList<string> actionableElseIfToken = data.ArrayAsStrings("actionableElseif");
+                IReadOnlyList<string> actionsToken = data.ArrayAsStrings("actions");
+                IReadOnlyList<string> endIfToken = data.ArrayAsStrings("endif");
                 string evaluatorName = data.ToString("evaluator");
+                string id = data.ToString("id");
                 bool trim = data.ToBool("trim");
                 bool wholeLine = data.ToBool("wholeLine");
                 ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
@@ -157,14 +159,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         break;
                 }
 
-                ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens = new[] { ifToken };
-                tokenVariants.ElseTokens = new[] { elseToken };
-                tokenVariants.ElseIfTokens = new[] { elseIfToken };
-                tokenVariants.EndIfTokens = new[] { endIfToken };
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    IfTokens = ifToken,
+                    ElseTokens = elseToken,
+                    ElseIfTokens = elseIfToken,
+                    EndIfTokens = endIfToken,
+                    ActionableElseIfTokens = actionableElseIfToken,
+                    ActionableElseTokens = actionableElseToken,
+                    ActionableIfTokens = actionableIfToken,
+                    ActionableOperations = actionsToken
+                };
 
-                // TODO: check the config for an operationId to pass to the constructor.
-                result.Add(new Conditional(tokenVariants, wholeLine, trim, evaluator, null));
+                result.Add(new Conditional(tokenVariants, wholeLine, trim, evaluator, id));
             }
 
             if (operations.TryGetValue("flags", out data))
@@ -178,6 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     string onNoEmit = innerData.ToString("onNoEmit") ?? string.Empty;
                     string offNoEmit = innerData.ToString("offNoEmit") ?? string.Empty;
                     string defaultStr = innerData.ToString("default");
+                    string id = innerData.ToString("id");
                     bool? @default = null;
 
                     if (defaultStr != null)
@@ -185,8 +193,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         @default = bool.Parse(defaultStr);
                     }
 
-                    // TODO: check the config for an operationId to pass to the constructor.
-                    result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, null, @default));
+                    result.Add(new SetFlag(flag, on, off, onNoEmit, offNoEmit, id, @default));
                 }
             }
 
@@ -194,21 +201,36 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (JProperty property in data.Properties())
                 {
+                    if (string.IsNullOrEmpty(property.Name))
+                    {
+                        continue;
+                    }
+
                     ITemplateParameter param;
                     if (parameters.TryGetParameter(property.Value.ToString(), out param))
                     {
-                        string val;
+                        Replacement r;
                         try
                         {
-                            val = parameters.ParameterValues[param];
+                            string val = parameters.ParameterValues[param];
+                            r = new Replacement(property.Name, val, null);
                         }
                         catch (KeyNotFoundException ex)
                         {
-                            throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
+                            JObject v = property.Value as JObject;
+
+                            if (v != null)
+                            {
+                                string id = v.ToString("id");
+                                string replacement = v.ToString("replaceWith");
+                                r = new Replacement(property.Name, replacement, id);
+                            }
+                            else
+                            {
+                                throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
+                            }
                         }
 
-                        // TODO: check the config for an operationId to pass to the constructor.
-                        Replacement r = new Replacement(property.Name, val, null);
                         result.Add(r);
                     }
                 }
@@ -224,8 +246,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             JToken expandToken;
             if (data.TryGetValue("expand", out expandToken) && expandToken.Type == JTokenType.Boolean && expandToken.ToObject<bool>())
             {
-                // TODO: check the config for an operationId to pass to the constructor.
-                // If there is an operationId, check the config for an initial on/off value and set it appropriately.
                 result?.Add(new ExpandVariables(null));
             }
 

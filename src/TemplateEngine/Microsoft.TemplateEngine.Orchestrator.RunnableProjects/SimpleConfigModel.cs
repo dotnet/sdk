@@ -189,18 +189,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     Dictionary<string, Dictionary<string, JObject>> specials =
                         new Dictionary<string, Dictionary<string, JObject>>
                         {
-                            ["**/*.css"] = ProduceConfig("/* ", "/* ", false),
-                            ["**/*.css.min"] = ProduceConfig("/* ", "/* ", false),
-                            ["**/*.cs"] = ProduceConfig("//", "#", false),
-                            ["**/*.cpp"] = ProduceConfig("//", "#", false),
-                            ["**/*.hpp"] = ProduceConfig("//", "#", false),
-                            ["**/*.h"] = ProduceConfig("//", "#", false),
-                            ["**/*.*proj"] = ProduceConfig("<!--/", "<!--#", false),
-                            ["**/*.*html"] = ProduceConfig("<!--", "<!--#", false),
-                            ["**/*.*htm"] = ProduceConfig("<!--", "<!--#", false),
-                            ["**/*.jsp"] = ProduceConfig("<!--", "<!--#", false),
-                            ["**/*.asp"] = ProduceConfig("<!--", "<!--#", false),
-                            ["**/*.aspx"] = ProduceConfig("<!--", "<!--#", false)
+                            ["**/*.json"] = ProduceConfig("//", "//#", "////#", "//", false),
+                            ["**/*.css"] = ProduceConfig("/*", "/*#", "", "", false),
+                            ["**/*.css.min"] = ProduceConfig("/*", "/*#", "", "", false),
+                            ["**/*.cs"] = ProduceConfig("//", "#", "", "", false),
+                            ["**/*.cpp"] = ProduceConfig("//", "#", "", "", false),
+                            ["**/*.hpp"] = ProduceConfig("//", "#", "", "", false),
+                            ["**/*.h"] = ProduceConfig("//", "#", "", "", false),
+                            ["**/*.*proj"] = ProduceConfig("<!--/", "<!--#", "", "", false),
+                            ["**/*.*html"] = ProduceConfig("<!--", "<!--#", "", "", false),
+                            ["**/*.*htm"] = ProduceConfig("<!--", "<!--#", "", "", false),
+                            ["**/*.jsp"] = ProduceConfig("<!--", "<!--#", "", "", false),
+                            ["**/*.asp"] = ProduceConfig("<!--", "<!--#", "", "", false),
+                            ["**/*.aspx"] = ProduceConfig("<!--", "<!--#", "", "", false)
                         };
 
 
@@ -214,7 +215,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
-        IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//", true);
+        IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//#", "////#", "//", true);
 
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
 
@@ -229,7 +230,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return config;
         }
 
-        private Dictionary<string, JObject> ProduceConfig(string switchPrefix, string conditionalPrefix, bool generateMacros)
+        //TODO: Restructure this to take language idioms into account while allowing
+        //  the expanded conditional syntax and operation toggling to work
+        private Dictionary<string, JObject> ProduceConfig(string switchPrefix, string conditionalPrefix, string actionableConditionalPrefix, string commentToken, bool generateMacros)
         {
             Dictionary<string, JObject> cfg = new Dictionary<string, JObject>
             {
@@ -260,10 +263,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     "conditionals",
                     JObject.Parse($@"{{
-    ""if"": ""{conditionalPrefix}if"",
-    ""else"": ""{conditionalPrefix}else"",
-    ""elseif"": ""{conditionalPrefix}elseif"",
-    ""endif"": ""{conditionalPrefix}endif"",
+    ""if"": [ ""{conditionalPrefix}if"" ],
+    ""else"": [ ""{conditionalPrefix}else"" ],
+    ""elseif"": [ ""{conditionalPrefix}elseif"" ],
+    ""endif"": [ ""{conditionalPrefix}endif"" ],
     ""evaluator"": ""C++"",
     ""wholeLine"": true,
     ""trim"": true
@@ -283,9 +286,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 },
                 {
                     "replacements",
-                    new JObject()
+                    JObject.Parse($@"{{
+    ""{commentToken}"": {{
+        ""replaceWith"": """",
+        ""id"": ""stripComments""
+    }},
+    ""{commentToken}{commentToken}"": {{
+        ""replaceWith"": ""{commentToken}"",
+        ""id"": ""preserveDoubleComment""
+    }}
+}}")
                 }
             };
+
+            if (!string.IsNullOrEmpty(actionableConditionalPrefix))
+            {
+                JObject cndDef = cfg["conditionals"];
+                cndDef["actionableIf"] = new JArray {$"{actionableConditionalPrefix}if"};
+                cndDef["actionableElse"] = new JArray {$"{actionableConditionalPrefix}else"};
+                cndDef["actionableElseif"] = new JArray {$"{actionableConditionalPrefix}elseif"};
+                cndDef["actions"] = new JArray {"stripComments", "preserveDoubleComment"};
+            }
 
             if (generateMacros)
             {
