@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (obj == null)
             {
-                return No<JProperty>.List.Value;
+                return Empty<JProperty>.List.Value;
             }
 
             if (key != null)
@@ -131,7 +131,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 JToken element;
                 if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element))
                 {
-                    return No<JProperty>.List.Value;
+                    return Empty<JProperty>.List.Value;
                 }
 
                 obj = element as JObject;
@@ -139,7 +139,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (obj == null)
             {
-                return No<JProperty>.List.Value;
+                return Empty<JProperty>.List.Value;
             }
 
             return obj.Properties();
@@ -192,7 +192,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (arr == null)
             {
-                return No<string>.List.Value;
+                return Empty<string>.List.Value;
             }
 
             List<string> values = new List<string>();
@@ -219,7 +219,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (arr == null)
             {
-                return No<Guid>.List.Value;
+                return Empty<Guid>.List.Value;
             }
 
             List<Guid> values = new List<Guid>();

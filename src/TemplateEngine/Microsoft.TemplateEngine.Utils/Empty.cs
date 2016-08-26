@@ -2,7 +2,7 @@
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public static class No<T>
+    public static class Empty<T>
     {
         public static class List
         {
