@@ -57,16 +57,25 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
+                // This is the operationId (flag) for the balanced nesting
+                string commentFixingOperationId = "Fix pseudo comments";
+
+                // This is not an operationId (flag), it does not toggle the operation.
+                // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
+                // It lets BalanceNesting know it's been reset
+                string commentFixingResetId = "Reset pseudo comment fixer";
+
                 ConditionalTokens tokenVariants = new ConditionalTokens();
                 tokenVariants.EndIfTokens = new[] { "#endif", "<!--#endif" };
                 tokenVariants.ActionableIfTokens = new[] { "<!--#if" };
                 tokenVariants.ActionableElseTokens = new[] { "#else", "<!--#else" };
                 tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" };
-                tokenVariants.ActionableOperations = ConditionalTokens.NoTokens;    // superfluous, but might get some value(s)
+                tokenVariants.ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new BalancedNesting("<!--", "-->", "-- >", commentFixingOperationId, commentFixingResetId)
                 };
 
                 return operations;
@@ -80,21 +89,37 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
+                // This is the operationId (flag) for the balanced nesting
+                string commentFixingOperationId = "Fix pseudo comments";
+
+                // This is not an operationId (flag), it does not toggle the operation.
+                // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
+                // Tt lets BalanceNesting know it's been reset
+                string commentFixingResetId = "Reset pseudo comment fixer";
+
                 ConditionalTokens tokenVariants = new ConditionalTokens();
                 tokenVariants.EndIfTokens = new[] { "#endif", "@*#endif" };
                 tokenVariants.ActionableIfTokens = new[] { "@*#if" };
                 tokenVariants.ActionableElseTokens = new[] { "#else", "@*#else" };
                 tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "@*#elseif" };
+                tokenVariants.ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new BalancedNesting("@*", "*@", "* @", commentFixingOperationId, commentFixingResetId)
                 };
 
                 return operations;
             }
         }
 
+
+        /// <summary>
+        /// This started as a proof-of-concept / demonstration of having multiple tokens of each type,
+        /// not to mention the arbitrariness of the conditional tokens.
+        /// It could go away, in conjunction with updating the unit tests that use it.
+        /// </summary>
         private IOperationProvider[] MadeUpConditionalsOperations
         {
             get
@@ -142,8 +167,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ActionableElseTokens = new[] { "////#else" };
                 tokenVariants.ActionableOperations = new[] { replaceOperationId, uncommentOperationId };
 
-                // TODO: add replacing //// -> //
-                // so that it doesn't get double reolaced by // -> ""
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
@@ -178,6 +201,108 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         #region XmlBlockComments
 
+        // The emitted value is not valid Xml in this test because the unbalanced comment in the first if
+        // doesn't cause the pseudo comment to become a real comment. 
+        // The test is to demonstrate that the balance checking gets reset after leaving the #if-#endif block.
+        // The fact that the comment in the second if gets its final pseudo comment fixed is demonstration of the reset.
+        [Fact]
+        public void VerifyBlockCommentUnbalancedMissingEndCommentsResets()
+        {
+            string originalValue = @"Start
+<!-- <!-- lead comment, just 'cuz -- > -->
+<!--#if (FIRST_IF)
+    <!-- <!-- Unbalanced comment -- >
+#endif-->
+
+Intermediate content
+
+<!--#if (SECOND_IF)
+    <!-- <!-- second comment -- > -- >
+#endif-->
+<!-- <!-- trailing comment -- > -->
+End";
+
+            string expectedValue = @"Start
+<!-- <!-- lead comment, just 'cuz -- > -->
+    <!-- <!-- Unbalanced comment -- >
+
+Intermediate content
+
+    <!-- <!-- second comment -- > -->
+<!-- <!-- trailing comment -- > -->
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["FIRST_IF"] = true,
+                ["SECOND_IF"] = true
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyBlockCommentUnbalancedExtraEndCommentsResets()
+        {
+            string originalValue = @"Start
+<!-- <!-- lead comment, just 'cuz -- > -->
+<!--#if (FIRST_IF)
+    <!-- <!-- Unbalanced comment -- > -- > -- >
+#endif-->
+
+Intermediate content
+
+<!--#if (SECOND_IF)
+    <!-- <!-- second comment -- > -- >
+#endif-->
+<!-- <!-- trailing comment -- > -->
+End";
+
+            string expectedValue = @"Start
+<!-- <!-- lead comment, just 'cuz -- > -->
+    <!-- <!-- Unbalanced comment -- > --> -- >
+
+Intermediate content
+
+    <!-- <!-- second comment -- > -->
+<!-- <!-- trailing comment -- > -->
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["FIRST_IF"] = true,
+                ["SECOND_IF"] = true
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyBlockCommentedContentStaysCommented()
+        {
+            string originalValue = @"Start
+<!-- <!-- lead comment, just 'cuz -- > -->
+<!--#if (VALUE)
+    <!-- Comment in the content -- >
+    Actual content
+    <!-- Moar Comments -- >
+#endif-->
+<!-- <!-- trailing comment -- > -->
+End";
+
+            string expectedValue = @"Start
+<!-- <!-- lead comment, just 'cuz -- > -->
+    <!-- Comment in the content -->
+    Actual content
+    <!-- Moar Comments -->
+<!-- <!-- trailing comment -- > -->
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["VALUE"] = true,
+            };
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
         /// <summary>
         /// Temporary test, experimenting with block comments
         /// </summary>
@@ -186,11 +311,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             string originalValue = @"Start
 <!--#if (IF_VALUE) -->
-    <!-- content: outer-if -- > -->
+    <!-- <!-- content: outer-if -- > -- >
 #endif-->
 End";
             string expectedValue = @"Start
-    <!-- content: outer-if -- > -->
+    <!-- <!-- content: outer-if -- > -->
 End";
 
             VariableCollection vc = new VariableCollection
@@ -1717,7 +1842,264 @@ Trailing stuff";
 
         #endregion Razor style tests
 
-        #region C-style conditionals with comment handling
+        #region C-style conditional with //// comment handling
+
+        [Fact]
+        public void VerifyBasicQuadCommentRemoval()
+        {
+            string originalValue = @"Start
+////#if (CLAUSE)
+////    Actual Comment
+//    content
+//#endif
+// end comment
+//// end quad comment
+End";
+            string expectedValue = @"Start
+//    Actual Comment
+    content
+// end comment
+//// end quad comment
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["CLAUSE"] = true,
+            };
+
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+
+            // The if is //#if (as opposed to ////#if) so no comment removal in the content
+            string originalNoCommentRemoval = @"Start
+////#if (CLAUSE)
+////    Actual Comment
+//    content
+//#endif
+// end comment
+//// end quad comment
+End";
+            string expectedValueNoCommentRemoval = @"Start
+//    Actual Comment
+    content
+// end comment
+//// end quad comment
+End";
+            RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyQuadCommentRemovalForEachClauseNoEmbedding()
+        {
+            string originalValue = @"Start
+////#if (IF)
+//    content: if
+////  Comment: if
+//    content: if part 2
+////  Comment: if part 2
+////#elseif (ELSEIF)
+//// Comment: elseif
+//    content: elseif
+//// Comment: elseif part 2
+//    content: elseif part 2
+////#else
+//    content: else
+////  Comment: else
+////  Comment: else 2
+//    content: else 2
+//#endif
+// end comment
+//// end quad comment
+End";
+            string ifExpectedValue = @"Start
+    content: if
+//  Comment: if
+    content: if part 2
+//  Comment: if part 2
+// end comment
+//// end quad comment
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["IF"] = true,
+            };
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, ifExpectedValue, processor, 9999);
+
+            string elseIfExpectedValue = @"Start
+// Comment: elseif
+    content: elseif
+// Comment: elseif part 2
+    content: elseif part 2
+// end comment
+//// end quad comment
+End";
+            vc = new VariableCollection
+            {
+                ["IF"] = false,
+                ["ELSEIF"] = true
+            };
+            processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, elseIfExpectedValue, processor, 9999);
+
+            string elseExpectedValue = @"Start
+    content: else
+//  Comment: else
+//  Comment: else 2
+    content: else 2
+// end comment
+//// end quad comment
+End";
+            vc = new VariableCollection
+            {
+                ["IF"] = false,
+                ["ELSEIF"] = false
+            };
+            processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyQuadCommentRemovalWithNestedClause()
+        {
+            string originalValue = @"Start
+////#if (OUTER_IF)
+    //// Comment: outer if
+    //content outer if
+    ////#if (INNER_IF)
+        //// Comment: inner if
+        //content: inner if
+    //#endif
+//#endif
+// end comment
+//// end quad comment
+End";
+            string outerTrueInnerFalseExpectedValue = @"Start
+    // Comment: outer if
+    content outer if
+// end comment
+//// end quad comment
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = false
+            };
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, outerTrueInnerFalseExpectedValue, processor, 9999);
+
+            string outerTrueInnerTrueExpectedValue = @"Start
+    // Comment: outer if
+    content outer if
+        // Comment: inner if
+        content: inner if
+// end comment
+//// end quad comment
+End";
+            vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = true
+            };
+            processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyQuadCommentRemovalNestedDoesntRemove()
+        {
+            string originalValue = @"Start
+////#if (OUTER_IF)
+    //// Comment: outer if
+    //content outer if
+    //#if (INNER_IF)
+        //// Comment: inner if
+        //content: inner if
+    //#endif
+//#endif
+// end comment
+//// end quad comment
+End";
+            string outerTrueInnerFalseExpectedValue = @"Start
+    // Comment: outer if
+    content outer if
+// end comment
+//// end quad comment
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = false
+            };
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, outerTrueInnerFalseExpectedValue, processor, 9999);
+
+            // TODO: determine if this is correct, or if the inner should //#if overrides the outer ////#if
+            string outerTrueInnerTrueExpectedValue = @"Start
+    // Comment: outer if
+    content outer if
+        // Comment: inner if
+        content: inner if
+// end comment
+//// end quad comment
+End";
+            vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = true
+            };
+            processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
+        }
+
+        [Fact]
+        public void VerifyQuadCommentRemovalOnlyNestedRemoves()
+        {
+            string originalValue = @"Start
+//#if (OUTER_IF)
+    // Comment: outer if
+    content outer if
+    ////#if (INNER_IF)
+        //// Comment: inner if
+        //content: inner if
+    //#endif
+//#endif
+// end comment
+//// end quad comment
+End";
+            string outerTrueInnerFalseExpectedValue = @"Start
+    // Comment: outer if
+    content outer if
+// end comment
+//// end quad comment
+End";
+            VariableCollection vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = false
+            };
+            IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, outerTrueInnerFalseExpectedValue, processor, 9999);
+
+            string outerTrueInnerTrueExpectedValue = @"Start
+    // Comment: outer if
+    content outer if
+        // Comment: inner if
+        content: inner if
+// end comment
+//// end quad comment
+End";
+            vc = new VariableCollection
+            {
+                ["OUTER_IF"] = true,
+                ["INNER_IF"] = true
+            };
+            processor = SetupCStyleWithCommentsProcessor(vc);
+            RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
+        }
+
+        #endregion C-style conditional with //// comment handling
+
+        #region C-style conditionals with comment handling - No tests dealing with //// in content
 
         [Fact]
         public void VerifyMixedConditionalsThreeLevelEmbedding()
