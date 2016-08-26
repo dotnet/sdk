@@ -7,8 +7,6 @@ using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.Mount;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;

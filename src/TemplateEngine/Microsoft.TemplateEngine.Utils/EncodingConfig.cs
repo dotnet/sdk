@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
     public class EncodingConfig : IEncodingConfig
     {

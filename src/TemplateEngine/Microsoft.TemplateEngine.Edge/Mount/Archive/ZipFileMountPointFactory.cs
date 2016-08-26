@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 {

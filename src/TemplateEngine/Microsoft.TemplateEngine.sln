@@ -23,6 +23,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Ed
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Orchestrator.VsTemplates", "src\Microsoft.TemplateEngine.Orchestrator.VsTemplates\Microsoft.TemplateEngine.Orchestrator.VsTemplates.xproj", "{8C7865CE-7038-4D34-B0A6-75B907848995}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Utils", "src\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.xproj", "{A86924AE-4B77-47A8-A690-EDA395F075A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{8C7865CE-7038-4D34-B0A6-75B907848995}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C7865CE-7038-4D34-B0A6-75B907848995}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C7865CE-7038-4D34-B0A6-75B907848995}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A86924AE-4B77-47A8-A690-EDA395F075A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A86924AE-4B77-47A8-A690-EDA395F075A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A86924AE-4B77-47A8-A690-EDA395F075A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A86924AE-4B77-47A8-A690-EDA395F075A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,5 +80,6 @@ Global
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{E22B59BD-A658-4E32-9407-C8D9570B9FDF} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{8C7865CE-7038-4D34-B0A6-75B907848995} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
+		{A86924AE-4B77-47A8-A690-EDA395F075A9} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests

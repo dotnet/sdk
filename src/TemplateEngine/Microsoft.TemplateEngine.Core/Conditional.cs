@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core
 {

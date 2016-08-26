@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
     public static class FileSystemInfoExtensions
     {

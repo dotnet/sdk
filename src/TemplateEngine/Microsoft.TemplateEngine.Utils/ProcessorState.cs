@@ -4,9 +4,9 @@ using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
-    internal class ProcessorState : IProcessorState
+    public class ProcessorState : IProcessorState
     {
         private readonly int _flushThreshold;
         private readonly Stream _source;
@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Core
                 IOperation op = _trie.GetOperation(CurrentBuffer, CurrentBufferLength, ref posedPosition, out token);
                 bool opEnabledFlag;
 
-                if ((op != null) 
+                if ((op != null)
                         && ((op.Id == null)
                             || (Config.Flags.TryGetValue(op.Id, out opEnabledFlag) && opEnabledFlag))
                     )

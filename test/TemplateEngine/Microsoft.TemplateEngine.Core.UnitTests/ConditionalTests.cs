@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -65,12 +66,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 // It lets BalanceNesting know it's been reset
                 string commentFixingResetId = "Reset pseudo comment fixer";
 
-                ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.EndIfTokens = new[] { "#endif", "<!--#endif" };
-                tokenVariants.ActionableIfTokens = new[] { "<!--#if" };
-                tokenVariants.ActionableElseTokens = new[] { "#else", "<!--#else" };
-                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" };
-                tokenVariants.ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId };
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    EndIfTokens = new[] {"#endif", "<!--#endif"},
+                    ActionableIfTokens = new[] {"<!--#if"},
+                    ActionableElseTokens = new[] {"#else", "<!--#else"},
+                    ActionableElseIfTokens = new[] {"#elseif", "<!--#elseif"},
+                    ActionableOperations = new[] {commentFixingOperationId, commentFixingResetId}
+                };
 
                 IOperationProvider[] operations =
                 {
@@ -97,12 +100,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 // Tt lets BalanceNesting know it's been reset
                 string commentFixingResetId = "Reset pseudo comment fixer";
 
-                ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.EndIfTokens = new[] { "#endif", "@*#endif" };
-                tokenVariants.ActionableIfTokens = new[] { "@*#if" };
-                tokenVariants.ActionableElseTokens = new[] { "#else", "@*#else" };
-                tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "@*#elseif" };
-                tokenVariants.ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId };
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    EndIfTokens = new[] {"#endif", "@*#endif"},
+                    ActionableIfTokens = new[] {"@*#if"},
+                    ActionableElseTokens = new[] {"#else", "@*#else"},
+                    ActionableElseIfTokens = new[] {"#elseif", "@*#elseif"},
+                    ActionableOperations = new[] {commentFixingOperationId, commentFixingResetId}
+                };
 
                 IOperationProvider[] operations =
                 {
@@ -125,18 +130,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             get
             {
                 // this is normally handled in the config setup
-                string replaceOperationId = "Replacement (//) ()";    
+                string replaceOperationId = "Replacement (//) ()";
                 string uncommentOperationId = "Uncomment (////) -> (//)";
 
-                ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens = new[] { "//#if", "//#check" };
-                tokenVariants.ElseTokens = new[] { "//#else", "//#otherwise" };
-                tokenVariants.ElseIfTokens = new[] { "//#elseif", "//#nextcheck" };
-                tokenVariants.EndIfTokens = new[] { "//#endif", "//#stop", "//#done", "//#nomore" };
-                tokenVariants.ActionableIfTokens = new[] { "////#if", "////#check", "//#Z_if" };
-                tokenVariants.ActionableElseTokens = new[] { "////#else", "////#otherwise", "//#Z_else" };
-                tokenVariants.ActionableElseIfTokens = new[] { "////#elseif", "////#nextcheck", "//#Z_elseif" };
-                tokenVariants.ActionableOperations = new[] { replaceOperationId, uncommentOperationId };
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    IfTokens = new[] {"//#if", "//#check"},
+                    ElseTokens = new[] {"//#else", "//#otherwise"},
+                    ElseIfTokens = new[] {"//#elseif", "//#nextcheck"},
+                    EndIfTokens = new[] {"//#endif", "//#stop", "//#done", "//#nomore"},
+                    ActionableIfTokens = new[] {"////#if", "////#check", "//#Z_if"},
+                    ActionableElseTokens = new[] {"////#else", "////#otherwise", "//#Z_else"},
+                    ActionableElseIfTokens = new[] {"////#elseif", "////#nextcheck", "//#Z_elseif"},
+                    ActionableOperations = new[] {replaceOperationId, uncommentOperationId}
+                };
 
                 IOperationProvider[] operations =
                 {
@@ -154,18 +161,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             get
             {
                 // this is normally handled in the config setup
-                string replaceOperationId = "Replacement: (//) ()";    
+                string replaceOperationId = "Replacement: (//) ()";
                 string uncommentOperationId = "Uncomment (////) -> (//)";
 
-                ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens = new[] { "//#if" };
-                tokenVariants.ElseTokens = new[] { "//#else" };
-                tokenVariants.ElseIfTokens = new[] { "//#elseif" };
-                tokenVariants.EndIfTokens = new[] { "//#endif" };
-                tokenVariants.ActionableIfTokens = new[] { "////#if" };
-                tokenVariants.ActionableElseIfTokens = new[] { "////#elseif" };
-                tokenVariants.ActionableElseTokens = new[] { "////#else" };
-                tokenVariants.ActionableOperations = new[] { replaceOperationId, uncommentOperationId };
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    IfTokens = new[] {"//#if"},
+                    ElseTokens = new[] {"//#else"},
+                    ElseIfTokens = new[] {"//#elseif"},
+                    EndIfTokens = new[] {"//#endif"},
+                    ActionableIfTokens = new[] {"////#if"},
+                    ActionableElseIfTokens = new[] {"////#elseif"},
+                    ActionableElseTokens = new[] {"////#else"},
+                    ActionableOperations = new[] {replaceOperationId, uncommentOperationId}
+                };
 
                 IOperationProvider[] operations =
                 {
@@ -182,11 +191,13 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             get
             {
-                ConditionalTokens tokenVariants = new ConditionalTokens();
-                tokenVariants.IfTokens = new[] { "#if" };
-                tokenVariants.ElseTokens = new[] { "#else" };
-                tokenVariants.ElseIfTokens = new[] { "#elseif" };
-                tokenVariants.EndIfTokens = new[] { "#endif" };
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    IfTokens = new[] {"#if"},
+                    ElseTokens = new[] {"#else"},
+                    ElseIfTokens = new[] {"#elseif"},
+                    EndIfTokens = new[] {"#endif"}
+                };
 
                 IOperationProvider[] operations =
                 {
@@ -202,7 +213,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         #region XmlBlockComments
 
         // The emitted value is not valid Xml in this test because the unbalanced comment in the first if
-        // doesn't cause the pseudo comment to become a real comment. 
+        // doesn't cause the pseudo comment to become a real comment.
         // The test is to demonstrate that the balance checking gets reset after leaving the #if-#endif block.
         // The fact that the comment in the second if gets its final pseudo comment fixed is demonstration of the reset.
         [Fact]
@@ -820,7 +831,7 @@ End";
             VariableCollection vc = new VariableCollection
             {
                 ["OUTER_IF_VALUE"] = true,
-                ["INNER_IF_VALUE"] = true,    
+                ["INNER_IF_VALUE"] = true,
                 ["INNER_ELSEIF_VALUE"] = true,    // irrelevant
                 ["OUTER_ELSEIF_VALUE"] = true,    // irrelevant
             };
@@ -907,7 +918,7 @@ Trailing stuff";
 
         /// <summary>
         /// This test fails
-        /// 
+        ///
         /// Test cases for conditionals in xml block comments.
         /// Comment stripping is needed for some of these.
         /// </summary>
@@ -1624,7 +1635,7 @@ Trailing stuff
     content: outer-if
 #elseif (OUTER_ELSEIF_CLAUSE)
     content: outer-elseif
-#else 
+#else
     content: outer-else
     @*#if (INNER_IF_CLAUSE) *@
         content: inner-if
@@ -1643,7 +1654,7 @@ Trailing stuff
     content: outer-if
 #elseif (OUTER_ELSEIF_CLAUSE)
     content: outer-elseif
-#else 
+#else
     content: outer-else
     @*#if (INNER_IF_CLAUSE)
         content: inner-if
@@ -1662,7 +1673,7 @@ Trailing stuff
     content: outer-if
 #elseif (OUTER_ELSEIF_CLAUSE)
     content: outer-elseif
-#else 
+#else
     content: outer-else
     @*#if (INNER_IF_CLAUSE)
         content: inner-if
@@ -2113,17 +2124,17 @@ End";
 //    //    //    content: level-3 if
 //    //    ////#elseif (LEVEL_3_ELSEIF)
 //    //    //    content: level-3 elseif
-//    //    ////#otherwise 
+//    //    ////#otherwise
 //    //    //    content: level-3 else
 //    //    ////#endif
 //    ////#nextcheck (LEVEL_2_ELSEIF)
 //    //    content: level-2 elseif
-//    ////#else 
+//    ////#else
 //    //    content: level-2 else
 //    ////#stop
 ////#nextcheck true
 //    content: level-1 elseif
-////#else 
+////#else
 //    content: level-1 else
 //#done
 // commented trailing content
@@ -2387,17 +2398,17 @@ moar trailing content";
 //    //    //    content: level-3 if
 //    //    ////#elseif (LEVEL_3_ELSEIF)
 //    //    //    content: level-3 elseif
-//    //    ////#else 
+//    //    ////#else
 //    //    //    content: level-3 else
 //    //    ////#endif
 //    ////#elseif (LEVEL_2_ELSEIF)
 //    //    content: level-2 elseif
-//    ////#else 
+//    ////#else
 //    //    content: level-2 else
 //    ////#endif
 ////#elseif true
 //    content: level-1 elseif
-////#else 
+////#else
 //    content: level-1 else
 //#endif
 // commented trailing content
@@ -2423,10 +2434,10 @@ moar trailing content";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        #endregion embedded conditionals 
+        #endregion embedded conditionals
 
         #region commenting / uncommenting parts of conditionals
-        
+
         /// <summary>
         /// Tests that the if block is uncommented in each of the scenarios
         /// because the if token is special and the clause is true in each case.

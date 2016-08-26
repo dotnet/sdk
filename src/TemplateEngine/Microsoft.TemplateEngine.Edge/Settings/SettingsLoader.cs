@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Edge.Template;
-using Newtonsoft.Json;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings

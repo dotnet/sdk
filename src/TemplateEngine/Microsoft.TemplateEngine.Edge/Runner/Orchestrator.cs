@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Runner;
-using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Runner
 {

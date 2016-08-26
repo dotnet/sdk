@@ -6,9 +6,10 @@ using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
+
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {

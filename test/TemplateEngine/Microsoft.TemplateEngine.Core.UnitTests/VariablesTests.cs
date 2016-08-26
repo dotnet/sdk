@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests

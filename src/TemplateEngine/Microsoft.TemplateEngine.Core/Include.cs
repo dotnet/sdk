@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core
 {
@@ -85,7 +86,7 @@ namespace Microsoft.TemplateEngine.Core
                 //Start off with a 64K buffer, we'll keep adding chunks to this
                 byte[] composite = new byte[pageSize];
                 int totalLength;
-                
+
                 using (Stream data = _source.SourceStreamOpener(sourceLocation))
                 {
                     int index = composite.Length - pageSize;

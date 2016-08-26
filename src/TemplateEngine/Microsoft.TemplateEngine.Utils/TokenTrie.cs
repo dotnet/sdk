@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
     public class TokenTrie : ITokenTrie
     {

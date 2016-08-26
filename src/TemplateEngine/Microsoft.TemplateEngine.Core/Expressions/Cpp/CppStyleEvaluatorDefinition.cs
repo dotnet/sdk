@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 {
