@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -62,7 +63,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 tokenVariants.ActionableIfTokens = new[] { "<!--#if" };
                 tokenVariants.ActionableElseTokens = new[] { "#else", "<!--#else" };
                 tokenVariants.ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" };
-                tokenVariants.ActionableOperations = ConditionalTokens.NoTokens;    // superfluous, but might get some value(s)
+                tokenVariants.ActionableOperations = No<string>.List.Value;
 
                 IOperationProvider[] operations =
                 {
@@ -100,7 +101,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             get
             {
                 // this is normally handled in the config setup
-                string replaceOperationId = "Replacement (//) ()";    
+                string replaceOperationId = "Replacement (//) ()";
                 string uncommentOperationId = "Uncomment (////) -> (//)";
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
@@ -129,7 +130,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             get
             {
                 // this is normally handled in the config setup
-                string replaceOperationId = "Replacement: (//) ()";    
+                string replaceOperationId = "Replacement: (//) ()";
                 string uncommentOperationId = "Uncomment (////) -> (//)";
 
                 ConditionalTokens tokenVariants = new ConditionalTokens();
@@ -695,7 +696,7 @@ End";
             VariableCollection vc = new VariableCollection
             {
                 ["OUTER_IF_VALUE"] = true,
-                ["INNER_IF_VALUE"] = true,    
+                ["INNER_IF_VALUE"] = true,
                 ["INNER_ELSEIF_VALUE"] = true,    // irrelevant
                 ["OUTER_ELSEIF_VALUE"] = true,    // irrelevant
             };
@@ -782,7 +783,7 @@ Trailing stuff";
 
         /// <summary>
         /// This test fails
-        /// 
+        ///
         /// Test cases for conditionals in xml block comments.
         /// Comment stripping is needed for some of these.
         /// </summary>
@@ -1499,7 +1500,7 @@ Trailing stuff
     content: outer-if
 #elseif (OUTER_ELSEIF_CLAUSE)
     content: outer-elseif
-#else 
+#else
     content: outer-else
     @*#if (INNER_IF_CLAUSE) *@
         content: inner-if
@@ -1518,7 +1519,7 @@ Trailing stuff
     content: outer-if
 #elseif (OUTER_ELSEIF_CLAUSE)
     content: outer-elseif
-#else 
+#else
     content: outer-else
     @*#if (INNER_IF_CLAUSE)
         content: inner-if
@@ -1537,7 +1538,7 @@ Trailing stuff
     content: outer-if
 #elseif (OUTER_ELSEIF_CLAUSE)
     content: outer-elseif
-#else 
+#else
     content: outer-else
     @*#if (INNER_IF_CLAUSE)
         content: inner-if
@@ -1731,17 +1732,17 @@ Trailing stuff";
 //    //    //    content: level-3 if
 //    //    ////#elseif (LEVEL_3_ELSEIF)
 //    //    //    content: level-3 elseif
-//    //    ////#otherwise 
+//    //    ////#otherwise
 //    //    //    content: level-3 else
 //    //    ////#endif
 //    ////#nextcheck (LEVEL_2_ELSEIF)
 //    //    content: level-2 elseif
-//    ////#else 
+//    ////#else
 //    //    content: level-2 else
 //    ////#stop
 ////#nextcheck true
 //    content: level-1 elseif
-////#else 
+////#else
 //    content: level-1 else
 //#done
 // commented trailing content
@@ -2005,17 +2006,17 @@ moar trailing content";
 //    //    //    content: level-3 if
 //    //    ////#elseif (LEVEL_3_ELSEIF)
 //    //    //    content: level-3 elseif
-//    //    ////#else 
+//    //    ////#else
 //    //    //    content: level-3 else
 //    //    ////#endif
 //    ////#elseif (LEVEL_2_ELSEIF)
 //    //    content: level-2 elseif
-//    ////#else 
+//    ////#else
 //    //    content: level-2 else
 //    ////#endif
 ////#elseif true
 //    content: level-1 elseif
-////#else 
+////#else
 //    content: level-1 else
 //#endif
 // commented trailing content
@@ -2041,10 +2042,10 @@ moar trailing content";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        #endregion embedded conditionals 
+        #endregion embedded conditionals
 
         #region commenting / uncommenting parts of conditionals
-        
+
         /// <summary>
         /// Tests that the if block is uncommented in each of the scenarios
         /// because the if token is special and the clause is true in each case.

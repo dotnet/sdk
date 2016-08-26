@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
     public class EncodingUtil
     {

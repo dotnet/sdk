@@ -1,19 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal static class No<T>
-    {
-        public static class List
-        {
-            // ReSharper disable once StaticMemberInGenericType
-            public static readonly IReadOnlyList<T> Value = new List<T>();
-        }
-    }
-
-
     internal static class JExtensions
     {
         public static string ToString(this JToken token, string key)

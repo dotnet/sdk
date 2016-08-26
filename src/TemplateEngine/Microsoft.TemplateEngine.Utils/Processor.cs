@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions.Engine;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
     public class Processor : IProcessor
     {

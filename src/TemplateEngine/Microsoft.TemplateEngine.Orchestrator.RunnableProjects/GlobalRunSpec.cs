@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -334,7 +335,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             switch (def["action"].ToString())
             {
                 case "new":
-                    int low = def.ToInt32("low", 0);
+                    int low = def.ToInt32("low");
                     int high = def.ToInt32("high", int.MaxValue);
                     Random rnd = new Random();
                     int val = rnd.Next(low, high);

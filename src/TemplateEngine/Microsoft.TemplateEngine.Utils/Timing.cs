@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
     public class Timing : IDisposable
     {

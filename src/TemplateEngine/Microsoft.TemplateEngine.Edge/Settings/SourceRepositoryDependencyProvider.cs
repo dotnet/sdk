@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             await EnsureResource();
 
-            FindPackageByIdDependencyInfo packageInfo = null;
+            FindPackageByIdDependencyInfo packageInfo;
             try
             {
                 if (Throttle != null)

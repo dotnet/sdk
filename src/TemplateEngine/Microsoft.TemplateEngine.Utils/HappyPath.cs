@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.TemplateEngine.Core
+namespace Microsoft.TemplateEngine.Utils
 {
     public static class HappyPath
     {

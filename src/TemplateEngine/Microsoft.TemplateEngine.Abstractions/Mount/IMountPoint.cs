@@ -1,5 +1,3 @@
-using System;
-
 namespace Microsoft.TemplateEngine.Abstractions.Mount
 {
     public interface IMountPoint

@@ -8,6 +8,7 @@
     "xunit": "2.1.0",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.TemplateEngine.Core": "1.0.0-*",
+    "Microsoft.TemplateEngine.Utils": "1.0.0-*",
     "Microsoft.NETCore.App": {
       "version": "1.0.0",
       "type": "platform"

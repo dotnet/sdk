@@ -32,7 +32,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             Guid parentMountPointId;
                             Guid mountPointFactoryId;
                             Guid mountPointId;
-                            string place;
 
                             JObject mp = (JObject) entry;
                             JToken parentMountPointIdToken;
@@ -59,7 +58,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                                 continue;
                             }
 
-                            place = placeToken.ToString();
+                            string place = placeToken.ToString();
                             MountPointInfo mountPoint = new MountPointInfo(parentMountPointId, mountPointFactoryId, mountPointId, place);
                             MountPoints.Add(mountPoint);
                         }

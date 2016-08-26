@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions.Runner;
-using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {

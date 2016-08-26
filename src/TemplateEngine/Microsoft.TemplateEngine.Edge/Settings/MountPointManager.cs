@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public bool TryDemandMountPoint(MountPointInfo info, out IMountPoint mountPoint)
         {
-            //using (Timing.Over("Get mount point - inner"))
+            using (Timing.Over("Get mount point - inner"))
             {
                 IMountPointFactory factory;
                 if (_componentManager.TryGetComponent(info.MountPointFactoryId, out factory))
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public bool TryDemandMountPoint(Guid mountPointId, out IMountPoint mountPoint)
         {
-            //using (Timing.Over("Get mount point"))
+            using (Timing.Over("Get mount point"))
             {
                 MountPointInfo info;
                 if (SettingsLoader.TryGetMountPoint(mountPointId, out info))
