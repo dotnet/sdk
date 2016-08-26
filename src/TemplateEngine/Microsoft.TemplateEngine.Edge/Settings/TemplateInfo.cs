@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
