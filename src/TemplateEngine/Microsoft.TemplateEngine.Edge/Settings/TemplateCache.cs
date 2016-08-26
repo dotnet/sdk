@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -34,5 +36,32 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public List<TemplateInfo> TemplateInfo { get; set; }
+
+        public static void Scan(string templateDir)
+        {
+            foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>())
+            {
+                IMountPoint mountPoint;
+                if (factory.TryMount(null, templateDir, out mountPoint))
+                {
+                    foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
+                    {
+                        foreach (ITemplate template in generator.GetTemplatesFromSource(mountPoint))
+                        {
+                            SettingsLoader.AddTemplate(template);
+                            SettingsLoader.AddMountPoint(mountPoint);
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void Scan(IReadOnlyList<string> templateRoots)
+        {
+            foreach (string templateDir in templateRoots)
+            {
+                Scan(templateDir);
+            }
+        }
     }
 }

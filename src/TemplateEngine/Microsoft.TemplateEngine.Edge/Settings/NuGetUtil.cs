@@ -227,24 +227,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            foreach (string templateDir in templateRoots)
-            {
-                foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>())
-                {
-                    IMountPoint mountPoint;
-                    if (factory.TryMount(null, templateDir, out mountPoint))
-                    {
-                        foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
-                        {
-                            foreach (ITemplate template in generator.GetTemplatesFromSource(mountPoint))
-                            {
-                                SettingsLoader.AddTemplate(template);
-                                SettingsLoader.AddMountPoint(mountPoint);
-                            }
-                        }
-                    }
-                }
-            }
+            TemplateCache.Scan(templateRoots);
         }
 
         private static void Init(ISettings settings)

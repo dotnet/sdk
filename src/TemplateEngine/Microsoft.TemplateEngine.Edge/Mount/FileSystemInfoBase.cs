@@ -1,3 +1,4 @@
+using System;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount
@@ -24,6 +25,16 @@ namespace Microsoft.TemplateEngine.Edge.Mount
         {
             get
             {
+                if (string.Equals(FullPath, "/", StringComparison.Ordinal))
+                {
+                    return null;
+                }
+
+                if (string.Equals(FullPath, $"/{Name}", StringComparison.Ordinal))
+                {
+                    return MountPoint.Root;
+                }
+
                 if (_parent == null)
                 {
                     if (FullPath == "/" || FullPath.Length < 2)
