@@ -229,33 +229,15 @@ namespace Microsoft.TemplateEngine.Edge
             private static string _userProfileDir;
             private static string _contentDir;
 
-            public static string UserProfileDir
-            {
-                get
-                {
-                    if (_userProfileDir == null)
-                    {
-                        string profileDir =
-                            Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                                ? "USERPROFILE"
-                                : "HOME");
-
-                        _userProfileDir = profileDir;
-                    }
-
-                    return _userProfileDir;
-                }
-            }
-
             public static string AliasesFile => GetOrComputePath(ref _aliasesFile, BaseDir, "aliases.json");
 
-            public static string BaseDir => GetOrComputePath(ref _baseDir, UserProfileDir, ".netnew");
+            public static string BaseDir => GetOrComputePath(ref _baseDir, HappyPath.UserProfileDir, ".netnew");
 
             public static string Content => GetOrComputePath(ref _contentDir, BaseDir, "content");
 
             public static string FirstRunCookie => GetOrComputePath(ref _firstRunCookie, BaseDir, ".firstrun");
 
-            public static string PackageCache => GetOrComputePath(ref _packageCache, UserProfileDir, ".nuget", "packages");
+            public static string PackageCache => GetOrComputePath(ref _packageCache, HappyPath.UserProfileDir, ".nuget", "packages");
 
             public static string ScratchDir => GetOrComputePath(ref _scratchDir, BaseDir, "scratch");
 

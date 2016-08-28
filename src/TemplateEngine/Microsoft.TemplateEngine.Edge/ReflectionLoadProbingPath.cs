@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if !NET451
 using System.Runtime.Loader;
+#endif
 
 namespace Microsoft.TemplateEngine.Edge
 {
@@ -22,7 +24,12 @@ namespace Microsoft.TemplateEngine.Edge
 
             if (!ReflectionLoadProbingPath.HasLoaded(asmName))
             {
-                AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(asmName));
+                AssemblyName name = new AssemblyName(asmName);
+#if !NET451
+                AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+#else
+                AppDomain.CurrentDomain.Load(name);
+#endif
             }
 
             return Type.GetType(typeName);
@@ -45,7 +52,11 @@ namespace Microsoft.TemplateEngine.Edge
         public static void Add(string basePath)
         {
             Instance.Add(new ReflectionLoadProbingPath(basePath));
+#if !NET451
             AssemblyLoadContext.Default.Resolving += Resolving;
+#else
+            AppDomain.CurrentDomain.AssemblyResolve += Resolving;
+#endif
         }
 
         public static bool HasLoaded(string assemblyName)
@@ -58,7 +69,11 @@ namespace Microsoft.TemplateEngine.Edge
             Instance.Clear();
         }
 
+#if !NET451
         private static Assembly SelectBestMatch(AssemblyLoadContext loadContext, AssemblyName match, IEnumerable<FileInfo> candidates)
+#else
+        private static Assembly SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
+#endif
         {
             return LoadedAssemblies.GetOrAdd(match.ToString(), n =>
             {
@@ -77,7 +92,11 @@ namespace Microsoft.TemplateEngine.Edge
                         continue;
                     }
 
+#if !NET451
                     AssemblyName candidateName = AssemblyLoadContext.GetAssemblyName(file.FullName);
+#else
+                    AssemblyName candidateName = AssemblyName.GetAssemblyName(file.FullName);
+#endif
 
                     //Only pursue things that may have the same identity
                     if (!string.Equals(candidateName.Name, match.Name, StringComparison.OrdinalIgnoreCase))
@@ -187,7 +206,11 @@ namespace Microsoft.TemplateEngine.Edge
                     try
                     {
                         string attempt = bestMatch.Pop();
+#if !NET451
                         Assembly result = loadContext.LoadFromAssemblyPath(attempt);
+#else
+                        Assembly result = Assembly.LoadFile(attempt);
+#endif
                         return result;
                     }
                     catch
@@ -199,27 +222,47 @@ namespace Microsoft.TemplateEngine.Edge
             });
         }
 
+#if !NET451
         private static Assembly Resolving(AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName)
+#else
+        private static Assembly Resolving(object sender, ResolveEventArgs resolveEventArgs)
+#endif
         {
+#if !NET451
+            string stringName = assemblyName.Name;
+#else
+            string stringName = resolveEventArgs.Name;
+            AssemblyName assemblyName = new AssemblyName(stringName);
+#endif
+
             foreach (ReflectionLoadProbingPath selector in Instance)
             {
-                DirectoryInfo info = new DirectoryInfo(Path.Combine(selector._path, assemblyName.Name));
+                DirectoryInfo info = new DirectoryInfo(Path.Combine(selector._path, stringName));
                 Assembly found = null;
 
                 if (info.Exists)
                 {
-                    IEnumerable<FileInfo> files = info.EnumerateFiles($"{assemblyName.Name}.dll", SearchOption.AllDirectories)
+                    IEnumerable<FileInfo> files = info.EnumerateFiles($"{stringName}.dll", SearchOption.AllDirectories)
                         .Where(x => x.FullName.IndexOf($"{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) > -1
                         && (x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netstandard1.", StringComparison.OrdinalIgnoreCase) > -1
                         || x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netcoreapp1.", StringComparison.OrdinalIgnoreCase) > -1))
                         .OrderByDescending(x => x.FullName);
+#if !NET451
                     found = SelectBestMatch(assemblyLoadContext, assemblyName, files);
+#else
+                    found = SelectBestMatch(sender, assemblyName, files);
+#endif
 
                     if (found != null)
                     {
                         foreach (AssemblyName reference in found.GetReferencedAssemblies())
                         {
+#if !NET451
                             Resolving(assemblyLoadContext, reference);
+#else
+                            ResolveEventArgs referenceArgs = new ResolveEventArgs(reference.FullName, found);
+                            Resolving(sender, referenceArgs);
+#endif
                         }
                     }
                 }
