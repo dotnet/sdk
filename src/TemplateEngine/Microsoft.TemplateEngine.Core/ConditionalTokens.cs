@@ -7,14 +7,14 @@ namespace Microsoft.TemplateEngine.Core
     {
         public ConditionalTokens()
         {
-            IfTokens = No<string>.List.Value;
-            ElseTokens = No<string>.List.Value;
-            ElseIfTokens = No<string>.List.Value;
-            EndIfTokens = No<string>.List.Value;
-            ActionableIfTokens = No<string>.List.Value;
-            ActionableElseTokens = No<string>.List.Value;
-            ActionableElseIfTokens = No<string>.List.Value;
-            ActionableOperations = No<string>.List.Value;
+            IfTokens = Empty<string>.List.Value;
+            ElseTokens = Empty<string>.List.Value;
+            ElseIfTokens = Empty<string>.List.Value;
+            EndIfTokens = Empty<string>.List.Value;
+            ActionableIfTokens = Empty<string>.List.Value;
+            ActionableElseTokens = Empty<string>.List.Value;
+            ActionableElseIfTokens = Empty<string>.List.Value;
+            ActionableOperations = Empty<string>.List.Value;
         }
 
         public IReadOnlyList<string> IfTokens { get; set; }
