@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿#if NET451
+using System;
+#endif
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if !NET451
 using System.Runtime.Loader;
+#endif
 
 namespace Microsoft.TemplateEngine.Edge
 {
@@ -10,7 +15,11 @@ namespace Microsoft.TemplateEngine.Edge
     {
         public static Assembly Load(string path)
         {
+#if !NET451
             return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+#else
+            return Assembly.LoadFile(path);
+#endif
         }
 
         public static IEnumerable<Assembly> LoadAllAssemblies(out IEnumerable<string> loadFailures, string componentsDir, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
@@ -26,7 +35,11 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<Assembly> LoadAllFromCodebase(out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
+#if !NET451
             return AssemblyLoadContext.Default.LoadAllFromCodebase(out loadFailures, pattern, searchOption);
+#else
+            return AppDomain.CurrentDomain.LoadAllFromCodebase(out loadFailures, pattern, searchOption);
+#endif
         }
 
         public static IEnumerable<Assembly> LoadAllFromUserDir(out IEnumerable<string> loadFailures, string componentsDir, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
@@ -36,7 +49,11 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<Assembly> LoadAllFromPath(out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
+#if !NET451
             return AssemblyLoadContext.Default.LoadAllFromPath(out loadFailures, path, pattern, searchOption);
+#else
+            return AppDomain.CurrentDomain.LoadAllFromPath(out loadFailures, path, pattern, searchOption);
+#endif
         }
     }
 }

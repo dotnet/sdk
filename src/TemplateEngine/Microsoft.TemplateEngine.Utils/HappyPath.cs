@@ -29,10 +29,14 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 if(_userProfileDir == null)
                 {
+#if !NET451
                     string profileDir =
                         Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                             ? "USERPROFILE"
                             : "HOME");
+#else
+                    string profileDir = "USERPROFILE";
+#endif
 
                     _userProfileDir = profileDir;
                 }

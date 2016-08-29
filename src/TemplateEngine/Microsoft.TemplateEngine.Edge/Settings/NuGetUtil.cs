@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if !NET451
 using System.Runtime.Loader;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -165,6 +167,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         fixNuspecIdCasing: true,
                         normalizeFileNames: true);
 
+                    if (match.Library.Version == null)
+                    {
+                        if (!quiet)
+                        {
+                            throw new Exception($"Package '{package.PackageId}' version {package.Version} could not be located.");
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
                     string source = Path.Combine(Paths.User.PackageCache, match.Library.Name, match.Library.Version.ToString());
 
                     if (!source.Exists() && match.Provider != null)
@@ -178,7 +192,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         target.CreateDirectory();
                         target = Path.Combine(target, match.Library.Version.ToString());
                         target.CreateDirectory();
-                        source.Copy(target);
+                        Paths.Copy(source, target);
                         target.Delete("*.nupkg", "*.nupkg.*");
 
                         string nuspec = target.EnumerateFiles("*.nuspec").FirstOrDefault();
@@ -217,7 +231,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         continue;
                     }
 
+#if !NET451
                     Assembly asm = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+#else
+                    Assembly asm = Assembly.LoadFile(path);
+#endif
                     foreach (Type type in asm.GetTypes())
                     {
                         SettingsLoader.Components.Register(type);
