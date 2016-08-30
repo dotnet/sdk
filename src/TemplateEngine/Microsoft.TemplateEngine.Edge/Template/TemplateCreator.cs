@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
@@ -7,8 +9,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
-using System.IO;
-using System.Diagnostics;
 using Microsoft.TemplateEngine.Edge.Runner;
 
 namespace Microsoft.TemplateEngine.Edge.Template
