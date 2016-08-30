@@ -1,4 +1,5 @@
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -16,6 +17,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Replaces { get; set; }
 
+        public string DataType { get; set; }
+
+        public IReadOnlyList<string> Choices { get; set; }
+
         public static ISymbolModel FromJObject(JObject jObject)
         {
             ParameterSymbol sym = new ParameterSymbol
@@ -25,8 +30,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Description = jObject.ToString(nameof(Description)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),
                 Type = jObject.ToString(nameof(Type)),
-                Replaces = jObject.ToString(nameof(Replaces))
+                Replaces = jObject.ToString(nameof(Replaces)),
+                DataType = jObject.ToString(nameof(DataType))
             };
+
+            if (sym.DataType == "choice")
+            {
+                List<string> choiceList = new List<string>();
+
+                JArray choices = (JArray)jObject["choices"];
+                foreach (JToken choice in choices)
+                {
+                    choiceList.Add(choice.ToString());
+                }
+
+                sym.Choices = choiceList.AsReadOnly();
+            }
 
             return sym;
         }

@@ -11,6 +11,7 @@ using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -208,12 +209,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
 
                     ITemplateParameter param;
-                    if (parameters.TryGetParameter(property.Value.ToString(), out param))
+                    if (parameters.TryGetParameterDefinition(property.Value.ToString(), out param))
                     {
                         Replacement r;
                         try
                         {
-                            string val = parameters.ParameterValues[param];
+                            string val = parameters.ResolvedValues[param];
                             r = new Replacement(property.Name, val, null);
                         }
                         catch (KeyNotFoundException ex)
@@ -347,7 +348,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     };
 
                     parameters.AddParameter(p);
-                    parameters.ParameterValues[p] = value;
+                    parameters.ResolvedValues[p] = value;
                     break;
             }
         }
@@ -367,7 +368,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (!vars.TryGetValue(sourceVar, out working))
                     {
                         ITemplateParameter param;
-                        if (!parameters.TryGetParameter(sourceVar, out param) || !parameters.ParameterValues.TryGetValue(param, out value))
+                        if (!parameters.TryGetParameterDefinition(sourceVar, out param) || !parameters.ResolvedValues.TryGetValue(param, out value))
                         {
                             value = string.Empty;
                         }
@@ -398,7 +399,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             };
 
             parameters.AddParameter(p);
-            parameters.ParameterValues[p] = value;
+            parameters.ResolvedValues[p] = value;
         }
 
         private static void HandleNowAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters)
@@ -414,7 +415,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             };
 
             parameters.AddParameter(p);
-            parameters.ParameterValues[p] = value;
+            parameters.ResolvedValues[p] = value;
         }
 
         private static void HandleConstantAction(string variableName, JObject def, RunnableProjectGenerator.ParameterSet parameters)
@@ -427,7 +428,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             };
 
             parameters.AddParameter(p);
-            parameters.ParameterValues[p] = value;
+            parameters.ResolvedValues[p] = value;
         }
 
         private void HandleEvaluateAction(string variableName, JObject variablesSection, JObject def, RunnableProjectGenerator.ParameterSet parameters)
@@ -454,7 +455,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             };
 
             parameters.AddParameter(p);
-            parameters.ParameterValues[p] = res.ToString();
+            parameters.ResolvedValues[p] = res.ToString();
         }
 
         private class ProcessorState : IProcessorState
@@ -537,7 +538,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         };
 
                         parameters.AddParameter(p);
-                        parameters.ParameterValues[p] = value;
+                        parameters.ResolvedValues[p] = value;
                     }
                     else
                     {
@@ -553,7 +554,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                             string rplc = char.IsUpper(guidFormats[i]) ? g.ToString(guidFormats[i].ToString()).ToUpperInvariant() : g.ToString(guidFormats[i].ToString()).ToLowerInvariant();
                             parameters.AddParameter(p);
-                            parameters.ParameterValues[p] = rplc;
+                            parameters.ResolvedValues[p] = rplc;
                         }
 
                         Parameter pd = new Parameter
@@ -563,7 +564,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         };
 
                         parameters.AddParameter(pd);
-                        parameters.ParameterValues[pd] = g.ToString("D");
+                        parameters.ResolvedValues[pd] = g.ToString("D");
                     }
 
                     break;
@@ -573,21 +574,128 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
         {
             VariableCollection vc = new VariableCollection();
-            foreach (ITemplateParameter parameter in parameters.Parameters)
+            foreach (ITemplateParameter parameter in parameters.ParameterDefinitions)
             {
                 Parameter param = (Parameter)parameter;
                 if (allParameters || param.IsVariable)
                 {
                     string value;
-                    if (parameters.ParameterValues.TryGetValue(param, out value))
+                    string key = string.Format(format ?? "{0}", param.Name);
+                    bool valueGetResult = parameters.ResolvedValues.TryGetValue(param, out value);
+
+                    if (value == null)
                     {
-                        string key = string.Format(format ?? "{0}", param.Name);
-                        vc[key] = InferTypeAndConvertLiteral(value);
+                        System.Diagnostics.Debug.WriteLine("Null value for param name = {0}", param.Name);
+                    }
+
+                    if (!string.IsNullOrEmpty(param.DataType))
+                    {
+                        vc[key] = DataTypeSpecifiedConvertLiteral(param, value);
+                    }
+                    else
+                    {
+                        if (valueGetResult)
+                        {
+                            vc[key] = InferTypeAndConvertLiteral(value);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("Get value failed on param name = {0}", param.Name);
+                        }
                     }
                 }
             }
 
             return vc;
+        }
+
+        /// For explicitly data-typed variables, attempt to convert the variable value to the specified type.
+        /// Data type names:
+        ///     - choice
+        ///     - bool
+        ///     - float
+        ///     - int
+        ///     - hex
+        ///     - text
+        /// The data type names are case insensitive.
+        /// 
+        /// Returns the converted value, or throws if a conversion isn't possible.
+        private static object DataTypeSpecifiedConvertLiteral(Parameter param, string literal)
+        {
+            if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                else if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                else
+                {
+                    // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
+                    // which takes care of making null bool -> true as appropriate.
+                    throw new TemplateParamException(param.Name, literal, param.DataType);
+                }
+            }
+            else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
+            {
+                if ((literal != null) && param.Choices.Contains(literal))
+                {
+                    return literal;
+                }
+                else
+                {
+                    string customBaseMessage = string.Format("Valid choices for this param are [{0}]", string.Join(",", param.Choices));
+                    throw new TemplateParamException(customBaseMessage, param.Name, literal, param.DataType);
+                }
+            }
+            else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
+            {
+                double convertedFloat;
+                if (double.TryParse(literal, out convertedFloat))
+                {
+                    return convertedFloat;
+                }
+                else
+                {
+                    throw new TemplateParamException(param.Name, literal, param.DataType);
+                }
+            }
+            else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase))
+            {
+                long convertedInt;
+                if (long.TryParse(literal, out convertedInt))
+                {
+                    return convertedInt;
+                }
+                else
+                {
+                    throw new TemplateParamException(param.Name, literal, param.DataType);
+                }
+            }
+            else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
+            {
+                long convertedHex;
+                if (long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex))
+                {
+                    return convertedHex;
+                }
+                else
+                {
+                    throw new TemplateParamException(param.Name, literal, param.DataType);
+                }
+            }
+            else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase))
+            {   // "text" is a valid data type, but doesn't need any special handling.
+                return literal;
+            }
+            else
+            {
+                string customMessage = string.Format("Param name = [{0}] had unknown data type = [{1}]", param.Name, param.DataType);
+                throw new TemplateParamException(customMessage);
+            }
         }
 
         private static object InferTypeAndConvertLiteral(string literal)

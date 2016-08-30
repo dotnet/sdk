@@ -1,5 +1,6 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -25,6 +26,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         [JsonProperty]
         public bool IsVariable { get; set; }
+
+        [JsonProperty]
+        public string DataType { get; set; }
+
+        [JsonProperty]
+        public IReadOnlyList<string> Choices { get; set; }
 
         string ITemplateParameter.Documentation => Description;
 

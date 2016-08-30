@@ -75,21 +75,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
             foreach (CustomParameter parameter in tmplt.CustomParameters)
             {
                 ITemplateParameter target;
-                if (p.TryGetParameter(parameter.Name, out target))
+                if (p.TryGetParameterDefinition(parameter.Name, out target))
                 {
-                    if (!p.ParameterValues.ContainsKey(target))
+                    if (!p.ResolvedValues.ContainsKey(target))
                     {
-                        p.ParameterValues[target] = parameter.DefaultValue;
+                        p.ResolvedValues[target] = parameter.DefaultValue;
                     }
                 }
             }
 
             ITemplateParameter projectNameParameter;
-            p.TryGetParameter("projectname", out projectNameParameter);
+            p.TryGetParameterDefinition("projectname", out projectNameParameter);
 
             Dictionary<string, string> fileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             List<string> copyOnly = new List<string>();
-            RecurseContent(templateContent, "", "", tmplt.DefaultName, parameters.ParameterValues[projectNameParameter], fileMap, copyOnly);
+            RecurseContent(templateContent, "", "", tmplt.DefaultName, parameters.ResolvedValues[projectNameParameter], fileMap, copyOnly);
 
             VsTemplateOrchestrator o = new VsTemplateOrchestrator(basicOrchestrator);
             o.Run(new VsTemplateGlobalRunSpec(parameters, fileMap, copyOnly), tmplt.SourceFile.Parent, Directory.GetCurrentDirectory());
@@ -168,12 +168,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
             p.AddParameter(fileInputName);
 
             ITemplateParameter projectName;
-            p.TryGetParameter("projectname", out projectName);
+            p.TryGetParameterDefinition("projectname", out projectName);
 
-            p.ParameterValues[safeProjectName] = p.ParameterValues[projectName];
-            p.ParameterValues[itemName] = p.ParameterValues[projectName];
-            p.ParameterValues[safeItemName] = p.ParameterValues[projectName];
-            p.ParameterValues[fileInputName] = p.ParameterValues[projectName];
+            p.ResolvedValues[safeProjectName] = p.ResolvedValues[projectName];
+            p.ResolvedValues[itemName] = p.ResolvedValues[projectName];
+            p.ResolvedValues[safeItemName] = p.ResolvedValues[projectName];
+            p.ResolvedValues[fileInputName] = p.ResolvedValues[projectName];
         }
 
         private class Parameter : ITemplateParameter
@@ -211,9 +211,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
                 AddParameter(new Parameter("rootnamespace", TemplateParameterPriority.Optional, "string", documentation: "The root namespace of the current project. This parameter applies only to item templates."));
             }
 
-            public IEnumerable<ITemplateParameter> Parameters => _parameters.Values;
+            public IEnumerable<ITemplateParameter> ParameterDefinitions => _parameters.Values;
 
-            public IDictionary<ITemplateParameter, string> ParameterValues { get; } = new Dictionary<ITemplateParameter, string>();
+            public IDictionary<ITemplateParameter, string> ResolvedValues { get; } = new Dictionary<ITemplateParameter, string>();
 
             public IEnumerable<string> RequiredBrokerCapabilities => Enumerable.Empty<string>();
 
@@ -222,7 +222,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
                 _parameters[param.Name] = param;
             }
 
-            public bool TryGetParameter(string name, out ITemplateParameter parameter)
+            public bool TryGetParameterDefinition(string name, out ITemplateParameter parameter)
             {
                 if (_parameters.TryGetValue(name, out parameter))
                 {

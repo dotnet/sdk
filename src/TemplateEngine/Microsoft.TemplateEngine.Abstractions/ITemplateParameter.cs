@@ -13,5 +13,7 @@
         bool IsName { get; }
 
         string DefaultValue { get; }
+
+        string DataType { get; }
     }
 }

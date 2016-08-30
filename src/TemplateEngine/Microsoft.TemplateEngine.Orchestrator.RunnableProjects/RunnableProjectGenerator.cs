@@ -127,9 +127,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            public IEnumerable<ITemplateParameter> Parameters => _parameters.Values;
+            public IEnumerable<ITemplateParameter> ParameterDefinitions => _parameters.Values;
 
-            public IDictionary<ITemplateParameter, string> ParameterValues { get; } = new Dictionary<ITemplateParameter, string>();
+            public IDictionary<ITemplateParameter, string> ResolvedValues { get; } = new Dictionary<ITemplateParameter, string>();
 
             public IEnumerable<string> RequiredBrokerCapabilities => Enumerable.Empty<string>();
 
@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 _parameters[param.Name] = param;
             }
 
-            public bool TryGetParameter(string name, out ITemplateParameter parameter)
+            public bool TryGetParameterDefinition(string name, out ITemplateParameter parameter)
             {
                 if (_parameters.TryGetValue(name, out parameter))
                 {

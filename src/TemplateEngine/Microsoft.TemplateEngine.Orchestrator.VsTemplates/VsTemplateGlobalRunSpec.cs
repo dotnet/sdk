@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
 
             VariableCollection vc = new VariableCollection(sys);
 
-            foreach (ITemplateParameter param in parameters.Parameters)
+            foreach (ITemplateParameter param in parameters.ParameterDefinitions)
             {
                 if (param.Priority != TemplateParameterPriority.Required)
                 {
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.VsTemplates
                 }
             }
 
-            foreach (KeyValuePair<ITemplateParameter, string> param in parameters.ParameterValues)
+            foreach (KeyValuePair<ITemplateParameter, string> param in parameters.ResolvedValues)
             {
                 vc[$"${param.Key.Name}$"] = param.Value;
             }
