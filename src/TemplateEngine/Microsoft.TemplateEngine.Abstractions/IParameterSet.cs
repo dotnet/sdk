@@ -4,12 +4,12 @@ namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IParameterSet
     {
-        IEnumerable<ITemplateParameter> Parameters { get; }
+        IEnumerable<ITemplateParameter> ParameterDefinitions { get; }
 
         IEnumerable<string> RequiredBrokerCapabilities { get; }
 
-        IDictionary<ITemplateParameter, string> ParameterValues { get; }
+        IDictionary<ITemplateParameter, string> ResolvedValues { get; }
 
-        bool TryGetParameter(string name, out ITemplateParameter parameter);
+        bool TryGetParameterDefinition(string name, out ITemplateParameter parameter);
     }
 }

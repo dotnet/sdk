@@ -226,7 +226,6 @@ namespace Microsoft.TemplateEngine.Edge
             private static string _scratchDir;
             private static string _settingsFile;
             private static string _templateCache;
-            private static string _userProfileDir;
             private static string _contentDir;
 
             public static string AliasesFile => GetOrComputePath(ref _aliasesFile, BaseDir, "aliases.json");

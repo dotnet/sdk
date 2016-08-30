@@ -74,7 +74,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                     IsVariable = true,
                                     Name = symbol.Key,
                                     Requirement = param.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
-                                    Type = param.Type
+                                    Type = param.Type,
+                                    DataType = param.DataType,
+                                    Choices = param.Choices
                                 };
                             }
                         }
@@ -505,7 +507,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // Console.WriteLine(_simpleConfigModel.NameParameter);
 
                     string val;
-                    if (parameters.ParameterValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
+                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
                     {
                         foreach(IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {
@@ -537,7 +539,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // Console.WriteLine(_simpleConfigModel.NameParameter);
 
                     string val;
-                    if (parameters.ParameterValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
+                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
                     {
                         foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {
