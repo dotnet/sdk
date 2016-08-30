@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {

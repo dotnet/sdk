@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -11,7 +12,6 @@ using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
-using System.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
