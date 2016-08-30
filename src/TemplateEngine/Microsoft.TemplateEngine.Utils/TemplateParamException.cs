@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 // This shouldn't ever happen, it's defensive against having 
                 // the exception processing itself cause an exception to be thrown.
-                fullMessage.AppendFormat("Input param name was null");
+                fullMessage.AppendLine("Input param name was null");
                 return fullMessage.ToString();
             }
 

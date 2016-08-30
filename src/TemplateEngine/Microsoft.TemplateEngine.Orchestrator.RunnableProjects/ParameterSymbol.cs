@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     choiceList.Add(choice.ToString());
                 }
 
-                sym.Choices = choiceList.AsReadOnly();
+                sym.Choices = choiceList;
             }
 
             return sym;
