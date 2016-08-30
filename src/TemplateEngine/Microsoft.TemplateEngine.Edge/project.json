@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
 
   "dependencies": {
@@ -7,7 +7,10 @@
     "Newtonsoft.Json": "9.0.1",
     "NuGet.Packaging": "3.5.0-beta2-1484",
     "NuGet.Configuration": "3.5.0-beta2-1484",
-    "NuGet.DependencyResolver.Core": "3.5.0-beta2-1484"
+    "NuGet.DependencyResolver.Core": "3.5.0-beta2-1484",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0",
+    "System.Threading.Tasks": "4.0.11",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121"
   },
 
   "frameworks": {
