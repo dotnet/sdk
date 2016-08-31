@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IRunnableProjectConfig Config { get; private set; }
 
-        public IFile ConfigFile { get; private set; }
+        public IFile ConfigFile { get; }
 
         public string DefaultName { get; }
 

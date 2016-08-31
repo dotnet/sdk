@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.Engine;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
