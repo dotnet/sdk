@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Abstractions.Engine;
-using Microsoft.TemplateEngine.Abstractions.Runner;
 using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {

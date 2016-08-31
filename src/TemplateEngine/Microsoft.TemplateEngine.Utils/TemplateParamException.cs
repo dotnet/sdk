@@ -9,11 +9,16 @@ namespace Microsoft.TemplateEngine.Utils
         public string InputValue { get; private set; }
         public string DataType { get; private set; }
 
-        public TemplateParamException() : base() { }
+        public TemplateParamException()
+        {
+        }
 
-        public TemplateParamException(string message) : base(message) { }
+        public TemplateParamException(string message)
+            : base(message)
+        {
+        }
 
-        public TemplateParamException(string message, Exception inner) 
+        public TemplateParamException(string message, Exception inner)
             : base(message, inner)
         {
         }
@@ -49,7 +54,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             if (paramName == null)
             {
-                // This shouldn't ever happen, it's defensive against having 
+                // This shouldn't ever happen, it's defensive against having
                 // the exception processing itself cause an exception to be thrown.
                 fullMessage.AppendLine("Input param name was null");
                 return fullMessage.ToString();

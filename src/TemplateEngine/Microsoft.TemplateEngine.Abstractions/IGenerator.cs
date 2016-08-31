@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Abstractions.Runner;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IGenerator : IIdentifiedComponent
     {
-        Task Create(IOrchestrator basicOrchestrator, ITemplate template, IParameterSet parameters);
+        Task Create(ITemplateEngineHost host, ITemplate template, IParameterSet parameters);
 
         IParameterSet GetParametersForTemplate(ITemplate template);
 

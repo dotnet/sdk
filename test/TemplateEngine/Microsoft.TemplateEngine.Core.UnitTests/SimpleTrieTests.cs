@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Core.Util;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests

@@ -1,6 +1,10 @@
+#if !NET451
 using System;
+#endif
 using System.IO;
+#if !NET451
 using System.Runtime.InteropServices;
+#endif
 
 namespace Microsoft.TemplateEngine.Utils
 {

@@ -23,6 +23,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Ed
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Utils", "src\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.xproj", "{A86924AE-4B77-47A8-A690-EDA395F075A9}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Core.Contracts", "src\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.xproj", "{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{A86924AE-4B77-47A8-A690-EDA395F075A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A86924AE-4B77-47A8-A690-EDA395F075A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A86924AE-4B77-47A8-A690-EDA395F075A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,5 +80,6 @@ Global
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{E22B59BD-A658-4E32-9407-C8D9570B9FDF} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{A86924AE-4B77-47A8-A690-EDA395F075A9} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
+		{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 	EndGlobalSection
 EndGlobal
