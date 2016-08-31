@@ -4,12 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 using Microsoft.TemplateEngine.Edge.Runner;
+
+// TODO: remove all uses of this. It can more easily go away when we have the reporting interface.
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
@@ -52,6 +53,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return matchingTemplatesCollection;
         }
 
+
         public static bool TryGetTemplate(string templateName, out ITemplateInfo tmplt)
         {
             try
@@ -75,25 +77,19 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> Instantiate(CommandLineApplication app, string templateName, CommandOption name, CommandOption dir, CommandOption help, CommandOption alias, IReadOnlyDictionary<string, string> inputParameters, bool quiet, bool skipUpdateCheck)
+        public static async Task<int> Instantiate(string templateName, string name, bool createDir, bool showHelp, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool quiet, bool skipUpdateCheck)
         {
-            if (string.IsNullOrWhiteSpace(templateName) && help.HasValue())
-            {
-                app.ShowHelp();
-                return 0;
-            }
-
-            ITemplateInfo tmpltInfo;
+            ITemplateInfo templateInfo;
 
             using (Timing.Over("Get single"))
             {
-                if (! TryGetTemplate(templateName, out tmpltInfo))
+                if (! TryGetTemplate(templateName, out templateInfo))
                 {
                     return -1;
                 }
             }
 
-            ITemplate template = SettingsLoader.LoadTemplate(tmpltInfo);
+            ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
 
             if (!skipUpdateCheck)
             {
@@ -105,21 +101,21 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 //UpdateCheck();    // this'll need params
             }
 
-            string realName = name.Value() ?? template.DefaultName ?? new DirectoryInfo(Directory.GetCurrentDirectory()).Name;
+            string realName = name ?? template.DefaultName ?? new DirectoryInfo(Directory.GetCurrentDirectory()).Name;
             IParameterSet templateParams = SetupDefaultParamValuesFromTemplate(template, realName);
 
-            if (alias.HasValue())
+            if (aliasName != null)
             {
                 //TODO: Add parameters to aliases (from _parameters_ collection)
-                AliasRegistry.SetTemplateAlias(alias.Value(), template);
+                AliasRegistry.SetTemplateAlias(aliasName, template);
                 Reporter.Output.WriteLine("Alias created.");
                 return 0;
             }
 
             OverrideTemplateParameters(templateParams, inputParameters);
-            bool missingProps = CheckForMissingRequiredParameters(help, templateParams);
+            bool missingProps = CheckForMissingRequiredParameters(showHelp, templateParams);
 
-            if (help.HasValue() || missingProps)
+            if (showHelp || missingProps)
             {
                 DisplayParameterProblems(template);
                 return missingProps ? -1 : 0;
@@ -138,7 +134,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
             finally
             {
-                if (dir.HasValue())
+                if (createDir)
                 {
                     Directory.SetCurrentDirectory(Directory.CreateDirectory(realName).FullName);
                 }
@@ -153,9 +149,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // 
         // Reads the parameters from the template and setup their values in the return IParameterSet.
         //
-        public static IParameterSet SetupDefaultParamValuesFromTemplate(ITemplate tmplt, string realName)
+        public static IParameterSet SetupDefaultParamValuesFromTemplate(ITemplate template, string realName)
         {
-            IParameterSet templateParams = tmplt.Generator.GetParametersForTemplate(tmplt);
+            IParameterSet templateParams = template.Generator.GetParametersForTemplate(template);
 
             foreach (ITemplateParameter param in templateParams.ParameterDefinitions)
             {
@@ -205,13 +201,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
         }
 
-        public static bool CheckForMissingRequiredParameters(CommandOption help, IParameterSet templateParams)
+        public static bool CheckForMissingRequiredParameters(bool showHelp, IParameterSet templateParams)
         {
             bool missingProps = false;
 
             foreach (ITemplateParameter parameter in templateParams.ParameterDefinitions)
             {
-                if (!help.HasValue() && parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
+                if (!showHelp && parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
                 {
                     Reporter.Error.WriteLine($"Missing required parameter {parameter.Name}".Bold().Red());
                     missingProps = true;
