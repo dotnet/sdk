@@ -5,8 +5,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.TemplateEngine.Abstractions.Engine;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Util;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 {

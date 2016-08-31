@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.TemplateEngine.Abstractions.Runner;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Util;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
