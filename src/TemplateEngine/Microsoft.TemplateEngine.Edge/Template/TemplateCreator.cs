@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
@@ -73,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> Instantiate(ITemplateEngineHost host, string templateName, string name, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public static async Task<int> Instantiate(ITemplateEngineHost host, string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
             ITemplateInfo templateInfo;
 
@@ -94,7 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 //UpdateCheck();    // this'll need params
             }
 
-            string realName = name ?? template.DefaultName ?? new DirectoryInfo(Directory.GetCurrentDirectory()).Name;
+            string realName = name ?? template.DefaultName ?? fallbackName;
             IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(host, template, realName);
 
             if (aliasName != null)
@@ -123,13 +122,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
             finally
             {
-                if (createDir)
-                {
-                    Directory.SetCurrentDirectory(Directory.CreateDirectory(realName).FullName);
-                }
-
-                string currentDir = Directory.GetCurrentDirectory();
-                Directory.SetCurrentDirectory(currentDir);
             }
 
             return 0;
