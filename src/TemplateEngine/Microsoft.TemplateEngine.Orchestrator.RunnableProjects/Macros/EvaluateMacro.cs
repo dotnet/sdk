@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -13,13 +14,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
         {
-            ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
-            switch (def.ToString("evaluator") ?? "C++")
-            {
-                case "C++":
-                    evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
-                    break;
-            }
+            string evaluatorName = def.ToString("evaluator");
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorName);
 
             byte[] data = Encoding.UTF8.GetBytes(def.ToString("action"));
             int len = data.Length;
