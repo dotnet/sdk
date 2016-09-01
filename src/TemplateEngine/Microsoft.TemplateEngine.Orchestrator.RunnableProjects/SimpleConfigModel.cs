@@ -506,13 +506,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     Dictionary<string, string> renames = new Dictionary<string, string>();
                     // Console.WriteLine(_simpleConfigModel.NameParameter);
 
-                    string val;
-                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
+                    object resolvedValue;
+                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out resolvedValue))
                     {
                         foreach(IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
-                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
+                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, (string)resolvedValue);
                             renames[tmpltRel] = outRel;
                             //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
                         }
@@ -538,13 +538,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     Dictionary<string, string> renames = new Dictionary<string, string>();
                     // Console.WriteLine(_simpleConfigModel.NameParameter);
 
-                    string val;
-                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out val))
+                    object resolvedValue;
+                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out resolvedValue))
                     {
                         foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                         {
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
-                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, val);
+                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, (string)resolvedValue);
                             renames[tmpltRel] = outRel;
                             //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
                         }

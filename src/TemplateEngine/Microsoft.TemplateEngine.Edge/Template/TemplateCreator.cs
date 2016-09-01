@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return 0;
             }
 
-            ResolveUserParameters(templateParams, inputParameters);
+            ResolveUserParameters(template, templateParams, inputParameters);
             bool missingParams = CheckForMissingRequiredParameters(host, templateParams);
 
             if (missingParams)
@@ -144,11 +144,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (host.TryGetHostParamDefault(param.Name, out hostParamValue) && hostParamValue != null)
                 {
-                    templateParams.ResolvedValues[param] = hostParamValue;
+                    templateParams.ResolvedValues[param] = template.Generator.ConvertVariableValueToType(param, hostParamValue);
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
                 {
-                    templateParams.ResolvedValues[param] = param.DefaultValue;
+                    templateParams.ResolvedValues[param] = template.Generator.ConvertVariableValueToType(param, param.DefaultValue);
                 }
             }
 
@@ -159,7 +159,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // The template params for which there are same-named input parameters have their values set to the corresponding input paramers value.
         // input parameters that do not have corresponding template params are ignored.
         //
-        public static void ResolveUserParameters(IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters)
+        public static void ResolveUserParameters(ITemplate template, IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters)
         {
             foreach (KeyValuePair<string, string> inputParam in inputParameters)
             {
@@ -173,7 +173,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     {
                         if (paramFromTemplate.DataType == "bool")
                         {
-                            templateParams.ResolvedValues[paramFromTemplate] = "true";
+                            // could probably directly assign bool true here, but best to have evrything go through the same process
+                            // ... in case something changes downstream.
+                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertVariableValueToType(paramFromTemplate, "true");
                         }
                         else
                         {
@@ -182,7 +184,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        templateParams.ResolvedValues[paramFromTemplate] = inputParam.Value;
+                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertVariableValueToType(paramFromTemplate, inputParam.Value);
                     }
                 }
             }

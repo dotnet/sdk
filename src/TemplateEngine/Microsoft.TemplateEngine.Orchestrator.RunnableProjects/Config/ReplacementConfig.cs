@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     Replacement r;
                     try
                     {
-                        string val = parameters.ResolvedValues[param];
+                        string val = (string)(parameters.ResolvedValues[param]);
                         r = new Replacement(property.Name, val, null);
                     }
                     catch (KeyNotFoundException ex)

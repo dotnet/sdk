@@ -23,9 +23,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     if (!vars.TryGetValue(sourceVar, out working))
                     {
                         ITemplateParameter param;
-                        if (!parameters.TryGetParameterDefinition(sourceVar, out param) || !parameters.ResolvedValues.TryGetValue(param, out value))
+                        object resolvedValue;
+                        if (!parameters.TryGetParameterDefinition(sourceVar, out param) || !parameters.ResolvedValues.TryGetValue(param, out resolvedValue))
                         {
                             value = string.Empty;
+                        }
+                        else
+                        {
+                            value = (string)resolvedValue;
                         }
                     }
                     else
