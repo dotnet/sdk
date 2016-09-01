@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -24,17 +25,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             IReadOnlyList<string> actionableElseIfToken = rawConfiguration.ArrayAsStrings("actionableElseif");
             IReadOnlyList<string> actionsToken = rawConfiguration.ArrayAsStrings("actions");
             IReadOnlyList<string> endIfToken = rawConfiguration.ArrayAsStrings("endif");
-            string evaluatorName = rawConfiguration.ToString("evaluator");
+            string evaluatorName = rawConfiguration.ToString("evaluator") ?? string.Empty;
             string id = rawConfiguration.ToString("id");
             bool trim = rawConfiguration.ToBool("trim");
             bool wholeLine = rawConfiguration.ToBool("wholeLine");
-            ConditionEvaluator evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
+            ConditionEvaluator evaluator;
 
             switch (evaluatorName)
             {
                 case "C++":
+                case "":
                     evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
                     break;
+                default:
+                    throw new Exception($"Unrecognized evaluator {evaluatorName}");
             }
 
             ConditionalTokens tokenVariants = new ConditionalTokens
