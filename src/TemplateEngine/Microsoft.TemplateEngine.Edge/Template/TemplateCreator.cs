@@ -144,11 +144,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (host.TryGetHostParamDefault(param.Name, out hostParamValue) && hostParamValue != null)
                 {
-                    templateParams.ResolvedValues[param] = template.Generator.ConvertVariableValueToType(param, hostParamValue);
+                    templateParams.ResolvedValues[param] = template.Generator.ConvertParameterValueToType(param, hostParamValue);
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
                 {
-                    templateParams.ResolvedValues[param] = template.Generator.ConvertVariableValueToType(param, param.DefaultValue);
+                    templateParams.ResolvedValues[param] = template.Generator.ConvertParameterValueToType(param, param.DefaultValue);
                 }
             }
 
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         {
                             // could probably directly assign bool true here, but best to have evrything go through the same process
                             // ... in case something changes downstream.
-                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertVariableValueToType(paramFromTemplate, "true");
+                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, "true");
                         }
                         else
                         {
@@ -184,7 +184,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertVariableValueToType(paramFromTemplate, inputParam.Value);
+                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, inputParam.Value);
                     }
                 }
             }

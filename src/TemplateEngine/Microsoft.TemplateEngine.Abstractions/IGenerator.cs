@@ -16,6 +16,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         bool TryGetTemplateFromSource(IMountPoint target, string name, out ITemplate template);
 
-        object ConvertVariableValueToType(ITemplateParameter parameter, string untypedValue);
+        object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue);
     }
 }

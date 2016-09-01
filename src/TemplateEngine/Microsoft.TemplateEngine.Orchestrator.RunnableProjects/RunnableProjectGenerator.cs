@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +10,6 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Globalization;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -120,7 +120,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // If the param has a datatype specified, use that. Otherwise attempt to infer the type.
         // Throws a TemplateParamException if the conversion fails for any reason.
         //
-        public object ConvertVariableValueToType(ITemplateParameter parameter, string untypedValue)
+        public object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue)
         {
             if (untypedValue == null)
             {
