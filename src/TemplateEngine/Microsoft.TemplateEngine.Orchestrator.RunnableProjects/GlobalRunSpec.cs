@@ -195,6 +195,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return vc;
         }
 
+        private static VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
+        {
+            VariableCollection vc = new VariableCollection();
+            foreach (ITemplateParameter parameter in parameters.ParameterDefinitions)
+            {
+                Parameter param = (Parameter)parameter;
+                if (allParameters || param.IsVariable)
+                {
+                    object value;
+                    string key = string.Format(format ?? "{0}", param.Name);
+
+                    if (!parameters.ResolvedValues.TryGetValue(param, out value))
+                    {
+                        throw new TemplateParamException("Parameter value was not specified", param.Name, null, param.DataType);
+                    }
+                    else if (value == null)
+                    {
+                        throw new TemplateParamException("Parameter value is null", param.Name, null, param.DataType);
+                    }
+                    else
+                    {
+                        vc[key] = value;
+                    }
+                }
+            }
+
+            return vc;
+        }
+
         internal class ProcessorState : IProcessorState
         {
             public ProcessorState(IVariableCollection vars, byte[] buffer, Encoding encoding)
@@ -256,35 +285,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 throw new NotImplementedException();
             }
-        }
-
-        private static VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
-        {
-            VariableCollection vc = new VariableCollection();
-            foreach (ITemplateParameter parameter in parameters.ParameterDefinitions)
-            {
-                Parameter param = (Parameter)parameter;
-                if (allParameters || param.IsVariable)
-                {
-                    object value;
-                    string key = string.Format(format ?? "{0}", param.Name);
-
-                    if (!parameters.ResolvedValues.TryGetValue(param, out value))
-                    {
-                        throw new TemplateParamException("Parameter value was not specified", param.Name, null, param.DataType);
-                    }
-                    else if (value == null)
-                    {
-                        throw new TemplateParamException("Parameter value is null", param.Name, null, param.DataType);
-                    }
-                    else
-                    {
-                        vc[key] = value;
-                    }
-                }
-            }
-
-            return vc;
         }
     }
 }
