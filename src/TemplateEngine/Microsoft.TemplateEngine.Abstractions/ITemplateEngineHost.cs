@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition);
 
-        // return of true means a new value was provided ???
+        // return of true means a new value was provided
         bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue);
 
         void OnSymbolUsed(string symbol, object value);

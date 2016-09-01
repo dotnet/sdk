@@ -694,7 +694,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return literal;
             }
             else
-            {   // if the DataType is invalid, no user input will fix it - the template in malformed.
+            {   
                 string customMessage = string.Format("Param name = [{0}] had unknown data type = [{1}]", param.Name, param.DataType);
                 throw new TemplateParamException(customMessage, param.Name, literal, param.DataType);
             }

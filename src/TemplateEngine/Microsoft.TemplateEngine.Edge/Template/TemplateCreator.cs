@@ -110,7 +110,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             if (missingParams)
             {
-                //DisplayParameterProblems(host, template);
                 return missingParams ? -1 : 0;
             }
 
