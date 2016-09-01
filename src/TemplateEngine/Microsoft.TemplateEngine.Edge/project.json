@@ -10,7 +10,8 @@
     "NuGet.DependencyResolver.Core": "3.5.0-beta2-1484",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0",
     "System.Threading.Tasks": "4.0.11",
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121"
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
+    "Microsoft.TemplateEngine.Core": "1.0.0-*"
   },
 
   "frameworks": {

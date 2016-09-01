@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
-using Microsoft.TemplateEngine.Edge.Runner;
-
-// TODO: remove all uses of this. It can more easily go away when we have the reporting interface.
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
@@ -77,7 +73,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> Instantiate(string templateName, string name, bool createDir, bool showHelp, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool quiet, bool skipUpdateCheck)
+        public static async Task<int> Instantiate(ITemplateEngineHost host, string templateName, string name, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
             ITemplateInfo templateInfo;
 
@@ -93,44 +89,38 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             if (!skipUpdateCheck)
             {
-                if (!quiet)
-                {
-                    Reporter.Output.WriteLine("Checking for updates...");
-                }
+                host.LogMessage("Checking for updates...");
 
                 //UpdateCheck();    // this'll need params
             }
 
             string realName = name ?? template.DefaultName ?? new DirectoryInfo(Directory.GetCurrentDirectory()).Name;
-            IParameterSet templateParams = SetupDefaultParamValuesFromTemplate(template, realName);
+            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(host, template, realName);
 
             if (aliasName != null)
             {
                 //TODO: Add parameters to aliases (from _parameters_ collection)
                 AliasRegistry.SetTemplateAlias(aliasName, template);
-                Reporter.Output.WriteLine("Alias created.");
+                host.LogMessage("Alias created.");
                 return 0;
             }
 
-            OverrideTemplateParameters(templateParams, inputParameters);
-            bool missingProps = CheckForMissingRequiredParameters(showHelp, templateParams);
+            ResolveUserParameters(templateParams, inputParameters);
+            bool missingParams = CheckForMissingRequiredParameters(host, templateParams);
 
-            if (showHelp || missingProps)
+            if (missingParams)
             {
-                DisplayParameterProblems(template);
-                return missingProps ? -1 : 0;
+                //DisplayParameterProblems(host, template);
+                return missingParams ? -1 : 0;
             }
 
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                await template.Generator.Create(new Orchestrator(), template, templateParams);
+                // todo: pass an implementation of ITemplateEngineHost 
+                await template.Generator.Create(host, template, templateParams);
                 sw.Stop();
-
-                if (!quiet)
-                {
-                    Reporter.Output.WriteLine($"Content generated in {sw.Elapsed.TotalMilliseconds} ms");
-                }
+                host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
             finally
             {
@@ -147,17 +137,23 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
         // 
-        // Reads the parameters from the template and setup their values in the return IParameterSet.
+        // Reads the parameters from the template and the host and setup their values in the return IParameterSet.
+        // Host param values override template defaults.
         //
-        public static IParameterSet SetupDefaultParamValuesFromTemplate(ITemplate template, string realName)
+        public static IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplateEngineHost host, ITemplate template, string realName)
         {
             IParameterSet templateParams = template.Generator.GetParametersForTemplate(template);
+            string hostParamValue;
 
             foreach (ITemplateParameter param in templateParams.ParameterDefinitions)
             {
                 if (param.IsName)
                 {
                     templateParams.ResolvedValues[param] = realName;
+                }
+                else if (host.TryGetHostParamDefault(param.Name, out hostParamValue) && hostParamValue != null)
+                {
+                    templateParams.ResolvedValues[param] = hostParamValue;
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
                 {
@@ -172,7 +168,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // The template params for which there are same-named input parameters have their values set to the corresponding input paramers value.
         // input parameters that do not have corresponding template params are ignored.
         //
-        public static void OverrideTemplateParameters(IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters)
+        public static void ResolveUserParameters(IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters)
         {
             foreach (KeyValuePair<string, string> inputParam in inputParameters)
             {
@@ -201,57 +197,38 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
         }
 
-        public static bool CheckForMissingRequiredParameters(bool showHelp, IParameterSet templateParams)
+        //
+        // Checks that all required parameters are provided. If a missing one is found, a value may be provided via host.OnParameterError
+        // but it's up to the caller / UI to decide how to act.
+        // Returns true if there are any missing params, false otherwise.
+        //
+        public static bool CheckForMissingRequiredParameters(ITemplateEngineHost host, IParameterSet templateParams)
         {
-            bool missingProps = false;
+            bool missingParams = false;
 
             foreach (ITemplateParameter parameter in templateParams.ParameterDefinitions)
             {
-                if (!showHelp && parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
+                if (parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
                 {
-                    Reporter.Error.WriteLine($"Missing required parameter {parameter.Name}".Bold().Red());
-                    missingProps = true;
+                    string newParamValue;
+
+                    while (host.OnParameterError(parameter, null, "Missing required parameter", out newParamValue)
+                        && string.IsNullOrEmpty(newParamValue))
+                    {
+                    }
+
+                    if (!string.IsNullOrEmpty(newParamValue))
+                    {
+                        templateParams.ResolvedValues.Add(parameter, newParamValue);
+                    }
+                    else
+                    {
+                        missingParams = true;
+                    }
                 }
             }
 
-            return missingProps;
-        }
-
-        public static void DisplayParameterProblems(ITemplate template)
-        {
-            string val;
-            if (template.TryGetProperty("Description", out val))
-            {
-                Reporter.Output.WriteLine($"{val}");
-            }
-
-            if (template.TryGetProperty("Author", out val))
-            {
-                Reporter.Output.WriteLine($"Author: {val}");
-            }
-
-            if (template.TryGetProperty("DiskPath", out val))
-            {
-                Reporter.Output.WriteLine($"Disk Path: {val}");
-            }
-
-            Reporter.Output.WriteLine("Parameters:");
-            foreach (ITemplateParameter parameter in template.Generator.GetParametersForTemplate(template).ParameterDefinitions.OrderBy(x => x.Priority).ThenBy(x => x.Name))
-            {
-                Reporter.Output.WriteLine(
-                    $@"    {parameter.Name} ({parameter.Priority})
-        Type: {parameter.Type}");
-
-                if (!string.IsNullOrEmpty(parameter.Documentation))
-                {
-                    Reporter.Output.WriteLine($"        Documentation: {parameter.Documentation}");
-                }
-
-                if (!string.IsNullOrEmpty(parameter.DefaultValue))
-                {
-                    Reporter.Output.WriteLine($"        Default: {parameter.DefaultValue}");
-                }
-            }
+            return missingParams;
         }
 
         //
