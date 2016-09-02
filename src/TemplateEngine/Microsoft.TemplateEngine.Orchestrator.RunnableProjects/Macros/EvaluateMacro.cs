@@ -2,7 +2,6 @@ using System;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
 
@@ -10,6 +9,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class EvaluateMacro : IMacro
     {
+        public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
+
         public string Type => "evaluate";
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)

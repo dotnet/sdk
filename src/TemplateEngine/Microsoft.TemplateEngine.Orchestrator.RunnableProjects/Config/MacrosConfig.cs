@@ -11,41 +11,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class MacrosConfig : IOperationConfig
     {
-        private static readonly IReadOnlyDictionary<string, IMacro> Macros;
-
-        static MacrosConfig()
-        {
-            Dictionary<string, IMacro> macros = new Dictionary<string, IMacro>();
-
-            IMacro constant = new ConstantMacro();
-            macros[constant.Type] = constant;
-
-            IMacro random = new RandomMacro();
-            macros[random.Type] = random;
-
-            IMacro now = new NowMacro();
-            macros[now.Type] = now;
-
-            IMacro evaluate = new EvaluateMacro();
-            macros[evaluate.Type] = evaluate;
-
-            IMacro guid = new GuidMacro();
-            macros[guid.Type] = guid;
-
-            IMacro regex = new RegexMacro();
-            macros[regex.Type] = regex;
-
-            Macros = macros;
-        }
-
-        public int Order => -10000;
-
-        public string Key => "macros";
+        private static IReadOnlyDictionary<string, IMacro> _macros;
 
         public Guid Id => new Guid("B03E4760-455F-48B1-9FF2-79ADB1E91519");
 
-        public IEnumerable<IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        public string Key => "macros";
+
+        public int Order => -10000;
+
+        public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
+            EnsureMacros(componentManager);
+
             ParameterSetter setter = (p, value) =>
             {
                 ((RunnableProjectGenerator.ParameterSet) parameters).AddParameter(p);
@@ -59,13 +36,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 string macroType = def["type"].ToString();
 
                 IMacro macroObject;
-                if (Macros.TryGetValue(macroType, out macroObject))
+                if (_macros.TryGetValue(macroType, out macroObject))
                 {
                     macroObject.Evaluate(variableName, variables, def, parameters, setter);
                 }
             }
 
             return Empty<IOperationProvider>.List.Value;
+        }
+
+        private static void EnsureMacros(IComponentManager componentManager)
+        {
+            if (_macros == null)
+            {
+                Dictionary<string, IMacro> macros = new Dictionary<string, IMacro>();
+
+                foreach (IMacro macro in componentManager.OfType<IMacro>())
+                {
+                    macros[macro.Type] = macro;
+                }
+
+                _macros = macros;
+            }
         }
     }
 }

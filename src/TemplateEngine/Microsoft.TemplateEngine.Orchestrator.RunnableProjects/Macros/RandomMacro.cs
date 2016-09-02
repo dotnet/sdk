@@ -7,6 +7,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class RandomMacro : IMacro
     {
+        public Guid Id => new Guid("011E8DC1-8544-4360-9B40-65FD916049B7");
+
         public string Type => "random";
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)

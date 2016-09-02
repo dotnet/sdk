@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    public interface IMacro
+    public interface IMacro : IIdentifiedComponent
     {
         string Type { get; }
 
