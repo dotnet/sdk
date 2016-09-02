@@ -2,9 +2,15 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
-    "Microsoft.TemplateEngine.Core.Contracts": "1.0.0-*",
-    "Microsoft.TemplateEngine.Utils": "1.0.0-*",
+    "Microsoft.TemplateEngine.Abstractions": {
+      "target": "project"
+    },
+    "Microsoft.TemplateEngine.Core.Contracts": {
+      "target": "project"
+    },
+    "Microsoft.TemplateEngine.Utils": {
+      "target": "project"
+    },
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0"
   },
 
