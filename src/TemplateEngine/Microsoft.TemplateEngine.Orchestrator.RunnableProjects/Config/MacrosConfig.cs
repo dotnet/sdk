@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -8,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    internal class MacrosConfig : IOperationConfig
+    public class MacrosConfig : IOperationConfig
     {
         private static readonly IReadOnlyDictionary<string, IMacro> Macros;
 
@@ -40,6 +41,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         public int Order => -10000;
 
         public string Key => "macros";
+
+        public Guid Id => new Guid("B03E4760-455F-48B1-9FF2-79ADB1E91519");
 
         public IEnumerable<IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {

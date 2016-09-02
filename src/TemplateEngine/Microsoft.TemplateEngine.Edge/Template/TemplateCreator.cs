@@ -116,7 +116,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 // todo: pass an implementation of ITemplateEngineHost 
-                await template.Generator.Create(host, template, templateParams);
+                IComponentManager componentManager = Settings.SettingsLoader.Components;
+                await template.Generator.Create(host, template, templateParams, componentManager);
                 sw.Stop();
                 host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
@@ -173,7 +174,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     {
                         if (paramFromTemplate.DataType == "bool")
                         {
-                            // could probably directly assign bool true here, but best to have evrything go through the same process
+                            // could probably directly assign bool true here, but best to have everything go through the same process
                             // ... in case something changes downstream.
                             templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, "true");
                         }

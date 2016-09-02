@@ -17,19 +17,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GlobalRunSpec : IGlobalRunSpec
     {
-        private static readonly IReadOnlyList<IOperationConfig> OperationConfigReaders;
+        private static IReadOnlyList<IOperationConfig> OperationConfigReaders;
 
-        static GlobalRunSpec()
+        private static void SetupOperations(IComponentManager componentManager)
         {
-            List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>
-            {
-                new ConditionalConfig(),
-                new FlagsConfig(),
-                new IncludeConfig(),
-                new MacrosConfig(),
-                new RegionConfig(),
-                new ReplacementConfig()
-            };
+            List<IOperationConfig> operationConfigReaders =
+                componentManager.OfType<IOperationConfig>().ToList();
 
             operationConfigReaders.Sort((x, y) => x.Order.CompareTo(y.Order));
             OperationConfigReaders = operationConfigReaders;
@@ -54,8 +47,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special)
+        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special, IComponentManager componentManager)
         {
+            SetupOperations(componentManager);
+
             int expect = source.Include?.Count ?? 0;
             List<IPathMatcher> includes = new List<IPathMatcher>(expect);
             if (source.Include != null && expect > 0)

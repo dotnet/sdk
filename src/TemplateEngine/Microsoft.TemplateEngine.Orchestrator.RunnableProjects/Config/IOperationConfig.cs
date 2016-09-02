@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public interface IOperationConfig
+    public interface IOperationConfig : IIdentifiedComponent
     {
         int Order { get; }
 
