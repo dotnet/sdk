@@ -7,6 +7,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class GuidMacro : IMacro
     {
+        public Guid Id => new Guid("10919008-4E13-4FA8-825C-3B4DA855578E");
+
         public string Type => "guid";
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)

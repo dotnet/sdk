@@ -7,6 +7,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class NowMacro : IMacro
     {
+        public Guid Id => new Guid("F2B423D7-3C23-4489-816A-41D8D2A98596");
+
         public string Type => "now";
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)

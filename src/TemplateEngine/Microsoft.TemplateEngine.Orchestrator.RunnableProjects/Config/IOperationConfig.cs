@@ -12,6 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         string Key { get; }
 
-        IEnumerable<IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters);
+        IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters);
     }
 }

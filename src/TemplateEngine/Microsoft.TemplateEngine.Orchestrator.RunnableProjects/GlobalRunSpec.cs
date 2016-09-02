@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
@@ -17,15 +16,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GlobalRunSpec : IGlobalRunSpec
     {
-        private static IReadOnlyList<IOperationConfig> OperationConfigReaders;
+        private static IReadOnlyList<IOperationConfig> _operationConfigReaders;
 
         private static void SetupOperations(IComponentManager componentManager)
         {
-            List<IOperationConfig> operationConfigReaders =
-                componentManager.OfType<IOperationConfig>().ToList();
-
-            operationConfigReaders.Sort((x, y) => x.Order.CompareTo(y.Order));
-            OperationConfigReaders = operationConfigReaders;
+            if (_operationConfigReaders == null)
+            {
+                List<IOperationConfig> operationConfigReaders = componentManager.OfType<IOperationConfig>().ToList();
+                operationConfigReaders.Sort((x, y) => x.Order.CompareTo(y.Order));
+                _operationConfigReaders = operationConfigReaders;
+            }
         }
 
         public IReadOnlyList<IPathMatcher> Exclude { get; }
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             IVariableCollection variables;
-            Operations = ProcessOperations(parameters, templateRoot, operations, out variables);
+            Operations = ProcessOperations(componentManager, parameters, templateRoot, operations, out variables);
             RootVariableCollection = variables;
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
 
@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = ProcessOperations(parameters, templateRoot, specialEntry.Value, out specialVariables);
+                        specialOps = ProcessOperations(componentManager, parameters, templateRoot, specialEntry.Value, out specialVariables);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
@@ -111,18 +111,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        private static IReadOnlyList<IOperationProvider> ProcessOperations(IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operations, out IVariableCollection variables)
+        private static IReadOnlyList<IOperationProvider> ProcessOperations(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operations, out IVariableCollection variables)
         {
             List<IOperationProvider> result = new List<IOperationProvider>();
             JObject variablesSection = operations["variables"];
 
-            foreach (IOperationConfig configReader in OperationConfigReaders)
+            foreach (IOperationConfig configReader in _operationConfigReaders)
             {
                 JObject data;
                 if (operations.TryGetValue(configReader.Key, out data))
                 {
                     IVariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
-                    result.AddRange(configReader.Process(data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet) parameters));
+                    result.AddRange(configReader.Process(componentManager, data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet) parameters));
                 }
             }
 
