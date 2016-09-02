@@ -115,7 +115,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                // todo: pass an implementation of ITemplateEngineHost 
                 IComponentManager componentManager = Settings.SettingsLoader.Components;
                 await template.Generator.Create(host, template, templateParams, componentManager);
                 sw.Stop();

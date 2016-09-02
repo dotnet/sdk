@@ -42,6 +42,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Rename { get; }
 
+        public IPostAction PostActions { get; }
+
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
@@ -87,7 +89,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             IVariableCollection variables;
-            Operations = ProcessOperations(componentManager, parameters, templateRoot, operations, out variables);
+            Operations = SetupOperations(componentManager, parameters, templateRoot, operations, out variables);
             RootVariableCollection = variables;
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
 
@@ -100,7 +102,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = ProcessOperations(componentManager, parameters, templateRoot, specialEntry.Value, out specialVariables);
+                        specialOps = SetupOperations(componentManager, parameters, templateRoot, specialEntry.Value, out specialVariables);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
@@ -111,7 +113,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        private static IReadOnlyList<IOperationProvider> ProcessOperations(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operations, out IVariableCollection variables)
+        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operations, out IVariableCollection variables)
         {
             List<IOperationProvider> result = new List<IOperationProvider>();
             JObject variablesSection = operations["variables"];
@@ -121,16 +123,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 JObject data;
                 if (operations.TryGetValue(configReader.Key, out data))
                 {
-                    IVariableCollection vars = HandleVariables(parameters, variablesSection, null, true);
+                    IVariableCollection vars = SetupVariables(parameters, variablesSection, null, true);
                     result.AddRange(configReader.Process(componentManager, data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet) parameters));
                 }
             }
 
-            variables = HandleVariables(parameters, variablesSection, result);
+            variables = SetupVariables(parameters, variablesSection, result);
             return result;
         }
 
-        private static IVariableCollection HandleVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
+        private static IVariableCollection SetupVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
         {
             IVariableCollection vc = VariableCollection.Root();
             JToken expandToken;

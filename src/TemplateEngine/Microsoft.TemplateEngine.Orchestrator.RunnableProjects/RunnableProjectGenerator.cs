@@ -19,7 +19,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid Id => GeneratorId;
 
-        //TODO: Pass host around where applicable so operations and whatnot can interact with the host environment
         public Task Create(ITemplateEngineHost host, ITemplate template, IParameterSet parameters, IComponentManager componentManager)
         {
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
@@ -47,7 +46,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 o.Run(runSpec, tmplt.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }
 
+            TEMP_PLACEHOLDER_ProcessPostOperations(host, tmplt.Config.PostActions);
+
             return Task.FromResult(true);
+        }
+
+        private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyDictionary<string, IPostAction> postActions)
+        {
+            foreach (KeyValuePair<string, IPostAction> postActionInfo in postActions)
+            {
+                host.LogMessage(string.Format("Placeholder for post action processing of action: {0}", postActionInfo.Key));
+                foreach (IPostActionOperation operation in postActionInfo.Value.Operations)
+                {
+                    host.LogMessage(string.Format("\tStandard Operation:{0}", operation.CommandText));
+                }
+
+                foreach (IPostActionOperation altOperation in postActionInfo.Value.AlternateOperations)
+                {
+                    host.LogMessage(string.Format("\tAlternate Operation:{0}", altOperation.CommandText));
+                }
+            }
         }
 
         public IParameterSet GetParametersForTemplate(ITemplate template)

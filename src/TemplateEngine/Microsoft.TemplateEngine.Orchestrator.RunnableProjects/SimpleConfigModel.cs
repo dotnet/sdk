@@ -25,6 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private Dictionary<string, Dictionary<string, JObject>> _special;
         private Parameter _nameParameter;
         private string _safeNameName;
+        private IReadOnlyDictionary<string, IPostAction> _postActions;
 
         public IFile SourceFile { get; set; }
 
@@ -110,6 +111,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyList<ExtendedFileSource> Sources { get; set; }
 
         public IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
+
+        public IReadOnlyDictionary<string, IPostActionModel> PostActionModel { get; set; }
+
+        public IReadOnlyDictionary<string, IPostAction> PostActions
+        {
+            get
+            {
+                if (_postActions == null)
+                {
+                    Dictionary<string, IPostAction> postActions = new Dictionary<string, IPostAction>();
+
+                    foreach (KeyValuePair<string, IPostActionModel> actionModel in PostActionModel)
+                    {
+                        IPostAction action = PostAction.FromModel(actionModel.Key, actionModel.Value);
+                        postActions.Add(actionModel.Key, action);
+                    }
+
+                    _postActions = postActions;
+                }
+
+                return _postActions;
+            }
+        }
 
         public IReadOnlyDictionary<string, string> Tags { get; set; }
 
@@ -442,6 +466,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyDictionary<string, Parameter> Parameters => ((IRunnableProjectConfig)_simpleConfigModel).Parameters;
 
+            public IReadOnlyDictionary<string, IPostAction> PostActions => ((IRunnableProjectConfig)_simpleConfigModel).PostActions;
+
+
             public string ShortName => _simpleConfigModel.ShortName;
 
             public IFile SourceFile
@@ -567,21 +594,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public static SimpleConfigModel FromJObject(JObject source)
         {
-            SimpleConfigModel tmp = new SimpleConfigModel();
-            tmp.Author = source.ToString(nameof(tmp.Author));
-            tmp.Classifications = source.ArrayAsStrings(nameof(tmp.Classifications));
-            tmp.DefaultName = source.ToString(nameof(DefaultName));
-            tmp.GroupIdentity = source.ToString(nameof(GroupIdentity));
-            tmp.Guids = source.ArrayAsGuids(nameof(tmp.Guids));
-            tmp.Identity = source.ToString(nameof(tmp.Identity));
-            tmp.Name = source.ToString(nameof(tmp.Name));
-            tmp.ShortName = source.ToString(nameof(tmp.ShortName));
-            tmp.SourceName = source.ToString(nameof(tmp.SourceName));
+            SimpleConfigModel config = new SimpleConfigModel();
+            config.Author = source.ToString(nameof(config.Author));
+            config.Classifications = source.ArrayAsStrings(nameof(config.Classifications));
+            config.DefaultName = source.ToString(nameof(DefaultName));
+            config.GroupIdentity = source.ToString(nameof(GroupIdentity));
+            config.Guids = source.ArrayAsGuids(nameof(config.Guids));
+            config.Identity = source.ToString(nameof(config.Identity));
+            config.Name = source.ToString(nameof(config.Name));
+            config.ShortName = source.ToString(nameof(config.ShortName));
+            config.SourceName = source.ToString(nameof(config.SourceName));
 
             List<ExtendedFileSource> sources = new List<ExtendedFileSource>();
-            tmp.Sources = sources;
+            config.Sources = sources;
 
-            foreach (JObject item in source.Items<JObject>(nameof(tmp.Sources)))
+            foreach (JObject item in source.Items<JObject>(nameof(config.Sources)))
             {
                 ExtendedFileSource src = new ExtendedFileSource();
                 sources.Add(src);
@@ -606,8 +633,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
-            tmp.Symbols = symbols;
-            foreach (JProperty prop in source.PropertiesOf(nameof(tmp.Symbols)))
+            config.Symbols = symbols;
+            foreach (JProperty prop in source.PropertiesOf(nameof(config.Symbols)))
             {
                 JObject obj = prop.Value as JObject;
 
@@ -624,9 +651,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            tmp.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(tmp.Tags));
+            config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
 
-            return tmp;
+            Dictionary<string, IPostActionModel> postActionModel = new Dictionary<string, IPostActionModel>(StringComparer.Ordinal);
+            config.PostActionModel = postActionModel;
+            foreach (JProperty prop in source.PropertiesOf(nameof(config.PostActions)))
+            {
+                JObject obj = prop.Value as JObject;
+
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                IPostActionModel model = RunnableProjects.PostActionModel.FromJObject(obj);
+
+                if (model != null)
+                {
+                    postActionModel[prop.Name] = model;
+                }
+            }
+
+            return config;
         }
     }
 }

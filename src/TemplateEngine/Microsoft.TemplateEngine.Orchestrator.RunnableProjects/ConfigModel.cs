@@ -24,11 +24,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Dictionary<string, Parameter> Parameters { get; set; }
 
+        public Dictionary<string, IPostAction> PostActions { get; set; }
+
         public Dictionary<string, JObject> Config { get; set; }
 
         public Dictionary<string, Dictionary<string, JObject>> Special { get; set; }
 
         IReadOnlyDictionary<string, Parameter> IRunnableProjectConfig.Parameters => Parameters;
+
+        IReadOnlyDictionary<string, IPostAction> IRunnableProjectConfig.PostActions => PostActions;
 
         IReadOnlyDictionary<string, Dictionary<string, JObject>> IRunnableProjectConfig.Special => Special;
 
@@ -72,39 +76,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public static ConfigModel FromJObject(JObject source)
         {
-            ConfigModel temp = new ConfigModel();
-            temp.Author = source.ToString(nameof(Author));
+            ConfigModel config = new ConfigModel();
+            config.Author = source.ToString(nameof(Author));
 
             List<string> classifications = new List<string>();
-            temp.Classifications = classifications;
+            config.Classifications = classifications;
             foreach (JToken item in source.Get<JArray>(nameof(Classifications)))
             {
                 classifications.Add(item.ToString());
             }
 
-            temp.Config = new Dictionary<string, JObject>();
+            config.Config = new Dictionary<string, JObject>();
             foreach (JProperty prop in source.PropertiesOf(nameof(Config)))
             {
-                temp.Config[prop.Name] = (JObject) prop.Value;
+                config.Config[prop.Name] = (JObject) prop.Value;
             }
 
-            temp.DefaultName = source.ToString(nameof(DefaultName));
-            temp.GroupIdentity = source.ToString(nameof(GroupIdentity));
-            temp.Identity = source.ToString(nameof(Identity));
-            temp.Macros = new Dictionary<string, string>();
+            config.DefaultName = source.ToString(nameof(DefaultName));
+            config.GroupIdentity = source.ToString(nameof(GroupIdentity));
+            config.Identity = source.ToString(nameof(Identity));
+            config.Macros = new Dictionary<string, string>();
 
             foreach (JProperty prop in source.PropertiesOf(nameof(Macros)))
             {
-                temp.Macros[prop.Name] = prop.Value.ToString();
+                config.Macros[prop.Name] = prop.Value.ToString();
             }
 
-            temp.Name = source.ToString(nameof(Name));
-            temp.ShortName = source.ToString(nameof(ShortName));
-            temp.Special = new Dictionary<string, Dictionary<string, JObject>>();
+            config.Name = source.ToString(nameof(Name));
+            config.ShortName = source.ToString(nameof(ShortName));
+            config.Special = new Dictionary<string, Dictionary<string, JObject>>();
 
             foreach (JProperty prop in source.PropertiesOf(nameof(Special)))
             {
-                Dictionary<string, JObject> current = temp.Special[prop.Name] = new Dictionary<string, JObject>();
+                Dictionary<string, JObject> current = config.Special[prop.Name] = new Dictionary<string, JObject>();
 
                 foreach (JProperty child in ((JObject) prop.Value).Properties())
                 {
@@ -112,7 +116,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            temp.Sources = new List<FileSource>();
+            config.Sources = new List<FileSource>();
 
             foreach (JToken item in source.Get<JArray>(nameof(Sources)))
             {
@@ -123,10 +127,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 src.Exclude = item.Get<JArray>(nameof(src.Exclude)).ArrayAsStrings();
                 src.CopyOnly = item.Get<JArray>(nameof(src.CopyOnly)).ArrayAsStrings();
                 src.Rename = item.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(src.Rename));
-                temp.Sources.Add(src);
+                config.Sources.Add(src);
             }
 
-            temp.Parameters = new Dictionary<string, Parameter>();
+            config.Parameters = new Dictionary<string, Parameter>();
 
             foreach (JToken item in source.Get<JArray>(nameof(Parameters)))
             {
@@ -138,17 +142,58 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 p.Name = item.ToString(nameof(p.Name));
                 p.Requirement = item.ToEnum<TemplateParameterPriority>(nameof(p.Requirement));
                 p.Type = item.ToString(nameof(p.Type));
-                temp.Parameters[p.Name] = p;
+                config.Parameters[p.Name] = p;
             }
 
             Dictionary<string, string> tags = new Dictionary<string, string>();
-            temp.Tags = tags;
+            config.Tags = tags;
             foreach (JProperty item in source.PropertiesOf(nameof(Tags)))
             {
                 tags[item.Name] = item.Value.ToString();
             }
 
-            return temp;
+            config.PostActions = new Dictionary<string, IPostAction>(StringComparer.Ordinal);
+            foreach (JProperty actionConfig in source.PropertiesOf("PostActions)"))
+            {
+                JObject obj = actionConfig.Value as JObject;
+
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                List<IPostActionOperation> operationList = new List<IPostActionOperation>();
+                foreach (JToken token in (JArray)actionConfig["operations"])
+                {
+                    PostActionOperation operation = new PostActionOperation()
+                    {
+                        CommandText = token.ToString()
+                    };
+                    operationList.Add(operation);
+                }
+
+                List<IPostActionOperation> altOperationList = new List<IPostActionOperation>();
+                foreach (JToken token in (JArray)actionConfig["alternateOperations"])
+                {
+                    PostActionOperation operation = new PostActionOperation()
+                    {
+                        CommandText = token.ToString()
+                    };
+                    altOperationList.Add(operation);
+                }
+
+                PostAction action = new PostAction()
+                {
+                    Name = actionConfig.ToString(nameof(action.Name)),
+                    Order = actionConfig.ToInt32(nameof(action.Order)),
+                    Operations = operationList,
+                    AlternateOperations = altOperationList
+                };
+
+                config.PostActions[actionConfig.Name] = action;
+            }
+
+            return config;
         }
     }
 }
