@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    internal class ConditionalConfig : IOperationConfig
+    public class ConditionalConfig : IOperationConfig
     {
         public int Order => -7000;
 
         public string Key => "conditionals";
+
+        public Guid Id => new Guid("3E8BCBF0-D631-45BA-A12D-FBF1DE03AA38");
 
         public IEnumerable<IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {

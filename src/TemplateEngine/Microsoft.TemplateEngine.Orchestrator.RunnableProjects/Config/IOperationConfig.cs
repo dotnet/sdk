@@ -6,12 +6,12 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public interface IOperationConfig
+    public interface IOperationConfig : IIdentifiedComponent
     {
         int Order { get; }
 
         string Key { get; }
 
-        IEnumerable<IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters);
+        IEnumerable <IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters);
     }
 }

@@ -20,13 +20,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public Guid Id => GeneratorId;
 
         //TODO: Pass host around where applicable so operations and whatnot can interact with the host environment
-        public Task Create(ITemplateEngineHost host, ITemplate template, IParameterSet parameters)
+        public Task Create(ITemplateEngineHost host, ITemplate template, IParameterSet parameters, IComponentManager componentManager)
         {
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
-            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special);
+            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special, componentManager);
             IOperationProvider[] providers = configRunSpec.Operations.ToArray();
 
             foreach (KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (FileSource source in m.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special);
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special, componentManager);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 o.Run(runSpec, tmplt.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }

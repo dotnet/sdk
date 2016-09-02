@@ -14,7 +14,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly List<string> _loadLocations = new List<string>();
         private readonly Dictionary<Guid, string> _componentIdToAssemblyQualifiedTypeName = new Dictionary<Guid, string>();
         private readonly Dictionary<Type, List<Guid>> _componentIdsByType;
-        private readonly HashSet<Type> _acceptedTypes;
         private readonly SettingsStore _settings;
 
         private interface ICache
@@ -31,7 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             public void AddPart(IIdentifiedComponent component)
             {
-                Parts[component.Id] = (T) component;
+                Parts[component.Id] = (T)component;
             }
         }
 
@@ -46,27 +45,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 ReflectionLoadProbingPath.Add(loadLocation);
             }
 
-            _acceptedTypes = new HashSet<Type>(typeof(IIdentifiedComponent)
-                .GetTypeInfo()
-                .Assembly
-                .GetTypes()
-                .Where(x =>
-                {
-                    TypeInfo info = x.GetTypeInfo();
-                    return info.IsInterface && typeof(IIdentifiedComponent).IsAssignableFrom(x);
-                }));
-
             _componentIdsByType = new Dictionary<Type, List<Guid>>();
             HashSet<Guid> allowedIds = new HashSet<Guid>();
 
-            foreach (Type acceptedType in _acceptedTypes)
+            foreach (KeyValuePair<string, List<Guid>> bucket in userSettings.ComponentTypeToGuidList)
             {
-                List<Guid> bucket;
-                if (userSettings.ComponentTypeToGuidList.TryGetValue(acceptedType.FullName, out bucket))
-                {
-                    _componentIdsByType[acceptedType] = bucket;
-                    allowedIds.UnionWith(bucket);
-                }
+                allowedIds.UnionWith(bucket.Value);
             }
 
             foreach (KeyValuePair<string, string> entry in userSettings.ComponentGuidToAssemblyQualifiedName)
@@ -101,15 +85,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             where T : class, IIdentifiedComponent
         {
             List<Guid> ids;
-            if (_componentIdsByType.TryGetValue(typeof(T), out ids))
+            if (!_componentIdsByType.TryGetValue(typeof(T), out ids))
             {
-                foreach (Guid id in ids)
+                if (_settings.ComponentTypeToGuidList.TryGetValue(typeof(T).FullName, out ids))
                 {
-                    T component;
-                    if (TryGetComponent(id, out component))
-                    {
-                        yield return component;
-                    }
+                    _componentIdsByType[typeof(T)] = ids;
+                }
+                else
+                {
+                    yield break;
+                }
+            }
+
+            foreach (Guid id in ids)
+            {
+                T component;
+                if (TryGetComponent(id, out component))
+                {
+                    yield return component;
                 }
             }
         }
@@ -121,33 +114,37 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            IIdentifiedComponent instance = (IIdentifiedComponent) Activator.CreateInstance(type);
-            foreach (Type t in _acceptedTypes)
+            IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).IsAssignableFrom(x)).ToList();
+            if (registerFor.Count == 0)
             {
-                if (t.IsAssignableFrom(type))
+                return;
+            }
+
+            IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
+
+            foreach (Type t in registerFor)
+            {
+                FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
+                ICache cache = (ICache)instanceField.GetValue(null);
+                cache.AddPart(instance);
+                _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
+                _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
+
+                List<Guid> ids;
+                if (!_componentIdsByType.TryGetValue(t, out ids))
                 {
-                    FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
-                    ICache cache = (ICache) instanceField.GetValue(null);
-                    cache.AddPart(instance);
-                    _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
-                    _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
-
-                    List<Guid> ids;
-                    if (!_componentIdsByType.TryGetValue(t, out ids))
-                    {
-                        _componentIdsByType[t] = ids = new List<Guid>();
-                    }
-
-                    ids.Add(instance.Id);
-
-                    if (!_settings.ComponentTypeToGuidList.TryGetValue(t.FullName, out ids))
-                    {
-                        _settings.ComponentTypeToGuidList[t.FullName] = ids = new List<Guid>();
-                    }
-
-                    ids.Add(instance.Id);
-                    _settings.Save();
+                    _componentIdsByType[t] = ids = new List<Guid>();
                 }
+
+                ids.Add(instance.Id);
+
+                if (!_settings.ComponentTypeToGuidList.TryGetValue(t.FullName, out ids))
+                {
+                    _settings.ComponentTypeToGuidList[t.FullName] = ids = new List<Guid>();
+                }
+
+                ids.Add(instance.Id);
+                _settings.Save();
             }
         }
 

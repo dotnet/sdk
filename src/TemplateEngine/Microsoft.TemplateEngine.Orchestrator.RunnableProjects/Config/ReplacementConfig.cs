@@ -8,11 +8,13 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    internal class ReplacementConfig : IOperationConfig
+    public class ReplacementConfig : IOperationConfig
     {
         public int Order => 10000;
 
         public string Key => "replacements";
+
+        public Guid Id => new Guid("62DB7F1F-A10E-46F0-953F-A28A03A81CD1");
 
         public IEnumerable<IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
