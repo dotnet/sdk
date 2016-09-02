@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             public void AddPart(IIdentifiedComponent component)
             {
-                Parts[component.Id] = (T)component;
+                Parts[component.Id] = (T) component;
             }
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (Type t in registerFor)
             {
                 FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
-                ICache cache = (ICache)instanceField.GetValue(null);
+                ICache cache = (ICache) instanceField.GetValue(null);
                 cache.AddPart(instance);
                 _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
                 _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;

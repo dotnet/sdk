@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public IEnumerable<IOperationProvider> Process(JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
-            JArray regionSettings = (JArray)rawConfiguration["settings"];
+            JArray regionSettings = (JArray) rawConfiguration["settings"];
             foreach (JToken child in regionSettings.Children())
             {
                 JObject setting = (JObject)child;

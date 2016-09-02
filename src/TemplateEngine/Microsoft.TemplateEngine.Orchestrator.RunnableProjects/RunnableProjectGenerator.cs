@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public Task Create(ITemplateEngineHost host, ITemplate template, IParameterSet parameters, IComponentManager componentManager)
         {
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
-            RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
+            RunnableProjectTemplate tmplt = (RunnableProjectTemplate) template;
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
             GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special, componentManager);
