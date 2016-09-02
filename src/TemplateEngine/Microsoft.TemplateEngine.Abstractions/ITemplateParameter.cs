@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TemplateEngine.Abstractions
+﻿using System.Collections.Generic;
+
+namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ITemplateParameter
     {
@@ -15,5 +17,7 @@
         string DefaultValue { get; }
 
         string DataType { get; }
+
+        IReadOnlyList<string> Choices { get; }
     }
 }

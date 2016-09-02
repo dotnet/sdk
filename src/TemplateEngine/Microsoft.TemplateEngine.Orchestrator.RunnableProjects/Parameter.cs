@@ -44,5 +44,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         bool ITemplateParameter.IsName => IsName;
 
         string ITemplateParameter.DefaultValue => DefaultValue;
+
+        string ITemplateParameter.DataType => DataType;
+
+        IReadOnlyList<string> ITemplateParameter.Choices => Choices;
     }
 }

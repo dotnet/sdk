@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IEnumerable<string> RequiredBrokerCapabilities { get; }
 
-        IDictionary<ITemplateParameter, string> ResolvedValues { get; }
+        IDictionary<ITemplateParameter, object> ResolvedValues { get; }
 
         bool TryGetParameterDefinition(string name, out ITemplateParameter parameter);
     }
