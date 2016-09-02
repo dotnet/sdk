@@ -2,9 +2,15 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.TemplateEngine.Core": "1.0.0-*",
-    "Microsoft.TemplateEngine.Utils": "1.0.0-*",
-    "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
+    "Microsoft.TemplateEngine.Core": {
+      "target": "project"
+    },
+    "Microsoft.TemplateEngine.Utils": {
+      "target": "project"
+    },
+    "Microsoft.TemplateEngine.Abstractions": {
+      "target": "project"
+    },
     "Newtonsoft.Json": "9.0.1"
   },
 
