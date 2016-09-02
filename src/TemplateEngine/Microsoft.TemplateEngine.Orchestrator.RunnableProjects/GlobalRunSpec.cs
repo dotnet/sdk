@@ -42,8 +42,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Rename { get; }
 
-        public IPostAction PostActions { get; }
-
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
