@@ -8,8 +8,7 @@
     "NuGet.Packaging": "3.5.0-beta2-1484",
     "NuGet.Configuration": "3.5.0-beta2-1484",
     "NuGet.DependencyResolver.Core": "3.5.0-beta2-1484",
-    "Microsoft.Extensions.CommandLineUtils": "1.0.0",
-    "Microsoft.TemplateEngine.Core": "1.0.0-*"
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0"
   },
 
   "frameworks": {

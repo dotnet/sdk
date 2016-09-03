@@ -143,10 +143,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             HashSet<Package> remainingPackages = new HashSet<Package>(packages.Select(x => new Package(x, VersionRange.All)));
             HashSet<Package> encounteredPackages = new HashSet<Package>();
             List<string> templateRoots = new List<string>();
-            List<KeyValuePair<string, string>> componentRoots = new List<KeyValuePair<string, string>>();
+            Dictionary<string, int> latestRoundEncountered = new Dictionary<string, int>();
+            Dictionary<string, NuGetVersion> currentVersion = new Dictionary<string, NuGetVersion>();
+            int round = -1;
 
             while (remainingPackages.Count > 0)
             {
+                ++round;
                 HashSet<Package> nextRound = new HashSet<Package>();
 
                 foreach (Package package in remainingPackages)
@@ -209,7 +212,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             }
                             else
                             {
-                                componentRoots.Add(new KeyValuePair<string, string>(match.Library.Name, match.Library.Version.ToString()));
+                                latestRoundEncountered[match.Library.Name] = round;
+
+                                NuGetVersion currentVer;
+                                if (!currentVersion.TryGetValue(match.Library.Name, out currentVer) || match.Library.Version.CompareTo(currentVersion) > 0)
+                                {
+                                    currentVersion[match.Library.Name] = match.Library.Version;
+                                }
                             }
                         }
                     }
@@ -220,9 +229,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 remainingPackages = nextRound;
             }
 
-            foreach (KeyValuePair<string, string> package in componentRoots)
+            foreach (KeyValuePair<string, int> package in latestRoundEncountered.OrderByDescending(x => x.Value))
             {
-                foreach (string path in Path.Combine(Paths.User.Content, package.Key, package.Value).EnumerateFiles($"{package.Key}.dll", SearchOption.AllDirectories))
+                string packageName = package.Key;
+                string version = currentVersion[packageName].ToString();
+
+                foreach (string path in Path.Combine(Paths.User.Content, packageName, version).EnumerateFiles($"{package.Key}.dll", SearchOption.AllDirectories))
                 {
                     if (path.IndexOf($"{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) < 0
                         || (path.IndexOf($"{Path.DirectorySeparatorChar}netstandard1.", StringComparison.OrdinalIgnoreCase) < 0
