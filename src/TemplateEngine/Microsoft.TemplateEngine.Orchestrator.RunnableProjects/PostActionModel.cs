@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IPostActionOperationModel> Operations { get; private set; }
 
-        public IReadOnlyList<IPostActionOperationModel> AlternateOperations { get; private set; }
+        public string ManualInstructions { get; set; }
 
         public static IPostActionModel FromJObject(JObject jObject)
         {
@@ -20,18 +20,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 operationList.Add(new PostActionOperationModel(token.ToString()));
             }
 
-            List<IPostActionOperationModel> altOperationList = new List<IPostActionOperationModel>();
-            JArray altOperations = (JArray)jObject["alternateOperations"];
-            foreach (JToken token in altOperations)
-            {
-                altOperationList.Add(new PostActionOperationModel(token.ToString()));
-            }
-
             PostActionModel model = new PostActionModel
             {
                 Order = jObject.ToInt32(nameof(Order)),
                 Operations = operationList,
-                AlternateOperations = altOperationList
+                ManualInstructions = jObject.ToString(nameof(ManualInstructions))
             };
 
             return model;

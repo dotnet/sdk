@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -11,6 +8,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<IPostActionOperationModel> Operations { get; }
 
-        IReadOnlyList<IPostActionOperationModel> AlternateOperations { get; }
+        string ManualInstructions { get; }
     }
 }

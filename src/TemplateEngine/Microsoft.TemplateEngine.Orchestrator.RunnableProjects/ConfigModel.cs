@@ -172,22 +172,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     operationList.Add(operation);
                 }
 
-                List<IPostActionOperation> altOperationList = new List<IPostActionOperation>();
-                foreach (JToken token in (JArray)actionConfig["alternateOperations"])
-                {
-                    PostActionOperation operation = new PostActionOperation()
-                    {
-                        CommandText = token.ToString()
-                    };
-                    altOperationList.Add(operation);
-                }
-
                 PostAction action = new PostAction()
                 {
                     Name = actionConfig.ToString(nameof(action.Name)),
                     Order = actionConfig.ToInt32(nameof(action.Order)),
                     Operations = operationList,
-                    AlternateOperations = altOperationList
+                    ManualInstructions = actionConfig.ToString(nameof(action.ManualInstructions))
                 };
 
                 config.PostActions[actionConfig.Name] = action;

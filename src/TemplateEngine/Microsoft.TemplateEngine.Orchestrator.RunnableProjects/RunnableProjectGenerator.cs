@@ -61,10 +61,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     host.LogMessage(string.Format("\tStandard Operation:{0}", operation.CommandText));
                 }
 
-                foreach (IPostActionOperation altOperation in postActionInfo.Value.AlternateOperations)
-                {
-                    host.LogMessage(string.Format("\tAlternate Operation:{0}", altOperation.CommandText));
-                }
+                host.LogMessage(string.Format("\tManual Instructions:{0}", postActionInfo.Value.ManualInstructions));
             }
         }
 

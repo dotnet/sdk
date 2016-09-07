@@ -10,6 +10,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IReadOnlyList<IPostActionOperation> Operations { get; }
 
-        IReadOnlyList<IPostActionOperation> AlternateOperations { get; }
+        string ManualInstructions { get; }
     }
 }

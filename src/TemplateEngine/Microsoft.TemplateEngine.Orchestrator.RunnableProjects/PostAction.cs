@@ -1,8 +1,5 @@
-﻿using Microsoft.TemplateEngine.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -14,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public List<IPostActionOperation> Operations { get; set; }
 
-        public List<IPostActionOperation> AlternateOperations { get; set; }
+        public string ManualInstructions { get; set; }
 
         string IPostAction.Name => Name;
 
@@ -22,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<IPostActionOperation> IPostAction.Operations => Operations;
 
-        IReadOnlyList<IPostActionOperation> IPostAction.AlternateOperations => AlternateOperations;
+        string IPostAction.ManualInstructions => ManualInstructions;
 
         public static PostAction FromModel(string name, IPostActionModel model)
         {
@@ -37,12 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             postAction.Operations = operations;
 
-            List<IPostActionOperation> altOperations = new List<IPostActionOperation>();
-            foreach (IPostActionOperationModel altOperationModel in model.AlternateOperations)
-            {
-                altOperations.Add(PostActionOperation.FromModel(altOperationModel));
-            }
-            postAction.AlternateOperations = altOperations;
+            postAction.ManualInstructions = model.ManualInstructions;
 
             return postAction;
         }
