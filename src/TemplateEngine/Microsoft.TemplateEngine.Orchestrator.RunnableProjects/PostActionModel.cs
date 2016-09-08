@@ -1,33 +1,55 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class PostActionModel : IPostActionModel
     {
-        public int Order { get; private set; }
+        public string Description { get; private set; }
 
-        public IReadOnlyList<IPostActionOperationModel> Operations { get; private set; }
+        public Guid ActionId { get; private set; }
 
-        public string ManualInstructions { get; set; }
+        public bool ContinueOnError { get; private set; }
 
-        public static IPostActionModel FromJObject(JObject jObject)
+        public IReadOnlyDictionary<string, string> Args { get; private set; }
+
+        public string ManualInstructions { get; private set; }
+
+        public string ConfigFile { get; private set; }
+
+        public static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject)
         {
-            List<IPostActionOperationModel> operationList = new List<IPostActionOperationModel>();
-            JArray operations = (JArray)jObject["operations"];
-            foreach (JToken token in operations)
+            List<IPostActionModel> modelList = new List<IPostActionModel>();
+
+            if (jObject == null)
             {
-                operationList.Add(new PostActionOperationModel(token.ToString()));
+                return modelList;
             }
 
-            PostActionModel model = new PostActionModel
+            foreach (JToken action in jObject)
             {
-                Order = jObject.ToInt32(nameof(Order)),
-                Operations = operationList,
-                ManualInstructions = jObject.ToString(nameof(ManualInstructions))
-            };
+                Dictionary<string, string> args = new Dictionary<string, string>();
 
-            return model;
+                foreach (JProperty argInfo in action.PropertiesOf("Args"))
+                {
+                    args.Add(argInfo.Name, argInfo.Value.ToString());
+                }
+
+                PostActionModel model = new PostActionModel()
+                {
+                    Description = action.ToString(nameof(model.Description)),
+                    ActionId = action.ToGuid(nameof(model.ActionId)),
+                    ContinueOnError = action.ToBool(nameof(model.ContinueOnError)),
+                    Args = args,
+                    ManualInstructions = action.ToString(nameof(model.ManualInstructions)),
+                    ConfigFile = action.ToString(nameof(model.ConfigFile))
+                };
+
+                modelList.Add(model);
+            }
+
+            return modelList;
         }
     }
 }

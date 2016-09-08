@@ -1,15 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IPostAction
     {
-        int Order { get; }
+        string Description { get; }
 
-        string Name { get; }
+        Guid ActionId { get; }
 
-        IReadOnlyList<IPostActionOperation> Operations { get; }
+        bool ContinueOnError { get; }
+
+        IReadOnlyDictionary<string, string> Args { get; }
 
         string ManualInstructions { get; }
+
+        string ConfigFile { get; }
     }
 }

@@ -1,13 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public interface IPostActionModel
     {
-        int Order { get; }
+        string Description { get; }
 
-        IReadOnlyList<IPostActionOperationModel> Operations { get; }
+        Guid ActionId { get; }
+
+        bool ContinueOnError { get; }
+
+        IReadOnlyDictionary<string, string> Args { get; }
 
         string ManualInstructions { get; }
+
+        string ConfigFile { get; }
     }
 }

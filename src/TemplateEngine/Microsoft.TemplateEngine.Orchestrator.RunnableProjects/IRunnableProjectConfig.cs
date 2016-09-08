@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string Identity { get; }
 
-        IReadOnlyDictionary<string, IPostAction> PostActions { get; }
+        IReadOnlyList<IPostAction> PostActions { get; }
 
         IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations);
     }

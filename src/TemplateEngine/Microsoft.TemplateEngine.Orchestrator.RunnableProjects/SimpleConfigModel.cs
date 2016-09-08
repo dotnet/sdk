@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private Dictionary<string, Dictionary<string, JObject>> _special;
         private Parameter _nameParameter;
         private string _safeNameName;
-        private IReadOnlyDictionary<string, IPostAction> _postActions;
+        private IReadOnlyList<IPostAction> _postActions;
 
         public IFile SourceFile { get; set; }
 
@@ -112,23 +112,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
 
-        public IReadOnlyDictionary<string, IPostActionModel> PostActionModel { get; set; }
+        public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
 
-        public IReadOnlyDictionary<string, IPostAction> PostActions
+        public IReadOnlyList<IPostAction> PostActions
         {
             get
             {
                 if (_postActions == null)
                 {
-                    Dictionary<string, IPostAction> postActions = new Dictionary<string, IPostAction>();
-
-                    foreach (KeyValuePair<string, IPostActionModel> actionModel in PostActionModel)
-                    {
-                        IPostAction action = PostAction.FromModel(actionModel.Key, actionModel.Value);
-                        postActions.Add(actionModel.Key, action);
-                    }
-
-                    _postActions = postActions;
+                    _postActions = PostAction.ListFromModel(PostActionModel);
                 }
 
                 return _postActions;
@@ -466,7 +458,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyDictionary<string, Parameter> Parameters => ((IRunnableProjectConfig)_simpleConfigModel).Parameters;
 
-            public IReadOnlyDictionary<string, IPostAction> PostActions => ((IRunnableProjectConfig)_simpleConfigModel).PostActions;
+            public IReadOnlyList<IPostAction> PostActions => _simpleConfigModel.PostActions;
 
 
             public string ShortName => _simpleConfigModel.ShortName;
@@ -652,25 +644,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
-
-            Dictionary<string, IPostActionModel> postActionModel = new Dictionary<string, IPostActionModel>(StringComparer.Ordinal);
-            config.PostActionModel = postActionModel;
-            foreach (JProperty prop in source.PropertiesOf(nameof(config.PostActions)))
-            {
-                JObject obj = prop.Value as JObject;
-
-                if (obj == null)
-                {
-                    continue;
-                }
-
-                IPostActionModel model = RunnableProjects.PostActionModel.FromJObject(obj);
-
-                if (model != null)
-                {
-                    postActionModel[prop.Name] = model;
-                }
-            }
+            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray((JArray)source["PostActions"]);
 
             return config;
         }

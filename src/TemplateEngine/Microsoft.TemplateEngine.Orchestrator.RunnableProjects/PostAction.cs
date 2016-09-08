@@ -1,42 +1,56 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class PostAction : IPostAction
     {
-        public string Name { get; set; }
+        public string Description { get; private set; }
 
-        public int Order { get; set; }
+        public Guid ActionId { get; private set; }
 
-        public List<IPostActionOperation> Operations { get; set; }
+        public bool AbortOnFail { get; private set; }
 
-        public string ManualInstructions { get; set; }
+        public IReadOnlyDictionary<string, string> Args { get; private set; }
 
-        string IPostAction.Name => Name;
+        public string ManualInstructions { get; private set; }
 
-        int IPostAction.Order => Order;
+        public string ConfigFile { get; private set; }
 
-        IReadOnlyList<IPostActionOperation> IPostAction.Operations => Operations;
+
+        string IPostAction.Description => Description;
+
+        Guid IPostAction.ActionId => ActionId;
+
+        bool IPostAction.ContinueOnError => AbortOnFail;
+
+        IReadOnlyDictionary<string, string> IPostAction.Args => Args;
 
         string IPostAction.ManualInstructions => ManualInstructions;
 
-        public static PostAction FromModel(string name, IPostActionModel model)
+        string IPostAction.ConfigFile => ConfigFile;
+
+        public static List<IPostAction> ListFromModel(IReadOnlyList<IPostActionModel> modelList)
         {
-            PostAction postAction = new PostAction();
-            postAction.Name = name;
-            postAction.Order = model.Order;
+            List<IPostAction> actionList = new List<IPostAction>();
 
-            List<IPostActionOperation> operations = new List<IPostActionOperation>();
-            foreach (IPostActionOperationModel operationModel in model.Operations)
+            foreach (IPostActionModel model in modelList)
             {
-                operations.Add(PostActionOperation.FromModel(operationModel));
+                IPostAction postAction = new PostAction()
+                {
+                    Description = model.Description,
+                    ActionId = model.ActionId,
+                    AbortOnFail = model.ContinueOnError,
+                    Args = model.Args,
+                    ManualInstructions = model.ManualInstructions,
+                    ConfigFile = model.ConfigFile,
+                };
+
+                actionList.Add(postAction);
             }
-            postAction.Operations = operations;
 
-            postAction.ManualInstructions = model.ManualInstructions;
-
-            return postAction;
+            return actionList;
         }
     }
 }

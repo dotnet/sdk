@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Dictionary<string, Parameter> Parameters { get; set; }
 
-        public Dictionary<string, IPostAction> PostActions { get; set; }
+        public List<IPostAction> PostActions { get; set; }
 
         public Dictionary<string, JObject> Config { get; set; }
 
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, Parameter> IRunnableProjectConfig.Parameters => Parameters;
 
-        IReadOnlyDictionary<string, IPostAction> IRunnableProjectConfig.PostActions => PostActions;
+        IReadOnlyList<IPostAction> IRunnableProjectConfig.PostActions => PostActions;
 
         IReadOnlyDictionary<string, Dictionary<string, JObject>> IRunnableProjectConfig.Special => Special;
 
@@ -152,36 +152,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 tags[item.Name] = item.Value.ToString();
             }
 
-            config.PostActions = new Dictionary<string, IPostAction>(StringComparer.Ordinal);
-            foreach (JProperty actionConfig in source.PropertiesOf("PostActions)"))
-            {
-                JObject obj = actionConfig.Value as JObject;
-
-                if (obj == null)
-                {
-                    continue;
-                }
-
-                List<IPostActionOperation> operationList = new List<IPostActionOperation>();
-                foreach (JToken token in (JArray)actionConfig["operations"])
-                {
-                    PostActionOperation operation = new PostActionOperation()
-                    {
-                        CommandText = token.ToString()
-                    };
-                    operationList.Add(operation);
-                }
-
-                PostAction action = new PostAction()
-                {
-                    Name = actionConfig.ToString(nameof(action.Name)),
-                    Order = actionConfig.ToInt32(nameof(action.Order)),
-                    Operations = operationList,
-                    ManualInstructions = actionConfig.ToString(nameof(action.ManualInstructions))
-                };
-
-                config.PostActions[actionConfig.Name] = action;
-            }
+            IReadOnlyList<IPostActionModel> postActionModel = PostActionModel.ListFromJArray((JArray)(source["PostActions"]));
+            config.PostActions = PostAction.ListFromModel(postActionModel);
 
             return config;
         }

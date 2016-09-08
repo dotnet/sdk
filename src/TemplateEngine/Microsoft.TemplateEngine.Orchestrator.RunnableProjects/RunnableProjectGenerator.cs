@@ -51,17 +51,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Task.FromResult(true);
         }
 
-        private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyDictionary<string, IPostAction> postActions)
+        private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyList<IPostAction> postActions)
         {
-            foreach (KeyValuePair<string, IPostAction> postActionInfo in postActions)
+            foreach (IPostAction postActionInfo in postActions)
             {
-                host.LogMessage(string.Format("Placeholder for post action processing of action: {0}", postActionInfo.Key));
-                foreach (IPostActionOperation operation in postActionInfo.Value.Operations)
-                {
-                    host.LogMessage(string.Format("\tStandard Operation:{0}", operation.CommandText));
-                }
+                host.LogMessage(string.Format("Placeholder for post action processing of action: {0}", postActionInfo.Description));
 
-                host.LogMessage(string.Format("\tManual Instructions:{0}", postActionInfo.Value.ManualInstructions));
+                host.LogMessage(string.Format("\tActionId: {0}", postActionInfo.ActionId));
+                host.LogMessage(string.Format("\tAbortOnFail: {0}", postActionInfo.ContinueOnError));
+                host.LogMessage(string.Format("\tConfigFile: {0}", postActionInfo.ConfigFile));
+                host.LogMessage(string.Format("\tManual Instructions: {0}", postActionInfo.ManualInstructions));
+                host.LogMessage(string.Format("\tArgs"));
+
+                foreach (KeyValuePair<string, string> arg in postActionInfo.Args)
+                {
+                    host.LogMessage(string.Format("\t\tKey = {0} | Value = {1}", arg.Key, arg.Value));
+                }
             }
         }
 
@@ -94,8 +99,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine(string.Format("Error reading the template: {0}", ex.ToString()));
             }
 
             template = null;
