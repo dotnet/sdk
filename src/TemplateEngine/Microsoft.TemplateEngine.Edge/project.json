@@ -2,13 +2,19 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.TemplateEngine.Utils": "1.0.0-*",
-    "Microsoft.TemplateEngine.Abstractions": "1.0.0-*",
+    "Microsoft.TemplateEngine.Utils": {
+      "target": "project"
+    },
+    "Microsoft.TemplateEngine.Abstractions": {
+      "target": "project"
+    },
     "Newtonsoft.Json": "9.0.1",
     "NuGet.Packaging": "3.5.0-beta2-1484",
     "NuGet.Configuration": "3.5.0-beta2-1484",
     "NuGet.DependencyResolver.Core": "3.5.0-beta2-1484",
-    "Microsoft.Extensions.CommandLineUtils": "1.0.0"
+    "Microsoft.TemplateEngine.Core": {
+      "target": "project"
+    }
   },
 
   "frameworks": {

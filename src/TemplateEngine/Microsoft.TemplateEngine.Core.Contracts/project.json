@@ -2,7 +2,9 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.TemplateEngine.Abstractions": "1.0.0-*"
+    "Microsoft.TemplateEngine.Abstractions": {
+      "target": "project"
+    }
   },
 
   "frameworks": {
