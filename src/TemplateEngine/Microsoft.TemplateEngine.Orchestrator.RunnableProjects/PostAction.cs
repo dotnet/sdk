@@ -69,7 +69,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     ActionId = model.ActionId,
                     AbortOnFail = model.ContinueOnError,
                     Args = model.Args,
-                    //ManualInstructions = model.ManualInstructions,
                     ManualInstructions = chosenInstruction,
                     ConfigFile = model.ConfigFile,
                 };
