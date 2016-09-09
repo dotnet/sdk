@@ -170,7 +170,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                         TokenFamily foundTokenFamily = (TokenFamily)token;
 
-                        // new
                         if (foundTokenFamily == TokenFamily.QuotedLiteral || foundTokenFamily == TokenFamily.SingleQuotedLiteral)
                         {
                             if (quoteNesting.Count == 0)
@@ -266,7 +265,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 bufferLength = processor.CurrentBufferLength;
             }
 
-            //Debug.Assert(currentTokenFamily != TokenFamily.QuotedLiteral && currentTokenFamily != TokenFamily.SingleQuotedLiteral,
             Debug.Assert(quoteNesting.Count == 0,
                 $"Malformed predicate due to unmatched quotes. InitialBuffer = {initialBuffer} currentTokenFamily = {currentTokenFamily} | TokenFamily.QuotedLiteral = {TokenFamily.QuotedLiteral} | TokenFamily.SingleQuotedLiteral = {TokenFamily.SingleQuotedLiteral}");
 
