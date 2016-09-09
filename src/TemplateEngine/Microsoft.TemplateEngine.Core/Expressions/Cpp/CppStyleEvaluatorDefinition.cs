@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
@@ -12,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 {
     public static class CppStyleEvaluatorDefinition
     {
-        private const int ReservedTokenCount = 22;
+        private const int ReservedTokenCount = 23;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
         private static readonly IOperationProvider[] NoOperationProviders = new IOperationProvider[0];
 
@@ -64,6 +63,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             trie.AddToken(processor.Encoding.GetBytes("\r\n"), 19);
             trie.AddToken(processor.Encoding.GetBytes("\n"), 20);
             trie.AddToken(processor.Encoding.GetBytes("\r"), 21);
+
+            // quotes
+            trie.AddToken(processor.Encoding.GetBytes("\""), 22);
 
             //Tokens
             trie.Append(processor.EncodingConfig.Variables);
@@ -147,8 +149,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             }
                         }
 
-                        //We matched an item, so whatever this is, it's not a literal, end the current literal if that's
-                        //  what we currently have
+                        // We matched an item, so whatever this is, it's not a literal. 
+                        // if the current token is a literal, end it.
                         if (currentTokenFamily == TokenFamily.Literal)
                         {
                             string literal = processor.Encoding.GetString(currentTokenBytes.ToArray());
@@ -160,29 +162,47 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             currentTokenBytes.Clear();
                         }
 
-                        //If we have a token from the args...
-                        if (token > ReservedTokenMaxIndex)
-                        {
-                            if (currentTokenFamily == TokenFamily.Literal)
-                            {
-                                TokenRef previous = tokens[tokens.Count - 1];
-                                previous.Literal += processor.Encoding.GetString(currentTokenBytes.ToArray());
-                                currentTokenBytes = processor.Encoding.GetBytes(previous.Literal).ToList();
-                                tokens.RemoveAt(tokens.Count - 1);
+                        TokenFamily foundTokenFamily = (TokenFamily)token;
+
+                        if (foundTokenFamily == TokenFamily.QuotedLiteral)
+                        {   // this token is a quote
+                            if (currentTokenFamily == TokenFamily.QuotedLiteral)
+                            {   // we were already in a quoted string, this is the end quote
+                                currentTokenBytes.AddRange(trie.Tokens[token]);  // Add the quote. It's necessary for the evaluator to infer the type - which itself needs work.
+                                string literal = processor.Encoding.GetString(currentTokenBytes.ToArray());
+                                tokens.Add(new TokenRef
+                                {
+                                    Family = TokenFamily.Literal,
+                                    Literal = literal
+                                });
+                                currentTokenBytes.Clear();
+                                // we finished the quoted literal. 
+                                // Change this to a value so no processing gets done on an assumption of what this (the previous token) was.
+                                currentTokenFamily = TokenFamily.Whitespace;
                             }
                             else
                             {
-                                currentTokenFamily = TokenFamily.Reference | (TokenFamily) token;
-                                tokens.Add(new TokenRef
-                                {
-                                    Family = currentTokenFamily
-                                });
+                                // this is the lead quote
+                                currentTokenFamily = TokenFamily.QuotedLiteral;
+                                currentTokenBytes.AddRange(trie.Tokens[token]);  // Add the quote. It's necessary for the evaluator to infer the type - which itself needs work.
                             }
                         }
-                        //If we have a normal token...
-                        else
+                        else if (currentTokenFamily == TokenFamily.QuotedLiteral)
+                        {   // we're inside a quoted literal, the token found by the trie should not be processed, just included with the literal
+                            currentTokenBytes.AddRange(trie.Tokens[token]);
+                        }
+                        else if (token > ReservedTokenMaxIndex)
                         {
+                            currentTokenFamily = TokenFamily.Reference | (TokenFamily)token;
+                            tokens.Add(new TokenRef
+                            {
+                                Family = currentTokenFamily
+                            });
+                        }
+                        else
+                        {   //If we have a normal token...
                             currentTokenFamily = (TokenFamily)token;
+
                             if (currentTokenFamily != TokenFamily.WindowsEOL && currentTokenFamily != TokenFamily.LegacyMacEOL && currentTokenFamily != TokenFamily.UnixEOL)
                             {
                                 if (currentTokenFamily == TokenFamily.OpenBrace)
@@ -205,6 +225,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             }
                         }
                     }
+                    else if (currentTokenFamily == TokenFamily.QuotedLiteral)
+                    {   // we're in a quoted literal but did not match a token at the current position.
+                        // so just add the current byte to the currentTokenBytes
+                        currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
+                    }
                     else if (braceDepth > 0)
                     {
                         currentTokenFamily = TokenFamily.Literal;
@@ -222,6 +247,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 bufferLength = processor.CurrentBufferLength;
             }
 
+            int comparison = currentTokenFamily.CompareTo(TokenFamily.QuotedLiteral);
+            Debug.Assert(currentTokenFamily != TokenFamily.QuotedLiteral, 
+                string.Format("Malformed predicate due to unmatched quotes. currentTokenFamily = {0} | TokenFamily.QuotedLiteral = {1} | comparison = {2}"
+                    , currentTokenFamily.ToString(), TokenFamily.QuotedLiteral.ToString(), comparison));
+            
             return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
         }
 

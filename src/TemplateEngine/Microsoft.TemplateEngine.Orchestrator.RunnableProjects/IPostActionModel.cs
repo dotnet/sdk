@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, string> Args { get; }
 
-        string ManualInstructions { get; }
+        IReadOnlyList<KeyValuePair<string, string>> ManualInstructionInfo { get; }
 
         string ConfigFile { get; }
     }

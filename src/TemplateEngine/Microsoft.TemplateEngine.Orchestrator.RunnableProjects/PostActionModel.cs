@@ -14,7 +14,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Args { get; private set; }
 
-        public string ManualInstructions { get; private set; }
+        // Each key value pair represents a manual instruction option.
+        // The key is the text of the instruction
+        // The value is a conditional to evaluate to determine if the instruction is valid in this context.
+        // The instructions get resolved when turning the model into the actual - at most 1 will be chosen.
+        public IReadOnlyList<KeyValuePair<string, string>> ManualInstructionInfo { get; private set; }
 
         public string ConfigFile { get; private set; }
 
@@ -36,13 +40,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     args.Add(argInfo.Name, argInfo.Value.ToString());
                 }
 
+                List<KeyValuePair<string, string>> instructionOptions = new List<KeyValuePair<string, string>>();
+                
+                foreach (JToken instructionToken in (JArray)action["ManualInstructions"])
+                {
+                    KeyValuePair<string, string> instruction = new KeyValuePair<string, string>(instructionToken.ToString("text"), instructionToken.ToString("condition"));
+                    instructionOptions.Add(instruction);
+                }
+
                 PostActionModel model = new PostActionModel()
                 {
                     Description = action.ToString(nameof(model.Description)),
                     ActionId = action.ToGuid(nameof(model.ActionId)),
                     ContinueOnError = action.ToBool(nameof(model.ContinueOnError)),
                     Args = args,
-                    ManualInstructions = action.ToString(nameof(model.ManualInstructions)),
+                    ManualInstructionInfo = instructionOptions,
                     ConfigFile = action.ToString(nameof(model.ConfigFile))
                 };
 

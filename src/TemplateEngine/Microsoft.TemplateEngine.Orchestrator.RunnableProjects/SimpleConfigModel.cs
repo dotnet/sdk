@@ -25,7 +25,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private Dictionary<string, Dictionary<string, JObject>> _special;
         private Parameter _nameParameter;
         private string _safeNameName;
-        private IReadOnlyList<IPostAction> _postActions;
 
         public IFile SourceFile { get; set; }
 
@@ -114,18 +113,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
 
-        public IReadOnlyList<IPostAction> PostActions
-        {
-            get
-            {
-                if (_postActions == null)
-                {
-                    _postActions = PostAction.ListFromModel(PostActionModel);
-                }
-
-                return _postActions;
-            }
-        }
+        public IReadOnlyList<IPostAction> PostActions { get; private set; }
 
         public IReadOnlyDictionary<string, string> Tags { get; set; }
 
@@ -246,6 +234,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             EvaluatedSimpleConfig config = new EvaluatedSimpleConfig(this);
             config.Evaluate(parameters, rootVariableCollection, configFile);
+            PostActions = PostAction.ListFromModel(PostActionModel, rootVariableCollection);
             return config;
         }
 
@@ -459,7 +448,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             public IReadOnlyDictionary<string, Parameter> Parameters => ((IRunnableProjectConfig)_simpleConfigModel).Parameters;
 
             public IReadOnlyList<IPostAction> PostActions => _simpleConfigModel.PostActions;
-
 
             public string ShortName => _simpleConfigModel.ShortName;
 

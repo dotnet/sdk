@@ -153,7 +153,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             IReadOnlyList<IPostActionModel> postActionModel = PostActionModel.ListFromJArray((JArray)(source["PostActions"]));
-            config.PostActions = PostAction.ListFromModel(postActionModel);
+
+            // With the null second param, this does not cause evaluation of variables / conditions in the post action model
+            // TODO: determine if a change is needed.
+            config.PostActions = PostAction.ListFromModel(postActionModel, null);
 
             return config;
         }

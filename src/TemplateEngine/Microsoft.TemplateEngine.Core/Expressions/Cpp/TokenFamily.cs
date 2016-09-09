@@ -27,6 +27,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
         WindowsEOL,
         UnixEOL,
         LegacyMacEOL,
+        QuotedLiteral,
         Literal,
         Reference = 0x40000000
     }
