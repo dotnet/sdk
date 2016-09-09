@@ -16,14 +16,8 @@
 
   "frameworks": {
     "net451": {},
-    "netcoreapp1.0": {
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "version": "1.0.0",
-          "type": "platform"
-        }
-      },
-      "imports": "portable-dnxcore50+net45+win8+wp8+wpa81"
+    "netstandard1.3": {
+      "dependencies": { "NETStandard.Library": "1.6.0" }
     }
   }
 }
