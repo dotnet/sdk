@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
 
             bool first = true;
-            Stack<TokenFamily> quoteNesting = new Stack<TokenFamily>();
+            TokenFamily inQuoteType = TokenFamily.Whitespace;
 
             while ((first || braceDepth > 0) && bufferLength > 0)
             {
@@ -172,39 +172,28 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                         if (foundTokenFamily == TokenFamily.QuotedLiteral || foundTokenFamily == TokenFamily.SingleQuotedLiteral)
                         {
-                            if (quoteNesting.Count == 0)
-                            {   // Not in a quoted section, this is the start of one
-                                quoteNesting.Push(foundTokenFamily);
+                            if (inQuoteType == TokenFamily.Whitespace)
+                            {   // starting quote found
                                 currentTokenBytes.AddRange(trie.Tokens[token]);
+                                inQuoteType = foundTokenFamily;
                             }
-                            else if (quoteNesting.Contains(foundTokenFamily))
-                            {
-                                while (quoteNesting.Pop() != foundTokenFamily)
-                                {
-                                    // Getting in this loop means an unbalanced quoting situation.
-                                    // This loop causes left-greediness, i.e. this quote implicitly ends other nested start quotes
-                                    // that we haven't seen corresponding end quotes for.
-                                    // nothing else needs to be done
-                                }
-
+                            else if (foundTokenFamily == inQuoteType)
+                            {   // end quote found
                                 currentTokenBytes.AddRange(trie.Tokens[token]);
-                                if (quoteNesting.Count == 0)
-                                {   // this is the end of the quoting. create the token.
-                                    tokens.Add(new TokenRef
-                                    {
-                                        Family = TokenFamily.Literal,
-                                        Literal = processor.Encoding.GetString(currentTokenBytes.ToArray())
-                                    });
-                                    currentTokenBytes.Clear();
-                                }
+                                tokens.Add(new TokenRef
+                                {
+                                    Family = TokenFamily.Literal,
+                                    Literal = processor.Encoding.GetString(currentTokenBytes.ToArray())
+                                });
+                                currentTokenBytes.Clear();
+                                inQuoteType = TokenFamily.Whitespace;
                             }
                             else
-                            {   // starting a new quote nesting level
-                                quoteNesting.Push(foundTokenFamily);
+                            {   // this is a different quote type. Treat it like a non-match, just add the token to the currentTokenBytes
                                 currentTokenBytes.AddRange(trie.Tokens[token]);
                             }
                         }
-                        else if (quoteNesting.Count > 0)
+                        else if (inQuoteType != TokenFamily.Whitespace)
                         {
                             // we're inside a quoted literal, the token found by the trie should not be processed, just included with the literal
                             currentTokenBytes.AddRange(trie.Tokens[token]);
@@ -243,7 +232,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             }
                         }
                     }
-                    else if (quoteNesting.Count > 0)
+                    else if (inQuoteType != TokenFamily.Whitespace)
                     {   // we're in a quoted literal but did not match a token at the current position.
                         // so just add the current byte to the currentTokenBytes
                         currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
@@ -265,7 +254,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 bufferLength = processor.CurrentBufferLength;
             }
 
-            Debug.Assert(quoteNesting.Count == 0,
+            Debug.Assert(inQuoteType == TokenFamily.Whitespace,
                 $"Malformed predicate due to unmatched quotes. InitialBuffer = {initialBuffer} currentTokenFamily = {currentTokenFamily} | TokenFamily.QuotedLiteral = {TokenFamily.QuotedLiteral} | TokenFamily.SingleQuotedLiteral = {TokenFamily.SingleQuotedLiteral}");
 
             return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
