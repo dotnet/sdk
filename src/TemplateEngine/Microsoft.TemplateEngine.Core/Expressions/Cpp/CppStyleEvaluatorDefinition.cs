@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
@@ -14,6 +15,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
         private const int ReservedTokenCount = 24;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
         private static readonly IOperationProvider[] NoOperationProviders = new IOperationProvider[0];
+        private static readonly char[] SupportedQuotes = {'"', '\''};
 
         public static bool EvaluateFromString(string text, IVariableCollection variables)
         {
@@ -30,9 +32,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
         {
-            // for debugging:
-            string initialBuffer = processor.Encoding.GetString(processor.CurrentBuffer);
-
             TokenTrie trie = new TokenTrie();
 
             //Logic
@@ -116,7 +115,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
 
             bool first = true;
-            TokenFamily inQuoteType = TokenFamily.Whitespace;
+            QuotedRegionKind inQuoteType = QuotedRegionKind.None;
 
             while ((first || braceDepth > 0) && bufferLength > 0)
             {
@@ -172,12 +171,27 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                         if (foundTokenFamily == TokenFamily.QuotedLiteral || foundTokenFamily == TokenFamily.SingleQuotedLiteral)
                         {
-                            if (inQuoteType == TokenFamily.Whitespace)
+                            QuotedRegionKind incomingQuoteKind;
+
+                            switch (foundTokenFamily)
+                            {
+                                case TokenFamily.QuotedLiteral:
+                                    incomingQuoteKind = QuotedRegionKind.DoubleQuoteRegion;
+                                    break;
+                                case TokenFamily.SingleQuotedLiteral:
+                                    incomingQuoteKind = QuotedRegionKind.SingleQuoteRegion;
+                                    break;
+                                default:
+                                    incomingQuoteKind = QuotedRegionKind.None;
+                                    break;
+                            }
+
+                            if (inQuoteType == QuotedRegionKind.None)
                             {   // starting quote found
                                 currentTokenBytes.AddRange(trie.Tokens[token]);
-                                inQuoteType = foundTokenFamily;
+                                inQuoteType = incomingQuoteKind;
                             }
-                            else if (foundTokenFamily == inQuoteType)
+                            else if (incomingQuoteKind == inQuoteType)
                             {   // end quote found
                                 currentTokenBytes.AddRange(trie.Tokens[token]);
                                 tokens.Add(new TokenRef
@@ -186,14 +200,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                                     Literal = processor.Encoding.GetString(currentTokenBytes.ToArray())
                                 });
                                 currentTokenBytes.Clear();
-                                inQuoteType = TokenFamily.Whitespace;
+                                inQuoteType = QuotedRegionKind.None;
                             }
                             else
                             {   // this is a different quote type. Treat it like a non-match, just add the token to the currentTokenBytes
                                 currentTokenBytes.AddRange(trie.Tokens[token]);
                             }
                         }
-                        else if (inQuoteType != TokenFamily.Whitespace)
+                        else if (inQuoteType != QuotedRegionKind.None)
                         {
                             // we're inside a quoted literal, the token found by the trie should not be processed, just included with the literal
                             currentTokenBytes.AddRange(trie.Tokens[token]);
@@ -232,7 +246,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             }
                         }
                     }
-                    else if (inQuoteType != TokenFamily.Whitespace)
+                    else if (inQuoteType != QuotedRegionKind.None)
                     {   // we're in a quoted literal but did not match a token at the current position.
                         // so just add the current byte to the currentTokenBytes
                         currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
@@ -254,8 +268,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 bufferLength = processor.CurrentBufferLength;
             }
 
-            Debug.Assert(inQuoteType == TokenFamily.Whitespace,
-                $"Malformed predicate due to unmatched quotes. InitialBuffer = {initialBuffer} currentTokenFamily = {currentTokenFamily} | TokenFamily.QuotedLiteral = {TokenFamily.QuotedLiteral} | TokenFamily.SingleQuotedLiteral = {TokenFamily.SingleQuotedLiteral}");
+#if DEBUG
+            Debug.Assert(inQuoteType == QuotedRegionKind.None,
+                $"Malformed predicate due to unmatched quotes. InitialBuffer = {processor.Encoding.GetString(processor.CurrentBuffer)} currentTokenFamily = {currentTokenFamily} | TokenFamily.QuotedLiteral = {TokenFamily.QuotedLiteral} | TokenFamily.SingleQuotedLiteral = {TokenFamily.SingleQuotedLiteral}");
+#endif
 
             return EvaluateCondition(tokens, processor.EncodingConfig.VariableValues);
         }
@@ -514,7 +530,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static object InferTypeAndConvertLiteral(string literal)
         {
-            if (!literal.Contains("\""))
+            //A propertly quoted string must be...
+            //  At least two characters long
+            //  Start and end with the same character
+            //  The character that the string starts with must be one of the supported quote kinds
+            if (literal.Length < 2 || literal[0] != literal[literal.Length - 1] || !SupportedQuotes.Contains(literal[0]))
             {
                 if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
                 {
