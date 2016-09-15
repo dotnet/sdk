@@ -38,5 +38,37 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 yield return new SetFlag(flag, on, off, onNoEmit, offNoEmit, id, @default);
             }
         }
+
+        public static readonly string FlagConditionalSuffix = ":cnd";
+        public static readonly string FlagReplacementSuffix = ":replacements";
+        public static readonly string FlagExpandVariablesSuffix = ":vars";
+        public static readonly string FlagIncludeSuffix = ":include";
+        public static readonly string FlagFlagsSuffix = ":flags";
+
+        // Returns a default flags operations setup for the given switchPrefix
+        public static IReadOnlyList<IOperationProvider> FlagsDefaultSetup(string switchPrefix)
+        {
+            List<IOperationProvider> flagOperations = new List<IOperationProvider>();
+            string on = string.Format("{0}+{1}", switchPrefix, FlagConditionalSuffix);
+            string off = string.Format("{0}-{1}", switchPrefix, FlagConditionalSuffix);
+            flagOperations.Add(new SetFlag("conditionals", on, off, string.Empty, string.Empty, string.Empty));
+
+            on = string.Format("{0}+{1}", switchPrefix, FlagReplacementSuffix);
+            off = string.Format("{0}-{1}", switchPrefix, FlagReplacementSuffix);
+            flagOperations.Add(new SetFlag("replacements", on, off, string.Empty, string.Empty, string.Empty));
+
+            on = string.Format("{0}+{1}", switchPrefix, FlagExpandVariablesSuffix);
+            off = string.Format("{0}-{1}", switchPrefix, FlagExpandVariablesSuffix);
+            flagOperations.Add(new SetFlag("expandVariables", on, off, string.Empty, string.Empty, string.Empty));
+
+            on = string.Format("{0}+{1}", switchPrefix, FlagIncludeSuffix);
+            off = string.Format("{0}-{1}", switchPrefix, FlagIncludeSuffix);
+            flagOperations.Add(new SetFlag("include", on, off, string.Empty, string.Empty, string.Empty));
+
+            on = string.Format("{0}+{1}", switchPrefix, FlagFlagsSuffix);
+            flagOperations.Add(new SetFlag("flags", on, off, string.Empty, string.Empty, string.Empty));
+
+            return flagOperations;
+        }
     }
 }

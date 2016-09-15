@@ -9,7 +9,9 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
-
+using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -23,8 +25,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyDictionary<string, Parameter> _parameters;
         private IReadOnlyList<FileSource> _sources;
         private Dictionary<string, Dictionary<string, JObject>> _special;
+        private IReadOnlyDictionary<string, IGlobalRunConfig> _operationSpecial;
         private Parameter _nameParameter;
         private string _safeNameName;
+        private string _oldSafeNameName;
 
         public IFile SourceFile { get; set; }
 
@@ -210,9 +214,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             ["**/*.asp"] = ProduceConfig("<!--", "<!--#", "", "", false),
                             ["**/*.aspx"] = ProduceConfig("<!--", "<!--#", "", "", false)
                         };
-
-
-
                     _special = specials;
                 }
 
@@ -220,9 +221,46 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        //IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> IRunnableProjectConfig.SpecialOperationConfig
+        IReadOnlyDictionary<string, IGlobalRunConfig> IRunnableProjectConfig.SpecialOperationConfig
+        {
+            get
+            {
+                if (_operationSpecial == null)
+                {
+                    //Dictionary<string, IReadOnlyList<IOperationProvider>> operationSpecials =
+                    //    new Dictionary<string, IReadOnlyList<IOperationProvider>>
+                    Dictionary<string, IGlobalRunConfig> operationSpecials = new Dictionary<string, IGlobalRunConfig>
+                        {
+                            ["**/*.json"] = ProduceOperationSetup("//", false, ConditionalType.CWithComments),
+                            ["**/*.css"] = ProduceOperationSetup("/*", false, ConditionalType.CBlockComments),
+                            ["**/*.css.min"] = ProduceOperationSetup("/*", false, ConditionalType.CBlockComments),
+                            ["**/*.cs"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.cpp"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.hpp"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.h"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.*proj"] = ProduceOperationSetup("<!--/", false, ConditionalType.Xml),
+                            ["**/*.*html"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.*htm"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.jsp"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.asp"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.aspx"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                        };
+                    _operationSpecial = operationSpecials;
+                }
+
+                return _operationSpecial;
+            }
+        }
+
+        // TODO: figure out why this is an instance variable, as opposed to just a local where it's used.
+        // It may be because it accumulates the results of each call
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
         IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//#", "////#", "//", true);
+
+        //IReadOnlyList<IOperationProvider> IRunnableProjectConfig.OperationConfig => ProduceOperationSetup("//", "//", true, ConditionalType.CWithComments);
+        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup("//", true, ConditionalType.CWithComments);
 
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
 
@@ -238,83 +276,123 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return config;
         }
 
+        // new version of ProduceConfig
+        // DONE:
+        //      ConditionalSetup
+        //      FlagsSetup
+        //      Replacements
+        //      Variables
+        // To Figure out:
+        //      Macros
+        // TODO: 
+        private IGlobalRunConfig ProduceOperationSetup(string switchPrefix, bool generateMacros, ConditionalType conditionalStyle)
+        {
+            // Note: conditional setup provides the comment strippers / preservers / changers that are needed for that conditional type.
+            // so no need to do the stripComments & preserveComments setup here that was in the old ProductConfig()
+            List<IOperationProvider> operations = new List<IOperationProvider>();
+            operations.AddRange(ConditionalConfig.ConditionalSetup(conditionalStyle, "C++", true, true, null));
+            operations.AddRange(FlagsConfig.FlagsDefaultSetup(switchPrefix));
+
+            IReadOnlyList<IReplacementTokens> macroGeneratedReplacements = null;
+            IReadOnlyList<IMacroConfig> macros = null;
+
+            if (generateMacros)
+            {
+                macros = ProduceMacroConfig(out macroGeneratedReplacements);
+            }
+
+            GlobalRunConfig config = new GlobalRunConfig()
+            {
+                Operations = operations,
+                VariableSetup = VariableConfig.DefaultVariableSetup(),
+                Macros = macros,
+                Replacements = macroGeneratedReplacements
+            };
+
+            return config;
+        }
+
         //TODO: Restructure this to take language idioms into account while allowing
         //  the expanded conditional syntax and operation toggling to work
         private Dictionary<string, JObject> ProduceConfig(string switchPrefix, string conditionalPrefix, string actionableConditionalPrefix, string commentToken, bool generateMacros)
-        {
+        { 
             Dictionary<string, JObject> cfg = new Dictionary<string, JObject>
             {
+//                {
+//                    "flags",    // migrated
+//                    JObject.Parse($@"{{
+//    ""conditionals"": {{
+//        ""on"": ""{switchPrefix}+:cnd"",
+//        ""off"": ""{switchPrefix}-:cnd""
+//    }},
+//    ""replacements"": {{    
+//        ""on"": ""{switchPrefix}+:replacements"",
+//        ""off"": ""{switchPrefix}-:replacements""
+//    }},
+//    ""expandVariables"": {{
+//        ""on"": ""{switchPrefix}+:vars"",
+//        ""off"": ""{switchPrefix}-:vars""
+//    }},
+//    ""flags"": {{
+//        ""off"": ""{switchPrefix}-:flags""
+//    }},
+//    ""include"": {{
+//        ""on"": ""{switchPrefix}+:include"",
+//        ""off"": ""{switchPrefix}-:include""
+//    }}
+//}}")
+//                },
+//                {
+//                    "conditionals", // migrated
+//                    JObject.Parse($@"{{
+//    ""if"": [ ""{conditionalPrefix}if"" ],
+//    ""else"": [ ""{conditionalPrefix}else"" ],
+//    ""elseif"": [ ""{conditionalPrefix}elseif"" ],
+//    ""endif"": [ ""{conditionalPrefix}endif"" ],
+//    ""evaluator"": ""C++"",
+//    ""wholeLine"": true,
+//    ""trim"": true
+//}}")
+//                },
+//                {
+//                    "variables",
+//                    JObject.Parse(@"{
+//    ""sources"": {
+//        ""environment"": ""env_{0}"",
+//        ""user"": ""usr_{0}"",
+//    },
+//    ""order"": [ ""environment"", ""user"" ],
+//    ""fallbackFormat"": ""{0}"",
+//    ""expand"": false
+//}")
+//                },
                 {
-                    "flags",
-                    JObject.Parse($@"{{
-    ""conditionals"": {{
-        ""on"": ""{switchPrefix}+:cnd"",
-        ""off"": ""{switchPrefix}-:cnd""
-    }},
-    ""replacements"": {{
-        ""on"": ""{switchPrefix}+:replacements"",
-        ""off"": ""{switchPrefix}-:replacements""
-    }},
-    ""expandVariables"": {{
-        ""on"": ""{switchPrefix}+:vars"",
-        ""off"": ""{switchPrefix}-:vars""
-    }},
-    ""flags"": {{
-        ""off"": ""{switchPrefix}-:flags""
-    }},
-    ""include"": {{
-        ""on"": ""{switchPrefix}+:include"",
-        ""off"": ""{switchPrefix}-:include""
-    }}
-}}")
-                },
-                {
-                    "conditionals",
-                    JObject.Parse($@"{{
-    ""if"": [ ""{conditionalPrefix}if"" ],
-    ""else"": [ ""{conditionalPrefix}else"" ],
-    ""elseif"": [ ""{conditionalPrefix}elseif"" ],
-    ""endif"": [ ""{conditionalPrefix}endif"" ],
-    ""evaluator"": ""C++"",
-    ""wholeLine"": true,
-    ""trim"": true
-}}")
-                },
-                {
-                    "variables",
-                    JObject.Parse(@"{
-    ""sources"": {
-        ""environment"": ""env_{0}"",
-        ""user"": ""usr_{0}"",
-    },
-    ""order"": [ ""environment"", ""user"" ],
-    ""fallbackFormat"": ""{0}"",
-    ""expand"": false
-}")
-                },
-                {
-                    "replacements",
-                    JObject.Parse($@"{{
-    ""{commentToken}"": {{
-        ""replaceWith"": """",
-        ""id"": ""stripComments""
-    }},
-    ""{commentToken}{commentToken}"": {{
-        ""replaceWith"": ""{commentToken}"",
-        ""id"": ""preserveDoubleComment""
-    }}
-}}")
+                    "replacements", new JObject()
                 }
+// These get setup in the conditional configurations as appropriate for the conditional.
+//                {
+//                    "replacements",
+//                    JObject.Parse($@"{{
+//    ""{commentToken}"": {{
+//        ""replaceWith"": """",
+//        ""id"": ""stripComments""
+//    }},
+//    ""{commentToken}{commentToken}"": {{
+//        ""replaceWith"": ""{commentToken}"",
+//        ""id"": ""preserveDoubleComment""
+//    }}
+//}}")
+//                }
             };
 
-            if (!string.IsNullOrEmpty(actionableConditionalPrefix))
-            {
-                JObject cndDef = cfg["conditionals"];
-                cndDef["actionableIf"] = new JArray {$"{actionableConditionalPrefix}if"};
-                cndDef["actionableElse"] = new JArray {$"{actionableConditionalPrefix}else"};
-                cndDef["actionableElseif"] = new JArray {$"{actionableConditionalPrefix}elseif"};
-                cndDef["actions"] = new JArray {"stripComments", "preserveDoubleComment"};
-            }
+            //if (!string.IsNullOrEmpty(actionableConditionalPrefix))
+            //{
+            //    JObject cndDef = cfg["conditionals"];
+            //    cndDef["actionableIf"] = new JArray { $"{actionableConditionalPrefix}if" };
+            //    cndDef["actionableElse"] = new JArray { $"{actionableConditionalPrefix}else" };
+            //    cndDef["actionableElseif"] = new JArray { $"{actionableConditionalPrefix}elseif" };
+            //    cndDef["actions"] = new JArray { "stripComments", "preserveDoubleComment" };
+            //}
 
             if (generateMacros)
             {
@@ -352,7 +430,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (symbol.Value.Binding == "safe_name")
                     {
-                        _safeNameName = symbol.Key;
+                        _oldSafeNameName = symbol.Key;
                     }
 
                     if (symbol.Value.Type == "computed" && generateMacros)
@@ -383,7 +461,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            if (_safeNameName == null && generateMacros)
+            if (_oldSafeNameName == null && generateMacros)
             {
                 cfg["macros"]["safe_name"] = JObject.Parse(@"{
     ""type"": ""regex"",
@@ -394,12 +472,79 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         ""replacement"": ""_""
     }]
 }");
+                _oldSafeNameName = "safe_name";
+            }
+
+            cfg["replacements"][SourceName] = _oldSafeNameName;
+
+            return cfg;
+        }
+
+        // might need to change the out param to <IOperationsProvider>
+        private IReadOnlyList<IMacroConfig> ProduceMacroConfig(out IReadOnlyList<IReplacementTokens> otherOperations)
+        {
+            List<IMacroConfig> macroConfigs = new List<IMacroConfig>();
+            List<IReplacementTokens> replacementsSetup = new List<IReplacementTokens>();
+
+            if (Guids != null)
+            {
+                int guidCount = 0;
+                foreach (Guid guid in Guids)
+                {
+                    int id = guidCount++;
+                    string replacementId = "guid" + id;
+                    macroConfigs.Add(new GuidMacroConfig(replacementId, "new", null));
+                    _guidToGuidPrefixMap[guid] = replacementId;
+                }
+            }
+
+            foreach (KeyValuePair<Guid, string> map in _guidToGuidPrefixMap)
+            {
+                foreach (char format in "ndbpxNDPBX")
+                {
+                    string newGuid = char.IsUpper(format) ? map.Key.ToString(format.ToString()).ToUpperInvariant() : map.Key.ToString(format.ToString()).ToLowerInvariant();
+                    replacementsSetup.Add(new ReplacementTokens(map.Value + "-" + format, newGuid));
+                }
+            }
+
+            if (Symbols != null)
+            {
+                foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                {
+                    if (symbol.Value.Binding == "safe_name")
+                    {
+                        _safeNameName = symbol.Key; // save for later, to generate the safe_name regex macro
+                    }
+
+                    if (symbol.Value.Type == "computed")
+                    {
+                        string action = ((ComputedSymbol)symbol.Value).Value;
+                        macroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, "C++"));
+                    }
+                    // TODO: Figure out how to deal with these
+                    //else if (symbol.Value.Type == "generated")
+                    //{
+                    //}
+
+                    if (symbol.Value.Replaces != null)
+                    {
+                        replacementsSetup.Add(new ReplacementTokens(symbol.Value.Replaces, symbol.Key));
+                    }
+                }
+            }
+
+            if (_safeNameName == null)
+            {
+                IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>();
+                steps.Add(new KeyValuePair<string, string>(@"\\W", "_"));
+                macroConfigs.Add(new RegexMacroConfig("safe_name", "replace", NameParameter.Name, steps));
                 _safeNameName = "safe_name";
             }
 
-            cfg["replacements"][SourceName] = _safeNameName;
+            replacementsSetup.Add(new ReplacementTokens(_safeNameName, SourceName));
+            otherOperations = replacementsSetup;
 
-            return cfg;
+            return macroConfigs;
         }
 
         private static IReadOnlyList<string> JTokenToCollection(JToken token, IFile sourceFile, string[] defaultSet)
@@ -437,6 +582,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyDictionary<string, JObject> Config => ((IRunnableProjectConfig)_simpleConfigModel).Config;
 
+            public IGlobalRunConfig OperationConfig => ((IRunnableProjectConfig)_simpleConfigModel).OperationConfig;
+
             public string DefaultName => _simpleConfigModel.DefaultName ?? _simpleConfigModel.SourceName;
 
             public string GroupIdentity => _simpleConfigModel.GroupIdentity;
@@ -460,6 +607,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             public IReadOnlyList<FileSource> Sources => _sources;
 
             public IReadOnlyDictionary<string, Dictionary<string, JObject>> Special => ((IRunnableProjectConfig)_simpleConfigModel).Special;
+
+            public IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig => ((IRunnableProjectConfig)_simpleConfigModel).SpecialOperationConfig;
 
             public IReadOnlyDictionary<string, string> Tags => _simpleConfigModel.Tags;
 

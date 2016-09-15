@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private static IReadOnlyList<IOperationConfig> _operationConfigReaders;
 
-        private static void SetupOperations(IComponentManager componentManager)
+        private static void SetupOperationConfigReaders(IComponentManager componentManager)
         {
             if (_operationConfigReaders == null)
             {
@@ -47,9 +47,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special, IComponentManager componentManager)
+        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, 
+            IReadOnlyDictionary<string, JObject> operationConfig, 
+            IReadOnlyDictionary<string, Dictionary<string, JObject>> specialConfig, 
+            IComponentManager componentManager, 
+            IGlobalRunConfig operations, 
+            IReadOnlyDictionary<string, IGlobalRunConfig> specialOperations)
         {
-            SetupOperations(componentManager);
+            SetupOperationConfigReaders(componentManager);
 
             int expect = source.Include?.Count ?? 0;
             List<IPathMatcher> includes = new List<IPathMatcher>(expect);
@@ -87,20 +92,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             IVariableCollection variables;
-            Operations = SetupOperations(componentManager, parameters, templateRoot, operations, out variables);
+            Operations = SetupOperations(componentManager, parameters, templateRoot, operationConfig, operations, out variables);
             RootVariableCollection = variables;
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
 
-            if (special != null)
+            if (specialConfig != null)
             {
-                foreach (KeyValuePair<string, Dictionary<string, JObject>> specialEntry in special)
+                foreach (KeyValuePair<string, Dictionary<string, JObject>> specialEntry in specialConfig)
                 {
                     IReadOnlyList<IOperationProvider> specialOps = null;
                     IVariableCollection specialVariables = variables;
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = SetupOperations(componentManager, parameters, templateRoot, specialEntry.Value, out specialVariables);
+                        IGlobalRunConfig preMadeOps;
+                        if (! specialOperations.TryGetValue(specialEntry.Key, out preMadeOps))
+                        {
+                            preMadeOps = new GlobalRunConfig();
+                        }
+
+                        specialOps = SetupOperations(componentManager, parameters, templateRoot, specialEntry.Value, preMadeOps, out specialVariables);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
@@ -111,26 +122,135 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operations, out IVariableCollection variables)
+        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, 
+            IReadOnlyDictionary<string, JObject> operationConfig, 
+            IGlobalRunConfig runConfig, 
+            out IVariableCollection variables)
+        {
+            List<IOperationProvider> operations = new List<IOperationProvider>();
+            operations.AddRange(runConfig.Operations);
+
+            // this loop will eventually get phased out of any SimpleConfigModel based processing - there will be nothing remaining that uses it
+            // but stuff from ConfigModel will use it eventually.
+            //foreach (IOperationConfig configReader in _operationConfigReaders)
+            //{
+            //    JObject data;
+            //    if (operationConfig.TryGetValue(configReader.Key, out data))
+            //    {
+            //        IVariableCollection vars = SetupVariables(parameters, runConfig.VariableSetup, null, true);
+            //        operations.AddRange(configReader.Process(componentManager, data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet)parameters));
+            //    }
+            //}
+
+            if (runConfig.Macros != null)
+            {
+                IVariableCollection varsForMacros = SetupVariables(parameters, runConfig.VariableSetup, null, true);
+                MacrosConfig macroProcessor = new MacrosConfig();
+                macroProcessor.Setup(componentManager, runConfig.Macros, varsForMacros, parameters);
+            }
+
+            List<IOperationProvider> newReplaceSetup = new List<IOperationProvider>();
+            if (runConfig.Replacements != null)
+            {
+                foreach (IReplacementTokens replaceSetup in runConfig.Replacements)
+                {
+                    IOperationProvider replacement = ReplacementConfig.Setup(replaceSetup, parameters);
+                    if (replacement != null)
+                    {
+                        newReplaceSetup.Add(replacement);
+                    }
+                }
+            }
+
+            variables = SetupVariables(parameters, runConfig.VariableSetup, operations);
+            return operations;
+        }
+
+        private static IVariableCollection SetupVariables(IParameterSet parameters, IVariableConfig variableConfig, List<IOperationProvider> operations, bool allParameters = false)
+        {
+            IVariableCollection variables = VariableCollection.Root();
+
+            if (variableConfig.Expand)
+            {
+                operations?.Add(new ExpandVariables(null));
+            }
+
+            Dictionary<string, VariableCollection> collections = new Dictionary<string, VariableCollection>();
+
+            foreach (KeyValuePair<string, string> source in variableConfig.Sources)
+            {
+                VariableCollection variablesForSource = null;
+                string format = source.Value;
+
+                switch (source.Key)
+                {
+                    case "environment":
+                        variablesForSource = VariableCollection.Environment(format);
+
+                        if (variableConfig.FallbackFormat != null)
+                        {
+                            variablesForSource = VariableCollection.Environment(variablesForSource, variableConfig.FallbackFormat);
+                        }
+                        break;
+                    case "user":
+                        variablesForSource = ProduceUserVariablesCollection(parameters, format, allParameters);
+
+                        if (variableConfig.FallbackFormat != null)
+                        {
+                            VariableCollection variablesFallback = ProduceUserVariablesCollection(parameters, variableConfig.FallbackFormat, allParameters);
+                            variablesFallback.Parent = variablesForSource;
+                            variablesForSource = variablesFallback;
+                        }
+                        break;
+                }
+
+                collections[source.Key] = variablesForSource;
+            }
+
+            foreach (string order in variableConfig.Order)
+            {
+                IVariableCollection current = collections[order.ToString()];
+
+                IVariableCollection tmp = current;
+                while (tmp.Parent != null)
+                {
+                    tmp = tmp.Parent;
+                }
+
+                tmp.Parent = variables;
+                variables = current;
+            }
+
+            return variables;
+        }
+
+        #region Old Method Versions 
+
+        // this version uses the JSON config to do setup
+        // it was already partly migrated to using pre-read configs before i preserverd a copy
+        // use git history to see the original
+        private static IReadOnlyList<IOperationProvider> SetupOperations_FROM_JSON_CONFIG(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operationConfig, IReadOnlyList<IOperationProvider> operations, out IVariableCollection variables)
         {
             List<IOperationProvider> result = new List<IOperationProvider>();
-            JObject variablesSection = operations["variables"];
+            result.AddRange(operations);
+
+            JObject variablesSection = operationConfig["variables"];
 
             foreach (IOperationConfig configReader in _operationConfigReaders)
             {
                 JObject data;
-                if (operations.TryGetValue(configReader.Key, out data))
+                if (operationConfig.TryGetValue(configReader.Key, out data))
                 {
-                    IVariableCollection vars = SetupVariables(parameters, variablesSection, null, true);
-                    result.AddRange(configReader.Process(componentManager, data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet) parameters));
+                    IVariableCollection vars = SetupVariables_FROM_JSON_CONFIG(parameters, variablesSection, null, true);
+                    result.AddRange(configReader.Process(componentManager, data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet)parameters));
                 }
             }
 
-            variables = SetupVariables(parameters, variablesSection, result);
+            variables = SetupVariables_FROM_JSON_CONFIG(parameters, variablesSection, result);
             return result;
         }
 
-        private static IVariableCollection SetupVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
+        private static IVariableCollection SetupVariables_FROM_JSON_CONFIG(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
         {
             IVariableCollection vc = VariableCollection.Root();
             JToken expandToken;
@@ -189,6 +309,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             return vc;
         }
+
+        #endregion Old Method Versions 
 
         private static VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
         {

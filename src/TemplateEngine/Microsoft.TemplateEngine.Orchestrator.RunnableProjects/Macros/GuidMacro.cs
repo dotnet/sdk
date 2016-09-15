@@ -1,6 +1,7 @@
 using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
@@ -10,6 +11,58 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         public Guid Id => new Guid("10919008-4E13-4FA8-825C-3B4DA855578E");
 
         public string Type => "guid";
+        public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        {
+            GuidMacroConfig config = rawConfig as GuidMacroConfig;
+
+            if (config == null)
+            {
+                throw new InvalidCastException("Couldn't cast the rawConfig as GuidMacroConfig");
+            }
+
+            switch (config.Action)
+            {
+                case "new":
+                    if (config.Format != null)
+                    {
+                        Guid g = Guid.NewGuid();
+                        string value = char.IsUpper(config.Format[0]) ? g.ToString(config.Format[0].ToString()).ToUpperInvariant() : g.ToString(config.Format[0].ToString()).ToLowerInvariant();
+                        Parameter p = new Parameter
+                        {
+                            IsVariable = true,
+                            Name = config.VariableName
+                        };
+
+                        setter(p, value);
+                    }
+                    else
+                    {
+                        Guid g = Guid.NewGuid();
+                        string guidFormats = GuidMacroConfig.DefaultFormats;
+                        for (int i = 0; i < guidFormats.Length; ++i)
+                        {
+                            string value = char.IsUpper(guidFormats[i]) ? g.ToString(guidFormats[i].ToString()).ToUpperInvariant() : g.ToString(guidFormats[i].ToString()).ToLowerInvariant();
+                            Parameter p = new Parameter
+                            {
+                                IsVariable = true,
+                                Name = config.VariableName + "-" + guidFormats[i]
+                            };
+
+                            setter(p, value);
+                        }
+
+                        Parameter pd = new Parameter
+                        {
+                            IsVariable = true,
+                            Name = config.VariableName
+                        };
+
+                        setter(pd, g.ToString("D"));
+                    }
+
+                    break;
+            }
+        }
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
         {

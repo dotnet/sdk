@@ -28,7 +28,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Dictionary<string, JObject> Config { get; set; }
 
+        public IGlobalRunConfig OperationConfig { get; set; }
+
         public Dictionary<string, Dictionary<string, JObject>> Special { get; set; }
+
+        public IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig { get; set; }
 
         IReadOnlyDictionary<string, Parameter> IRunnableProjectConfig.Parameters => Parameters;
 
@@ -36,7 +40,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, Dictionary<string, JObject>> IRunnableProjectConfig.Special => Special;
 
+        IReadOnlyDictionary<string, IGlobalRunConfig> IRunnableProjectConfig.SpecialOperationConfig => SpecialOperationConfig;
+
         IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => Config;
+
+        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => OperationConfig;
 
         IReadOnlyList<FileSource> IRunnableProjectConfig.Sources => Sources;
 

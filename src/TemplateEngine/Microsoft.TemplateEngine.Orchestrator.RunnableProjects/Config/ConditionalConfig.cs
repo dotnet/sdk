@@ -47,5 +47,174 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             yield return new Conditional(tokenVariants, wholeLine, trim, evaluator, id);
         }
+
+        public static IReadOnlyList<IOperationProvider> ConditionalSetup(ConditionalType style, string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            List<IOperationProvider> setup;
+
+            switch (style)
+            {
+                case ConditionalType.Xml:
+                    setup = XmlConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
+                case ConditionalType.Razor:
+                    setup = RazorConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
+                case ConditionalType.CWithComments:
+                    setup = CStyleWithCommentsConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
+                case ConditionalType.CNoComments:
+                    setup = CStyleNoCommentsConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
+                case ConditionalType.CBlockComments:
+                    setup = CBlockCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
+                default:
+                    throw new Exception($"Unrecognized conditional type {style}");
+            }
+
+            return setup;
+        }
+
+        public static List<IOperationProvider> XmlConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            // This is the operationId (flag) for the balanced nesting.
+            string commentFixingOperationId = "Fix pseudo comments";
+
+            // This is not an operationId (flag), it does not toggle the operation.
+            // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
+            // It lets BalancedNesting know it's been reset.
+            string commentFixingResetId = "Reset pseudo comment fixer";
+
+            IOperationProvider balancedComments = new BalancedNesting("<!--", "-->", "-- >", commentFixingOperationId, commentFixingResetId);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                EndIfTokens = new[] { "#endif", "<!--#endif" },
+                ActionableIfTokens = new[] { "<!--#if" },
+                ActionableElseTokens = new[] { "#else", "<!--#else" },
+                ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" },
+                ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                balancedComments
+            };
+        }
+
+        public static List<IOperationProvider> RazorConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            // This is the operationId (flag) for the balanced nesting
+            string commentFixingOperationId = "Fix pseudo comments";
+
+            // This is not an operationId (flag), it does not toggle the operation.
+            // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
+            // Tt lets BalanceNesting know it's been reset
+            string commentFixingResetId = "Reset pseudo comment fixer";
+
+            IOperationProvider balancedComments = new BalancedNesting("@*", "*@", "* @", commentFixingOperationId, commentFixingResetId);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                EndIfTokens = new[] { "#endif", "@*#endif" },
+                ActionableIfTokens = new[] { "@*#if" },
+                ActionableElseTokens = new[] { "#else", "@*#else" },
+                ActionableElseIfTokens = new[] { "#elseif", "@*#elseif" },
+                ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                balancedComments
+            };
+        }
+
+        //ProduceConfig("/*", "/*#", "", "", false),
+        public static List<IOperationProvider> CBlockCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            // This is the operationId (flag) for the balanced nesting
+            string commentFixingOperationId = "Fix pseudo comments";
+
+            // This is not an operationId (flag), it does not toggle the operation.
+            // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
+            // Tt lets BalanceNesting know it's been reset
+            string commentFixingResetId = "Reset pseudo comment fixer";
+
+            IOperationProvider balancedComments = new BalancedNesting("/*", "*/", "* /", commentFixingOperationId, commentFixingResetId);
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                EndIfTokens = new[] { "#endif", "/*#endif" },
+                ActionableIfTokens = new[] { "/*#if" },
+                ActionableElseTokens = new[] { "#else", "/*#else" },
+                ActionableElseIfTokens = new[] { "#elseif", "/*#elseif" },
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                balancedComments
+            };
+        }
+
+        public static List<IOperationProvider> CStyleWithCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            string replaceOperationId = "Replacement: (//) ()";
+            string uncommentOperationId = "Uncomment (////) -> (//)";
+            IOperationProvider uncomment = new Replacement("////", "//", uncommentOperationId);
+            IOperationProvider commentReplace = new Replacement("//", string.Empty, replaceOperationId);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                IfTokens = new[] { "//#if" },
+                ElseTokens = new[] { "//#else" },
+                ElseIfTokens = new[] { "//#elseif" },
+                EndIfTokens = new[] { "//#endif" },
+                ActionableIfTokens = new[] { "////#if" },
+                ActionableElseIfTokens = new[] { "////#elseif" },
+                ActionableElseTokens = new[] { "////#else" },
+                ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                uncomment,
+                commentReplace
+            };
+        }
+
+        public static List<IOperationProvider> CStyleNoCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                IfTokens = new[] { "#if" },
+                ElseTokens = new[] { "#else" },
+                ElseIfTokens = new[] { "#elseif" },
+                EndIfTokens = new[] { "#endif" }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional
+            };
+        }
     }
 }

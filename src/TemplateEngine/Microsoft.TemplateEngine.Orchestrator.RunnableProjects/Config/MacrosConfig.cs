@@ -19,6 +19,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public int Order => -10000;
 
+        public IEnumerable<IOperationProvider> Setup(IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
+        {
+            EnsureMacros(componentManager);
+
+            ParameterSetter setter = (p, value) =>
+            {
+                ((RunnableProjectGenerator.ParameterSet)parameters).AddParameter(p);
+                parameters.ResolvedValues[p] = value;
+            };
+
+            foreach (IMacroConfig config in macroConfigs)
+            {
+                IMacro macroObject;
+                if (_macros.TryGetValue(config.Type, out macroObject))
+                {
+                    macroObject.EvaluateConfig(variables, config, parameters, setter);
+                }
+            }
+
+            return Empty<IOperationProvider>.List.Value;
+        }
+
         public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
             EnsureMacros(componentManager);

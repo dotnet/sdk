@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate) template;
 
             RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
-            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special, componentManager);
+            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special, componentManager, tmplt.Config.OperationConfig, tmplt.Config.SpecialOperationConfig);
             IOperationProvider[] providers = configRunSpec.Operations.ToArray();
 
             foreach (KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (FileSource source in m.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special, componentManager);
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special, componentManager, m.OperationConfig, m.SpecialOperationConfig);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 o.Run(runSpec, tmplt.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }

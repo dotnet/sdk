@@ -12,7 +12,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, Dictionary<string, JObject>> Special { get; }
 
+        IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig { get; }
+
         IReadOnlyDictionary<string, JObject> Config { get; }
+
+        IGlobalRunConfig OperationConfig { get; }
 
         IReadOnlyList<FileSource> Sources { get; }
 
