@@ -10,11 +10,11 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IParameterSet GetParametersForTemplate(ITemplate template);
 
-        IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source);
+        IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source, IComponentManager componentManager);
 
-        bool TryGetTemplateFromConfig(IFileSystemInfo config, out ITemplate template);
+        bool TryGetTemplateFromConfig(IFileSystemInfo config, IComponentManager componentManager, out ITemplate template);
 
-        bool TryGetTemplateFromSource(IMountPoint target, string name, out ITemplate template);
+        bool TryGetTemplateFromSource(IMountPoint target, string name, IComponentManager componentManager, out ITemplate template);
 
         object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue);
     }

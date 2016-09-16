@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class MacrosConfig : IOperationConfig
+    public class MacrosOperationConfig : IOperationConfig
     {
         private static IReadOnlyDictionary<string, IMacro> _macros;
 

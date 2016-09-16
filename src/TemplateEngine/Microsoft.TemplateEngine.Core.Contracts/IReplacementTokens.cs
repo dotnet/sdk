@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 {
     public interface IReplacementTokens
     {
-        string Identity { get; }
+        string VariableName { get; }
 
         string OriginalValue { get; }
     }

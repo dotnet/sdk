@@ -79,12 +79,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         public static List<IOperationProvider> XmlConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             // This is the operationId (flag) for the balanced nesting.
-            string commentFixingOperationId = "Fix pseudo comments";
+            string commentFixingOperationId = "Fix pseudo comments (XML)";
 
             // This is not an operationId (flag), it does not toggle the operation.
             // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
             // It lets BalancedNesting know it's been reset.
-            string commentFixingResetId = "Reset pseudo comment fixer";
+            string commentFixingResetId = "Reset pseudo comment fixer (XML)";
 
             IOperationProvider balancedComments = new BalancedNesting("<!--", "-->", "-- >", commentFixingOperationId, commentFixingResetId);
 
@@ -110,12 +110,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         public static List<IOperationProvider> RazorConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             // This is the operationId (flag) for the balanced nesting
-            string commentFixingOperationId = "Fix pseudo comments";
+            string commentFixingOperationId = "Fix pseudo comments (Razor)";
 
             // This is not an operationId (flag), it does not toggle the operation.
             // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
             // Tt lets BalanceNesting know it's been reset
-            string commentFixingResetId = "Reset pseudo comment fixer";
+            string commentFixingResetId = "Reset pseudo comment fixer (Razor)";
 
             IOperationProvider balancedComments = new BalancedNesting("@*", "*@", "* @", commentFixingOperationId, commentFixingResetId);
 
@@ -142,12 +142,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         public static List<IOperationProvider> CBlockCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             // This is the operationId (flag) for the balanced nesting
-            string commentFixingOperationId = "Fix pseudo comments";
+            string commentFixingOperationId = "Fix pseudo comments (C Block)";
 
             // This is not an operationId (flag), it does not toggle the operation.
             // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
             // Tt lets BalanceNesting know it's been reset
-            string commentFixingResetId = "Reset pseudo comment fixer";
+            string commentFixingResetId = "Reset pseudo comment fixer (C Block)";
 
             IOperationProvider balancedComments = new BalancedNesting("/*", "*/", "* /", commentFixingOperationId, commentFixingResetId);
             ConditionalTokens tokens = new ConditionalTokens

@@ -28,11 +28,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 case "replace":
                     object working;
-                    if (!vars.TryGetValue(config.VariableName, out working))
+                    if (!vars.TryGetValue(config.SourceVariable, out working))
                     {
                         ITemplateParameter param;
                         object resolvedValue;
-                        if (!parameters.TryGetParameterDefinition(config.VariableName, out param) || !parameters.ResolvedValues.TryGetValue(param, out resolvedValue))
+                        if (!parameters.TryGetParameterDefinition(config.SourceVariable, out param) || !parameters.ResolvedValues.TryGetValue(param, out resolvedValue))
                         {
                             value = string.Empty;
                         }

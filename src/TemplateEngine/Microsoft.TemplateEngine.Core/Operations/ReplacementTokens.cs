@@ -4,13 +4,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class ReplacementTokens : IReplacementTokens
     {
-        public string Identity { get; private set; }
+        public string VariableName { get; }
 
-        public string OriginalValue { get; private set; }
+        public string OriginalValue { get; }
 
         public ReplacementTokens(string identity, string originalValue)
         {
-            Identity = identity;
+            VariableName = identity;
             OriginalValue = originalValue;
         }
     }

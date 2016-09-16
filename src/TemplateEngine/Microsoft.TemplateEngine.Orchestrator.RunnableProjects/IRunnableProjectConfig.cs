@@ -10,10 +10,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         IReadOnlyDictionary<string, Parameter> Parameters { get; }
 
+        // TODO: remove, it's being deprecated
         IReadOnlyDictionary<string, Dictionary<string, JObject>> Special { get; }
 
         IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig { get; }
 
+        // TODO: remove, it's being deprecated
         IReadOnlyDictionary<string, JObject> Config { get; }
 
         IGlobalRunConfig OperationConfig { get; }
@@ -40,6 +42,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<IPostAction> PostActions { get; }
 
-        IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations);
+        IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations, IComponentManager componentManager);
     }
 }

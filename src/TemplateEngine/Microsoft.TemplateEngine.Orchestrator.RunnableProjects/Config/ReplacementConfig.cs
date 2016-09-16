@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         public static IOperationProvider Setup(IReplacementTokens tokens, IParameterSet parameters)
         {
             ITemplateParameter param;
-            if (parameters.TryGetParameterDefinition(tokens.Identity, out param))
+            if (parameters.TryGetParameterDefinition(tokens.VariableName, out param))
             {
                 Replacement replacement;
                 try
@@ -29,6 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 }
                 catch (KeyNotFoundException ex)
                 {
+                    // TODO: make this do what's in the catch block in Process()
                     throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
                 }
 
