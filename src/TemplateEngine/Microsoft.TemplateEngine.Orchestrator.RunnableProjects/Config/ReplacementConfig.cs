@@ -30,6 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 catch (KeyNotFoundException ex)
                 {
                     // TODO: make this do what's in the catch block in Process()
+                    // actually probably not needed - remove this comment when testing is done.
                     throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
                 }
 

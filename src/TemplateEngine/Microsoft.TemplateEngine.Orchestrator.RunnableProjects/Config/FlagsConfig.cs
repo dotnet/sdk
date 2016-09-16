@@ -39,11 +39,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
         }
 
-        public static readonly string FlagConditionalSuffix = ":cnd";
-        public static readonly string FlagReplacementSuffix = ":replacements";
-        public static readonly string FlagExpandVariablesSuffix = ":vars";
-        public static readonly string FlagIncludeSuffix = ":include";
-        public static readonly string FlagFlagsSuffix = ":flags";
+        private static readonly string FlagConditionalSuffix = ":cnd";
+        private static readonly string FlagReplacementSuffix = ":replacements";
+        private static readonly string FlagExpandVariablesSuffix = ":vars";
+        private static readonly string FlagIncludeSuffix = ":include";
+        private static readonly string FlagFlagsSuffix = ":flags";
 
         // Returns a default flags operations setup for the given switchPrefix
         public static IReadOnlyList<IOperationProvider> FlagsDefaultSetup(string switchPrefix)

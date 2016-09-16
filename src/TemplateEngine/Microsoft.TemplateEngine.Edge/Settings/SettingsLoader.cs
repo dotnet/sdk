@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             ITemplate template;
             using (Timing.Over("Template from config"))
-                if (generator.TryGetTemplateFromConfig(config, _componentManager, out template))
+                if (generator.TryGetTemplateFromConfig(config, out template))
                 {
                     return template;
                 }

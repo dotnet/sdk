@@ -3,7 +3,6 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    // TODO: make this an IOperationConfig
     public class VariableConfig : IVariableConfig
     {
         public IReadOnlyDictionary<string, string> Sources { get; set; }

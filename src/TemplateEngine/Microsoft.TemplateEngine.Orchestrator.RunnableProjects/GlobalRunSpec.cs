@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -15,18 +14,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GlobalRunSpec : IGlobalRunSpec
     {
-        //private static IReadOnlyList<IOperationConfig> _operationConfigReaders;
-
-        //private static void SetupOperationConfigReaders(IComponentManager componentManager)
-        //{
-        //    if (_operationConfigReaders == null)
-        //    {
-        //        List<IOperationConfig> operationConfigReaders = componentManager.OfType<IOperationConfig>().ToList();
-        //        operationConfigReaders.Sort((x, y) => x.Order.CompareTo(y.Order));
-        //        _operationConfigReaders = operationConfigReaders;
-        //    }
-        //}
-
         public IReadOnlyList<IPathMatcher> Exclude { get; }
 
         public IReadOnlyList<IPathMatcher> Include { get; }
@@ -51,11 +38,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IGlobalRunConfig operations, 
             IReadOnlyDictionary<string, IGlobalRunConfig> specialOperations)
         {
-            //SetupOperationConfigReaders(componentManager);
             Include = SetupPathInfoFromSource(source.Include);
             CopyOnly = SetupPathInfoFromSource(source.CopyOnly);
             Exclude = SetupPathInfoFromSource(source.Exclude);
-
             Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             // regular operations
@@ -91,9 +76,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             List<IPathMatcher> paths = new List<IPathMatcher>(expect);
             if (fileSources != null && expect > 0)
             {
-                foreach (string include in fileSources)
+                foreach (string source in fileSources)
                 {
-                    paths.Add(new GlobbingPatternMatcher(include));
+                    paths.Add(new GlobbingPatternMatcher(source));
                 }
             }
 
@@ -106,19 +91,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
             operations.AddRange(runConfig.Operations);
-
-            // this loop will eventually get phased out of any SimpleConfigModel based processing - there will be nothing remaining that uses it
-            // but stuff from ConfigModel will use it eventually - while refactoring its transition in config processing
-            // ... after that it gets deleted.
-            //foreach (IOperationConfig configReader in _operationConfigReaders)
-            //{
-            //    JObject data;
-            //    if (operationConfig.TryGetValue(configReader.Key, out data))
-            //    {
-            //        IVariableCollection vars = SetupVariables(parameters, runConfig.VariableSetup, null, true);
-            //        operations.AddRange(configReader.Process(componentManager, data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet)parameters));
-            //    }
-            //}
 
             if (runConfig.Macros != null)
             {

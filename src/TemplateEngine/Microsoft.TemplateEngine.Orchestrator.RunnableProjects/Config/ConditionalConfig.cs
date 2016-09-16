@@ -170,8 +170,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public static List<IOperationProvider> CStyleWithCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
-            string replaceOperationId = "Replacement: (//) ()";
-            string uncommentOperationId = "Uncomment (////) -> (//)";
+            string replaceOperationId = "Replacement (C style): (//) -> ()";
+            string uncommentOperationId = "Uncomment (C style): (////) -> (//)";
             IOperationProvider uncomment = new Replacement("////", "//", uncommentOperationId);
             IOperationProvider commentReplace = new Replacement("//", string.Empty, replaceOperationId);
 

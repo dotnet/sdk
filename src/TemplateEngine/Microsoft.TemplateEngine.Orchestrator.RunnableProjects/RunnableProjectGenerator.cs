@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -77,12 +76,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return new ParameterSet(tmplt.Config);
         }
 
-        public IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source, IComponentManager componentManager)
+        public IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source)
         {
-            return GetTemplatesFromDir(source.Root, componentManager).ToList();
+            return GetTemplatesFromDir(source.Root).ToList();
         }
 
-        public bool TryGetTemplateFromConfig(IFileSystemInfo config, IComponentManager componentManager, out ITemplate template)
+        public bool TryGetTemplateFromConfig(IFileSystemInfo config, out ITemplate template)
         {
             IFile file = config as IFile;
 
@@ -96,7 +95,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 JObject srcObject = ReadConfigModel(file);
 
-                template = new RunnableProjectTemplate(srcObject, this, file, RunnableProjectConfigConverter.FromJObject(srcObject, componentManager));
+                template = new RunnableProjectTemplate(srcObject, this, file, RunnableProjectConfigConverter.FromJObject(srcObject));
 
                 return true;
             }
@@ -119,21 +118,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private IEnumerable<ITemplate> GetTemplatesFromDir(IDirectory folder, IComponentManager componentManager)
+        private IEnumerable<ITemplate> GetTemplatesFromDir(IDirectory folder)
         {
             foreach (IFile file in folder.EnumerateFiles(".netnew.json", SearchOption.AllDirectories))
             {
                 ITemplate tmp;
-                if (TryGetTemplateFromConfig(file, componentManager, out tmp))
+                if (TryGetTemplateFromConfig(file, out tmp))
                 {
                     yield return tmp;
                 }
             }
         }
 
-        public bool TryGetTemplateFromSource(IMountPoint target, string name, IComponentManager componentManager, out ITemplate template)
+        public bool TryGetTemplateFromSource(IMountPoint target, string name, out ITemplate template)
         {
-            template = GetTemplatesFromSource(target, componentManager).FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+            template = GetTemplatesFromSource(target).FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
             return template != null;
         }
 

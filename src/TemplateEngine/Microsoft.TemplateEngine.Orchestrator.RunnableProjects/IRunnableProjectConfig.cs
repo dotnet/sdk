@@ -10,13 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         IReadOnlyDictionary<string, Parameter> Parameters { get; }
 
-        // TODO: remove, it's being deprecated
-        IReadOnlyDictionary<string, Dictionary<string, JObject>> Special { get; }
-
         IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig { get; }
-
-        // TODO: remove, it's being deprecated
-        IReadOnlyDictionary<string, JObject> Config { get; }
 
         IGlobalRunConfig OperationConfig { get; }
 

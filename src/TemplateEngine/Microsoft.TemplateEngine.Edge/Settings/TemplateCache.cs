@@ -46,8 +46,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
                     {
-                        IComponentManager componentManager = SettingsLoader.Components;
-                        foreach (ITemplate template in generator.GetTemplatesFromSource(mountPoint, componentManager))
+                        foreach (ITemplate template in generator.GetTemplatesFromSource(mountPoint))
                         {
                             SettingsLoader.AddTemplate(template);
                             SettingsLoader.AddMountPoint(mountPoint);

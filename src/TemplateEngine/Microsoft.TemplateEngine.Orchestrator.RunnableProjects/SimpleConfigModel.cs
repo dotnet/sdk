@@ -7,11 +7,11 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
-using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -24,11 +24,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyDictionary<string, Parameter> _parameters;
         private IReadOnlyList<FileSource> _sources;
-        //private Dictionary<string, Dictionary<string, JObject>> _special;
-        private IReadOnlyDictionary<string, IGlobalRunConfig> _operationSpecial;
+        private IReadOnlyDictionary<string, IGlobalRunConfig> _specialOperationConfig;
         private Parameter _nameParameter;
         private string _safeNameName;
-        //private string _oldSafeNameName;
 
         public IFile SourceFile { get; set; }
 
@@ -192,43 +190,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        IReadOnlyDictionary<string, Dictionary<string, JObject>> IRunnableProjectConfig.Special
-        {
-            get
-            {
-                throw new NotSupportedException("this is being deprecated");
-
-                //if (_special == null)
-                //{
-                //    Dictionary<string, Dictionary<string, JObject>> specials =
-                //        new Dictionary<string, Dictionary<string, JObject>>
-                //        {
-                //            ["**/*.json"] = ProduceConfig("//", "//#", "////#", "//", false),
-                //            ["**/*.css"] = ProduceConfig("/*", "/*#", "", "", false),
-                //            ["**/*.css.min"] = ProduceConfig("/*", "/*#", "", "", false),
-                //            ["**/*.cs"] = ProduceConfig("//", "#", "", "", false),
-                //            ["**/*.cpp"] = ProduceConfig("//", "#", "", "", false),
-                //            ["**/*.hpp"] = ProduceConfig("//", "#", "", "", false),
-                //            ["**/*.h"] = ProduceConfig("//", "#", "", "", false),
-                //            ["**/*.*proj"] = ProduceConfig("<!--/", "<!--#", "", "", false),
-                //            ["**/*.*html"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                //            ["**/*.*htm"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                //            ["**/*.jsp"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                //            ["**/*.asp"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                //            ["**/*.aspx"] = ProduceConfig("<!--", "<!--#", "", "", false)
-                //        };
-                //    _special = specials;
-                //}
-
-                //return _special;
-            }
-        }
-
         IReadOnlyDictionary<string, IGlobalRunConfig> IRunnableProjectConfig.SpecialOperationConfig
         {
             get
             {
-                if (_operationSpecial == null)
+                if (_specialOperationConfig == null)
                 {
                     Dictionary<string, IGlobalRunConfig> operationSpecials = new Dictionary<string, IGlobalRunConfig>
                         {
@@ -246,25 +212,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             ["**/*.asp"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
                             ["**/*.aspx"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
                         };
-                    _operationSpecial = operationSpecials;
+                    _specialOperationConfig = operationSpecials;
                 }
 
-                return _operationSpecial;
+                return _specialOperationConfig;
             }
         }
 
-        // TODO: figure out why this is an instance variable, as opposed to just a local where it's used.
-        // It may be because it accumulates the results of each call
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
-
-        //IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//#", "////#", "//", true);
-        IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config
-        {
-            get
-            {
-                throw new NotSupportedException("This is being deprecated");
-            }
-        }
 
         IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup("//", true, ConditionalType.CWithComments);
 
@@ -331,179 +286,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return config;
         }
 
-        #region old deprecated code
-
-        //TODO: Restructure this to take language idioms into account while allowing
-        //  the expanded conditional syntax and operation toggling to work
-        //private Dictionary<string, JObject> ProduceConfig(string switchPrefix, string conditionalPrefix, string actionableConditionalPrefix, string commentToken, bool generateMacros)
-        //{
-        //    Dictionary<string, JObject> cfg = new Dictionary<string, JObject>
-        //            {
-        //                {
-        //                    "flags",    // migrated
-        //                    JObject.Parse($@"{{
-        //    ""conditionals"": {{
-        //        ""on"": ""{switchPrefix}+:cnd"",
-        //        ""off"": ""{switchPrefix}-:cnd""
-        //    }},
-        //    ""replacements"": {{    
-        //        ""on"": ""{switchPrefix}+:replacements"",
-        //        ""off"": ""{switchPrefix}-:replacements""
-        //    }},
-        //    ""expandVariables"": {{
-        //        ""on"": ""{switchPrefix}+:vars"",
-        //        ""off"": ""{switchPrefix}-:vars""
-        //    }},
-        //    ""flags"": {{
-        //        ""off"": ""{switchPrefix}-:flags""
-        //    }},
-        //    ""include"": {{
-        //        ""on"": ""{switchPrefix}+:include"",
-        //        ""off"": ""{switchPrefix}-:include""
-        //    }}
-        //}}")
-        //                },
-        //                {
-        //                    "conditionals", // migrated
-        //                    JObject.Parse($@"{{
-        //    ""if"": [ ""{conditionalPrefix}if"" ],
-        //    ""else"": [ ""{conditionalPrefix}else"" ],
-        //    ""elseif"": [ ""{conditionalPrefix}elseif"" ],
-        //    ""endif"": [ ""{conditionalPrefix}endif"" ],
-        //    ""evaluator"": ""C++"",
-        //    ""wholeLine"": true,
-        //    ""trim"": true
-        //}}")
-        //                },
-        //                {
-        //                    "variables",
-        //                    JObject.Parse(@"{
-        //    ""sources"": {
-        //        ""environment"": ""env_{0}"",
-        //        ""user"": ""usr_{0}"",
-        //    },
-        //    ""order"": [ ""environment"", ""user"" ],
-        //    ""fallbackFormat"": ""{0}"",
-        //    ""expand"": false
-        //}")
-        //                },
-        //                {
-        //                    "replacements", new JObject()
-        //                },
-        // //These get setup in the conditional configurations as appropriate for the conditional.
-        //                {
-        //        "replacements",
-        //                    JObject.Parse($@"{{
-        //    ""{commentToken}"": {{
-        //        ""replaceWith"": """",
-        //        ""id"": ""stripComments""
-        //    }},
-        //    ""{commentToken}{commentToken}"": {{
-        //        ""replaceWith"": ""{commentToken}"",
-        //        ""id"": ""preserveDoubleComment""
-        //    }}
-        //}}")
-        //                }
-        //};
-
-        //    if (!string.IsNullOrEmpty(actionableConditionalPrefix))
-        //    {
-        //        JObject cndDef = cfg["conditionals"];
-        //        cndDef["actionableIf"] = new JArray { $"{actionableConditionalPrefix}if" };
-        //        cndDef["actionableElse"] = new JArray { $"{actionableConditionalPrefix}else" };
-        //        cndDef["actionableElseif"] = new JArray { $"{actionableConditionalPrefix}elseif" };
-        //        cndDef["actions"] = new JArray { "stripComments", "preserveDoubleComment" };
-        //    }
-
-        //    if (generateMacros)
-        //    {
-        //        cfg["macros"] = new JObject();
-        //    }
-
-        //    if (generateMacros && Guids != null)
-        //    {
-        //        int guidCount = 0;
-        //        foreach (Guid guid in Guids)
-        //        {
-        //            JObject macros = cfg["macros"];
-        //            JObject macro = new JObject();
-        //            int id = guidCount++;
-        //            macros["guid" + id] = macro;
-        //            macro["type"] = "guid";
-        //            macro["action"] = "new";
-
-        //            _guidToGuidPrefixMap[guid] = "guid" + id;
-        //        }
-        //    }
-
-        //    foreach (KeyValuePair<Guid, string> map in _guidToGuidPrefixMap)
-        //    {
-        //        foreach (char fmt in "ndbpxNDPBX")
-        //        {
-        //            string rplc = char.IsUpper(fmt) ? map.Key.ToString(fmt.ToString()).ToUpperInvariant() : map.Key.ToString(fmt.ToString()).ToLowerInvariant();
-        //            cfg["replacements"][rplc] = map.Value + "-" + fmt;
-        //        }
-        //    }
-
-        //    if (Symbols != null)
-        //    {
-        //        foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
-        //        {
-        //            if (symbol.Value.Binding == "safe_name")
-        //            {
-        //                _oldSafeNameName = symbol.Key;
-        //            }
-
-        //            if (symbol.Value.Type == "computed" && generateMacros)
-        //            {
-        //                JObject cmp = new JObject();
-        //                cfg["macros"][symbol.Key] = cmp;
-        //                cmp["type"] = "evaluate";
-        //                cmp["action"] = ((ComputedSymbol)symbol.Value).Value;
-        //                cmp["evaluator"] = "C++";
-        //            }
-        //            else if (symbol.Value.Type == "generated" && generateMacros)
-        //            {
-        //                JObject gen = new JObject();
-        //                cfg["macros"][symbol.Key] = gen;
-        //                GeneratedSymbol gs = (GeneratedSymbol)symbol.Value;
-        //                gen["type"] = gs.Generator;
-
-        //                foreach (KeyValuePair<string, string> parameter in gs.Parameters)
-        //                {
-        //                    gen[parameter.Key] = parameter.Value;
-        //                }
-        //            }
-
-        //            if (symbol.Value.Replaces != null)
-        //            {
-        //                cfg["replacements"][symbol.Value.Replaces] = symbol.Key;
-        //            }
-        //        }
-        //    }
-
-        //    if (_oldSafeNameName == null && generateMacros)
-        //    {
-        //        cfg["macros"]["safe_name"] = JObject.Parse(@"{
-        //    ""type"": ""regex"",
-        //    ""action"": ""replace"",
-        //    ""source"": """ + NameParameter.Name + @""",
-        //    ""steps"": [{
-        //        ""regex"": ""\\W"",
-        //        ""replacement"": ""_""
-        //    }]
-        //}");
-        //        _oldSafeNameName = "safe_name";
-        //    }
-
-        //    cfg["replacements"][SourceName] = _oldSafeNameName;
-
-        //    return cfg;
-        //}
-
-        #endregion old
-
-
         private IReadOnlyList<IMacroConfig> ProduceMacroConfig(List<IReplacementTokens> otherOperations)
         {
             List<IMacroConfig> macroConfigs = new List<IMacroConfig>();
@@ -537,6 +319,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // TODO: Figure out how to deal with these
                     //else if (symbol.Value.Type == "generated")
                     //{
+                    //    // notes (scp 2016-09-16):
+                    //    // Symbol.Key is probably the variable name
+                    //    // this could become ANY(?) macro type ???
+                    //    //      the GeneratedSymbol.Generator becomes the type
+                    //    // so we'll need to get the IMacroConfig instance from the type, and set it up accordingly :(
                     //}
                 }
             }
@@ -585,15 +372,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyList<string> Classifications => _simpleConfigModel.Classifications;
 
-            //public IReadOnlyDictionary<string, JObject> Config => ((IRunnableProjectConfig)_simpleConfigModel).Config;
-            public IReadOnlyDictionary<string, JObject> Config
-            {
-                get
-                {
-                    throw new NotSupportedException("This is being deprecated");
-                }
-            }
-
             public IGlobalRunConfig OperationConfig => ((IRunnableProjectConfig)_simpleConfigModel).OperationConfig;
 
             public string DefaultName => _simpleConfigModel.DefaultName ?? _simpleConfigModel.SourceName;
@@ -617,15 +395,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             public IReadOnlyList<FileSource> Sources => _sources;
-
-            //public IReadOnlyDictionary<string, Dictionary<string, JObject>> Special => ((IRunnableProjectConfig)_simpleConfigModel).Special;
-            public IReadOnlyDictionary<string, Dictionary<string, JObject>> Special
-            {
-                get
-                {
-                    throw new NotSupportedException("This is being deprecated");
-                }
-            }
 
             public IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig => ((IRunnableProjectConfig)_simpleConfigModel).SpecialOperationConfig;
 
@@ -679,7 +448,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
 
                     Dictionary<string, string> renames = new Dictionary<string, string>();
-                    // Console.WriteLine(_simpleConfigModel.NameParameter);
 
                     object resolvedValue;
                     if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out resolvedValue))
@@ -689,7 +457,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
                             string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, (string)resolvedValue);
                             renames[tmpltRel] = outRel;
-                            //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
                         }
                     }
 
@@ -711,7 +478,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     IReadOnlyList<string> copyOnlyPattern = new[] { "**/node_modules/**/*" };
 
                     Dictionary<string, string> renames = new Dictionary<string, string>();
-                    // Console.WriteLine(_simpleConfigModel.NameParameter);
 
                     object resolvedValue;
                     if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out resolvedValue))
@@ -721,7 +487,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent);
                             string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, (string)resolvedValue);
                             renames[tmpltRel] = outRel;
-                            //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
                         }
                     }
 

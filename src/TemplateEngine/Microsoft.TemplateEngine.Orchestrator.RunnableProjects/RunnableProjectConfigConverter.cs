@@ -1,12 +1,10 @@
-﻿using System;
-using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class RunnableProjectConfigConverter
     {
-        public static IRunnableProjectConfig FromJObject(JObject o, IComponentManager componentManager)
+        public static IRunnableProjectConfig FromJObject(JObject o)
         {
             return SimpleConfigModel.FromJObject(o);
         }
