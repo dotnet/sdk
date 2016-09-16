@@ -272,7 +272,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
                 if (best != -1)
                 {
-                    _target.Position -= (consume ? match.TokenLength[best] : 0);
+                    _target.Position -= nRead - bestPos + (consume ? match.TokenLength[best] : 0);
                     _target.SetLength(_target.Position);
                     return;
                 }
