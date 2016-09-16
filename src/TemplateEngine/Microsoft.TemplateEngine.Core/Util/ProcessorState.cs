@@ -198,7 +198,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
                 else
                 {
-                    // If the operation is diabled, it's as if the token were just arbitrary text, so do nothing special with it.
+                    // If the operation is disabled, it's as if the token were just arbitrary text, so do nothing special with it.
                     ++CurrentBufferPosition;
                 }
 

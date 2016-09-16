@@ -26,12 +26,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
-                return CppStyleEvaluator(state, ref len, ref pos);
+                bool faulted;
+                return CppStyleEvaluator(state, ref len, ref pos, out faulted);
             }
         }
 
-        public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
+        public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
+            faulted = false;
             TokenTrie trie = new TokenTrie();
 
             //Logic
