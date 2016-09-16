@@ -1409,6 +1409,7 @@ Trailing stuff
 <!- trailing comment -->";
             testCases.Add(innerElseDefaultValue);
 
+//This test fails on Linux with an extra newline between "outer-if" and "Trailing stuff" 
             string outerElseifDefaultValue = @"Start
 <!--#if (OUTER_IF_CLAUSE)
     content: outer-if
@@ -2183,6 +2184,7 @@ Past endif
 // dont uncomment";
             testCases.Add(originalValue);
 
+//For some reason this test fails on Linux with the else in the ////otherwise not being uncommented
             originalValue = @"Hello
 ////#check (VALUE_IF)
     //if value
