@@ -4,6 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -29,7 +30,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 parameters.ResolvedValues[p] = value;
             };
 
-            foreach (IMacroConfig config in macroConfigs)
+            IList<IMacroConfig> allMacroConfigs = new List<IMacroConfig>(macroConfigs);
+
+            // TODO: finish this, along with ResolveDeferredMacroConfig()
+            //foreach (IMacroConfig config in macroConfigs)
+            //{
+            //    GeneratedSymbolDeferredMacroConfig deferredConfig = config as GeneratedSymbolDeferredMacroConfig;
+            //    if (deferredConfig == null)
+            //    {
+            //        continue;
+            //    }
+
+            //    // setup the actual macro config, add it to the all MacroConfigs
+            //    IMacro macroObject;
+            //    if (_macros.TryGetValue(deferredConfig.Type, out macroObject))
+            //    {
+            //        IMacroConfig actualConfig = ResolveDeferredMacroConfig(macroObject, deferredConfig);
+            //        allMacroConfigs.Add(actualConfig);
+            //    }
+            //}
+
+            foreach (IMacroConfig config in allMacroConfigs)
             {
                 IMacro macroObject;
                 if (_macros.TryGetValue(config.Type, out macroObject))
@@ -40,6 +61,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             return Empty<IOperationProvider>.List.Value;
         }
+
+        // TODO: write this method
+        //private IMacroConfig ResolveDeferredMacroConfig(IMacro macroObject, GeneratedSymbolDeferredMacroConfig deferredConfig)
+        //{
+        //    switch macr
+        //}
 
         public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {

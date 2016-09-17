@@ -6,13 +6,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GeneratedSymbol : ISymbolModel
     {
+        // NOTE (scp 2016-09-16): Not used (i think). Only here to satisfy the interface
         public string Binding { get; set; }
 
+        // NOTE (scp 2016-09-16): Not used (i think). Only here to satisfy the interface
+        public string Replaces { get; set; }
+
+        // Refers to the Type value of a concrete IMacro
         public string Generator { get; set; }
 
         public IReadOnlyDictionary<string, string> Parameters { get; set; }
-
-        public string Replaces { get; set; }
 
         public string Type { get; set; }
 

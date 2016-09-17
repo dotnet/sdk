@@ -11,6 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         public Guid Id => new Guid("F2B423D7-3C23-4489-816A-41D8D2A98596");
 
         public string Type => "now";
+         
         public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             NowMacroConfig config = rawConfig as NowMacroConfig;

@@ -11,6 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         public Guid Id => new Guid("10919008-4E13-4FA8-825C-3B4DA855578E");
 
         public string Type => "guid";
+
         public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             GuidMacroConfig config = rawConfig as GuidMacroConfig;
@@ -85,16 +86,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     else
                     {
                         Guid g = Guid.NewGuid();
-                        const string guidFormats = "ndbpxNDPBX";
-                        for (int i = 0; i < guidFormats.Length; ++i)
+                        for (int i = 0; i < GuidMacroConfig.DefaultFormats.Length; ++i)
                         {
                             Parameter p = new Parameter
                             {
                                 IsVariable = true,
-                                Name = variableName + "-" + guidFormats[i]
+                                Name = variableName + "-" + GuidMacroConfig.DefaultFormats[i]
                             };
 
-                            string rplc = char.IsUpper(guidFormats[i]) ? g.ToString(guidFormats[i].ToString()).ToUpperInvariant() : g.ToString(guidFormats[i].ToString()).ToLowerInvariant();
+                            string rplc = char.IsUpper(GuidMacroConfig.DefaultFormats[i]) 
+                                ? g.ToString(GuidMacroConfig.DefaultFormats[i].ToString()).ToUpperInvariant() 
+                                : g.ToString(GuidMacroConfig.DefaultFormats[i].ToString()).ToLowerInvariant();
                             setter(p, rplc);
                         }
 
