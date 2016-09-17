@@ -2184,7 +2184,6 @@ Past endif
 // dont uncomment";
             testCases.Add(originalValue);
 
-//For some reason this test fails on Linux with the else in the ////otherwise not being uncommented
             originalValue = @"Hello
 ////#check (VALUE_IF)
     //if value
