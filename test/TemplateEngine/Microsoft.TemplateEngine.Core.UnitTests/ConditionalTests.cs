@@ -1409,6 +1409,7 @@ Trailing stuff
 <!- trailing comment -->";
             testCases.Add(innerElseDefaultValue);
 
+//This test fails on Linux with an extra newline between "outer-if" and "Trailing stuff" 
             string outerElseifDefaultValue = @"Start
 <!--#if (OUTER_IF_CLAUSE)
     content: outer-if

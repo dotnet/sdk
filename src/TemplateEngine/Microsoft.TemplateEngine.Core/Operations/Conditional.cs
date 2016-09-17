@@ -403,7 +403,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                         break;
                     }
 
-                    bufferAdvanceFailed = !processor.AdvanceBuffer(bufferLength - _trie.MaxLength + 1);
+                    bufferAdvanceFailed = !processor.AdvanceBuffer(bufferLength - _trie.MaxLength);
                     currentBufferPosition = processor.CurrentBufferPosition;
                     bufferLength = processor.CurrentBufferLength;
                 }
