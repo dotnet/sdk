@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.MSBuild;
 using Microsoft.TemplateEngine.Core.Operations;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -16,6 +17,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 case "C++":
                 case "":
                     evaluator = CppStyleEvaluatorDefinition.CppStyleEvaluator;
+                    break;
+                case "MSBUILD":
+                    evaluator = MSBuildStyleEvaluatorDefinition.MSBuildStyleEvaluator;
                     break;
                 default:
                     throw new Exception($"Unrecognized evaluator {evaluatorName}");

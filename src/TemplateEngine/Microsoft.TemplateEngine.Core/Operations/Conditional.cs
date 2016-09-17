@@ -427,7 +427,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
                 {
-                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition);
+                    bool faulted;
+                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out faulted);
                     return BranchTaken;
                 }
 

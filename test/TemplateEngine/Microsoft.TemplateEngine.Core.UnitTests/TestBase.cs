@@ -8,16 +8,16 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public abstract class TestBase
     {
-        protected void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize)
+        protected void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null)
         {
             byte[] valueBytes = Encoding.UTF8.GetBytes(originalValue);
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
             bool changed = processor.Run(input, output, bufferSize);
-            Verify(Encoding.UTF8, output, changed, originalValue, expectedValue);
+            Verify(Encoding.UTF8, output, changed, originalValue, expectedValue, changeOverride);
         }
 
-        protected void Verify(Encoding encoding, Stream output, bool changed, string source, string expected)
+        protected void Verify(Encoding encoding, Stream output, bool changed, string source, string expected, bool? changeOverride = null)
         {
             output.Position = 0;
             byte[] resultBytes = new byte[output.Length];
@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             string actual = encoding.GetString(resultBytes);
             Assert.Equal(expected, actual);
 
-            bool expectedChange = !string.Equals(expected, source, StringComparison.Ordinal);
+            bool expectedChange = changeOverride ?? !string.Equals(expected, source, StringComparison.Ordinal);
             string modifier = expectedChange ? "" : "not ";
             if (expectedChange ^ changed)
             {
