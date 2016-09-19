@@ -1,16 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     public class GeneratedSymbolDeferredMacroConfig : IMacroConfig
     {
+        public Guid Id => new Guid("12CA34F3-A1B7-4859-B08C-172483C9B0FD");
+
         public string VariableName { get; private set; }
 
         // comes from GeneratedSymbol.Generator
-        // note that GeneratedSymbol.Type = "generated" is always the case
+        // note that for all generated symbols, GeneratedSymbol.Type = "generated"
         public string Type { get; private set;  }
 
+        // the action for the real macro will be in the parameters(?)
         public string Action
         {
             get
@@ -34,7 +38,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             VariableName = variableName;
             Type = symbol.Generator;    // symbol.Type == "generated" always. Generator is a string that refers to the actual macro type.
             Parameters = symbol.Parameters;
+        }
 
+        public IMacroConfig ConfigFromDeferredConfig(IMacroConfig rawConfig)
+        {
+            throw new NotImplementedException();
         }
     }
 }

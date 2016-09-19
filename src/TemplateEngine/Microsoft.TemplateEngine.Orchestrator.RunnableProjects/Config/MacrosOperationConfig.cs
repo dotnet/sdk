@@ -14,6 +14,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
     {
         private static IReadOnlyDictionary<string, IMacro> _macros;
 
+        private static IReadOnlyDictionary<String, IMacroConfig> _macroConfigs;
+
         public Guid Id => new Guid("B03E4760-455F-48B1-9FF2-79ADB1E91519");
 
         public string Key => "macros";
@@ -33,22 +35,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             IList<IMacroConfig> allMacroConfigs = new List<IMacroConfig>(macroConfigs);
 
             // TODO: finish this, along with ResolveDeferredMacroConfig()
-            //foreach (IMacroConfig config in macroConfigs)
-            //{
-            //    GeneratedSymbolDeferredMacroConfig deferredConfig = config as GeneratedSymbolDeferredMacroConfig;
-            //    if (deferredConfig == null)
-            //    {
-            //        continue;
-            //    }
+            foreach (IMacroConfig config in macroConfigs)
+            {
+                GeneratedSymbolDeferredMacroConfig deferredConfig = config as GeneratedSymbolDeferredMacroConfig;
+                if (deferredConfig == null)
+                {
+                    continue;
+                }
 
-            //    // setup the actual macro config, add it to the all MacroConfigs
-            //    IMacro macroObject;
-            //    if (_macros.TryGetValue(deferredConfig.Type, out macroObject))
-            //    {
-            //        IMacroConfig actualConfig = ResolveDeferredMacroConfig(macroObject, deferredConfig);
-            //        allMacroConfigs.Add(actualConfig);
-            //    }
-            //}
+                // setup the actual macro config, add it to the all MacroConfigs
+                IMacroConfig macroConfigObject;
+                if (_macroConfigs.TryGetValue(deferredConfig.Type, out macroConfigObject))
+                {
+                    IMacroConfig actualConfig = macroConfigObject.ConfigFromDeferredConfig(deferredConfig);
+                    allMacroConfigs.Add(actualConfig);
+                }
+            }
 
             foreach (IMacroConfig config in allMacroConfigs)
             {
@@ -61,12 +63,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             return Empty<IOperationProvider>.List.Value;
         }
-
-        // TODO: write this method
-        //private IMacroConfig ResolveDeferredMacroConfig(IMacro macroObject, GeneratedSymbolDeferredMacroConfig deferredConfig)
-        //{
-        //    switch macr
-        //}
 
         public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
@@ -106,6 +102,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 }
 
                 _macros = macros;
+            }
+
+            if (_macroConfigs == null)
+            {
+                Dictionary<string, IMacroConfig> macroConfigs = new Dictionary<string, IMacroConfig>();
+
+                foreach (IMacroConfig config in componentManager.OfType<IMacroConfig>())
+                {
+                    macroConfigs[config.Type] = config;
+                }
+
+                _macroConfigs = macroConfigs;
             }
         }
     }
