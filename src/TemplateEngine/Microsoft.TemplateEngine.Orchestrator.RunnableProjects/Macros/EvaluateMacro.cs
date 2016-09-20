@@ -14,6 +14,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "evaluate";
 
+        public static readonly string DefaultEvaluator = "C++";
+
+        // action is the predicate to evaluate
         public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             EvaluateMacroConfig config = rawConfig as EvaluateMacroConfig;
@@ -49,16 +52,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            string action;
-            if (!deferredConfig.Parameters.TryGetValue("action", out action))
+            JToken actionToken;
+            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
             {
                 throw new ArgumentNullException("action");
             }
+            string action = actionToken.ToString();
 
             string evaluator;
-            if (!deferredConfig.Parameters.TryGetValue("evaluator", out evaluator))
+            JToken evaluatorToken;
+            if (!deferredConfig.Parameters.TryGetValue("evaluator", out evaluatorToken))
             {
-                throw new ArgumentNullException("evaluator");
+                evaluator = DefaultEvaluator;
+            }
+            else
+            {
+                evaluator = evaluatorToken.ToString();
             }
 
             IMacroConfig realConfig = new EvaluateMacroConfig(deferredConfig.VariableName, action, evaluator);

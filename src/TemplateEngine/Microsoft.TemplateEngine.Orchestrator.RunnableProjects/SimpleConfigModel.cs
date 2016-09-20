@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -314,21 +315,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (symbol.Value.Type == "computed")
                     {
                         string action = ((ComputedSymbol)symbol.Value).Value;
-                        macroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, "C++"));
+                        macroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, EvaluateMacro.DefaultEvaluator));
                     }
                     else if (symbol.Value.Type == "generated")
                     {
                         GeneratedSymbol symbolInfo = (GeneratedSymbol)symbol.Value;
                         string type = symbolInfo.Generator;
                         string variableName = symbol.Key;
-                        Dictionary<string, string> otherConfig = new Dictionary<string, string>();
+                        Dictionary<string, JToken> configParams = new Dictionary<string, JToken>();
 
-                        foreach (KeyValuePair<string, string> parameter in symbolInfo.Parameters)
+                        foreach (KeyValuePair<string, JToken> parameter in symbolInfo.Parameters)
                         {
-                            otherConfig.Add(parameter.Key, parameter.Value);
+                            configParams.Add(parameter.Key, parameter.Value);
                         }
 
-                        macroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, variableName, otherConfig));
+                        macroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, variableName, configParams));
                     }
                 }
             }
@@ -510,7 +511,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        // TODO: Modify to deal with IGlobalRunConfig
         public static SimpleConfigModel FromJObject(JObject source)
         {
             SimpleConfigModel config = new SimpleConfigModel();

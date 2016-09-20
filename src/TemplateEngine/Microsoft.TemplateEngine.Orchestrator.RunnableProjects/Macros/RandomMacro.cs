@@ -47,33 +47,34 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            string action;
-            if (!deferredConfig.Parameters.TryGetValue("action", out action))
+            JToken actionToken;
+            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
             {
                 throw new ArgumentNullException("action");
             }
+            string action = actionToken.ToString();
 
-            string lowString;
-            string highString;
+            JToken lowToken;
+            JToken highToken;
             int low;
             int high;
 
-            if (!deferredConfig.Parameters.TryGetValue("low", out lowString))
+            if (!deferredConfig.Parameters.TryGetValue("low", out lowToken))
             {
                 throw new ArgumentNullException("low");
             }
             else
             {
-                low = Convert.ToInt32(lowString);
+                low = lowToken.Value<int>();
             }
 
-            if (!deferredConfig.Parameters.TryGetValue("high", out highString))
+            if (!deferredConfig.Parameters.TryGetValue("high", out highToken))
             {
                 high = int.MaxValue;
             }
             else
             {
-                high = Convert.ToInt32(highString);
+                high = highToken.Value<int>();
             }
 
             IMacroConfig realConfig = new RandomMacroConfig(deferredConfig.VariableName, action, low, high);

@@ -21,10 +21,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Task Create(ITemplateEngineHost host, ITemplate template, IParameterSet parameters, IComponentManager componentManager)
         {
-            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate) template;
 
-            RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
             GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, componentManager, tmplt.Config.OperationConfig, tmplt.Config.SpecialOperationConfig);
             IOperationProvider[] providers = configRunSpec.Operations.ToArray();
 
@@ -37,11 +35,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            IRunnableProjectConfig m = tmplt.Config.ReprocessWithParameters(parameters, configRunSpec.RootVariableCollection, tmplt.ConfigFile, providers, componentManager);
+            IRunnableProjectConfig reprocessedConfig = tmplt.Config.ReprocessWithParameters(parameters, configRunSpec.RootVariableCollection, tmplt.ConfigFile, providers, componentManager);
+            reprocessedConfig.OperationConfig.Macros = null;    // temporary fix for the macro double evaluation problem. Doesn't work
 
-            foreach (FileSource source in m.Sources)
+            // special processing
+            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
+            RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
+
+            foreach (FileSource source in reprocessedConfig.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, componentManager, m.OperationConfig, m.SpecialOperationConfig);
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, componentManager, reprocessedConfig.OperationConfig, reprocessedConfig.SpecialOperationConfig);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 o.Run(runSpec, tmplt.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }

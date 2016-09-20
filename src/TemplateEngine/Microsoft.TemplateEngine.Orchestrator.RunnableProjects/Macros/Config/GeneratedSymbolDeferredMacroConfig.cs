@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
@@ -23,23 +24,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             }
         }
 
-        public IReadOnlyDictionary<string, string> Parameters { get; private set; }
+        public IReadOnlyDictionary<string, JToken> Parameters { get; private set; }
 
 
-        public GeneratedSymbolDeferredMacroConfig(string type, string variableName, Dictionary<string, string> parameters)
+        public GeneratedSymbolDeferredMacroConfig(string type, string variableName, Dictionary<string, JToken> parameters)
         {
             Type = type;
             VariableName = variableName;
             Parameters = parameters;
         }
-
-        // Don't think this is needed
-        //public GeneratedSymbolDeferredMacroConfig(string variableName, GeneratedSymbol symbol)
-        //{
-        //    VariableName = variableName;
-        //    Type = symbol.Generator;    // symbol.Type == "generated" always. Generator is a string that refers to the actual macro type.
-        //    Parameters = symbol.Parameters;
-        //}
 
         public IMacroConfig ConfigFromDeferredConfig(IMacroConfig rawConfig)
         {

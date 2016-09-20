@@ -12,6 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "now";
          
+        // The action from the config is the format string
         public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             NowMacroConfig config = rawConfig as NowMacroConfig;
@@ -41,17 +42,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            string action;
-            if (!deferredConfig.Parameters.TryGetValue("action", out action))
+            JToken actionToken;
+            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
             {
                 throw new ArgumentNullException("action");
             }
+            string action = actionToken.ToString();
 
             bool utc;
-            string utcString;
-            if (deferredConfig.Parameters.TryGetValue("utc", out utcString))
+            JToken utcToken;
+            if (deferredConfig.Parameters.TryGetValue("utc", out utcToken))
             {
-                utc = Convert.ToBoolean(utcString);
+                utc = utcToken.ToBool();
             }
             else
             {

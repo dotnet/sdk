@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 IVariableCollection varsForMacros = SetupVariables(parameters, runConfig.VariableSetup, null, true);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.Setup(componentManager, runConfig.Macros, varsForMacros, parameters);
+                macroProcessor.ProcessMacros(componentManager, runConfig.Macros, varsForMacros, parameters);
             }
 
             if (runConfig.Replacements != null)
