@@ -316,22 +316,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         string action = ((ComputedSymbol)symbol.Value).Value;
                         macroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, "C++"));
                     }
-                    // TODO: Figure out how to deal with these
                     else if (symbol.Value.Type == "generated")
                     {
-                        // notes (scp 2016-09-16):
-                        // Symbol.Key is probably the variable name
-                        // this could become ANY(?) macro type ???
-                        //      the GeneratedSymbol.Generator becomes the type
-
                         GeneratedSymbol symbolInfo = (GeneratedSymbol)symbol.Value;
                         string type = symbolInfo.Generator;
                         string variableName = symbol.Key;
                         Dictionary<string, string> otherConfig = new Dictionary<string, string>();
+
                         foreach (KeyValuePair<string, string> parameter in symbolInfo.Parameters)
                         {
                             otherConfig.Add(parameter.Key, parameter.Value);
                         }
+
                         macroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, variableName, otherConfig));
                     }
                 }

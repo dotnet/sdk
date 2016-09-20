@@ -65,6 +65,46 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, value);
         }
 
+        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        {
+            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+
+            if (deferredConfig == null)
+            {
+                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
+            }
+
+            string action;
+            if (!deferredConfig.Parameters.TryGetValue("action", out action))
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            string sourceVariable;
+            if (!deferredConfig.Parameters.TryGetValue("source", out sourceVariable))
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            string stepListString;
+            List<KeyValuePair<string, string>> replacementSteps = new List<KeyValuePair<string, string>>();
+            if (deferredConfig.Parameters.TryGetValue("steps", out stepListString))
+            {
+                JArray stepList = JArray.Parse(stepListString);
+
+                foreach (JToken step in stepList)
+                {
+                    JObject map = (JObject)step;
+                    string regex = map.ToString("regex");
+                    string replaceWith = map.ToString("replacement");
+                    replacementSteps.Add(new KeyValuePair<string, string>(regex, replaceWith));
+                }
+            }
+
+            IMacroConfig realConfig = new RegexMacroConfig(deferredConfig.VariableName, action, sourceVariable, replacementSteps);
+            EvaluateConfig(vars, realConfig, parameters, setter);
+        }
+
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
         {
             string action = def.ToString("action");

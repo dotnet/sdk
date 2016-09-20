@@ -30,6 +30,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, config.Action);
         }
 
+        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        {
+            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+
+            if (deferredConfig == null)
+            {
+                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
+            }
+
+            string action;
+            if (!deferredConfig.Parameters.TryGetValue("action", out action))
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            IMacroConfig realConfig = new ConstantMacroConfig(deferredConfig.VariableName, action);
+            EvaluateConfig(vars, realConfig, parameters, setter);
+        }
+
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
         {
             string value = def.ToString("action");

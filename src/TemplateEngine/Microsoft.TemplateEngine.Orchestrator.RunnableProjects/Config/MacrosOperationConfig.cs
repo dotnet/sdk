@@ -12,9 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class MacrosOperationConfig : IOperationConfig
     {
-        private static IReadOnlyDictionary<string, IMacro> _macros;
-
-        private static IReadOnlyDictionary<String, IMacroConfig> _macroConfigs;
+        private static IReadOnlyDictionary<string, IMacro> _macroObjects;
 
         public Guid Id => new Guid("B03E4760-455F-48B1-9FF2-79ADB1E91519");
 
@@ -34,7 +32,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             IList<IMacroConfig> allMacroConfigs = new List<IMacroConfig>(macroConfigs);
 
-            // TODO: finish this, along with ResolveDeferredMacroConfig()
+            foreach (IMacroConfig config in allMacroConfigs)
+            {
+                if (config is GeneratedSymbolDeferredMacroConfig)
+                {
+                    continue;
+                }
+
+                IMacro macroObject;
+                if (_macroObjects.TryGetValue(config.Type, out macroObject))
+                {
+                    macroObject.EvaluateConfig(variables, config, parameters, setter);
+                }
+            }
+
+            // run the deferred macros
             foreach (IMacroConfig config in macroConfigs)
             {
                 GeneratedSymbolDeferredMacroConfig deferredConfig = config as GeneratedSymbolDeferredMacroConfig;
@@ -43,21 +55,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     continue;
                 }
 
-                // setup the actual macro config, add it to the all MacroConfigs
-                IMacroConfig macroConfigObject;
-                if (_macroConfigs.TryGetValue(deferredConfig.Type, out macroConfigObject))
-                {
-                    IMacroConfig actualConfig = macroConfigObject.ConfigFromDeferredConfig(deferredConfig);
-                    allMacroConfigs.Add(actualConfig);
-                }
-            }
-
-            foreach (IMacroConfig config in allMacroConfigs)
-            {
                 IMacro macroObject;
-                if (_macros.TryGetValue(config.Type, out macroObject))
+                if (_macroObjects.TryGetValue(deferredConfig.Type, out macroObject))
                 {
-                    macroObject.EvaluateConfig(variables, config, parameters, setter);
+                    macroObject.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
                 }
             }
 
@@ -81,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 string macroType = def["type"].ToString();
 
                 IMacro macroObject;
-                if (_macros.TryGetValue(macroType, out macroObject))
+                if (_macroObjects.TryGetValue(macroType, out macroObject))
                 {
                     macroObject.Evaluate(variableName, variables, def, parameters, setter);
                 }
@@ -92,28 +93,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         private static void EnsureMacros(IComponentManager componentManager)
         {
-            if (_macros == null)
+            if (_macroObjects == null)
             {
-                Dictionary<string, IMacro> macros = new Dictionary<string, IMacro>();
+                Dictionary<string, IMacro> macroObjects = new Dictionary<string, IMacro>();
 
                 foreach (IMacro macro in componentManager.OfType<IMacro>())
                 {
-                    macros[macro.Type] = macro;
+                    macroObjects[macro.Type] = macro;
                 }
 
-                _macros = macros;
-            }
-
-            if (_macroConfigs == null)
-            {
-                Dictionary<string, IMacroConfig> macroConfigs = new Dictionary<string, IMacroConfig>();
-
-                foreach (IMacroConfig config in componentManager.OfType<IMacroConfig>())
-                {
-                    macroConfigs[config.Type] = config;
-                }
-
-                _macroConfigs = macroConfigs;
+                _macroObjects = macroObjects;
             }
         }
     }

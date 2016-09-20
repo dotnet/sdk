@@ -33,12 +33,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Parameters = parameters;
         }
 
-        public GeneratedSymbolDeferredMacroConfig(string variableName, GeneratedSymbol symbol)
-        {
-            VariableName = variableName;
-            Type = symbol.Generator;    // symbol.Type == "generated" always. Generator is a string that refers to the actual macro type.
-            Parameters = symbol.Parameters;
-        }
+        // Don't think this is needed
+        //public GeneratedSymbolDeferredMacroConfig(string variableName, GeneratedSymbol symbol)
+        //{
+        //    VariableName = variableName;
+        //    Type = symbol.Generator;    // symbol.Type == "generated" always. Generator is a string that refers to the actual macro type.
+        //    Parameters = symbol.Parameters;
+        //}
 
         public IMacroConfig ConfigFromDeferredConfig(IMacroConfig rawConfig)
         {

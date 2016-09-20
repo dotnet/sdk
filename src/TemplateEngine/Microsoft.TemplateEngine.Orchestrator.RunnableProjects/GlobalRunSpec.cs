@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     specials[new GlobbingPatternMatcher(specialEntry.Key)] = spec;
                 }
             }
-
+             
             Special = specials;
         }
 

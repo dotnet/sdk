@@ -33,7 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                             IsVariable = true,
                             Name = config.VariableName
                         };
-
                         setter(p, value);
                     }
                     else
@@ -63,6 +62,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
                     break;
             }
+        }
+
+        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        {
+            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+
+            if (deferredConfig == null)
+            {
+                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
+            }
+
+            string action;
+            if (!deferredConfig.Parameters.TryGetValue("action", out action))
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            string format;
+            if (!deferredConfig.Parameters.TryGetValue("format", out format))
+            {
+                throw new ArgumentNullException("format");
+            }
+
+            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, action, format);
+            EvaluateConfig(vars, realConfig, parameters, setter);
         }
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)

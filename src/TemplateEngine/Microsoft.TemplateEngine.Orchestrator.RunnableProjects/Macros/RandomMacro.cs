@@ -26,6 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 case "new":
                     Random rnd = new Random();
                     int value = rnd.Next(config.Low, config.High);
+
                     Parameter p = new Parameter
                     {
                         IsVariable = true,
@@ -35,6 +36,48 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     setter(p, value.ToString());
                     break;
             }
+        }
+
+        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        {
+            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+
+            if (deferredConfig == null)
+            {
+                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
+            }
+
+            string action;
+            if (!deferredConfig.Parameters.TryGetValue("action", out action))
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            string lowString;
+            string highString;
+            int low;
+            int high;
+
+            if (!deferredConfig.Parameters.TryGetValue("low", out lowString))
+            {
+                throw new ArgumentNullException("low");
+            }
+            else
+            {
+                low = Convert.ToInt32(lowString);
+            }
+
+            if (!deferredConfig.Parameters.TryGetValue("high", out highString))
+            {
+                high = int.MaxValue;
+            }
+            else
+            {
+                high = Convert.ToInt32(highString);
+            }
+
+            IMacroConfig realConfig = new RandomMacroConfig(deferredConfig.VariableName, action, low, high);
+            EvaluateConfig(vars, realConfig, parameters, setter);
         }
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
