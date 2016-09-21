@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -10,9 +9,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         IReadOnlyDictionary<string, Parameter> Parameters { get; }
 
-        IReadOnlyDictionary<string, Dictionary<string, JObject>> Special { get; }
+        IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig { get; }
 
-        IReadOnlyDictionary<string, JObject> Config { get; }
+        IGlobalRunConfig OperationConfig { get; }
 
         IReadOnlyList<FileSource> Sources { get; }
 
@@ -34,8 +33,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string Identity { get; }
 
-        IReadOnlyList<IPostAction> PostActions { get; }
+        IReadOnlyList<IPostActionModel> PostActionModel { get; }
 
-        IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations);
+        void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
     }
 }

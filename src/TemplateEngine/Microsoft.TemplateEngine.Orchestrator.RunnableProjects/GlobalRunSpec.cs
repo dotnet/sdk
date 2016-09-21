@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -9,25 +8,11 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
-using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GlobalRunSpec : IGlobalRunSpec
     {
-        private static IReadOnlyList<IOperationConfig> _operationConfigReaders;
-
-        private static void SetupOperations(IComponentManager componentManager)
-        {
-            if (_operationConfigReaders == null)
-            {
-                List<IOperationConfig> operationConfigReaders = componentManager.OfType<IOperationConfig>().ToList();
-                operationConfigReaders.Sort((x, y) => x.Order.CompareTo(y.Order));
-                _operationConfigReaders = operationConfigReaders;
-            }
-        }
-
         public IReadOnlyList<IPathMatcher> Exclude { get; }
 
         public IReadOnlyList<IPathMatcher> Include { get; }
@@ -47,176 +32,83 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, IReadOnlyDictionary<string, JObject> operations, IReadOnlyDictionary<string, Dictionary<string, JObject>> special, IComponentManager componentManager)
+        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, 
+            IVariableCollection variables,
+            IComponentManager componentManager, 
+            IGlobalRunConfig operations, 
+            IReadOnlyDictionary<string, IGlobalRunConfig> specialOperations)
         {
-            SetupOperations(componentManager);
-
-            int expect = source.Include?.Count ?? 0;
-            List<IPathMatcher> includes = new List<IPathMatcher>(expect);
-            if (source.Include != null && expect > 0)
-            {
-                foreach (string include in source.Include)
-                {
-                    includes.Add(new GlobbingPatternMatcher(include));
-                }
-            }
-            Include = includes;
-
-            expect = source.CopyOnly?.Count ?? 0;
-            List<IPathMatcher> copyOnlys = new List<IPathMatcher>(expect);
-            if (source.CopyOnly != null && expect > 0)
-            {
-                foreach (string copyOnly in source.CopyOnly)
-                {
-                    copyOnlys.Add(new GlobbingPatternMatcher(copyOnly));
-                }
-            }
-            CopyOnly = copyOnlys;
-
-            expect = source.Exclude?.Count ?? 0;
-            List<IPathMatcher> excludes = new List<IPathMatcher>(expect);
-            if (source.Exclude != null && expect > 0)
-            {
-                foreach (string exclude in source.Exclude)
-                {
-                    excludes.Add(new GlobbingPatternMatcher(exclude));
-                }
-            }
-            Exclude = excludes;
-
+            Include = SetupPathInfoFromSource(source.Include);
+            CopyOnly = SetupPathInfoFromSource(source.CopyOnly);
+            Exclude = SetupPathInfoFromSource(source.Exclude);
             Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            IVariableCollection variables;
-            Operations = SetupOperations(componentManager, parameters, templateRoot, operations, out variables);
+            // regular operations
             RootVariableCollection = variables;
+            Operations = SetupOperations(componentManager, parameters, operations);
+
+            // special operations
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
 
-            if (special != null)
+            if (specialOperations != null)
             {
-                foreach (KeyValuePair<string, Dictionary<string, JObject>> specialEntry in special)
+                foreach (KeyValuePair<string, IGlobalRunConfig> specialEntry in specialOperations)
                 {
                     IReadOnlyList<IOperationProvider> specialOps = null;
                     IVariableCollection specialVariables = variables;
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = SetupOperations(componentManager, parameters, templateRoot, specialEntry.Value, out specialVariables);
+                        specialOps = SetupOperations(componentManager, parameters, specialEntry.Value);
+                        specialVariables = VariableCollection.SetupVariables(parameters, specialEntry.Value.VariableSetup);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
                     specials[new GlobbingPatternMatcher(specialEntry.Key)] = spec;
                 }
             }
-
+             
             Special = specials;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, IReadOnlyDictionary<string, JObject> operations, out IVariableCollection variables)
+        private static IReadOnlyList<IPathMatcher> SetupPathInfoFromSource(IReadOnlyList<string> fileSources)
         {
-            List<IOperationProvider> result = new List<IOperationProvider>();
-            JObject variablesSection = operations["variables"];
-
-            foreach (IOperationConfig configReader in _operationConfigReaders)
+            int expect = fileSources?.Count ?? 0;
+            List<IPathMatcher> paths = new List<IPathMatcher>(expect);
+            if (fileSources != null && expect > 0)
             {
-                JObject data;
-                if (operations.TryGetValue(configReader.Key, out data))
+                foreach (string source in fileSources)
                 {
-                    IVariableCollection vars = SetupVariables(parameters, variablesSection, null, true);
-                    result.AddRange(configReader.Process(componentManager, data, templateRoot, vars, (RunnableProjectGenerator.ParameterSet) parameters));
+                    paths.Add(new GlobbingPatternMatcher(source));
                 }
             }
 
-            variables = SetupVariables(parameters, variablesSection, result);
-            return result;
+            return paths;
         }
 
-        private static IVariableCollection SetupVariables(IParameterSet parameters, JObject data, List<IOperationProvider> result, bool allParameters = false)
+        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IGlobalRunConfig runConfig)
         {
-            IVariableCollection vc = VariableCollection.Root();
-            JToken expandToken;
-            if (data.TryGetValue("expand", out expandToken) && expandToken.Type == JTokenType.Boolean && expandToken.ToObject<bool>())
+            List<IOperationProvider> operations = new List<IOperationProvider>();
+            operations.AddRange(runConfig.Operations);
+
+            if (runConfig.Replacements != null)
             {
-                result?.Add(new ExpandVariables(null));
-            }
-
-            JObject sources = (JObject)data["sources"];
-            string fallbackFormat = data.ToString("fallbackFormat");
-            Dictionary<string, VariableCollection> collections = new Dictionary<string, VariableCollection>();
-
-            foreach (JProperty prop in sources.Properties())
-            {
-                VariableCollection c = null;
-                string format = prop.Value.ToString();
-
-                switch (prop.Name)
+                foreach (IReplacementTokens replaceSetup in runConfig.Replacements)
                 {
-                    case "environment":
-                        c = VariableCollection.Environment(format);
-
-                        if (fallbackFormat != null)
-                        {
-                            c = VariableCollection.Environment(c, fallbackFormat);
-                        }
-                        break;
-                    case "user":
-                        c = ProduceUserVariablesCollection(parameters, format, allParameters);
-
-                        if (fallbackFormat != null)
-                        {
-                            VariableCollection d = ProduceUserVariablesCollection(parameters, fallbackFormat, allParameters);
-                            d.Parent = c;
-                            c = d;
-                        }
-                        break;
-                }
-
-                collections[prop.Name] = c;
-            }
-
-            foreach (JToken order in ((JArray)data["order"]).Children())
-            {
-                IVariableCollection current = collections[order.ToString()];
-
-                IVariableCollection tmp = current;
-                while (tmp.Parent != null)
-                {
-                    tmp = tmp.Parent;
-                }
-
-                tmp.Parent = vc;
-                vc = current;
-            }
-
-            return vc;
-        }
-
-        private static VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
-        {
-            VariableCollection vc = new VariableCollection();
-            foreach (ITemplateParameter parameter in parameters.ParameterDefinitions)
-            {
-                Parameter param = (Parameter)parameter;
-                if (allParameters || param.IsVariable)
-                {
-                    object value;
-                    string key = string.Format(format ?? "{0}", param.Name);
-
-                    if (!parameters.ResolvedValues.TryGetValue(param, out value))
+                    IOperationProvider replacement = ReplacementConfig.Setup(replaceSetup, parameters);
+                    if (replacement != null)
                     {
-                        throw new TemplateParamException("Parameter value was not specified", param.Name, null, param.DataType);
-                    }
-                    else if (value == null)
-                    {
-                        throw new TemplateParamException("Parameter value is null", param.Name, null, param.DataType);
-                    }
-                    else
-                    {
-                        vc[key] = value;
+                        operations.Add(replacement);
                     }
                 }
             }
 
-            return vc;
+            if (runConfig.VariableSetup.Expand)
+            {
+                operations?.Add(new ExpandVariables(null));
+            }
+
+            return operations;
         }
 
         internal class ProcessorState : IProcessorState

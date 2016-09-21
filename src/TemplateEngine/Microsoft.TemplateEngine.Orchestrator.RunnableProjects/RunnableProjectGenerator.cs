@@ -6,7 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,36 +21,61 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid Id => GeneratorId;
 
-        public Task Create(ITemplateEngineHost host, ITemplate template, IParameterSet parameters, IComponentManager componentManager)
+        public Task Create(ITemplateEngineHost host, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager)
         {
-            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
-            RunnableProjectTemplate tmplt = (RunnableProjectTemplate) template;
+            RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
+            ProcessMacros(componentManager, template.Config.OperationConfig, parameters);
 
-            RunnableProjectOrchestrator o = new RunnableProjectOrchestrator(basicOrchestrator);
-            GlobalRunSpec configRunSpec = new GlobalRunSpec(new FileSource(), tmplt.ConfigFile.Parent, parameters, tmplt.Config.Config, tmplt.Config.Special, componentManager);
-            IOperationProvider[] providers = configRunSpec.Operations.ToArray();
+            IVariableCollection variables = VariableCollection.SetupVariables(parameters, template.Config.OperationConfig.VariableSetup);
+            template.Config.Evaluate(parameters, variables, template.ConfigFile);
 
-            foreach (KeyValuePair<IPathMatcher, IRunSpec> special in configRunSpec.Special)
+            GlobalRunSpec primaryRunSpec = new GlobalRunSpec(new FileSource(), template.ConfigFile.Parent, parameters, variables, componentManager, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
+            IOperationProvider[] opProviders = primaryRunSpec.Operations.ToArray();
+
+            foreach (KeyValuePair<IPathMatcher, IRunSpec> special in primaryRunSpec.Special)
             {
                 if (special.Key.IsMatch(".netnew.json"))
                 {
-                    providers = special.Value.GetOperations(providers).ToArray();
+                    opProviders = special.Value.GetOperations(opProviders).ToArray();
                     break;
                 }
             }
 
-            IRunnableProjectConfig m = tmplt.Config.ReprocessWithParameters(parameters, configRunSpec.RootVariableCollection, tmplt.ConfigFile, providers);
+            // special processing
+            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
+            RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            foreach (FileSource source in m.Sources)
+            foreach (FileSource source in template.Config.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, tmplt.ConfigFile.Parent, parameters, m.Config, m.Special, componentManager);
+                GlobalRunSpec runSpec = new GlobalRunSpec(source, template.ConfigFile.Parent, parameters, variables, componentManager, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
-                o.Run(runSpec, tmplt.ConfigFile.Parent.DirectoryInfo(source.Source), target);
+                orchestrator.Run(runSpec, template.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }
 
-            TEMP_PLACEHOLDER_ProcessPostOperations(host, tmplt.Config.PostActions);
+            List<IPostAction> postActions = PostAction.ListFromModel(template.Config.PostActionModel, primaryRunSpec.RootVariableCollection);
+            TEMP_PLACEHOLDER_ProcessPostOperations(host, postActions);
 
             return Task.FromResult(true);
+        }
+
+        // Note the deferred-config macros (generated) are part of the runConfig.Macros
+        //      and not in the ComputedMacros.
+        //  Possibly make a separate property for the deferred-config macros
+        private static void ProcessMacros(IComponentManager componentManager, IGlobalRunConfig runConfig, IParameterSet parameters)
+        {
+            if (runConfig.Macros != null)
+            {
+                IVariableCollection varsForMacros = VariableCollection.SetupVariables(parameters, runConfig.VariableSetup);
+                MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
+                macroProcessor.ProcessMacros(componentManager, runConfig.Macros, varsForMacros, parameters);
+            }
+
+            if (runConfig.ComputedMacros != null)
+            {
+                IVariableCollection varsForMacros = VariableCollection.SetupVariables(parameters, runConfig.VariableSetup);
+                MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
+                macroProcessor.ProcessMacros(componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
+            }
         }
 
         private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyList<IPostAction> postActions)

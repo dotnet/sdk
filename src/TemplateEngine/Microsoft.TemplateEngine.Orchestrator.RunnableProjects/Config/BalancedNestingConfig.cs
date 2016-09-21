@@ -26,5 +26,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             yield return new BalancedNesting(startToken, realEndToken, pseudoEndToken, id, resetFlag);
         }
+
+        public static JObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
+        {
+            JObject config = new JObject();
+            config["startToken"] = startToken;
+            config["realEndToken"] = realEndToken;
+            config["pseudoEndToken"] = pseudoEndToken;
+            config["id"] = id;
+            config["resetFlag"] = resetFlag;
+
+            return config;
+        }
     }
 }

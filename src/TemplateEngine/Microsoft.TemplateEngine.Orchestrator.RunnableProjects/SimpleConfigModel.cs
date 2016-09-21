@@ -7,9 +7,12 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
-
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -22,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyDictionary<string, Parameter> _parameters;
         private IReadOnlyList<FileSource> _sources;
-        private Dictionary<string, Dictionary<string, JObject>> _special;
+        private IReadOnlyDictionary<string, IGlobalRunConfig> _specialOperationConfig;
         private Parameter _nameParameter;
         private string _safeNameName;
 
@@ -82,6 +85,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         }
                     }
 
+                    // TODO: move this into the above else. it only makes sense in that context
                     string nameParameter = parameters.FirstOrDefault(x => x.Value.IsName).Key;
 
                     if (nameParameter == null)
@@ -112,8 +116,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
 
         public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
-
-        public IReadOnlyList<IPostAction> PostActions { get; private set; }
 
         public IReadOnlyDictionary<string, string> Tags { get; set; }
 
@@ -187,42 +189,38 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        IReadOnlyDictionary<string, Dictionary<string, JObject>> IRunnableProjectConfig.Special
+        IReadOnlyDictionary<string, IGlobalRunConfig> IRunnableProjectConfig.SpecialOperationConfig
         {
             get
             {
-                if (_special == null)
+                if (_specialOperationConfig == null)
                 {
-                    Dictionary<string, Dictionary<string, JObject>> specials =
-                        new Dictionary<string, Dictionary<string, JObject>>
+                    Dictionary<string, IGlobalRunConfig> operationSpecials = new Dictionary<string, IGlobalRunConfig>
                         {
-                            ["**/*.json"] = ProduceConfig("//", "//#", "////#", "//", false),
-                            ["**/*.css"] = ProduceConfig("/*", "/*#", "", "", false),
-                            ["**/*.css.min"] = ProduceConfig("/*", "/*#", "", "", false),
-                            ["**/*.cs"] = ProduceConfig("//", "#", "", "", false),
-                            ["**/*.cpp"] = ProduceConfig("//", "#", "", "", false),
-                            ["**/*.hpp"] = ProduceConfig("//", "#", "", "", false),
-                            ["**/*.h"] = ProduceConfig("//", "#", "", "", false),
-                            ["**/*.*proj"] = ProduceConfig("<!--/", "<!--#", "", "", false),
-                            ["**/*.*html"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                            ["**/*.*htm"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                            ["**/*.jsp"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                            ["**/*.asp"] = ProduceConfig("<!--", "<!--#", "", "", false),
-                            ["**/*.aspx"] = ProduceConfig("<!--", "<!--#", "", "", false)
+                            ["**/*.json"] = ProduceOperationSetup("//", false, ConditionalType.CWithComments),
+                            ["**/*.css"] = ProduceOperationSetup("/*", false, ConditionalType.CBlockComments),
+                            ["**/*.css.min"] = ProduceOperationSetup("/*", false, ConditionalType.CBlockComments),
+                            ["**/*.cs"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.cpp"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.hpp"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.h"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
+                            ["**/*.*proj"] = ProduceOperationSetup("<!--/", false, ConditionalType.Xml),
+                            ["**/*.*html"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.*htm"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.jsp"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.asp"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
+                            ["**/*.aspx"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
                         };
-
-
-
-                    _special = specials;
+                    _specialOperationConfig = operationSpecials;
                 }
 
-                return _special;
+                return _specialOperationConfig;
             }
         }
 
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
-        IReadOnlyDictionary<string, JObject> IRunnableProjectConfig.Config => ProduceConfig("//", "//#", "////#", "//", true);
+        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup("//", true, ConditionalType.CWithComments);
 
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
 
@@ -230,119 +228,70 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Identity { get; set; }
 
-        public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations)
+        private IGlobalRunConfig ProduceOperationSetup(string switchPrefix, bool generateMacros, ConditionalType conditionalStyle)
         {
-            EvaluatedSimpleConfig config = new EvaluatedSimpleConfig(this);
-            config.Evaluate(parameters, rootVariableCollection, configFile);
-            PostActions = PostAction.ListFromModel(PostActionModel, rootVariableCollection);
-            return config;
-        }
+            // Note: conditional setup provides the comment strippers / preservers / changers that are needed for that conditional type.
+            // so no need to do the stripComments & preserveComments setup here that was in the old ProductConfig()
+            List<IOperationProvider> operations = new List<IOperationProvider>();
+            operations.AddRange(ConditionalConfig.ConditionalSetup(conditionalStyle, "C++", true, true, null));
+            operations.AddRange(FlagsConfig.FlagsDefaultSetup(switchPrefix));
 
-        //TODO: Restructure this to take language idioms into account while allowing
-        //  the expanded conditional syntax and operation toggling to work
-        private Dictionary<string, JObject> ProduceConfig(string switchPrefix, string conditionalPrefix, string actionableConditionalPrefix, string commentToken, bool generateMacros)
-        {
-            Dictionary<string, JObject> cfg = new Dictionary<string, JObject>
-            {
-                {
-                    "flags",
-                    JObject.Parse($@"{{
-    ""conditionals"": {{
-        ""on"": ""{switchPrefix}+:cnd"",
-        ""off"": ""{switchPrefix}-:cnd""
-    }},
-    ""replacements"": {{
-        ""on"": ""{switchPrefix}+:replacements"",
-        ""off"": ""{switchPrefix}-:replacements""
-    }},
-    ""expandVariables"": {{
-        ""on"": ""{switchPrefix}+:vars"",
-        ""off"": ""{switchPrefix}-:vars""
-    }},
-    ""flags"": {{
-        ""off"": ""{switchPrefix}-:flags""
-    }},
-    ""include"": {{
-        ""on"": ""{switchPrefix}+:include"",
-        ""off"": ""{switchPrefix}-:include""
-    }}
-}}")
-                },
-                {
-                    "conditionals",
-                    JObject.Parse($@"{{
-    ""if"": [ ""{conditionalPrefix}if"" ],
-    ""else"": [ ""{conditionalPrefix}else"" ],
-    ""elseif"": [ ""{conditionalPrefix}elseif"" ],
-    ""endif"": [ ""{conditionalPrefix}endif"" ],
-    ""evaluator"": ""C++"",
-    ""wholeLine"": true,
-    ""trim"": true
-}}")
-                },
-                {
-                    "variables",
-                    JObject.Parse(@"{
-    ""sources"": {
-        ""environment"": ""env_{0}"",
-        ""user"": ""usr_{0}"",
-    },
-    ""order"": [ ""environment"", ""user"" ],
-    ""fallbackFormat"": ""{0}"",
-    ""expand"": false
-}")
-                },
-                {
-                    "replacements",
-                    JObject.Parse($@"{{
-    ""{commentToken}"": {{
-        ""replaceWith"": """",
-        ""id"": ""stripComments""
-    }},
-    ""{commentToken}{commentToken}"": {{
-        ""replaceWith"": ""{commentToken}"",
-        ""id"": ""preserveDoubleComment""
-    }}
-}}")
-                }
-            };
-
-            if (!string.IsNullOrEmpty(actionableConditionalPrefix))
-            {
-                JObject cndDef = cfg["conditionals"];
-                cndDef["actionableIf"] = new JArray {$"{actionableConditionalPrefix}if"};
-                cndDef["actionableElse"] = new JArray {$"{actionableConditionalPrefix}else"};
-                cndDef["actionableElseif"] = new JArray {$"{actionableConditionalPrefix}elseif"};
-                cndDef["actions"] = new JArray {"stripComments", "preserveDoubleComment"};
-            }
+            IReadOnlyList<IMacroConfig> macros = null;
+            List<IMacroConfig> computedMacros = new List<IMacroConfig>();
+            List<IReplacementTokens> macroGeneratedReplacements = new List<IReplacementTokens>();
 
             if (generateMacros)
             {
-                cfg["macros"] = new JObject();
+                macros = ProduceMacroConfig(computedMacros);
             }
 
-            if (generateMacros && Guids != null)
-            {
-                int guidCount = 0;
-                foreach (Guid guid in Guids)
-                {
-                    JObject macros = cfg["macros"];
-                    JObject macro = new JObject();
-                    int id = guidCount++;
-                    macros["guid" + id] = macro;
-                    macro["type"] = "guid";
-                    macro["action"] = "new";
+            macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
 
-                    _guidToGuidPrefixMap[guid] = "guid" + id;
+            if (Symbols != null)
+            {
+                foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                {
+                    if (symbol.Value.Replaces != null)
+                    {
+                        macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Value.Replaces, symbol.Key));
+                    }
                 }
             }
 
             foreach (KeyValuePair<Guid, string> map in _guidToGuidPrefixMap)
             {
-                foreach (char fmt in "ndbpxNDPBX")
+                foreach (char format in GuidMacroConfig.DefaultFormats)
                 {
-                    string rplc = char.IsUpper(fmt) ? map.Key.ToString(fmt.ToString()).ToUpperInvariant() : map.Key.ToString(fmt.ToString()).ToLowerInvariant();
-                    cfg["replacements"][rplc] = map.Value + "-" + fmt;
+                    string newGuid = char.IsUpper(format) ? map.Key.ToString(format.ToString()).ToUpperInvariant() : map.Key.ToString(format.ToString()).ToLowerInvariant();
+                    macroGeneratedReplacements.Add(new ReplacementTokens(map.Value + "-" + format, newGuid));
+                }
+            }
+
+            GlobalRunConfig config = new GlobalRunConfig()
+            {
+                Operations = operations,
+                VariableSetup = VariableConfig.DefaultVariableSetup(),
+                Macros = macros,
+                ComputedMacros = computedMacros,
+                Replacements = macroGeneratedReplacements
+            };
+
+            return config;
+        }
+
+        private IReadOnlyList<IMacroConfig> ProduceMacroConfig(List<IMacroConfig> computedMacroConfigs)
+        {
+            List<IMacroConfig> generatedMacroConfigs = new List<IMacroConfig>();
+
+            if (Guids != null)
+            {
+                int guidCount = 0;
+                foreach (Guid guid in Guids)
+                {
+                    int id = guidCount++;
+                    string replacementId = "guid" + id;
+                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, "new", null));
+                    _guidToGuidPrefixMap[guid] = replacementId;
                 }
             }
 
@@ -352,54 +301,40 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (symbol.Value.Binding == "safe_name")
                     {
-                        _safeNameName = symbol.Key;
+                        _safeNameName = symbol.Key; // save for later, to generate the safe_name regex macro
                     }
 
-                    if (symbol.Value.Type == "computed" && generateMacros)
+                    if (symbol.Value.Type == "computed")
                     {
-                        JObject cmp = new JObject();
-                        cfg["macros"][symbol.Key] = cmp;
-                        cmp["type"] = "evaluate";
-                        cmp["action"] = ((ComputedSymbol)symbol.Value).Value;
-                        cmp["evaluator"] = "C++";
+                        string action = ((ComputedSymbol)symbol.Value).Value;
+                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, EvaluateMacro.DefaultEvaluator));
                     }
-                    else if (symbol.Value.Type == "generated" && generateMacros)
+                    else if (symbol.Value.Type == "generated")
                     {
-                        JObject gen = new JObject();
-                        cfg["macros"][symbol.Key] = gen;
-                        GeneratedSymbol gs = (GeneratedSymbol)symbol.Value;
-                        gen["type"] = gs.Generator;
+                        GeneratedSymbol symbolInfo = (GeneratedSymbol)symbol.Value;
+                        string type = symbolInfo.Generator;
+                        string variableName = symbol.Key;
+                        Dictionary<string, JToken> configParams = new Dictionary<string, JToken>();
 
-                        foreach (KeyValuePair<string, string> parameter in gs.Parameters)
+                        foreach (KeyValuePair<string, JToken> parameter in symbolInfo.Parameters)
                         {
-                            gen[parameter.Key] = parameter.Value;
+                            configParams.Add(parameter.Key, parameter.Value);
                         }
-                    }
 
-                    if (symbol.Value.Replaces != null)
-                    {
-                        cfg["replacements"][symbol.Value.Replaces] = symbol.Key;
+                        generatedMacroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, variableName, configParams));
                     }
                 }
             }
 
-            if (_safeNameName == null && generateMacros)
+            if (_safeNameName == null)
             {
-                cfg["macros"]["safe_name"] = JObject.Parse(@"{
-    ""type"": ""regex"",
-    ""action"": ""replace"",
-    ""source"": """ + NameParameter.Name + @""",
-    ""steps"": [{
-        ""regex"": ""\\W"",
-        ""replacement"": ""_""
-    }]
-}");
+                IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>();
+                steps.Add(new KeyValuePair<string, string>(@"\W", "_"));
+                generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", "replace", NameParameter.Name, steps));
                 _safeNameName = "safe_name";
             }
 
-            cfg["replacements"][SourceName] = _safeNameName;
-
-            return cfg;
+            return generatedMacroConfigs;
         }
 
         private static IReadOnlyList<string> JTokenToCollection(JToken token, IFile sourceFile, string[] defaultSet)
@@ -421,155 +356,103 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return token.ArrayAsStrings();
         }
 
-        private class EvaluatedSimpleConfig : IRunnableProjectConfig
+        public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
         {
-            private readonly SimpleConfigModel _simpleConfigModel;
-            private IReadOnlyList<FileSource> _sources;
+            List<FileSource> sources = new List<FileSource>();
+            bool stable = Symbols == null;
+            Dictionary<string, bool> computed = new Dictionary<string, bool>();
 
-            public EvaluatedSimpleConfig(SimpleConfigModel simpleConfigModel)
+            while (!stable)
             {
-                _simpleConfigModel = simpleConfigModel;
-            }
-
-            public string Author => _simpleConfigModel.Author;
-
-            public IReadOnlyList<string> Classifications => _simpleConfigModel.Classifications;
-
-            public IReadOnlyDictionary<string, JObject> Config => ((IRunnableProjectConfig)_simpleConfigModel).Config;
-
-            public string DefaultName => _simpleConfigModel.DefaultName ?? _simpleConfigModel.SourceName;
-
-            public string GroupIdentity => _simpleConfigModel.GroupIdentity;
-
-            public string Identity => _simpleConfigModel.Identity;
-
-            public string Name => _simpleConfigModel.Name;
-
-            public IReadOnlyDictionary<string, Parameter> Parameters => ((IRunnableProjectConfig)_simpleConfigModel).Parameters;
-
-            public IReadOnlyList<IPostAction> PostActions => _simpleConfigModel.PostActions;
-
-            public string ShortName => _simpleConfigModel.ShortName;
-
-            public IFile SourceFile
-            {
-                private get { return _simpleConfigModel.SourceFile; }
-                set { _simpleConfigModel.SourceFile = value; }
-            }
-
-            public IReadOnlyList<FileSource> Sources => _sources;
-
-            public IReadOnlyDictionary<string, Dictionary<string, JObject>> Special => ((IRunnableProjectConfig)_simpleConfigModel).Special;
-
-            public IReadOnlyDictionary<string, string> Tags => _simpleConfigModel.Tags;
-
-            public IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] providers)
-            {
-                return _simpleConfigModel.ReprocessWithParameters(parameters, rootVariableCollection, configFile, providers);
-            }
-
-            internal void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
-            {
-                List<FileSource> sources = new List<FileSource>();
-                bool stable = _simpleConfigModel.Symbols == null;
-                Dictionary<string, bool> computed = new Dictionary<string, bool>();
-
-                while (!stable)
+                stable = true;
+                foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                 {
-                    stable = true;
-                    foreach (KeyValuePair<string, ISymbolModel> symbol in _simpleConfigModel.Symbols)
+                    if (symbol.Value.Type == "computed")
                     {
-                        if (symbol.Value.Type == "computed")
+                        ComputedSymbol sym = (ComputedSymbol)symbol.Value;
+                        bool value = CppStyleEvaluatorDefinition.EvaluateFromString(sym.Value, rootVariableCollection);
+                        bool currentValue;
+                        stable &= computed.TryGetValue(symbol.Key, out currentValue) && currentValue == value;
+                        rootVariableCollection[symbol.Key] = value;
+                        computed[symbol.Key] = value;
+                    }
+                }
+            }
+
+            foreach (ExtendedFileSource source in Sources)
+            {
+                List<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" }).ToList();
+                List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" }).ToList();
+                List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" }).ToList();
+
+                if (source.Modifiers != null)
+                {
+                    foreach (SourceModifier modifier in source.Modifiers)
+                    {
+                        if (CppStyleEvaluatorDefinition.EvaluateFromString(modifier.Condition, rootVariableCollection))
                         {
-                            ComputedSymbol sym = (ComputedSymbol)symbol.Value;
-                            bool value = CppStyleEvaluatorDefinition.EvaluateFromString(sym.Value, rootVariableCollection);
-                            bool currentValue;
-                            stable &= computed.TryGetValue(symbol.Key, out currentValue) && currentValue == value;
-                            rootVariableCollection[symbol.Key] = value;
-                            computed[symbol.Key] = value;
+                            includePattern.AddRange(JTokenToCollection(modifier.Include, SourceFile, new string[0]));
+                            excludePattern.AddRange(JTokenToCollection(modifier.Exclude, SourceFile, new string[0]));
+                            copyOnlyPattern.AddRange(JTokenToCollection(modifier.CopyOnly, SourceFile, new string[0]));
                         }
                     }
                 }
 
-                foreach (ExtendedFileSource source in _simpleConfigModel.Sources)
+                Dictionary<string, string> renames = new Dictionary<string, string>();
+
+                object resolvedValue;
+                if (parameters.ResolvedValues.TryGetValue(NameParameter, out resolvedValue))
                 {
-                    List<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" }).ToList();
-                    List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" }).ToList();
-                    List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" }).ToList();
-
-                    if (source.Modifiers != null)
+                    foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
-                        foreach (SourceModifier modifier in source.Modifiers)
-                        {
-                            if (CppStyleEvaluatorDefinition.EvaluateFromString(modifier.Condition, rootVariableCollection))
-                            {
-                                includePattern.AddRange(JTokenToCollection(modifier.Include, SourceFile, new string[0]));
-                                excludePattern.AddRange(JTokenToCollection(modifier.Exclude, SourceFile, new string[0]));
-                                copyOnlyPattern.AddRange(JTokenToCollection(modifier.CopyOnly, SourceFile, new string[0]));
-                            }
-                        }
+                        string tmpltRel = entry.PathRelativeTo(configFile.Parent);
+                        string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
+                        renames[tmpltRel] = outRel;
                     }
-
-                    Dictionary<string, string> renames = new Dictionary<string, string>();
-                    // Console.WriteLine(_simpleConfigModel.NameParameter);
-
-                    object resolvedValue;
-                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out resolvedValue))
-                    {
-                        foreach(IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
-                        {
-                            string tmpltRel = entry.PathRelativeTo(configFile.Parent);
-                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, (string)resolvedValue);
-                            renames[tmpltRel] = outRel;
-                            //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
-                        }
-                    }
-
-                    sources.Add(new FileSource
-                    {
-                        CopyOnly = copyOnlyPattern.ToArray(),
-                        Exclude = excludePattern.ToArray(),
-                        Include = includePattern.ToArray(),
-                        Source = source.Source ?? "./",
-                        Target = source.Target ?? "./",
-                        Rename = renames
-                    });
                 }
 
-                if (_simpleConfigModel.Sources.Count == 0)
+                sources.Add(new FileSource
                 {
-                    IReadOnlyList<string> includePattern = new[] { "**/*" };
-                    IReadOnlyList<string> excludePattern = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
-                    IReadOnlyList<string> copyOnlyPattern = new[] { "**/node_modules/**/*" };
-
-                    Dictionary<string, string> renames = new Dictionary<string, string>();
-                    // Console.WriteLine(_simpleConfigModel.NameParameter);
-
-                    object resolvedValue;
-                    if (parameters.ResolvedValues.TryGetValue(_simpleConfigModel.NameParameter, out resolvedValue))
-                    {
-                        foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
-                        {
-                            string tmpltRel = entry.PathRelativeTo(configFile.Parent);
-                            string outRel = tmpltRel.Replace(_simpleConfigModel.SourceName, (string)resolvedValue);
-                            renames[tmpltRel] = outRel;
-                            //Console.WriteLine($"Mapping {tmpltRel} -> {outRel}");
-                        }
-                    }
-
-                    sources.Add(new FileSource
-                    {
-                        CopyOnly = copyOnlyPattern,
-                        Exclude = excludePattern,
-                        Include = includePattern,
-                        Source = "./",
-                        Target = "./",
-                        Rename = renames
-                    });
-                }
-
-                _sources = sources;
+                    CopyOnly = copyOnlyPattern.ToArray(),
+                    Exclude = excludePattern.ToArray(),
+                    Include = includePattern.ToArray(),
+                    Source = source.Source ?? "./",
+                    Target = source.Target ?? "./",
+                    Rename = renames
+                });
             }
+
+            if (Sources.Count == 0)
+            {
+                IReadOnlyList<string> includePattern = new[] { "**/*" };
+                IReadOnlyList<string> excludePattern = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
+                IReadOnlyList<string> copyOnlyPattern = new[] { "**/node_modules/**/*" };
+
+                Dictionary<string, string> renames = new Dictionary<string, string>();
+
+                object resolvedValue;
+                if (parameters.ResolvedValues.TryGetValue(NameParameter, out resolvedValue))
+                {
+                    foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        string tmpltRel = entry.PathRelativeTo(configFile.Parent);
+                        string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
+                        renames[tmpltRel] = outRel;
+                    }
+                }
+
+                sources.Add(new FileSource
+                {
+                    CopyOnly = copyOnlyPattern,
+                    Exclude = excludePattern,
+                    Include = includePattern,
+                    Source = "./",
+                    Target = "./",
+                    Rename = renames
+                });
+            }
+
+            _sources = sources;
         }
 
         public static SimpleConfigModel FromJObject(JObject source)

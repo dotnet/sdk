@@ -9,5 +9,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         string Type { get; }
 
         void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter);
+
+        void EvaluateConfig(IVariableCollection vars, IMacroConfig config, IParameterSet parameters, ParameterSetter setter);
+
+        void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter);
     }
 }

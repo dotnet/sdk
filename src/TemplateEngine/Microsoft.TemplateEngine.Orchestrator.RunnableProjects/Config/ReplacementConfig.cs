@@ -16,6 +16,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public Guid Id => new Guid("62DB7F1F-A10E-46F0-953F-A28A03A81CD1");
 
+        public static IOperationProvider Setup(IReplacementTokens tokens, IParameterSet parameters)
+        {
+            ITemplateParameter param;
+            if (parameters.TryGetParameterDefinition(tokens.VariableName, out param))
+            {
+                Replacement replacement;
+                try
+                {
+                    string newValue = (string)(parameters.ResolvedValues[param]);
+                    replacement = new Replacement(tokens.OriginalValue, newValue, null);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    // TODO: make this do what's in the catch block in Process()
+                    // actually probably not needed - remove this comment when testing is done.
+                    throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
+                }
+
+                return replacement;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
             foreach (JProperty property in rawConfiguration.Properties())
