@@ -48,5 +48,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         string ITemplateParameter.DataType => DataType;
 
         IReadOnlyList<string> ITemplateParameter.Choices => Choices;
+
+        public override string ToString()
+        {
+            return $"{Name} ({Type})";
+        }
     }
 }

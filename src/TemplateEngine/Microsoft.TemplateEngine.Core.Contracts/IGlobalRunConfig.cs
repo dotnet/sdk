@@ -8,7 +8,9 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IVariableConfig VariableSetup { get; }
 
-        IReadOnlyList<IMacroConfig> Macros { get; set; }
+        IReadOnlyList<IMacroConfig> Macros { get; }
+
+        IReadOnlyList<IMacroConfig> ComputedMacros { get; }
 
         IReadOnlyList<IReplacementTokens> Replacements { get; }
     }

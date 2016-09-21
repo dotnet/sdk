@@ -33,8 +33,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string Identity { get; }
 
-        IReadOnlyList<IPostAction> PostActions { get; }
+        IReadOnlyList<IPostActionModel> PostActionModel { get; }
 
-        IRunnableProjectConfig ReprocessWithParameters(IParameterSet parameters, IVariableCollection rootVariableCollection, IFile configFile, IOperationProvider[] operations, IComponentManager componentManager);
+        void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
     }
 }

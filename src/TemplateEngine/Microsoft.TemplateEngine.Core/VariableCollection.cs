@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core
 {
@@ -217,6 +219,85 @@ namespace Microsoft.TemplateEngine.Core
         private void RelayKeysChanged(object sender, IKeysChangedEventArgs args)
         {
             OnKeysChanged();
+        }
+
+
+        public static IVariableCollection SetupVariables(IParameterSet parameters, IVariableConfig variableConfig)
+        {
+            IVariableCollection variables = Root();
+
+            Dictionary<string, VariableCollection> collections = new Dictionary<string, VariableCollection>();
+
+            foreach (KeyValuePair<string, string> source in variableConfig.Sources)
+            {
+                VariableCollection variablesForSource = null;
+                string format = source.Value;
+
+                switch (source.Key)
+                {
+                    case "environment":
+                        variablesForSource = VariableCollection.Environment(format);
+
+                        if (variableConfig.FallbackFormat != null)
+                        {
+                            variablesForSource = VariableCollection.Environment(variablesForSource, variableConfig.FallbackFormat);
+                        }
+                        break;
+                    case "user":
+                        variablesForSource = VariableCollectionFromParameters(parameters, format);
+
+                        if (variableConfig.FallbackFormat != null)
+                        {
+                            VariableCollection variablesFallback = VariableCollectionFromParameters(parameters, variableConfig.FallbackFormat);
+                            variablesFallback.Parent = variablesForSource;
+                            variablesForSource = variablesFallback;
+                        }
+                        break;
+                }
+
+                collections[source.Key] = variablesForSource;
+            }
+
+            foreach (string order in variableConfig.Order)
+            {
+                IVariableCollection current = collections[order.ToString()];
+
+                IVariableCollection tmp = current;
+                while (tmp.Parent != null)
+                {
+                    tmp = tmp.Parent;
+                }
+
+                tmp.Parent = variables;
+                variables = current;
+            }
+
+            return variables;
+        }
+
+        public static VariableCollection VariableCollectionFromParameters(IParameterSet parameters, string format)
+        {
+            VariableCollection vc = new VariableCollection();
+            foreach (ITemplateParameter param in parameters.ParameterDefinitions)
+            {
+                object value;
+                string key = string.Format(format ?? "{0}", param.Name);
+
+                if (!parameters.ResolvedValues.TryGetValue(param, out value))
+                {
+                    throw new TemplateParamException("Parameter value was not specified", param.Name, null, param.DataType);
+                }
+                else if (value == null)
+                {
+                    throw new TemplateParamException("Parameter value is null", param.Name, null, param.DataType);
+                }
+                else
+                {
+                    vc[key] = value;
+                }
+            }
+
+            return vc;
         }
     }
 }

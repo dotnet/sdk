@@ -8,7 +8,6 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -34,6 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, 
+            IVariableCollection variables,
             IComponentManager componentManager, 
             IGlobalRunConfig operations, 
             IReadOnlyDictionary<string, IGlobalRunConfig> specialOperations)
@@ -44,12 +44,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             // regular operations
-            IVariableCollection variables;
-            Operations = SetupOperations(componentManager, parameters, templateRoot, operations, out variables);
             RootVariableCollection = variables;
-            Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
+            Operations = SetupOperations(componentManager, parameters, operations);
 
             // special operations
+            Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
+
             if (specialOperations != null)
             {
                 foreach (KeyValuePair<string, IGlobalRunConfig> specialEntry in specialOperations)
@@ -59,7 +59,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = SetupOperations(componentManager, parameters, templateRoot, specialEntry.Value, out specialVariables);
+                        specialOps = SetupOperations(componentManager, parameters, specialEntry.Value);
+                        specialVariables = VariableCollection.SetupVariables(parameters, specialEntry.Value.VariableSetup);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
@@ -85,19 +86,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return paths;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IDirectory templateRoot, 
-            IGlobalRunConfig runConfig, 
-            out IVariableCollection variables)
+        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IGlobalRunConfig runConfig)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
             operations.AddRange(runConfig.Operations);
-
-            if (runConfig.Macros != null)
-            {
-                IVariableCollection varsForMacros = SetupVariables(parameters, runConfig.VariableSetup, null, true);
-                MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(componentManager, runConfig.Macros, varsForMacros, parameters);
-            }
 
             if (runConfig.Replacements != null)
             {
@@ -111,95 +103,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            variables = SetupVariables(parameters, runConfig.VariableSetup, operations);
-            return operations;
-        }
-
-        private static IVariableCollection SetupVariables(IParameterSet parameters, IVariableConfig variableConfig, List<IOperationProvider> operations, bool allParameters = false)
-        {
-            IVariableCollection variables = VariableCollection.Root();
-
-            if (variableConfig.Expand)
+            if (runConfig.VariableSetup.Expand)
             {
                 operations?.Add(new ExpandVariables(null));
             }
 
-            Dictionary<string, VariableCollection> collections = new Dictionary<string, VariableCollection>();
-
-            foreach (KeyValuePair<string, string> source in variableConfig.Sources)
-            {
-                VariableCollection variablesForSource = null;
-                string format = source.Value;
-
-                switch (source.Key)
-                {
-                    case "environment":
-                        variablesForSource = VariableCollection.Environment(format);
-
-                        if (variableConfig.FallbackFormat != null)
-                        {
-                            variablesForSource = VariableCollection.Environment(variablesForSource, variableConfig.FallbackFormat);
-                        }
-                        break;
-                    case "user":
-                        variablesForSource = ProduceUserVariablesCollection(parameters, format, allParameters);
-
-                        if (variableConfig.FallbackFormat != null)
-                        {
-                            VariableCollection variablesFallback = ProduceUserVariablesCollection(parameters, variableConfig.FallbackFormat, allParameters);
-                            variablesFallback.Parent = variablesForSource;
-                            variablesForSource = variablesFallback;
-                        }
-                        break;
-                }
-
-                collections[source.Key] = variablesForSource;
-            }
-
-            foreach (string order in variableConfig.Order)
-            {
-                IVariableCollection current = collections[order.ToString()];
-
-                IVariableCollection tmp = current;
-                while (tmp.Parent != null)
-                {
-                    tmp = tmp.Parent;
-                }
-
-                tmp.Parent = variables;
-                variables = current;
-            }
-
-            return variables;
-        }
-
-        private static VariableCollection ProduceUserVariablesCollection(IParameterSet parameters, string format, bool allParameters)
-        {
-            VariableCollection vc = new VariableCollection();
-            foreach (ITemplateParameter parameter in parameters.ParameterDefinitions)
-            {
-                Parameter param = (Parameter)parameter;
-                if (allParameters || param.IsVariable)
-                {
-                    object value;
-                    string key = string.Format(format ?? "{0}", param.Name);
-
-                    if (!parameters.ResolvedValues.TryGetValue(param, out value))
-                    {
-                        throw new TemplateParamException("Parameter value was not specified", param.Name, null, param.DataType);
-                    }
-                    else if (value == null)
-                    {
-                        throw new TemplateParamException("Parameter value is null", param.Name, null, param.DataType);
-                    }
-                    else
-                    {
-                        vc[key] = value;
-                    }
-                }
-            }
-
-            return vc;
+            return operations;
         }
 
         internal class ProcessorState : IProcessorState

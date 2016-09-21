@@ -11,6 +11,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IMacroConfig> Macros { get; set; }
 
+        public IReadOnlyList<IMacroConfig> ComputedMacros { get; set; }
+
         public IReadOnlyList<IReplacementTokens> Replacements { get; set; }
     }
 }
