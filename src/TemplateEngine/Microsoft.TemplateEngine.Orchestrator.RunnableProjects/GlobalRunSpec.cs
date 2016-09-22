@@ -56,7 +56,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(FileSource source,
+        public GlobalRunSpec(ITemplateEngineHost host,
+            FileSource source,
             IDirectory templateRoot,
             IComponentManager componentManager,
             IParameterSet parameters, 
@@ -73,7 +74,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // regular operations
             RootVariableCollection = variables;
-            Operations = ResolveOperations(operations, componentManager, templateRoot, variables, parameters);
+            Operations = ResolveOperations(host, operations, componentManager, templateRoot, variables, parameters);
 
             // special operations
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
@@ -87,7 +88,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = ResolveOperations(specialEntry.Value, componentManager, templateRoot, variables, parameters);
+                        specialOps = ResolveOperations(host, specialEntry.Value, componentManager, templateRoot, variables, parameters);
                         specialVariables = VariableCollection.SetupVariables(parameters, specialEntry.Value.VariableSetup);
                     }
 
@@ -103,9 +104,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // If there are custom Conditional operations, don't include the default Conditionals.
         //
         // Note: we may need a more robust filtering mechanism in the future.
-        private static IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IComponentManager componentManager, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        private static IReadOnlyList<IOperationProvider> ResolveOperations(ITemplateEngineHost host, IGlobalRunConfig runConfig, IComponentManager componentManager, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
-            IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(runConfig.CustomOperations, componentManager, templateRoot, variables, parameters);
+            IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(host, runConfig.CustomOperations, componentManager, templateRoot, variables, parameters);
             IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(parameters, runConfig);
 
             List<IOperationProvider> operations = new List<IOperationProvider>(customOperations);
@@ -149,7 +150,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<ICustomOperationModel> customModel, IComponentManager componentManager, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(ITemplateEngineHost host, IReadOnlyList<ICustomOperationModel> customModel, IComponentManager componentManager, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
             List<IOperationProvider> customOperations = new List<IOperationProvider>();
 
@@ -158,7 +159,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 CustomOperationModel opModel = opModelUntyped as CustomOperationModel;
                 if (opModel == null)
                 {
-                    continue;   // TODO: decide if this is ok, or if we need some other handling.
+                    host.LogMessage($"Operation type = [{opModel.Type}] from configuration is unknown.");
+                    continue;
                 }
                     
                 string opType = opModel.Type;

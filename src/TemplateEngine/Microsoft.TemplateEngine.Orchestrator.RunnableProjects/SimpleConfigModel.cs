@@ -43,6 +43,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Name { get; set; }
 
+        public string ShortName { get; set; }
+
+        public string SourceName { get; set; }
+
+        public IReadOnlyList<ExtendedFileSource> Sources { get; set; }
+
+        public IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
+
+        public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
+
+        public IReadOnlyDictionary<string, string> Tags { get; set; }
+
+        IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
+
+        IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
+
+        public string Identity { get; set; }
+
         IReadOnlyDictionary<string, Parameter> IRunnableProjectConfig.Parameters
         {
             get
@@ -106,18 +124,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _parameters;
             }
         }
-
-        public string ShortName { get; set; }
-
-        public string SourceName { get; set; }
-
-        public IReadOnlyList<ExtendedFileSource> Sources { get; set; }
-
-        public IReadOnlyDictionary<string, ISymbolModel> Symbols { get; set; }
-
-        public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
-
-        public IReadOnlyDictionary<string, string> Tags { get; set; }
 
         private Parameter NameParameter
         {
@@ -189,6 +195,43 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
+
+        private static readonly SpecialOperationConfigParams DefaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CWithComments);
+
+        // operation info read from the config
+        private ICustomFileGlobModel CustomOperations = new CustomFileGlobModel();
+
+        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup(DefaultOperationParams, true, CustomOperations);
+
+        private class SpecialOperationConfigParams
+        {
+            public SpecialOperationConfigParams(string glob, string flagPrefix, ConditionalType type)
+            {
+                Glob = glob;
+                FlagPrefix = flagPrefix;
+                ConditionalStyle = type;
+            }
+
+            public string Glob { get; }
+
+            public string FlagPrefix { get; }
+
+            public ConditionalType ConditionalStyle { get; }
+
+            private static readonly SpecialOperationConfigParams _Defaults = new SpecialOperationConfigParams(string.Empty, string.Empty, ConditionalType.None);
+
+            public static SpecialOperationConfigParams Defaults
+            {
+                get
+                {
+                    return _Defaults;
+                }
+            }
+        }
+
+        private IReadOnlyList<ICustomFileGlobModel> SpecialCustomSetup = new List<ICustomFileGlobModel>();
+
         IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> IRunnableProjectConfig.SpecialOperationConfig
         {
             get
@@ -218,19 +261,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     foreach (ICustomFileGlobModel customGlobModel in SpecialCustomSetup)
                     {
                         SpecialOperationConfigParams defaultParams = defaultSpecials.Where(x => x.Glob == customGlobModel.Glob).FirstOrDefault();
-                        IGlobalRunConfig runConfig;
 
-                        if (defaultParams != null)
+                        if (defaultParams == null)
                         {
-                            // the custom config is for a default-defined glob. Producing the setup uses the custom info.
-                            runConfig = ProduceOperationSetup(defaultParams.SwitchPrefix, false, defaultParams.ConditionalStyle, customGlobModel);
-                        }
-                        else
-                        {
-                            // the custom config is not for a known glob type. Only use the custom info
-                            runConfig = ProduceOperationSetup(string.Empty, false, ConditionalType.None, customGlobModel);
+                            defaultParams = SpecialOperationConfigParams.Defaults;
                         }
 
+                        IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, customGlobModel);
                         specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(customGlobModel.Glob, runConfig));
                         processedGlobs.Add(customGlobModel.Glob);
                     }
@@ -243,7 +280,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             continue;
                         }
 
-                        IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams.SwitchPrefix, false, defaultParams.ConditionalStyle);
+                        IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, null);
                         specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(defaultParams.Glob, runConfig));
                     }
 
@@ -254,50 +291,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private class SpecialOperationConfigParams
+        private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, ICustomFileGlobModel customGlobModel = null)
         {
-            public SpecialOperationConfigParams(string glob, string switchPrefix, ConditionalType type)
-            {
-                Glob = glob;
-                SwitchPrefix = switchPrefix;
-                ConditionalStyle = type;
-            }
-
-            public string Glob { get; }
-
-            public string SwitchPrefix { get; }
-
-            public ConditionalType ConditionalStyle { get; }
-        }
-
-        private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
-
-        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup("//", true, ConditionalType.CWithComments, CustomOperations);
-
-        // operation info read from the config
-        private ICustomFileGlobModel CustomOperations = new CustomFileGlobModel();
-
-        private IReadOnlyList<ICustomFileGlobModel> SpecialCustomSetup = new List<ICustomFileGlobModel>();
-
-        IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
-
-        IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
-
-        public string Identity { get; set; }
-
-        private IGlobalRunConfig ProduceOperationSetup(string flagsPrefix, bool generateMacros, ConditionalType conditionalStyle, ICustomFileGlobModel customGlobModel = null)
-        {
-            // Note: conditional setup provides the comment strippers / preservers / changers that are needed for that conditional type.
-            // so no need to do the stripComments & preserveComments setup here that was in the old ProductConfig()
             List<IOperationProvider> operations = new List<IOperationProvider>();
-            if (conditionalStyle != ConditionalType.None)
+
+            // TODO: if we allow custom config to specify a built-in conditional type, decide what to do.
+            if (defaultModel.ConditionalStyle != ConditionalType.None)
             {
-                operations.AddRange(ConditionalConfig.ConditionalSetup(conditionalStyle, "C++", true, true, null));
+                operations.AddRange(ConditionalConfig.ConditionalSetup(defaultModel.ConditionalStyle, "C++", true, true, null));
             }
 
             if (customGlobModel == null || string.IsNullOrEmpty(customGlobModel.FlagPrefix))
-            {
-                operations.AddRange(FlagsConfig.FlagsDefaultSetup(flagsPrefix));
+            {   // these conditions may need to be separated - if there is custom info, but the flag prefix was not provided, we might want to raise a warning / error
+                operations.AddRange(FlagsConfig.FlagsDefaultSetup(defaultModel.FlagPrefix));
             }
             else
             {
