@@ -181,7 +181,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return result;
         }
 
-        // Leaves the values as JObjects.
+        // Leaves the values as JTokens.
         public static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer comparaer = null, string propertyName = null)
         {
             Dictionary<string, JToken> result = new Dictionary<string, JToken>(comparaer ?? StringComparer.Ordinal);

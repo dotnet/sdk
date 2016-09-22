@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyDictionary<string, Parameter> _parameters;
         private IReadOnlyList<FileSource> _sources;
-        private IReadOnlyDictionary<string, IGlobalRunConfig> _specialOperationConfig;
+        private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
         private Parameter _nameParameter;
         private string _safeNameName;
 
@@ -189,38 +189,95 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        IReadOnlyDictionary<string, IGlobalRunConfig> IRunnableProjectConfig.SpecialOperationConfig
+        IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> IRunnableProjectConfig.SpecialOperationConfig
         {
             get
             {
                 if (_specialOperationConfig == null)
                 {
-                    Dictionary<string, IGlobalRunConfig> operationSpecials = new Dictionary<string, IGlobalRunConfig>
+                    List<SpecialOperationConfigParams> defaultSpecials = new List<SpecialOperationConfigParams>();
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.json", "//", ConditionalType.CWithComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css.min", "/*", ConditionalType.CBlockComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css", "/*", ConditionalType.CBlockComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cs", "//", ConditionalType.CNoComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cpp", "//", ConditionalType.CNoComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.h", "//", ConditionalType.CNoComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.hpp", "//", ConditionalType.CNoComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.*proj", "<!--/", ConditionalType.Xml));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.*htm", "<!--", ConditionalType.Xml));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.*html", "<!--", ConditionalType.Xml));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.jsp", "<!--", ConditionalType.Xml));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.asp", "<!--", ConditionalType.Xml));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.aspx", "<!--", ConditionalType.Xml));
+
+                    List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
+
+                    // put the custom configs first in the list
+                    HashSet<string> processedGlobs = new HashSet<string>();
+
+                    foreach (ICustomFileGlobModel customGlobModel in SpecialCustomSetup)
+                    {
+                        SpecialOperationConfigParams defaultParams = defaultSpecials.Where(x => x.Glob == customGlobModel.Glob).FirstOrDefault();
+                        IGlobalRunConfig runConfig;
+
+                        if (defaultParams != null)
                         {
-                            ["**/*.json"] = ProduceOperationSetup("//", false, ConditionalType.CWithComments),
-                            ["**/*.css"] = ProduceOperationSetup("/*", false, ConditionalType.CBlockComments),
-                            ["**/*.css.min"] = ProduceOperationSetup("/*", false, ConditionalType.CBlockComments),
-                            ["**/*.cs"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
-                            ["**/*.cpp"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
-                            ["**/*.hpp"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
-                            ["**/*.h"] = ProduceOperationSetup("//", false, ConditionalType.CNoComments),
-                            ["**/*.*proj"] = ProduceOperationSetup("<!--/", false, ConditionalType.Xml),
-                            ["**/*.*html"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
-                            ["**/*.*htm"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
-                            ["**/*.jsp"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
-                            ["**/*.asp"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
-                            ["**/*.aspx"] = ProduceOperationSetup("<!--", false, ConditionalType.Xml),
-                        };
-                    _specialOperationConfig = operationSpecials;
+                            // the custom config is for a default-defined glob. Producing the setup uses the custom info.
+                            runConfig = ProduceOperationSetup(defaultParams.SwitchPrefix, false, defaultParams.ConditionalStyle, customGlobModel);
+                        }
+                        else
+                        {
+                            // the custom config is not for a known glob type. Only use the custom info
+                            runConfig = ProduceOperationSetup(string.Empty, false, ConditionalType.None, customGlobModel);
+                        }
+
+                        specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(customGlobModel.Glob, runConfig));
+                        processedGlobs.Add(customGlobModel.Glob);
+                    }
+
+                    // add the remaining default configs in the order specified above
+                    foreach (SpecialOperationConfigParams defaultParams in defaultSpecials)
+                    {
+                        if (processedGlobs.Contains(defaultParams.Glob))
+                        {   // this one was already setup due to a custom config
+                            continue;
+                        }
+
+                        IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams.SwitchPrefix, false, defaultParams.ConditionalStyle);
+                        specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(defaultParams.Glob, runConfig));
+                    }
+
+                    _specialOperationConfig = specialOperationConfig;
                 }
 
                 return _specialOperationConfig;
             }
         }
 
+        private class SpecialOperationConfigParams
+        {
+            public SpecialOperationConfigParams(string glob, string switchPrefix, ConditionalType type)
+            {
+                Glob = glob;
+                SwitchPrefix = switchPrefix;
+                ConditionalStyle = type;
+            }
+
+            public string Glob { get; }
+
+            public string SwitchPrefix { get; }
+
+            public ConditionalType ConditionalStyle { get; }
+        }
+
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
-        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup("//", true, ConditionalType.CWithComments);
+        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup("//", true, ConditionalType.CWithComments, CustomOperations);
+
+        // operation info read from the config
+        private ICustomFileGlobModel CustomOperations = new CustomFileGlobModel();
+
+        private IReadOnlyList<ICustomFileGlobModel> SpecialCustomSetup = new List<ICustomFileGlobModel>();
 
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
 
@@ -228,13 +285,34 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Identity { get; set; }
 
-        private IGlobalRunConfig ProduceOperationSetup(string switchPrefix, bool generateMacros, ConditionalType conditionalStyle)
+        private IGlobalRunConfig ProduceOperationSetup(string flagsPrefix, bool generateMacros, ConditionalType conditionalStyle, ICustomFileGlobModel customGlobModel = null)
         {
             // Note: conditional setup provides the comment strippers / preservers / changers that are needed for that conditional type.
             // so no need to do the stripComments & preserveComments setup here that was in the old ProductConfig()
             List<IOperationProvider> operations = new List<IOperationProvider>();
-            operations.AddRange(ConditionalConfig.ConditionalSetup(conditionalStyle, "C++", true, true, null));
-            operations.AddRange(FlagsConfig.FlagsDefaultSetup(switchPrefix));
+            if (conditionalStyle != ConditionalType.None)
+            {
+                operations.AddRange(ConditionalConfig.ConditionalSetup(conditionalStyle, "C++", true, true, null));
+            }
+
+            if (customGlobModel == null || string.IsNullOrEmpty(customGlobModel.FlagPrefix))
+            {
+                operations.AddRange(FlagsConfig.FlagsDefaultSetup(flagsPrefix));
+            }
+            else
+            {
+                operations.AddRange(FlagsConfig.FlagsDefaultSetup(customGlobModel.FlagPrefix));
+            }
+
+            IVariableConfig variableConfig;
+            if (customGlobModel != null)
+            {
+                variableConfig = customGlobModel.VariableFormat;
+            }
+            else
+            {
+                variableConfig = VariableConfig.DefaultVariableSetup();
+            }
 
             IReadOnlyList<IMacroConfig> macros = null;
             List<IMacroConfig> computedMacros = new List<IMacroConfig>();
@@ -267,13 +345,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
+            IReadOnlyList<ICustomOperationModel> customOperationConfig;
+            if (customGlobModel != null && customGlobModel.Operations != null)
+            {
+                customOperationConfig = customGlobModel.Operations;
+            }
+            else
+            {
+                customOperationConfig = new List<ICustomOperationModel>();
+            }
+
             GlobalRunConfig config = new GlobalRunConfig()
             {
                 Operations = operations,
-                VariableSetup = VariableConfig.DefaultVariableSetup(),
+                VariableSetup = variableConfig,
                 Macros = macros,
                 ComputedMacros = computedMacros,
-                Replacements = macroGeneratedReplacements
+                Replacements = macroGeneratedReplacements,
+                CustomOperations = customOperationConfig
             };
 
             return config;
@@ -516,6 +605,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
             config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray((JArray)source["PostActions"]);
+
+            // Custom operations at the global level
+            JToken globalCustomConfigData = source[nameof(config.CustomOperations)];
+            if (globalCustomConfigData != null)
+            {
+                config.CustomOperations = CustomFileGlobModel.FromJObject((JObject)globalCustomConfigData, string.Empty);
+            }
+            else
+            {
+                config.CustomOperations = new CustomFileGlobModel();
+            }
+
+            // Custom operations for specials
+            IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "SpecialCustomOperations");
+            List<ICustomFileGlobModel> specialCustomSetup = new List<ICustomFileGlobModel>();
+
+            foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
+            {
+                string globName = globConfigKeyValue.Key;
+                JToken globData = globConfigKeyValue.Value;
+
+                CustomFileGlobModel globModel = CustomFileGlobModel.FromJObject((JObject)globData, globName);
+                specialCustomSetup.Add(globModel);
+            }
+
+            config.SpecialCustomSetup = specialCustomSetup;
 
             return config;
         }

@@ -16,27 +16,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public Guid Id => new Guid("A1E27A4B-9608-47F1-B3B8-F70DF62DC521");
 
-        public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        public IEnumerable<IOperationProvider> ConfigureFromJObject(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
-            foreach (JProperty property in rawConfiguration.Properties())
+            string flag = rawConfiguration.ToString("name");
+            string on = rawConfiguration.ToString("on") ?? string.Empty;
+            string off = rawConfiguration.ToString("off") ?? string.Empty;
+            string onNoEmit = rawConfiguration.ToString("onNoEmit") ?? string.Empty;
+            string offNoEmit = rawConfiguration.ToString("offNoEmit") ?? string.Empty;
+            string defaultStr = rawConfiguration.ToString("default");
+            string id = rawConfiguration.ToString("id");
+            bool? @default = null;
+
+            if (defaultStr != null)
             {
-                JObject innerData = (JObject)property.Value;
-                string flag = property.Name;
-                string on = innerData.ToString("on") ?? string.Empty;
-                string off = innerData.ToString("off") ?? string.Empty;
-                string onNoEmit = innerData.ToString("onNoEmit") ?? string.Empty;
-                string offNoEmit = innerData.ToString("offNoEmit") ?? string.Empty;
-                string defaultStr = innerData.ToString("default");
-                string id = innerData.ToString("id");
-                bool? @default = null;
-
-                if (defaultStr != null)
-                {
-                    @default = bool.Parse(defaultStr);
-                }
-
-                yield return new SetFlag(flag, on, off, onNoEmit, offNoEmit, id, @default);
+                @default = bool.Parse(defaultStr);
             }
+
+            yield return new SetFlag(flag, on, off, onNoEmit, offNoEmit, id, @default);
         }
 
         private static readonly string FlagConditionalSuffix = ":cnd";
@@ -65,6 +61,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             off = string.Format("{0}-{1}", switchPrefix, FlagIncludeSuffix);
             flagOperations.Add(new SetFlag("include", on, off, string.Empty, string.Empty, string.Empty));
 
+            // no off for the flag-flag
             on = string.Format("{0}+{1}", switchPrefix, FlagFlagsSuffix);
             flagOperations.Add(new SetFlag("flags", on, off, string.Empty, string.Empty, string.Empty));
 

@@ -29,8 +29,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 }
                 catch (KeyNotFoundException ex)
                 {
-                    // TODO: make this do what's in the catch block in Process()
-                    // actually probably not needed - remove this comment when testing is done.
                     throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
                 }
 
@@ -42,43 +40,47 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
         }
 
-        public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        // Due to the refactor in configuration processing, these won't ever happen. 
+        // For similar reasons, this class will probably stop being an IOperationConfig soon
+        public IEnumerable<IOperationProvider> ConfigureFromJObject(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
-            foreach (JProperty property in rawConfiguration.Properties())
-            {
-                if (string.IsNullOrEmpty(property.Name))
-                {
-                    continue;
-                }
+            throw new NotImplementedException("Deprecated");
 
-                ITemplateParameter param;
-                if (parameters.TryGetParameterDefinition(property.Value.ToString(), out param))
-                {
-                    Replacement r;
-                    try
-                    {
-                        string val = (string)(parameters.ResolvedValues[param]);
-                        r = new Replacement(property.Name, val, null);
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        JObject v = property.Value as JObject;
+            //foreach (JProperty property in rawConfiguration.Properties())
+            //{
+            //    if (string.IsNullOrEmpty(property.Name))
+            //    {
+            //        continue;
+            //    }
 
-                        if (v != null)
-                        {
-                            string id = v.ToString("id");
-                            string replacement = v.ToString("replaceWith");
-                            r = new Replacement(property.Name, replacement, id);
-                        }
-                        else
-                        {
-                            throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
-                        }
-                    }
+            //    ITemplateParameter param;
+            //    if (parameters.TryGetParameterDefinition(property.Value.ToString(), out param))
+            //    {
+            //        Replacement r;
+            //        try
+            //        {
+            //            string val = (string)(parameters.ResolvedValues[param]);
+            //            r = new Replacement(property.Name, val, null);
+            //        }
+            //        catch (KeyNotFoundException ex)
+            //        {
+            //            JObject v = property.Value as JObject;
 
-                    yield return r;
-                }
-            }
+            //            if (v != null)
+            //            {
+            //                string id = v.ToString("id");
+            //                string replacement = v.ToString("replaceWith");
+            //                r = new Replacement(property.Name, replacement, id);
+            //            }
+            //            else
+            //            {
+            //                throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
+            //            }
+            //        }
+
+            //        yield return r;
+            //    }
+            //}
         }
     }
 }

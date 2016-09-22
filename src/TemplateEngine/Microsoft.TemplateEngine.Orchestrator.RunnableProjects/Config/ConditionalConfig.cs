@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public Guid Id => new Guid("3E8BCBF0-D631-45BA-A12D-FBF1DE03AA38");
 
-        public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        public IEnumerable<IOperationProvider> ConfigureFromJObject(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
             IReadOnlyList<string> ifToken = rawConfiguration.ArrayAsStrings("if");
             IReadOnlyList<string> elseToken = rawConfiguration.ArrayAsStrings("else");
@@ -138,7 +138,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
         }
 
-        //ProduceConfig("/*", "/*#", "", "", false),
         public static List<IOperationProvider> CBlockCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             // This is the operationId (flag) for the balanced nesting

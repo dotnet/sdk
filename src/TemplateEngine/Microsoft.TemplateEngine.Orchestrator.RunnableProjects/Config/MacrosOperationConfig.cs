@@ -65,30 +65,34 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             return Empty<IOperationProvider>.List.Value;
         }
 
-        public IEnumerable<IOperationProvider> Process(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        // Due to the refactor in configuration processing, these won't ever happen. 
+        // For similar reasons, this class will probably stop being an IOperationConfig soon
+        public IEnumerable<IOperationProvider> ConfigureFromJObject(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
-            EnsureMacros(componentManager);
+            throw new NotImplementedException("Deprecated");
 
-            ParameterSetter setter = (p, value) =>
-            {
-                ((RunnableProjectGenerator.ParameterSet) parameters).AddParameter(p);
-                parameters.ResolvedValues[p] = value;
-            };
+            //EnsureMacros(componentManager);
 
-            foreach (JProperty property in rawConfiguration.Properties())
-            {
-                string variableName = property.Name;
-                JObject def = (JObject)property.Value;
-                string macroType = def["type"].ToString();
+            //ParameterSetter setter = (p, value) =>
+            //{
+            //    ((RunnableProjectGenerator.ParameterSet) parameters).AddParameter(p);
+            //    parameters.ResolvedValues[p] = value;
+            //};
 
-                IMacro macroObject;
-                if (_macroObjects.TryGetValue(macroType, out macroObject))
-                {
-                    macroObject.Evaluate(variableName, variables, def, parameters, setter);
-                }
-            }
+            //foreach (JProperty property in rawConfiguration.Properties())
+            //{
+            //    string variableName = property.Name;
+            //    JObject def = (JObject)property.Value;
+            //    string macroType = def["type"].ToString();
 
-            return Empty<IOperationProvider>.List.Value;
+            //    IMacro macroObject;
+            //    if (_macroObjects.TryGetValue(macroType, out macroObject))
+            //    {
+            //        macroObject.Evaluate(variableName, variables, def, parameters, setter);
+            //    }
+            //}
+
+            //return Empty<IOperationProvider>.List.Value;
         }
 
         private static void EnsureMacros(IComponentManager componentManager)

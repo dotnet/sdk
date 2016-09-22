@@ -2,17 +2,41 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
+using Microsoft.TemplateEngine.Abstractions.Mount;
+using System.Linq;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GlobalRunSpec : IGlobalRunSpec
     {
+        // probably not necessary - i don't think the order matters anymore.
+        private static IReadOnlyList<IOperationConfig> _operationConfigReadersOrdered;
+
+        private static IReadOnlyDictionary<string, IOperationConfig> _operationConfigLookup;
+
+        private static void EnsureOperationConfigs(IComponentManager componentManager)
+        {
+            if (_operationConfigReadersOrdered == null)
+            {
+                List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>(componentManager.OfType<IOperationConfig>());
+                operationConfigReaders.Sort((x, y) => x.Order.CompareTo(y.Order));
+                _operationConfigReadersOrdered = operationConfigReaders;
+
+                Dictionary<string, IOperationConfig> operationConfigLookup = new Dictionary<string, IOperationConfig>();
+                foreach (IOperationConfig opConfig in operationConfigReaders)
+                {
+                    operationConfigLookup[opConfig.Key] = opConfig;
+                }
+                _operationConfigLookup = operationConfigLookup;
+            }
+        }
+
         public IReadOnlyList<IPathMatcher> Exclude { get; }
 
         public IReadOnlyList<IPathMatcher> Include { get; }
@@ -32,12 +56,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(FileSource source, IDirectory templateRoot, IParameterSet parameters, 
+        public GlobalRunSpec(FileSource source,
+            IDirectory templateRoot,
+            IComponentManager componentManager,
+            IParameterSet parameters, 
             IVariableCollection variables,
-            IComponentManager componentManager, 
-            IGlobalRunConfig operations, 
-            IReadOnlyDictionary<string, IGlobalRunConfig> specialOperations)
+            IGlobalRunConfig operations,
+            IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> specialOperations)
         {
+            EnsureOperationConfigs(componentManager);
+
             Include = SetupPathInfoFromSource(source.Include);
             CopyOnly = SetupPathInfoFromSource(source.CopyOnly);
             Exclude = SetupPathInfoFromSource(source.Exclude);
@@ -45,7 +73,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // regular operations
             RootVariableCollection = variables;
-            Operations = SetupOperations(componentManager, parameters, operations);
+            Operations = ResolveOperations(operations, componentManager, templateRoot, variables, parameters);
 
             // special operations
             Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
@@ -59,7 +87,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = SetupOperations(componentManager, parameters, specialEntry.Value);
+                        specialOps = ResolveOperations(specialEntry.Value, componentManager, templateRoot, variables, parameters);
                         specialVariables = VariableCollection.SetupVariables(parameters, specialEntry.Value.VariableSetup);
                     }
 
@@ -67,30 +95,40 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     specials[new GlobbingPatternMatcher(specialEntry.Key)] = spec;
                 }
             }
-             
+
             Special = specials;
         }
 
-        private static IReadOnlyList<IPathMatcher> SetupPathInfoFromSource(IReadOnlyList<string> fileSources)
+        // Returns a list of operations which contains the custom operations and the default operations.
+        // If there are custom Conditional operations, don't include the default Conditionals.
+        //
+        // Note: we may need a more robust filtering mechanism in the future.
+        private static IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IComponentManager componentManager, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
-            int expect = fileSources?.Count ?? 0;
-            List<IPathMatcher> paths = new List<IPathMatcher>(expect);
-            if (fileSources != null && expect > 0)
+            IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(runConfig.CustomOperations, componentManager, templateRoot, variables, parameters);
+            IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(parameters, runConfig);
+
+            List<IOperationProvider> operations = new List<IOperationProvider>(customOperations);
+
+            if (customOperations.Any(x => x is Conditional))
             {
-                foreach (string source in fileSources)
-                {
-                    paths.Add(new GlobbingPatternMatcher(source));
-                }
+                operations.AddRange(defaultOperations.Where(op => !(op is Conditional)));
+            }
+            else
+            {
+                operations.AddRange(defaultOperations);
             }
 
-            return paths;
+            return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupOperations(IComponentManager componentManager, IParameterSet parameters, IGlobalRunConfig runConfig)
+        private static IReadOnlyList<IOperationProvider> SetupOperations(IParameterSet parameters, IGlobalRunConfig runConfig)
         {
+            // default operations
             List<IOperationProvider> operations = new List<IOperationProvider>();
             operations.AddRange(runConfig.Operations);
 
+            // replacements
             if (runConfig.Replacements != null)
             {
                 foreach (IReplacementTokens replaceSetup in runConfig.Replacements)
@@ -109,6 +147,51 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return operations;
+        }
+
+        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<ICustomOperationModel> customModel, IComponentManager componentManager, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        {
+            List<IOperationProvider> customOperations = new List<IOperationProvider>();
+
+            foreach (ICustomOperationModel opModelUntyped in customModel)
+            {
+                CustomOperationModel opModel = opModelUntyped as CustomOperationModel;
+                if (opModel == null)
+                {
+                    continue;   // TODO: decide if this is ok, or if we need some other handling.
+                }
+                    
+                string opType = opModel.Type;
+                string condition = opModel.Condition;
+
+                if (string.IsNullOrEmpty(condition)
+                    || CppStyleEvaluatorDefinition.EvaluateFromString(condition, variables))
+                {
+                    IOperationConfig realConfigObject;
+                    if (_operationConfigLookup.TryGetValue(opType, out realConfigObject))
+                    {
+                        customOperations.AddRange(
+                            realConfigObject.ConfigureFromJObject(componentManager, opModel.Configuration, templateRoot, variables, parameters));
+                    }
+                }
+            }
+
+            return customOperations;
+        }
+
+        private static IReadOnlyList<IPathMatcher> SetupPathInfoFromSource(IReadOnlyList<string> fileSources)
+        {
+            int expect = fileSources?.Count ?? 0;
+            List<IPathMatcher> paths = new List<IPathMatcher>(expect);
+            if (fileSources != null && expect > 0)
+            {
+                foreach (string source in fileSources)
+                {
+                    paths.Add(new GlobbingPatternMatcher(source));
+                }
+            }
+
+            return paths;
         }
 
         internal class ProcessorState : IProcessorState

@@ -13,5 +13,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         IReadOnlyList<IMacroConfig> ComputedMacros { get; }
 
         IReadOnlyList<IReplacementTokens> Replacements { get; }
+
+        IReadOnlyList<ICustomOperationModel> CustomOperations { get; }
     }
 }
