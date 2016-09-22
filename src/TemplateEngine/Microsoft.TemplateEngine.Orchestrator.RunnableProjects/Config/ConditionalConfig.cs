@@ -233,7 +233,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 IfTokens = new[] { "#if" },
                 ElseTokens = new[] { "#else" },
                 ElseIfTokens = new[] { "#elseif" },
-                EndIfTokens = new[] { "#endif" },
+                EndIfTokens = new[] { "#endif", "##endif" },
                 ActionableIfTokens = new[] { "##if" },
                 ActionableElseIfTokens = new[] { "##elseif" },
                 ActionableElseTokens = new[] { "##else" },
