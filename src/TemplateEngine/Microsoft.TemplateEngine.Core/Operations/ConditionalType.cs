@@ -6,8 +6,9 @@
         None,
         Xml,
         Razor,
-        CWithComments,
         CNoComments,
-        CBlockComments
+        CLineComments,
+        CBlockComments,
+        HashSignLineComment
     }
 }

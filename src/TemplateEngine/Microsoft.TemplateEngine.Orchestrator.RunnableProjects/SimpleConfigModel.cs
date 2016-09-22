@@ -197,7 +197,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
-        private static readonly SpecialOperationConfigParams DefaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CWithComments);
+        private static readonly SpecialOperationConfigParams DefaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CLineComments);
 
         // operation info read from the config
         private ICustomFileGlobModel CustomOperations = new CustomFileGlobModel();
@@ -239,7 +239,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (_specialOperationConfig == null)
                 {
                     List<SpecialOperationConfigParams> defaultSpecials = new List<SpecialOperationConfigParams>();
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.json", "//", ConditionalType.CWithComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.json", "//", ConditionalType.CLineComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css.min", "/*", ConditionalType.CBlockComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css", "/*", ConditionalType.CBlockComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cs", "//", ConditionalType.CNoComments));

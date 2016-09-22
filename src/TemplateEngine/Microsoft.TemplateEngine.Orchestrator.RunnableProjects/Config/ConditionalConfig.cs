@@ -60,14 +60,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 case ConditionalType.Razor:
                     setup = RazorConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
-                case ConditionalType.CWithComments:
-                    setup = CStyleWithCommentsConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                case ConditionalType.CLineComments:
+                    setup = CStyleLineCommentsConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
                 case ConditionalType.CNoComments:
                     setup = CStyleNoCommentsConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
                 case ConditionalType.CBlockComments:
-                    setup = CBlockCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    setup = CStyleBlockCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
+                case ConditionalType.HashSignLineComment:
+                    setup = HashSignLineCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
                 default:
                     throw new Exception($"Unrecognized conditional type {style}");
@@ -138,7 +141,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
         }
 
-        public static List<IOperationProvider> CBlockCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        public static List<IOperationProvider> CStyleBlockCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             // This is the operationId (flag) for the balanced nesting
             string commentFixingOperationId = "Fix pseudo comments (C Block)";
@@ -167,7 +170,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
         }
 
-        public static List<IOperationProvider> CStyleWithCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        public static List<IOperationProvider> CStyleLineCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             string replaceOperationId = "Replacement (C style): (//) -> ()";
             string uncommentOperationId = "Uncomment (C style): (////) -> (//)";
@@ -213,6 +216,38 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             return new List<IOperationProvider>()
             {
                 conditional
+            };
+        }
+
+        // TODO: test
+        // this should work for nginx.conf, Perl, bash, etc.
+        public static List<IOperationProvider> HashSignLineCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            string uncommentOperationId = "Uncomment (hash line): (##) -> (#)";
+            string replaceOperationId = "Replacement (hash line): (#) -> ()";
+            IOperationProvider uncomment = new Replacement("##", "#", uncommentOperationId);
+            IOperationProvider commentReplace = new Replacement("#", "", replaceOperationId);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                IfTokens = new[] { "#if" },
+                ElseTokens = new[] { "#else" },
+                ElseIfTokens = new[] { "#elseif" },
+                EndIfTokens = new[] { "#endif" },
+                ActionableIfTokens = new[] { "##if" },
+                ActionableElseIfTokens = new[] { "##elseif" },
+                ActionableElseTokens = new[] { "##else" },
+                ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                uncomment,
+                commentReplace
             };
         }
     }
