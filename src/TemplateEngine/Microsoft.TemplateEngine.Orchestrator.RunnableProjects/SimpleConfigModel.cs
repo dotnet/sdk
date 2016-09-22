@@ -614,7 +614,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else
             {
-                config.CustomOperations = new CustomFileGlobModel();
+                config.CustomOperations = null;
             }
 
             // Custom operations for specials
