@@ -72,6 +72,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 case ConditionalType.HashSignLineComment:
                     setup = HashSignLineCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
+                case ConditionalType.RemLineComment:
+                    setup = RemLineCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
                 default:
                     throw new Exception($"Unrecognized conditional type {style}");
             }
@@ -172,10 +175,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public static List<IOperationProvider> CStyleLineCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
-            string replaceOperationId = "Replacement (C style): (//) -> ()";
-            string uncommentOperationId = "Uncomment (C style): (////) -> (//)";
-            IOperationProvider uncomment = new Replacement("////", "//", uncommentOperationId);
-            IOperationProvider commentReplace = new Replacement("//", string.Empty, replaceOperationId);
+            string uncommentOperationId = "Uncomment (C style): (//) -> ()";
+            string reduceCommentsOperationId = "Reduce comment (C style): (////) -> (//)";
+            IOperationProvider uncomment = new Replacement("//", string.Empty, uncommentOperationId);
+            IOperationProvider reduceComment = new Replacement("////", "//", reduceCommentsOperationId);
 
             ConditionalTokens tokens = new ConditionalTokens
             {
@@ -186,7 +189,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 ActionableIfTokens = new[] { "////#if" },
                 ActionableElseIfTokens = new[] { "////#elseif" },
                 ActionableElseTokens = new[] { "////#else" },
-                ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
+                ActionableOperations = new[] { uncommentOperationId, reduceCommentsOperationId }
             };
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
@@ -195,8 +198,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             return new List<IOperationProvider>()
             {
                 conditional,
-                uncomment,
-                commentReplace
+                reduceComment,
+                uncomment
             };
         }
 
@@ -219,14 +222,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
         }
 
-        // TODO: test
         // this should work for nginx.conf, Perl, bash, etc.
         public static List<IOperationProvider> HashSignLineCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
-            string uncommentOperationId = "Uncomment (hash line): (##) -> (#)";
-            string replaceOperationId = "Replacement (hash line): (#) -> ()";
-            IOperationProvider uncomment = new Replacement("##", "#", uncommentOperationId);
-            IOperationProvider commentReplace = new Replacement("#", "", replaceOperationId);
+            string uncommentOperationId = "Uncomment (hash line): (#) -> ()";
+            string reduceCommentOperationId = "Reduce comment (hash line): (##) -> (#)";
+            IOperationProvider uncomment = new Replacement("#", string.Empty, uncommentOperationId);
+            IOperationProvider reduceComment = new Replacement("##", "#", reduceCommentOperationId);
 
             ConditionalTokens tokens = new ConditionalTokens
             {
@@ -237,7 +239,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 ActionableIfTokens = new[] { "##if" },
                 ActionableElseIfTokens = new[] { "##elseif" },
                 ActionableElseTokens = new[] { "##else" },
-                ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
+                ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
             };
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
@@ -246,8 +248,38 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             return new List<IOperationProvider>()
             {
                 conditional,
-                uncomment,
-                commentReplace
+                reduceComment,
+                uncomment
+            };
+        }
+
+        public static List<IOperationProvider> RemLineCommentConditionalSetup(String evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            string uncommentOperationId = "Replacement (bat rem): (rem) -> ()";
+            string reduceCommentOperationId = "Uncomment (bat rem): (rem rem) -> (rem)";
+            IOperationProvider uncomment = new Replacement("rem", string.Empty, uncommentOperationId);
+            IOperationProvider reduceComment = new Replacement("rem rem", "rem", reduceCommentOperationId);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                IfTokens = new[] { "rem #if" },
+                ElseTokens = new[] { "rem #else" },
+                ElseIfTokens = new[] { "rem #elseif" },
+                EndIfTokens = new[] { "rem #endif", "rem rem #endif" },
+                ActionableIfTokens = new[] { "rem rem #if" },
+                ActionableElseIfTokens = new[] { "rem rem #elseif" },
+                ActionableElseTokens = new[] { "rem rem #else" },
+                ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                reduceComment,
+                uncomment
             };
         }
     }

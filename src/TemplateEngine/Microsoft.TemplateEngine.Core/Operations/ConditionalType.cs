@@ -9,6 +9,7 @@
         CNoComments,
         CLineComments,
         CBlockComments,
-        HashSignLineComment
+        HashSignLineComment,
+        RemLineComment
     }
 }

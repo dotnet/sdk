@@ -62,56 +62,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return defaultValue;
             }
-
-            // all old
-            //if (key == null)
-            //{
-            //    if (token != null
-            //        && (token.Type == JTokenType.Boolean || token.Type == JTokenType.String))
-            //    {
-            //        return string.Equals(token.ToString(), "true", StringComparison.OrdinalIgnoreCase);
-            //    }
-            //    else
-            //    {
-            //        return defaultValue;
-            //    }
-
-            //    // old
-            //    //if (token == null || token.Type != JTokenType.Boolean)
-            //    //{
-            //    //    return defaultValue;
-            //    //}
-
-            //    //return string.Equals(token.ToString(), "true", StringComparison.OrdinalIgnoreCase);
-            //}
-
-            //JObject obj = token as JObject;
-
-            //if (obj == null)
-            //{
-            //    return defaultValue;
-            //}
-
-            //JToken element;
-
-            //// new
-            //if (obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element)
-            //    && (element.Type == JTokenType.Boolean || element.Type == JTokenType.String))
-            //{
-            //    return string.Equals(element.ToString(), "true", StringComparison.OrdinalIgnoreCase);
-            //}
-            //else
-            //{
-            //    return defaultValue;
-            //}
-
-            //// old
-            ////if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element) || element.Type != JTokenType.Boolean)
-            ////{
-            ////    return defaultValue;
-            ////}
-
-            ////return string.Equals(element.ToString(), "true", StringComparison.OrdinalIgnoreCase);
         }
 
         public static int ToInt32(this JToken token, string key = null, int defaultValue = 0)
