@@ -14,6 +14,8 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         string Condition { get; }
 
-        bool ConditionEvaluation { get; set; }
+        bool ConditionResult { get; }
+
+        void EvaluateCondition(IVariableCollection variables);
     }
 }

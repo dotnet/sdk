@@ -279,7 +279,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     foreach (ICustomFileGlobModel customGlobModel in SpecialCustomSetup)
                     {
-                        if (customGlobModel.ConditionEvaluation)
+                        if (customGlobModel.ConditionResult)
                         {   // only add the special if the condition is true
                             SpecialOperationConfigParams defaultParams = defaultSpecials.Where(x => x.Glob == customGlobModel.Glob).FirstOrDefault();
 
@@ -503,15 +503,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // the result is needed for SpecialOperationConfig
             foreach (ICustomFileGlobModel fileGlobModel in SpecialCustomSetup)
             {
-                if (string.IsNullOrEmpty(fileGlobModel.Condition)
-                    || CppStyleEvaluatorDefinition.EvaluateFromString(fileGlobModel.Condition, rootVariableCollection))
-                {
-                    fileGlobModel.ConditionEvaluation = true;
-                }
-                else
-                {
-                    fileGlobModel.ConditionEvaluation = false;
-                }
+                fileGlobModel.EvaluateCondition(rootVariableCollection);
             }
 
             foreach (ExtendedFileSource source in Sources)
