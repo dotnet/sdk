@@ -11,5 +11,9 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         IVariableConfig VariableFormat { get; }
 
         string FlagPrefix { get; }
+
+        string Condition { get; }
+
+        bool ConditionEvaluation { get; set; }
     }
 }

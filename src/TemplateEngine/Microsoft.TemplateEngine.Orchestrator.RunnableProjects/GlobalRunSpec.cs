@@ -15,24 +15,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GlobalRunSpec : IGlobalRunSpec
     {
-        // probably not necessary - i don't think the order matters anymore.
-        private static IReadOnlyList<IOperationConfig> _operationConfigReadersOrdered;
-
         private static IReadOnlyDictionary<string, IOperationConfig> _operationConfigLookup;
 
         private static void EnsureOperationConfigs(IComponentManager componentManager)
         {
-            if (_operationConfigReadersOrdered == null)
+            if (_operationConfigLookup == null)
             {
                 List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>(componentManager.OfType<IOperationConfig>());
-                operationConfigReaders.Sort((x, y) => x.Order.CompareTo(y.Order));
-                _operationConfigReadersOrdered = operationConfigReaders;
-
                 Dictionary<string, IOperationConfig> operationConfigLookup = new Dictionary<string, IOperationConfig>();
+
                 foreach (IOperationConfig opConfig in operationConfigReaders)
                 {
                     operationConfigLookup[opConfig.Key] = opConfig;
                 }
+
                 _operationConfigLookup = operationConfigLookup;
             }
         }

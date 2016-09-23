@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -15,6 +16,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IVariableConfig VariableFormat { get; set; }
 
         public string FlagPrefix { get; set; }
+
+        public string Condition { get; set; }
+
+        public bool ConditionEvaluation { get; set; }
 
         public static CustomFileGlobModel FromJObject(JObject globData, string globName)
         {
@@ -47,7 +52,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Glob = globName,
                 Operations = customOpsForGlob,
                 VariableFormat = variableConfig,
-                FlagPrefix = globData.ToString("flagprefix")
+                FlagPrefix = globData.ToString(nameof(FlagPrefix)),
+                Condition = globData.ToString(nameof(Condition))
             };
 
             return globModel;

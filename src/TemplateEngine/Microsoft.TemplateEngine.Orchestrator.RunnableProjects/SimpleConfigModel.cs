@@ -279,15 +279,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     foreach (ICustomFileGlobModel customGlobModel in SpecialCustomSetup)
                     {
-                        SpecialOperationConfigParams defaultParams = defaultSpecials.Where(x => x.Glob == customGlobModel.Glob).FirstOrDefault();
+                        if (customGlobModel.ConditionEvaluation)
+                        {   // only add the special if the condition is true
+                            SpecialOperationConfigParams defaultParams = defaultSpecials.Where(x => x.Glob == customGlobModel.Glob).FirstOrDefault();
 
-                        if (defaultParams == null)
-                        {
-                            defaultParams = SpecialOperationConfigParams.Defaults;
+                            if (defaultParams == null)
+                            {
+                                defaultParams = SpecialOperationConfigParams.Defaults;
+                            }
+
+                            IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, customGlobModel);
+                            specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(customGlobModel.Glob, runConfig));
                         }
 
-                        IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, customGlobModel);
-                        specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(customGlobModel.Glob, runConfig));
+                        // mark this special as already processed, so it doesn't get included with the defaults
+                        // even if the special was skipped due to its custom condition.
                         processedGlobs.Add(customGlobModel.Glob);
                     }
 
@@ -490,6 +496,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
                     }
+                }
+            }
+
+            // evaluate the file glob (specials) conditions
+            // the result is needed for SpecialOperationConfig
+            foreach (ICustomFileGlobModel fileGlobModel in SpecialCustomSetup)
+            {
+                if (string.IsNullOrEmpty(fileGlobModel.Condition)
+                    || CppStyleEvaluatorDefinition.EvaluateFromString(fileGlobModel.Condition, rootVariableCollection))
+                {
+                    fileGlobModel.ConditionEvaluation = true;
+                }
+                else
+                {
+                    fileGlobModel.ConditionEvaluation = false;
                 }
             }
 

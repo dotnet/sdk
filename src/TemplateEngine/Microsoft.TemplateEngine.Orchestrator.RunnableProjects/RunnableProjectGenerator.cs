@@ -29,18 +29,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = VariableCollection.SetupVariables(parameters, template.Config.OperationConfig.VariableSetup);
             template.Config.Evaluate(parameters, variables, template.ConfigFile);
 
-            //GlobalRunSpec primaryRunSpec = new GlobalRunSpec(host, new FileSource(), template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
-            //IOperationProvider[] opProviders = primaryRunSpec.Operations.ToArray();
-
-            //foreach (KeyValuePair<IPathMatcher, IRunSpec> special in primaryRunSpec.Special)
-            //{
-            //    if (special.Key.IsMatch(".netnew.json"))
-            //    {
-            //        opProviders = special.Value.GetOperations(opProviders).ToArray();
-            //        break;
-            //    }
-            //}
-
             // special processing
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
