@@ -66,10 +66,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        #region From SimpleConfigModel
-
-        #endregion From SimpleConfigModel
-
         private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyList<IPostAction> postActions)
         {
             foreach (IPostAction postActionInfo in postActions)

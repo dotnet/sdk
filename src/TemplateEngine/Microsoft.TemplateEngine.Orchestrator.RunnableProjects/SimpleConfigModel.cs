@@ -198,12 +198,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
-        //private static readonly SpecialOperationConfigParams DefaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CLineComments);
-
         // operation info read from the config
         private ICustomFileGlobModel CustomOperations = new CustomFileGlobModel();
-
-        //IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup(DefaultOperationParams, true, CustomOperations);
 
         IGlobalRunConfig IRunnableProjectConfig.OperationConfig
         {
