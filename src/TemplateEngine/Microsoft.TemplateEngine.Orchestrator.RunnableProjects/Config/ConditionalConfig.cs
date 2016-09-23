@@ -9,8 +9,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class ConditionalConfig : IOperationConfig
     {
-        public int Order => -7000;
-
         public string Key => "conditionals";
 
         public Guid Id => new Guid("3E8BCBF0-D631-45BA-A12D-FBF1DE03AA38");

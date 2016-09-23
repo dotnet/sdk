@@ -8,8 +8,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public interface IOperationConfig : IIdentifiedComponent
     {
-        int Order { get; }
-
         string Key { get; }
 
         IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot);

@@ -10,8 +10,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class IncludeConfig : IOperationConfig
     {
-        public int Order => -9000;
-
         public string Key => "include";
 
         public Guid Id => new Guid("3FAE1942-7257-4247-B44D-2DDE07CB4A4A");

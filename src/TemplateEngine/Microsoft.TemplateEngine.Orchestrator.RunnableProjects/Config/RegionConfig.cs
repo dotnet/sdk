@@ -9,8 +9,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class RegionConfig : IOperationConfig
     {
-        public int Order => -8000;
-
         public string Key => "regions";
 
         public Guid Id => new Guid("3D33B3BF-F40E-43EB-A14D-F40516F880CD");

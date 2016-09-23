@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -11,12 +10,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
     public class MacrosOperationConfig
     {
         private static IReadOnlyDictionary<string, IMacro> _macroObjects;
-
-        public Guid Id => new Guid("B03E4760-455F-48B1-9FF2-79ADB1E91519");
-
-        public string Key => "macros";
-
-        public int Order => -10000;
 
         public IEnumerable<IOperationProvider> ProcessMacros(IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
         {
