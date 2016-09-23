@@ -173,7 +173,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (_operationConfigLookup.TryGetValue(opType, out realConfigObject))
                     {
                         customOperations.AddRange(
-                            realConfigObject.ConfigureFromJObject(componentManager, opModel.Configuration, templateRoot, variables, parameters));
+                            realConfigObject.ConfigureFromJObject(opModel.Configuration, templateRoot));
                     }
                 }
             }

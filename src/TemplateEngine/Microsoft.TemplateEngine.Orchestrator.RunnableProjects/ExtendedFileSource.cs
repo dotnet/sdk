@@ -22,6 +22,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string Target { get; set; }
 
         [JsonProperty]
+        public string Condition { get; set; }
+
+        [JsonProperty]
         public List<SourceModifier> Modifiers { get; internal set; }
     }
 }

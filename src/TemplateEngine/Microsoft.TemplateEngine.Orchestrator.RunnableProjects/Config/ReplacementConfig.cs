@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         // Due to the refactor in configuration processing, these won't ever happen. 
         // For similar reasons, this class will probably stop being an IOperationConfig soon
-        public IEnumerable<IOperationProvider> ConfigureFromJObject(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
         {
             throw new NotImplementedException("Deprecated");
 

@@ -9,7 +9,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         IReadOnlyDictionary<string, Parameter> Parameters { get; }
 
-        //IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig { get; }
         IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> SpecialOperationConfig { get; }
 
         IGlobalRunConfig OperationConfig { get; }

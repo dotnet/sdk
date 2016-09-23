@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
@@ -17,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public Guid Id => new Guid("3FAE1942-7257-4247-B44D-2DDE07CB4A4A");
 
-        public IEnumerable<IOperationProvider> ConfigureFromJObject(IComponentManager componentManager, JObject rawConfiguration, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
         {
             string startToken = rawConfiguration.ToString("start");
             string endToken = rawConfiguration.ToString("end");

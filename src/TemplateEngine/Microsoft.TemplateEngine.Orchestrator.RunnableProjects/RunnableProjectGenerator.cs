@@ -29,17 +29,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = VariableCollection.SetupVariables(parameters, template.Config.OperationConfig.VariableSetup);
             template.Config.Evaluate(parameters, variables, template.ConfigFile);
 
-            GlobalRunSpec primaryRunSpec = new GlobalRunSpec(host, new FileSource(), template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
-            IOperationProvider[] opProviders = primaryRunSpec.Operations.ToArray();
+            //GlobalRunSpec primaryRunSpec = new GlobalRunSpec(host, new FileSource(), template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
+            //IOperationProvider[] opProviders = primaryRunSpec.Operations.ToArray();
 
-            foreach (KeyValuePair<IPathMatcher, IRunSpec> special in primaryRunSpec.Special)
-            {
-                if (special.Key.IsMatch(".netnew.json"))
-                {
-                    opProviders = special.Value.GetOperations(opProviders).ToArray();
-                    break;
-                }
-            }
+            //foreach (KeyValuePair<IPathMatcher, IRunSpec> special in primaryRunSpec.Special)
+            //{
+            //    if (special.Key.IsMatch(".netnew.json"))
+            //    {
+            //        opProviders = special.Value.GetOperations(opProviders).ToArray();
+            //        break;
+            //    }
+            //}
 
             // special processing
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 orchestrator.Run(runSpec, template.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }
 
-            List<IPostAction> postActions = PostAction.ListFromModel(template.Config.PostActionModel, primaryRunSpec.RootVariableCollection);
+            List<IPostAction> postActions = PostAction.ListFromModel(template.Config.PostActionModel, variables);
             TEMP_PLACEHOLDER_ProcessPostOperations(host, postActions);
 
             return Task.FromResult(true);
@@ -77,6 +77,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 macroProcessor.ProcessMacros(componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
             }
         }
+
+        #region From SimpleConfigModel
+
+        #endregion From SimpleConfigModel
 
         private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyList<IPostAction> postActions)
         {

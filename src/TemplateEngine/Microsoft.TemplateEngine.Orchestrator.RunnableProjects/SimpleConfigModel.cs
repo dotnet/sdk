@@ -25,6 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyDictionary<string, Parameter> _parameters;
         private IReadOnlyList<FileSource> _sources;
+        private IGlobalRunConfig _operationConfig;
         private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
         private Parameter _nameParameter;
         private string _safeNameName;
@@ -197,12 +198,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
-        private static readonly SpecialOperationConfigParams DefaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CLineComments);
+        //private static readonly SpecialOperationConfigParams DefaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CLineComments);
 
         // operation info read from the config
         private ICustomFileGlobModel CustomOperations = new CustomFileGlobModel();
 
-        IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup(DefaultOperationParams, true, CustomOperations);
+        //IGlobalRunConfig IRunnableProjectConfig.OperationConfig => ProduceOperationSetup(DefaultOperationParams, true, CustomOperations);
+
+        IGlobalRunConfig IRunnableProjectConfig.OperationConfig
+        {
+            get
+            {
+                if (_operationConfig == null)
+                {
+                    SpecialOperationConfigParams defaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CLineComments);
+                    _operationConfig = ProduceOperationSetup(defaultOperationParams, true, CustomOperations);
+                }
+
+                return _operationConfig;
+            }
+        }
 
         private class SpecialOperationConfigParams
         {
@@ -254,6 +269,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.aspx", "<!--", ConditionalType.Xml));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.bat", "rem --:", ConditionalType.RemLineComment));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cmd", "rem --:", ConditionalType.RemLineComment));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/nginx.conf", "#--", ConditionalType.HashSignLineComment));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/robots.txt", "#--", ConditionalType.HashSignLineComment));
 
                     List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
 
@@ -478,6 +495,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (ExtendedFileSource source in Sources)
             {
+                if (!string.IsNullOrEmpty(source.Condition) && !CppStyleEvaluatorDefinition.EvaluateFromString(source.Condition, rootVariableCollection))
+                {
+                    continue;
+                }
+
                 List<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" }).ToList();
                 List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" }).ToList();
                 List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" }).ToList();
@@ -486,7 +508,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     foreach (SourceModifier modifier in source.Modifiers)
                     {
-                        if (CppStyleEvaluatorDefinition.EvaluateFromString(modifier.Condition, rootVariableCollection))
+                        if (string.IsNullOrEmpty(modifier.Condition) || CppStyleEvaluatorDefinition.EvaluateFromString(modifier.Condition, rootVariableCollection))
                         {
                             includePattern.AddRange(JTokenToCollection(modifier.Include, SourceFile, new string[0]));
                             excludePattern.AddRange(JTokenToCollection(modifier.Exclude, SourceFile, new string[0]));
@@ -575,6 +597,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 src.CopyOnly = item.Get<JToken>(nameof(src.CopyOnly));
                 src.Exclude = item.Get<JToken>(nameof(src.Exclude));
                 src.Include = item.Get<JToken>(nameof(src.Include));
+                src.Condition = item.ToString(nameof(src.Condition));
 
                 List<SourceModifier> modifiers = new List<SourceModifier>();
                 src.Modifiers = modifiers;
