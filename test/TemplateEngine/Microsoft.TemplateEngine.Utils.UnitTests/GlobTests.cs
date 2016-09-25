@@ -47,6 +47,25 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         }
 
         [Fact]
+        public void VerifyGlobNegate()
+        {
+            Glob g = Glob.Parse("!f*o");
+            Assert.False(g.IsMatch("foo"));
+            Assert.False(g.IsMatch("foooooooo"));
+            Assert.True(g.IsMatch("foot"));
+        }
+
+        [Fact]
+        public void VerifyGlobEscape()
+        {
+            Glob g = Glob.Parse(@"\[[\[\ \]]");
+            Assert.True(g.IsMatch("[ "));
+            Assert.True(g.IsMatch("[]"));
+            Assert.True(g.IsMatch("[["));
+            Assert.False(g.IsMatch("]"));
+        }
+
+        [Fact]
         public void VerifyGlobKitchenSink()
         {
             Glob g = Glob.Parse("**/[Dd]ocuments/**/*.htm*");

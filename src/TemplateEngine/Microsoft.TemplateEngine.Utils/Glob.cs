@@ -7,9 +7,11 @@ namespace Microsoft.TemplateEngine.Utils
     public class Glob
     {
         private readonly IReadOnlyList<IMatcher> _matchers;
+        private readonly bool _negate;
 
-        private Glob(IReadOnlyList<IMatcher> matchers)
+        private Glob(bool negate, IReadOnlyList<IMatcher> matchers)
         {
+            _negate = negate;
             _matchers = matchers;
         }
 
@@ -26,14 +28,59 @@ namespace Microsoft.TemplateEngine.Utils
         {
             List<IMatcher> matchers = new List<IMatcher>();
 
-            for (int i = 0; i < pattern.Length; ++i)
+            int start = 0;
+            bool negate = false;
+
+            if (pattern.Length > 0 && pattern[0] == '!')
+            {
+                negate = true;
+                start = 1;
+            }
+
+            for (int i = start; i < pattern.Length; ++i)
             {
                 switch (pattern[i])
                 {
+                    case '\\':
+                        if (i < pattern.Length - 1)
+                        {
+                            switch (pattern[i + 1])
+                            {
+                                case '[':
+                                case ' ':
+                                    matchers.Add(new LiteralMatcher(pattern[i + 1]));
+                                    ++i;
+                                    break;
+                                default:
+                                    matchers.Add(new LiteralMatcher('\\'));
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            matchers.Add(new LiteralMatcher('\\'));
+                        }
+                        break;
                     case '[':
                         List<char> values = new List<char>();
                         for (; i < pattern.Length; ++i)
                         {
+                            if (pattern[i] == '\\')
+                            {
+                                if (i < pattern.Length - 1)
+                                {
+                                    switch (pattern[i + 1])
+                                    {
+                                        case ']':
+                                        case '[':
+                                        case ' ':
+                                            ++i;
+                                            values.Add(pattern[i]);
+                                            continue;
+                                    }
+                                }
+                            }
+
                             if (pattern[i] == ']')
                             {
                                 break;
@@ -68,10 +115,15 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            return new Glob(matchers);
+            return new Glob(negate, matchers);
         }
 
         public bool IsMatch(string test)
+        {
+            return _negate ^ IsMatchCore(test);
+        }
+
+        private bool IsMatchCore(string test)
         {
             Stack<Checkpoint> checkpoints = new Stack<Checkpoint>();
 
