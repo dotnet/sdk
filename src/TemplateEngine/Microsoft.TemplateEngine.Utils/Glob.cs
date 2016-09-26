@@ -8,11 +8,13 @@ namespace Microsoft.TemplateEngine.Utils
     {
         private readonly IReadOnlyList<IMatcher> _matchers;
         private readonly bool _negate;
+        private readonly bool _isNameOnlyMatch;
 
         private Glob(bool negate, IReadOnlyList<IMatcher> matchers)
         {
             _negate = negate;
             _matchers = matchers;
+            _isNameOnlyMatch = !_matchers.Any(x => x is PathMatcher || x is ExactPathMatcher || (x as LiteralMatcher)?.Char?.FirstOrDefault() == '/');
         }
 
         private interface IMatcher
@@ -93,7 +95,7 @@ namespace Microsoft.TemplateEngine.Utils
                     case '*':
                         if (pattern.Length > i + 1 && pattern[i + 1] == '*')
                         {
-                            if (i < pattern.Length - 2 && pattern[i + 2] == '/')
+                            if (pattern.Length > i + 2 && pattern[i + 2] == '/')
                             {
                                 matchers.Add(new ExactPathMatcher());
                                 i += 2;
@@ -131,7 +133,7 @@ namespace Microsoft.TemplateEngine.Utils
             int i = 0;
 
             //See if we can just do a name match
-            if (!_matchers.Any(x => x is PathMatcher || x is ExactPathMatcher || (x as LiteralMatcher)?.Char?.FirstOrDefault() == '/'))
+            if (_isNameOnlyMatch)
             {
                 i = test.LastIndexOf('/') + 1;
             }
@@ -188,7 +190,7 @@ namespace Microsoft.TemplateEngine.Utils
                     if (checkpoint.Matcher.CanConsume(test, checkpoint.StringPosition, out i))
                     {
                         checkpoint.StringPosition = i;
-                        currentMatcher = checkpoint.NextMatcher;
+                        currentMatcher = checkpoint.NextMatcherIndex;
                         checkpoints.Push(checkpoint);
                         break;
                     }
@@ -206,16 +208,16 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class Checkpoint
         {
-            public Checkpoint(IMatcher matcher, int nextMatcher, int stringPosition)
+            public Checkpoint(IMatcher matcher, int nextMatcherIndex, int stringPosition)
             {
                 Matcher = matcher;
-                NextMatcher = nextMatcher;
+                NextMatcherIndex = nextMatcherIndex;
                 StringPosition = stringPosition;
             }
 
             public IMatcher Matcher { get; }
 
-            public int NextMatcher { get; }
+            public int NextMatcherIndex { get; }
 
             public int StringPosition { get; set; }
         }
