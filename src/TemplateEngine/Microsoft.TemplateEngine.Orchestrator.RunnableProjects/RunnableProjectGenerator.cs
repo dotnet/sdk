@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid Id => GeneratorId;
 
-        public Task Create(ITemplateEngineHost host, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager)
+        public Task Create(ITemplateEngineHost host, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, out ICreationResult creationResult)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
             ProcessMacros(componentManager, template.Config.OperationConfig, parameters);
@@ -40,8 +40,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 orchestrator.Run(runSpec, template.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }
 
-            List<IPostAction> postActions = PostAction.ListFromModel(template.Config.PostActionModel, variables);
-            TEMP_PLACEHOLDER_ProcessPostOperations(host, postActions);
+            // todo: add artefacts, and anything else we'd want to report to the broker
+            creationResult = new CreationResult()
+            {
+                PostActions = PostAction.ListFromModel(template.Config.PostActionModel, variables),
+                Artefacts = new Dictionary<string, IReadOnlyList<string>>()
+            };
 
             return Task.FromResult(true);
         }
@@ -63,25 +67,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IVariableCollection varsForMacros = VariableCollection.SetupVariables(parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
                 macroProcessor.ProcessMacros(componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
-            }
-        }
-
-        private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyList<IPostAction> postActions)
-        {
-            foreach (IPostAction postActionInfo in postActions)
-            {
-                host.LogMessage(string.Format("Placeholder for post action processing of action: {0}", postActionInfo.Description));
-
-                host.LogMessage(string.Format("\tActionId: {0}", postActionInfo.ActionId));
-                host.LogMessage(string.Format("\tAbortOnFail: {0}", postActionInfo.ContinueOnError));
-                host.LogMessage(string.Format("\tConfigFile: {0}", postActionInfo.ConfigFile));
-                host.LogMessage(string.Format("\tManual Instructions: {0}", postActionInfo.ManualInstructions));
-                host.LogMessage(string.Format("\tArgs"));
-
-                foreach (KeyValuePair<string, string> arg in postActionInfo.Args)
-                {
-                    host.LogMessage(string.Format("\t\tKey = {0} | Value = {1}", arg.Key, arg.Value));
-                }
             }
         }
 

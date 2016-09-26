@@ -18,6 +18,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class SimpleConfigModel : IRunnableProjectConfig
     {
+        private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
+        private static readonly string[] ExcludePatternDefaults = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
+        private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**/*" };
+
         public SimpleConfigModel()
         {
             Sources = new[] { new ExtendedFileSource() };
@@ -157,9 +161,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     foreach (ExtendedFileSource source in Sources)
                     {
-                        IReadOnlyList<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" });
-                        IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" });
-                        IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" });
+                        IReadOnlyList<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults);
+                        IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
+                        IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
 
                         sources.Add(new FileSource
                         {
@@ -174,9 +178,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (sources.Count == 0)
                     {
-                        IReadOnlyList<string> includePattern = new[] { "**/*" };
-                        IReadOnlyList<string> excludePattern = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
-                        IReadOnlyList<string> copyOnlyPattern = new[] { "**/node_modules/**/*" };
+                        IReadOnlyList<string> includePattern = IncludePatternDefaults;
+                        IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
+                        IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
 
                         sources.Add(new FileSource
                         {
@@ -509,9 +513,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                List<string> includePattern = JTokenToCollection(source.Include, SourceFile, new[] { "**/*" }).ToList();
-                List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" }).ToList();
-                List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, new[] { "**/node_modules/**/*" }).ToList();
+                List<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults).ToList();
+                List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults).ToList();
+                List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
 
                 if (source.Modifiers != null)
                 {
@@ -552,9 +556,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (Sources.Count == 0)
             {
-                IReadOnlyList<string> includePattern = new[] { "**/*" };
-                IReadOnlyList<string> excludePattern = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
-                IReadOnlyList<string> copyOnlyPattern = new[] { "**/node_modules/**/*" };
+                IReadOnlyList<string> includePattern = IncludePatternDefaults;
+                IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
+                IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
 
                 Dictionary<string, string> renames = new Dictionary<string, string>();
 
