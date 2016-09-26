@@ -35,6 +35,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<IPostActionModel> PostActionModel { get; }
 
+        IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; }
+
         void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
     }
 }

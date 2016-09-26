@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             creationResult = new CreationResult()
             {
                 PostActions = PostAction.ListFromModel(template.Config.PostActionModel, variables),
-                Artefacts = new Dictionary<string, IReadOnlyList<string>>()
+                PrimaryOutputs = CreationPath.ListFromModel(template.Config.PrimaryOutputs, variables)
             };
 
             return Task.FromResult(true);

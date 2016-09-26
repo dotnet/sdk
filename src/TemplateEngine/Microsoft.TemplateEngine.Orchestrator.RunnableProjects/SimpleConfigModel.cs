@@ -58,6 +58,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
 
+        public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
+
         public IReadOnlyDictionary<string, string> Tags { get; set; }
 
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
@@ -506,6 +508,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 fileGlobModel.EvaluateCondition(rootVariableCollection);
             }
 
+            // evaluate the conditions and resolve the paths for the PrimaryOutputs
+            foreach (CreationPathModel pathModel in PrimaryOutputs)
+            {
+                pathModel.EvaluateCondition(rootVariableCollection);
+            }
+
             foreach (ExtendedFileSource source in Sources)
             {
                 if (!string.IsNullOrEmpty(source.Condition) && !CppStyleEvaluatorDefinition.EvaluateFromString(source.Condition, rootVariableCollection))
@@ -649,6 +657,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
             config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray((JArray)source["PostActions"]);
+
+            config.PrimaryOutputs = CreationPathModel.ListFromJArray((JArray)source["PrimaryOutputs"]);
 
             // Custom operations at the global level
             JToken globalCustomConfigData = source[nameof(config.CustomOperations)];
