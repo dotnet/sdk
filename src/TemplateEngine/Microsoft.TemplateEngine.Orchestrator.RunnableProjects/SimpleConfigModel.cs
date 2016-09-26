@@ -508,10 +508,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 fileGlobModel.EvaluateCondition(rootVariableCollection);
             }
 
+            object resolvedNameParamValue;
+            parameters.ResolvedValues.TryGetValue(NameParameter, out resolvedNameParamValue);
+
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
-            foreach (CreationPathModel pathModel in PrimaryOutputs)
+            foreach (ICreationPathModel pathModel in PrimaryOutputs)
             {
                 pathModel.EvaluateCondition(rootVariableCollection);
+
+                if (pathModel.ConditionResult && (resolvedNameParamValue != null))
+                {   // this path will be included in the outputs, replace the name (same thing we do to other file paths)
+                    pathModel.PathResolved = pathModel.PathOriginal.Replace(SourceName, (string)resolvedNameParamValue);
+                }
             }
 
             foreach (ExtendedFileSource source in Sources)
@@ -540,13 +548,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 Dictionary<string, string> renames = new Dictionary<string, string>();
 
-                object resolvedValue;
-                if (parameters.ResolvedValues.TryGetValue(NameParameter, out resolvedValue))
+                if (resolvedNameParamValue != null)
                 {
                     foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
                         string tmpltRel = entry.PathRelativeTo(configFile.Parent);
-                        string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
+                        string outRel = tmpltRel.Replace(SourceName, (string)resolvedNameParamValue);
                         renames[tmpltRel] = outRel;
                     }
                 }

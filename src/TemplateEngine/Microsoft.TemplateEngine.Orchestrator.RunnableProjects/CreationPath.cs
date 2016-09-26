@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     ICreationPath path = new CreationPath()
                     {
-                        Path = model.PathOriginal
+                        Path = model.PathResolved
                     };
                     pathList.Add(path);
                 }
