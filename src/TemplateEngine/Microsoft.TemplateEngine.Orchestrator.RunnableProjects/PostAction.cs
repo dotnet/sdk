@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid ActionId { get; private set; }
 
-        public bool AbortOnFail { get; private set; }
+        public bool ContinueOnError { get; private set; }
 
         public IReadOnlyDictionary<string, string> Args { get; private set; }
 
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         Guid IPostAction.ActionId => ActionId;
 
-        bool IPostAction.ContinueOnError => AbortOnFail;
+        bool IPostAction.ContinueOnError => ContinueOnError;
 
         IReadOnlyDictionary<string, string> IPostAction.Args => Args;
 
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     Description = model.Description,
                     ActionId = model.ActionId,
-                    AbortOnFail = model.ContinueOnError,
+                    ContinueOnError = model.ContinueOnError,
                     Args = model.Args,
                     ManualInstructions = chosenInstruction,
                     ConfigFile = model.ConfigFile,

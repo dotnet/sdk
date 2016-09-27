@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 host.LogMessage(string.Format("Placeholder for post action processing of action: {0}", postActionInfo.Description));
 
                 host.LogMessage(string.Format("\tActionId: {0}", postActionInfo.ActionId));
-                host.LogMessage(string.Format("\tAbortOnFail: {0}", postActionInfo.ContinueOnError));
+                host.LogMessage(string.Format("\tContinueOnError: {0}", postActionInfo.ContinueOnError));
                 host.LogMessage(string.Format("\tConfigFile: {0}", postActionInfo.ConfigFile));
                 host.LogMessage(string.Format("\tManual Instructions: {0}", postActionInfo.ManualInstructions));
                 host.LogMessage(string.Format("\tArgs"));
