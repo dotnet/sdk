@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         IReadOnlyDictionary<string, Parameter> Parameters { get; }
 
-        IReadOnlyDictionary<string, IGlobalRunConfig> SpecialOperationConfig { get; }
+        IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> SpecialOperationConfig { get; }
 
         IGlobalRunConfig OperationConfig { get; }
 
@@ -33,7 +33,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string Identity { get; }
 
+        string PlaceholderFilename { get; set; }
+
         IReadOnlyList<IPostActionModel> PostActionModel { get; }
+
+        IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; }
 
         void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
     }

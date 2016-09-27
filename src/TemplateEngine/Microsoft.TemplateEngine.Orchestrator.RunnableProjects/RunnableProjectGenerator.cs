@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid Id => GeneratorId;
 
-        public Task Create(ITemplateEngineHost host, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager)
+        public Task Create(ITemplateEngineHost host, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, out ICreationResult creationResult)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
             ProcessMacros(componentManager, template.Config.OperationConfig, parameters);
@@ -29,31 +29,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = VariableCollection.SetupVariables(parameters, template.Config.OperationConfig.VariableSetup);
             template.Config.Evaluate(parameters, variables, template.ConfigFile);
 
-            GlobalRunSpec primaryRunSpec = new GlobalRunSpec(new FileSource(), template.ConfigFile.Parent, parameters, variables, componentManager, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
-            IOperationProvider[] opProviders = primaryRunSpec.Operations.ToArray();
-
-            foreach (KeyValuePair<IPathMatcher, IRunSpec> special in primaryRunSpec.Special)
-            {
-                if (special.Key.IsMatch(".netnew.json"))
-                {
-                    opProviders = special.Value.GetOperations(opProviders).ToArray();
-                    break;
-                }
-            }
-
             // special processing
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
             foreach (FileSource source in template.Config.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(source, template.ConfigFile.Parent, parameters, variables, componentManager, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
+                GlobalRunSpec runSpec = new GlobalRunSpec(host, source, template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.PlaceholderFilename);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 orchestrator.Run(runSpec, template.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }
 
-            List<IPostAction> postActions = PostAction.ListFromModel(template.Config.PostActionModel, primaryRunSpec.RootVariableCollection);
-            TEMP_PLACEHOLDER_ProcessPostOperations(host, postActions);
+            // todo: add anything else we'd want to report to the broker
+            creationResult = new CreationResult()
+            {
+                PostActions = PostAction.ListFromModel(template.Config.PostActionModel, variables),
+                PrimaryOutputs = CreationPath.ListFromModel(template.Config.PrimaryOutputs, variables)
+            };
 
             return Task.FromResult(true);
         }
@@ -75,25 +67,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IVariableCollection varsForMacros = VariableCollection.SetupVariables(parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
                 macroProcessor.ProcessMacros(componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
-            }
-        }
-
-        private static void TEMP_PLACEHOLDER_ProcessPostOperations(ITemplateEngineHost host, IReadOnlyList<IPostAction> postActions)
-        {
-            foreach (IPostAction postActionInfo in postActions)
-            {
-                host.LogMessage(string.Format("Placeholder for post action processing of action: {0}", postActionInfo.Description));
-
-                host.LogMessage(string.Format("\tActionId: {0}", postActionInfo.ActionId));
-                host.LogMessage(string.Format("\tAbortOnFail: {0}", postActionInfo.ContinueOnError));
-                host.LogMessage(string.Format("\tConfigFile: {0}", postActionInfo.ConfigFile));
-                host.LogMessage(string.Format("\tManual Instructions: {0}", postActionInfo.ManualInstructions));
-                host.LogMessage(string.Format("\tArgs"));
-
-                foreach (KeyValuePair<string, string> arg in postActionInfo.Args)
-                {
-                    host.LogMessage(string.Format("\t\tKey = {0} | Value = {1}", arg.Key, arg.Value));
-                }
             }
         }
 

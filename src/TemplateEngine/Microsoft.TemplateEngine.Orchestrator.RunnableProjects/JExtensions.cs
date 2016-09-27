@@ -37,30 +37,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public static bool ToBool(this JToken token, string key = null, bool defaultValue = false)
         {
-            if (key == null)
+            JToken checkToken;
+
+            // determine which token to bool-ify
+            if (token == null)
             {
-                if (token == null || token.Type != JTokenType.Boolean)
-                {
-                    return defaultValue;
-                }
-
-                return string.Equals(token.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+                return defaultValue;
             }
-
-            JObject obj = token as JObject;
-
-            if (obj == null)
+            else if (key == null)
+            {
+                checkToken = token;
+            }
+            else if (! ((JObject)token).TryGetValue(key, StringComparison.OrdinalIgnoreCase, out checkToken))
             {
                 return defaultValue;
             }
 
-            JToken element;
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element) || element.Type != JTokenType.Boolean)
+            // do the conversion on checkToken
+            if (checkToken.Type == JTokenType.Boolean || checkToken.Type == JTokenType.String)
+            {
+                return string.Equals(checkToken.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+            }
+            else
             {
                 return defaultValue;
             }
-
-            return string.Equals(element.ToString(), "true", StringComparison.OrdinalIgnoreCase);
         }
 
         public static int ToInt32(this JToken token, string key = null, int defaultValue = 0)
@@ -181,7 +182,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return result;
         }
 
-        // Leaves the values as JObjects.
+        // Leaves the values as JTokens.
         public static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer comparaer = null, string propertyName = null)
         {
             Dictionary<string, JToken> result = new Dictionary<string, JToken>(comparaer ?? StringComparer.Ordinal);

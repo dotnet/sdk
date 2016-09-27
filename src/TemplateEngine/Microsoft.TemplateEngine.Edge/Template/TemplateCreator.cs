@@ -112,17 +112,23 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return missingParams ? -1 : 0;
             }
 
+            ICreationResult creationResult;
+
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = Settings.SettingsLoader.Components;
-                await template.Generator.Create(host, template, templateParams, componentManager);
+                await template.Generator.Create(host, template, templateParams, componentManager, out creationResult);
                 sw.Stop();
                 host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
             finally
             {
             }
+
+            // TODO: pass back the creationResult (probably as an out param)
+            // (and get rid of this debugging)
+            creationResult.TEMP_CONSOLE_DEBUG_CreationResult(host);
 
             return 0;
         }
