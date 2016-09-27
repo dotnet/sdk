@@ -252,8 +252,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public static List<IOperationProvider> RemLineCommentConditionalSetup(String evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
-            string uncommentOperationId = "Replacement (bat rem): (rem) -> ()";
-            string reduceCommentOperationId = "Uncomment (bat rem): (rem rem) -> (rem)";
+            string uncommentOperationId = "Replacement (rem line): (rem) -> ()";
+            string reduceCommentOperationId = "Uncomment (rem line): (rem rem) -> (rem)";
             IOperationProvider uncomment = new Replacement("rem", string.Empty, uncommentOperationId);
             IOperationProvider reduceComment = new Replacement("rem rem", "rem", reduceCommentOperationId);
 

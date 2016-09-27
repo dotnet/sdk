@@ -21,6 +21,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (ICreationPathModel model in modelList)
             {
+                // Note: this check is probably superfluous. The Model has evaluation info.
+                // OTOH: this is probaby a cleaner way to do it. 
                 if (string.IsNullOrEmpty(model.Condition)
                     || CppStyleEvaluatorDefinition.EvaluateFromString(model.Condition, rootVariableCollection))
                 {
