@@ -68,6 +68,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Identity { get; set; }
 
+        private static readonly string DefaultPlaceholderFilename = "-.-";
+
+        private string _placeholderValue;
+
+        public string PlaceholderFilename
+        {
+            get
+            {
+                return _placeholderValue;
+            }
+            set
+            {
+                _placeholderValue = value ?? DefaultPlaceholderFilename;
+            }
+        }
+
         IReadOnlyDictionary<string, Parameter> IRunnableProjectConfig.Parameters
         {
             get
@@ -614,8 +630,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.Name = source.ToString(nameof(config.Name));
             config.ShortName = source.ToString(nameof(config.ShortName));
             config.SourceName = source.ToString(nameof(config.SourceName));
+            config.PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename));
 
-            List<ExtendedFileSource> sources = new List<ExtendedFileSource>();
+            List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
             config.Sources = sources;
 
             foreach (JObject item in source.Items<JObject>(nameof(config.Sources)))

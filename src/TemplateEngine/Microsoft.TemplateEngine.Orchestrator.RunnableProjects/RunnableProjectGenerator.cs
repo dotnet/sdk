@@ -35,12 +35,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (FileSource source in template.Config.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(host, source, template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig);
+                GlobalRunSpec runSpec = new GlobalRunSpec(host, source, template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.PlaceholderFilename);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 orchestrator.Run(runSpec, template.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }
 
-            // todo: add artefacts, and anything else we'd want to report to the broker
+            // todo: add anything else we'd want to report to the broker
             creationResult = new CreationResult()
             {
                 PostActions = PostAction.ListFromModel(template.Config.PostActionModel, variables),

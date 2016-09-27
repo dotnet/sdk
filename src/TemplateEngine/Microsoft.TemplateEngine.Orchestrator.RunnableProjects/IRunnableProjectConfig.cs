@@ -33,6 +33,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string Identity { get; }
 
+        string PlaceholderFilename { get; set; }
+
         IReadOnlyList<IPostActionModel> PostActionModel { get; }
 
         IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; }

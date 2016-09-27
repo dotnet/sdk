@@ -47,6 +47,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Rename { get; }
 
+        public string PlaceholderFilename { get; }
+
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
@@ -59,7 +61,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IParameterSet parameters, 
             IVariableCollection variables,
             IGlobalRunConfig globalConfig,
-            IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> fileGlobConfigs)
+            IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> fileGlobConfigs,
+            string placeholderFilename)
         {
             EnsureOperationConfigs(componentManager);
 
@@ -67,6 +70,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             CopyOnly = SetupPathInfoFromSource(source.CopyOnly);
             Exclude = SetupPathInfoFromSource(source.Exclude);
             Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            PlaceholderFilename = placeholderFilename;
 
             // regular operations
             RootVariableCollection = variables;

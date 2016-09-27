@@ -71,6 +71,14 @@ namespace Microsoft.TemplateEngine.Core.Util
             foreach (IFile file in sourceDir.EnumerateFiles("*", SearchOption.AllDirectories))
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);
+                string fileName = Path.GetFileName(sourceRel);
+
+                if (fileName == spec.PlaceholderFilename)
+                {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                    // So this happens before all the include / exclude / copy checks.
+                    CreateTargetDir(sourceRel, targetDir, spec);
+                    continue;
+                }
 
                 foreach (IPathMatcher include in spec.Include)
                 {
@@ -104,15 +112,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                             }
                             else
                             {
-                                string targetRel;
-                                if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))
-                                {
-                                    targetRel = sourceRel;
-                                }
-
-                                string targetPath = Path.Combine(targetDir, targetRel);
-                                string fullTargetDir = Path.GetDirectoryName(targetPath);
-                                Directory.CreateDirectory(fullTargetDir);
+                                string targetPath = CreateTargetDir(sourceRel, targetDir, spec);
 
                                 using (Stream sourceStream = file.OpenRead())
                                 using (Stream targetStream = File.Create(targetPath))
@@ -126,6 +126,21 @@ namespace Microsoft.TemplateEngine.Core.Util
                     }
                 }
             }
+        }
+
+        private static string CreateTargetDir(string sourceRel, string targetDir, IGlobalRunSpec spec)
+        {
+            string targetRel;
+            if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))
+            {
+                targetRel = sourceRel;
+            }
+
+            string targetPath = Path.Combine(targetDir, targetRel);
+            string fullTargetDir = Path.GetDirectoryName(targetPath);
+            Directory.CreateDirectory(fullTargetDir);
+
+            return targetPath;
         }
 
         private static void ProcessFile(Orchestrator self, IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IReadOnlyDictionary<IPathMatcher, IProcessor> specializations)
