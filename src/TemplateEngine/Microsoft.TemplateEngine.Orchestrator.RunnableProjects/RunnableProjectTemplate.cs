@@ -23,6 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ShortName = config.ShortName;
             Author = config.Author;
             Tags = config.Tags;
+            Description = config.Description;
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;
             _raw = raw;
@@ -33,6 +34,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public Guid GeneratorId => Generator.Id;
 
         public string Author { get; }
+
+        public string Description { get; }
 
         public IReadOnlyList<string> Classifications { get; }
 
