@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
@@ -20,14 +18,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Type = "evaluate";
             Action = action;
             Evaluator = evaluator;
-        }
-
-        public static EvaluateMacroConfig FromJObject(JObject config, string variableName)
-        {
-            string action = config.ToString("action");
-            string evaluator = config.ToString("evaluator");
-
-            return new EvaluateMacroConfig(variableName, action, evaluator);
         }
     }
 }

@@ -43,36 +43,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             setter(p, result.ToString());
         }
-        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
-        {
-            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
-
-            if (deferredConfig == null)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
-            }
-
-            JToken actionToken;
-            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
-            {
-                throw new ArgumentNullException("action");
-            }
-            string action = actionToken.ToString();
-
-            string evaluator;
-            JToken evaluatorToken;
-            if (!deferredConfig.Parameters.TryGetValue("evaluator", out evaluatorToken))
-            {
-                evaluator = DefaultEvaluator;
-            }
-            else
-            {
-                evaluator = evaluatorToken.ToString();
-            }
-
-            IMacroConfig realConfig = new EvaluateMacroConfig(deferredConfig.VariableName, action, evaluator);
-            EvaluateConfig(vars, realConfig, parameters, setter);
-        }
 
         public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
         {

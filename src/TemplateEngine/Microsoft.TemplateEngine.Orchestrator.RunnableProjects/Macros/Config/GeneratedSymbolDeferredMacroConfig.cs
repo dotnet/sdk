@@ -26,17 +26,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public IReadOnlyDictionary<string, JToken> Parameters { get; private set; }
 
-
         public GeneratedSymbolDeferredMacroConfig(string type, string variableName, Dictionary<string, JToken> parameters)
         {
             Type = type;
             VariableName = variableName;
             Parameters = parameters;
-        }
-
-        public IMacroConfig ConfigFromDeferredConfig(IMacroConfig rawConfig)
-        {
-            throw new NotImplementedException();
         }
     }
 }

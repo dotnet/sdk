@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
@@ -23,15 +21,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Action = action;
             Low = low;
             High = high ?? int.MaxValue;
-        }
-
-        public static RandomMacroConfig FromJObject(JObject config, string variableName)
-        {
-            string action = config.ToString("action");
-            int low = config.ToInt32("low");
-            int high = config.ToInt32("high", int.MaxValue);
-
-            return new RandomMacroConfig(variableName, action, low, high);
         }
     }
 }

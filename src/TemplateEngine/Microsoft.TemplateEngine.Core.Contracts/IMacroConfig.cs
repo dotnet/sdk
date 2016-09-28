@@ -1,6 +1,4 @@
-﻿using Microsoft.TemplateEngine.Abstractions;
-
-namespace Microsoft.TemplateEngine.Core.Contracts
+﻿namespace Microsoft.TemplateEngine.Core.Contracts
 {
     // Base interface for all macro configurations
     public interface IMacroConfig

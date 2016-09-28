@@ -10,10 +10,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
     public class MacrosOperationConfig
     {
         private static IReadOnlyDictionary<string, IMacro> _macroObjects;
+        private static IReadOnlyDictionary<string, IDeferredMacro> _deferredMacroObjects;
 
+        // Warning: if there are unknown macro "types", they are quietly ignored here.
+        // This applies to both the regular and deferred macros.
         public IEnumerable<IOperationProvider> ProcessMacros(IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
         {
             EnsureMacros(componentManager);
+            EnsureDeferredMacros(componentManager);
 
             ParameterSetter setter = (p, value) =>
             {
@@ -22,11 +26,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
 
             IList<IMacroConfig> allMacroConfigs = new List<IMacroConfig>(macroConfigs);
+            IList<GeneratedSymbolDeferredMacroConfig> deferredConfigList = new List<GeneratedSymbolDeferredMacroConfig>();
 
+
+            // run the macros that are already setup, stash the deferred ones for afterwards
             foreach (IMacroConfig config in allMacroConfigs)
             {
                 if (config is GeneratedSymbolDeferredMacroConfig)
                 {
+                    deferredConfigList.Add(config as GeneratedSymbolDeferredMacroConfig);
                     continue;
                 }
 
@@ -38,18 +46,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
 
             // run the deferred macros
-            foreach (IMacroConfig config in macroConfigs)
+            foreach (GeneratedSymbolDeferredMacroConfig deferredConfig in deferredConfigList)
             {
-                GeneratedSymbolDeferredMacroConfig deferredConfig = config as GeneratedSymbolDeferredMacroConfig;
-                if (deferredConfig == null)
+                IDeferredMacro deferredMacroObject;
+                if (_deferredMacroObjects.TryGetValue(deferredConfig.Type, out deferredMacroObject))
                 {
-                    continue;
-                }
-
-                IMacro macroObject;
-                if (_macroObjects.TryGetValue(deferredConfig.Type, out macroObject))
-                {
-                    macroObject.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+                    deferredMacroObject.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
                 }
             }
 
@@ -68,6 +70,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 }
 
                 _macroObjects = macroObjects;
+            }
+        }
+
+        private static void EnsureDeferredMacros(IComponentManager componentManager)
+        {
+            if (_deferredMacroObjects == null)
+            {
+                Dictionary<string, IDeferredMacro> deferredMacroObjects = new Dictionary<string, IDeferredMacro>();
+
+                foreach (IDeferredMacro deferredMacro in componentManager.OfType<IDeferredMacro>())
+                {
+                    deferredMacroObjects[deferredMacro.Type] = deferredMacro;
+                }
+
+                _deferredMacroObjects = deferredMacroObjects;
             }
         }
     }

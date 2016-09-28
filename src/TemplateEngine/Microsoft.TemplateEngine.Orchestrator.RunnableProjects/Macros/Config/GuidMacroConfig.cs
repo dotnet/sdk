@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
@@ -22,14 +20,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Type = "guid";
             Action = action;
             Format = format;
-        }
-
-        public static GuidMacroConfig FromJObject(JObject config, string variableName)
-        {
-            string action = config.ToString("action");
-            string format = config.ToString("format");
-
-            return new GuidMacroConfig(variableName, action, format);
         }
     }
 }

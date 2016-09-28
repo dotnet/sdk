@@ -275,6 +275,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.json", "//", ConditionalType.CLineComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css.min", "/*", ConditionalType.CBlockComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css", "/*", ConditionalType.CBlockComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cshtml", "@*", ConditionalType.Razor));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cs", "//", ConditionalType.CNoComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cpp", "//", ConditionalType.CNoComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.h", "//", ConditionalType.CNoComments));

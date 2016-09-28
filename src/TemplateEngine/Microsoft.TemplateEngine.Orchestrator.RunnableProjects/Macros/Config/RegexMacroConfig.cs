@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
@@ -25,28 +23,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             Action = action;
             SourceVariable = sourceVariable;
             Steps = steps;
-        }
-
-        public static RegexMacroConfig FromJObject(JObject config, string variableName)
-        {
-            string action = config.ToString("action");
-            string sourceVariable = config.ToString("source");
-            JArray stepList = config.Get<JArray>("steps");
-
-            List<KeyValuePair<string, string>> replacementSteps = new List<KeyValuePair<string, string>>();
-
-            if (stepList != null)
-            {
-                foreach (JToken step in stepList)
-                {
-                    JObject map = (JObject)step;
-                    string regex = map.ToString("regex");
-                    string replaceWith = map.ToString("replacement");
-                    replacementSteps.Add(new KeyValuePair<string, string>(regex, replaceWith));
-                }
-            }
-
-            return new RegexMacroConfig(variableName, action, sourceVariable, replacementSteps);
         }
     }
 }
