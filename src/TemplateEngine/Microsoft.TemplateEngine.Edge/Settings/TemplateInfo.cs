@@ -25,6 +25,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     classifications.Add(item.ToString());
                 }
             DefaultName = entry["DefaultName"].ToString();
+            Description = entry["Description"].ToString();
             Identity = entry["Identity"].ToString();
             GeneratorId = Guid.Parse(entry["GeneratorId"].ToString());
             GroupIdentity = entry["GroupIdentity"].ToString();
@@ -52,6 +53,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public string DefaultName { get; set; }
+
+        [JsonProperty]
+        public string Description { get; set; }
 
         [JsonProperty]
         public string Identity { get; set; }
