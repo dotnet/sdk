@@ -21,46 +21,40 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as GuidMacroConfig");
             }
 
-            switch (config.Action)
+            if (config.Format != null)
             {
-                case "new":
-                    if (config.Format != null)
+                Guid g = Guid.NewGuid();
+                string value = char.IsUpper(config.Format[0]) ? g.ToString(config.Format[0].ToString()).ToUpperInvariant() : g.ToString(config.Format[0].ToString()).ToLowerInvariant();
+                Parameter p = new Parameter
+                {
+                    IsVariable = true,
+                    Name = config.VariableName
+                };
+                setter(p, value);
+            }
+            else
+            {
+                Guid g = Guid.NewGuid();
+                string guidFormats = GuidMacroConfig.DefaultFormats;
+                for (int i = 0; i < guidFormats.Length; ++i)
+                {
+                    string value = char.IsUpper(guidFormats[i]) ? g.ToString(guidFormats[i].ToString()).ToUpperInvariant() : g.ToString(guidFormats[i].ToString()).ToLowerInvariant();
+                    Parameter p = new Parameter
                     {
-                        Guid g = Guid.NewGuid();
-                        string value = char.IsUpper(config.Format[0]) ? g.ToString(config.Format[0].ToString()).ToUpperInvariant() : g.ToString(config.Format[0].ToString()).ToLowerInvariant();
-                        Parameter p = new Parameter
-                        {
-                            IsVariable = true,
-                            Name = config.VariableName
-                        };
-                        setter(p, value);
-                    }
-                    else
-                    {
-                        Guid g = Guid.NewGuid();
-                        string guidFormats = GuidMacroConfig.DefaultFormats;
-                        for (int i = 0; i < guidFormats.Length; ++i)
-                        {
-                            string value = char.IsUpper(guidFormats[i]) ? g.ToString(guidFormats[i].ToString()).ToUpperInvariant() : g.ToString(guidFormats[i].ToString()).ToLowerInvariant();
-                            Parameter p = new Parameter
-                            {
-                                IsVariable = true,
-                                Name = config.VariableName + "-" + guidFormats[i]
-                            };
+                        IsVariable = true,
+                        Name = config.VariableName + "-" + guidFormats[i]
+                    };
 
-                            setter(p, value);
-                        }
+                    setter(p, value);
+                }
 
-                        Parameter pd = new Parameter
-                        {
-                            IsVariable = true,
-                            Name = config.VariableName
-                        };
+                Parameter pd = new Parameter
+                {
+                    IsVariable = true,
+                    Name = config.VariableName
+                };
 
-                        setter(pd, g.ToString("D"));
-                    }
-
-                    break;
+                setter(pd, g.ToString("D"));
             }
         }
 
@@ -73,13 +67,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            JToken actionToken;
-            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
-            {
-                throw new ArgumentNullException("action");
-            }
-            string action = actionToken.ToString();
-
             JToken formatToken;
             if (!deferredConfig.Parameters.TryGetValue("format", out formatToken))
             {
@@ -87,7 +74,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             string format = formatToken.ToString();
 
-            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, action, format);
+            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, format);
             EvaluateConfig(vars, realConfig, parameters, setter);
         }
     }

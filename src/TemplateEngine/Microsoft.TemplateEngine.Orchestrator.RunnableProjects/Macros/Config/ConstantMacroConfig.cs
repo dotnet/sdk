@@ -8,13 +8,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; private set; }
 
-        public string Action { get; private set; }
+        public string Value { get; private set; }
 
-        public ConstantMacroConfig(string variableName, string action)
+        public ConstantMacroConfig(string variableName, string value)
         {
             VariableName = variableName;
             Type = "constant";
-            Action = action;
+            Value = value;
         }
     }
 }

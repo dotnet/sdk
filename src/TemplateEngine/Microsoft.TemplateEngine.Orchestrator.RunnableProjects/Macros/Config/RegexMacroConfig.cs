@@ -9,18 +9,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; private set; }
 
-        public string Action { get; private set; }
-
         public string SourceVariable { get; private set; }
 
         // Regex -> Replacement
         public IList<KeyValuePair<string, string>> Steps { get; private set; }
 
-        public RegexMacroConfig(string variableName, string action, string sourceVariable, IList<KeyValuePair<string, string>> steps)
+        public RegexMacroConfig(string variableName, string sourceVariable, IList<KeyValuePair<string, string>> steps)
         {
             VariableName = variableName;
             Type = "regex";
-            Action = action;
             SourceVariable = sourceVariable;
             Steps = steps;
         }

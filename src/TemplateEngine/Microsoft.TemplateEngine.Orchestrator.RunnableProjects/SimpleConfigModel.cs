@@ -429,7 +429,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     int id = guidCount++;
                     string replacementId = "guid" + id;
-                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, "new", null));
+                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, null));
                     _guidToGuidPrefixMap[guid] = replacementId;
                 }
             }
@@ -445,9 +445,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (symbol.Value.Type == "computed")
                     {
-                        string action = ((ComputedSymbol)symbol.Value).Value;
+                        string value = ((ComputedSymbol)symbol.Value).Value;
                         string evaluator = ((ComputedSymbol)symbol.Value).Evaluator;
-                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, evaluator));
+                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, value, evaluator));
                     }
                     else if (symbol.Value.Type == "generated")
                     {
@@ -470,7 +470,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>();
                 steps.Add(new KeyValuePair<string, string>(@"\W", "_"));
-                generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", "replace", NameParameter.Name, steps));
+                generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", NameParameter.Name, steps));
                 _safeNameName = "safe_name";
             }
 

@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    // Symbol.type = "computed" is the only thying that becomes an evaluate macro.
+    // Symbol.type = "computed" is the only thing that becomes an evaluate macro.
     internal class EvaluateMacro : IMacro
     {
         public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
@@ -16,7 +16,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public static readonly string DefaultEvaluator = "C++";
 
-        // action is the predicate to evaluate
         public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             EvaluateMacroConfig config = rawConfig as EvaluateMacroConfig;
@@ -28,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(config.Evaluator);
 
-            byte[] data = Encoding.UTF8.GetBytes(config.Action);
+            byte[] data = Encoding.UTF8.GetBytes(config.Value);
             int len = data.Length;
             int pos = 0;
             IProcessorState state = new GlobalRunSpec.ProcessorState(vars, data, Encoding.UTF8);

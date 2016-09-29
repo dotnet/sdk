@@ -58,7 +58,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             Parameter p = new Parameter
             {
                 IsVariable = true,
-                Name = config.VariableName
+                Name = config.VariableName,
+                DataType = config.DataType
             };
             setter(p, result.ToString());
         }
@@ -79,9 +80,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 evaluator = evaluatorToken.ToString();
             }
 
+            JToken dataTypeToken;
+            string dataType = null;
+            if (deferredConfig.Parameters.TryGetValue("datatype", out dataTypeToken))
+            {
+                dataType = dataTypeToken.ToString();
+            }
+
             JToken switchListToken;
             List<KeyValuePair<string, string>> switchList = new List<KeyValuePair<string, string>>();
-            if (deferredConfig.Parameters.TryGetValue("switches", out switchListToken))
+            if (deferredConfig.Parameters.TryGetValue("cases", out switchListToken))
             {
                 JArray switchJArray = (JArray)switchListToken;
                 foreach (JToken switchInfo in switchJArray)
@@ -93,7 +101,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 }
             }
 
-            IMacroConfig realConfig = new SwitchMacroConfig(deferredConfig.VariableName, evaluator, switchList);
+            IMacroConfig realConfig = new SwitchMacroConfig(deferredConfig.VariableName, evaluator, dataType, switchList);
             EvaluateConfig(vars, realConfig, parameters, setter);
         }
     }

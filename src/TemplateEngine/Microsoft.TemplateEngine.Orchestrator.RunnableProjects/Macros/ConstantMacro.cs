@@ -12,7 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "constant";
 
-        // The action from the config is the constant value
         public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             ConstantMacroConfig config = rawConfig as ConstantMacroConfig;
@@ -28,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 Name = config.VariableName
             };
 
-            setter(p, config.Action);
+            setter(p, config.Value);
         }
 
         public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
@@ -40,14 +39,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            JToken actionToken;
-            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
+            JToken valueToken;
+            if (!deferredConfig.Parameters.TryGetValue("value", out valueToken))
             {
-                throw new ArgumentNullException("action");
+                throw new ArgumentNullException("value");
             }
 
-            string action = actionToken.ToString();
-            IMacroConfig realConfig = new ConstantMacroConfig(deferredConfig.VariableName, action);
+            string value = valueToken.ToString();
+            IMacroConfig realConfig = new ConstantMacroConfig(deferredConfig.VariableName, value);
             EvaluateConfig(vars, realConfig, parameters, setter);
         }
     }

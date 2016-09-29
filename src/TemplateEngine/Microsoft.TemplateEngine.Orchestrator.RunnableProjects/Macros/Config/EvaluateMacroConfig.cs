@@ -8,15 +8,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; private set; }
 
-        public string Action { get; private set; }
+        public string Value { get; private set; }
 
         public string Evaluator { get; set; }
 
-        public EvaluateMacroConfig(string variableName, string action, string evaluator)
+        public EvaluateMacroConfig(string variableName, string value, string evaluator)
         {
             VariableName = variableName;
             Type = "evaluate";
-            Action = action;
+            Value = value;
             Evaluator = evaluator;
         }
     }

@@ -143,6 +143,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         //
         public object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue)
         {
+            return InternalConvertParameterValueToType(parameter, untypedValue);
+        }
+
+        internal static object InternalConvertParameterValueToType(ITemplateParameter parameter, string untypedValue)
+        { 
             if (untypedValue == null)
             {
                 throw new TemplateParamException("Parameter value is null", parameter.Name, null, parameter.DataType);
@@ -176,7 +181,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // The data type names are case insensitive.
         //
         // Returns the converted value if it can be converted, throw otherwise
-        private static object DataTypeSpecifiedConvertLiteral(ITemplateParameter param, string literal)
+        internal static object DataTypeSpecifiedConvertLiteral(ITemplateParameter param, string literal)
         {
             if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
             {
@@ -255,7 +260,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private static object InferTypeAndConvertLiteral(string literal)
+        internal static object InferTypeAndConvertLiteral(string literal)
         {
             if (literal == null)
             {

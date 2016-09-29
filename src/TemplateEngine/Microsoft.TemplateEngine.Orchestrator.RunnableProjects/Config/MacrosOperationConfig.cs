@@ -22,12 +22,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             ParameterSetter setter = (p, value) =>
             {
                 ((RunnableProjectGenerator.ParameterSet)parameters).AddParameter(p);
-                parameters.ResolvedValues[p] = value;
+                parameters.ResolvedValues[p] = RunnableProjectGenerator.InternalConvertParameterValueToType(p, value);
             };
 
             IList<IMacroConfig> allMacroConfigs = new List<IMacroConfig>(macroConfigs);
             IList<GeneratedSymbolDeferredMacroConfig> deferredConfigList = new List<GeneratedSymbolDeferredMacroConfig>();
-
 
             // run the macros that are already setup, stash the deferred ones for afterwards
             foreach (IMacroConfig config in allMacroConfigs)
