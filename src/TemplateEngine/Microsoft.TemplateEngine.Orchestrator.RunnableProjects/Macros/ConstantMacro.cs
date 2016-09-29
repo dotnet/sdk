@@ -50,17 +50,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             IMacroConfig realConfig = new ConstantMacroConfig(deferredConfig.VariableName, action);
             EvaluateConfig(vars, realConfig, parameters, setter);
         }
-
-        public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
-        {
-            string value = def.ToString("action");
-            Parameter p = new Parameter
-            {
-                IsVariable = true,
-                Name = variableName
-            };
-
-            setter(p, value);
-        }
     }
 }

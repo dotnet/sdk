@@ -63,20 +63,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             IMacroConfig realConfig = new NowMacroConfig(deferredConfig.VariableName, action, utc);
             EvaluateConfig(vars, realConfig, parameters, setter);
         }
-
-        public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
-        {
-            string format = def.ToString("action");
-            bool utc = def.ToBool("utc");
-            DateTime time = utc ? DateTime.UtcNow : DateTime.Now;
-            string value = time.ToString(format);
-            Parameter p = new Parameter
-            {
-                IsVariable = true,
-                Name = variableName
-            };
-
-            setter(p, value);
-        }
     }
 }

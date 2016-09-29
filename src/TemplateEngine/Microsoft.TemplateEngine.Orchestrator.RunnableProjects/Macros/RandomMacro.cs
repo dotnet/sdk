@@ -80,26 +80,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             IMacroConfig realConfig = new RandomMacroConfig(deferredConfig.VariableName, action, low, high);
             EvaluateConfig(vars, realConfig, parameters, setter);
         }
-
-        public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
-        {
-            switch (def["action"].ToString())
-            {
-                case "new":
-                    int low = def.ToInt32("low");
-                    int high = def.ToInt32("high", int.MaxValue);
-                    Random rnd = new Random();
-                    int val = rnd.Next(low, high);
-                    string value = val.ToString();
-                    Parameter p = new Parameter
-                    {
-                        IsVariable = true,
-                        Name = variableName
-                    };
-
-                    setter(p, value);
-                    break;
-            }
-        }
     }
 }

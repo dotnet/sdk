@@ -446,7 +446,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (symbol.Value.Type == "computed")
                     {
                         string action = ((ComputedSymbol)symbol.Value).Value;
-                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, EvaluateMacro.DefaultEvaluator));
+                        string evaluator = ((ComputedSymbol)symbol.Value).Evaluator;
+                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, evaluator));
                     }
                     else if (symbol.Value.Type == "generated")
                     {

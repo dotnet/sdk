@@ -7,6 +7,7 @@
 
         string Type { get; }
 
+        // soon to be deprecated. Avoid new uses for this property
         string Action { get; }
     }
 }

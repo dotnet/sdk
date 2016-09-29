@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         // note that for all generated symbols, GeneratedSymbol.Type = "generated"
         public string Type { get; private set;  }
 
-        // the action for the real macro will be in the parameters(?)
+        // the action for the real macro will be in the parameters
         public string Action
         {
             get

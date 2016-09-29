@@ -90,53 +90,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, action, format);
             EvaluateConfig(vars, realConfig, parameters, setter);
         }
-
-        public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
-        {
-            switch (def.ToString("action"))
-            {
-                case "new":
-                    string fmt = def.ToString("format");
-                    if (fmt != null)
-                    {
-                        Guid g = Guid.NewGuid();
-                        string value = char.IsUpper(fmt[0]) ? g.ToString(fmt[0].ToString()).ToUpperInvariant() : g.ToString(fmt[0].ToString()).ToLowerInvariant();
-                        Parameter p = new Parameter
-                        {
-                            IsVariable = true,
-                            Name = variableName
-                        };
-
-                        setter(p, value);
-                    }
-                    else
-                    {
-                        Guid g = Guid.NewGuid();
-                        for (int i = 0; i < GuidMacroConfig.DefaultFormats.Length; ++i)
-                        {
-                            Parameter p = new Parameter
-                            {
-                                IsVariable = true,
-                                Name = variableName + "-" + GuidMacroConfig.DefaultFormats[i]
-                            };
-
-                            string rplc = char.IsUpper(GuidMacroConfig.DefaultFormats[i]) 
-                                ? g.ToString(GuidMacroConfig.DefaultFormats[i].ToString()).ToUpperInvariant() 
-                                : g.ToString(GuidMacroConfig.DefaultFormats[i].ToString()).ToLowerInvariant();
-                            setter(p, rplc);
-                        }
-
-                        Parameter pd = new Parameter
-                        {
-                            IsVariable = true,
-                            Name = variableName
-                        };
-
-                        setter(pd, g.ToString("D"));
-                    }
-
-                    break;
-            }
-        }
     }
 }
