@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
@@ -10,20 +8,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; private set; }
 
-        public string Action { get; private set; }
+        public string Value { get; private set; }
 
-        public ConstantMacroConfig(string variableName, string action)
+        public ConstantMacroConfig(string variableName, string value)
         {
             VariableName = variableName;
             Type = "constant";
-            Action = action;
-        }
-
-        public static ConstantMacroConfig FromJObject(JObject config, string variableName)
-        {
-            string action = config.ToString("action");
-
-            return new ConstantMacroConfig(variableName, action);
+            Value = value;
         }
     }
 }

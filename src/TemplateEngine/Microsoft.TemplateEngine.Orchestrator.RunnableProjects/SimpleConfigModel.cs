@@ -277,6 +277,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.json", "//", ConditionalType.CLineComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css.min", "/*", ConditionalType.CBlockComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css", "/*", ConditionalType.CBlockComments));
+                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cshtml", "@*", ConditionalType.Razor));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cs", "//", ConditionalType.CNoComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cpp", "//", ConditionalType.CNoComments));
                     defaultSpecials.Add(new SpecialOperationConfigParams("**/*.h", "//", ConditionalType.CNoComments));
@@ -430,7 +431,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     int id = guidCount++;
                     string replacementId = "guid" + id;
-                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, "new", null));
+                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, null));
                     _guidToGuidPrefixMap[guid] = replacementId;
                 }
             }
@@ -446,8 +447,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (symbol.Value.Type == "computed")
                     {
-                        string action = ((ComputedSymbol)symbol.Value).Value;
-                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, action, EvaluateMacro.DefaultEvaluator));
+                        string value = ((ComputedSymbol)symbol.Value).Value;
+                        string evaluator = ((ComputedSymbol)symbol.Value).Evaluator;
+                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, value, evaluator));
                     }
                     else if (symbol.Value.Type == "generated")
                     {
@@ -470,7 +472,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>();
                 steps.Add(new KeyValuePair<string, string>(@"\W", "_"));
-                generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", "replace", NameParameter.Name, steps));
+                generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", NameParameter.Name, steps));
                 _safeNameName = "safe_name";
             }
 

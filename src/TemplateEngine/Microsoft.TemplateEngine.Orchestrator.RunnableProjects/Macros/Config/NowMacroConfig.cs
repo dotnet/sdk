@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
@@ -10,24 +8,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; private set; }
 
-        public string Action { get; private set; }
+        public string Format { get; private set; }
 
         public bool Utc { get; private set; }
 
-        public NowMacroConfig(string variableName, string action, bool utc)
+        public NowMacroConfig(string variableName, string format, bool utc)
         {
             VariableName = variableName;
             Type = "now";
-            Action = action;
+            Format = format;
             Utc = utc;
-        }
-
-        public static NowMacroConfig FromJObject(JObject config, string variableName)
-        {
-            string action = config.ToString("action");
-            bool utc = config.ToBool("utc");
-
-            return new NowMacroConfig(variableName, action, utc);
         }
     }
 }

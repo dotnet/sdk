@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class RandomMacro : IMacro
+    internal class RandomMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("011E8DC1-8544-4360-9B40-65FD916049B7");
 
@@ -21,21 +21,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as RandomMacroConfig");
             }
 
-            switch (config.Action)
+            Random rnd = new Random();
+            int value = rnd.Next(config.Low, config.High);
+
+            Parameter p = new Parameter
             {
-                case "new":
-                    Random rnd = new Random();
-                    int value = rnd.Next(config.Low, config.High);
+                IsVariable = true,
+                Name = config.VariableName
+            };
 
-                    Parameter p = new Parameter
-                    {
-                        IsVariable = true,
-                        Name = config.VariableName
-                    };
-
-                    setter(p, value.ToString());
-                    break;
-            }
+            setter(p, value.ToString());
         }
 
         public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
@@ -46,13 +41,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
-
-            JToken actionToken;
-            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
-            {
-                throw new ArgumentNullException("action");
-            }
-            string action = actionToken.ToString();
 
             JToken lowToken;
             JToken highToken;
@@ -77,29 +65,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 high = highToken.Value<int>();
             }
 
-            IMacroConfig realConfig = new RandomMacroConfig(deferredConfig.VariableName, action, low, high);
+            IMacroConfig realConfig = new RandomMacroConfig(deferredConfig.VariableName, low, high);
             EvaluateConfig(vars, realConfig, parameters, setter);
-        }
-
-        public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
-        {
-            switch (def["action"].ToString())
-            {
-                case "new":
-                    int low = def.ToInt32("low");
-                    int high = def.ToInt32("high", int.MaxValue);
-                    Random rnd = new Random();
-                    int val = rnd.Next(low, high);
-                    string value = val.ToString();
-                    Parameter p = new Parameter
-                    {
-                        IsVariable = true,
-                        Name = variableName
-                    };
-
-                    setter(p, value);
-                    break;
-            }
         }
     }
 }

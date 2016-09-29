@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class RegexMacro : IMacro
+    internal class RegexMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("8A4D4937-E23F-426D-8398-3BDBD1873ADB");
 
@@ -24,37 +24,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as RegexMacroConfig");
             }
 
-            switch (config.Action)
+            object working;
+            if (!vars.TryGetValue(config.SourceVariable, out working))
             {
-                case "replace":
-                    object working;
-                    if (!vars.TryGetValue(config.SourceVariable, out working))
-                    {
-                        ITemplateParameter param;
-                        object resolvedValue;
-                        if (!parameters.TryGetParameterDefinition(config.SourceVariable, out param) || !parameters.ResolvedValues.TryGetValue(param, out resolvedValue))
-                        {
-                            value = string.Empty;
-                        }
-                        else
-                        {
-                            value = (string)resolvedValue;
-                        }
-                    }
-                    else
-                    {
-                        value = working?.ToString() ?? "";
-                    }
+                ITemplateParameter param;
+                object resolvedValue;
+                if (!parameters.TryGetParameterDefinition(config.SourceVariable, out param) || !parameters.ResolvedValues.TryGetValue(param, out resolvedValue))
+                {
+                    value = string.Empty;
+                }
+                else
+                {
+                    value = (string)resolvedValue;
+                }
+            }
+            else
+            {
+                value = working?.ToString() ?? "";
+            }
 
-                    if (config.Steps != null)
-                    {
-                        foreach (KeyValuePair<string, string> stepInfo in config.Steps)
-                        {
-                            value = Regex.Replace(value, stepInfo.Key, stepInfo.Value);
-                        }
-                    }
-
-                    break;
+            if (config.Steps != null)
+            {
+                foreach (KeyValuePair<string, string> stepInfo in config.Steps)
+                {
+                    value = Regex.Replace(value, stepInfo.Key, stepInfo.Value);
+                }
             }
 
             Parameter p = new Parameter
@@ -73,13 +67,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
-
-            JToken actionToken;
-            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
-            {
-                throw new ArgumentNullException("action");
-            }
-            string action = actionToken.ToString();
 
             JToken sourceVarToken;
             if (!deferredConfig.Parameters.TryGetValue("source", out sourceVarToken))
@@ -102,60 +89,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 }
             }
 
-            IMacroConfig realConfig = new RegexMacroConfig(deferredConfig.VariableName, action, sourceVariable, replacementSteps);
+            IMacroConfig realConfig = new RegexMacroConfig(deferredConfig.VariableName, sourceVariable, replacementSteps);
             EvaluateConfig(vars, realConfig, parameters, setter);
-        }
-
-        public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
-        {
-            string action = def.ToString("action");
-            string value = null;
-
-            switch (action)
-            {
-                case "replace":
-                    string sourceVar = def.ToString("source");
-                    JArray steps = def.Get<JArray>("steps");
-                    object working;
-                    if (!vars.TryGetValue(sourceVar, out working))
-                    {
-                        ITemplateParameter param;
-                        object resolvedValue;
-                        if (!parameters.TryGetParameterDefinition(sourceVar, out param) || !parameters.ResolvedValues.TryGetValue(param, out resolvedValue))
-                        {
-                            value = string.Empty;
-                        }
-                        else
-                        {
-                            value = (string)resolvedValue;
-                        }
-                    }
-                    else
-                    {
-                        value = working?.ToString() ?? "";
-                    }
-
-                    if (steps != null)
-                    {
-                        foreach (JToken child in steps)
-                        {
-                            JObject map = (JObject)child;
-                            string regex = map.ToString("regex");
-                            string replaceWith = map.ToString("replacement");
-
-                            value = Regex.Replace(value, regex, replaceWith);
-                        }
-                    }
-                    break;
-            }
-
-            Parameter p = new Parameter
-            {
-                IsVariable = true,
-                Name = variableName
-            };
-
-            setter(p, value);
         }
     }
 }

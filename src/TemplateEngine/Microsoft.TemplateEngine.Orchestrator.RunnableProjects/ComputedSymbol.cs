@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Type { get; private set; }
 
+        public string Evaluator { get; private set; }
+
         string ISymbolModel.Binding
         {
             get { return null; }
@@ -25,7 +27,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ComputedSymbol sym = new ComputedSymbol
             {
                 Value = jObject.ToString(nameof(Value)),
-                Type = jObject.ToString(nameof(Type))
+                Type = jObject.ToString(nameof(Type)),
+                Evaluator = jObject.ToString(nameof(Evaluator))
             };
 
             return sym;

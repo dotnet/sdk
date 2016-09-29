@@ -4,10 +4,10 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
+    // Symbol.type = "computed" is the only thing that becomes an evaluate macro.
     internal class EvaluateMacro : IMacro
     {
         public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
@@ -16,7 +16,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public static readonly string DefaultEvaluator = "C++";
 
-        // action is the predicate to evaluate
         public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             EvaluateMacroConfig config = rawConfig as EvaluateMacroConfig;
@@ -28,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(config.Evaluator);
 
-            byte[] data = Encoding.UTF8.GetBytes(config.Action);
+            byte[] data = Encoding.UTF8.GetBytes(config.Value);
             int len = data.Length;
             int pos = 0;
             IProcessorState state = new GlobalRunSpec.ProcessorState(vars, data, Encoding.UTF8);
@@ -42,57 +41,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             };
 
             setter(p, result.ToString());
-        }
-        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
-        {
-            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
-
-            if (deferredConfig == null)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
-            }
-
-            JToken actionToken;
-            if (!deferredConfig.Parameters.TryGetValue("action", out actionToken))
-            {
-                throw new ArgumentNullException("action");
-            }
-            string action = actionToken.ToString();
-
-            string evaluator;
-            JToken evaluatorToken;
-            if (!deferredConfig.Parameters.TryGetValue("evaluator", out evaluatorToken))
-            {
-                evaluator = DefaultEvaluator;
-            }
-            else
-            {
-                evaluator = evaluatorToken.ToString();
-            }
-
-            IMacroConfig realConfig = new EvaluateMacroConfig(deferredConfig.VariableName, action, evaluator);
-            EvaluateConfig(vars, realConfig, parameters, setter);
-        }
-
-        public void Evaluate(string variableName, IVariableCollection vars, JObject def, IParameterSet parameters, ParameterSetter setter)
-        {
-            string evaluatorName = def.ToString("evaluator");
-            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorName);
-
-            byte[] data = Encoding.UTF8.GetBytes(def.ToString("action"));
-            int len = data.Length;
-            int pos = 0;
-            IProcessorState state = new GlobalRunSpec.ProcessorState(vars, data, Encoding.UTF8);
-            bool faulted;
-            bool res = evaluator(state, ref len, ref pos, out faulted);
-
-            Parameter p = new Parameter
-            {
-                IsVariable = true,
-                Name = variableName
-            };
-
-            setter(p, res.ToString());
         }
     }
 }
