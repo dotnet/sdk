@@ -127,7 +127,7 @@ namespace dotnet_new3.VSIX
             }
         }
 
-        private void CreateSolutionTemplate(Solution solution)
+        private static void CreateSolutionTemplate(Solution solution)
         {
             string fullPath = solution.FullName;
             string dir = Path.GetDirectoryName(fullPath);
@@ -139,8 +139,8 @@ namespace dotnet_new3.VSIX
             {
                 const string solutionTemplate = @"{
     ""author"": """",
-    ""classifications"": """",
-    ""displayName"": """",
+    ""classifications"": [ ],
+    ""description"": """",
     ""name"": """",
     ""defaultName"": """",
     ""groupIdentity"": """",
@@ -152,7 +152,6 @@ namespace dotnet_new3.VSIX
 
                 JObject o = JObject.Parse(solutionTemplate);
                 o["author"] = win.AuthorTextBox.Text;
-                o["displayName"] = win.FriendlyNameTextBox.Text;
                 o["name"] = win.FriendlyNameTextBox.Text;
                 o["defaultName"] = win.DefaultNameTextBox.Text;
                 o["sourceName"] = Path.GetFileNameWithoutExtension(solution.FullName);
@@ -184,7 +183,7 @@ namespace dotnet_new3.VSIX
             }
         }
 
-        private void CreateProjectTemplate(Project proj)
+        private static void CreateProjectTemplate(Project proj)
         {
             string fullPath = proj.FullName;
             string dir = Path.GetDirectoryName(fullPath);
@@ -196,8 +195,8 @@ namespace dotnet_new3.VSIX
             {
                 const string solutionTemplate = @"{
     ""author"": """",
-    ""classifications"": """",
-    ""displayName"": """",
+    ""classifications"": [ ],
+    ""description"": """",
     ""name"": """",
     ""defaultName"": """",
     ""groupIdentity"": """",
@@ -209,7 +208,6 @@ namespace dotnet_new3.VSIX
 
                 JObject o = JObject.Parse(solutionTemplate);
                 o["author"] = win.AuthorTextBox.Text;
-                o["displayName"] = win.FriendlyNameTextBox.Text;
                 o["name"] = win.FriendlyNameTextBox.Text;
                 o["defaultName"] = win.DefaultNameTextBox.Text;
                 o["sourceName"] = Path.GetFileNameWithoutExtension(proj.FullName);

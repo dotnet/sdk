@@ -2,7 +2,7 @@
   "identity": "Microsoft.WebAndCloud.QuickStarts.Mvc.CSharp",
   "author": "Microsoft",
   "classifications": [ "Web & Cloud>>Quick Starts" ],
-  "displayName": "My Template",
+  "name": "My Template",
   "groupIdentity": "Microsoft.AspNet.Mvc",
   "shortName": "mytmp",
   "sourceName": "WebApplication1",

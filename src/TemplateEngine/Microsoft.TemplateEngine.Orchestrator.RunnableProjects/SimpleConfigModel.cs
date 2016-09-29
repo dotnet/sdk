@@ -42,6 +42,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string DefaultName { get; set; }
 
+        public string Description { get; set; }
+
         public string GroupIdentity { get; set; }
 
         public IReadOnlyList<Guid> Guids { get; set; }
@@ -626,6 +628,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.Author = source.ToString(nameof(config.Author));
             config.Classifications = source.ArrayAsStrings(nameof(config.Classifications));
             config.DefaultName = source.ToString(nameof(DefaultName));
+            config.Description = source.ToString(nameof(Description));
             config.GroupIdentity = source.ToString(nameof(GroupIdentity));
             config.Guids = source.ArrayAsGuids(nameof(config.Guids));
             config.Identity = source.ToString(nameof(config.Identity));

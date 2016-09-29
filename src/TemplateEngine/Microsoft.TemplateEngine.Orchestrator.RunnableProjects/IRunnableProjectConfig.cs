@@ -17,6 +17,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string DefaultName { get; }
 
+        string Description { get; }
+
         string Name { get; }
 
         string ShortName { get; }

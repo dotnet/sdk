@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Abstractions
     {
         string Author { get; }
 
+        string Description { get; }
+
         IReadOnlyList<string> Classifications { get; }
 
         string DefaultName { get; }
