@@ -29,13 +29,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = VariableCollection.SetupVariables(parameters, template.Config.OperationConfig.VariableSetup);
             template.Config.Evaluate(parameters, variables, template.ConfigFile);
 
-            // special processing
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
+            GlobalRunSpec runSpec = new GlobalRunSpec(host, template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.PlaceholderFilename);
+
             foreach (FileSource source in template.Config.Sources)
             {
-                GlobalRunSpec runSpec = new GlobalRunSpec(host, source, template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.PlaceholderFilename);
+                runSpec.SetupFileSource(source);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
                 orchestrator.Run(runSpec, template.ConfigFile.Parent.DirectoryInfo(source.Source), target);
             }

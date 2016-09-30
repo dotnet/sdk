@@ -52,21 +52,28 @@ namespace Microsoft.TemplateEngine.Core.Util
             return false;
         }
 
+        private static List<KeyValuePair<IPathMatcher, IProcessor>> CreateSpecialProcessors(IGlobalRunSpec spec)
+        {
+            List<KeyValuePair<IPathMatcher, IProcessor>> processorList = new List<KeyValuePair<IPathMatcher, IProcessor>>();
+
+            foreach (KeyValuePair<IPathMatcher, IRunSpec> runSpec in spec.Special)
+            {
+                IReadOnlyList<IOperationProvider> operations = runSpec.Value.GetOperations(spec.Operations);
+                EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
+                IProcessor processor = Processor.Create(config, operations);
+
+                processorList.Add(new KeyValuePair<IPathMatcher, IProcessor>(runSpec.Key, processor));
+            }
+
+            return processorList;
+        }
+
         private static void RunInternal(Orchestrator self, IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)
         {
             EngineConfig cfg = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
             IProcessor fallback = Processor.Create(cfg, spec.Operations);
 
-            Dictionary<IPathMatcher, IProcessor> specializations = spec.Special
-                .ToDictionary(
-                    x => x.Key,
-                    x =>
-                    {
-                        IReadOnlyList<IOperationProvider> operations = x.Value.GetOperations(spec.Operations);
-                        EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
-                        IProcessor processor = Processor.Create(config, operations);
-                        return processor;
-                    });
+            List<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors = CreateSpecialProcessors(spec);
 
             foreach (IFile file in sourceDir.EnumerateFiles("*", SearchOption.AllDirectories))
             {
@@ -106,10 +113,28 @@ namespace Microsoft.TemplateEngine.Core.Util
                                 }
                             }
 
+                            // *** LOC NOTES ***
+                            //
+                            //// decide if we need to loc here, branch accordingly
+                            //IProcessor locProcessor = null;
+                            //IReadOnlyList<IOperationProvider> locOperations;
+                            //if (localizedFiles.TryGetOperations(sourceRel, out locOperations))
+                            //{
+                            //    locProcessor = Processor.Create(cfg, locOperations);
+                            //}
+
                             if (!copy)
                             {
-                                ProcessFile(self, file, sourceRel, targetDir, spec, fallback, specializations);
+                                ProcessFile(self, file, sourceRel, targetDir, spec, fallback, fileGlobProcessors);
+
+                                // *** LOC NOTES ***
+                                //ProcessFile(self, file, sourceRel, targetDir, spec, fallback, specializations, locProcessor);
                             }
+                            // *** LOC NOTES ***
+                            //else if (locProcessor != null)
+                            //{
+                            //    ProcessFile(self, file, sourceRel, targetDir, spec, null, Empty<KeyValuePair<IPathMatcher, IProcessor>>.List.Value, locProcessor);
+                            //}
                             else
                             {
                                 string targetPath = CreateTargetDir(sourceRel, targetDir, spec);
@@ -143,9 +168,18 @@ namespace Microsoft.TemplateEngine.Core.Util
             return targetPath;
         }
 
-        private static void ProcessFile(Orchestrator self, IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IReadOnlyDictionary<IPathMatcher, IProcessor> specializations)
+        // *** LOC NOTES ***
+        //
+        //private static void ProcessFile(Orchestrator self, IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> specializations, IProcessor locProcessor)
+
+        private static void ProcessFile(Orchestrator self, IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors)
         {
-            IProcessor runner = specializations.FirstOrDefault(x => x.Key.IsMatch(sourceRel)).Value ?? fallback;
+            IProcessor runner = fileGlobProcessors.FirstOrDefault(x => x.Key.IsMatch(sourceRel)).Value ?? fallback;
+
+            // *** LOC NOTES ***
+            // TODO: append loc operations to the runner here - need new code to accomplish
+            //  not exactly append - we need to leave the original as-is
+            //runner = runner?.Plus(locProcessor) ?? locProcessor;
 
             string targetRel;
             if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))

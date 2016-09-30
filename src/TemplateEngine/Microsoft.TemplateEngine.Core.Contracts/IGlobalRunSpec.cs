@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IVariableCollection RootVariableCollection { get; }
 
-        IReadOnlyDictionary<IPathMatcher, IRunSpec> Special { get; }
+        IReadOnlyList<KeyValuePair<IPathMatcher, IRunSpec>> Special { get; }
 
         string PlaceholderFilename { get; }
 
