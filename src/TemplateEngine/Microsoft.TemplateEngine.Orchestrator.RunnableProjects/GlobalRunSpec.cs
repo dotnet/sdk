@@ -33,19 +33,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IReadOnlyList<IPathMatcher> Exclude { get; }
+        public IReadOnlyList<IPathMatcher> Include { get; private set; }
 
-        public IReadOnlyList<IPathMatcher> Include { get; }
+        public IReadOnlyList<IPathMatcher> Exclude { get; private set; }
+
+        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
+
+        public IReadOnlyDictionary<string, string> Rename { get; private set; }
 
         public IReadOnlyList<IOperationProvider> Operations { get; }
 
         public IVariableCollection RootVariableCollection { get; }
 
-        public IReadOnlyDictionary<IPathMatcher, IRunSpec> Special { get; }
-
-        public IReadOnlyList<IPathMatcher> CopyOnly { get; }
-
-        public IReadOnlyDictionary<string, string> Rename { get; }
+        public IReadOnlyList<KeyValuePair<IPathMatcher, IRunSpec>> Special { get; }
 
         public string PlaceholderFilename { get; }
 
@@ -55,7 +55,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         public GlobalRunSpec(ITemplateEngineHost host,
-            FileSource source,
             IDirectory templateRoot,
             IComponentManager componentManager,
             IParameterSet parameters, 
@@ -66,18 +65,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             EnsureOperationConfigs(componentManager);
 
-            Include = SetupPathInfoFromSource(source.Include);
-            CopyOnly = SetupPathInfoFromSource(source.CopyOnly);
-            Exclude = SetupPathInfoFromSource(source.Exclude);
-            Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             PlaceholderFilename = placeholderFilename;
-
-            // regular operations
             RootVariableCollection = variables;
             Operations = ResolveOperations(host, globalConfig, templateRoot, variables, parameters);
-
-            // file glob specific operations
-            Dictionary<IPathMatcher, IRunSpec> specials = new Dictionary<IPathMatcher, IRunSpec>();
+            List<KeyValuePair<IPathMatcher, IRunSpec>> specials = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
 
             if (fileGlobConfigs != null)
             {
@@ -93,11 +84,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
-                    specials[new GlobbingPatternMatcher(specialEntry.Key)] = spec;
+                    specials.Add(new KeyValuePair<IPathMatcher, IRunSpec>(new GlobbingPatternMatcher(specialEntry.Key), spec));
                 }
             }
 
             Special = specials;
+        }
+
+        public void SetupFileSource(FileSource source)
+        {
+            Include = SetupPathInfoFromSource(source.Include);
+            CopyOnly = SetupPathInfoFromSource(source.CopyOnly);
+            Exclude = SetupPathInfoFromSource(source.Exclude);
+            Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         // Returns a list of operations which contains the custom operations and the default operations.
