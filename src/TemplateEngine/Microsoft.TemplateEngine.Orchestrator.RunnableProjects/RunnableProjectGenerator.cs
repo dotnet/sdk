@@ -169,6 +169,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             try
             {
+<<<<<<< 4a2631c51d7bd77f0fccec555e13df814697612c
                 JObject srcObject = ReadJObjectFromIFile(file);
 
                 JObject localeSourceObject = null;
@@ -176,6 +177,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
+=======
+                JObject srcObject = ReadConfigModel(file);
+                template = new RunnableProjectTemplate(srcObject, this, file, SimpleConfigModel.FromJObject(srcObject));
+>>>>>>> Localization processing in progress.
 
                 SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(srcObject, localeSourceObject);
                 template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null);
