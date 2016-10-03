@@ -9,6 +9,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IReadOnlyList<ICreationPath> PrimaryOutputs { get; }
 
-        void TEMP_CONSOLE_DEBUG_CreationResult(ITemplateEngineHost host);
+        void TEMP_CONSOLE_DEBUG_CreationResult();
     }
 }

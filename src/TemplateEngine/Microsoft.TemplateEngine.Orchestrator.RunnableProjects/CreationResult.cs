@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -9,8 +10,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<ICreationPath> PrimaryOutputs { get; set; }
 
-        public void TEMP_CONSOLE_DEBUG_CreationResult(ITemplateEngineHost host)
+        public void TEMP_CONSOLE_DEBUG_CreationResult()
         {
+            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
+
             foreach (IPostAction postActionInfo in PostActions)
             {
                 host.LogMessage(string.Format("Placeholder for post action processing of action: {0}", postActionInfo.Description));

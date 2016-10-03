@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -56,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
 
-        public GlobalRunSpec(ITemplateEngineHost host,
+        public GlobalRunSpec(
             IDirectory templateRoot,
             IComponentManager componentManager,
             IParameterSet parameters, 
@@ -71,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             RootVariableCollection = variables;
             LocalizationOperations = localizationOperations;
             PlaceholderFilename = placeholderFilename;
-            Operations = ResolveOperations(host, globalConfig, templateRoot, variables, parameters);
+            Operations = ResolveOperations(globalConfig, templateRoot, variables, parameters);
             List<KeyValuePair<IPathMatcher, IRunSpec>> specials = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
 
             if (fileGlobConfigs != null)
@@ -83,7 +84,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = ResolveOperations(host, specialEntry.Value, templateRoot, variables, parameters);
+                        specialOps = ResolveOperations(specialEntry.Value, templateRoot, variables, parameters);
                         specialVariables = VariableCollection.SetupVariables(parameters, specialEntry.Value.VariableSetup);
                     }
 
@@ -107,9 +108,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // If there are custom Conditional operations, don't include the default Conditionals.
         //
         // Note: we may need a more robust filtering mechanism in the future.
-        private static IReadOnlyList<IOperationProvider> ResolveOperations(ITemplateEngineHost host, IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        private static IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
-            IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(host, runConfig.CustomOperations, templateRoot, variables);
+            IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(runConfig.CustomOperations, templateRoot, variables);
             IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(parameters, runConfig);
 
             List<IOperationProvider> operations = new List<IOperationProvider>(customOperations);
@@ -153,8 +154,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(ITemplateEngineHost host, IReadOnlyList<ICustomOperationModel> customModel, IDirectory templateRoot, IVariableCollection variables)
+        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<ICustomOperationModel> customModel, IDirectory templateRoot, IVariableCollection variables)
         {
+            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             List<IOperationProvider> customOperations = new List<IOperationProvider>();
 
             foreach (ICustomOperationModel opModelUntyped in customModel)
