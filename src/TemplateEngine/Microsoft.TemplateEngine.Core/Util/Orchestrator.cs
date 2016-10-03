@@ -27,12 +27,12 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
             }
 
-            RunInternal(this, sourceDir, targetDir, spec);
+            RunInternal(sourceDir, targetDir, spec);
         }
 
         public void Run(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir)
         {
-            RunInternal(this, sourceDir, targetDir, spec);
+            RunInternal(sourceDir, targetDir, spec);
         }
 
         protected virtual IGlobalRunSpec RunSpecLoader(Stream runSpec)
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             return false;
         }
 
-        private static List<KeyValuePair<IPathMatcher, IProcessor>> CreateSpecialProcessors(IGlobalRunSpec spec)
+        private static List<KeyValuePair<IPathMatcher, IProcessor>> CreateFileGlobProcessors(IGlobalRunSpec spec)
         {
             List<KeyValuePair<IPathMatcher, IProcessor>> processorList = new List<KeyValuePair<IPathMatcher, IProcessor>>();
 
@@ -68,12 +68,12 @@ namespace Microsoft.TemplateEngine.Core.Util
             return processorList;
         }
 
-        private static void RunInternal(Orchestrator self, IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)
+        private void RunInternal(IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)
         {
             EngineConfig cfg = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
             IProcessor fallback = Processor.Create(cfg, spec.Operations);
 
-            List<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors = CreateSpecialProcessors(spec);
+            List<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors = CreateFileGlobProcessors(spec);
 
             foreach (IFile file in sourceDir.EnumerateFiles("*", SearchOption.AllDirectories))
             {
@@ -113,28 +113,17 @@ namespace Microsoft.TemplateEngine.Core.Util
                                 }
                             }
 
-                            // *** LOC NOTES ***
-                            //
-                            //// decide if we need to loc here, branch accordingly
-                            //IProcessor locProcessor = null;
-                            //IReadOnlyList<IOperationProvider> locOperations;
-                            //if (localizedFiles.TryGetOperations(sourceRel, out locOperations))
-                            //{
-                            //    locProcessor = Processor.Create(cfg, locOperations);
-                            //}
+                            IReadOnlyList<IOperationProvider> locOperations;
+                            spec.LocalizationOperations.TryGetValue(sourceRel, out locOperations);
 
                             if (!copy)
                             {
-                                ProcessFile(self, file, sourceRel, targetDir, spec, fallback, fileGlobProcessors);
-
-                                // *** LOC NOTES ***
-                                //ProcessFile(self, file, sourceRel, targetDir, spec, fallback, specializations, locProcessor);
+                                ProcessFile(file, sourceRel, targetDir, spec, fallback, fileGlobProcessors, locOperations);
                             }
-                            // *** LOC NOTES ***
-                            //else if (locProcessor != null)
-                            //{
-                            //    ProcessFile(self, file, sourceRel, targetDir, spec, null, Empty<KeyValuePair<IPathMatcher, IProcessor>>.List.Value, locProcessor);
-                            //}
+                            else if (locOperations != null)
+                            {
+                                ProcessFile(file, sourceRel, targetDir, spec, fallback, Empty<KeyValuePair<IPathMatcher, IProcessor>>.List.Value, locOperations);
+                            }
                             else
                             {
                                 string targetPath = CreateTargetDir(sourceRel, targetDir, spec);
@@ -168,18 +157,18 @@ namespace Microsoft.TemplateEngine.Core.Util
             return targetPath;
         }
 
-        // *** LOC NOTES ***
-        //
-        //private static void ProcessFile(Orchestrator self, IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> specializations, IProcessor locProcessor)
-
-        private static void ProcessFile(Orchestrator self, IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors)
+        private void ProcessFile(IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors, IReadOnlyList<IOperationProvider> locOperations)
         {
             IProcessor runner = fileGlobProcessors.FirstOrDefault(x => x.Key.IsMatch(sourceRel)).Value ?? fallback;
+            if (runner == null)
+            {
+                throw new InvalidOperationException("At least one of [runner] or [fallback] cannot be null");
+            }
 
-            // *** LOC NOTES ***
-            // TODO: append loc operations to the runner here - need new code to accomplish
-            //  not exactly append - we need to leave the original as-is
-            //runner = runner?.Plus(locProcessor) ?? locProcessor;
+            if (locOperations != null)
+            {
+                runner = runner.CloneAndAppendOperations(locOperations);
+            }
 
             string targetRel;
             if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))
@@ -191,11 +180,11 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             //TODO: Update context with the current file & such here
 
-            int bufferSize,
-                flushThreshold;
+            int bufferSize;
+            int flushThreshold;
 
-            bool customBufferSize = self.TryGetBufferSize(sourceFile, out bufferSize);
-            bool customFlushThreshold = self.TryGetFlushThreshold(sourceFile, out flushThreshold);
+            bool customBufferSize = TryGetBufferSize(sourceFile, out bufferSize);
+            bool customFlushThreshold = TryGetFlushThreshold(sourceFile, out flushThreshold);
             string fullTargetDir = Path.GetDirectoryName(targetPath);
             Directory.CreateDirectory(fullTargetDir);
 

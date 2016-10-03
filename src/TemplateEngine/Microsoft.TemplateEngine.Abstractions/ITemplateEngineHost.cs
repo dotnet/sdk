@@ -4,6 +4,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ITemplateEngineHost
     {
+        string Locale { get; }
+
         void LogMessage(string message);
 
         void OnCriticalError(string code, string message, string currentFile, long currentPosition);

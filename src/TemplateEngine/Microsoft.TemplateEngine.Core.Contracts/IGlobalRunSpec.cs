@@ -16,6 +16,8 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IReadOnlyList<KeyValuePair<IPathMatcher, IRunSpec>> Special { get; }
 
+        IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; }
+
         string PlaceholderFilename { get; }
 
         bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath);
