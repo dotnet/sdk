@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
         {
-            Console.WriteLine("DotNetNew3TemplateEngineHost::OnParameterError() called");
+            Console.WriteLine("DefaultTemplateEngineHost::OnParameterError() called");
             Console.WriteLine("\tError message: {0}", message);
             Console.WriteLine("Parameter name = {0}", parameter.Name);
             Console.WriteLine("Parameter value = {0}", receivedValue);
