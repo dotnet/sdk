@@ -9,7 +9,6 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -265,6 +264,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        // file -> replacements
+        public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; private set; }
+
+
         private IReadOnlyList<ICustomFileGlobModel> SpecialCustomSetup = new List<ICustomFileGlobModel>();
 
         IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> IRunnableProjectConfig.SpecialOperationConfig
@@ -406,7 +409,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 customOperationConfig = new List<ICustomOperationModel>();
             }
-
+            
             GlobalRunConfig config = new GlobalRunConfig()
             {
                 Operations = operations,
@@ -414,7 +417,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Macros = macros,
                 ComputedMacros = computedMacros,
                 Replacements = macroGeneratedReplacements,
-                CustomOperations = customOperationConfig
+                CustomOperations = customOperationConfig,
             };
 
             return config;
@@ -714,6 +717,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             config.SpecialCustomSetup = specialCustomSetup;
+
+            // In-Progress: read localization data from the config.
+            IReadOnlyDictionary<string, JToken> localizationConfigJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "file_localizations");
+            Dictionary<string, IReadOnlyList<IOperationProvider>> localizations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
+
+            if (localizationConfigJson != null)
+            {
+                foreach (KeyValuePair<string, JToken> fileLocInfo in localizationConfigJson)
+                {
+                    string fileName = fileLocInfo.Key;
+                    JToken translations = fileLocInfo.Value;
+                    localizations.Add(fileName, LocalizationConfig.FromJObject((JObject)translations));
+                }
+            }
+            config.LocalizationOperations = localizations;
 
             return config;
         }

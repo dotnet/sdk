@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.TemplateEngine.Core.Contracts
 {
@@ -9,5 +10,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         bool Run(Stream source, Stream target, int bufferSize);
 
         bool Run(Stream source, Stream target, int bufferSize, int flushThreshold);
+
+        IProcessor CloneAndAppendOperations(IReadOnlyList<IOperationProvider> tempOperations);
     }
 }

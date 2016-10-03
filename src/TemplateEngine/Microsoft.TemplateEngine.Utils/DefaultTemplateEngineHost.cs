@@ -2,22 +2,26 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
-namespace dotnet_new3
+namespace Microsoft.TemplateEngine.Utils
 {
-    // A (probably) temporary implementation of ITemplateEngineHost, for testing
-    public class DotNetNew3TemplateEngineHost : ITemplateEngineHost
+    // this is effectively a copy of DotNetNew3TemplateEngineHost
+    internal class DefaultTemplateEngineHost : ITemplateEngineHost
     {
         private IReadOnlyDictionary<string, string> _HostDefaults { get; }
 
-        public DotNetNew3TemplateEngineHost()
+        public DefaultTemplateEngineHost(string locale)
         {
+            Locale = locale;
             _HostDefaults = new Dictionary<string, string>();
         }
 
-        public DotNetNew3TemplateEngineHost(Dictionary<string, string> defaults)
+        public DefaultTemplateEngineHost(string locale, Dictionary<string, string> defaults)
         {
+            Locale = locale;
             _HostDefaults = defaults;
         }
+
+        public string Locale { get; private set; }
 
         public void LogMessage(string message)
         {
@@ -36,13 +40,13 @@ namespace dotnet_new3
 
         public bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
         {
-            Console.WriteLine("DotNetNew3TemplateEngineHost::OnParameterError() called");
+            Console.WriteLine("DefaultTemplateEngineHost::OnParameterError() called");
             Console.WriteLine("\tError message: {0}", message);
             Console.WriteLine("Parameter name = {0}", parameter.Name);
             Console.WriteLine("Parameter value = {0}", receivedValue);
             Console.WriteLine("Enter a new value for the param, or:");
             newValue = Console.ReadLine();
-            return ! string.IsNullOrEmpty(newValue);
+            return !string.IsNullOrEmpty(newValue);
         }
 
         public void OnSymbolUsed(string symbol, object value)

@@ -72,8 +72,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> Instantiate(ITemplateEngineHost host, string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public static async Task<int> Instantiate(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
+            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             ITemplateInfo templateInfo;
 
             using (Timing.Over("Get single"))
@@ -94,7 +95,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
 
             string realName = name ?? template.DefaultName ?? fallbackName;
-            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(host, template, realName);
+            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName);
 
             if (aliasName != null)
             {
@@ -105,7 +106,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
 
             ResolveUserParameters(template, templateParams, inputParameters);
-            bool missingParams = CheckForMissingRequiredParameters(host, templateParams);
+            bool missingParams = CheckForMissingRequiredParameters(templateParams);
 
             if (missingParams)
             {
@@ -118,7 +119,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = Settings.SettingsLoader.Components;
-                await template.Generator.Create(host, template, templateParams, componentManager, out creationResult);
+                await template.Generator.Create(template, templateParams, componentManager, out creationResult);
                 sw.Stop();
                 host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
@@ -128,7 +129,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             // TODO: pass back the creationResult (probably as an out param)
             // (and get rid of this debugging)
-            creationResult.TEMP_CONSOLE_DEBUG_CreationResult(host);
+            creationResult.TEMP_CONSOLE_DEBUG_CreationResult();
 
             return 0;
         }
@@ -137,8 +138,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // Reads the parameters from the template and the host and setup their values in the return IParameterSet.
         // Host param values override template defaults.
         //
-        public static IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplateEngineHost host, ITemplate template, string realName)
+        public static IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate template, string realName)
         {
+            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             IParameterSet templateParams = template.Generator.GetParametersForTemplate(template);
             string hostParamValue;
 
@@ -201,8 +203,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // but it's up to the caller / UI to decide how to act.
         // Returns true if there are any missing params, false otherwise.
         //
-        public static bool CheckForMissingRequiredParameters(ITemplateEngineHost host, IParameterSet templateParams)
+        public static bool CheckForMissingRequiredParameters(IParameterSet templateParams)
         {
+            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             bool missingParams = false;
 
             foreach (ITemplateParameter parameter in templateParams.ParameterDefinitions)

@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid Id => GeneratorId;
 
-        public Task Create(ITemplateEngineHost host, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, out ICreationResult creationResult)
+        public Task Create(ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, out ICreationResult creationResult)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
             ProcessMacros(componentManager, template.Config.OperationConfig, parameters);
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(host, template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.PlaceholderFilename);
+            GlobalRunSpec runSpec = new GlobalRunSpec(template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.PlaceholderFilename);
 
             foreach (FileSource source in template.Config.Sources)
             {
@@ -95,8 +95,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             try
             {
                 JObject srcObject = ReadConfigModel(file);
-
-                template = new RunnableProjectTemplate(srcObject, this, file, RunnableProjectConfigConverter.FromJObject(srcObject));
+                template = new RunnableProjectTemplate(srcObject, this, file, SimpleConfigModel.FromJObject(srcObject));
 
                 return true;
             }
