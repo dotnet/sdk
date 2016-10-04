@@ -7,6 +7,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class Region : IOperationProvider
     {
+        public static readonly string OperationName = "region";
+
         private readonly string _end;
         private readonly bool _include;
         private readonly string _start;
@@ -60,7 +62,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;
-                if (processor.Config.Flags.TryGetValue("regions", out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(Region.OperationName, out flag) && !flag)
                 {
                     byte[] tokenValue = Tokens[token];
                     target.Write(tokenValue, 0, tokenValue.Length);

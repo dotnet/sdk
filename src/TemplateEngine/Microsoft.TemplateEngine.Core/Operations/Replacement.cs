@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class Replacement : IOperationProvider
     {
+        public static readonly string OperationName = "replacement";
+
         private readonly string _match;
         private readonly string _replaceWith;
         private readonly string _id;
@@ -53,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;
-                if (processor.Config.Flags.TryGetValue("replacements", out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(Replacement.OperationName, out flag) && !flag)
                 {
                     byte[] tokenValue = Tokens[token];
                     target.Write(tokenValue, 0, tokenValue.Length);

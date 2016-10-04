@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core.Operations
 {
@@ -15,6 +16,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
     public class BalancedNesting : IOperationProvider
     {
+        public static readonly string OperationName = "balancednesting";
+
         private readonly string _startToken;
         private readonly string _realEndToken;
         private readonly string _pseudoEndToken;
@@ -97,9 +100,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     // The reset operation should limit the scope of the problem.
                     // The depth-zero pseudo-comment is the only one that will be "fixed".
                     // But this could be changed to also fix any where depth < 0.
-
-                    System.Diagnostics.Debug.WriteLine("Balanced nesting depth < 0. CurrentBufferPosition = " + currentBufferPosition);
-                    //System.Diagnostics.Debug.Assert(false, "Balanced nesting depth < 0. CurrentBufferPosition = " + currentBufferPosition);
+                    EngineEnvironmentSettings.Host.LogMessage($"Balanced nesting depth < 0. CurrentBufferPosition = {currentBufferPosition}");
                 }
 
                 if (_depth == 0 && token == PseudoEndTokenIndex)

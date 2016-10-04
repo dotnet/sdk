@@ -7,6 +7,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class ExpandVariables : IOperationProvider
     {
+        public static readonly string OperationName = "expandvariables";
+
         private readonly string _id;
 
         public ExpandVariables(string id)

@@ -9,6 +9,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class Include : IOperationProvider
     {
+        public static readonly string OperationName = "include";
+
         public Include(string startToken, string endToken, Func<string, Stream> sourceStreamOpener, string id)
         {
             SourceStreamOpener = sourceStreamOpener;
@@ -55,7 +57,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;
-                if (processor.Config.Flags.TryGetValue("include", out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(Include.OperationName, out flag) && !flag)
                 {
                     byte[] tokenValue = Tokens[token];
                     target.Write(tokenValue, 0, tokenValue.Length);

@@ -92,6 +92,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return false;
             }
 
+            // notes for correctly reading localization info - not from .netnew.json - coming soon
+            //try
+            //{
+            //    JObject srcObject = ReadConfigModel(file);
+            //    // read the neutral locale, decide if we need a locale-specific config
+            //    // if need locale-specific
+            //        // read the locale specific
+            //        // JObject localeSrcObject =  ???()
+            //    // else
+            //        // JObject localeSrcObject = null;
+                    
+            //    // template = new RunnableProjectTemplate(srcObject, this, file, SimpleConfigModel.FromJObject(srcObject, localeSrcObject));
+            //}
+
             try
             {
                 JObject srcObject = ReadConfigModel(file);
