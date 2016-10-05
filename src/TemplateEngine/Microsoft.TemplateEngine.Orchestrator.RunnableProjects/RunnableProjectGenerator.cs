@@ -113,7 +113,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 JObject srcObject = ReadConfigModel(file);
                 template = new RunnableProjectTemplate(srcObject, this, file, SimpleConfigModel.FromJObject(srcObject, localizationFile));
-
                 return true;
             }
             catch (Exception ex)
