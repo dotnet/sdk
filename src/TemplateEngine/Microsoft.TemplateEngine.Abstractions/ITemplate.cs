@@ -29,6 +29,8 @@ namespace Microsoft.TemplateEngine.Abstractions
         Guid ConfigMountPointId { get; }
 
         string ConfigPlace { get; }
+
+        string Locale { get; }
     }
 
     public interface ITemplate : ITemplateInfo

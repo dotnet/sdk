@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> Instantiate(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public static async Task<int> Instantiate(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, string localizationFile)
         {
             ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             ITemplateInfo templateInfo;
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
             }
 
-            ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
+            ITemplate template = SettingsLoader.LoadTemplate(templateInfo, localizationFile);
 
             if (!skipUpdateCheck)
             {

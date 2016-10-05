@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return GetTemplatesFromDir(source.Root).ToList();
         }
 
-        public bool TryGetTemplateFromConfig(IFileSystemInfo config, out ITemplate template)
+        public bool TryGetTemplateFromConfig(IFileSystemInfo config, out ITemplate template, string localizationFile = null)
         {
             IFile file = config as IFile;
 
@@ -93,6 +93,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             // notes for correctly reading localization info - not from .netnew.json - coming soon
+            // this method is called when the cache is populated, as well as when actually reading a template for processing.
+            // so we'll have to decide what/if to do regarding localization for setting up the cache, as opposed to regular processing.
+            //
             //try
             //{
             //    JObject srcObject = ReadConfigModel(file);
@@ -109,7 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             try
             {
                 JObject srcObject = ReadConfigModel(file);
-                template = new RunnableProjectTemplate(srcObject, this, file, SimpleConfigModel.FromJObject(srcObject));
+                template = new RunnableProjectTemplate(srcObject, this, file, SimpleConfigModel.FromJObject(srcObject, localizationFile));
 
                 return true;
             }

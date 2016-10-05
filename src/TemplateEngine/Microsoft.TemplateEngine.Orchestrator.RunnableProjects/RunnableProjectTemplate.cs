@@ -26,6 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Description = config.Description;
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;
+            Locale = config.Locale;
             _raw = raw;
         }
 
@@ -56,6 +57,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IMountPoint Source { get; }
 
         public IReadOnlyDictionary<string, string> Tags { get; }
+
+        public string Locale { get; }
 
         public Guid ConfigMountPointId => Configuration.MountPoint.Info.MountPointId;
 

@@ -96,9 +96,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 templates.UnionWith(cache.TemplateInfo);
         }
 
-        public static ITemplate LoadTemplate(ITemplateInfo info)
+        public static ITemplate LoadTemplate(ITemplateInfo info, string localizationFile = null)
         {
-
             IGenerator generator;
             if (!Components.TryGetComponent(info.GeneratorId, out generator))
             {
@@ -115,7 +114,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             ITemplate template;
             using (Timing.Over("Template from config"))
-                if (generator.TryGetTemplateFromConfig(config, out template))
+                if (generator.TryGetTemplateFromConfig(config, out template, localizationFile))
                 {
                     return template;
                 }
@@ -171,7 +170,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Author = template.Author,
                 GroupIdentity = template.GroupIdentity,
                 Identity = template.Identity,
-                DefaultName = template.DefaultName
+                DefaultName = template.DefaultName,
+                Locale = template.Locale
             };
 
             _userTemplateCache.TemplateInfo.Add(info);

@@ -77,5 +77,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public string ConfigPlace { get; set; }
+
+        [JsonProperty]
+        public string Locale { get; set; }
     }
 }
