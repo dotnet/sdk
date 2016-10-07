@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 templates.UnionWith(cache.TemplateInfo);
         }
 
-        public static ITemplate LoadTemplate(ITemplateInfo info, string localizationFile = null)
+        public static ITemplate LoadTemplate(ITemplateInfo info)
         {
             IGenerator generator;
             if (!Components.TryGetComponent(info.GeneratorId, out generator))

@@ -66,10 +66,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
 
-        public string Locale { get; set; }
-
-        string IRunnableProjectConfig.Locale => Locale;
-
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
         public string Identity { get; set; }

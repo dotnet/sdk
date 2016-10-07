@@ -77,7 +77,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public static async Task<int> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
-            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             ITemplateInfo templateInfo;
 
             using (Timing.Over("Get single"))

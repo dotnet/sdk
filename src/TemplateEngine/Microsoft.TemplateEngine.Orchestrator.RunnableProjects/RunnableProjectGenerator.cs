@@ -102,7 +102,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return false;
         }
 
-<<<<<<< 30f4f662b5506499ac75f907df48a1dc46ef0136
         public IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations)
         {
             IDirectory folder = source.Root;
