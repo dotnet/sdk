@@ -11,6 +11,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
 {
     public static class TemplateCreator
     {
+        // returns the templates whose:
+        //      name or shortName contains the searchString
+        //      matches by a registered alias
         public static IReadOnlyCollection<ITemplateInfo> List(string searchString)
         {
             HashSet<ITemplateInfo> matchingTemplates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
@@ -49,7 +52,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
 
-        public static bool TryGetTemplate(string templateName, out ITemplateInfo tmplt)
+        public static bool TryGetTemplateInfoFromCache(string templateName, out ITemplateInfo tmplt)
         {
             try
             {
@@ -72,24 +75,25 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> Instantiate(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, string localizationFile)
+        public static async Task<int> Instantiate(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
-            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             ITemplateInfo templateInfo;
 
             using (Timing.Over("Get single"))
             {
-                if (! TryGetTemplate(templateName, out templateInfo))
+                if (! TryGetTemplateInfoFromCache(templateName, out templateInfo))
                 {
                     return -1;
                 }
             }
 
-            ITemplate template = SettingsLoader.LoadTemplate(templateInfo, localizationFile);
+            // SettingsLoader.LoadTemplate is where the loc info should be read!!!
+            // templateInfo knows enough to get at the loc, if any
+            ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
 
             if (!skipUpdateCheck)
             {
-                host.LogMessage("Checking for updates...");
+                EngineEnvironmentSettings.Host.LogMessage("Checking for updates...");
 
                 //UpdateCheck();    // this'll need params
             }
@@ -101,7 +105,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 //TODO: Add parameters to aliases (from _parameters_ collection)
                 AliasRegistry.SetTemplateAlias(aliasName, template);
-                host.LogMessage("Alias created.");
+                EngineEnvironmentSettings.Host.LogMessage("Alias created.");
                 return 0;
             }
 
@@ -121,7 +125,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 IComponentManager componentManager = Settings.SettingsLoader.Components;
                 await template.Generator.Create(template, templateParams, componentManager, out creationResult);
                 sw.Stop();
-                host.OnTimingCompleted("Content generation time", sw.Elapsed);
+                EngineEnvironmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
             finally
             {

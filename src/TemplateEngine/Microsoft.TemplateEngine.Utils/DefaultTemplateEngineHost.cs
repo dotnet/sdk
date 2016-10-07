@@ -4,8 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    // this is effectively a copy of DotNetNew3TemplateEngineHost
-    internal class DefaultTemplateEngineHost : ITemplateEngineHost
+    public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
         private IReadOnlyDictionary<string, string> _HostDefaults { get; }
 

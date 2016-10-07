@@ -66,10 +66,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
 
-        public string Locale { get; set; }
-
-        string IRunnableProjectConfig.Locale => Locale;
-
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
         public string Identity { get; set; }
@@ -630,12 +626,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _sources = sources;
         }
 
-        // NOTE: localFileFullPath is absolutely temporary!!!
-        // we'll either get the localization JObject or a LocalizationModel
-        // doesn't really matter, just need to decide.
-        public static SimpleConfigModel FromJObject(JObject source, string localeFileFullPath = null)
+        public static SimpleConfigModel FromJObject(JObject source, JObject localeSource = null)
         {
-            LocalizationModel localizationModel = LocalizationFromFilePath(localeFileFullPath);
+            ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
 
             SimpleConfigModel config = new SimpleConfigModel();
             config.Author = localizationModel?.Author ?? source.ToString(nameof(config.Author));
@@ -649,7 +642,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.ShortName = source.ToString(nameof(config.ShortName));
             config.SourceName = source.ToString(nameof(config.SourceName));
             config.PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename));
-            config.Locale = source.ToString(nameof(config.Locale));
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
             config.Sources = sources;
@@ -755,26 +747,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return config;
         }
 
-        public static LocalizationModel LocalizationFromFilePath(string fullpath)
-        {
-            if (fullpath == null)
-            {
-                return null;
-            }
-
-            JObject localizationJObject;
-
-            using (FileStream s = File.OpenRead(fullpath))
-            using (TextReader tr = new StreamReader(s, true))
-            using (Newtonsoft.Json.JsonReader r = new Newtonsoft.Json.JsonTextReader(tr))
-            {
-                localizationJObject = JObject.Load(r);
-            }
-
-            return LocalizationFromJObject(localizationJObject);
-        }
-
-        public static LocalizationModel LocalizationFromJObject(JObject source)
+        public static ILocalizationModel LocalizationFromJObject(JObject source)
         {
             if (source == null)
             {
@@ -785,21 +758,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             model.Author = source.ToString(nameof(model.Author));
             model.Name = source.ToString(nameof(model.Name));
             model.Description = source.ToString(nameof(model.Description));
+            model.Identity = source.ToString(nameof(model.Identity));
 
             // symbol description localizations
             model.SymbolDescriptions = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
 
             // post action localizations
-            Dictionary<Guid, PostActionLocalizationModel> postActions = new Dictionary<Guid, PostActionLocalizationModel>();
+            Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();
             foreach (JObject item in source.Items<JObject>(nameof(model.PostActions)))
             {
-                PostActionLocalizationModel postActionModel = PostActionLocalizationModel.FromJObject(item);
+                IPostActionLocalizationModel postActionModel = PostActionLocalizationModel.FromJObject(item);
                 postActions.Add(postActionModel.ActionId, postActionModel);
             }
             model.PostActions = postActions;
 
             // regular file localizations
-            IReadOnlyDictionary<string, JToken> fileLocalizationJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "filespecific");
+            IReadOnlyDictionary<string, JToken> fileLocalizationJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "localizations");
             List<FileLocalizationModel> fileLocalizations = new List<FileLocalizationModel>();
 
             if (fileLocalizationJson != null)

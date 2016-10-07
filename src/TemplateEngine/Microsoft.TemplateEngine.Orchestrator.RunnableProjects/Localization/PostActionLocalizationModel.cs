@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    public class PostActionLocalizationModel
+    public class PostActionLocalizationModel : IPostActionLocalizationModel
     {
         // correlates to the culture-neutral action
         public Guid ActionId { get; set; }

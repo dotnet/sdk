@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
+using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string ConfigFile { get; private set; }
 
-        public static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<Guid, PostActionLocalizationModel> localizations)
+        public static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<Guid, IPostActionLocalizationModel> localizations)
         {
             List<IPostActionModel> modelList = new List<IPostActionModel>();
 
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             foreach (JToken action in jObject)
             {
                 Guid actionId = action.ToGuid(nameof(ActionId));
-                PostActionLocalizationModel actionLocalizations;
+                IPostActionLocalizationModel actionLocalizations;
                 if (localizations == null || !localizations.TryGetValue(actionId, out actionLocalizations))
                 {
                     actionLocalizations = null;

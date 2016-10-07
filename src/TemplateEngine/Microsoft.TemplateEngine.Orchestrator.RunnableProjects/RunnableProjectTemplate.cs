@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly JObject _raw;
 
-        public RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config)
+        public RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config, IFile localeConfigFile)
         {
             config.SourceFile = configFile;
             ConfigFile = configFile;
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Description = config.Description;
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;
-            Locale = config.Locale;
+            LocaleConfigFile = localeConfigFile;
             _raw = raw;
         }
 
@@ -42,8 +42,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IRunnableProjectConfig Config { get; private set; }
 
-        public IFile ConfigFile { get; }
-
         public string DefaultName { get; }
 
         public IGenerator Generator { get; }
@@ -58,25 +56,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Tags { get; }
 
-        public string Locale { get; }
+        public IFile ConfigFile { get; }
+
+        public IFileSystemInfo Configuration => ConfigFile;
 
         public Guid ConfigMountPointId => Configuration.MountPoint.Info.MountPointId;
 
         public string ConfigPlace => Configuration.FullPath;
 
-        public IFileSystemInfo Configuration => ConfigFile;
+        public IFile LocaleConfigFile { get; }
 
-        public bool TryGetProperty(string name, out string value)
-        {
-            JToken token;
-            if (_raw.TryGetValue(name, StringComparison.OrdinalIgnoreCase, out token))
-            {
-                value = token?.ToString();
-                return true;
-            }
+        public IFileSystemInfo LocaleConfiguration => LocaleConfigFile;
 
-            value = null;
-            return false;
-        }
+        public Guid LocaleConfigMountPointId => LocaleConfiguration.MountPoint.Info.MountPointId;
+
+        public string LocaleConfigPlace => LocaleConfiguration.FullPath;
     }
 }

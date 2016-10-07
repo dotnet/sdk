@@ -10,11 +10,9 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IParameterSet GetParametersForTemplate(ITemplate template);
 
-        IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source);
+        bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig);
 
-        bool TryGetTemplateFromConfig(IFileSystemInfo config, out ITemplate template, string localizationFile);
-
-        bool TryGetTemplateFromSource(IMountPoint target, string name, out ITemplate template);
+        IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations);
 
         object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue);
     }

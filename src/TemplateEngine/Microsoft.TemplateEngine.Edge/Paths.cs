@@ -238,7 +238,6 @@ namespace Microsoft.TemplateEngine.Edge
             private static string _packageCache;
             private static string _scratchDir;
             private static string _settingsFile;
-            private static string _templateCache;
             private static string _contentDir;
 
             public static string AliasesFile => GetOrComputePath(ref _aliasesFile, BaseDir, "aliases.json");
@@ -255,7 +254,40 @@ namespace Microsoft.TemplateEngine.Edge
 
             public static string SettingsFile => GetOrComputePath(ref _settingsFile, BaseDir, "settings.json");
 
-            public static string TemplateCacheFile => GetOrComputePath(ref _templateCache, BaseDir, "templatecache.json");
+            public static string CultureNeutralTemplateCacheFile
+            {
+                get
+                {
+                    return ExplicitLocaleTemplateCacheFile(null);
+                }
+            }
+
+            public static string CurrentLocaleTemplateCacheFile
+            {
+                get
+                {
+                    return ExplicitLocaleTemplateCacheFile(EngineEnvironmentSettings.Host.Locale);
+                }
+            }
+
+            public static readonly string TemplateCacheFileBaseName = "templatecache.json";
+
+            public static string ExplicitLocaleTemplateCacheFile(string locale)
+            {
+                string filename;
+
+                if (string.IsNullOrEmpty(locale))
+                {
+                    filename = TemplateCacheFileBaseName;
+                }
+                else
+                {
+                    filename = locale + "." + TemplateCacheFileBaseName;
+                }
+
+                string tempCache = null;    // don't cache, the locale could change
+                return GetOrComputePath(ref tempCache, BaseDir, filename);
+            }
 
             public static string NuGetConfig => GetOrComputePath(ref _nuGetConfig, BaseDir, "NuGet.config");
         }

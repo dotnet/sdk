@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    public class FileLocalizationModel
+    public class FileLocalizationModel : IFileLocalizationModel
     {
         public string File { get; set; }
 

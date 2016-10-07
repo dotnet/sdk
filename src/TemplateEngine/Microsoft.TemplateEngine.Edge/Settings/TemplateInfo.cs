@@ -40,6 +40,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     tags[item.Name] = item.Value.ToString();
                 }
             ConfigPlace = entry["ConfigPlace"].ToString();
+
+            LocaleConfigMountPointId = Guid.Parse(entry["LocaleConfigMountPointId"].ToString());
+            LocaleConfigPlace = entry["LocaleConfigPlace"].ToString();
         }
 
         [JsonProperty]
@@ -79,6 +82,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public string ConfigPlace { get; set; }
 
         [JsonProperty]
-        public string Locale { get; set; }
+        public Guid LocaleConfigMountPointId { get; set; }
+
+        [JsonProperty]
+        public string LocaleConfigPlace { get; set; }
     }
 }
