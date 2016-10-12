@@ -13,7 +13,6 @@
     <EmbeddedResource Include="**\*.resx" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <Reference Include="mscorlib" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>  
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.5'">
@@ -22,8 +21,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.Sdk">
+    <PackageReference Include="Microsoft.NET.Sdk">
       <Version>0.0</Version>
+      <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

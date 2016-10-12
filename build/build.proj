@@ -13,13 +13,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SolutionFile Include="$(RepositoryRootDirectory)core-sdk.sln" Condition="'$(BuildTemplates)' != 'true'" />
-    <SolutionFile Include="$(RepositoryRootDirectory)core-sdk-templates.sln" Condition="'$(BuildTemplates)' == 'true'" />
-    <SolutionFile Include="$(RepositoryRootDirectory)core-sdk-web-templates.sln" Condition="'$(BuildTemplates)' == 'true'" />
+    <SolutionFile Include="$(RepositoryRootDirectory)sdk.sln" Condition="'$(BuildTemplates)' != 'true'" />
+    <SolutionFile Include="$(RepositoryRootDirectory)sdk-templates.sln" Condition="'$(BuildTemplates)' == 'true'" />
+    <SolutionFile Include="$(RepositoryRootDirectory)sdk-web-templates.sln" Condition="'$(BuildTemplates)' == 'true'" />
 
-    <SigningProjectFile Include="$(RepositoryRootDirectory)build\Signing\Microsoft.NETCore.Signing.proj"/>
-    <NuGetProjectFile Include="$(RepositoryRootDirectory)build\Nuget\Microsoft.NETCore.Nuget.proj" />
-    <WebNuGetProjectFile Include="$(RepositoryRootDirectory)build\Nuget\Microsoft.NETCore.Web.Nuget.proj" />
+    <SigningProjectFile Include="$(RepositoryRootDirectory)build\Signing\Microsoft.NET.Signing.proj"/>
+    <NuGetProjectFile Include="$(RepositoryRootDirectory)build\Nuget\Microsoft.NET.Nuget.proj" />
+    <WebNuGetProjectFile Include="$(RepositoryRootDirectory)build\Nuget\Microsoft.NET.Web.Nuget.proj" />
+
+    <VsManProjectFile Include="$(RepositoryRootDirectory)src\VsixV3\Microsoft.VisualStudio.Templates.VisualBasic.NetCore.vsmanproj" />
+    <VsManProjectFile Include="$(RepositoryRootDirectory)src\VsixV3\Microsoft.VisualStudio.Templates.CSharp.NetCore.vsmanproj" />
   </ItemGroup>
 
   <Target Name="RestorePackages">
@@ -31,7 +34,7 @@
           />
 
     <ItemGroup>
-      <ProjectToRestore3 Include="src\Tasks\Microsoft.NETCore.Build.Tasks\Microsoft.NETCore.Build.Tasks.csproj" />
+      <ProjectToRestore3 Include="src\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" />
     </ItemGroup>
 
     <!-- work around https://github.com/dotnet/sdk/issues/203 by passing in /p:SkipInvalidConfigurations=true -->
@@ -62,7 +65,7 @@
              />
   </Target>
 
-  <Target Name="SignPackages" Condition="'$(BuildTemplates)' != 'true'">
+  <Target Name="SignPackages">
 
     <MSBuild BuildInParallel="true"
              Projects="@(SigningProjectFile)"
@@ -101,6 +104,21 @@
              />
   </Target>
 
+  <Target Name="BuildModernVsixPackages" DependsOnTargets="SignPackages" Condition="'$(BuildTemplates)' == 'true'">
+    <MSBuild Projects="@(VsManProjectFile)"
+             Targets="Build"
+             Condition="'$(RunningInMicroBuild)' == 'true'"
+             />
+  </Target>
+
+  <Target Name="RebuildModernVsixPackages" DependsOnTargets="SignPackages" Condition="'$(BuildTemplates)' == 'true'">
+
+    <MSBuild Projects="@(VsManProjectFile)"
+             Targets="Rebuild"
+             Condition="'$(RunningInMicroBuild)' == 'true'"
+             />
+  </Target>
+
   <Target Name="Test" Condition="'$(BuildTemplates)' != 'true'">
 
     <ItemGroup>
@@ -131,7 +149,7 @@
 
   </Target>
 
-  <Target Name="Build" DependsOnTargets="RestorePackages;BuildSolution;SignPackages;BuildNuGetPackages;Test" />
-  <Target Name="Rebuild" DependsOnTargets="RestorePackages;RebuildSolution;SignPackages;RebuildNuGetPackages;Test" />
+  <Target Name="Build" DependsOnTargets="RestorePackages;BuildSolution;SignPackages;BuildNuGetPackages;BuildModernVsixPackages;Test" />
+  <Target Name="Rebuild" DependsOnTargets="RestorePackages;RebuildSolution;SignPackages;RebuildNuGetPackages;RebuildModernVsixPackages;Test" />
 
 </Project>

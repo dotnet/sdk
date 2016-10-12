@@ -15,11 +15,12 @@
     <PackageReference Include="Microsoft.NETCore.App">
       <Version>1.0.1</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETCore.Sdk">
+    <PackageReference Include="Microsoft.NET.Sdk">
       <Version>$$buildversion$$</Version>
+      <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   <PackageReference Include="Microsoft.TestPlatform.TestHost">
-      <Version>15.0.0</Version>
+      <Version>15.0.0-preview-20161005-01</Version>
     </PackageReference>
   <PackageReference Include="MSTest.TestAdapter">
       <Version>1.1.2-preview</Version>
