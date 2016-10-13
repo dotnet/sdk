@@ -237,8 +237,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 foreach (string path in Path.Combine(Paths.User.Content, packageName, version).EnumerateFiles($"{package.Key}.dll", SearchOption.AllDirectories))
                 {
                     if (path.IndexOf($"{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) < 0
+#if !NET451
                         || (path.IndexOf($"{Path.DirectorySeparatorChar}netstandard1.", StringComparison.OrdinalIgnoreCase) < 0
-                            && path.IndexOf($"{Path.DirectorySeparatorChar}netcoreapp1.", StringComparison.OrdinalIgnoreCase) < 0))
+                            && path.IndexOf($"{Path.DirectorySeparatorChar}netcoreapp1.", StringComparison.OrdinalIgnoreCase) < 0)
+#else
+                        || path.IndexOf($"{Path.DirectorySeparatorChar}netstandard1.", StringComparison.OrdinalIgnoreCase) < 0
+#endif
+                        )
                     {
                         continue;
                     }
