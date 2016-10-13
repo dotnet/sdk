@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -77,12 +78,86 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return new ParameterSet(tmplt.Config);
         }
 
-        public IEnumerable<ITemplate> GetTemplatesFromSource(IMountPoint source)
+        private bool TryGetLangPackFromFile(IFile file, out ILocalizationModel locModel)
         {
-            return GetTemplatesFromDir(source.Root).ToList();
+            if (file == null)
+            {
+                locModel = null;
+                return false;
+            }
+
+            try
+            {
+                JObject srcObject = ReadJObjectFromIFile(file);
+                locModel = SimpleConfigModel.LocalizationFromJObject(srcObject);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ITemplateEngineHost host = EngineEnvironmentSettings.Host;
+                host.LogMessage($"Error reading Langpack from file: {file.FullPath} | Error = {ex.ToString()}");
+            }
+
+            locModel = null;
+            return false;
         }
 
-        public bool TryGetTemplateFromConfig(IFileSystemInfo config, out ITemplate template)
+        public IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations)
+        {
+            IDirectory folder = source.Root;
+
+            Regex localeFileRegex = new Regex(@"
+                ^
+                (?<locale>
+                    [a-z]{2}
+                    (?:_[a-z]{2})?
+                )
+                \.netnew\.json
+                $"
+                , RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+
+            IList<ITemplate> templateList = new List<ITemplate>();
+            localizations = new List<ILocalizationLocator>();
+
+            foreach (IFile file in folder.EnumerateFiles("*.netnew.json", SearchOption.AllDirectories))
+            {
+                if (string.Equals(file.Name, ".netnew.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    ITemplate template;
+                    if (TryGetTemplateFromConfigInfo(file, out template))
+                    {
+                        templateList.Add(template);
+                    }
+
+                    continue;
+                }
+
+                Match localeMatch = localeFileRegex.Match(file.Name);
+                if (localeMatch.Success)
+                {
+                    string locale = localeMatch.Groups["locale"].Value;
+
+                    ILocalizationModel locModel;
+                    if (TryGetLangPackFromFile(file, out locModel))
+                    {
+                        ILocalizationLocator locator = new LocalizationLocator()
+                        {
+                            Locale = locale,
+                            MountPointId = source.Info.MountPointId,
+                            ConfigPlace = file.FullPath,
+                            Identity = locModel.Identity,
+                        };
+                        localizations.Add(locator);
+                    }
+
+                    continue;
+                }
+            }
+
+            return templateList;
+        }
+
+        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig = null)
         {
             IFile file = config as IFile;
 
@@ -92,23 +167,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return false;
             }
 
+            IFile localeFile = localeConfig as IFile;
+
             try
             {
-                JObject srcObject = ReadConfigModel(file);
-                template = new RunnableProjectTemplate(srcObject, this, file, SimpleConfigModel.FromJObject(srcObject));
+                JObject srcObject = ReadJObjectFromIFile(file);
 
+                JObject localeSourceObject = null;
+                if (localeFile != null)
+                {
+                    localeSourceObject = ReadJObjectFromIFile(localeFile);
+                }
+
+                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(srcObject, localeSourceObject);
+                template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null);
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("Error reading the template: {0}", ex.ToString()));
+                ITemplateEngineHost host = EngineEnvironmentSettings.Host;
+                host.LogMessage($"Error reading template from file: {file.FullPath} | Error = {ex.ToString()}");
             }
 
             template = null;
             return false;
         }
 
-        private JObject ReadConfigModel(IFile file)
+        private JObject ReadJObjectFromIFile(IFile file)
         {
             using (Stream s = file.OpenRead())
             using (TextReader tr = new StreamReader(s, true))
@@ -116,24 +201,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return JObject.Load(r);
             }
-        }
-
-        private IEnumerable<ITemplate> GetTemplatesFromDir(IDirectory folder)
-        {
-            foreach (IFile file in folder.EnumerateFiles(".netnew.json", SearchOption.AllDirectories))
-            {
-                ITemplate tmp;
-                if (TryGetTemplateFromConfig(file, out tmp))
-                {
-                    yield return tmp;
-                }
-            }
-        }
-
-        public bool TryGetTemplateFromSource(IMountPoint target, string name, out ITemplate template)
-        {
-            template = GetTemplatesFromSource(target).FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
-            return template != null;
         }
 
         //

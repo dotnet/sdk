@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class FlagsConfig : IOperationConfig
     {
-        public string Key => "flags";
+        public string Key => SetFlag.OperationName;
 
         public Guid Id => new Guid("A1E27A4B-9608-47F1-B3B8-F70DF62DC521");
 
@@ -44,23 +44,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             List<IOperationProvider> flagOperations = new List<IOperationProvider>();
             string on = string.Format("{0}+{1}", switchPrefix, FlagConditionalSuffix);
             string off = string.Format("{0}-{1}", switchPrefix, FlagConditionalSuffix);
-            flagOperations.Add(new SetFlag("conditionals", on, off, string.Empty, string.Empty, string.Empty));
+            flagOperations.Add(new SetFlag(Conditional.OperationName, on, off, string.Empty, string.Empty, string.Empty));
 
             on = string.Format("{0}+{1}", switchPrefix, FlagReplacementSuffix);
             off = string.Format("{0}-{1}", switchPrefix, FlagReplacementSuffix);
-            flagOperations.Add(new SetFlag("replacements", on, off, string.Empty, string.Empty, string.Empty));
+            flagOperations.Add(new SetFlag(Replacement.OperationName, on, off, string.Empty, string.Empty, string.Empty));
 
             on = string.Format("{0}+{1}", switchPrefix, FlagExpandVariablesSuffix);
             off = string.Format("{0}-{1}", switchPrefix, FlagExpandVariablesSuffix);
-            flagOperations.Add(new SetFlag("expandVariables", on, off, string.Empty, string.Empty, string.Empty));
+            flagOperations.Add(new SetFlag(ExpandVariables.OperationName, on, off, string.Empty, string.Empty, string.Empty));
 
             on = string.Format("{0}+{1}", switchPrefix, FlagIncludeSuffix);
             off = string.Format("{0}-{1}", switchPrefix, FlagIncludeSuffix);
-            flagOperations.Add(new SetFlag("include", on, off, string.Empty, string.Empty, string.Empty));
+            flagOperations.Add(new SetFlag(Include.OperationName, on, off, string.Empty, string.Empty, string.Empty));
 
             // no off for the flag-flag
             on = string.Format("{0}+{1}", switchPrefix, FlagFlagsSuffix);
-            flagOperations.Add(new SetFlag("flags", on, off, string.Empty, string.Empty, string.Empty));
+            flagOperations.Add(new SetFlag(SetFlag.OperationName, on, off, string.Empty, string.Empty, string.Empty));
 
             return flagOperations;
         }

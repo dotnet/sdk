@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class EngineEnvironmentSettings
     {
-        private static readonly string DefaultLocale = "en-US";
+        private static readonly string DefaultLocale = "en_US";
 
         static EngineEnvironmentSettings()
         {

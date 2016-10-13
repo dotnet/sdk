@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -625,17 +626,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _sources = sources;
         }
 
-        public static SimpleConfigModel FromJObject(JObject source)
+        public static SimpleConfigModel FromJObject(JObject source, JObject localeSource = null)
         {
+            ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
+
             SimpleConfigModel config = new SimpleConfigModel();
-            config.Author = source.ToString(nameof(config.Author));
+            config.Author = localizationModel?.Author ?? source.ToString(nameof(config.Author));
             config.Classifications = source.ArrayAsStrings(nameof(config.Classifications));
             config.DefaultName = source.ToString(nameof(DefaultName));
-            config.Description = source.ToString(nameof(Description));
+            config.Description = localizationModel?.Description ?? source.ToString(nameof(Description));
             config.GroupIdentity = source.ToString(nameof(GroupIdentity));
             config.Guids = source.ArrayAsGuids(nameof(config.Guids));
             config.Identity = source.ToString(nameof(config.Identity));
-            config.Name = source.ToString(nameof(config.Name));
+            config.Name = localizationModel?.Name ?? source.ToString(nameof(config.Name));
             config.ShortName = source.ToString(nameof(config.ShortName));
             config.SourceName = source.ToString(nameof(config.SourceName));
             config.PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename));
@@ -679,7 +682,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj);
+                string localizedDescription = null;
+                if (localizationModel != null)
+                {
+                    localizationModel.SymbolDescriptions.TryGetValue(prop.Name, out localizedDescription);
+                }
+
+                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, localizedDescription);
 
                 if (model != null)
                 {
@@ -688,7 +697,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
-            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray((JArray)source["PostActions"]);
+            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray((JArray)source["PostActions"], localizationModel?.PostActions);
 
             config.PrimaryOutputs = CreationPathModel.ListFromJArray((JArray)source["PrimaryOutputs"]);
 
@@ -718,22 +727,68 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             config.SpecialCustomSetup = specialCustomSetup;
 
-            // In-Progress: read localization data from the config.
-            IReadOnlyDictionary<string, JToken> localizationConfigJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "file_localizations");
+            // localization operations for individual files
             Dictionary<string, IReadOnlyList<IOperationProvider>> localizations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
-
-            if (localizationConfigJson != null)
+            if (localizationModel != null && localizationModel.FileLocalizations != null)
             {
-                foreach (KeyValuePair<string, JToken> fileLocInfo in localizationConfigJson)
+                foreach (FileLocalizationModel fileLocalization in localizationModel.FileLocalizations)
                 {
-                    string fileName = fileLocInfo.Key;
-                    JToken translations = fileLocInfo.Value;
-                    localizations.Add(fileName, LocalizationConfig.FromJObject((JObject)translations));
+                    List<IOperationProvider> localizationsForFile = new List<IOperationProvider>();
+                    foreach (KeyValuePair<string, string> localizationInfo in fileLocalization.Localizations)
+                    {
+                        localizationsForFile.Add(new Replacement(localizationInfo.Key, localizationInfo.Value, null));
+                    }
+
+                    localizations.Add(fileLocalization.File, localizationsForFile);
                 }
             }
             config.LocalizationOperations = localizations;
 
             return config;
+        }
+
+        public static ILocalizationModel LocalizationFromJObject(JObject source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            LocalizationModel model = new LocalizationModel();
+            model.Author = source.ToString(nameof(model.Author));
+            model.Name = source.ToString(nameof(model.Name));
+            model.Description = source.ToString(nameof(model.Description));
+            model.Identity = source.ToString(nameof(model.Identity));
+
+            // symbol description localizations
+            model.SymbolDescriptions = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
+
+            // post action localizations
+            Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();
+            foreach (JObject item in source.Items<JObject>(nameof(model.PostActions)))
+            {
+                IPostActionLocalizationModel postActionModel = PostActionLocalizationModel.FromJObject(item);
+                postActions.Add(postActionModel.ActionId, postActionModel);
+            }
+            model.PostActions = postActions;
+
+            // regular file localizations
+            IReadOnlyDictionary<string, JToken> fileLocalizationJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "localizations");
+            List<FileLocalizationModel> fileLocalizations = new List<FileLocalizationModel>();
+
+            if (fileLocalizationJson != null)
+            {
+                foreach (KeyValuePair<string, JToken> fileLocInfo in fileLocalizationJson)
+                {
+                    string fileName = fileLocInfo.Key;
+                    JToken localizationJson = fileLocInfo.Value;
+                    FileLocalizationModel fileModel = FileLocalizationModel.FromJObject(fileName, (JObject)localizationJson);
+                    fileLocalizations.Add(fileModel);
+                }
+            }
+            model.FileLocalizations = fileLocalizations;
+
+            return model;
         }
     }
 }

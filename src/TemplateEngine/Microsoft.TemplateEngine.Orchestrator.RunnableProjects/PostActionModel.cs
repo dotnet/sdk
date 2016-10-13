@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -22,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string ConfigFile { get; private set; }
 
-        public static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject)
+        public static IReadOnlyList<IPostActionModel> ListFromJArray(JArray jObject, IReadOnlyDictionary<Guid, IPostActionLocalizationModel> localizations)
         {
             List<IPostActionModel> modelList = new List<IPostActionModel>();
 
@@ -33,6 +34,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (JToken action in jObject)
             {
+                Guid actionId = action.ToGuid(nameof(ActionId));
+                IPostActionLocalizationModel actionLocalizations;
+                if (localizations == null || !localizations.TryGetValue(actionId, out actionLocalizations))
+                {
+                    actionLocalizations = null;
+                }
+
                 Dictionary<string, string> args = new Dictionary<string, string>();
 
                 foreach (JProperty argInfo in action.PropertiesOf("Args"))
@@ -41,17 +49,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 List<KeyValuePair<string, string>> instructionOptions = new List<KeyValuePair<string, string>>();
-                
-                foreach (JToken instructionToken in (JArray)action["ManualInstructions"])
+
+                JArray manualInstructions = (JArray)action["ManualInstructions"];
+                bool useLocalizedInstructions =
+                    actionLocalizations != null
+                    && manualInstructions != null
+                    && actionLocalizations.Instructions.Count == manualInstructions.Count;
+
+                for (int i = 0; i < manualInstructions.Count; i++)
                 {
-                    KeyValuePair<string, string> instruction = new KeyValuePair<string, string>(instructionToken.ToString("text"), instructionToken.ToString("condition"));
+                    string text;
+                    if (useLocalizedInstructions)
+                    {
+                        text = actionLocalizations.Instructions[i];
+                    }
+                    else
+                    {
+                        text = manualInstructions[i].ToString("text");
+                    }
+
+                    KeyValuePair<string, string> instruction = new KeyValuePair<string, string>(text, manualInstructions[i].ToString("condition"));
                     instructionOptions.Add(instruction);
                 }
 
                 PostActionModel model = new PostActionModel()
                 {
-                    Description = action.ToString(nameof(model.Description)),
-                    ActionId = action.ToGuid(nameof(model.ActionId)),
+                    Description = actionLocalizations?.Description ?? action.ToString(nameof(model.Description)),
+                    ActionId = actionId,
                     ContinueOnError = action.ToBool(nameof(model.ContinueOnError)),
                     Args = args,
                     ManualInstructionInfo = instructionOptions,

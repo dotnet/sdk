@@ -29,6 +29,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         Guid ConfigMountPointId { get; }
 
         string ConfigPlace { get; }
+
+        Guid LocaleConfigMountPointId { get; }
+
+        string LocaleConfigPlace { get; }
     }
 
     public interface ITemplate : ITemplateInfo
@@ -37,6 +41,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IFileSystemInfo Configuration { get; }
 
-        bool TryGetProperty(string name, out string value);
+        IFileSystemInfo LocaleConfiguration { get; }
     }
 }

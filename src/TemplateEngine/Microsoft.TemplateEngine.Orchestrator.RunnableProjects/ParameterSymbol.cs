@@ -21,13 +21,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<string> Choices { get; set; }
 
-        public static ISymbolModel FromJObject(JObject jObject)
+        public static ISymbolModel FromJObject(JObject jObject, string localizedDescription = null)
         {
             ParameterSymbol sym = new ParameterSymbol
             {
                 Binding = jObject.ToString(nameof(Binding)),
                 DefaultValue = jObject.ToString(nameof(DefaultValue)),
-                Description = jObject.ToString(nameof(Description)),
+                Description = localizedDescription ?? jObject.ToString(nameof(Description)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),
                 Type = jObject.ToString(nameof(Type)),
                 Replaces = jObject.ToString(nameof(Replaces)),

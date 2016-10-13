@@ -7,6 +7,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class SetFlag : IOperationProvider
     {
+        public static readonly string OperationName = "flags";
+
         private readonly string _id;
 
         public string Name { get; }
@@ -69,7 +71,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flagsOn;
-                if(!processor.Config.Flags.TryGetValue("flags", out flagsOn))
+                if(!processor.Config.Flags.TryGetValue(SetFlag.OperationName, out flagsOn))
                 {
                     flagsOn = true;
                 }
@@ -92,9 +94,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 {
                     processor.Config.Flags[_owner.Name] = token == 0;
                 }
-                else if (_owner.Name == "flags" && turnOn)
+                else if (_owner.Name == SetFlag.OperationName && turnOn)
                 {
-                    processor.Config.Flags["flags"] = true;
+                    processor.Config.Flags[SetFlag.OperationName] = true;
                 }
 
                 return written;

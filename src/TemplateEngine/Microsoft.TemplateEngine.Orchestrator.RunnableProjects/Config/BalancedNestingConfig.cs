@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class BalancedNestingConfig : IOperationConfig
     {
-        public string Key => "balancednestings";
+        public string Key => BalancedNesting.OperationName;
 
         public Guid Id => new Guid("3147965A-08E5-4523-B869-02C8E9A8AAA1");
 

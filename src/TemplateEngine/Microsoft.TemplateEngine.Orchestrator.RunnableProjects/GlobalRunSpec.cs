@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 CustomOperationModel opModel = opModelUntyped as CustomOperationModel;
                 if (opModel == null)
                 {
-                    host.LogMessage($"Operation type = [{opModel.Type}] from configuration is unknown.");
+                    host.LogMessage($"Operation type = [{opModelUntyped.Type}] could not be cast as a CustomOperationModel");
                     continue;
                 }
                     
@@ -179,6 +179,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         customOperations.AddRange(
                             realConfigObject.ConfigureFromJObject(opModel.Configuration, templateRoot));
+                    }
+                    else
+                    {
+                        host.LogMessage($"Operation type = [{opType}] from configuration is unknown.");
                     }
                 }
             }

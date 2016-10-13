@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class ConditionalConfig : IOperationConfig
     {
-        public string Key => "conditionals";
+        public string Key => Conditional.OperationName;
 
         public Guid Id => new Guid("3E8BCBF0-D631-45BA-A12D-FBF1DE03AA38");
 
@@ -174,6 +174,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         {
             string uncommentOperationId = "Uncomment (C style): (//) -> ()";
             string reduceCommentsOperationId = "Reduce comment (C style): (////) -> (//)";
+
+            // temporary - one time test
             IOperationProvider uncomment = new Replacement("//", string.Empty, uncommentOperationId);
             IOperationProvider reduceComment = new Replacement("////", "//", reduceCommentsOperationId);
 
