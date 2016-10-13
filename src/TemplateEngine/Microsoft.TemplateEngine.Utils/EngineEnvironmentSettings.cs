@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Utils
                             ? "USERPROFILE"
                             : "HOME");
 #else
-                        string profileDir = "USERPROFILE";
+                        string profileDir = System.Environment.GetEnvironmentVariable("USERPROFILE");
 #endif
 
                         _userProfileDir = profileDir;
