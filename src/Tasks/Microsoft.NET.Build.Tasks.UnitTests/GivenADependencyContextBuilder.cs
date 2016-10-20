@@ -31,22 +31,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             ITaskItem[] satelliteAssemblies)
         {
             LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
-
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
                 "/usr/Path",
                 mainProjectName,
                 mainProjectVersion,
                 satelliteAssemblies ?? new ITaskItem[] { });
 
-            ProjectContext projectContext = lockFile.CreateProjectContext(
-                FrameworkConstants.CommonFrameworks.NetCoreApp10,
-                runtime,
-                Constants.DefaultPlatformLibrary);
-
             DependencyContext dependencyContext = new DependencyContextBuilder().Build(
                 mainProject,
-                projectContext,
-                compilationOptions);
+                compilationOptions,
+                lockFile,
+                FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                runtime);
 
             JObject result = Save(dependencyContext);
             JObject baseline = ReadJson($"{baselineFileName}.deps.json");

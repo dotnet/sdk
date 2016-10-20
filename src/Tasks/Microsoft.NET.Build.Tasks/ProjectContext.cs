@@ -13,22 +13,18 @@ namespace Microsoft.NET.Build.Tasks
     {
         private readonly LockFile _lockFile;
         private readonly LockFileTarget _lockFileTarget;
-        private readonly string _platformLibraryName;
 
         public bool IsPortable { get; }
-        public LockFileTargetLibrary PlatformLibrary { get; }
 
         public LockFile LockFile => _lockFile;
         public LockFileTarget LockFileTarget => _lockFileTarget;
 
-        public ProjectContext(LockFile lockFile, LockFileTarget lockFileTarget, string platformLibraryName)
+        public ProjectContext(LockFile lockFile, LockFileTarget lockFileTarget)
         {
             _lockFile = lockFile;
             _lockFileTarget = lockFileTarget;
-            _platformLibraryName = platformLibraryName;
 
-            PlatformLibrary = _lockFileTarget.GetLibrary(_platformLibraryName);
-            IsPortable = PlatformLibrary != null && string.IsNullOrEmpty(_lockFileTarget.RuntimeIdentifier);
+            IsPortable = _lockFileTarget.IsPortable();
         }
 
         public IEnumerable<LockFileTargetLibrary> GetRuntimeLibraries(IEnumerable<string> privateAssetPackageIds)
@@ -41,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (IsPortable)
             {
-                allExclusionList.UnionWith(_lockFileTarget.GetPlatformExclusionList(PlatformLibrary, libraryLookup));
+                allExclusionList.UnionWith(_lockFileTarget.GetPlatformExclusionList(libraryLookup));
             }
 
             if (privateAssetPackageIds?.Any() == true)
