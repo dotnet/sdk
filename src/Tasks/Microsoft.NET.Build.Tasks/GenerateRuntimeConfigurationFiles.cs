@@ -34,8 +34,6 @@ namespace Microsoft.NET.Build.Tasks
 
         public string RuntimeIdentifier { get; set; }
 
-        public string PlatformLibraryName { get; set; }
-
         public string UserRuntimeConfig { get; set; }
 
         protected override void ExecuteCore()
@@ -43,8 +41,7 @@ namespace Microsoft.NET.Build.Tasks
             LockFile lockFile = new LockFileCache(BuildEngine4).GetLockFile(AssetsFilePath);
             ProjectContext projectContext = lockFile.CreateProjectContext(
                 NuGetUtils.ParseFrameworkName(TargetFramework),
-                RuntimeIdentifier,
-                PlatformLibraryName);
+                RuntimeIdentifier);
 
             WriteRuntimeConfig(projectContext);
 
@@ -69,7 +66,8 @@ namespace Microsoft.NET.Build.Tasks
         {
             if (projectContext.IsPortable)
             {
-                var platformLibrary = projectContext.PlatformLibrary;
+                var platformLibrary = projectContext.LockFileTarget.GetPlatformLibrary();
+
                 if (platformLibrary != null)
                 {
                     RuntimeConfigFramework framework = new RuntimeConfigFramework();

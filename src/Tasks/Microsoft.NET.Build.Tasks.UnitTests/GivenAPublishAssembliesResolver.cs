@@ -23,8 +23,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             LockFile lockFile = TestLockFiles.GetLockFile(projectName);
             ProjectContext projectContext = lockFile.CreateProjectContext(
                 FrameworkConstants.CommonFrameworks.NetCoreApp10,
-                runtime,
-                Constants.DefaultPlatformLibrary);
+                runtime);
 
             IEnumerable<ResolvedFile> resolvedFiles = new PublishAssembliesResolver(new MockPackageResolver())
                 .Resolve(projectContext);
