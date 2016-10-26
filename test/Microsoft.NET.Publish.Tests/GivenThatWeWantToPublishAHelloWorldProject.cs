@@ -54,6 +54,64 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
+        public void It_runs_portable_apps_from_a_different_path_after_building()
+        {
+            var helloWorldAsset = _testAssetsManager
+                   .CopyTestAsset("HelloWorld")
+                   .WithSource()
+                   .Restore();
+
+            var buildCommand = new BuildCommand(Stage0MSBuild, helloWorldAsset.TestRoot);
+
+            buildCommand.Execute().Should().Pass();
+
+            var runCommand = Command.Create(RepoInfo.DotNetHostPath, new[]
+            {
+                "run3",
+                "--no-build",
+                "--project",
+                buildCommand.FullPathProjectFile
+            });
+
+            string workingDirectory = Directory.GetParent(helloWorldAsset.Path).FullName;
+
+            runCommand.WorkingDirectory(workingDirectory)
+                .CaptureStdOut()
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World!");
+        }
+
+        //  Blocked by https://github.com/dotnet/cli/issues/4447
+        //[Fact]
+        public void It_runs_portable_apps_from_a_different_path_without_building()
+        {
+            var helloWorldAsset = _testAssetsManager
+                   .CopyTestAsset("HelloWorld")
+                   .WithSource()
+                   .Restore();
+
+            var runCommand = Command.Create(RepoInfo.DotNetHostPath, new[]
+            {
+                "run3",
+                "--project",
+                Path.Combine(helloWorldAsset.Path, "HelloWorld.csproj")
+            });
+
+            string workingDirectory = Directory.GetParent(helloWorldAsset.Path).FullName;
+
+            runCommand.WorkingDirectory(workingDirectory)
+                .CaptureStdOut()
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World!");
+        }
+
+        [Fact]
         public void It_publishes_self_contained_apps_to_the_publish_folder_and_the_app_should_run()
         {
             var rid = RuntimeEnvironment.GetRuntimeIdentifier();
