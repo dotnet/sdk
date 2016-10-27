@@ -19,6 +19,11 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_fails_to_build_if_no_rid_is_set()
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
             var testAsset = _testAssetsManager
                 .CopyTestAsset("DesktopMinusRid")
                 .WithSource()
@@ -52,6 +57,11 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("arm-something", "AnyCPU")]
         public void It_builds_with_inferred_platform_target(string runtimeIdentifier, string expectedPlatformTarget)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
             var testAsset = _testAssetsManager
                 .CopyTestAsset("DesktopMinusRid", identifier: Path.DirectorySeparatorChar + runtimeIdentifier)
                 .WithSource()
@@ -75,6 +85,11 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_respects_explicit_platform_target()
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
             var testAsset = _testAssetsManager
                 .CopyTestAsset("DesktopMinusRid")
                 .WithSource()
