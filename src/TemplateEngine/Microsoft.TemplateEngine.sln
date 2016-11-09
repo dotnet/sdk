@@ -1,31 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.25907.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Core", "src\Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.xproj", "{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-new3", "src\dotnet-new3\dotnet-new3.xproj", "{76D8C970-B5CA-4364-B1E3-45D771922F74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Core", "src\Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj", "{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Abstractions", "src\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.xproj", "{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new3", "src\dotnet-new3\dotnet-new3.csproj", "{76D8C970-B5CA-4364-B1E3-45D771922F74}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Orchestrator.RunnableProjects", "src\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.xproj", "{578CE255-E412-4CC7-9A03-1EDCA522DA27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Abstractions", "src\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj", "{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-new3.VSIX", "src\dotnet-new3.VSIX\dotnet-new3.VSIX.csproj", "{848010BF-F566-4EE1-9CA8-F3B8DFFF3411}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Orchestrator.RunnableProjects", "src\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj", "{578CE255-E412-4CC7-9A03-1EDCA522DA27}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Core.UnitTests", "test\Microsoft.TemplateEngine.Core.UnitTests\Microsoft.TemplateEngine.Core.UnitTests.xproj", "{62BD1600-18A2-400E-94F5-C33BBD67CA97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Core.UnitTests", "test\Microsoft.TemplateEngine.Core.UnitTests\Microsoft.TemplateEngine.Core.UnitTests.csproj", "{62BD1600-18A2-400E-94F5-C33BBD67CA97}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Edge", "src\Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.xproj", "{E22B59BD-A658-4E32-9407-C8D9570B9FDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Edge", "src\Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj", "{E22B59BD-A658-4E32-9407-C8D9570B9FDF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Utils", "src\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.xproj", "{A86924AE-4B77-47A8-A690-EDA395F075A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Utils", "src\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj", "{A86924AE-4B77-47A8-A690-EDA395F075A9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Core.Contracts", "src\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.xproj", "{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Core.Contracts", "src\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj", "{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.TemplateEngine.Utils.UnitTests", "test\Microsoft.TemplateEngine.Utils.UnitTests\Microsoft.TemplateEngine.Utils.UnitTests.xproj", "{62BD1609-18A2-400E-94F5-C33BBD67CA97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Utils.UnitTests", "test\Microsoft.TemplateEngine.Utils.UnitTests\Microsoft.TemplateEngine.Utils.UnitTests.csproj", "{62BD1609-18A2-400E-94F5-C33BBD67CA97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,10 +47,6 @@ Global
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27}.Release|Any CPU.Build.0 = Release|Any CPU
-		{848010BF-F566-4EE1-9CA8-F3B8DFFF3411}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{848010BF-F566-4EE1-9CA8-F3B8DFFF3411}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{848010BF-F566-4EE1-9CA8-F3B8DFFF3411}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{848010BF-F566-4EE1-9CA8-F3B8DFFF3411}.Release|Any CPU.Build.0 = Release|Any CPU
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -82,11 +76,9 @@ Global
 		{76D8C970-B5CA-4364-B1E3-45D771922F74} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
-		{848010BF-F566-4EE1-9CA8-F3B8DFFF3411} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{E22B59BD-A658-4E32-9407-C8D9570B9FDF} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{A86924AE-4B77-47A8-A690-EDA395F075A9} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
-		{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{9FCFAD2A-061E-4FC0-848E-F0E8AA03676D} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{62BD1609-18A2-400E-94F5-C33BBD67CA97} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 	EndGlobalSection

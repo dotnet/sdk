@@ -8,14 +8,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class InlineMarkupConditionalTests : TestBase
     {
-        private static IProcessor SetupXmlPlusCppProcessor(IVariableCollection vc)
+        private static IProcessor SetupXmlPlusMsBuildProcessor(IVariableCollection vc)
         {
             EngineConfig cfg = new EngineConfig(vc, "$({0})");
             return Processor.Create(cfg, new InlineMarkupConditional(
                 new MarkupTokens("<", "</", ">", "/>", "Condition=\"", "\""),
                 true,
                 true,
-                MSBuildStyleEvaluatorDefinition.MSBuildStyleEvaluator,
+                MSBuildStyleEvaluatorDefinition.Evaluate,
                 null
             ));
         }
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = true,
                 ["SECOND_IF"] = true
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = false,
                 ["SECOND_IF"] = true
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = true,
                 ["SECOND_IF"] = false
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = false,
                 ["SECOND_IF"] = false
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -139,7 +139,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = false,
                 ["SECOND_IF"] = false
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = false,
                 ["SECOND_IF"] = false
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -176,7 +176,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = ">< &' \""
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -194,7 +194,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = "1.2.3"
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -210,7 +210,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 </root>";
 
             VariableCollection vc = new VariableCollection();
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999, true);
         }
 
@@ -228,7 +228,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = ">< &' \""
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["Configuration"] = "Debug",
                 ["Platform"] = "AnyCPU"
             };
-            IProcessor processor = SetupXmlPlusCppProcessor(vc);
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
 
             originalValue = @"<root>

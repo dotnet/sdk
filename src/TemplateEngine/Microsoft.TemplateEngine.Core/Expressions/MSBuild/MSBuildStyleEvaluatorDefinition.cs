@@ -65,11 +65,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
                 int len = (int) ms.Length;
                 int pos = 0;
                 bool faulted;
-                return MSBuildStyleEvaluator(state, ref len, ref pos, out faulted);
+                return Evaluate(state, ref len, ref pos, out faulted);
             }
         }
 
-        public static bool MSBuildStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
+        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
             ITokenTrie tokens = GetSymbols(processor);
             ScopeBuilder<Operators, Tokens> builder = processor.ScopeBuilder(tokens, Map, true);

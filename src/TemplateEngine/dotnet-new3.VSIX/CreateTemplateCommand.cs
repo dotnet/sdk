@@ -47,12 +47,7 @@ namespace dotnet_new3.VSIX
         /// <param name="package">Owner package, not null.</param>
         private CreateTemplateCommand(Package package)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            _package = package;
+            _package = package ?? throw new ArgumentNullException(nameof(package));
 
             OleMenuCommandService commandService = ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
 

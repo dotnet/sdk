@@ -517,8 +517,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         ComputedSymbol sym = (ComputedSymbol)symbol.Value;
                         bool value = CppStyleEvaluatorDefinition.EvaluateFromString(sym.Value, rootVariableCollection);
-                        bool currentValue;
-                        stable &= computed.TryGetValue(symbol.Key, out currentValue) && currentValue == value;
+                        stable &= computed.TryGetValue(symbol.Key, out bool currentValue) && currentValue == value;
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
                     }
@@ -532,8 +531,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 fileGlobModel.EvaluateCondition(rootVariableCollection);
             }
 
-            object resolvedNameParamValue;
-            parameters.ResolvedValues.TryGetValue(NameParameter, out resolvedNameParamValue);
+            parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
 
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
             foreach (ICreationPathModel pathModel in PrimaryOutputs)
@@ -600,9 +598,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
 
                 Dictionary<string, string> renames = new Dictionary<string, string>();
-
-                object resolvedValue;
-                if (parameters.ResolvedValues.TryGetValue(NameParameter, out resolvedValue))
+                if (parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedValue))
                 {
                     foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
@@ -630,18 +626,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
 
-            SimpleConfigModel config = new SimpleConfigModel();
-            config.Author = localizationModel?.Author ?? source.ToString(nameof(config.Author));
-            config.Classifications = source.ArrayAsStrings(nameof(config.Classifications));
-            config.DefaultName = source.ToString(nameof(DefaultName));
-            config.Description = localizationModel?.Description ?? source.ToString(nameof(Description));
-            config.GroupIdentity = source.ToString(nameof(GroupIdentity));
-            config.Guids = source.ArrayAsGuids(nameof(config.Guids));
-            config.Identity = source.ToString(nameof(config.Identity));
-            config.Name = localizationModel?.Name ?? source.ToString(nameof(config.Name));
-            config.ShortName = source.ToString(nameof(config.ShortName));
-            config.SourceName = source.ToString(nameof(config.SourceName));
-            config.PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename));
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Author = localizationModel?.Author ?? source.ToString(nameof(config.Author)),
+                Classifications = source.ArrayAsStrings(nameof(config.Classifications)),
+                DefaultName = source.ToString(nameof(DefaultName)),
+                Description = localizationModel?.Description ?? source.ToString(nameof(Description)),
+                GroupIdentity = source.ToString(nameof(GroupIdentity)),
+                Guids = source.ArrayAsGuids(nameof(config.Guids)),
+                Identity = source.ToString(nameof(config.Identity)),
+                Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
+                ShortName = source.ToString(nameof(config.ShortName)),
+                SourceName = source.ToString(nameof(config.SourceName)),
+                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename))
+            };
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
             config.Sources = sources;
@@ -659,11 +657,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 src.Modifiers = modifiers;
                 foreach (JObject entry in item.Items<JObject>(nameof(src.Modifiers)))
                 {
-                    SourceModifier modifier = new SourceModifier();
-                    modifier.Condition = entry.ToString(nameof(modifier.Condition));
-                    modifier.CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly));
-                    modifier.Exclude = entry.Get<JToken>(nameof(modifier.Exclude));
-                    modifier.Include = entry.Get<JToken>(nameof(modifier.Include));
+                    SourceModifier modifier = new SourceModifier()
+                    {
+                        Condition = entry.ToString(nameof(modifier.Condition)),
+                        CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly)),
+                        Exclude = entry.Get<JToken>(nameof(modifier.Exclude)),
+                        Include = entry.Get<JToken>(nameof(modifier.Include))
+                    };
                     modifiers.Add(modifier);
                 }
 
@@ -754,14 +754,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return null;
             }
 
-            LocalizationModel model = new LocalizationModel();
-            model.Author = source.ToString(nameof(model.Author));
-            model.Name = source.ToString(nameof(model.Name));
-            model.Description = source.ToString(nameof(model.Description));
-            model.Identity = source.ToString(nameof(model.Identity));
+            LocalizationModel model = new LocalizationModel()
+            {
+                Author = source.ToString(nameof(model.Author)),
+                Name = source.ToString(nameof(model.Name)),
+                Description = source.ToString(nameof(model.Description)),
+                Identity = source.ToString(nameof(model.Identity)),
 
-            // symbol description localizations
-            model.SymbolDescriptions = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
+                // symbol description localizations
+                SymbolDescriptions = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "symbols")
+            };
 
             // post action localizations
             Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();

@@ -75,13 +75,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> Instantiate(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public static async Task<int> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
             ITemplateInfo templateInfo;
 
             using (Timing.Over("Get single"))
             {
-                if (! TryGetTemplateInfoFromCache(templateName, out templateInfo))
+                if (!TryGetTemplateInfoFromCache(templateName, out templateInfo))
                 {
                     return -1;
                 }
@@ -146,15 +146,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
         {
             ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             IParameterSet templateParams = template.Generator.GetParametersForTemplate(template);
-            string hostParamValue;
-
             foreach (ITemplateParameter param in templateParams.ParameterDefinitions)
             {
                 if (param.IsName)
                 {
                     templateParams.ResolvedValues[param] = realName;
                 }
-                else if (host.TryGetHostParamDefault(param.Name, out hostParamValue) && hostParamValue != null)
+                else if (host.TryGetHostParamDefault(param.Name, out string hostParamValue) && hostParamValue != null)
                 {
                     templateParams.ResolvedValues[param] = template.Generator.ConvertParameterValueToType(param, hostParamValue);
                 }
@@ -175,8 +173,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         {
             foreach (KeyValuePair<string, string> inputParam in inputParameters)
             {
-                ITemplateParameter paramFromTemplate;
-                if (templateParams.TryGetParameterDefinition(inputParam.Key, out paramFromTemplate))
+                if (templateParams.TryGetParameterDefinition(inputParam.Key, out ITemplateParameter paramFromTemplate))
                 {
                     // The user provided params included the name of a bool flag without a value.
                     // We assume that means the value "true" is desired for the bool.
@@ -216,9 +213,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 if (parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
                 {
-                    string newParamValue;
-
-                    while (host.OnParameterError(parameter, null, "Missing required parameter", out newParamValue)
+                    while (host.OnParameterError(parameter, null, "Missing required parameter", out string newParamValue)
                         && string.IsNullOrEmpty(newParamValue))
                     {
                     }

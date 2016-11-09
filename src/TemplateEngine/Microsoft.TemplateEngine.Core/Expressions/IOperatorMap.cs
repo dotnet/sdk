@@ -26,6 +26,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         IReadOnlyDictionary<TToken, TOperator> TokensToOperatorsMap { get; }
 
+        bool TryConvert<T>(object source, out T result);
+
         string Decode(string value);
 
         string Encode(string value);

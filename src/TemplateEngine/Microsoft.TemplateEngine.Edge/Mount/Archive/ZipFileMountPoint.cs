@@ -28,6 +28,15 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         public IDirectory DirectoryInfo(string fullPath)
         {
+            if(Universe.TryGetValue(fullPath, out IFileSystemInfo info))
+            {
+                return info as IDirectory;
+            }
+            else if (Universe.TryGetValue(fullPath + "/", out info))
+            {
+                return info as IDirectory;
+            }
+
             return new ZipFileDirectory(this, fullPath, fullPath.Substring(fullPath.LastIndexOf('/') + 1));
         }
 
@@ -64,10 +73,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                         {
                             path += parts[i] + "/";
 
-                            IFileSystemInfo parentDirEntry;
-                            if (!universe.TryGetValue(path, out parentDirEntry))
+                            if (!universe.TryGetValue(path, out IFileSystemInfo parentDirEntry))
                             {
-                                parentDirEntry = new ZipFileDirectory(this, path, parts[i]);
+                                universe[path] = parentDirEntry = new ZipFileDirectory(this, path, parts[i]);
                             }
 
                             parentDir = parentDirEntry as IDirectory;

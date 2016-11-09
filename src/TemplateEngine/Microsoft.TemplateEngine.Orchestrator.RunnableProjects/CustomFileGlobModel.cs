@@ -66,8 +66,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             // setup the variable config
             IVariableConfig variableConfig;
-            JToken variableData;
-            if (globData.TryGetValue(nameof(VariableFormat), System.StringComparison.OrdinalIgnoreCase, out variableData))
+            if (globData.TryGetValue(nameof(VariableFormat), System.StringComparison.OrdinalIgnoreCase, out JToken variableData))
             {
                 variableConfig = VariableConfig.FromJObject((JObject)variableData);
             }
@@ -78,9 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // setup the custom operations
             List<ICustomOperationModel> customOpsForGlob = new List<ICustomOperationModel>();
-            JToken operationData;
-
-            if (globData.TryGetValue("Operations", System.StringComparison.OrdinalIgnoreCase, out operationData))
+            if (globData.TryGetValue("Operations", StringComparison.OrdinalIgnoreCase, out JToken operationData))
             {
                 foreach (JObject operationConfig in (JArray)operationData)
                 {

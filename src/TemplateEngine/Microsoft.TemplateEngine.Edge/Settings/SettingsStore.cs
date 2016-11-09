@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             MountPoints = new List<MountPointInfo>();
             ComponentGuidToAssemblyQualifiedName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            ComponentTypeToGuidList = new Dictionary<string, List<Guid>>();
+            ComponentTypeToGuidList = new Dictionary<string, HashSet<Guid>>();
             ProbingPaths = new HashSet<string>();
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                         if (values != null)
                         {
-                            List<Guid> set = new List<Guid>();
+                            HashSet<Guid> set = new HashSet<Guid>();
                             ComponentTypeToGuidList[entry.Name] = set;
 
                             foreach (JToken value in values)
@@ -140,6 +140,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public HashSet<string> ProbingPaths { get; }
 
         [JsonProperty]
-        public Dictionary<string, List<Guid>> ComponentTypeToGuidList { get; }
+        public Dictionary<string, HashSet<Guid>> ComponentTypeToGuidList { get; }
     }
 }
