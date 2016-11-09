@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+#if !NET451
+using System.Runtime.Loader;
+#endif
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -58,11 +64,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // can't correctly write locale cache(s) until all of both are read.
         public static void Scan(string templateDir)
         {
-            foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>())
+            string searchTarget = Path.Combine(Directory.GetCurrentDirectory(), templateDir.Trim());
+            List<string> matches = Directory.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
+
+            if(matches.Count == 1)
+            {
+                templateDir = matches[0];
+            }
+            else
+            {
+                foreach(string match in matches)
+                {
+                    Scan(match);
+                }
+
+                return;
+            }
+
+            foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
             {
                 IMountPoint mountPoint;
                 if (factory.TryMount(null, templateDir, out mountPoint))
                 {
+                    ScanForComponents(mountPoint, templateDir);
                     SettingsLoader.AddMountPoint(mountPoint);
 
                     foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
@@ -79,6 +103,45 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         {
                             AddTemplateToMemoryCache(template);
                         }
+                    }
+                }
+            }
+        }
+
+        private static void ScanForComponents(IMountPoint mountPoint, string templateDir)
+        {
+            if (mountPoint.Root.EnumerateFiles("*.dll", SearchOption.AllDirectories).Any())
+            {
+                string diskPath = templateDir;
+                if (mountPoint.Info.MountPointFactoryId != FileSystemMountPointFactory.FactoryId)
+                {
+                    string path = Path.Combine(Paths.User.Content, Path.GetFileName(templateDir));
+
+                    try
+                    {
+                        mountPoint.Root.CopyTo(path);
+                    }
+                    catch (IOException)
+                    {
+                        return;
+                    }
+
+                    diskPath = path;
+                }
+
+                foreach (Assembly asm in AssemblyLoader.LoadAllAssemblies(out IEnumerable<string> failures))
+                {
+                    try
+                    {
+                        foreach (Type type in asm.GetTypes())
+                        {
+                            SettingsLoader.Components.Register(type);
+                        }
+
+                        SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Location));
+                    }
+                    catch
+                    {
                     }
                 }
             }
@@ -142,7 +205,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 string[] fileParts = filename.Split(new char[] { '.' }, 2);
                 string fileLocale = fileParts[0];
 
-                if (!string.IsNullOrEmpty(fileLocale) && 
+                if (!string.IsNullOrEmpty(fileLocale) &&
                     (fileParts[1] == Paths.User.TemplateCacheFileBaseName)
                     && !localesWritten.Contains(fileLocale))
                 {
@@ -152,11 +215,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             // always write the culture neutral cache
-            // It must be written last because when a cache for a culture is first created, it's based on the 
+            // It must be written last because when a cache for a culture is first created, it's based on the
             // culture neutral cache, plus newly registered templates.
             // If the culture neutral cache is updated before the new cache is first written,
             // the new cache will have duplicate values.
-            // 
+            //
             // being last may not matter anymore due to changes after the comment was written.
             WriteTemplateCacheForLocale(null);
         }
@@ -226,7 +289,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private static void UpdateTemplateLocalization(TemplateInfo template, IDictionary<string, ILocalizationLocator> locatorsForLocale)
         {
             ILocalizationLocator localizationInfo = null;
-            if (locatorsForLocale == null 
+            if (locatorsForLocale == null
                 || !locatorsForLocale.TryGetValue(template.Identity, out localizationInfo))
             {
                 return;

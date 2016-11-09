@@ -252,23 +252,31 @@ namespace Microsoft.TemplateEngine.Edge
 #else
                     found = SelectBestMatch(sender, assemblyName, files);
 #endif
-
-                    if (found != null)
-                    {
-                        foreach (AssemblyName reference in found.GetReferencedAssemblies())
-                        {
-#if !NET451
-                            Resolving(assemblyLoadContext, reference);
-#else
-                            ResolveEventArgs referenceArgs = new ResolveEventArgs(reference.FullName, found);
-                            Resolving(sender, referenceArgs);
-#endif
-                        }
-                    }
                 }
+                else if(File.Exists(Path.Combine(selector._path, stringName + ".dll")))
+                {
+                    FileInfo f = new FileInfo(Path.Combine(selector._path, stringName + ".dll"));
+                    FileInfo[] files = { f };
+#if !NET451
+                    found = SelectBestMatch(assemblyLoadContext, assemblyName, files);
+#else
+                    found = SelectBestMatch(sender, assemblyName, files);
+#endif
+                }
+
 
                 if (found != null)
                 {
+                    foreach (AssemblyName reference in found.GetReferencedAssemblies())
+                    {
+#if !NET451
+                        Resolving(assemblyLoadContext, reference);
+#else
+                        ResolveEventArgs referenceArgs = new ResolveEventArgs(reference.FullName, found);
+                        Resolving(sender, referenceArgs);
+#endif
+                    }
+
                     return found;
                 }
             }

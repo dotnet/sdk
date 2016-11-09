@@ -32,9 +32,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 while (currentSource?.MoveNext() ?? false)
                 {
                     Phase c = currentSource.Current;
-
-                    int existingMatchToken;
-                    if (!tokenMap.TryGetValue(c.Match, out existingMatchToken))
+                    if (!tokenMap.TryGetValue(c.Match, out int existingMatchToken))
                     {
                         byte[] bytes = encoding.GetBytes(c.Match);
                         existingMatchToken = tokenMap[c.Match] = tokens.Count;
@@ -49,8 +47,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                     foreach (string reset in c.ResetsWith)
                     {
-                        int existingResetToken;
-                        if (!tokenMap.TryGetValue(reset, out existingResetToken))
+                        if (!tokenMap.TryGetValue(reset, out int existingResetToken))
                         {
                             byte[] bytes = encoding.GetBytes(reset);
                             existingResetToken = tokenMap[reset] = tokens.Count;

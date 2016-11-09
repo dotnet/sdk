@@ -78,8 +78,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                 for (; bufferPosition < bufferLength - targetLen + 1;)
                 {
                     int oldBufferPos = bufferPosition;
-                    int token;
-                    if (_tokens.GetOperation(_processor.CurrentBuffer, bufferLength, ref bufferPosition, out token))
+                    if (_tokens.GetOperation(_processor.CurrentBuffer, bufferLength, ref bufferPosition, out int token))
                     {
                         allData.AddRange(_tokens.Tokens[token]);
                         TToken mappedToken = (TToken)(object)token;
@@ -241,11 +240,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             else
                             {
                                 //We got a token we understand, but it's not an operator
-                                TOperator op;
-                                if (_tokenToOperatorMap.TryGetValue(mappedToken, out op))
+                                if (_tokenToOperatorMap.TryGetValue(mappedToken, out TOperator op))
                                 {
-                                    Func<IEvaluable, IEvaluable> factory;
-                                    if (_operatorScopeFactory.TryGetValue(op, out factory))
+                                    if (_operatorScopeFactory.TryGetValue(op, out Func<IEvaluable, IEvaluable> factory))
                                     {
                                         IEvaluable oldActive = isolator.Active;
                                         isolator.Active = factory(isolator.Active);

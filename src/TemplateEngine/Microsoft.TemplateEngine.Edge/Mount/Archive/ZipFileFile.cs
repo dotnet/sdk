@@ -20,8 +20,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
         {
             get
             {
-                IFileSystemInfo info;
-                return _entry != null || (_mountPoint.Universe.TryGetValue(FullPath, out info) && info.Kind == FileSystemInfoKind.File);
+                return _entry != null || (_mountPoint.Universe.TryGetValue(FullPath, out var info) && info.Kind == FileSystemInfoKind.File);
             }
         }
 
@@ -29,8 +28,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
         {
             if (_entry == null)
             {
-                IFileSystemInfo info;
-                if (!_mountPoint.Universe.TryGetValue(FullPath, out info) || info.Kind != FileSystemInfoKind.File || !info.Exists)
+                if (!_mountPoint.Universe.TryGetValue(FullPath, out var info) || info.Kind != FileSystemInfoKind.File || !info.Exists)
                 {
                     throw new FileNotFoundException("File not found", FullPath);
                 }

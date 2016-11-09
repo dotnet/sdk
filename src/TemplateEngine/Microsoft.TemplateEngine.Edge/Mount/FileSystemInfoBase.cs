@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount
                         return null;
                     }
 
-                    string parentPath = FullPath.Substring(0, lastSlash);
+                    string parentPath = FullPath.Substring(0, lastSlash + 1);
                     _parent = MountPoint.DirectoryInfo(parentPath);
                 }
 

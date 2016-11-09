@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             string rx = Regex.Escape(pattern);
             rx = rx.Replace("\\*", ".*").Replace("\\?", ".?");
             Regex r = new Regex(rx);
-            return _mountPoint.Universe.Values.Where(x => x.FullPath.StartsWith(FullPath, StringComparison.Ordinal) && r.IsMatch(x.Name));
+            return _mountPoint.Universe.Values.Where(x => x.FullPath.StartsWith(FullPath, StringComparison.Ordinal) && x.FullPath.Length != FullPath.Length && r.IsMatch(x.Name)).Where(x => searchOption == SearchOption.AllDirectories || x.FullPath.TrimEnd('/').Count(y => y == '/') == FullPath.Count(y => y == '/'));
         }
     }
 }

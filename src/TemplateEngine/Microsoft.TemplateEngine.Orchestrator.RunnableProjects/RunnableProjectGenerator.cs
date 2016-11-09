@@ -123,8 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (string.Equals(file.Name, ".netnew.json", StringComparison.OrdinalIgnoreCase))
                 {
-                    ITemplate template;
-                    if (TryGetTemplateFromConfigInfo(file, out template))
+                    if (TryGetTemplateFromConfigInfo(file, out ITemplate template))
                     {
                         templateList.Add(template);
                     }
@@ -137,8 +136,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     string locale = localeMatch.Groups["locale"].Value;
 
-                    ILocalizationModel locModel;
-                    if (TryGetLangPackFromFile(file, out locModel))
+                    if (TryGetLangPackFromFile(file, out ILocalizationModel locModel))
                     {
                         ILocalizationLocator locator = new LocalizationLocator()
                         {
@@ -282,8 +280,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
             {
-                double convertedFloat;
-                if (double.TryParse(literal, out convertedFloat))
+                if (double.TryParse(literal, out double convertedFloat))
                 {
                     return convertedFloat;
                 }
@@ -294,8 +291,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase))
             {
-                long convertedInt;
-                if (long.TryParse(literal, out convertedInt))
+                if (long.TryParse(literal, out long convertedInt))
                 {
                     return convertedInt;
                 }
@@ -306,8 +302,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
             {
-                long convertedHex;
-                if (long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex))
+                if (long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex))
                 {
                     return convertedHex;
                 }
@@ -351,14 +346,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return null;
                 }
 
-                double literalDouble;
-                if (literal.Contains(".") && double.TryParse(literal, out literalDouble))
+                if (literal.Contains(".") && double.TryParse(literal, out double literalDouble))
                 {
                     return literalDouble;
                 }
 
-                long literalLong;
-                if (long.TryParse(literal, out literalLong))
+                if (long.TryParse(literal, out long literalLong))
                 {
                     return literalLong;
                 }

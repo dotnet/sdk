@@ -7,6 +7,26 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class FileSystemInfoExtensions
     {
+        public static void CopyTo(this IDirectory source, string target)
+        {
+            Directory.CreateDirectory(target);
+
+            foreach (IFile file in source.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+            {
+                using (Stream f = File.Create(Path.Combine(target, file.Name)))
+                using (Stream s = file.OpenRead())
+                {
+                    s.CopyTo(f);
+                    f.Flush();
+                }
+            }
+
+            foreach(IDirectory dir in source.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))
+            {
+                dir.CopyTo(Path.Combine(target, dir.Name));
+            }
+        }
+
         public static string CombinePaths(this string basePath, params string[] paths)
         {
             Stack<string> partStack = new Stack<string>();

@@ -27,11 +27,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 int len = (int)ms.Length;
                 int pos = 0;
                 bool faulted;
-                return CppStyleEvaluator(state, ref len, ref pos, out faulted);
+                return Evaluate(state, ref len, ref pos, out faulted);
             }
         }
 
-        public static bool CppStyleEvaluator(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
+        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
             faulted = false;
             TokenTrie trie = new TokenTrie();

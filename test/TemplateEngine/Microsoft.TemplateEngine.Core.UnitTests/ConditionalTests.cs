@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Xunit;
@@ -90,7 +91,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new BalancedNesting("<!--", "-->", "-- >", commentFixingOperationId, commentFixingResetId)
                 };
 
@@ -124,7 +125,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new BalancedNesting("@*", "*@", "* @", commentFixingOperationId, commentFixingResetId)
                 };
 
@@ -160,7 +161,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new Replacement("////", "//", uncommentOperationId),
                     new Replacement("//", string.Empty, replaceOperationId)
                 };
@@ -191,7 +192,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new Replacement("////", "//", uncommentOperationId),
                     new Replacement("//", string.Empty, replaceOperationId)
                 };
@@ -214,7 +215,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null)
                 };
 
                 return operations;
@@ -242,7 +243,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new Replacement("##", "#", uncommentOperationId),
                     new Replacement("#", "", replaceOperationId),
                 };
@@ -272,7 +273,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.CppStyleEvaluator, null),
+                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new Replacement("rem rem", "rem", uncommentOperationId),
                     new Replacement("rem", "", replaceOperationId)
                 };
@@ -4868,7 +4869,7 @@ There";
         public void VerifyIfEndifTrueBitwiseAndEqualsCondition()
         {
             string value = @"Hello
-    #if (VALUE & 0xFFFF == 2)
+    #if (VALUE & 0xFFFF) == 2
 value
     #endif
 There";
@@ -5183,8 +5184,7 @@ There";
             #endif
         #endif
     #endif";
-            string expected = @"Hello
-";
+            string expected = @"Hello";
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             MemoryStream input = new MemoryStream(valueBytes);

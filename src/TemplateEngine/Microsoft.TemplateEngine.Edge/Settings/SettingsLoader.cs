@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
@@ -225,6 +226,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public static void AddMountPoint(IMountPoint mountPoint)
         {
+            if(_mountPoints.Values.Any(x => string.Equals(x.Place, mountPoint.Info.Place) && x.ParentMountPointId == mountPoint.Info.ParentMountPointId))
+            {
+                return;
+            }
+
             _mountPoints[mountPoint.Info.MountPointId] = mountPoint.Info;
             _userSettings.MountPoints.Add(mountPoint.Info);
             JObject serialized = JObject.FromObject(_userSettings);

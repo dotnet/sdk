@@ -1,6 +1,4 @@
-﻿#if NET451
-using System;
-#endif
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -34,12 +32,24 @@ namespace Microsoft.TemplateEngine.Edge
             {
                 try
                 {
+                    Assembly assembly = null;
+
 #if !NET451
-                    Assembly assembly = context.LoadFromAssemblyPath(file);
+                    if(file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        assembly = context.LoadFromAssemblyPath(file);
+                    }
 #else
-                    Assembly assembly = Assembly.LoadFile(file);
+                    if (file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        assembly = Assembly.LoadFile(file);
+                    }
 #endif
-                    loaded.Add(assembly);
+
+                    if (assembly != null)
+                    {
+                        loaded.Add(assembly);
+                    }
                 }
                 catch
                 {

@@ -70,8 +70,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
-                bool flagsOn;
-                if(!processor.Config.Flags.TryGetValue(SetFlag.OperationName, out flagsOn))
+                if (!processor.Config.Flags.TryGetValue(OperationName, out bool flagsOn))
                 {
                     flagsOn = true;
                 }
