@@ -6,7 +6,9 @@ if "%ERRORLEVEL%" == "0" (
     goto :SkipDeveloperSetup
 )
 
-set DeveloperCommandPrompt=%VS140COMNTOOLS%\VsDevCmd.bat
+if "%DeveloperCommandPrompt%" == "" (
+    set DeveloperCommandPrompt=%VS140COMNTOOLS%\VsDevCmd.bat
+)
 
 if not exist "%DeveloperCommandPrompt%" (
   echo In order to build this repository, you either need 'msbuild' on the path or Visual Studio 2015 installed.
