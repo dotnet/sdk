@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3</TargetFrameworks>
     <AssemblyName>Microsoft.TemplateEngine.Core</AssemblyName>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>

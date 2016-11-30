@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3</TargetFrameworks>
     <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'net451' ">v4.5.1</TargetFrameworkVersion>
     <AssemblyName>Microsoft.TemplateEngine.Abstractions</AssemblyName>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
