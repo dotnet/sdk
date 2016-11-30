@@ -297,6 +297,21 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             template.LocaleConfigPlace = localizationInfo.ConfigPlace ?? null;
             template.LocaleConfigMountPointId = localizationInfo.MountPointId;
+
+            if (!string.IsNullOrEmpty(localizationInfo.Author))
+            {
+                template.Author = localizationInfo.Author;
+            }
+
+            if (!string.IsNullOrEmpty(localizationInfo.Name))
+            {
+                template.Name = localizationInfo.Name;
+            }
+
+            if (!string.IsNullOrEmpty(localizationInfo.Description))
+            {
+                template.Description = localizationInfo.Description;
+            }
         }
 
         // returns TemplateInfo for all the known templates.
@@ -325,11 +340,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     GeneratorId = template.Generator.Id,
                     ConfigPlace = template.Configuration.FullPath,
                     ConfigMountPointId = template.Configuration.MountPoint.Info.MountPointId,
-                    Name = template.Name,
+                    Name = localizationInfo?.Name ?? template.Name,
                     Tags = template.Tags,
                     ShortName = template.ShortName,
                     Classifications = template.Classifications,
-                    Author = template.Author,
+                    Author = localizationInfo?.Author ?? template.Author,
+                    Description = localizationInfo?.Description ?? template.Description,
                     GroupIdentity = template.GroupIdentity,
                     Identity = template.Identity,
                     DefaultName = template.DefaultName,
