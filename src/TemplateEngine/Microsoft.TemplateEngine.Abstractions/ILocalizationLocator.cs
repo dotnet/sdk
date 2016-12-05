@@ -11,5 +11,11 @@ namespace Microsoft.TemplateEngine.Abstractions
         string ConfigPlace { get; }
 
         string Identity { get; }
+
+        string Author { get; }
+
+        string Name { get; }
+
+        string Description { get; }
     }
 }

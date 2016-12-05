@@ -144,6 +144,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             MountPointId = source.Info.MountPointId,
                             ConfigPlace = file.FullPath,
                             Identity = locModel.Identity,
+                            Author = locModel.Author,
+                            Name = locModel.Name,
+                            Description = locModel.Description
                         };
                         localizations.Add(locator);
                     }

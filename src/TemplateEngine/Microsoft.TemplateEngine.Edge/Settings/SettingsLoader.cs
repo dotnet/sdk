@@ -87,8 +87,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 // when they got installed, the cache should have been created for that locale.
                 using (Timing.Over("Clone cultural neutral cache"))
                 {
-                    EngineEnvironmentSettings.Host.LogMessage($"Cloning culture neutral template cache for current locale = [{EngineEnvironmentSettings.Host.Locale}]");
-
                     userTemplateCache = Paths.User.CultureNeutralTemplateCacheFile.ReadAllText("{}");
                     Paths.User.CurrentLocaleTemplateCacheFile.WriteAllText(userTemplateCache);
                 }
@@ -193,8 +191,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public static void WriteTemplateCache(IList<TemplateInfo> templates, string locale, bool isCurrentCache)
         {
-            EngineEnvironmentSettings.Host.LogMessage($"Writing template cache for locale = [{locale ?? string.Empty}]. Template count = {templates.Count}");
-
             TemplateCache cache = new TemplateCache();
             cache.TemplateInfo.AddRange(templates);
             JObject serialized = JObject.FromObject(cache);
