@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8B498D0C-F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Core", "src\Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj", "{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new3", "src\dotnet-new3\dotnet-new3.csproj", "{76D8C970-B5CA-4364-B1E3-45D771922F74}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Abstractions", "src\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj", "{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Orchestrator.RunnableProjects", "src\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj", "{578CE255-E412-4CC7-9A03-1EDCA522DA27}"
@@ -35,10 +33,6 @@ Global
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{76D8C970-B5CA-4364-B1E3-45D771922F74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{76D8C970-B5CA-4364-B1E3-45D771922F74}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{76D8C970-B5CA-4364-B1E3-45D771922F74}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{76D8C970-B5CA-4364-B1E3-45D771922F74}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -73,7 +67,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{72213E25-DEA2-4A6F-9FA9-AC03F3DE7DCF} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
-		{76D8C970-B5CA-4364-B1E3-45D771922F74} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{0C92EDA7-492F-4CBA-9F36-61932CA5C1F4} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{578CE255-E412-4CC7-9A03-1EDCA522DA27} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{62BD1600-18A2-400E-94F5-C33BBD67CA97} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
