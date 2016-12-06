@@ -59,6 +59,54 @@
 
   </Target>
 
+  <!-- RewriteToken Task: Deletes all lines from a file that contain the specified string  -->
+  <UsingTask TaskName="DeleteLinesFromFile"
+             TaskFactory="CodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <FilePath ParameterType="System.String" Required="true" />
+      <LineContents ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+      
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        string[] lines = File.ReadAllLines(FilePath);
+        System.Text.StringBuilder content = new StringBuilder();
+        foreach (string line in lines)
+        {
+            if (!line.Contains(LineContents))
+            {
+                content.AppendLine(line);
+            }
+        }
+        File.WriteAllText(FilePath, content.ToString());
+      ]]></Code>
+    </Task>
+  </UsingTask>
+    
+  <!-- _RestoreTemplateProject Target: Run "dotnet restore" on the project file to create the project.assets.json,
+        then remove the "packageFolders" value from the file (as that is machine-specific). -->
+  <Target Name="_RestoreTemplateProject" BeforeTargets="GetZipFilesFromVSTemplates" DependsOnTargets="_UpdateNETCoreSdkVersion">
+      <PropertyGroup>
+        <__NewLine><![CDATA[
+]]></__NewLine>
+        <__SetMSBuildSdksPath>set MSBuildSDKsPath=$(RepositoryRootDirectory)bin\$(Configuration)\Sdks</__SetMSBuildSdksPath>
+    </PropertyGroup>
+    
+    <Exec Command="$(__SetMSBuildSdksPath)$(__NewLine)$(DotNetTool) restore %(ProjectTemplate.TargetPath)" />
+
+    <PropertyGroup>
+      <_PackagesFolderToReplace>$(NUGET_PACKAGES)</_PackagesFolderToReplace>
+      <_PackagesFolderToReplace>$(_PackagesFolderToReplace.Replace('\', '\\'))</_PackagesFolderToReplace>
+      <_TemplateProjectAssetsFile>$(MSBuildProjectDirectory)\obj\project.assets.json</_TemplateProjectAssetsFile>
+    </PropertyGroup>
+      <DeleteLinesFromFile 
+        FilePath="$(_TemplateProjectAssetsFile)"
+        LineContents="$(_PackagesFolderToReplace)"
+        Condition="Exists($(_TemplateProjectAssetsFile))"
+        />
+  </Target>
+
   <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
   <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
 
