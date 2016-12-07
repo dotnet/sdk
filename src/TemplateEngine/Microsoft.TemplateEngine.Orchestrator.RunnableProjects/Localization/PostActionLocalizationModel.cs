@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
         public string Description { get; set; }
 
         // The order corresponds to the order of the instructions in the same action
-        // in the culture neutral .netnew.json
+        // in the culture neutral TemplateConfigFile
         public IReadOnlyList<string> Instructions { get; set; }
 
         public static PostActionLocalizationModel FromJObject(JObject postActionSection)

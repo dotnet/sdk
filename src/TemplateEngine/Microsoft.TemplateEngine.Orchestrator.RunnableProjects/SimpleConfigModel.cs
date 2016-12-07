@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     public class SimpleConfigModel : IRunnableProjectConfig
     {
         private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
-        private static readonly string[] ExcludePatternDefaults = new[] { "/[Bb]in/", "/[Oo]bj/", ".netnew.json", "**/*.filelist" };
+        private static readonly string[] ExcludePatternDefaults = new[] { "/[Bb]in/", "/[Oo]bj/", RunnableProjectGenerator.TemplateConfigFileName, "**/*.filelist" };
         private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**/*" };
 
         public SimpleConfigModel()

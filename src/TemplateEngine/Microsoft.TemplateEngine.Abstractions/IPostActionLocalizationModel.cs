@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         string Description { get; }
 
         // The order corresponds to the order of the instructions in the same action
-        // in the culture neutral .netnew.json
+        // in the culture neutral TemplateConfigFile
         IReadOnlyList<string> Instructions { get; }
     }
 }
