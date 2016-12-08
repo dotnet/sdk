@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public static async Task<int> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, TemplateCreationResult result)
         {
             ITemplateInfo templateInfo;
 
@@ -83,6 +83,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 if (!TryGetTemplateInfoFromCache(templateName, out templateInfo))
                 {
+                    result.Message = "Not found";
+                    result.Status = CreationResultStatus.TemplateNotFound;
                     return -1;
                 }
             }
@@ -90,31 +92,42 @@ namespace Microsoft.TemplateEngine.Edge.Template
             // SettingsLoader.LoadTemplate is where the loc info should be read!!!
             // templateInfo knows enough to get at the loc, if any
             ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
-
-            if (!skipUpdateCheck)
-            {
-                EngineEnvironmentSettings.Host.LogMessage("Checking for updates...");
-
-                //UpdateCheck();    // this'll need params
-            }
-
-            string realName = name ?? template.DefaultName ?? fallbackName;
-            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName);
+            result.TemplateFullName = template.Name;
 
             if (aliasName != null)
             {
                 //TODO: Add parameters to aliases (from _parameters_ collection)
-                AliasRegistry.SetTemplateAlias(aliasName, template);
-                EngineEnvironmentSettings.Host.LogMessage("Alias created.");
-                return 0;
+                if (AliasRegistry.SetTemplateAlias(aliasName, template) != 0)
+                {
+                    result.Message = "Alias already exists";
+                    result.Status = CreationResultStatus.AliasFailed;
+                    return -1;
+                }
+                else
+                {
+                    result.Message = "Alias created";
+                    result.Status = CreationResultStatus.AliasSucceeded;
+                    return 0;
+                }
             }
 
+            //if (!skipUpdateCheck)
+            //{
+            //    EngineEnvironmentSettings.Host.LogMessage("Checking for updates...");
+            //    UpdateCheck();    // this'll need params
+            //}
+
+            string realName = name ?? template.DefaultName ?? fallbackName;
+            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName);
+
             ResolveUserParameters(template, templateParams, inputParameters);
-            bool missingParams = CheckForMissingRequiredParameters(templateParams);
+            bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
 
             if (missingParams)
             {
-                return missingParams ? -1 : 0;
+                result.Message = string.Join(", ", missingParamNames);
+                result.Status = CreationResultStatus.MissingMandatoryParam;
+                return -1;
             }
 
             ICreationResult creationResult;
@@ -126,6 +139,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 await template.Generator.Create(template, templateParams, componentManager, out creationResult);
                 sw.Stop();
                 EngineEnvironmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
+
+                result.Message = string.Empty;
+                result.Status = CreationResultStatus.CreateSucceeded;
             }
             finally
             {
@@ -133,7 +149,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             // TODO: pass back the creationResult (probably as an out param)
             // (and get rid of this debugging)
-            creationResult.TEMP_CONSOLE_DEBUG_CreationResult();
+            //creationResult.TEMP_CONSOLE_DEBUG_CreationResult();
 
             return 0;
         }
@@ -204,10 +220,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // but it's up to the caller / UI to decide how to act.
         // Returns true if there are any missing params, false otherwise.
         //
-        public static bool CheckForMissingRequiredParameters(IParameterSet templateParams)
+        public static bool CheckForMissingRequiredParameters(IParameterSet templateParams, out IList<string> missingParamNames)
         {
             ITemplateEngineHost host = EngineEnvironmentSettings.Host;
-            bool missingParams = false;
+            bool anyMissingParams = false;
+            missingParamNames = new List<string>();
 
             foreach (ITemplateParameter parameter in templateParams.ParameterDefinitions)
             {
@@ -224,12 +241,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        missingParams = true;
+                        missingParamNames.Add(parameter.Name);
+                        anyMissingParams = true;
                     }
                 }
             }
 
-            return missingParams;
+            return anyMissingParams;
         }
 
         //

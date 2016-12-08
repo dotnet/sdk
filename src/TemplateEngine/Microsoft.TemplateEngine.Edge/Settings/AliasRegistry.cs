@@ -105,11 +105,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return alias;
         }
 
-        public static void SetTemplateAlias(string alias, ITemplateInfo template)
+        // returns -1 if the alias already exists, zero otherwise
+        public static int SetTemplateAlias(string alias, ITemplateInfo template)
         {
             Load();
+            if (AliasesToTemplates.ContainsKey(alias))
+            {
+                return -1;
+            }
+
             _source[alias] = template.Name;
             File.WriteAllText(Paths.User.AliasesFile, _source.ToString());
+            return 0;
         }
     }
 }
