@@ -246,11 +246,28 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="_ComputeLockFileFrameworks"
+          DependsOnTargets="RunResolvePackageDependencies"
+          Returns="ResolvedFrameworkAssemblies">
+    <ItemGroup>
+      <TFMFileItems Include="@(FileDependencies->WithMetadataValue('ParentTarget', '$(_NugetTargetMonikerAndRID)'))" />
+      <_FrameworkAssemblies Include="@(TFMFileItems->WithMetadataValue('FileGroup', 'FrameworkAssembly'))" />
+
+      <ResolvedFrameworkAssemblies Include="%(_FrameworkAssemblies.FrameworkAssembly)">
+        <Private>false</Private>
+        <NuGetIsFrameworkReference>true</NuGetIsFrameworkReference>
+        <NuGetSourceType>Package</NuGetSourceType>
+      </ResolvedFrameworkAssemblies>
+
+    </ItemGroup>
+  </Target>
+
   <Target Name="ResolveLockFileReferences"
-          DependsOnTargets="_ComputeLockFileReferences">
+          DependsOnTargets="_ComputeLockFileReferences;_ComputeLockFileFrameworks">
     <ItemGroup>
       <!-- Add the references we computed -->
       <Reference Include="@(ResolvedCompileFileDefinitions)" />
+      <Reference Include="@(ResolvedFrameworkAssemblies)" />
     </ItemGroup>
   </Target>
 
