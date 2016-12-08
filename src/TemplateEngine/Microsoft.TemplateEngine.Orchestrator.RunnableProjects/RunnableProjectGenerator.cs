@@ -22,6 +22,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid Id => GeneratorId;
 
+        public static readonly string TemplateConfigFileName = ".template.json";
+
         public Task Create(ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, out ICreationResult creationResult)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
@@ -111,17 +113,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 (?<locale>
                     [a-z]{2}
                     (?:_[a-z]{2})?
-                )
-                \.netnew\.json
-                $"
+                )"
+                + Regex.Escape(TemplateConfigFileName)
+                + "$"
                 , RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
             IList<ITemplate> templateList = new List<ITemplate>();
             localizations = new List<ILocalizationLocator>();
 
-            foreach (IFile file in folder.EnumerateFiles("*.netnew.json", SearchOption.AllDirectories))
+            foreach (IFile file in folder.EnumerateFiles("*" + TemplateConfigFileName, SearchOption.AllDirectories))
             {
-                if (string.Equals(file.Name, ".netnew.json", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(file.Name, TemplateConfigFileName, StringComparison.OrdinalIgnoreCase))
                 {
                     if (TryGetTemplateFromConfigInfo(file, out ITemplate template))
                     {

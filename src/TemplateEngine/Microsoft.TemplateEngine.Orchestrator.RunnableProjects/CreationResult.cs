@@ -30,10 +30,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            host.LogMessage("Primary Outputs (artifacts)");
-            foreach (ICreationPath pathInfo in PrimaryOutputs)
+            if (PrimaryOutputs.Count > 0)
             {
-                host.LogMessage(string.Format("\tPath: {0}", pathInfo.Path));
+                host.LogMessage("Primary Outputs (artifacts)");
+                foreach (ICreationPath pathInfo in PrimaryOutputs)
+                {
+                    host.LogMessage(string.Format("\tPath: {0}", pathInfo.Path));
+                }
             }
         }
     }

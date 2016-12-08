@@ -24,7 +24,8 @@ namespace Microsoft.TemplateEngine.Utils
 
         public void LogMessage(string message)
         {
-            Console.WriteLine("LogMessage: {0}", message);
+            //Console.WriteLine("LogMessage: {0}", message);
+            Console.WriteLine(message);
         }
 
         public void OnCriticalError(string code, string message, string currentFile, long currentPosition)
@@ -39,8 +40,8 @@ namespace Microsoft.TemplateEngine.Utils
 
         public bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
         {
-            Console.WriteLine("DefaultTemplateEngineHost::OnParameterError() called");
-            Console.WriteLine("\tError message: {0}", message);
+            //Console.WriteLine("DefaultTemplateEngineHost::OnParameterError() called");
+            Console.WriteLine("Parameter Error: {0}", message);
             Console.WriteLine("Parameter name = {0}", parameter.Name);
             Console.WriteLine("Parameter value = {0}", receivedValue);
             Console.WriteLine("Enter a new value for the param, or:");

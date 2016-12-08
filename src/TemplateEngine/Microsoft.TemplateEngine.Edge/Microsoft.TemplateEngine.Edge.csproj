@@ -7,7 +7,7 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <OutputPath Condition="'$(OutputPath)'=='' ">..\..\artifacts\</OutputPath>
-    <PackageVersion>1.0.0-beta1</PackageVersion>
+    <PackageVersion>1.0.0</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />
@@ -25,15 +25,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>9.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="NuGet.Packaging">
-      <Version>3.5.0-beta2-1484</Version>
-    </PackageReference>
-    <PackageReference Include="NuGet.Configuration">
-      <Version>3.5.0-beta2-1484</Version>
-    </PackageReference>
-    <PackageReference Include="NuGet.DependencyResolver.Core">
-      <Version>3.5.0-beta2-1484</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
