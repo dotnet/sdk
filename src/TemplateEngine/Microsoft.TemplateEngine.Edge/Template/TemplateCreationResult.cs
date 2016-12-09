@@ -18,8 +18,20 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
     public class TemplateCreationResult
     {
-        public string Message { get; set; }
-        public CreationResultStatus Status { get; set; }
-        public string TemplateFullName { get; set; }
+        public TemplateCreationResult(int resultCode, string message, CreationResultStatus status, string templateFullName)
+        {
+            ResultCode = resultCode;
+            Message = message;
+            Status = status;
+            TemplateFullName = templateFullName;
+        }
+
+        public int ResultCode { get; private set; }
+
+        public string Message { get; private set; }
+
+        public CreationResultStatus Status { get; private set; }
+
+        public string TemplateFullName { get; private set; }
     }
 }
