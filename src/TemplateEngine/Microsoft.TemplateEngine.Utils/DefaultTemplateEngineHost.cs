@@ -8,19 +8,22 @@ namespace Microsoft.TemplateEngine.Utils
     {
         private IReadOnlyDictionary<string, string> _HostDefaults { get; }
 
-        public DefaultTemplateEngineHost(string locale)
+        public DefaultTemplateEngineHost(string hostIdentifier, string locale)
         {
             Locale = locale;
+            HostIdentifier = hostIdentifier;
             _HostDefaults = new Dictionary<string, string>();
         }
 
-        public DefaultTemplateEngineHost(string locale, Dictionary<string, string> defaults)
+        public DefaultTemplateEngineHost(string hostIdentifier, string locale, Dictionary<string, string> defaults)
         {
             Locale = locale;
+            HostIdentifier = hostIdentifier;
             _HostDefaults = defaults;
         }
-
         public string Locale { get; private set; }
+
+        public string HostIdentifier { get; private set; }
 
         public void LogMessage(string message)
         {

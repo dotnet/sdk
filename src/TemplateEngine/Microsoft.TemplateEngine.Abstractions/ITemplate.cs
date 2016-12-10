@@ -42,5 +42,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         IFileSystemInfo Configuration { get; }
 
         IFileSystemInfo LocaleConfiguration { get; }
+
+        IDirectory TemplateSourceRoot { get; }
     }
 }

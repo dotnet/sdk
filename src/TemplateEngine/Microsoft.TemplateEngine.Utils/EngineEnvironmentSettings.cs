@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         static EngineEnvironmentSettings()
         {
-            Host = new DefaultTemplateEngineHost(DefaultLocale);
+            Host = new DefaultTemplateEngineHost(string.Empty, DefaultLocale);
             Paths = new DefaultPathInfo();
         }
 
