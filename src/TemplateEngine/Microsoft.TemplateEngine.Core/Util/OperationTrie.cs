@@ -4,7 +4,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Core.Util
 {
-    internal class OperationTrie
+    public class OperationTrie
     {
         private readonly Dictionary<byte, OperationTrie> _map = new Dictionary<byte, OperationTrie>();
 
