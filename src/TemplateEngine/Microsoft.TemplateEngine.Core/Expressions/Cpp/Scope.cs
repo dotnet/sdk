@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 default:
                     if (Left != null)
                     {
-                        return EvaluateSide(Left, x => Convert.ToBoolean(x ?? "False"));
+                        return EvaluateSide(Left, x => x);
                     }
 
                     return false;
