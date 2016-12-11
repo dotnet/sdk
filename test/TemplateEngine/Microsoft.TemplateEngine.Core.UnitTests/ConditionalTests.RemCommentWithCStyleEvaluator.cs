@@ -5,7 +5,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBasicBatRemCommentHandling))]
         public void VerifyBasicBatRemCommentHandling()
         {
             string originalValue = @"Start
@@ -49,7 +49,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalForEachClauseNoEmbedding))]
         public void VerifyBatRemCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -122,7 +122,7 @@ End";
         }
 
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalWithNestedClause))]
         public void VerifyBatRemCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -169,7 +169,7 @@ End";
         }
 
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalNestedDoesntRemove))]
         public void VerifyBatRemCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -216,7 +216,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBatRemMixedConditionalsThreeLevelEmbedding))]
         public void VerifyBatRemMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

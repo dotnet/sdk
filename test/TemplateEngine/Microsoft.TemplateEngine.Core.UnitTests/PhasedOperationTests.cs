@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return Processor.Create(cfg, new PhasedOperation(null, phases));
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyPhasedOperationStateProgression))]
         public void VerifyPhasedOperationStateProgression()
         {
             string originalValue = @"

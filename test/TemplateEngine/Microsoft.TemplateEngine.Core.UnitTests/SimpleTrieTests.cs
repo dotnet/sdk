@@ -6,7 +6,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class SimpleTrieTests
     {
-        [Fact]
+        [Fact(DisplayName = nameof(VerifySimpleTrieAtBegin))]
         public void VerifySimpleTrieAtBegin()
         {
             byte[] hello = Encoding.UTF8.GetBytes("hello");
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.Equal(-1, token);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifySimpleTrieNotEnoughBufferLeft))]
         public void VerifySimpleTrieNotEnoughBufferLeft()
         {
             byte[] hello = Encoding.UTF8.GetBytes("hello");
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.Equal(-1, token);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifySimpleTrieCombine))]
         public void VerifySimpleTrieCombine()
         {
             byte[] hello = Encoding.UTF8.GetBytes("hello");
