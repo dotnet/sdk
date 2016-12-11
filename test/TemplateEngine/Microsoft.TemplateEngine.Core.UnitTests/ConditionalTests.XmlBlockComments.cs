@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         // doesn't cause the pseudo comment to become a real comment.
         // The test is to demonstrate that the balance checking gets reset after leaving the #if-#endif block.
         // The fact that the comment in the second if gets its final pseudo comment fixed is demonstration of the reset.
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBlockCommentUnbalancedMissingEndCommentsResets))]
         public void VerifyBlockCommentUnbalancedMissingEndCommentsResets()
         {
             string originalValue = @"Start
@@ -45,7 +45,7 @@ End";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBlockCommentUnbalancedExtraEndCommentsResets))]
         public void VerifyBlockCommentUnbalancedExtraEndCommentsResets()
         {
             string originalValue = @"Start
@@ -80,7 +80,7 @@ End";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyBlockCommentedContentStaysCommented))]
         public void VerifyBlockCommentedContentStaysCommented()
         {
             string originalValue = @"Start
@@ -111,7 +111,7 @@ End";
         /// <summary>
         /// Temporary test, experimenting with block comments
         /// </summary>
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyMultipleConsecutiveTrailingCommentsWithinContent))]
         public void VerifyMultipleConsecutiveTrailingCommentsWithinContent()
         {
             string originalValue = @"Start
@@ -131,7 +131,7 @@ End";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyMultipleEndCommentsOnEndif))]
         public void VerifyMultipleEndCommentsOnEndif()
         {
             string originalValue = @"Start
@@ -182,7 +182,7 @@ End";
             RunAndVerify(threePartOriginalValue, threePartExpectedValue, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyMultipleEndCommentsOnElseif))]
         public void VerifyMultipleEndCommentsOnElseif()
         {
             string originalValue = @"Start
@@ -239,7 +239,7 @@ End";
 
         // Tests 3-level nesting of if blocks
         // Tests multiple elseif's in the same block
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyThreeLevelNestedBlockComments))]
         public void VerifyThreeLevelNestedBlockComments()
         {
             string originalValue = @"Start
@@ -515,7 +515,7 @@ End";
         /// <summary>
         /// Temporary test, experimenting with block comments.
         /// </summary>
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyMultipleNestedBlockComments))]
         public void VerifyMultipleNestedBlockComments()
         {
             // the actual tests for OUTER_IF_CLAUSE = true (inner else also happens because the other inners are false)
@@ -598,7 +598,7 @@ Trailing stuff
             RunAndVerify(inputValue3, expectedValue, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyXmlBlockCommentsNestedInIf_ProperComments))]
         public void VerifyXmlBlockCommentsNestedInIf_ProperComments()
         {
             string originalValue = @"Start
@@ -635,7 +635,7 @@ End";
 
         // Below tests may not have properly formatted comments, but still work
 
-        [Fact]
+        [Fact(DisplayName = nameof(XmlBlockCommentBasicTest))]
         public void XmlBlockCommentBasicTest()
         {
             IList<string> testCases = new List<string>();
@@ -716,7 +716,7 @@ Trailing stuff";
         /// Test cases for conditionals in xml block comments.
         /// Comment stripping is needed for some of these.
         /// </summary>
-        [Fact]
+        [Fact(DisplayName = nameof(XmlBlockCommentIfElseifElseTestWithCommentStripping))]
         public void XmlBlockCommentIfElseifElseTestWithCommentStripping()
         {
             IList<string> testCases = new List<string>();
@@ -823,7 +823,7 @@ Trailing stuff
         /// <summary>
         /// Tests basic conditional embedding for block XML comments
         /// </summary>
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyXmlBlockCommentEmbeddedInIfTest))]
         public void VerifyXmlBlockCommentEmbeddedInIfTest()
         {
             IList<string> testCases = new List<string>();
@@ -1063,7 +1063,7 @@ Trailing stuff
         /// <summary>
         /// Temporary test for isolating bugs
         /// </summary>
-        [Fact]
+        [Fact(DisplayName = nameof(MinimalXmlElseifEmbeddingTest))]
         public void MinimalXmlElseifEmbeddingTest()
         {
             string testValue = @"Start
@@ -1103,7 +1103,7 @@ Trailing stuff
         /// <summary>
         /// Tests block comment embedding of conditionals in the elseif
         /// </summary>
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyXmlBlockCommentEmbeddedInElseifTest))]
         public void VerifyXmlBlockCommentEmbeddedInElseifTest()
         {
             IList<string> testCases = new List<string>();

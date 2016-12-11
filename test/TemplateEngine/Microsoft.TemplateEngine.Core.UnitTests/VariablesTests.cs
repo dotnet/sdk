@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class VariablesTests : TestBase
     {
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyVariables))]
         public void VerifyVariables()
         {
             string value = @"test %PATH% test";
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyVariablesNull))]
         public void VerifyVariablesNull()
         {
             string value = @"test %NULL% test";
