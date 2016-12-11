@@ -22,7 +22,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid Id => GeneratorId;
 
-        public static readonly string TemplateConfigFileName = ".template.json";
+        public static readonly string TemplateConfigDirectoryName = ".template.config";
+        public static readonly string TemplateConfigFileName = "template.json";
 
         public Task Create(ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, out ICreationResult creationResult)
         {
@@ -35,13 +36,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(template.ConfigFile.Parent, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.PlaceholderFilename);
+            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.PlaceholderFilename);
 
             foreach (FileSource source in template.Config.Sources)
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
-                orchestrator.Run(runSpec, template.ConfigFile.Parent.DirectoryInfo(source.Source), target);
+                orchestrator.Run(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target);
             }
 
             // todo: add anything else we'd want to report to the broker
@@ -80,6 +81,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return new ParameterSet(tmplt.Config);
         }
 
+        public IReadOnlyDictionary<string, string> ParameterMapForTemplate(ITemplate template)
+        {
+            RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
+            return tmplt.Config.HostTemplateInfo?.ParameterMap;
+        }
+
         private bool TryGetLangPackFromFile(IFile file, out ILocalizationModel locModel)
         {
             if (file == null)
@@ -113,7 +120,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 (?<locale>
                     [a-z]{2}
                     (?:_[a-z]{2})?
-                )"
+                )
+                \."
                 + Regex.Escape(TemplateConfigFileName)
                 + "$"
                 , RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
@@ -160,7 +168,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return templateList;
         }
 
-        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig = null)
+        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig = null, IFile hostTemplateConfigFile = null)
         {
             IFile file = config as IFile;
 
@@ -182,7 +190,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
 
-                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(srcObject, localeSourceObject);
+                JObject hostTemplateSourceObject = null;
+                if (hostTemplateConfigFile != null)
+                {
+                    hostTemplateSourceObject = ReadJObjectFromIFile(hostTemplateConfigFile);
+                }
+
+                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(srcObject, localeSourceObject, hostTemplateSourceObject);
                 template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null);
                 return true;
             }

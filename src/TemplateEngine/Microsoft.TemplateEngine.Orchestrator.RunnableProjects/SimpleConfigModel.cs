@@ -19,8 +19,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     public class SimpleConfigModel : IRunnableProjectConfig
     {
         private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
-        private static readonly string[] ExcludePatternDefaults = new[] { "/[Bb]in/", "/[Oo]bj/", RunnableProjectGenerator.TemplateConfigFileName, "**/*.filelist" };
-        private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**/*" };
+        private static readonly string[] ExcludePatternDefaults = new[] { "**/[Bb]in/**", "**/[Oo]bj/**", "**/" + RunnableProjectGenerator.TemplateConfigDirectoryName + "/**", "**/*.filelist" };
+        private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
 
         public SimpleConfigModel()
         {
@@ -33,6 +33,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
         private Parameter _nameParameter;
         private string _safeNameName;
+
+        public IHostTemplateModel HostTemplateInfo { get; set; }
 
         public IFile SourceFile { get; set; }
 
@@ -492,7 +494,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (token.Type == JTokenType.String)
             {
-                using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToString()).OpenRead())
+                using (Stream excludeList = sourceFile.Parent.Parent.FileInfo(token.ToString()).OpenRead())
                 using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
                 {
                     return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -572,9 +574,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 if (resolvedNameParamValue != null)
                 {
-                    foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                    foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
-                        string tmpltRel = entry.PathRelativeTo(configFile.Parent);
+                        string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
                         string outRel = tmpltRel.Replace(SourceName, (string)resolvedNameParamValue);
                         renames[tmpltRel] = outRel;
                     }
@@ -600,9 +602,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Dictionary<string, string> renames = new Dictionary<string, string>();
                 if (parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedValue))
                 {
-                    foreach (IFileSystemInfo entry in configFile.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                    foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
-                        string tmpltRel = entry.PathRelativeTo(configFile.Parent);
+                        string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
                         string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
                         renames[tmpltRel] = outRel;
                     }
@@ -622,9 +624,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _sources = sources;
         }
 
-        public static SimpleConfigModel FromJObject(JObject source, JObject localeSource = null)
+        public static SimpleConfigModel FromJObject(JObject source, JObject localeSource = null, JObject hostSource = null)
         {
             ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
+            IHostTemplateModel hostTemplateModel = HostTemplateInfoFromJObject(hostSource);
 
             SimpleConfigModel config = new SimpleConfigModel()
             {
@@ -638,7 +641,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
                 ShortName = source.ToString(nameof(config.ShortName)),
                 SourceName = source.ToString(nameof(config.SourceName)),
-                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename))
+                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename)),
+                HostTemplateInfo = hostTemplateModel
             };
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
@@ -745,6 +749,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.LocalizationOperations = localizations;
 
             return config;
+        }
+
+        public static IHostTemplateModel HostTemplateInfoFromJObject(JObject source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            IReadOnlyDictionary<string, string> parameterMap = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "ParameterMap");
+            return new HostTemplateModel()
+            {
+                ParameterMap = parameterMap
+            };
         }
 
         public static ILocalizationModel LocalizationFromJObject(JObject source)

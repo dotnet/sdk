@@ -30,6 +30,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _raw = raw;
         }
 
+        public IDirectory TemplateSourceRoot
+        {
+            get
+            {
+                return ConfigFile.Parent.Parent;
+            }
+        }
+
         public string Identity { get; }
 
         public Guid GeneratorId => Generator.Id;

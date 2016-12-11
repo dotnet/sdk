@@ -10,6 +10,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public static class SettingsLoader
     {
+        public static readonly string HostTemplateFileConfigBaseName = ".host.json";
+
         private static SettingsStore _userSettings;
         private static TemplateCache _userTemplateCache;
         private static IMountPointManager _mountPointManager;
@@ -111,9 +113,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             EnsureLoaded();
         }
 
-        // DOES NOT LOAD TEMPLATES.
-        // copies the cache into the templates parameter.
-        private static void LoadTemplates(TemplateCache cache, ISet<ITemplateInfo> templates)
+        private static void UpdateTemplateListFromCache(TemplateCache cache, ISet<ITemplateInfo> templates)
         {
             using (Timing.Over("Enumerate infos"))
                 templates.UnionWith(cache.TemplateInfo);
@@ -149,9 +149,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
             }
 
+            IFile hostTemplateConfigFile = null;
+            if (!string.IsNullOrEmpty(EngineEnvironmentSettings.Host.HostIdentifier))
+            {
+                string hostTemplateFileName = string.Join(string.Empty, EngineEnvironmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
+                hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, System.IO.SearchOption.TopDirectoryOnly).FirstOrDefault();
+            }
+
+
             ITemplate template;
             using (Timing.Over("Template from config"))
-                if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig))
+                if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile))
                 {
                     return template;
                 }
@@ -186,7 +194,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             using (Timing.Over("Settings init"))
                 EnsureLoaded();
             using (Timing.Over("Template load"))
-                LoadTemplates(_userTemplateCache, templates);
+                UpdateTemplateListFromCache(_userTemplateCache, templates);
         }
 
         public static void WriteTemplateCache(IList<TemplateInfo> templates, string locale, bool isCurrentCache)

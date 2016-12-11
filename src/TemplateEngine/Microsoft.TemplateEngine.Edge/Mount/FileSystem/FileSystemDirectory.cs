@@ -10,9 +10,21 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         private readonly DirectoryInfo _dir;
 
         public FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, DirectoryInfo dir)
-            : base(mountPoint, fullPath, name)
+            : base(mountPoint, EnsureTrailingSlash(fullPath), name)
         {
             _dir = dir;
+        }
+
+        private static string EnsureTrailingSlash(string path)
+        {
+            if (path.Last() == '/')
+            {
+                return path;
+            }
+            else
+            {
+                return path + "/";
+            }
         }
 
         public override bool Exists => _dir.Exists;
@@ -71,7 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _dir.EnumerateFiles(pattern, searchOption).Select(x =>
             {
-                string baseName = x.FullName.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.FullName.Substring(new DirectoryInfo(MountPoint.Info.Place).FullName.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {

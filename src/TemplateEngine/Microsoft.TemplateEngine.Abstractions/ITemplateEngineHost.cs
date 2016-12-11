@@ -6,6 +6,8 @@ namespace Microsoft.TemplateEngine.Abstractions
     {
         string Locale { get; }
 
+        string HostIdentifier { get; }
+
         void LogMessage(string message);
 
         void OnCriticalError(string code, string message, string currentFile, long currentPosition);

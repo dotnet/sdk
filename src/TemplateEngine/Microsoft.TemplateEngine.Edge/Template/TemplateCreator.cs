@@ -75,7 +75,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<int> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, TemplateCreationResult result)
+        //public static async Task<int> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, TemplateCreationResult result)
+        public static async Task<TemplateCreationResult> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
             ITemplateInfo templateInfo;
 
@@ -83,31 +84,25 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 if (!TryGetTemplateInfoFromCache(templateName, out templateInfo))
                 {
-                    result.Message = "Not found";
-                    result.Status = CreationResultStatus.TemplateNotFound;
-                    return -1;
+                    return new TemplateCreationResult(-1, "Not Found", CreationResultStatus.TemplateNotFound, templateName);
                 }
             }
 
             // SettingsLoader.LoadTemplate is where the loc info should be read!!!
             // templateInfo knows enough to get at the loc, if any
             ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
-            result.TemplateFullName = template.Name;
+            //result.TemplateFullName = template.Name;
 
             if (aliasName != null)
             {
                 //TODO: Add parameters to aliases (from _parameters_ collection)
                 if (AliasRegistry.SetTemplateAlias(aliasName, template) != 0)
                 {
-                    result.Message = "Alias already exists";
-                    result.Status = CreationResultStatus.AliasFailed;
-                    return -1;
+                    return new TemplateCreationResult(-1, "Alias already exists", CreationResultStatus.AliasFailed, template.Name);
                 }
                 else
                 {
-                    result.Message = "Alias created";
-                    result.Status = CreationResultStatus.AliasSucceeded;
-                    return 0;
+                    return new TemplateCreationResult(0, "Alias created", CreationResultStatus.AliasSucceeded, template.Name);
                 }
             }
 
@@ -125,9 +120,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             if (missingParams)
             {
-                result.Message = string.Join(", ", missingParamNames);
-                result.Status = CreationResultStatus.MissingMandatoryParam;
-                return -1;
+                return new TemplateCreationResult(-1, string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
             }
 
             ICreationResult creationResult;
@@ -140,8 +133,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 sw.Stop();
                 EngineEnvironmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
 
-                result.Message = string.Empty;
-                result.Status = CreationResultStatus.CreateSucceeded;
             }
             finally
             {
@@ -151,7 +142,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             // (and get rid of this debugging)
             //creationResult.TEMP_CONSOLE_DEBUG_CreationResult();
 
-            return 0;
+            return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateSucceeded, template.Name);
         }
 
         // 

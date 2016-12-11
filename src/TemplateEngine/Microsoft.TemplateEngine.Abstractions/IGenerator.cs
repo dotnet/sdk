@@ -10,7 +10,9 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IParameterSet GetParametersForTemplate(ITemplate template);
 
-        bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig);
+        IReadOnlyDictionary<string, string> ParameterMapForTemplate(ITemplate template);
+
+        bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig, IFile hostTemplateConfigFile);
 
         IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations);
 

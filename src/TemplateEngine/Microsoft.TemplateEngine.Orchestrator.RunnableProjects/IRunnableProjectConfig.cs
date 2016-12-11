@@ -13,6 +13,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; }
 
+        IHostTemplateModel HostTemplateInfo { get; }
+
         IGlobalRunConfig OperationConfig { get; }
 
         IReadOnlyList<FileSource> Sources { get; }
