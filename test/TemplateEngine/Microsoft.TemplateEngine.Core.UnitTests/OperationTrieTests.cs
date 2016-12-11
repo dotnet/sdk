@@ -8,29 +8,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class OperationTrieTests
     {
-        private delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
-
-        private class MockOperation : IOperation
-        {
-            private readonly MatchHandler _onMatch;
-
-            public MockOperation(string id, MatchHandler onMatch, params byte[][] tokens)
-            {
-                Tokens = tokens;
-                Id = id;
-                _onMatch = onMatch;
-            }
-
-            public IReadOnlyList<byte[]> Tokens { get; }
-
-            public string Id { get; }
-
-            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
-            {
-                return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token, target) ?? 0;
-            }
-        }
-
         [Fact(DisplayName = nameof(VerifyOperationTrieFindsTokenAtStart))]
         public void VerifyOperationTrieFindsTokenAtStart()
         {
