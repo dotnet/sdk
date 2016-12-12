@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         /// <summary>
         /// Tests that the inner if-elseif-else with special tokens gets processed correctly.
         /// </summary>
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyOuterIfAndEmbeddedConditionals))]
         public void VerifyOuterIfAndEmbeddedConditionals()
         {
             string originalValue = @"Lead content
@@ -92,7 +92,7 @@ moar trailing content";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyThreeLevelEmbedding))]
         public void VerifyThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

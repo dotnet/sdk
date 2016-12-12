@@ -4,7 +4,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class GlobTests
     {
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyGlobExactPathSpanning))]
         public void VerifyGlobExactPathSpanning()
         {
             Glob g = Glob.Parse("a/**/b");
@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.False(g.IsMatch("z/a/b"));
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyGlobPathSpanning))]
         public void VerifyGlobPathSpanning()
         {
             Glob g = Glob.Parse("a/**");
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.False(g.IsMatch("z/a/b"));
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyGlobCharacterGroups))]
         public void VerifyGlobCharacterGroups()
         {
             Glob g = Glob.Parse("f[Oo]o");
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.False(g.IsMatch("z/a/x/y/fOO"));
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyGlobWildcard))]
         public void VerifyGlobWildcard()
         {
             Glob g = Glob.Parse("f*o");
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.False(g.IsMatch("foot"));
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyGlobNegate))]
         public void VerifyGlobNegate()
         {
             Glob g = Glob.Parse("!f*o");
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.True(g.IsMatch("foot"));
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyGlobEscape))]
         public void VerifyGlobEscape()
         {
             Glob g = Glob.Parse(@"\[[\[\ \]]");
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.False(g.IsMatch("]"));
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyGlobKitchenSink))]
         public void VerifyGlobKitchenSink()
         {
             Glob g = Glob.Parse("**/[Dd]ocuments/**/*.htm*");

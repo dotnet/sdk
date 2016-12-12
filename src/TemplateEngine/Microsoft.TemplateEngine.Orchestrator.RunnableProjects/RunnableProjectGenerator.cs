@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             foreach (FileSource source in template.Config.Sources)
             {
                 runSpec.SetupFileSource(source);
-                string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
+                string target = Path.Combine(EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory(), source.Target);
                 orchestrator.Run(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target);
             }
 
@@ -119,12 +119,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 ^
                 (?<locale>
                     [a-z]{2}
-                    (?:_[a-z]{2})?
+                    (?:-[A-Z]{2})?
                 )
                 \."
                 + Regex.Escape(TemplateConfigFileName)
                 + "$"
-                , RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+                , RegexOptions.IgnorePatternWhitespace);
 
             IList<ITemplate> templateList = new List<ITemplate>();
             localizations = new List<ILocalizationLocator>();

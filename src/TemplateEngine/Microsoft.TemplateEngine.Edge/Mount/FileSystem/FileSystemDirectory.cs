@@ -7,12 +7,12 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
     internal class FileSystemDirectory : DirectoryBase
     {
-        private readonly DirectoryInfo _dir;
+        private readonly string _physicalPath;
 
-        public FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, DirectoryInfo dir)
+        public FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
             : base(mountPoint, EnsureTrailingSlash(fullPath), name)
         {
-            _dir = dir;
+            _physicalPath = physicalPath;
         }
 
         private static string EnsureTrailingSlash(string path)
@@ -27,13 +27,13 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
             }
         }
 
-        public override bool Exists => _dir.Exists;
+        public override bool Exists => _physicalPath.DirectoryExists();
 
         public override IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos(string pattern, SearchOption searchOption)
         {
-            return _dir.EnumerateFileSystemInfos(pattern, searchOption).Select(x =>
+            return _physicalPath.EnumerateFileSystemEntries(pattern, searchOption).Select(x =>
             {
-                string baseName = x.FullName.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = "/" + baseName;
                 }
 
-                if (x is DirectoryInfo && baseName[baseName.Length - 1] != '/')
+                if (x.DirectoryExists() && baseName[baseName.Length - 1] != '/')
                 {
                     baseName = baseName + "/";
                 }
@@ -56,9 +56,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public override IEnumerable<IDirectory> EnumerateDirectories(string pattern, SearchOption searchOption)
         {
-            return _dir.EnumerateDirectories(pattern, searchOption).Select(x =>
+            return _physicalPath.EnumerateDirectories(pattern, searchOption).Select(x =>
             {
-                string baseName = x.FullName.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -75,15 +75,15 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = baseName + "/";
                 }
 
-                return new FileSystemDirectory(MountPoint, baseName, x.Name, x);
+                return new FileSystemDirectory(MountPoint, baseName, x.Name(), x);
             });
         }
 
         public override IEnumerable<IFile> EnumerateFiles(string pattern, SearchOption searchOption)
         {
-            return _dir.EnumerateFiles(pattern, searchOption).Select(x =>
+            return _physicalPath.EnumerateFiles(pattern, searchOption).Select(x =>
             {
-                string baseName = x.FullName.Substring(new DirectoryInfo(MountPoint.Info.Place).FullName.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.Substring(new DirectoryInfo(MountPoint.Info.Place).FullName.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = "/" + baseName;
                 }
 
-                return new FileSystemFile(MountPoint, baseName, x.Name, x);
+                return new FileSystemFile(MountPoint, baseName, x.Name(), x);
             });
         }
     }

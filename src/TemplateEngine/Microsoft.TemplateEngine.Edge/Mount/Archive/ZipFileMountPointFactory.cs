@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.IO.Compression;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
@@ -23,7 +22,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
             if (parent == null)
             {
-                if (!File.Exists(place))
+                if (!EngineEnvironmentSettings.Host.FileSystem.FileExists(place))
                 {
                     mountPoint = null;
                     return false;
@@ -31,7 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
                 try
                 {
-                    archive = new ZipArchive(File.OpenRead(place), ZipArchiveMode.Read, false);
+                    archive = new ZipArchive(EngineEnvironmentSettings.Host.FileSystem.OpenRead(place), ZipArchiveMode.Read, false);
                 }
                 catch
                 {

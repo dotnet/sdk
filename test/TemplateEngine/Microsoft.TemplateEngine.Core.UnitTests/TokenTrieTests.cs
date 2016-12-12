@@ -4,10 +4,10 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class SimpleTrieTests
+    public class TokenTrieTests
     {
-        [Fact]
-        public void VerifySimpleTrieAtBegin()
+        [Fact(DisplayName = nameof(VerifyTokenTrieAtBegin))]
+        public void VerifyTokenTrieAtBegin()
         {
             byte[] hello = Encoding.UTF8.GetBytes("hello");
             byte[] helloBang = Encoding.UTF8.GetBytes("hello!");
@@ -51,8 +51,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.Equal(-1, token);
         }
 
-        [Fact]
-        public void VerifySimpleTrieNotEnoughBufferLeft()
+        [Fact(DisplayName = nameof(VerifyTokenTrieNotEnoughBufferLeft))]
+        public void VerifyTokenTrieNotEnoughBufferLeft()
         {
             byte[] hello = Encoding.UTF8.GetBytes("hello");
             byte[] helloBang = Encoding.UTF8.GetBytes("hello!");
@@ -78,8 +78,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.Equal(-1, token);
         }
 
-        [Fact]
-        public void VerifySimpleTrieCombine()
+        [Fact(DisplayName = nameof(VerifyTokenTrieCombine))]
+        public void VerifyTokenTrieCombine()
         {
             byte[] hello = Encoding.UTF8.GetBytes("hello");
             byte[] helloBang = Encoding.UTF8.GetBytes("hello!");

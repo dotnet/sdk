@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         public FileSystemMountPoint(MountPointInfo info)
         {
             Info = info;
-            Root = new FileSystemDirectory(this, "/", "", new DirectoryInfo(info.Place));
+            Root = new FileSystemDirectory(this, "/", "", info.Place);
         }
 
         public MountPointInfo Info { get; }
@@ -18,15 +18,13 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         public IFile FileInfo(string fullPath)
         {
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
-            FileInfo info = new FileInfo(realPath);
-            return new FileSystemFile(this, realPath, info.Name, info);
+            return new FileSystemFile(this, realPath, realPath.Name(), realPath);
         }
 
         public IDirectory DirectoryInfo(string fullPath)
         {
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
-            DirectoryInfo info = new DirectoryInfo(realPath);
-            return new FileSystemDirectory(this, fullPath, info.Name, info);
+            return new FileSystemDirectory(this, fullPath, realPath.Name(), realPath);
         }
 
         public IFileSystemInfo FileSystemInfo(string fullPath)
@@ -34,14 +32,10 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
             if (Directory.Exists(realPath))
             {
-                DirectoryInfo info = new DirectoryInfo(realPath);
-                return new FileSystemDirectory(this, fullPath, info.Name, info);
+                return new FileSystemDirectory(this, fullPath, realPath.Name(), realPath);
             }
-            else
-            {
-                FileInfo info = new FileInfo(realPath);
-                return new FileSystemFile(this, fullPath, info.Name, info);
-            }
+
+            return new FileSystemFile(this, fullPath, realPath.Name(), realPath);
         }
     }
 }

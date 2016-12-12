@@ -1,47 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Utils
 {
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private IReadOnlyDictionary<string, string> _HostDefaults { get; }
+        private readonly IReadOnlyDictionary<string, string> _hostDefaults;
 
         public DefaultTemplateEngineHost(string hostIdentifier, string locale)
         {
             Locale = locale;
             HostIdentifier = hostIdentifier;
-            _HostDefaults = new Dictionary<string, string>();
+            _hostDefaults = new Dictionary<string, string>();
+            FileSystem = new PhysicalFileSystem();
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string locale, Dictionary<string, string> defaults)
         {
             Locale = locale;
             HostIdentifier = hostIdentifier;
-            _HostDefaults = defaults;
+            _hostDefaults = defaults;
         }
-        public string Locale { get; private set; }
 
-        public string HostIdentifier { get; private set; }
+        public IPhysicalFileSystem FileSystem { get; }
 
-        public void LogMessage(string message)
+        public string Locale { get; }
+
+        public string HostIdentifier { get; }
+
+        public virtual void LogMessage(string message)
         {
             //Console.WriteLine("LogMessage: {0}", message);
             Console.WriteLine(message);
         }
 
-        public void OnCriticalError(string code, string message, string currentFile, long currentPosition)
+        public virtual void OnCriticalError(string code, string message, string currentFile, long currentPosition)
         {
-            throw new NotImplementedException();
         }
 
-        public bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition)
+        public virtual bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition)
         {
-            throw new NotImplementedException();
+            return false;
         }
 
-        public bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
+        public virtual bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
         {
             //Console.WriteLine("DefaultTemplateEngineHost::OnParameterError() called");
             Console.WriteLine("Parameter Error: {0}", message);
@@ -52,18 +56,17 @@ namespace Microsoft.TemplateEngine.Utils
             return !string.IsNullOrEmpty(newValue);
         }
 
-        public void OnSymbolUsed(string symbol, object value)
+        public virtual void OnSymbolUsed(string symbol, object value)
         {
-            throw new NotImplementedException();
         }
 
-        public void OnTimingCompleted(string label, TimeSpan timing)
+        public virtual void OnTimingCompleted(string label, TimeSpan timing)
         {
             LogMessage(string.Format("{0}: {1} ms", label, timing.TotalMilliseconds));
         }
 
         // stub that will be built out soon.
-        public bool TryGetHostParamDefault(string paramName, out string value)
+        public virtual bool TryGetHostParamDefault(string paramName, out string value)
         {
             value = null;
             return false;

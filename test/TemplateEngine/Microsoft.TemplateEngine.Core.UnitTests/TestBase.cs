@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public abstract class TestBase
     {
-        protected void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null)
+        protected static void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null)
         {
             byte[] valueBytes = Encoding.UTF8.GetBytes(originalValue);
             MemoryStream input = new MemoryStream(valueBytes);
@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, originalValue, expectedValue, changeOverride);
         }
 
-        protected void Verify(Encoding encoding, Stream output, bool changed, string source, string expected, bool? changeOverride = null)
+        protected static void Verify(Encoding encoding, Stream output, bool changed, string source, string expected, bool? changeOverride = null)
         {
             output.Position = 0;
             byte[] resultBytes = new byte[output.Length];

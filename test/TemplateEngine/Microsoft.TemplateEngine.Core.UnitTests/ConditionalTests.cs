@@ -7,43 +7,43 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests : TestBase
     {
-        protected IProcessor SetupRazorStyleProcessor(VariableCollection vc)
+        protected static IProcessor SetupRazorStyleProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = RazorStyleCommentConditionalsOperations;
             return SetupTestProcessor(operations, vc);
         }
 
-        protected IProcessor SetupMadeUpStyleProcessor(VariableCollection vc)
+        protected static IProcessor SetupMadeUpStyleProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = MadeUpConditionalsOperations;
             return SetupTestProcessor(operations, vc);
         }
 
-        protected IProcessor SetupXmlStyleProcessor(VariableCollection vc)
+        protected static IProcessor SetupXmlStyleProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = XmlStyleCommentConditionalsOperations;
             return SetupTestProcessor(operations, vc);
         }
 
-        protected IProcessor SetupCStyleWithCommentsProcessor(VariableCollection vc)
+        protected static IProcessor SetupCStyleWithCommentsProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = CStyleWithCommentsConditionalOperations;
             return SetupTestProcessor(operations, vc);
         }
 
-        protected IProcessor SetupCStyleNoCommentsProcessor(VariableCollection vc)
+        protected static IProcessor SetupCStyleNoCommentsProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
             return SetupTestProcessor(operations, vc);
         }
 
-        protected IProcessor SetupHashSignLineCommentsProcessor(VariableCollection vc)
+        protected static IProcessor SetupHashSignLineCommentsProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = HashSignLineCommentConditionalOperations;
             return SetupTestProcessor(operations, vc);
         }
 
-        protected IProcessor SetupBatFileRemLineCommentsProcessor(VariableCollection vc)
+        protected static IProcessor SetupBatFileRemLineCommentsProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = BatFileRemLineCommentConditionalOperations;
             return SetupTestProcessor(operations, vc);
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         ///
         /// Sets up a processor with the input params.
         ///
-        private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
+        private static IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
         {
             EngineConfig cfg = new EngineConfig(vc);
             return Processor.Create(cfg, operations);

@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         public void Run(string runSpecPath, IDirectory sourceDir, string targetDir)
         {
             IGlobalRunSpec spec;
-            using (FileStream stream = File.OpenRead(runSpecPath))
+            using (Stream stream = EngineEnvironmentSettings.Host.FileSystem.OpenRead(runSpecPath))
             {
                 spec = RunSpecLoader(stream);
                 EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
@@ -56,13 +56,16 @@ namespace Microsoft.TemplateEngine.Core.Util
         {
             List<KeyValuePair<IPathMatcher, IProcessor>> processorList = new List<KeyValuePair<IPathMatcher, IProcessor>>();
 
-            foreach (KeyValuePair<IPathMatcher, IRunSpec> runSpec in spec.Special)
+            if (spec.Special != null)
             {
-                IReadOnlyList<IOperationProvider> operations = runSpec.Value.GetOperations(spec.Operations);
-                EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
-                IProcessor processor = Processor.Create(config, operations);
+                foreach (KeyValuePair<IPathMatcher, IRunSpec> runSpec in spec.Special)
+                {
+                    IReadOnlyList<IOperationProvider> operations = runSpec.Value.GetOperations(spec.Operations);
+                    EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
+                    IProcessor processor = Processor.Create(config, operations);
 
-                processorList.Add(new KeyValuePair<IPathMatcher, IProcessor>(runSpec.Key, processor));
+                    processorList.Add(new KeyValuePair<IPathMatcher, IProcessor>(runSpec.Key, processor));
+                }
             }
 
             return processorList;
@@ -129,7 +132,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                                 string targetPath = CreateTargetDir(sourceRel, targetDir, spec);
 
                                 using (Stream sourceStream = file.OpenRead())
-                                using (Stream targetStream = File.Create(targetPath))
+                                using (Stream targetStream = EngineEnvironmentSettings.Host.FileSystem.CreateFile(targetPath))
                                 {
                                     sourceStream.CopyTo(targetStream);
                                 }
@@ -152,7 +155,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             string targetPath = Path.Combine(targetDir, targetRel);
             string fullTargetDir = Path.GetDirectoryName(targetPath);
-            Directory.CreateDirectory(fullTargetDir);
+            EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(fullTargetDir);
 
             return targetPath;
         }
@@ -186,12 +189,12 @@ namespace Microsoft.TemplateEngine.Core.Util
             bool customBufferSize = TryGetBufferSize(sourceFile, out bufferSize);
             bool customFlushThreshold = TryGetFlushThreshold(sourceFile, out flushThreshold);
             string fullTargetDir = Path.GetDirectoryName(targetPath);
-            Directory.CreateDirectory(fullTargetDir);
+            EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(fullTargetDir);
 
             try
             {
                 using (Stream source = sourceFile.OpenRead())
-                using (FileStream target = File.Create(targetPath))
+                using (Stream target = EngineEnvironmentSettings.Host.FileSystem.CreateFile(targetPath))
                 {
                     if (!customBufferSize)
                     {

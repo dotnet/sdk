@@ -1,23 +1,24 @@
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
     internal class FileSystemFile : FileBase
     {
-        private readonly FileInfo _file;
+        private readonly string _physicalPath;
 
-        public FileSystemFile(IMountPoint mountPoint, string fullPath, string name, FileInfo fileInfo)
+        public FileSystemFile(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
             : base(mountPoint, fullPath, name)
         {
-            _file = fileInfo;
+            _physicalPath = physicalPath;
         }
 
-        public override bool Exists => _file.Exists;
+        public override bool Exists => _physicalPath.FileExists();
 
         public override Stream OpenRead()
         {
-            return _file.OpenRead();
+            return EngineEnvironmentSettings.Host.FileSystem.OpenRead(_physicalPath);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class ReplacementTests : TestBase
     {
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyReplacement))]
         public void VerifyReplacement()
         {
             string value = @"test value test";
@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyNoReplacement))]
         public void VerifyNoReplacement()
         {
             string value = @"test value test";
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyTornReplacement))]
         public void VerifyTornReplacement()
         {
             string value = @"test value test";
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyTinyPageReplacement))]
         public void VerifyTinyPageReplacement()
         {
             string value = @"test value test";
