@@ -119,12 +119,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 ^
                 (?<locale>
                     [a-z]{2}
-                    (?:_[a-z]{2})?
+                    (?:-[A-Z]{2})?
                 )
                 \."
                 + Regex.Escape(TemplateConfigFileName)
                 + "$"
-                , RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+                , RegexOptions.IgnorePatternWhitespace);
 
             IList<ITemplate> templateList = new List<ITemplate>();
             localizations = new List<ILocalizationLocator>();
