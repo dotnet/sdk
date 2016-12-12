@@ -173,6 +173,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static string Name(this string path)
         {
+            path = path.TrimEnd('/', '\\');
             return Path.GetFileName(path);
         }
 

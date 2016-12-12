@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _physicalPath.EnumerateFileSystemEntries(pattern, searchOption).Select(x =>
             {
-                string baseName = _physicalPath.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
+                string baseName = x.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
