@@ -64,8 +64,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // can't correctly write locale cache(s) until all of both are read.
         public static void Scan(string templateDir)
         {
-            string searchTarget = Path.Combine(Directory.GetCurrentDirectory(), templateDir.Trim());
-            List<string> matches = Directory.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
+            string searchTarget = Path.Combine(EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory(), templateDir.Trim());
+            List<string> matches = EngineEnvironmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
 
             if(matches.Count == 1)
             {

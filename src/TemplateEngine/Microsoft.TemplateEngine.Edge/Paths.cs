@@ -26,9 +26,9 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static void Copy(this string path, string targetPath)
         {
-            if (File.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
             {
-                File.Copy(path, targetPath, true);
+                EngineEnvironmentSettings.Host.FileSystem.FileCopy(path, targetPath, true);
                 return;
             }
 
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Edge
             {
                 string localPath = p.Substring(path.Length).TrimStart('\\', '/');
 
-                if (Directory.Exists(p))
+                if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(p))
                 {
                     localPath.CreateDirectory(targetPath);
                 }
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Edge
                         parentDir.CreateDirectory(targetPath);
                     }
 
-                    File.Copy(p, wholeTargetPath, true);
+                    EngineEnvironmentSettings.Host.FileSystem.FileCopy(p, wholeTargetPath, true);
                 }
             }
         }
@@ -64,13 +64,13 @@ namespace Microsoft.TemplateEngine.Edge
             for (int i = 0; i < parts.Length; ++i)
             {
                 current = Path.Combine(current, parts[i]);
-                Directory.CreateDirectory(current);
+                EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(current);
             }
         }
 
         public static void CreateDirectory(this string path)
         {
-            Directory.CreateDirectory(path);
+            EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(path);
         }
 
         public static void Delete(this string path)
@@ -102,30 +102,30 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static void DeleteDirectory(this string path)
         {
-            if (Directory.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                Directory.Delete(path, true);
+                EngineEnvironmentSettings.Host.FileSystem.DirectoryDelete(path, true);
             }
         }
 
         public static void DeleteFile(this string path)
         {
-            if (File.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
             {
-                File.Delete(path);
+                EngineEnvironmentSettings.Host.FileSystem.FileDelete(path);
             }
         }
 
         public static bool DirectoryExists(this string path)
         {
-            return Directory.Exists(path);
+            return EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path);
         }
 
         public static IEnumerable<string> EnumerateDirectories(this string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            if (Directory.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                return Directory.EnumerateDirectories(path, pattern, searchOption);
+                return EngineEnvironmentSettings.Host.FileSystem.EnumerateDirectories(path, pattern, searchOption);
             }
 
             return Enumerable.Empty<string>();
@@ -133,14 +133,14 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<string> EnumerateFiles(this string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            if (File.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
             {
                 return new[] { path };
             }
 
-            if (Directory.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                return Directory.EnumerateFiles(path.ProcessPath(), pattern, searchOption);
+                return EngineEnvironmentSettings.Host.FileSystem.EnumerateFiles(path.ProcessPath(), pattern, searchOption);
             }
 
             return Enumerable.Empty<string>();
@@ -148,14 +148,14 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<string> EnumerateFileSystemEntries(this string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            if (File.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
             {
                 return new[] { path };
             }
 
-            if (Directory.Exists(path))
+            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                return Directory.EnumerateFileSystemEntries(path.ProcessPath(), pattern, searchOption);
+                return EngineEnvironmentSettings.Host.FileSystem.EnumerateFileSystemEntries(path.ProcessPath(), pattern, searchOption);
             }
 
             return Enumerable.Empty<string>();
@@ -168,12 +168,17 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static bool FileExists(this string path)
         {
-            return File.Exists(path);
+            return EngineEnvironmentSettings.Host.FileSystem.FileExists(path);
+        }
+
+        public static string Name(this string path)
+        {
+            return Path.GetFileName(path);
         }
 
         public static string ReadAllText(this string path, string defaultValue = "")
         {
-            return path.Exists() ? File.ReadAllText(path) : defaultValue;
+            return path.Exists() ? EngineEnvironmentSettings.Host.FileSystem.ReadAllText(path) : defaultValue;
         }
 
         public static string ToPath(this string codebase)
@@ -189,10 +194,10 @@ namespace Microsoft.TemplateEngine.Edge
 
             if (!parentDir.Exists())
             {
-                Directory.CreateDirectory(parentDir);
+                EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(parentDir);
             }
 
-            File.WriteAllText(path, value);
+            EngineEnvironmentSettings.Host.FileSystem.WriteAllText(path, value);
         }
 
         private static string GetOrComputePath(ref string cache, params string[] paths)

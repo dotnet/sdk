@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -115,7 +116,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             _source[alias] = template.Name;
-            File.WriteAllText(Paths.User.AliasesFile, _source.ToString());
+            EngineEnvironmentSettings.Host.FileSystem.WriteAllText(Paths.User.AliasesFile, _source.ToString());
             return 0;
         }
     }

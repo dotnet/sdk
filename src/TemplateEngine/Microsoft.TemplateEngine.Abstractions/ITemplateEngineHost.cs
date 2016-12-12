@@ -1,9 +1,12 @@
 ﻿using System;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ITemplateEngineHost
     {
+        IPhysicalFileSystem FileSystem { get; }
+
         string Locale { get; }
 
         string HostIdentifier { get; }

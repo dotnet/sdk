@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             foreach (FileSource source in template.Config.Sources)
             {
                 runSpec.SetupFileSource(source);
-                string target = Path.Combine(Directory.GetCurrentDirectory(), source.Target);
+                string target = Path.Combine(EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory(), source.Target);
                 orchestrator.Run(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target);
             }
 
