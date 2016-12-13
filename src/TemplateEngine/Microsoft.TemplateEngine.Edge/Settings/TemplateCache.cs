@@ -81,29 +81,46 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
+            if (SettingsLoader.TryGetMountPointFromPlace(searchTarget, out IMountPoint existingMountPoint))
             {
-                IMountPoint mountPoint;
-                if (factory.TryMount(null, templateDir, out mountPoint))
+                ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir);
+            }
+            else
+            {
+                foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
                 {
-                    ScanForComponents(mountPoint, templateDir);
-                    SettingsLoader.AddMountPoint(mountPoint);
-
-                    foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
+                    IMountPoint mountPoint;
+                    if (factory.TryMount(null, templateDir, out mountPoint))
                     {
-                        IList<ILocalizationLocator> localizationInfo;
-                        IEnumerable<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out localizationInfo);
-
-                        foreach (ILocalizationLocator locator in localizationInfo)
-                        {
-                            AddLocalizationToMemoryCache(locator);
-                        }
-
-                        foreach (ITemplate template in templateList)
-                        {
-                            AddTemplateToMemoryCache(template);
-                        }
+                        // TODO: consider not adding the mount point if there is nothing to install.
+                        // It'd require choosing to not write it upstream from here, which might be better anyway.
+                        // "nothing to install" could have a couple different meanings:
+                        // 1) no templates, and no langpacks were found.
+                        // 2) only langpacks were found, but they aren't for any existing templates - but we won't know that at this point.
+                        SettingsLoader.AddMountPoint(mountPoint);
+                        ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir);
                     }
+                }
+            }
+        }
+
+        private static void ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
+        {
+            ScanForComponents(mountPoint, templateDir);
+
+            foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
+            {
+                IList<ILocalizationLocator> localizationInfo;
+                IEnumerable<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out localizationInfo);
+
+                foreach (ILocalizationLocator locator in localizationInfo)
+                {
+                    AddLocalizationToMemoryCache(locator);
+                }
+
+                foreach (ITemplate template in templateList)
+                {
+                    AddTemplateToMemoryCache(template);
                 }
             }
         }
@@ -267,6 +284,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             HashSet<string> foundTemplates = new HashSet<string>();
             List<TemplateInfo> mergedTemplateList = new List<TemplateInfo>();
 
+            // When a template is updated, i.e. it already existed in the disk cache, and is being added again,
+            // the existing locale info is lost.
+            // This might be the right behavior - the update may have different enough info that it requires different loc. 
+            // But if we want to include the previously existing LOC info, it needs to happen here - in one of the two following loops.
+            // Could probably be in either loop - but either way, we'll need to check the locatorsForLocale.
+            // If there isn't one for the current template-locale pair, that means there isn't new LOC info. 
+            // In that case, we'd (potentially) take the old LOC.
+
             foreach (TemplateInfo template in NewTemplateInfoForLocale(locale))
             {
                 mergedTemplateList.Add(template);
@@ -315,7 +340,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         // returns TemplateInfo for all the known templates.
-        // if the locale is matches localization for the template, the loc info is included.
+        // If the locale matches localization for the template, the loc info is included.
         private static IList<TemplateInfo> NewTemplateInfoForLocale(string locale)
         {
             IList<TemplateInfo> templatesForLocale = new List<TemplateInfo>();
