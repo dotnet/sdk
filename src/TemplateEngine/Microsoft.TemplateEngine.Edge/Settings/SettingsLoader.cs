@@ -221,11 +221,39 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _userSettings.Save();
         }
 
-        public static bool TryGetMountPoint(Guid mountPointId, out MountPointInfo info)
+        public static bool TryGetMountPointInfo(Guid mountPointId, out MountPointInfo info)
         {
             EnsureLoaded();
             using(Timing.Over("Mount point lookup"))
             return _mountPoints.TryGetValue(mountPointId, out info);
+        }
+
+        public static bool TryGetMountPointInfoFromPlace(string mountPointPlace, out MountPointInfo info)
+        {
+            EnsureLoaded();
+            using (Timing.Over("Mount point place lookup"))
+                foreach (MountPointInfo mountInfoToCheck in _mountPoints.Values)
+                {
+                    if (mountPointPlace.Equals(mountInfoToCheck.Place, StringComparison.OrdinalIgnoreCase))
+                    {
+                        info = mountInfoToCheck;
+                        return true;
+                    }
+                }
+
+            info = null;
+            return false;
+        }
+
+        public static bool TryGetMountPointFromPlace(string mountPointPlace, out IMountPoint mountPoint)
+        {
+            if (! TryGetMountPointInfoFromPlace(mountPointPlace, out MountPointInfo info))
+            {
+                mountPoint = null;
+                return false;
+            }
+
+            return _mountPointManager.TryDemandMountPoint(info.MountPointId, out mountPoint);
         }
 
         public static void AddMountPoint(IMountPoint mountPoint)

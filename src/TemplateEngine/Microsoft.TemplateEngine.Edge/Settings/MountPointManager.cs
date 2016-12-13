@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             using (Timing.Over("Get mount point"))
             {
                 MountPointInfo info;
-                if (SettingsLoader.TryGetMountPoint(mountPointId, out info))
+                if (SettingsLoader.TryGetMountPointInfo(mountPointId, out info))
                 {
                     return TryDemandMountPoint(info, out mountPoint);
                 }
