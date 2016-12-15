@@ -42,6 +42,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public virtual bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition)
         {
+            LogMessage(string.Format($"Error: {message}"));
             return false;
         }
 

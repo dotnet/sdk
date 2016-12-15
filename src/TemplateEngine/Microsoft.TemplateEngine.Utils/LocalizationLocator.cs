@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.TemplateEngine.Abstractions;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Utils
 {
     public class LocalizationLocator : ILocalizationLocator
     {
@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Author { get; set; }
 
-        public string Name { get; set;  }
+        public string Name { get; set; }
 
         public string Description { get; set; }
     }

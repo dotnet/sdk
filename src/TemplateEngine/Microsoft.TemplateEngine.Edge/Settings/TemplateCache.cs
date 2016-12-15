@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             string searchTarget = Path.Combine(EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory(), templateDir.Trim());
             List<string> matches = EngineEnvironmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
 
-            if(matches.Count == 1)
+            if (matches.Count == 1)
             {
                 templateDir = matches[0];
             }
@@ -262,126 +262,118 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private static void WriteTemplateCacheForLocale(string locale)
         {
-            bool isCurrentLocale = string.IsNullOrEmpty(locale)
-                    && string.IsNullOrEmpty(EngineEnvironmentSettings.Host.Locale)
-                    || (locale == EngineEnvironmentSettings.Host.Locale);
-
-            IDictionary<string, ILocalizationLocator> locatorsForLocale;
-            if (string.IsNullOrEmpty(locale)
-                || !_localizationMemoryCache.TryGetValue(locale, out locatorsForLocale))
-            {
-                locatorsForLocale = null;
-            }
-
             List<TemplateInfo> existingTemplatesForLocale = LoadTemplateCacheForLocale(locale);
+            IDictionary<string, ILocalizationLocator> existingLocatorsForLocale;
 
             if (existingTemplatesForLocale.Count == 0)
-            {
-                // the cache for this locale didn't exist previously. Start with the neutral locale as if it were the existing
+            {   // the cache for this locale didn't exist previously. Start with the neutral locale as if it were the existing (no locales)
                 existingTemplatesForLocale = LoadTemplateCacheForLocale(null);
+                existingLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
+            }
+            else
+            {
+                existingLocatorsForLocale = GetLocalizationsFromTemplates(existingTemplatesForLocale, locale);
             }
 
             HashSet<string> foundTemplates = new HashSet<string>();
             List<TemplateInfo> mergedTemplateList = new List<TemplateInfo>();
 
-            // When a template is updated, i.e. it already existed in the disk cache, and is being added again,
-            // the existing locale info is lost.
-            // This might be the right behavior - the update may have different enough info that it requires different loc. 
-            // But if we want to include the previously existing LOC info, it needs to happen here - in one of the two following loops.
-            // Could probably be in either loop - but either way, we'll need to check the locatorsForLocale.
-            // If there isn't one for the current template-locale pair, that means there isn't new LOC info. 
-            // In that case, we'd (potentially) take the old LOC.
-
-            foreach (TemplateInfo template in NewTemplateInfoForLocale(locale))
+            // These are from langpacks being installed... identity -> locator
+            IDictionary<string, ILocalizationLocator> newLocatorsForLocale;
+            if (string.IsNullOrEmpty(locale)
+                || !_localizationMemoryCache.TryGetValue(locale, out newLocatorsForLocale))
             {
-                mergedTemplateList.Add(template);
-                foundTemplates.Add(template.Identity);
+                newLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
             }
 
-            foreach (TemplateInfo templateInfo in existingTemplatesForLocale)
+            foreach (ITemplate newTemplate in _templateMemoryCache.Values)
             {
-                if (!foundTemplates.Contains(templateInfo.Identity))
+                ILocalizationLocator locatorForTemplate = GetPreferredLocatorForTemplate(newTemplate.Identity, existingLocatorsForLocale, newLocatorsForLocale);
+                TemplateInfo localizedTemplate = LocalizeTemplate(newTemplate, locatorForTemplate);
+                mergedTemplateList.Add(localizedTemplate);
+                foundTemplates.Add(newTemplate.Identity);
+            }
+
+            foreach (TemplateInfo existingTemplate in existingTemplatesForLocale)
+            {
+                if (!foundTemplates.Contains(existingTemplate.Identity))
                 {
-                    UpdateTemplateLocalization(templateInfo, locatorsForLocale);
-                    mergedTemplateList.Add(templateInfo);
-                    foundTemplates.Add(templateInfo.Identity);
+                    ILocalizationLocator locatorForTemplate = GetPreferredLocatorForTemplate(existingTemplate.Identity, existingLocatorsForLocale, newLocatorsForLocale);
+                    TemplateInfo localizedTemplate = LocalizeTemplate(existingTemplate, locatorForTemplate);
+                    mergedTemplateList.Add(localizedTemplate);
+                    foundTemplates.Add(existingTemplate.Identity);
                 }
             }
 
+            bool isCurrentLocale = string.IsNullOrEmpty(locale)
+                && string.IsNullOrEmpty(EngineEnvironmentSettings.Host.Locale)
+                || (locale == EngineEnvironmentSettings.Host.Locale);
             SettingsLoader.WriteTemplateCache(mergedTemplateList, locale, isCurrentLocale);
         }
 
-        private static void UpdateTemplateLocalization(TemplateInfo template, IDictionary<string, ILocalizationLocator> locatorsForLocale)
+        // find the best locator (if any). New is preferred over old
+        private static ILocalizationLocator GetPreferredLocatorForTemplate(string identity, IDictionary<string, ILocalizationLocator> existingLocatorsForLocale, IDictionary<string, ILocalizationLocator> newLocatorsForLocale)
         {
-            ILocalizationLocator localizationInfo = null;
-            if (locatorsForLocale == null
-                || !locatorsForLocale.TryGetValue(template.Identity, out localizationInfo))
+            ILocalizationLocator locatorForTemplate;
+            if (!newLocatorsForLocale.TryGetValue(identity, out locatorForTemplate))
             {
-                return;
+                existingLocatorsForLocale.TryGetValue(identity, out locatorForTemplate);
             }
 
-            template.LocaleConfigPlace = localizationInfo.ConfigPlace ?? null;
-            template.LocaleConfigMountPointId = localizationInfo.MountPointId;
-
-            if (!string.IsNullOrEmpty(localizationInfo.Author))
-            {
-                template.Author = localizationInfo.Author;
-            }
-
-            if (!string.IsNullOrEmpty(localizationInfo.Name))
-            {
-                template.Name = localizationInfo.Name;
-            }
-
-            if (!string.IsNullOrEmpty(localizationInfo.Description))
-            {
-                template.Description = localizationInfo.Description;
-            }
+            return locatorForTemplate;
         }
 
-        // returns TemplateInfo for all the known templates.
-        // If the locale matches localization for the template, the loc info is included.
-        private static IList<TemplateInfo> NewTemplateInfoForLocale(string locale)
+        private static TemplateInfo LocalizeTemplate(ITemplateInfo template, ILocalizationLocator localizationInfo)
         {
-            IList<TemplateInfo> templatesForLocale = new List<TemplateInfo>();
-            IDictionary<string, ILocalizationLocator> locatorsForLocale;
-
-            if (string.IsNullOrEmpty(locale)
-                || ! _localizationMemoryCache.TryGetValue(locale, out locatorsForLocale))
+            TemplateInfo localizedTemplate = new TemplateInfo
             {
-                locatorsForLocale = null;
-            }
+                GeneratorId = template.GeneratorId,
+                ConfigPlace = template.ConfigPlace,
+                ConfigMountPointId = template.ConfigMountPointId,
+                Name = localizationInfo?.Name ?? template.Name,
+                Tags = template.Tags,
+                ShortName = template.ShortName,
+                Classifications = template.Classifications,
+                Author = localizationInfo?.Author ?? template.Author,
+                Description = localizationInfo?.Description ?? template.Description,
+                GroupIdentity = template.GroupIdentity,
+                Identity = template.Identity,
+                DefaultName = template.DefaultName,
+                LocaleConfigPlace = localizationInfo?.ConfigPlace ?? null,
+                LocaleConfigMountPointId = localizationInfo?.MountPointId ?? Guid.Empty
+            };
 
-            foreach (ITemplate template in _templateMemoryCache.Values)
+            return localizedTemplate;
+        }
+
+        // return dict is: Identity -> locator
+        private static IDictionary<string, ILocalizationLocator> GetLocalizationsFromTemplates(IList<TemplateInfo> templateList, string locale)
+        {
+            IDictionary<string, ILocalizationLocator> locatorLookup = new Dictionary<string, ILocalizationLocator>();
+
+            foreach (TemplateInfo template in templateList)
             {
-                ILocalizationLocator localizationInfo = null;
-                if (locatorsForLocale != null)
-                {
-                    locatorsForLocale.TryGetValue(template.Identity, out localizationInfo);
+                if (template.LocaleConfigMountPointId == null
+                    || template.LocaleConfigMountPointId == Guid.Empty)
+                {   // Indicates an unlocalized entry in the locale specific template cache.
+                    continue;
                 }
 
-                TemplateInfo localizedTemplate = new TemplateInfo
+                ILocalizationLocator locator = new LocalizationLocator()
                 {
-                    GeneratorId = template.Generator.Id,
-                    ConfigPlace = template.Configuration.FullPath,
-                    ConfigMountPointId = template.Configuration.MountPoint.Info.MountPointId,
-                    Name = localizationInfo?.Name ?? template.Name,
-                    Tags = template.Tags,
-                    ShortName = template.ShortName,
-                    Classifications = template.Classifications,
-                    Author = localizationInfo?.Author ?? template.Author,
-                    Description = localizationInfo?.Description ?? template.Description,
-                    GroupIdentity = template.GroupIdentity,
+                    Locale = locale,
+                    MountPointId = template.LocaleConfigMountPointId,
+                    ConfigPlace = template.LocaleConfigPlace,
                     Identity = template.Identity,
-                    DefaultName = template.DefaultName,
-                    LocaleConfigPlace = localizationInfo?.ConfigPlace ?? null,
-                    LocaleConfigMountPointId = localizationInfo?.MountPointId ?? Guid.Empty
+                    Author = template.Author,
+                    Name = template.Name,
+                    Description = template.Description
                 };
 
-                templatesForLocale.Add(localizedTemplate);
+                locatorLookup.Add(locator.Identity, locator);
             }
 
-            return templatesForLocale;
+            return locatorLookup;
         }
 
         // Adds the template to the memory cache, keyed on identity.

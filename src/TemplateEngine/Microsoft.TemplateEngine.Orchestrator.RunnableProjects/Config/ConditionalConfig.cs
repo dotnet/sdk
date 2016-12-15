@@ -158,6 +158,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 ActionableIfTokens = new[] { "/*#if" },
                 ActionableElseTokens = new[] { "#else", "/*#else" },
                 ActionableElseIfTokens = new[] { "#elseif", "/*#elseif" },
+                ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
             };
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
