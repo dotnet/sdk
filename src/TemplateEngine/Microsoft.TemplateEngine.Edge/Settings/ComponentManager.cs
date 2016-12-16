@@ -6,6 +6,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Mount.Archive;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -76,6 +77,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 ids.Add(ZipFileMountPointFactory.FactoryId);
                 Cache<IMountPointFactory>.Instance.AddPart(new ZipFileMountPointFactory());
+            }
+
+            foreach(KeyValuePair<Guid, Func<Type>> components in EngineEnvironmentSettings.Host.BuiltInComponents)
+            {
+                if (!ids.Contains(components.Key))
+                {
+                    Register(components.Value());
+                }
             }
         }
 

@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Utils
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
+        private readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> _hostBuiltInComponents;
+        private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = new KeyValuePair<Guid, Func<Type>>[0];
 
         public DefaultTemplateEngineHost(string hostIdentifier, Version version, string locale)
             : this(hostIdentifier, version, locale, null)
@@ -15,12 +17,19 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, Version version, string locale, Dictionary<string, string> defaults)
+            : this (hostIdentifier, version, locale, defaults, NoComponents)
+        {
+        }
+
+        public DefaultTemplateEngineHost(string hostIdentifier, Version version, string locale, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns)
         {
             HostIdentifier = hostIdentifier;
             Version = version;
             Locale = locale;
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
+            _hostDefaults = defaults;
+            _hostBuiltInComponents = builtIns;
         }
 
         public IPhysicalFileSystem FileSystem { get; }
@@ -36,6 +45,8 @@ namespace Microsoft.TemplateEngine.Utils
 
         public Version Version { get; }
 
+        public virtual IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents => _hostBuiltInComponents;
+        
         public virtual void LogMessage(string message)
         {
             //Console.WriteLine("LogMessage: {0}", message);
@@ -75,8 +86,14 @@ namespace Microsoft.TemplateEngine.Utils
         // stub that will be built out soon.
         public virtual bool TryGetHostParamDefault(string paramName, out string value)
         {
-            value = null;
-            return false;
+            switch (paramName)
+            {
+                case "HostIdentifier":
+                    value = HostIdentifier;
+                    return true;
+            }
+
+            return _hostDefaults.TryGetValue(paramName, out value);
         }
     }
 }

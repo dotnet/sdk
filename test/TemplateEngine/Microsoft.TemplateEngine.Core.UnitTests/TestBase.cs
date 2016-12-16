@@ -2,12 +2,18 @@
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public abstract class TestBase
     {
+        protected TestBase()
+        {
+            EngineEnvironmentSettings.Host = new DefaultTemplateEngineHost("TestRunner", Version.Parse("1.0.0.0"), "en-US");
+        }
+
         protected static void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null)
         {
             byte[] valueBytes = Encoding.UTF8.GetBytes(originalValue);

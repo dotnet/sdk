@@ -7,6 +7,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class TestHost : ITemplateEngineHost
     {
+        public TestHost()
+        {
+            BuiltInComponents = new List<KeyValuePair<Guid, Func<Type>>>();
+        }
+
         public event Action<string, TimeSpan> TimingCompleted;
 
         public event Action<string, object> SymbolUsed;
@@ -34,6 +39,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         public string HostIdentifier { get; set; }
 
         public Version Version { get; set; }
+
+        public IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents { get; set; }
 
         public bool TryGetHostParamDefault(string paramName, out string value)
         {
