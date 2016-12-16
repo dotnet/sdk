@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ITemplateEngineHost
     {
-        IPhysicalFileSystem FileSystem { get; }
+        IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents { get; }
 
-        string Locale { get; }
+        IPhysicalFileSystem FileSystem { get; }
 
         string HostIdentifier { get; }
 
         Version Version { get; }
 
+        string Locale { get; }
+        
         void LogMessage(string message);
 
         void OnCriticalError(string code, string message, string currentFile, long currentPosition);
