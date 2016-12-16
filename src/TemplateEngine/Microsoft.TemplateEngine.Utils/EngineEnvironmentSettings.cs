@@ -12,11 +12,8 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class EngineEnvironmentSettings
     {
-        private static readonly string DefaultLocale = "en_US";
-
         static EngineEnvironmentSettings()
         {
-            Host = new DefaultTemplateEngineHost(string.Empty, DefaultLocale);
             Paths = new DefaultPathInfo();
         }
 
@@ -57,7 +54,7 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     if (_baseDir == null)
                     {
-                        _baseDir = Path.Combine(UserProfileDir, ".netnew");
+                        _baseDir = Path.Combine(UserProfileDir, ".netnew", Host.HostIdentifier, Host.Version.ToString());
                     }
 
                     return _baseDir;

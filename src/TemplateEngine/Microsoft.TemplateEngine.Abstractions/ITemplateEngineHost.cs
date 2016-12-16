@@ -11,6 +11,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string HostIdentifier { get; }
 
+        Version Version { get; }
+
         void LogMessage(string message);
 
         void OnCriticalError(string code, string message, string currentFile, long currentPosition);
