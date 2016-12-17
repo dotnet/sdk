@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             using (Timing.Over("Alias search"))
             {
-#if !NET451
+#if !NET45
                 IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates;
 #else
                 IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates.ToList();
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 matchingTemplates.UnionWith(AliasRegistry.GetTemplatesForAlias(searchString, allTemplatesCollection));
             }
 
-#if !NET451
+#if !NET45
             IReadOnlyCollection<ITemplateInfo> matchingTemplatesCollection = matchingTemplates;
 #else
             IReadOnlyCollection<ITemplateInfo> matchingTemplatesCollection = matchingTemplates.ToList();

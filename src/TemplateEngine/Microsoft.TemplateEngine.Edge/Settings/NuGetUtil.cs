@@ -3,7 +3,7 @@
 //using System.IO;
 //using System.Linq;
 //using System.Reflection;
-//#if !NET451
+//#if !NET45
 //using System.Runtime.Loader;
 //#endif
 //using System.Threading;
@@ -243,7 +243,7 @@
 //                        continue;
 //                    }
 
-//#if !NET451
+//#if !NET45
 //                    Assembly asm = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 //#else
 //                    Assembly asm = Assembly.LoadFile(path);
