@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class RegexMacro : IMacro, IDeferredMacro
+    public class RegexMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("8A4D4937-E23F-426D-8398-3BDBD1873ADB");
 

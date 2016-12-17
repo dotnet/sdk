@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     // Symbol.type = "computed" is the only thing that becomes an evaluate macro.
-    internal class EvaluateMacro : IMacro
+    public class EvaluateMacro : IMacro
     {
         public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
 

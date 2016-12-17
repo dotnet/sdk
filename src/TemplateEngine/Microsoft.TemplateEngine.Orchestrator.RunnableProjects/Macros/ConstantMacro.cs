@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class ConstantMacro : IMacro, IDeferredMacro
+    public class ConstantMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("370996FE-2943-4AED-B2F6-EC03F0B75B4A");
 
