@@ -31,8 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             int len = data.Length;
             int pos = 0;
             IProcessorState state = new GlobalRunSpec.ProcessorState(vars, data, Encoding.UTF8);
-            bool faulted;
-            bool result = evaluator(state, ref len, ref pos, out faulted);
+            bool result = evaluator(state, ref len, ref pos, out bool faulted);
 
             Parameter p = new Parameter
             {

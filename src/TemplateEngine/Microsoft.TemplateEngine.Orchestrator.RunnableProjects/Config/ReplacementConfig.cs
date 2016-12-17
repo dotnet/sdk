@@ -16,8 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public static IOperationProvider Setup(IReplacementTokens tokens, IParameterSet parameters)
         {
-            ITemplateParameter param;
-            if (parameters.TryGetParameterDefinition(tokens.VariableName, out param))
+            if (parameters.TryGetParameterDefinition(tokens.VariableName, out ITemplateParameter param))
             {
                 Replacement replacement;
                 try

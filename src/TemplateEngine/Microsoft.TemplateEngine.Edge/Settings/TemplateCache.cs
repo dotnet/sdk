@@ -31,17 +31,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public TemplateCache(JObject parsed)
             : this()
         {
-            JToken templateInfoToken;
-            if (parsed.TryGetValue("TemplateInfo", StringComparison.OrdinalIgnoreCase, out templateInfoToken))
+            if (parsed.TryGetValue("TemplateInfo", StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken))
             {
-                JArray arr = templateInfoToken as JArray;
-                if (arr != null)
+                if (templateInfoToken is JArray arr)
                 {
                     foreach (JToken entry in arr)
                     {
                         if (entry != null && entry.Type == JTokenType.Object)
                         {
-                            TemplateInfo.Add(new TemplateInfo((JObject) entry));
+                            TemplateInfo.Add(new TemplateInfo((JObject)entry));
                         }
                     }
                 }
@@ -89,8 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
                 {
-                    IMountPoint mountPoint;
-                    if (factory.TryMount(null, templateDir, out mountPoint))
+                    if (factory.TryMount(null, templateDir, out IMountPoint mountPoint))
                     {
                         // TODO: consider not adding the mount point if there is nothing to install.
                         // It'd require choosing to not write it upstream from here, which might be better anyway.
@@ -110,8 +107,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
             {
-                IList<ILocalizationLocator> localizationInfo;
-                IEnumerable<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out localizationInfo);
+                IEnumerable<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out IList<ILocalizationLocator> localizationInfo);
 
                 foreach (ILocalizationLocator locator in localizationInfo)
                 {
@@ -170,11 +166,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             JObject parsed = JObject.Parse(cacheContent);
             List<TemplateInfo> templates = new List<TemplateInfo>();
 
-            JToken templateInfoToken;
-            if (parsed.TryGetValue("TemplateInfo", StringComparison.OrdinalIgnoreCase, out templateInfoToken))
+            if (parsed.TryGetValue("TemplateInfo", StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken))
             {
-                JArray arr = templateInfoToken as JArray;
-                if (arr != null)
+                if (templateInfoToken is JArray arr)
                 {
                     foreach (JToken entry in arr)
                     {
@@ -279,9 +273,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             List<TemplateInfo> mergedTemplateList = new List<TemplateInfo>();
 
             // These are from langpacks being installed... identity -> locator
-            IDictionary<string, ILocalizationLocator> newLocatorsForLocale;
             if (string.IsNullOrEmpty(locale)
-                || !_localizationMemoryCache.TryGetValue(locale, out newLocatorsForLocale))
+                || !_localizationMemoryCache.TryGetValue(locale, out IDictionary<string, ILocalizationLocator> newLocatorsForLocale))
             {
                 newLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
             }
@@ -314,8 +307,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // find the best locator (if any). New is preferred over old
         private static ILocalizationLocator GetPreferredLocatorForTemplate(string identity, IDictionary<string, ILocalizationLocator> existingLocatorsForLocale, IDictionary<string, ILocalizationLocator> newLocatorsForLocale)
         {
-            ILocalizationLocator locatorForTemplate;
-            if (!newLocatorsForLocale.TryGetValue(identity, out locatorForTemplate))
+            if (!newLocatorsForLocale.TryGetValue(identity, out ILocalizationLocator locatorForTemplate))
             {
                 existingLocatorsForLocale.TryGetValue(identity, out locatorForTemplate);
             }
@@ -386,9 +378,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private static void AddLocalizationToMemoryCache(ILocalizationLocator locator)
         {
-            IDictionary<string, ILocalizationLocator> localeLocators;
-
-            if (!_localizationMemoryCache.TryGetValue(locator.Locale, out localeLocators))
+            if (!_localizationMemoryCache.TryGetValue(locator.Locale, out IDictionary<string, ILocalizationLocator> localeLocators))
             {
                 localeLocators = new Dictionary<string, ILocalizationLocator>();
                 _localizationMemoryCache.Add(locator.Locale, localeLocators);

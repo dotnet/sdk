@@ -24,11 +24,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<Assembly> LoadAllAssemblies(out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
-            IEnumerable<string>
-                failures1,
-                failures2;
-
-            IEnumerable<Assembly> loaded = LoadAllFromUserDir(out failures1, pattern, searchOption).Union(LoadAllFromCodebase(out failures2, pattern, searchOption));
+            IEnumerable<Assembly> loaded = LoadAllFromUserDir(out IEnumerable<string> failures1, pattern, searchOption).Union(LoadAllFromCodebase(out IEnumerable<string> failures2, pattern, searchOption));
             loadFailures = failures1.Union(failures2);
             return loaded;
         }

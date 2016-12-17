@@ -123,16 +123,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new TemplateCreationResult(-1, string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
             }
 
-            ICreationResult creationResult;
-
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                IComponentManager componentManager = Settings.SettingsLoader.Components;
-                await template.Generator.Create(template, templateParams, componentManager, out creationResult);
+                IComponentManager componentManager = SettingsLoader.Components;
+                await template.Generator.Create(template, templateParams, componentManager, out ICreationResult creationResult);
                 sw.Stop();
                 EngineEnvironmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
-
             }
             finally
             {

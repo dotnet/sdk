@@ -78,8 +78,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 //      <!-- <!-- comment -- >
                 // into this:
                 //      <!-- <!-- comment -->
-                bool resetFlagValue;
-                if (processor.Config.Flags.TryGetValue(_resetFlag, out resetFlagValue) && resetFlagValue)
+                if (processor.Config.Flags.TryGetValue(_resetFlag, out bool resetFlagValue) && resetFlagValue)
                 {
                     processor.Config.Flags.Remove(_resetFlag);
                     _depth = 0;

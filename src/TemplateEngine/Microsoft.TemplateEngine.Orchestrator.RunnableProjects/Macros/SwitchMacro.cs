@@ -45,9 +45,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     int length = conditionBytes.Length;
                     int position = 0;
                     IProcessorState state = new GlobalRunSpec.ProcessorState(vars, conditionBytes, Encoding.UTF8);
-                    bool faulted;
 
-                    if (evaluator(state, ref length, ref position, out faulted))
+                    if (evaluator(state, ref length, ref position, out bool faulted))
                     {
                         result = value;
                         break;
@@ -73,23 +72,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a SwitchMacroConfig");
             }
 
-            JToken evaluatorToken;
             string evaluator = null;
-            if (deferredConfig.Parameters.TryGetValue("evaluator", out evaluatorToken))
+            if (deferredConfig.Parameters.TryGetValue("evaluator", out JToken evaluatorToken))
             {
                 evaluator = evaluatorToken.ToString();
             }
 
-            JToken dataTypeToken;
             string dataType = null;
-            if (deferredConfig.Parameters.TryGetValue("datatype", out dataTypeToken))
+            if (deferredConfig.Parameters.TryGetValue("datatype", out JToken dataTypeToken))
             {
                 dataType = dataTypeToken.ToString();
             }
 
-            JToken switchListToken;
             List<KeyValuePair<string, string>> switchList = new List<KeyValuePair<string, string>>();
-            if (deferredConfig.Parameters.TryGetValue("cases", out switchListToken))
+            if (deferredConfig.Parameters.TryGetValue("cases", out JToken switchListToken))
             {
                 JArray switchJArray = (JArray)switchListToken;
                 foreach (JToken switchInfo in switchJArray)

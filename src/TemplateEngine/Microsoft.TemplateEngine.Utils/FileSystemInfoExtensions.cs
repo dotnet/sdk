@@ -120,7 +120,11 @@ namespace Microsoft.TemplateEngine.Utils
             List<string> segments = new List<string> { info.Name };
 
             //Walk back the set of parents of this item until one is contained by our source, building up a list as we go
+
+#pragma warning disable IDE0018 // Inline variable declaration
+            //If inlined, this breaks compilation for use of an unassigned variable
             int revIndex = 0;
+#pragma warning restore IDE0018 // Inline variable declaration
             while (current != null && !sourceSegments.TryGetValue(current.FullPath, out revIndex))
             {
                 segments.Insert(0, current.Name);
