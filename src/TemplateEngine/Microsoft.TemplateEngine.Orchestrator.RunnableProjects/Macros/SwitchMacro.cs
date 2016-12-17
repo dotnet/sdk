@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class SwitchMacro : IMacro, IDeferredMacro
+    public class SwitchMacro : IMacro, IDeferredMacro
     {
         public Guid Id => new Guid("B57D64E0-9B4F-4ABE-9366-711170FD5294");
 
