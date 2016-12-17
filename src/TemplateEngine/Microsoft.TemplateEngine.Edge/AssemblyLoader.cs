@@ -1,11 +1,11 @@
-﻿#if NET451
+﻿#if NET45
 using System;
 #endif
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-#if !NET451
+#if !NET45
 using System.Runtime.Loader;
 #endif
 
@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Edge
     {
         public static Assembly Load(string path)
         {
-#if !NET451
+#if !NET45
             return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 #else
             return Assembly.LoadFile(path);
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<Assembly> LoadAllFromCodebase(out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
-#if !NET451
+#if !NET45
             return AssemblyLoadContext.Default.LoadAllFromCodebase(out loadFailures, pattern, searchOption);
 #else
             return AppDomain.CurrentDomain.LoadAllFromCodebase(out loadFailures, pattern, searchOption);
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<Assembly> LoadAllFromPath(out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
-#if !NET451
+#if !NET45
             return AssemblyLoadContext.Default.LoadAllFromPath(out loadFailures, path, pattern, searchOption);
 #else
             return AppDomain.CurrentDomain.LoadAllFromPath(out loadFailures, path, pattern, searchOption);

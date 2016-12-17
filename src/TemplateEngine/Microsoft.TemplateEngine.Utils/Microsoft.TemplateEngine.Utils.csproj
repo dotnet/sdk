@@ -1,22 +1,17 @@
-﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Version.props" />
-
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <EmbeddedResource Include="**\*.resx" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
+  <ItemGroup  Condition="'$(TargetFramework)' == 'netstandard1.3'">
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.0" />
     <PackageReference Include="NETStandard.Library" Version="1.6.0" />
   </ItemGroup>
-
 </Project>

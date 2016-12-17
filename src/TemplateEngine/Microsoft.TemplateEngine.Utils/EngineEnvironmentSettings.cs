@@ -1,10 +1,10 @@
 ﻿using Microsoft.TemplateEngine.Abstractions;
 
-#if !NET451
+#if !NET45
 using System;
 #endif
 using System.IO;
-#if !NET451
+#if !NET45
 using System.Runtime.InteropServices;
 #endif
 
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     if (_userProfileDir == null)
                     {
-#if !NET451
+#if !NET45
                     string profileDir =
                         Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                             ? "USERPROFILE"

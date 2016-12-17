@@ -1,7 +1,7 @@
-﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.0;net45</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />
@@ -13,6 +13,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.0'">    
     <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0" />
     <PackageReference Include="System.Runtime.Loader" Version="4.0.0" />
   </ItemGroup>
