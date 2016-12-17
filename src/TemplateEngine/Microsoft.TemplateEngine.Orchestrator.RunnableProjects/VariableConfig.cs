@@ -35,9 +35,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             Dictionary<string, string> sourceFormats = new Dictionary<string, string>();
             List<string> order = new List<string>();
-            JToken sourcesData;
 
-            if (configData.TryGetValue("sources", System.StringComparison.OrdinalIgnoreCase, out sourcesData))
+            if (configData.TryGetValue("sources", System.StringComparison.OrdinalIgnoreCase, out JToken sourcesData))
             {
                 foreach (JObject source in (JArray)sourcesData)
                 {

@@ -39,8 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            JToken valueToken;
-            if (!deferredConfig.Parameters.TryGetValue("value", out valueToken))
+            if (!deferredConfig.Parameters.TryGetValue("value", out JToken valueToken))
             {
                 throw new ArgumentNullException("value");
             }

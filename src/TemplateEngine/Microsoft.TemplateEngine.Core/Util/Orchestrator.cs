@@ -116,8 +116,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                                 }
                             }
 
-                            IReadOnlyList<IOperationProvider> locOperations;
-                            spec.LocalizationOperations.TryGetValue(sourceRel, out locOperations);
+                            spec.LocalizationOperations.TryGetValue(sourceRel, out IReadOnlyList<IOperationProvider> locOperations);
 
                             if (!copy)
                             {
@@ -147,8 +146,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         private static string CreateTargetDir(string sourceRel, string targetDir, IGlobalRunSpec spec)
         {
-            string targetRel;
-            if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))
+            if (!spec.TryGetTargetRelPath(sourceRel, out string targetRel))
             {
                 targetRel = sourceRel;
             }
@@ -173,21 +171,16 @@ namespace Microsoft.TemplateEngine.Core.Util
                 runner = runner.CloneAndAppendOperations(locOperations);
             }
 
-            string targetRel;
-            if (!spec.TryGetTargetRelPath(sourceRel, out targetRel))
+            if (!spec.TryGetTargetRelPath(sourceRel, out string targetRel))
             {
                 targetRel = sourceRel;
             }
 
             string targetPath = Path.Combine(targetDir, targetRel);
-
             //TODO: Update context with the current file & such here
 
-            int bufferSize;
-            int flushThreshold;
-
-            bool customBufferSize = TryGetBufferSize(sourceFile, out bufferSize);
-            bool customFlushThreshold = TryGetFlushThreshold(sourceFile, out flushThreshold);
+            bool customBufferSize = TryGetBufferSize(sourceFile, out int bufferSize);
+            bool customFlushThreshold = TryGetFlushThreshold(sourceFile, out int flushThreshold);
             string fullTargetDir = Path.GetDirectoryName(targetPath);
             EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(fullTargetDir);
 

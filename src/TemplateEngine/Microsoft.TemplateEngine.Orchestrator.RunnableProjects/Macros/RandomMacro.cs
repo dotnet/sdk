@@ -42,12 +42,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            JToken lowToken;
-            JToken highToken;
             int low;
             int high;
 
-            if (!deferredConfig.Parameters.TryGetValue("low", out lowToken))
+            if (!deferredConfig.Parameters.TryGetValue("low", out JToken lowToken))
             {
                 throw new ArgumentNullException("low");
             }
@@ -56,7 +54,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 low = lowToken.Value<int>();
             }
 
-            if (!deferredConfig.Parameters.TryGetValue("high", out highToken))
+            if (!deferredConfig.Parameters.TryGetValue("high", out JToken highToken))
             {
                 high = int.MaxValue;
             }

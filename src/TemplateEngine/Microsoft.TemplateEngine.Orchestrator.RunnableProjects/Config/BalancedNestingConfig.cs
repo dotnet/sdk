@@ -26,12 +26,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public static JObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
         {
-            JObject config = new JObject();
-            config["startToken"] = startToken;
-            config["realEndToken"] = realEndToken;
-            config["pseudoEndToken"] = pseudoEndToken;
-            config["id"] = id;
-            config["resetFlag"] = resetFlag;
+            JObject config = new JObject
+            {
+                ["startToken"] = startToken,
+                ["realEndToken"] = realEndToken,
+                ["pseudoEndToken"] = pseudoEndToken,
+                ["id"] = id,
+                ["resetFlag"] = resetFlag
+            };
 
             return config;
         }

@@ -24,12 +24,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as RegexMacroConfig");
             }
 
-            object working;
-            if (!vars.TryGetValue(config.SourceVariable, out working))
+            if (!vars.TryGetValue(config.SourceVariable, out object working))
             {
-                ITemplateParameter param;
-                object resolvedValue;
-                if (!parameters.TryGetParameterDefinition(config.SourceVariable, out param) || !parameters.ResolvedValues.TryGetValue(param, out resolvedValue))
+                if (!parameters.TryGetParameterDefinition(config.SourceVariable, out ITemplateParameter param) || !parameters.ResolvedValues.TryGetValue(param, out object resolvedValue))
                 {
                     value = string.Empty;
                 }
@@ -68,16 +65,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            JToken sourceVarToken;
-            if (!deferredConfig.Parameters.TryGetValue("source", out sourceVarToken))
+            if (!deferredConfig.Parameters.TryGetValue("source", out JToken sourceVarToken))
             {
                 throw new ArgumentNullException("source");
             }
             string sourceVariable = sourceVarToken.ToString();
 
-            JToken stepListToken;
             List<KeyValuePair<string, string>> replacementSteps = new List<KeyValuePair<string, string>>();
-            if (deferredConfig.Parameters.TryGetValue("steps", out stepListToken))
+            if (deferredConfig.Parameters.TryGetValue("steps", out JToken stepListToken))
             {
                 JArray stepList = (JArray)stepListToken;
                 foreach (JToken step in stepList)
