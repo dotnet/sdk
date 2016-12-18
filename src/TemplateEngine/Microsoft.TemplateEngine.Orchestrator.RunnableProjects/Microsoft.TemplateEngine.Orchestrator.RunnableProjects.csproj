@@ -2,6 +2,7 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <Description>An extension for Template Engine that allows projects that still run to be used as templates</Description>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />

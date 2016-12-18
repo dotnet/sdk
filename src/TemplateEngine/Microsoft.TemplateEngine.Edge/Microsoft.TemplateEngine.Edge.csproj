@@ -2,6 +2,7 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.0;net45</TargetFrameworks>
+    <Description>Helper package for adding Template Engine to consuming applications</Description>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />
