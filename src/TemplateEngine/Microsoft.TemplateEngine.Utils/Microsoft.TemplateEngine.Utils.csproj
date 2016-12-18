@@ -2,6 +2,7 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <Description>Components used by all Template Engine extensions and consumers</Description>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />
