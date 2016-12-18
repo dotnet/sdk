@@ -286,19 +286,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
             {
-                if ((literal != null) && (param.Choices.Contains(literal) || param.DefaultValue == literal))
+                if (literal != null)
                 {
-                    return literal;
-                }
-                else
-                {
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && (val == null || !param.Choices.Contains(literal)))
-                    {
-                    }
+                    string match = param.Choices.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
 
-                    return val;
+                    if (match != null)
+                    {
+                        return match;
+                    }
                 }
+
+                if(literal == null && param.Priority != TemplateParameterPriority.Required)
+                {
+                    return param.DefaultValue;
+                }
+
+                while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && (val == null || !param.Choices.Contains(literal)))
+                {
+                }
+
+                return val;
             }
+
             else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
             {
                 if (double.TryParse(literal, out double convertedFloat))
