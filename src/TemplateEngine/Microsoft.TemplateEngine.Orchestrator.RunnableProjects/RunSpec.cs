@@ -9,10 +9,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private readonly IReadOnlyList<IOperationProvider> _overrides;
         private readonly IVariableCollection _vars;
 
-        public RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, IVariableCollection vars)
+        public RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, IVariableCollection vars, string variableFormatString)
         {
             _overrides = operationOverrides;
             _vars = vars ?? new VariableCollection();
+            VariableFormatString = variableFormatString ?? "{0}";
         }
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
@@ -30,5 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             return _vars;
         }
+
+        public string VariableFormatString { get; }
     }
 }

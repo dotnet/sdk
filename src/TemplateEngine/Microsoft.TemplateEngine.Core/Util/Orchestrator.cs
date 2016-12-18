@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 foreach (KeyValuePair<IPathMatcher, IRunSpec> runSpec in spec.Special)
                 {
                     IReadOnlyList<IOperationProvider> operations = runSpec.Value.GetOperations(spec.Operations);
-                    EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
+                    EngineConfig config = new EngineConfig(EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection, runSpec.Value.VariableFormatString);
                     IProcessor processor = Processor.Create(config, operations);
 
                     processorList.Add(new KeyValuePair<IPathMatcher, IProcessor>(runSpec.Key, processor));

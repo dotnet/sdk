@@ -233,7 +233,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (_operationConfig == null)
                 {
-                    SpecialOperationConfigParams defaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", ConditionalType.CLineComments);
+                    SpecialOperationConfigParams defaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", "C++", ConditionalType.CLineComments);
                     _operationConfig = ProduceOperationSetup(defaultOperationParams, true, CustomOperations);
                 }
 
@@ -243,8 +243,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class SpecialOperationConfigParams
         {
-            public SpecialOperationConfigParams(string glob, string flagPrefix, ConditionalType type)
+            public SpecialOperationConfigParams(string glob, string flagPrefix, string evaluatorName, ConditionalType type)
             {
+                EvaluatorName = evaluatorName;
                 Glob = glob;
                 FlagPrefix = flagPrefix;
                 ConditionalStyle = type;
@@ -252,11 +253,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public string Glob { get; }
 
+            public string EvaluatorName { get; }
+
             public string FlagPrefix { get; }
 
             public ConditionalType ConditionalStyle { get; }
 
-            private static readonly SpecialOperationConfigParams _Defaults = new SpecialOperationConfigParams(string.Empty, string.Empty, ConditionalType.None);
+            public string VariableFormat { get; set; }
+
+            private static readonly SpecialOperationConfigParams _Defaults = new SpecialOperationConfigParams(string.Empty, string.Empty, "C++", ConditionalType.None);
 
             public static SpecialOperationConfigParams Defaults
             {
@@ -265,6 +270,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return _Defaults;
                 }
             }
+
         }
 
         // file -> replacements
@@ -279,26 +285,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (_specialOperationConfig == null)
                 {
-                    List<SpecialOperationConfigParams> defaultSpecials = new List<SpecialOperationConfigParams>();
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.json", "//", ConditionalType.CLineComments));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css.min", "/*", ConditionalType.CBlockComments));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.css", "/*", ConditionalType.CBlockComments));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cshtml", "@*", ConditionalType.Razor));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cs", "//", ConditionalType.CNoComments));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cpp", "//", ConditionalType.CNoComments));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.h", "//", ConditionalType.CNoComments));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.hpp", "//", ConditionalType.CNoComments));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.*proj", "<!--/", ConditionalType.Xml));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.*htm", "<!--", ConditionalType.Xml));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.*html", "<!--", ConditionalType.Xml));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.jsp", "<!--", ConditionalType.Xml));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.asp", "<!--", ConditionalType.Xml));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.aspx", "<!--", ConditionalType.Xml));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.bat", "rem --:", ConditionalType.RemLineComment));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/*.cmd", "rem --:", ConditionalType.RemLineComment));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/nginx.conf", "#--", ConditionalType.HashSignLineComment));
-                    defaultSpecials.Add(new SpecialOperationConfigParams("**/robots.txt", "#--", ConditionalType.HashSignLineComment));
-
+                    List<SpecialOperationConfigParams> defaultSpecials = new List<SpecialOperationConfigParams>
+                    {
+                        new SpecialOperationConfigParams("**/*.json", "//", "C++", ConditionalType.CLineComments),
+                        new SpecialOperationConfigParams("**/*.css.min", "/*", "C++", ConditionalType.CBlockComments),
+                        new SpecialOperationConfigParams("**/*.css", "/*", "C++", ConditionalType.CBlockComments),
+                        new SpecialOperationConfigParams("**/*.cshtml", "@*", "C++", ConditionalType.Razor),
+                        new SpecialOperationConfigParams("**/*.cs", "//", "C++", ConditionalType.CNoComments),
+                        new SpecialOperationConfigParams("**/*.cpp", "//", "C++", ConditionalType.CNoComments),
+                        new SpecialOperationConfigParams("**/*.h", "//", "C++", ConditionalType.CNoComments),
+                        new SpecialOperationConfigParams("**/*.hpp", "//", "C++", ConditionalType.CNoComments),
+                        new SpecialOperationConfigParams("**/*.*proj", "<!--/", "MSBUILD", ConditionalType.MSBuild),
+                        new SpecialOperationConfigParams("**/*.*htm", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/*.*html", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/*.jsp", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/*.asp", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/*.aspx", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/*.bat", "rem --:", "C++", ConditionalType.RemLineComment),
+                        new SpecialOperationConfigParams("**/*.cmd", "rem --:", "C++", ConditionalType.RemLineComment),
+                        new SpecialOperationConfigParams("**/nginx.conf", "#--", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/robots.txt", "#--", "C++", ConditionalType.HashSignLineComment)
+                    };
                     List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
 
                     // put the custom configs first in the list
@@ -350,7 +357,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // TODO: if we allow custom config to specify a built-in conditional type, decide what to do.
             if (defaultModel.ConditionalStyle != ConditionalType.None)
             {
-                operations.AddRange(ConditionalConfig.ConditionalSetup(defaultModel.ConditionalStyle, "C++", true, true, null));
+                operations.AddRange(ConditionalConfig.ConditionalSetup(defaultModel.ConditionalStyle, defaultModel.EvaluatorName, true, true, null));
             }
 
             if (customGlobModel == null || string.IsNullOrEmpty(customGlobModel.FlagPrefix))
@@ -369,7 +376,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else
             {
-                variableConfig = VariableConfig.DefaultVariableSetup();
+                variableConfig = VariableConfig.DefaultVariableSetup(defaultModel.VariableFormat);
             }
 
             IReadOnlyList<IMacroConfig> macros = null;
@@ -476,8 +483,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (_safeNameName == null)
             {
-                IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>();
-                steps.Add(new KeyValuePair<string, string>(@"\W", "_"));
+                IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(@"\W", "_")
+                };
+
                 generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", NameParameter.Name, steps));
                 _safeNameName = "safe_name";
             }

@@ -10,6 +10,7 @@
         CLineComments,
         CBlockComments,
         HashSignLineComment,
-        RemLineComment
+        RemLineComment,
+        MSBuild
     }
 }

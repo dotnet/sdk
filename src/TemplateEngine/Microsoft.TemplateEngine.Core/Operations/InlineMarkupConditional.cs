@@ -11,13 +11,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         private readonly string _id;
 
-        public InlineMarkupConditional(MarkupTokens tokens, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id)
+        public InlineMarkupConditional(MarkupTokens tokens, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string variableFormat, string id)
         {
             Tokens = tokens;
             _id = id;
             Evaluator = evaluator;
             WholeLine = wholeLine;
             TrimWhitespace = trimWhitespace;
+            VariableFormat = variableFormat;
         }
 
         public ConditionEvaluator Evaluator { get; }
@@ -25,6 +26,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public MarkupTokens Tokens { get; }
 
         public bool TrimWhitespace { get; }
+
+        public string VariableFormat { get; }
 
         public bool WholeLine { get; }
 
@@ -94,7 +97,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 List<byte> conditionBytes = new List<byte>();
                 ScanToCloseCondition(processor, conditionBytes, ref bufferLength, ref currentBufferPosition);
                 byte[] condition = conditionBytes.ToArray();
-                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, processor.Config, new IOperationProvider[0]);
+                EngineConfig adjustedConfig = new EngineConfig(processor.Config.Whitespaces, processor.Config.LineEndings, processor.Config.Variables, _definition.VariableFormat);
+                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, adjustedConfig, new IOperationProvider[0]);
                 int pos = 0;
                 int len = conditionBytes.Count;
 

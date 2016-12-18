@@ -4,6 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
@@ -18,21 +19,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         {
             if (parameters.TryGetParameterDefinition(tokens.VariableName, out ITemplateParameter param))
             {
-                Replacement replacement;
-                try
+                if (parameters.ResolvedValues.TryGetValue(param, out object newValueObject) && newValueObject != null)
                 {
-                    string newValue = (string)(parameters.ResolvedValues[param]);
-                    replacement = new Replacement(tokens.OriginalValue, newValue, null);
+                    string newValue = (string)newValueObject;
+                    return new Replacement(tokens.OriginalValue, newValue, null);
                 }
-                catch (KeyNotFoundException ex)
+                else
                 {
-                    throw new Exception($"Unable to find a parameter value called \"{param.Name}\"", ex);
+                    EngineEnvironmentSettings.Host.LogMessage($"Couldn't bind {tokens.OriginalValue} to unset parameter {param.Name}");
+                    return null;
                 }
-
-                return replacement;
             }
             else
             {
+                EngineEnvironmentSettings.Host.LogMessage($"Couldn't find a parameter called {tokens.VariableName}");
                 return null;
             }
         }
