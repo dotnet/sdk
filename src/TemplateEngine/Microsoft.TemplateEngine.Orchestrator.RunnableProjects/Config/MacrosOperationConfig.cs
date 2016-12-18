@@ -31,14 +31,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             // run the macros that are already setup, stash the deferred ones for afterwards
             foreach (IMacroConfig config in allMacroConfigs)
             {
-                if (config is GeneratedSymbolDeferredMacroConfig)
+                if (config is GeneratedSymbolDeferredMacroConfig deferredConfig)
                 {
-                    deferredConfigList.Add(config as GeneratedSymbolDeferredMacroConfig);
+                    deferredConfigList.Add(deferredConfig);
                     continue;
                 }
 
-                IMacro macroObject;
-                if (_macroObjects.TryGetValue(config.Type, out macroObject))
+                if (_macroObjects.TryGetValue(config.Type, out IMacro macroObject))
                 {
                     macroObject.EvaluateConfig(variables, config, parameters, setter);
                 }

@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else
             {
-                variableConfig = VariableConfig.DefaultVariableSetup();
+                variableConfig = VariableConfig.DefaultVariableSetup(null);
             }
 
             // setup the custom operations

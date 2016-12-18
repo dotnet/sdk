@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Expressions.MSBuild;
 using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
 
@@ -51,6 +52,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             switch (style)
             {
+                case ConditionalType.MSBuild:
+                    setup = MSBuildConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
                 case ConditionalType.Xml:
                     setup = XmlConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
@@ -107,6 +111,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             {
                 conditional,
                 balancedComments
+            };
+        }
+
+        public static List<IOperationProvider> MSBuildConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new InlineMarkupConditional(
+                new MarkupTokens("<", "</", ">", "/>", "Condition=\"", "\""),
+                wholeLine,
+                trimWhiteSpace,
+                evaluator,
+                "$({0})",
+                id
+            );
+
+            return new List<IOperationProvider>()
+            {
+                conditional
             };
         }
 

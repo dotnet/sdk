@@ -234,18 +234,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         { 
             if (untypedValue == null)
             {
-                throw new TemplateParamException("Parameter value is null", parameter.Name, null, parameter.DataType);
+                return null;
             }
 
             if (!string.IsNullOrEmpty(parameter.DataType))
             {
                 object convertedValue = DataTypeSpecifiedConvertLiteral(parameter, untypedValue);
-
-                if (convertedValue == null)
-                {
-                    throw new TemplateParamException("Parameter value could not be converted", parameter.Name, untypedValue, parameter.DataType);
-                }
-
                 return convertedValue;
             }
             else
@@ -279,22 +273,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
+                    bool boolVal = false;
                     // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
                     // which takes care of making null bool -> true as appropriate.
                     // This else can also happen if there is a value but it can't be converted.
-                    throw new TemplateParamException("Value is not a bool", param.Name, literal, param.DataType);
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val) && !bool.TryParse(val, out boolVal))
+                    {
+                    }
+
+                    return boolVal;
                 }
             }
             else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
             {
-                if ((literal != null) && param.Choices.Contains(literal))
+                if ((literal != null) && (param.Choices.Contains(literal) || param.DefaultValue == literal))
                 {
                     return literal;
                 }
                 else
                 {
-                    string conversionErrorMessage = string.Format("Choice is invalid. Valid choices are: [{0}]", string.Join(",", param.Choices));
-                    throw new TemplateParamException(conversionErrorMessage, param.Name, literal, param.DataType);
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val))
+                    {
+                    }
+
+                    return val;
                 }
             }
             else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
@@ -305,7 +307,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    throw new TemplateParamException("Value is not a float", param.Name, literal, param.DataType);
+                    float floatVal = 0;
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && !float.TryParse(val, out floatVal))
+                    {
+                    }
+
+                    return floatVal;
                 }
             }
             else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase))
@@ -316,7 +323,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    throw new TemplateParamException("Value is not an int", param.Name, literal, param.DataType);
+                    int intVal = 0;
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && !int.TryParse(val, out intVal))
+                    {
+                    }
+
+                    return intVal;
                 }
             }
             else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
@@ -327,7 +339,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    throw new TemplateParamException("Value is not hex format", param.Name, literal, param.DataType);
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && !long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex))
+                    {
+                    }
+
+                    return convertedHex;
                 }
             }
             else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase))
@@ -336,8 +352,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else
             {
-                string customMessage = string.Format("Param name = [{0}] had unknown data type = [{1}]", param.Name, param.DataType);
-                throw new TemplateParamException(customMessage, param.Name, literal, param.DataType);
+                return literal;
             }
         }
 

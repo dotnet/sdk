@@ -65,13 +65,8 @@ namespace Microsoft.TemplateEngine.Utils
 
         public virtual bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
         {
-            //Console.WriteLine("DefaultTemplateEngineHost::OnParameterError() called");
-            Console.WriteLine("Parameter Error: {0}", message);
-            Console.WriteLine("Parameter name = {0}", parameter.Name);
-            Console.WriteLine("Parameter value = {0}", receivedValue);
-            Console.WriteLine("Enter a new value for the param, or:");
-            newValue = Console.ReadLine();
-            return !string.IsNullOrEmpty(newValue);
+            newValue = null;
+            return false;
         }
 
         public virtual void OnSymbolUsed(string symbol, object value)

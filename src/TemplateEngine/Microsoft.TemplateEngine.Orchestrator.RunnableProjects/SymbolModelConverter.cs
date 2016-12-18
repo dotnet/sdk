@@ -13,6 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return ParameterSymbol.FromJObject(jObject, localizedDescriptipn);
                 case "computed":
                     return ComputedSymbol.FromJObject(jObject);
+                case "bind":
                 case "generated":
                     return GeneratedSymbol.FromJObject(jObject);
                 default:

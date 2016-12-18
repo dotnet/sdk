@@ -61,8 +61,7 @@ namespace Microsoft.TemplateEngine.Core
         {
             get
             {
-                object result;
-                if (_values.TryGetValue(key, out result))
+                if (_values.TryGetValue(key, out object result))
                 {
                     ValueReadEventArgs args = new ValueReadEventArgs(key, result);
                     OnValueRead(args);
@@ -236,11 +235,11 @@ namespace Microsoft.TemplateEngine.Core
                 switch (source.Key)
                 {
                     case "environment":
-                        variablesForSource = VariableCollection.Environment(format);
+                        variablesForSource = Environment(format);
 
                         if (variableConfig.FallbackFormat != null)
                         {
-                            variablesForSource = VariableCollection.Environment(variablesForSource, variableConfig.FallbackFormat);
+                            variablesForSource = Environment(variablesForSource, variableConfig.FallbackFormat);
                         }
                         break;
                     case "user":
@@ -280,16 +279,29 @@ namespace Microsoft.TemplateEngine.Core
             VariableCollection vc = new VariableCollection();
             foreach (ITemplateParameter param in parameters.ParameterDefinitions)
             {
-                object value;
                 string key = string.Format(format ?? "{0}", param.Name);
 
-                if (!parameters.ResolvedValues.TryGetValue(param, out value))
+                if (!parameters.ResolvedValues.TryGetValue(param, out object value))
                 {
-                    throw new TemplateParamException("Parameter value was not specified", param.Name, null, param.DataType);
+                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
+                    {
+                        while(!EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val))
+                        {
+                        }
+
+                        parameters.ResolvedValues[param] = value;
+                    }
                 }
                 else if (value == null)
                 {
-                    throw new TemplateParamException("Parameter value is null", param.Name, null, param.DataType);
+                    if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
+                    {
+                        while (!EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNull", out string val))
+                        {
+                        }
+
+                        parameters.ResolvedValues[param] = value;
+                    }
                 }
                 else
                 {

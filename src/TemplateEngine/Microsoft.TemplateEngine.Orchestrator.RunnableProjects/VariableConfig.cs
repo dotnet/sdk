@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool Expand { get; set; }
 
-        public static IVariableConfig DefaultVariableSetup()
+        public static IVariableConfig DefaultVariableSetup(string fallbackFormat)
         {
             IVariableConfig config = new VariableConfig
             {
@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     { "user", "usr_{0}" }
                 },
                 Order = new List<string>() { "environment", "user" },
-                FallbackFormat = "{0}",
+                FallbackFormat = fallbackFormat ?? "{0}",
                 Expand = false
             };
 

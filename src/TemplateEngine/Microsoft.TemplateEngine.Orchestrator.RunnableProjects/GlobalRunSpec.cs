@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         specialVariables = VariableCollection.SetupVariables(parameters, specialEntry.Value.VariableSetup);
                     }
 
-                    RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables);
+                    RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables, specialEntry.Value.VariableSetup.FallbackFormat);
                     specials.Add(new KeyValuePair<IPathMatcher, IRunSpec>(new GlobbingPatternMatcher(specialEntry.Key), spec));
                 }
             }
