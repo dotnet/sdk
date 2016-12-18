@@ -292,7 +292,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val))
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && (val == null || !param.Choices.Contains(literal)))
                     {
                     }
 
@@ -307,12 +307,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    float floatVal = 0;
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && !float.TryParse(val, out floatVal))
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out string val) && (val == null || !double.TryParse(val, out convertedFloat)))
                     {
                     }
 
-                    return floatVal;
+                    return convertedFloat;
                 }
             }
             else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase))
@@ -323,12 +322,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    int intVal = 0;
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && !int.TryParse(val, out intVal))
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out string val) && (val == null || !long.TryParse(val, out convertedInt)))
                     {
                     }
 
-                    return intVal;
+                    return convertedInt;
                 }
             }
             else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
@@ -339,7 +337,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && !long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex))
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out string val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
                     {
                     }
 
