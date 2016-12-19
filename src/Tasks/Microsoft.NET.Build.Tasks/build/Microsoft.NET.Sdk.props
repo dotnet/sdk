@@ -34,7 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- User-facing configuration-agnostic defaults -->
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <FileAlignment>512</FileAlignment>
     <ErrorReport>prompt</ErrorReport>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
