@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils
         public Version Version { get; }
 
         public virtual IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents => _hostBuiltInComponents;
-        
+
         public virtual void LogMessage(string message)
         {
             //Console.WriteLine("LogMessage: {0}", message);

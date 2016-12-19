@@ -198,7 +198,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string uncommentOperationId = "Uncomment (C style): (//) -> ()";
             string reduceCommentsOperationId = "Reduce comment (C style): (////) -> (//)";
 
-            // temporary - one time test
             IOperationProvider uncomment = new Replacement("//", string.Empty, uncommentOperationId);
             IOperationProvider reduceComment = new Replacement("////", "//", reduceCommentsOperationId);
 
