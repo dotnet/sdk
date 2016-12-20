@@ -13,6 +13,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         AliasSucceeded,
         AliasFailed,
         MissingMandatoryParam,
+        InvalidParamValues,
         TemplateNotFound
     }
 

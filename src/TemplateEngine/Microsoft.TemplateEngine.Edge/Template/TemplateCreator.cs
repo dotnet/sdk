@@ -124,7 +124,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
             // SettingsLoader.LoadTemplate is where the loc info should be read!!!
             // templateInfo knows enough to get at the loc, if any
             ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
-            //result.TemplateFullName = template.Name;
 
             if (aliasName != null)
             {
@@ -146,19 +145,31 @@ namespace Microsoft.TemplateEngine.Edge.Template
             //}
 
             string realName = name ?? template.DefaultName ?? fallbackName;
-            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName);
-
-            if (template.IsNameAgreementWithFolderPreferred && string.IsNullOrEmpty(outputPath))
+            // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
+            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
+            if (defaultParamsWithInvalidValues.Any())
             {
-                outputPath = name;
+                string message = string.Join(", ", defaultParamsWithInvalidValues);
+                return new TemplateCreationResult(-1, message, CreationResultStatus.InvalidParamValues, template.Name);
             }
 
-            ResolveUserParameters(template, templateParams, inputParameters);
+            ResolveUserParameters(template, templateParams, inputParameters, out IList<string> userParamsWithInvalidValues);
+            if (userParamsWithInvalidValues.Any())
+            {
+                string message = string.Join(", ", userParamsWithInvalidValues);
+                return new TemplateCreationResult(-1, message, CreationResultStatus.InvalidParamValues, template.Name);
+            }
+
             bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
 
             if (missingParams)
             {
                 return new TemplateCreationResult(-1, string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
+            }
+
+            if (template.IsNameAgreementWithFolderPreferred && string.IsNullOrEmpty(outputPath))
+            {
+                outputPath = name;
             }
 
             try
@@ -186,10 +197,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // Reads the parameters from the template and the host and setup their values in the return IParameterSet.
         // Host param values override template defaults.
         //
-        public static IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate template, string realName)
+        public static IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate template, string realName, out IList<string> paramsWithInvalidValues)
         {
             ITemplateEngineHost host = EngineEnvironmentSettings.Host;
             IParameterSet templateParams = template.Generator.GetParametersForTemplate(template);
+            paramsWithInvalidValues = new List<string>();
+
             foreach (ITemplateParameter param in templateParams.ParameterDefinitions)
             {
                 if (param.IsName)
@@ -198,11 +211,27 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (host.TryGetHostParamDefault(param.Name, out string hostParamValue) && hostParamValue != null)
                 {
-                    templateParams.ResolvedValues[param] = template.Generator.ConvertParameterValueToType(param, hostParamValue);
+                    object resolvedValue = template.Generator.ConvertParameterValueToType(param, hostParamValue, out bool valueResolutionError);
+                    if (!valueResolutionError)
+                    {
+                        templateParams.ResolvedValues[param] = resolvedValue;
+                    }
+                    else
+                    {
+                        paramsWithInvalidValues.Add(param.Name);
+                    }
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
                 {
-                    templateParams.ResolvedValues[param] = template.Generator.ConvertParameterValueToType(param, param.DefaultValue);
+                    object resolvedValue = template.Generator.ConvertParameterValueToType(param, param.DefaultValue, out bool valueResolutionError);
+                    if (!valueResolutionError)
+                    {
+                        templateParams.ResolvedValues[param] = resolvedValue;
+                    }
+                    else
+                    {
+                        paramsWithInvalidValues.Add(param.Name);
+                    }
                 }
             }
 
@@ -210,11 +239,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
         // 
-        // The template params for which there are same-named input parameters have their values set to the corresponding input paramers value.
+        // The template params for which there are same-named input parameters have their values set to the corresponding input parameters value.
         // input parameters that do not have corresponding template params are ignored.
         //
-        public static void ResolveUserParameters(ITemplate template, IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters)
+        public static void ResolveUserParameters(ITemplate template, IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters, out IList<string> paramsWithInvalidValues)
         {
+            paramsWithInvalidValues = new List<string>();
+
             foreach (KeyValuePair<string, string> inputParam in inputParameters)
             {
                 if (templateParams.TryGetParameterDefinition(inputParam.Key, out ITemplateParameter paramFromTemplate))
@@ -228,7 +259,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         {
                             // could probably directly assign bool true here, but best to have everything go through the same process
                             // ... in case something changes downstream.
-                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, "true");
+                            // ignore the valueResolutionError
+                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, "true", out bool valueResolutionError);
                         }
                         else
                         {
@@ -237,7 +269,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, inputParam.Value);
+                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, inputParam.Value, out bool valueResolutionError);
+                        if (valueResolutionError)
+                        {
+                            paramsWithInvalidValues.Add(paramFromTemplate.Name);
+                        }
                     }
                 }
             }

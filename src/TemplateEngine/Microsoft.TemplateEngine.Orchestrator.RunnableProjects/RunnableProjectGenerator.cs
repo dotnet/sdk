@@ -225,25 +225,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // If the param has a datatype specified, use that. Otherwise attempt to infer the type.
         // Throws a TemplateParamException if the conversion fails for any reason.
         //
-        public object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue)
+        public object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
         {
-            return InternalConvertParameterValueToType(parameter, untypedValue);
+            return InternalConvertParameterValueToType(parameter, untypedValue, out valueResolutionError);
         }
 
-        internal static object InternalConvertParameterValueToType(ITemplateParameter parameter, string untypedValue)
+        internal static object InternalConvertParameterValueToType(ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
         { 
             if (untypedValue == null)
             {
+                valueResolutionError = false;
                 return null;
             }
 
             if (!string.IsNullOrEmpty(parameter.DataType))
             {
-                object convertedValue = DataTypeSpecifiedConvertLiteral(parameter, untypedValue);
+                object convertedValue = DataTypeSpecifiedConvertLiteral(parameter, untypedValue, out valueResolutionError);
                 return convertedValue;
             }
             else
             {
+                valueResolutionError = false;
                 return InferTypeAndConvertLiteral(untypedValue);
             }
         }
@@ -259,8 +261,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // The data type names are case insensitive.
         //
         // Returns the converted value if it can be converted, throw otherwise
-        internal static object DataTypeSpecifiedConvertLiteral(ITemplateParameter param, string literal)
+        internal static object DataTypeSpecifiedConvertLiteral(ITemplateParameter param, string literal, out bool valueResolutionError)
         {
+            valueResolutionError = false;
+
             if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
@@ -281,6 +285,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                     }
 
+                    valueResolutionError = !bool.TryParse(val, out boolVal);
                     return boolVal;
                 }
             }
@@ -305,6 +310,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                 }
 
+                valueResolutionError = !param.Choices.Contains(literal);
                 return val;
             }
 
@@ -320,6 +326,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                     }
 
+                    valueResolutionError = !double.TryParse(val, out convertedFloat);
                     return convertedFloat;
                 }
             }
@@ -335,6 +342,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                     }
 
+                    valueResolutionError = !long.TryParse(val, out convertedInt);
                     return convertedInt;
                 }
             }
@@ -350,6 +358,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                     }
 
+                    valueResolutionError = !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex);
                     return convertedHex;
                 }
             }

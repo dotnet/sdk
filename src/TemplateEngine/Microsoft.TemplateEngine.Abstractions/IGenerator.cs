@@ -16,6 +16,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations);
 
-        object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue);
+        object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue, out bool valueResolutionError);
     }
 }

@@ -22,7 +22,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             ParameterSetter setter = (p, value) =>
             {
                 ((RunnableProjectGenerator.ParameterSet)parameters).AddParameter(p);
-                parameters.ResolvedValues[p] = RunnableProjectGenerator.InternalConvertParameterValueToType(p, value);
+                parameters.ResolvedValues[p] = RunnableProjectGenerator.InternalConvertParameterValueToType(p, value, out bool valueResolutionError);
+                // TODO: consider checking the valueResolutionError and act on it, if needed.
+                // Should be safe to ignore, params should be verified by the time this occurs.
             };
 
             IList<IMacroConfig> allMacroConfigs = new List<IMacroConfig>(macroConfigs);
