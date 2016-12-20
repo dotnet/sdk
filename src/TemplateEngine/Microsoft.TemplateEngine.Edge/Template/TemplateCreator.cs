@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // returns the templates whose:
         //      name or shortName contains the searchString
         //      matches by a registered alias
-        public static IReadOnlyCollection<ITemplateInfo> List(string searchString)
+        public static IReadOnlyCollection<ITemplateInfo> List(string searchString, string language)
         {
             HashSet<ITemplateInfo> matchingTemplates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
             HashSet<ITemplateInfo> allTemplates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
@@ -34,6 +34,14 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 aliasSearchResult = AliasRegistry.GetTemplatesForAlias(searchString, allTemplatesCollection);
 
+                if (!string.IsNullOrEmpty(language))
+                {
+                    aliasSearchResult = aliasSearchResult.Where(x =>
+                    {
+                        return x.Tags == null || !x.Tags.TryGetValue("language", out string langVal) || string.Equals(langVal, language, StringComparison.OrdinalIgnoreCase);
+                    }).ToList();
+                }
+
                 if(aliasSearchResult.Count == 1)
                 {
                     return aliasSearchResult;
@@ -43,8 +51,17 @@ namespace Microsoft.TemplateEngine.Edge.Template
             using (Timing.Over("Search in loaded"))
             {
                 string[] tagParts = searchString?.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                List<ITemplateInfo> exactMatches = new List<ITemplateInfo>();
                 foreach (ITemplateInfo template in allTemplates)
                 {
+                    if (!string.IsNullOrEmpty(language))
+                    {
+                        if (template.Tags != null && template.Tags.TryGetValue("language", out string langVal) && !string.Equals(langVal, language, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                    }
+
                     if (string.IsNullOrEmpty(searchString))
                     {
                         matchingTemplates.Add(template);
@@ -57,7 +74,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         if (nameCompare == 0 && string.Equals(template.Name, searchString, StringComparison.OrdinalIgnoreCase) 
                             || shortNameCompare == 0 && string.Equals(template.ShortName, searchString, StringComparison.OrdinalIgnoreCase))
                         {
-                            return new[] { template };
+                            exactMatches.Add(template);
+                        }
+
+                        if(nameCompare > -1 || shortNameCompare > -1)
+                        {
+                            matchingTemplates.Add(template);
                         }
 
                         if (template.Classifications != null && template.Classifications.Count > 0)
@@ -73,6 +95,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         }
                     }
                 }
+
+                if (exactMatches.Count > 0)
+                {
+                    return exactMatches;
+                }
             }
 
             matchingTemplates.UnionWith(aliasSearchResult);
@@ -86,13 +113,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
 
-        public static bool TryGetTemplateInfoFromCache(string templateName, out ITemplateInfo tmplt)
+        public static bool TryGetTemplateInfoFromCache(string templateName, string language, out ITemplateInfo tmplt)
         {
             try
             {
                 using (Timing.Over("List"))
                 {
-                    IReadOnlyCollection<ITemplateInfo> result = List(templateName);
+                    IReadOnlyCollection<ITemplateInfo> result = List(templateName, language);
 
                     if (result.Count == 1)
                     {
@@ -109,13 +136,21 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        public static async Task<TemplateCreationResult> InstantiateAsync(string templateName, string name, string fallbackName, string outputPath, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public static async Task<TemplateCreationResult> InstantiateAsync(string templateName, string language, string name, string fallbackName, string outputPath, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
             ITemplateInfo templateInfo;
 
             using (Timing.Over("Get single"))
             {
-                if (!TryGetTemplateInfoFromCache(templateName, out templateInfo))
+                if (string.IsNullOrEmpty(language))
+                {
+                    if(EngineEnvironmentSettings.Host.TryGetHostParamDefault("prefs:language", out string l))
+                    {
+                        language = l;
+                    }
+                }
+                
+                if (!TryGetTemplateInfoFromCache(templateName, language, out templateInfo))
                 {
                     return new TemplateCreationResult(-1, "Not Found", CreationResultStatus.TemplateNotFound, templateName);
                 }
