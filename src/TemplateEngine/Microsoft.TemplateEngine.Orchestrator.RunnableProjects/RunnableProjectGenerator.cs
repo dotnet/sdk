@@ -301,7 +301,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                 }
 
-                if(literal == null && param.Priority != TemplateParameterPriority.Required)
+                if (literal == null && param.Priority != TemplateParameterPriority.Required)
                 {
                     return param.DefaultValue;
                 }
