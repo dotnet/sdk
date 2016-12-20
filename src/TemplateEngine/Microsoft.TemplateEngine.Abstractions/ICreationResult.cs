@@ -8,7 +8,5 @@ namespace Microsoft.TemplateEngine.Abstractions
         IReadOnlyList<IPostAction> PostActions { get; }
 
         IReadOnlyList<ICreationPath> PrimaryOutputs { get; }
-
-        void TEMP_CONSOLE_DEBUG_CreationResult();
     }
 }

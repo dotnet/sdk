@@ -112,72 +112,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return matchingTemplatesCollection;
         }
 
-
-        public static bool TryGetTemplateInfoFromCache(string templateName, string language, out ITemplateInfo tmplt)
+        public static async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
-            try
-            {
-                using (Timing.Over("List"))
-                {
-                    IReadOnlyCollection<ITemplateInfo> result = List(templateName, language);
-
-                    if (result.Count == 1)
-                    {
-                        tmplt = result.First();
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
-            }
-
-            tmplt = null;
-            return false;
-        }
-
-        public static async Task<TemplateCreationResult> InstantiateAsync(string templateName, string language, string name, string fallbackName, string outputPath, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
-        {
-            ITemplateInfo templateInfo;
-
-            using (Timing.Over("Get single"))
-            {
-                if (string.IsNullOrEmpty(language))
-                {
-                    if(EngineEnvironmentSettings.Host.TryGetHostParamDefault("prefs:language", out string l))
-                    {
-                        language = l;
-                    }
-                }
-                
-                if (!TryGetTemplateInfoFromCache(templateName, language, out templateInfo))
-                {
-                    return new TemplateCreationResult(-1, "Not Found", CreationResultStatus.TemplateNotFound, templateName);
-                }
-            }
-
             // SettingsLoader.LoadTemplate is where the loc info should be read!!!
             // templateInfo knows enough to get at the loc, if any
             ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
-
-            if (aliasName != null)
-            {
-                //TODO: Add parameters to aliases (from _parameters_ collection)
-                if (AliasRegistry.SetTemplateAlias(aliasName, template) != 0)
-                {
-                    return new TemplateCreationResult(-1, "Alias already exists", CreationResultStatus.AliasFailed, template.Name);
-                }
-                else
-                {
-                    return new TemplateCreationResult(0, "Alias created", CreationResultStatus.AliasSucceeded, template.Name);
-                }
-            }
-
-            //if (!skipUpdateCheck)
-            //{
-            //    EngineEnvironmentSettings.Host.LogMessage("Checking for updates...");
-            //    UpdateCheck();    // this'll need params
-            //}
 
             string realName = name ?? template.DefaultName ?? fallbackName;
             // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
@@ -207,13 +146,15 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 outputPath = name;
             }
 
+            ICreationResult creationResult = null;
+
             try
             {
                 string targetDir = outputPath ?? EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory();
                 targetDir.CreateDirectory();
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = SettingsLoader.Components;
-                await template.Generator.Create(template, templateParams, componentManager, targetDir, out ICreationResult creationResult);
+                creationResult = await template.Generator.CreateAsync(template, templateParams, componentManager, targetDir).ConfigureAwait(false);
                 sw.Stop();
                 EngineEnvironmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
@@ -221,11 +162,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
             }
 
-            // TODO: pass back the creationResult (probably as an out param)
-            // (and get rid of this debugging)
-            //creationResult.TEMP_CONSOLE_DEBUG_CreationResult();
+            if (creationResult != null)
+            {
+                return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateSucceeded, template.Name);
+            }
 
-            return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateSucceeded, template.Name);
+            return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateFailed, template.Name);
         }
 
         // 
