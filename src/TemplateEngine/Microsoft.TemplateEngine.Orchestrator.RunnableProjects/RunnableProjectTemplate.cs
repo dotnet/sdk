@@ -27,6 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;
             LocaleConfigFile = localeConfigFile;
+            IsNameAgreementWithFolderPreferred = raw.ToBool("preferNameDirectory", false);
             _raw = raw;
         }
 
@@ -79,5 +80,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public Guid LocaleConfigMountPointId => LocaleConfiguration.MountPoint.Info.MountPointId;
 
         public string LocaleConfigPlace => LocaleConfiguration.FullPath;
+
+        public bool IsNameAgreementWithFolderPreferred { get; }
     }
 }

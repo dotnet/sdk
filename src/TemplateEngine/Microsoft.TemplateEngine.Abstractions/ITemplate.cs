@@ -44,5 +44,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         IFileSystemInfo LocaleConfiguration { get; }
 
         IDirectory TemplateSourceRoot { get; }
+
+        bool IsNameAgreementWithFolderPreferred { get; }
     }
 }

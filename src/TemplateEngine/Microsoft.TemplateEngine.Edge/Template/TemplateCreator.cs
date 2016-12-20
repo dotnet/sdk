@@ -22,26 +22,60 @@ namespace Microsoft.TemplateEngine.Edge.Template
             using (Timing.Over("load"))
                 SettingsLoader.GetTemplates(allTemplates);
 
-            using (Timing.Over("Search in loaded"))
-                foreach (ITemplateInfo template in allTemplates)
-                {
-                    if (string.IsNullOrEmpty(searchString)
-                        || template.Name.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) > -1
-                        || template.ShortName.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) > -1)
-                    {
-                        matchingTemplates.Add(template);
-                    }
-                }
+#if !NET45
+            IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates;
+#else
+            IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates.ToList();
+#endif
+
+            IReadOnlyCollection<ITemplateInfo> aliasSearchResult;
 
             using (Timing.Over("Alias search"))
             {
-#if !NET45
-                IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates;
-#else
-                IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates.ToList();
-#endif
-                matchingTemplates.UnionWith(AliasRegistry.GetTemplatesForAlias(searchString, allTemplatesCollection));
+                aliasSearchResult = AliasRegistry.GetTemplatesForAlias(searchString, allTemplatesCollection);
+
+                if(aliasSearchResult.Count == 1)
+                {
+                    return aliasSearchResult;
+                }
             }
+
+            using (Timing.Over("Search in loaded"))
+            {
+                string[] tagParts = searchString?.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (ITemplateInfo template in allTemplates)
+                {
+                    if (string.IsNullOrEmpty(searchString))
+                    {
+                        matchingTemplates.Add(template);
+                    }
+                    else
+                    {
+                        int nameCompare = template.Name.IndexOf(searchString, StringComparison.OrdinalIgnoreCase);
+                        int shortNameCompare = template.ShortName.IndexOf(searchString, StringComparison.OrdinalIgnoreCase);
+
+                        if (nameCompare == 0 && string.Equals(template.Name, searchString, StringComparison.OrdinalIgnoreCase) 
+                            || shortNameCompare == 0 && string.Equals(template.ShortName, searchString, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return new[] { template };
+                        }
+
+                        if (template.Classifications != null && template.Classifications.Count > 0)
+                        {
+                            if (tagParts.All(x => template.Classifications.Contains(x, StringComparer.OrdinalIgnoreCase)))
+                            {
+                                matchingTemplates.Add(template);
+                            }
+                        }
+                        else
+                        {
+                            matchingTemplates.Add(template);
+                        }
+                    }
+                }
+            }
+
+            matchingTemplates.UnionWith(aliasSearchResult);
 
 #if !NET45
             IReadOnlyCollection<ITemplateInfo> matchingTemplatesCollection = matchingTemplates;
@@ -75,8 +109,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return false;
         }
 
-        //public static async Task<int> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, TemplateCreationResult result)
-        public static async Task<TemplateCreationResult> InstantiateAsync(string templateName, string name, string fallbackName, bool createDir, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public static async Task<TemplateCreationResult> InstantiateAsync(string templateName, string name, string fallbackName, string outputPath, string aliasName, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
             ITemplateInfo templateInfo;
 
@@ -115,6 +148,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
             string realName = name ?? template.DefaultName ?? fallbackName;
             IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName);
 
+            if (template.IsNameAgreementWithFolderPreferred && string.IsNullOrEmpty(outputPath))
+            {
+                outputPath = name;
+            }
+
             ResolveUserParameters(template, templateParams, inputParameters);
             bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
 
@@ -125,9 +163,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             try
             {
+                string targetDir = outputPath ?? EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory();
+                targetDir.CreateDirectory();
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = SettingsLoader.Components;
-                await template.Generator.Create(template, templateParams, componentManager, out ICreationResult creationResult);
+                await template.Generator.Create(template, templateParams, componentManager, targetDir, out ICreationResult creationResult);
                 sw.Stop();
                 EngineEnvironmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
