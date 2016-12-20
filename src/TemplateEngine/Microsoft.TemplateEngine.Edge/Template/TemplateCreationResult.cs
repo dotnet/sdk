@@ -8,13 +8,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
     {
         CreateSucceeded,
         CreateFailed,
-        InstallSucceeded,
-        InstallFailed,
-        AliasSucceeded,
-        AliasFailed,
         MissingMandatoryParam,
-        InvalidParamValues,
-        TemplateNotFound
+        InvalidParamValues
     }
 
     public class TemplateCreationResult

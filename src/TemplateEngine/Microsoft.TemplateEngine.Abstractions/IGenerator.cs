@@ -6,7 +6,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IGenerator : IIdentifiedComponent
     {
-        Task Create(ITemplate template, IParameterSet parameters, IComponentManager componentManager, string targetDirectory, out ICreationResult creationResult);
+        Task<ICreationResult> CreateAsync(ITemplate template, IParameterSet parameters, IComponentManager componentManager, string targetDirectory);
 
         IParameterSet GetParametersForTemplate(ITemplate template);
 

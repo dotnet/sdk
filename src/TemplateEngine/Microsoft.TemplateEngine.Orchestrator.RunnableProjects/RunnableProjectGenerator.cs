@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public static readonly string TemplateConfigDirectoryName = ".template.config";
         public static readonly string TemplateConfigFileName = "template.json";
 
-        public Task Create(ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory, out ICreationResult creationResult)
+        public Task<ICreationResult> CreateAsync(ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
             ProcessMacros(componentManager, template.Config.OperationConfig, parameters);
@@ -46,13 +46,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             // todo: add anything else we'd want to report to the broker
-            creationResult = new CreationResult()
+            return Task.FromResult<ICreationResult>(new CreationResult()
             {
                 PostActions = PostAction.ListFromModel(template.Config.PostActionModel, variables),
                 PrimaryOutputs = CreationPath.ListFromModel(template.Config.PrimaryOutputs, variables)
-            };
-
-            return Task.FromResult(true);
+            });
         }
 
         // Note the deferred-config macros (generated) are part of the runConfig.Macros

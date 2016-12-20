@@ -11,7 +11,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     {
         protected TestBase()
         {
-            EngineEnvironmentSettings.Host = new DefaultTemplateEngineHost("TestRunner", Version.Parse("1.0.0.0"), "en-US");
+            EngineEnvironmentSettings.Host = new TestHost
+            {
+                HostIdentifier = "TestRunner",
+                Version = Version.Parse("1.0.0.0"),
+                Locale = "en-US"
+            };
         }
 
         protected static void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null)
