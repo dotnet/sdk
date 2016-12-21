@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.Mocks;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
