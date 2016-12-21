@@ -245,12 +245,15 @@ namespace Microsoft.TemplateEngine.Edge
             private static string _scratchDir;
             private static string _settingsFile;
             private static string _contentDir;
+            private static string _packagesDir;
 
             public static string AliasesFile => GetOrComputePath(ref _aliasesFile, BaseDir, "aliases.json");
 
             public static string BaseDir => EngineEnvironmentSettings.Paths.BaseDir;
 
             public static string Content => GetOrComputePath(ref _contentDir, BaseDir, "content");
+
+            public static string Packages => GetOrComputePath(ref _packagesDir, BaseDir, "packages");
 
             public static string FirstRunCookie => GetOrComputePath(ref _firstRunCookie, BaseDir, ".firstrun");
 
