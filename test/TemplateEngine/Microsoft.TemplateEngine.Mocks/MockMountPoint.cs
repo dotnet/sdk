@@ -1,0 +1,85 @@
+﻿using System.IO;
+using System.Linq;
+using Microsoft.TemplateEngine.Abstractions.Mount;
+
+namespace Microsoft.TemplateEngine.Mocks
+{
+    public class MockMountPoint : IMountPoint
+    {
+        public MockMountPoint()
+        {
+            MockRoot = new MockDirectory("/", "/", this, null);
+        }
+
+        public MountPointInfo Info { get; set; }
+
+        public IDirectory Root => MockRoot;
+
+        public MockDirectory MockRoot { get; }
+
+        public IFileSystemInfo FileSystemInfo(string fullPath)
+        {
+            string[] parts = fullPath.TrimStart('/').Split('/');
+
+            IDirectory current = Root;
+
+            for (int i = 0; i < parts.Length; ++i)
+            {
+                IFileSystemInfo info = current.EnumerateFileSystemInfos(parts[i], SearchOption.TopDirectoryOnly).FirstOrDefault();
+
+                if (info == null)
+                {
+                    return new MockFile(fullPath, this);
+                }
+
+                IDirectory dir = info as IDirectory;
+
+                if (dir != null)
+                {
+                    current = dir;
+                    continue;
+                }
+
+                IFile file = info as IFile;
+
+                if (file != null)
+                {
+                    if (i == parts.Length - 1)
+                    {
+                        return file;
+                    }
+
+                    return new MockFile(fullPath, this);
+                }
+            }
+
+            return current;
+        }
+
+        public IDirectory DirectoryInfo(string fullPath)
+        {
+            IFileSystemInfo info = FileInfo(fullPath);
+            IDirectory resultDir = info as IDirectory;
+
+            if (resultDir != null)
+            {
+                return resultDir;
+            }
+
+            return new MockDirectory(fullPath, this);
+        }
+
+        public IFile FileInfo(string fullPath)
+        {
+            IFileSystemInfo info = FileInfo(fullPath);
+            IFile resultFile = info as IFile;
+
+            if (resultFile != null)
+            {
+                return resultFile;
+            }
+
+            return new MockFile(fullPath, this);
+        }
+    }
+}

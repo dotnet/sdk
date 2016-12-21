@@ -1,26 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 
-namespace Microsoft.TemplateEngine.Core.UnitTests
+namespace Microsoft.TemplateEngine.Mocks
 {
-    internal class MockOperationProvider : IOperationProvider
-    {
-        private readonly MockOperation _operation;
-
-        public MockOperationProvider(MockOperation operation)
-        {
-            _operation = operation;
-        }
-
-        public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
-        {
-            return _operation;
-        }
-    }
-
-    internal class MockOperation : IOperation
+    public class MockOperation : IOperation
     {
         public delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
         private readonly MatchHandler _onMatch;
