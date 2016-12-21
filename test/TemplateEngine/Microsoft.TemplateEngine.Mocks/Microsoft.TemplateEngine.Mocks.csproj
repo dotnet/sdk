@@ -1,15 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <EmbeddedResource Include="**\*.resx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
+    <PackageReference Include="Microsoft.TemplateEngine.Abstractions" Version="$(PackageVersion)" />
+    <PackageReference Include="Microsoft.TemplateEngine.Core.Contracts" Version="$(PackageVersion)" />
+    <PackageReference Include="Microsoft.TemplateEngine.Utils" Version="$(PackageVersion)" />
   </ItemGroup>
 </Project>
