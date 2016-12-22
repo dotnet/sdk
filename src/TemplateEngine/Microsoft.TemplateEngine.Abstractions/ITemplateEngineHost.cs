@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string HostIdentifier { get; }
 
-        Version Version { get; }
+        string Version { get; }
 
         string Locale { get; }
         

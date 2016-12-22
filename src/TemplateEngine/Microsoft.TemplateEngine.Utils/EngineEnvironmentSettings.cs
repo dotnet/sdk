@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     if (_baseDir == null)
                     {
-                        _baseDir = Path.Combine(UserProfileDir, ".templateengine", Host.HostIdentifier, Host.Version.ToString());
+                        _baseDir = Path.Combine(UserProfileDir, ".templateengine", Host.HostIdentifier, Host.Version);
                     }
 
                     return _baseDir;

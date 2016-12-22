@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             EngineEnvironmentSettings.Host = new TestHost
             {
                 HostIdentifier = "TestRunner",
-                Version = Version.Parse("1.0.0.0"),
+                Version = "1.0.0.0",
                 Locale = "en-US"
             };
         }

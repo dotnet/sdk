@@ -11,17 +11,17 @@ namespace Microsoft.TemplateEngine.Utils
         private readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> _hostBuiltInComponents;
         private static readonly IReadOnlyList<KeyValuePair<Guid, Func<Type>>> NoComponents = new KeyValuePair<Guid, Func<Type>>[0];
 
-        public DefaultTemplateEngineHost(string hostIdentifier, Version version, string locale)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale)
             : this(hostIdentifier, version, locale, null)
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, Version version, string locale, Dictionary<string, string> defaults)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults)
             : this (hostIdentifier, version, locale, defaults, NoComponents)
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, Version version, string locale, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns)
         {
             HostIdentifier = hostIdentifier;
             Version = version;
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public string HostIdentifier { get; }
 
-        public Version Version { get; }
+        public string Version { get; }
 
         public virtual IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents => _hostBuiltInComponents;
 

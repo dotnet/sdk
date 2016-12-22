@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         public string HostIdentifier { get; set; }
 
-        public Version Version { get; set; }
+        public string Version { get; set; }
 
         public IReadOnlyList<KeyValuePair<Guid, Func<Type>>> BuiltInComponents { get; set; }
 
