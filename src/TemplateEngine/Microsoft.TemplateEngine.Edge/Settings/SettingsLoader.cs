@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
@@ -10,6 +12,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public static class SettingsLoader
     {
+        private const int MaxLoadAttempts = 20;
         public static readonly string HostTemplateFileConfigBaseName = ".host.json";
 
         private static SettingsStore _userSettings;
@@ -33,9 +36,25 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            string userSettings;
+            string userSettings = null;
             using (Timing.Over("Read settings"))
-                userSettings = Paths.User.SettingsFile.ReadAllText("{}");
+                for (int i = 0; i < MaxLoadAttempts; ++i)
+                {
+                    try
+                    {
+                        userSettings = Paths.User.SettingsFile.ReadAllText("{}");
+                        break;
+                    }
+                    catch (IOException)
+                    {
+                        if(i == MaxLoadAttempts - 1)
+                        {
+                            throw;
+                        }
+
+                        Thread.Sleep(2);
+                    }
+                }
             JObject parsed;
             using (Timing.Over("Parse settings"))
                 parsed = JObject.Parse(userSettings);
