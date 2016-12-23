@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             if (creationResult != null)
             {
-                return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateSucceeded, template.Name);
+                return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateSucceeded, template.Name, creationResult);
             }
 
             return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateFailed, template.Name);
