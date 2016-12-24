@@ -122,10 +122,6 @@ namespace Microsoft.TemplateEngine.Core.Util
                             {
                                 ProcessFile(file, sourceRel, targetDir, spec, fallback, fileGlobProcessors, locOperations);
                             }
-                            else if (locOperations != null)
-                            {
-                                ProcessFile(file, sourceRel, targetDir, spec, fallback, Empty<KeyValuePair<IPathMatcher, IProcessor>>.List.Value, locOperations);
-                            }
                             else
                             {
                                 string targetPath = CreateTargetDir(sourceRel, targetDir, spec);
