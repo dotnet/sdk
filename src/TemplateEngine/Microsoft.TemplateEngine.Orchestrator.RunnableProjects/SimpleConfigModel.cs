@@ -33,6 +33,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
         private Parameter _nameParameter;
         private string _safeNameName;
+        private string _safeNamespaceName;
+        private string _lowerSafeNameName;
+        private string _lowerSafeNamespaceName;
 
         public IHostTemplateModel HostTemplateInfo { get; set; }
 
@@ -388,7 +391,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 macros = ProduceMacroConfig(computedMacros);
             }
 
-            macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
+            if(SourceName.ToLower() != SourceName)
+            {
+                if(SourceName.IndexOf('.') > -1)
+                {
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant()));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_')));
+                }
+                else
+                {
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant()));
+                }
+            }
+
+            if (SourceName.IndexOf('.') > -1)
+            {
+                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName));
+                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_')));
+            }
+            else
+            {
+                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
+            }
 
             if (Symbols != null)
             {
@@ -457,6 +481,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         _safeNameName = symbol.Key; // save for later, to generate the safe_name regex macro
                     }
+                    else if (symbol.Value.Binding == "lower_safe_name")
+                    {
+                        _lowerSafeNameName = symbol.Key; // save for later, to generate the safe_name regex macro
+                    }
+                    else if (symbol.Value.Binding == "safe_namespace_name")
+                    {
+                        _safeNamespaceName = symbol.Key; // save for later, to generate the safe_name regex macro
+                    }
+                    else if (symbol.Value.Binding == "lower_safe_namespace_name")
+                    {
+                        _lowerSafeNamespaceName = symbol.Key; // save for later, to generate the safe_name regex macro
+                    }
 
                     if (symbol.Value.Type == "computed")
                     {
@@ -485,11 +521,36 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>(@"\W", "_")
+                    new KeyValuePair<string, string>(@"(^\s+|\s+$)", ""),
+                    new KeyValuePair<string, string>(@"(((?<=\.)|^)(?=\d)|\W)", "_")
                 };
 
                 generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", NameParameter.Name, steps));
                 _safeNameName = "safe_name";
+            }
+
+            if (_lowerSafeNameName == null)
+            {
+                generatedMacroConfigs.Add(new CaseChangeMacroConfig("lower_safe_name", _safeNameName, true));
+                _lowerSafeNameName = "lower_safe_name";
+            }
+
+            if (_safeNamespaceName == null)
+            {
+                IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>(@"(^\s+|\s+$)", ""),
+                    new KeyValuePair<string, string>(@"(((?<=\.)|^)(?=\d)|[^\w\.])", "_")
+                };
+
+                generatedMacroConfigs.Add(new RegexMacroConfig("safe_namespace", NameParameter.Name, steps));
+                _safeNamespaceName = "safe_namespace";
+            }
+
+            if (_lowerSafeNamespaceName == null)
+            {
+                generatedMacroConfigs.Add(new CaseChangeMacroConfig("lower_safe_namespace", _safeNamespaceName, true));
+                _lowerSafeNamespaceName = "lower_safe_namespace";
             }
 
             return generatedMacroConfigs;
@@ -584,10 +645,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 if (resolvedNameParamValue != null)
                 {
+                    string targetName = ((string)resolvedNameParamValue).Trim();
+
                     foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
                         string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
-                        string outRel = tmpltRel.Replace(SourceName, (string)resolvedNameParamValue);
+                        string outRel = tmpltRel.Replace(SourceName, targetName);
                         renames[tmpltRel] = outRel;
                     }
                 }
