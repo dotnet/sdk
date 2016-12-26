@@ -231,13 +231,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public static void AddProbingPath(string probeIn)
         {
-            EnsureLoaded();
-            if (!_userSettings.ProbingPaths.Add(probeIn))
-            {
-                return;
-            }
+            const int maxAttempts = 10;
+            int attemptCount = 0;
+            bool successfulWrite = false;
 
-            _userSettings.Save();
+            EnsureLoaded();
+            while (!successfulWrite && attemptCount++ < maxAttempts)
+            {
+                if (!_userSettings.ProbingPaths.Add(probeIn))
+                {
+                    return;
+                }
+
+                try
+                {
+                    _userSettings.Save();
+                    successfulWrite = true;
+                }
+                catch
+                {
+                    Thread.Sleep(10);
+                    Reload();
+                }
+            }
         }
 
         public static bool TryGetMountPointInfo(Guid mountPointId, out MountPointInfo info)
