@@ -1,10 +1,13 @@
-﻿using Microsoft.TemplateEngine.Abstractions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge.Template;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class FilteredTemplateInfo : IFilteredTemplateInfo
     {
-        public FilteredTemplateInfo(ITemplateInfo info, FilterResult matchDisposition)
+        public FilteredTemplateInfo(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDisposition)
         {
             Info = info;
             MatchDisposition = matchDisposition;
@@ -12,14 +15,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public ITemplateInfo Info { get; }
 
-        public FilterResult MatchDisposition { get; set; }
+        public IReadOnlyList<MatchInfo> MatchDisposition { get; set; }
 
-        public static bool IsAnyMatchType(FilterResult matchDisposition)
-        {
-            return matchDisposition == FilterResult.Match
-                || matchDisposition == FilterResult.SubstringMatch
-                || matchDisposition == FilterResult.AliasMatch
-                || matchDisposition == FilterResult.ClassificationMatch;
-        }
+        public bool IsMatch => MatchDisposition.Count > 0 && !MatchDisposition.Any(x => x.Kind == MatchKind.Mismatch);
+
+        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
     }
 }

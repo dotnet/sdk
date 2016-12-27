@@ -47,22 +47,4 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         bool IsNameAgreementWithFolderPreferred { get; }
     }
-
-    public enum FilterResult
-    {
-        NonMatch = 0,
-        Match,
-        SubstringMatch,
-        ClassificationMatch,
-        AliasMatch,
-        NameMiss,
-        LanguageMismatch
-    }
-
-    public interface IFilteredTemplateInfo
-    {
-        ITemplateInfo Info { get; }
-
-        FilterResult MatchDisposition { get; set; }
-    }
 }

@@ -54,44 +54,42 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return null;
         }
 
-        public static IReadOnlyCollection<ITemplateInfo> GetTemplatesForAlias(string alias, IReadOnlyCollection<ITemplateInfo> templates)
+        public static IReadOnlyDictionary<string, ITemplateInfo> GetTemplatesForAlias(string alias, IReadOnlyCollection<ITemplateInfo> templates)
         {
+            Dictionary<string, ITemplateInfo> aliasVsTemplate = new Dictionary<string, ITemplateInfo>();
+
             if(alias == null)
             {
-                return new ITemplate[0];
+                return aliasVsTemplate;
             }
 
             Load();
             string templateName;
             if(AliasesToTemplates.TryGetValue(alias, out templateName))
             {
-                ITemplateInfo match = templates.FirstOrDefault(x => string.Equals(x.Name, templateName, StringComparison.Ordinal));
+                ITemplateInfo match = templates.FirstOrDefault(x => string.Equals(x.Name, templateName, StringComparison.OrdinalIgnoreCase));
 
                 if (match != null)
                 {
-                    return new[] { match };
+                    aliasVsTemplate[alias] = match;
+                    return aliasVsTemplate;
                 }
             }
-
 
             if (!string.IsNullOrWhiteSpace(alias))
             {
-                HashSet<string> matchedAliases = new HashSet<string>(AliasesToTemplates.Where(x => x.Key.IndexOf(alias, StringComparison.OrdinalIgnoreCase) > -1).Select(x => x.Value));
-
-                List<ITemplateInfo> results = new List<ITemplateInfo>();
+                Dictionary<string, string> matchedAliases = AliasesToTemplates.Where(x => x.Key.IndexOf(alias, StringComparison.OrdinalIgnoreCase) > -1).ToDictionary(x => x.Value, x => x.Key);
 
                 foreach (ITemplateInfo template in templates)
                 {
-                    if (matchedAliases.Contains(template.Name))
+                    if (matchedAliases.TryGetValue(template.Name, out string matchingAlias))
                     {
-                        results.Add(template);
+                        aliasVsTemplate[matchingAlias] = template;
                     }
                 }
-
-                return results;
             }
 
-            return templates;
+            return aliasVsTemplate;
         }
 
         public static string GetAliasForTemplate(ITemplateInfo template)
