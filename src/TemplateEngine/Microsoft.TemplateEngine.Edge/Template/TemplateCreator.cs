@@ -14,35 +14,53 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // returns the templates whose:
         //      name or shortName contains the searchString
         //      matches by a registered alias
-        public static IReadOnlyCollection<ITemplateInfo> List(string searchString, string language)
+        //
+        // TODO: consider moving the language parameter into the filter
+        public static IReadOnlyCollection<IFilteredTemplateInfo> List(string searchString, string language, Func<ITemplateInfo, FilterResult> filter = null)
         {
-            HashSet<ITemplateInfo> matchingTemplates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
+            HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
             HashSet<ITemplateInfo> allTemplates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
+            filter = filter ?? (x => FilterResult.Match);
 
             using (Timing.Over("load"))
                 SettingsLoader.GetTemplates(allTemplates);
-
-#if !NET45
-            IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates;
-#else
-            IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates.ToList();
-#endif
-
-            IReadOnlyCollection<ITemplateInfo> aliasSearchResult;
+            IReadOnlyCollection<IFilteredTemplateInfo> aliasSearchResult;
 
             using (Timing.Over("Alias search"))
             {
-                aliasSearchResult = AliasRegistry.GetTemplatesForAlias(searchString, allTemplatesCollection);
+#if !NET45
+                IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates;
+#else
+                IReadOnlyCollection<ITemplateInfo> allTemplatesCollection = allTemplates.ToList();
+#endif
+
+                aliasSearchResult = AliasRegistry.GetTemplatesForAlias(searchString, allTemplatesCollection).Select(x => new FilteredTemplateInfo(x, FilterResult.AliasMatch)).ToList();
 
                 if (!string.IsNullOrEmpty(language))
                 {
-                    aliasSearchResult = aliasSearchResult.Where(x =>
+                    foreach (IFilteredTemplateInfo template in aliasSearchResult)
                     {
-                        return x.Tags == null || !x.Tags.TryGetValue("language", out string langVal) || string.Equals(langVal, language, StringComparison.OrdinalIgnoreCase);
-                    }).ToList();
+                        if (template.Info.Tags != null && template.Info.Tags.TryGetValue("language", out string langVal) && !string.Equals(langVal, language, StringComparison.OrdinalIgnoreCase))
+                        {
+                            template.MatchDisposition = FilterResult.LanguageMismatch;
+                        }
+                        else
+                        {
+                            FilterResult filterResult = filter(template.Info);
+                            if (filterResult != FilterResult.Match)
+                            {
+                                template.MatchDisposition = filterResult;
+                            }
+                        }
+                    }
                 }
 
-                if(aliasSearchResult.Count == 1)
+                // Returns only templates whose alias matched. This includes templates with a language mismatch.
+                // The MatchDispositions will be one of:
+                //  - AliasMatch 
+                //  - LanguageMismatch
+                //  - a non-matching filter result (if AliasMatch and Language Match)
+                if (aliasSearchResult.Count(x => x.MatchDisposition == FilterResult.AliasMatch) == 1)
                 {
                     return aliasSearchResult;
                 }
@@ -51,20 +69,29 @@ namespace Microsoft.TemplateEngine.Edge.Template
             using (Timing.Over("Search in loaded"))
             {
                 string[] tagParts = searchString?.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                List<ITemplateInfo> exactMatches = new List<ITemplateInfo>();
+                List<IFilteredTemplateInfo> exactMatches = new List<IFilteredTemplateInfo>();
+
                 foreach (ITemplateInfo template in allTemplates)
                 {
+                    FilterResult filterResult = filter(template);
+                    if (filterResult == FilterResult.NonMatch)
+                    {
+                        continue;
+                    }
+
                     if (!string.IsNullOrEmpty(language))
                     {
                         if (template.Tags != null && template.Tags.TryGetValue("language", out string langVal) && !string.Equals(langVal, language, StringComparison.OrdinalIgnoreCase))
                         {
-                            continue;
+                            // this overrides other filter results.
+                            // eventually language matching will probably get rolled-up into filter matching.
+                            filterResult = FilterResult.LanguageMismatch;
                         }
                     }
 
                     if (string.IsNullOrEmpty(searchString))
                     {
-                        matchingTemplates.Add(template);
+                        matchingTemplates.Add(new FilteredTemplateInfo(template, filterResult));
                     }
                     else
                     {
@@ -74,28 +101,29 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         if (nameCompare == 0 && string.Equals(template.Name, searchString, StringComparison.OrdinalIgnoreCase) 
                             || shortNameCompare == 0 && string.Equals(template.ShortName, searchString, StringComparison.OrdinalIgnoreCase))
                         {
-                            exactMatches.Add(template);
+                            exactMatches.Add(new FilteredTemplateInfo(template, FilterResult.Match));
                         }
 
                         if(nameCompare > -1 || shortNameCompare > -1)
                         {
-                            matchingTemplates.Add(template);
+                            matchingTemplates.Add(new FilteredTemplateInfo(template, FilterResult.SubstringMatch));
                         }
 
                         if (template.Classifications != null && template.Classifications.Count > 0)
                         {
                             if (tagParts.All(x => template.Classifications.Contains(x, StringComparer.OrdinalIgnoreCase)))
                             {
-                                matchingTemplates.Add(template);
+                                matchingTemplates.Add(new FilteredTemplateInfo(template, FilterResult.ClassificationMatch));
                             }
                         }
                         else
                         {
-                            matchingTemplates.Add(template);
+                            matchingTemplates.Add(new FilteredTemplateInfo(template, filterResult));
                         }
                     }
                 }
 
+                // Only the exact matches are returned, if there are any.
                 if (exactMatches.Count > 0)
                 {
                     return exactMatches;
@@ -105,9 +133,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
             matchingTemplates.UnionWith(aliasSearchResult);
 
 #if !NET45
-            IReadOnlyCollection<ITemplateInfo> matchingTemplatesCollection = matchingTemplates;
+            IReadOnlyCollection<IFilteredTemplateInfo> matchingTemplatesCollection = matchingTemplates;
 #else
-            IReadOnlyCollection<ITemplateInfo> matchingTemplatesCollection = matchingTemplates.ToList();
+            IReadOnlyCollection<IFilteredTemplateInfo> matchingTemplatesCollection = matchingTemplates.ToList();
 #endif
             return matchingTemplatesCollection;
         }
