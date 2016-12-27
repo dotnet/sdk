@@ -21,8 +21,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
             Message = message;
             Status = status;
             TemplateFullName = templateFullName;
-            PostActions = creationOutputs.PostActions;
-            PrimaryOutputs = creationOutputs.PrimaryOutputs;
+            PostActions = creationOutputs?.PostActions;
+            PrimaryOutputs = creationOutputs?.PrimaryOutputs;
         }
 
         public int ResultCode { get; }
