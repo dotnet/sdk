@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly JObject _raw;
 
-        public RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config, IFile localeConfigFile)
+        public RunnableProjectTemplate(JObject raw, IGenerator generator, IFile configFile, IRunnableProjectConfig config, IFile localeConfigFile, IFile hostConfigFile)
         {
             config.SourceFile = configFile;
             ConfigFile = configFile;
@@ -28,6 +28,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             GroupIdentity = config.GroupIdentity;
             LocaleConfigFile = localeConfigFile;
             IsNameAgreementWithFolderPreferred = raw.ToBool("preferNameDirectory", false);
+            HostConfigMountPointId = hostConfigFile?.MountPoint?.Info?.MountPointId ?? Guid.Empty;
+            HostConfigPlace = hostConfigFile?.FullPath;
             _raw = raw;
         }
 
@@ -82,5 +84,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string LocaleConfigPlace => LocaleConfiguration.FullPath;
 
         public bool IsNameAgreementWithFolderPreferred { get; }
+
+        public Guid HostConfigMountPointId { get; }
+
+        public string HostConfigPlace { get; }
     }
 }
