@@ -79,12 +79,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return new ParameterSet(tmplt.Config);
         }
 
-        public IReadOnlyDictionary<string, string> ParameterMapForTemplate(ITemplate template)
-        {
-            RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
-            return tmplt.Config.HostTemplateInfo?.ParameterMap;
-        }
-
         private bool TryGetLangPackFromFile(IFile file, out ILocalizationModel locModel)
         {
             if (file == null)
@@ -188,14 +182,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
 
-                JObject hostTemplateSourceObject = null;
-                if (hostTemplateConfigFile != null)
-                {
-                    hostTemplateSourceObject = ReadJObjectFromIFile(hostTemplateConfigFile);
-                }
-
-                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(srcObject, localeSourceObject, hostTemplateSourceObject);
-                template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null);
+                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(srcObject, localeSourceObject);
+                template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null, hostTemplateConfigFile);
                 return true;
             }
             catch (Exception ex)

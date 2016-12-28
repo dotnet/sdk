@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (!string.IsNullOrEmpty(EngineEnvironmentSettings.Host.HostIdentifier))
             {
                 string hostTemplateFileName = string.Join(string.Empty, EngineEnvironmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
-                hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, System.IO.SearchOption.TopDirectoryOnly).FirstOrDefault();
+                hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
             }
 
 
@@ -302,6 +302,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _userSettings.MountPoints.Add(mountPoint.Info);
             JObject serialized = JObject.FromObject(_userSettings);
             Paths.User.SettingsFile.WriteAllText(serialized.ToString());
+        }
+
+        public static bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file)
+        {
+            if (!string.IsNullOrEmpty(place) && _mountPointManager.TryDemandMountPoint(mountPointId, out IMountPoint mountPoint))
+            {
+                file = mountPoint.FileInfo(place);
+                return file != null && file.Exists;
+            }
+
+            file = null;
+            return false;
         }
     }
 }

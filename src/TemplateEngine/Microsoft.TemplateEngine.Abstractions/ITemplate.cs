@@ -46,5 +46,9 @@ namespace Microsoft.TemplateEngine.Abstractions
         IDirectory TemplateSourceRoot { get; }
 
         bool IsNameAgreementWithFolderPreferred { get; }
+
+        Guid HostConfigMountPointId { get; }
+
+        string HostConfigPlace { get; }
     }
 }

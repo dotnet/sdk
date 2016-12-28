@@ -37,8 +37,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private string _lowerSafeNameName;
         private string _lowerSafeNamespaceName;
 
-        public IHostTemplateModel HostTemplateInfo { get; set; }
-
         public IFile SourceFile { get; set; }
 
         public string Author { get; set; }
@@ -697,10 +695,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _sources = sources;
         }
 
-        public static SimpleConfigModel FromJObject(JObject source, JObject localeSource = null, JObject hostSource = null)
+        public static SimpleConfigModel FromJObject(JObject source, JObject localeSource = null)
         {
             ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
-            IHostTemplateModel hostTemplateModel = HostTemplateInfoFromJObject(hostSource);
 
             SimpleConfigModel config = new SimpleConfigModel()
             {
@@ -714,8 +711,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
                 ShortName = source.ToString(nameof(config.ShortName)),
                 SourceName = source.ToString(nameof(config.SourceName)),
-                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename)),
-                HostTemplateInfo = hostTemplateModel
+                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename))
             };
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
@@ -822,20 +818,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.LocalizationOperations = localizations;
 
             return config;
-        }
-
-        public static IHostTemplateModel HostTemplateInfoFromJObject(JObject source)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-
-            IReadOnlyDictionary<string, string> parameterMap = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "ParameterMap");
-            return new HostTemplateModel()
-            {
-                ParameterMap = parameterMap
-            };
         }
 
         public static ILocalizationModel LocalizationFromJObject(JObject source)

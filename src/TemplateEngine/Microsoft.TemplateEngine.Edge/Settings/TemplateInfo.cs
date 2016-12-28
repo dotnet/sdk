@@ -14,9 +14,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public TemplateInfo(JObject entry)
         {
-            ConfigMountPointId = Guid.Parse(entry["ConfigMountPointId"].ToString());
-            Author = entry["Author"].ToString();
-            JArray classificationsArray = (JArray)entry["Classifications"];
+            ConfigMountPointId = Guid.Parse(entry[nameof(ConfigMountPointId)].ToString());
+            Author = entry[nameof(Author)].ToString();
+            JArray classificationsArray = (JArray)entry[nameof(Classifications)];
             List<string> classifications = new List<string>();
             Classifications = classifications;
             //using (Timing.Over("Read classifications"))
@@ -24,14 +24,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     classifications.Add(item.ToString());
                 }
-            DefaultName = entry["DefaultName"].ToString();
-            Description = entry["Description"].ToString();
-            Identity = entry["Identity"].ToString();
-            GeneratorId = Guid.Parse(entry["GeneratorId"].ToString());
-            GroupIdentity = entry["GroupIdentity"].ToString();
-            Name = entry["Name"].ToString();
-            ShortName = entry["ShortName"].ToString();
-            JObject tagsObject = (JObject) entry["Tags"];
+            DefaultName = entry[nameof(DefaultName)].ToString();
+            Description = entry[nameof(Description)].ToString();
+            Identity = entry[nameof(Identity)].ToString();
+            GeneratorId = Guid.Parse(entry[nameof(GeneratorId)].ToString());
+            GroupIdentity = entry[nameof(GroupIdentity)].ToString();
+            Name = entry[nameof(Name)].ToString();
+            ShortName = entry[nameof(ShortName)].ToString();
+            JObject tagsObject = (JObject) entry[nameof(Tags)];
             Dictionary<string, string> tags = new Dictionary<string, string>();
             Tags = tags;
             //using (Timing.Over("Read tags"))
@@ -39,10 +39,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     tags[item.Name] = item.Value.ToString();
                 }
-            ConfigPlace = entry["ConfigPlace"].ToString();
+            ConfigPlace = entry[nameof(ConfigPlace)].ToString();
 
-            LocaleConfigMountPointId = Guid.Parse(entry["LocaleConfigMountPointId"].ToString());
-            LocaleConfigPlace = entry["LocaleConfigPlace"].ToString();
+            LocaleConfigMountPointId = Guid.Parse(entry[nameof(LocaleConfigMountPointId)].ToString());
+            LocaleConfigPlace = entry[nameof(LocaleConfigPlace)].ToString();
         }
 
         [JsonProperty]
