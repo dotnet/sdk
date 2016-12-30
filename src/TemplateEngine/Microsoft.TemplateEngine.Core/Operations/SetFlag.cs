@@ -85,13 +85,18 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     target.Write(tokenValue, 0, tokenValue.Length);
                     written = tokenValue.Length;
                 }
+                else
+                {
+                    // consume the entire line when not emitting. Otherwise the newlines on the falg tokens get emitted
+                    processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                }
 
                 //Only turn the flag in question back on if it's the "flags" flag.
                 //  Yes, we still need to emit it as the common case is for this
                 //  to be done in the template definition file
                 if (flagsOn)
                 {
-                    processor.Config.Flags[_owner.Name] = token == 0;
+                    processor.Config.Flags[_owner.Name] = turnOn;
                 }
                 else if (_owner.Name == SetFlag.OperationName && turnOn)
                 {
