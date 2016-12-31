@@ -14,7 +14,7 @@
 
 //        public MockParameterSet(IRunnableProjectConfig config)
 //        {
-//            foreach (KeyValuePair<string, MockParameter> p in config.Parameters)
+//            foreach (KeyValuePair<string, Parameter> p in config.Parameters)
 //            {
 //                p.Value.Name = p.Key;
 //                _parameters[p.Key] = p.Value;
@@ -39,7 +39,7 @@
 //                return true;
 //            }
 
-//            parameter = new MockParameter
+//            parameter = new Parameter
 //            {
 //                Name = name,
 //                Requirement = TemplateParameterPriority.Optional,
