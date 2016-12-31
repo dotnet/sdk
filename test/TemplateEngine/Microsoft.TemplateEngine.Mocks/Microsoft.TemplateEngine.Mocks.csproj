@@ -13,5 +13,6 @@
     <PackageReference Include="Microsoft.TemplateEngine.Abstractions" Version="$(PackageVersion)" />
     <PackageReference Include="Microsoft.TemplateEngine.Core.Contracts" Version="$(PackageVersion)" />
     <PackageReference Include="Microsoft.TemplateEngine.Utils" Version="$(PackageVersion)" />
+    <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="$(PackageVersion)" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,70 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.TestHelper;
+using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator;
+using Newtonsoft.Json.Linq;
+using Xunit;
+
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
+{
+    public class GuidMacroTests : TestBase
+    {
+        [Fact(DisplayName = nameof(TestGuidConfig))]
+        public void TestGuidConfig()
+        {
+            string paramName = "TestGuid";
+            IMacroConfig macroConfig = new GuidMacroConfig(paramName, string.Empty);
+
+            IVariableCollection variables = new VariableCollection();
+            IRunnableProjectConfig config = new SimpleConfigModel();
+            IParameterSet parameters = new ParameterSet(config);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+
+            GuidMacro guidMacro = new GuidMacro();
+            guidMacro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            ValidateGuidMacroCreatedParametersWithResolvedValues(paramName, parameters);
+        }
+
+        [Fact(DisplayName = nameof(TestDeferredGuidConfig))]
+        public void TestDeferredGuidConfig()
+        {
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
+            jsonParameters.Add("format", null);
+            string variableName = "myGuid1";
+            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("GuidMacro", variableName, jsonParameters);
+
+            GuidMacro guidMacro = new GuidMacro();
+            IVariableCollection variables = new VariableCollection();
+            IRunnableProjectConfig config = new SimpleConfigModel();
+            IParameterSet parameters = new ParameterSet(config);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+
+            guidMacro.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+            ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, parameters);
+        }
+
+        private static void ValidateGuidMacroCreatedParametersWithResolvedValues(string variableName, IParameterSet parameters)
+        {
+            ITemplateParameter setParam;
+            Assert.True(parameters.TryGetParameterDefinition(variableName, out setParam));
+
+            Guid paramValue = Guid.Parse((string)parameters.ResolvedValues[setParam]);
+
+            // check that all the param name variants were created, and their values all resolve to the same guid.
+            string guidFormats = GuidMacroConfig.DefaultFormats;
+            for (int i = 0; i < guidFormats.Length; ++i)
+            {
+                string otherFormatParamName = variableName + "-" + guidFormats[i];
+                ITemplateParameter testParam;
+                Assert.True(parameters.TryGetParameterDefinition(otherFormatParamName, out testParam));
+                Guid testValue = Guid.Parse((string)parameters.ResolvedValues[testParam]);
+                Assert.Equal(paramValue, testValue);
+            }
+        }
+    }
+}

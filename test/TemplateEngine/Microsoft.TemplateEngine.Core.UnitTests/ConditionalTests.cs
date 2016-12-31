@@ -2,6 +2,7 @@
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
@@ -25,7 +26,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return SetupTestProcessor(operations, vc);
         }
 
-        protected static IProcessor SetupCStyleWithCommentsProcessor(VariableCollection vc)
+        internal static IProcessor SetupCStyleWithCommentsProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = CStyleWithCommentsConditionalOperations;
             return SetupTestProcessor(operations, vc);

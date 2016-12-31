@@ -21,7 +21,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as GuidMacroConfig");
             }
 
-            if (config.Format != null)
+            //if (config.Format != null)
+            if (! string.IsNullOrEmpty(config.Format))
             {
                 Guid g = Guid.NewGuid();
                 string value = char.IsUpper(config.Format[0]) ? g.ToString(config.Format[0].ToString()).ToUpperInvariant() : g.ToString(config.Format[0].ToString()).ToLowerInvariant();
@@ -71,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 throw new ArgumentNullException("format");
             }
-            string format = formatToken.ToString();
+            string format = formatToken?.ToString();
 
             IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, format);
             EvaluateConfig(vars, realConfig, parameters, setter);
