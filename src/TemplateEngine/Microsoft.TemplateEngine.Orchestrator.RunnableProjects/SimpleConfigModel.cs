@@ -418,7 +418,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (symbol.Value.Replaces != null)
                     {
-                        macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Value.Replaces, symbol.Key));
+                        macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Key, symbol.Value.Replaces));
                     }
                 }
             }
