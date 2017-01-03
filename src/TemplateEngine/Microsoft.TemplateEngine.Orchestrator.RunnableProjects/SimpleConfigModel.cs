@@ -418,7 +418,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (symbol.Value.Replaces != null)
                     {
-                        macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Value.Replaces, symbol.Key));
+                        //Replace the literal value in the "replaces" property with the evaluated value of the symbol
+                        macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Key, symbol.Value.Replaces));
                     }
                 }
             }
