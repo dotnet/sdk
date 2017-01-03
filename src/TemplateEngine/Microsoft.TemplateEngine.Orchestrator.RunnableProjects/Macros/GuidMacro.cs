@@ -21,7 +21,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as GuidMacroConfig");
             }
 
-            //if (config.Format != null)
             if (! string.IsNullOrEmpty(config.Format))
             {
                 Guid g = Guid.NewGuid();
