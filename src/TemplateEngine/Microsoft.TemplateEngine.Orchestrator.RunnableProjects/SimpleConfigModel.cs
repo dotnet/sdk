@@ -418,18 +418,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (symbol.Value.Replaces != null)
                     {
-                        //If "replaces" is on a parameter, replace the literal value in the "replaces" property
-                        //  with the value of the parameter
-                        if (string.Equals(symbol.Value.Type, "parameter", StringComparison.OrdinalIgnoreCase))
-                        {
-                            macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Key, symbol.Value.Replaces));
-                        }
-                        //Otherwise, replace the literal value (the symbol name) with the value held by the symbol
-                        //  with the name specified in the "replaces" property
-                        else
-                        {
-                            macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Value.Replaces, symbol.Key));
-                        }
+                        //Replace the literal value in the "replaces" property with the evaluated value of the symbol
+                        macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Key, symbol.Value.Replaces));
                     }
                 }
             }
