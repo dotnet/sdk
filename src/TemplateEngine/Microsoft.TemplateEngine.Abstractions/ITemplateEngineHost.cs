@@ -30,5 +30,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         void OnTimingCompleted(string label, TimeSpan timing);
 
         bool TryGetHostParamDefault(string paramName, out string value);
+
+        void UpdateLocale(string newLocale);
     }
 }
