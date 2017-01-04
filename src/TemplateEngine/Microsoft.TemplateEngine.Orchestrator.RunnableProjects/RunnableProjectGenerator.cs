@@ -296,7 +296,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                 }
 
-                valueResolutionError = !param.Choices.Keys.Contains(literal);
+                valueResolutionError = !param.Choices.ContainsKey(literal);
                 return val;
             }
 

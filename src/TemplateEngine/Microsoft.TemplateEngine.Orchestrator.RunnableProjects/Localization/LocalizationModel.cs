@@ -16,11 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
         // This is not localized info, more like a key
         public string Identity { get; set; }
 
-        // symbol name -> localized description
-        public IReadOnlyDictionary<string, string> SymbolDescriptions { get; set; }
-
-        // symbol name -> choice -> localized description
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ChoiceDescriptions { get; set; }
+        public IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; set; }
 
         public IReadOnlyDictionary<Guid, IPostActionLocalizationModel> PostActions { get; set; }
 

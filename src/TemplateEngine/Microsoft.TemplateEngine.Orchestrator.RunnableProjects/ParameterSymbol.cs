@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -21,13 +22,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Choices { get; set; }
 
-        public static ISymbolModel FromJObject(JObject jObject, string localizedDescription = null, IReadOnlyDictionary<string, string> localizedChoiceDescriptions = null)
+        public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization)
         {
             ParameterSymbol symbol = new ParameterSymbol
             {
                 Binding = jObject.ToString(nameof(Binding)),
                 DefaultValue = jObject.ToString(nameof(DefaultValue)),
-                Description = localizedDescription ?? jObject.ToString(nameof(Description)),
+                Description = localization?.Description ?? jObject.ToString(nameof(Description)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),
                 Type = jObject.ToString(nameof(Type)),
                 Replaces = jObject.ToString(nameof(Replaces)),
@@ -42,12 +43,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     string choice = choiceObject.ToString("choice");
 
-                    if (localizedChoiceDescriptions == null ||
-                        ! localizedChoiceDescriptions.TryGetValue(choice, out string description))
-                    {   // no localized description, use the default
-                        description = choiceObject.ToString("description");
+                    if (localization == null
+                        || ! localization.ChoicesAndDescriptions.TryGetValue(choice, out string choiceDescription))
+                    {
+                        choiceDescription = choiceObject.ToString("description");
                     }
-                    choicesAndDescriptions.Add(choice, description);
+                    choicesAndDescriptions.Add(choice, choiceDescription);
                 }
             }
 
