@@ -22,6 +22,8 @@ namespace Microsoft.NET.TestFramework
 
         public string TestRoot => Path;
 
+        public string SourceRoot => _testAssetRoot;
+
         internal TestAsset(string testDestination, string buildVersion) : base(testDestination)
         {
             BuildVersion = buildVersion;
@@ -117,7 +119,7 @@ namespace Microsoft.NET.TestFramework
                 }
             }
             return this;
-            
+
         }
 
         public void SetSdkVersion(XDocument project)

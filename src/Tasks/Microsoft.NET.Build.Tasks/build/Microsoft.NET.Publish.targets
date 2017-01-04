@@ -6,7 +6,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
           created a backup copy.  Incorrect changes to this file will make it
           impossible to load or build your projects from the command-line or the IDE.
 
-Copyright (c) .NET Foundation. All rights reserved. 
+Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -14,13 +14,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     ============================================================
                                         Publish
- 
+
     The main publish entry point.
     ============================================================
     -->
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    
+
     <DefaultCopyToPublishDirectoryMetadata Condition="'$(DefaultCopyToPublishDirectoryMetadata)' == ''">true</DefaultCopyToPublishDirectoryMetadata>
     <_GetChildProjectCopyToPublishDirectoryItems Condition="'$(_GetChildProjectCopyToPublishDirectoryItems)' == ''">true</_GetChildProjectCopyToPublishDirectoryItems>
 
@@ -34,12 +34,27 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolvedFileToPublish>
   </ItemDefinitionGroup>
 
+  <ItemGroup>
+    <!-- remove ClickOnce targets imported from Microsoft.Common.targets -->
+    <_FilteredPublishDependsOn Include="$(PublishDependsOn)"
+                               Exclude="Build;SetGenerateManifests;PublishOnly;_DeploymentUnpublishable" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_PublishDependsOn>
+      Build;
+      BeforePublish;
+      PrepareForPublish;
+      ComputeAndCopyFilesToPublishDirectory;
+      GeneratePublishDependencyFile;
+      GeneratePublishRuntimeConfigurationFile;
+      @(_FilteredPublishDependsOn);
+      AfterPublish;
+    </_PublishDependsOn>
+  </PropertyGroup>
+
   <Target Name="Publish"
-          DependsOnTargets="Build;
-                            PrepareForPublish;
-                            ComputeAndCopyFilesToPublishDirectory;
-                            GeneratePublishDependencyFile;
-                            GeneratePublishRuntimeConfigurationFile" />
+          DependsOnTargets="$(_PublishDependsOn)" />
 
   <!--
     ============================================================
@@ -179,7 +194,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               Condition="'$(CopyBuildOutputToPublishDirectory)' == 'true'">
         <RelativePath>@(IntermediateAssembly->'%(Filename)%(Extension)')</RelativePath>
       </ResolvedFileToPublish>
-      
+
       <!-- Copy the app.config (if any) -->
       <ResolvedFileToPublish Include="@(AppConfigWithTargetPath)"
                               Condition="'$(CopyBuildOutputToPublishDirectory)' == 'true'">
@@ -272,8 +287,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     This includes baggage items from transitively referenced projects. It would appear
     that this target computes full transitive closure of content items for all referenced
     projects; however that is not the case. It only collects the content items from its
-    immediate children and not children of children. 
-    
+    immediate children and not children of children.
+
     See comment on GetCopyToOutputDirectoryItems, from which this logic was taken.
     ============================================================
     -->
@@ -461,7 +476,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
                                         ComputePrivateAssetsPackageReferences
 
-    Builds up the @(PrivateAssetsPackageReference) item by looking for @(PackageReference) items with 
+    Builds up the @(PrivateAssetsPackageReference) item by looking for @(PackageReference) items with
     <PrivateAssets> metadata.
     ============================================================
     -->
