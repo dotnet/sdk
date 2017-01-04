@@ -20,6 +20,9 @@ namespace Microsoft.TemplateEngine.Abstractions
         // symbol name -> localized description
         IReadOnlyDictionary<string, string> SymbolDescriptions { get; }
 
+        // symbol name -> choice -> localized description
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ChoiceDescriptions { get; }
+
         IReadOnlyDictionary<Guid, IPostActionLocalizationModel> PostActions { get; }
 
         IReadOnlyList<IFileLocalizationModel> FileLocalizations { get; }

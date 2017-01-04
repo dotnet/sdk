@@ -19,11 +19,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string DataType { get; set; }
 
-        public IReadOnlyList<string> Choices { get; set; }
+        public IReadOnlyDictionary<string, string> Choices { get; set; }
 
-        public static ISymbolModel FromJObject(JObject jObject, string localizedDescription = null)
+        public static ISymbolModel FromJObject(JObject jObject, string localizedDescription = null, IReadOnlyDictionary<string, string> localizedChoiceDescriptions = null)
         {
-            ParameterSymbol sym = new ParameterSymbol
+            ParameterSymbol symbol = new ParameterSymbol
             {
                 Binding = jObject.ToString(nameof(Binding)),
                 DefaultValue = jObject.ToString(nameof(DefaultValue)),
@@ -34,20 +34,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 DataType = jObject.ToString(nameof(DataType))
             };
 
-            if (sym.DataType == "choice")
+            Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
+
+            if (symbol.DataType == "choice")
             {
-                List<string> choiceList = new List<string>();
-
-                JArray choices = (JArray)jObject["choices"];
-                foreach (JToken choice in choices)
+                foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))
                 {
-                    choiceList.Add(choice.ToString());
-                }
+                    string choice = choiceObject.ToString("choice");
 
-                sym.Choices = choiceList;
+                    if (localizedChoiceDescriptions == null ||
+                        ! localizedChoiceDescriptions.TryGetValue(choice, out string description))
+                    {   // no localized description, use the default
+                        description = choiceObject.ToString("description");
+                    }
+                    choicesAndDescriptions.Add(choice, description);
+                }
             }
 
-            return sym;
+            symbol.Choices = choicesAndDescriptions;
+
+            return symbol;
         }
     }
 }

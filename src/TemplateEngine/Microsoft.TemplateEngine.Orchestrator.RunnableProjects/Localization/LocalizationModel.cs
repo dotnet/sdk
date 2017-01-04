@@ -19,6 +19,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
         // symbol name -> localized description
         public IReadOnlyDictionary<string, string> SymbolDescriptions { get; set; }
 
+        // symbol name -> choice -> localized description
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ChoiceDescriptions { get; set; }
+
         public IReadOnlyDictionary<Guid, IPostActionLocalizationModel> PostActions { get; set; }
 
         public IReadOnlyList<IFileLocalizationModel> FileLocalizations { get; set; }

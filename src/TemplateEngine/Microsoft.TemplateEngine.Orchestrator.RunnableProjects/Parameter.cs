@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string DataType { get; set; }
 
         [JsonProperty]
-        public IReadOnlyList<string> Choices { get; set; }
+        public IReadOnlyDictionary<string, string> Choices { get; set; }
 
         string ITemplateParameter.Documentation => Description;
 
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string ITemplateParameter.DataType => DataType;
 
-        IReadOnlyList<string> ITemplateParameter.Choices => Choices;
+        IReadOnlyDictionary<string, string> ITemplateParameter.Choices => Choices;
 
         public override string ToString()
         {

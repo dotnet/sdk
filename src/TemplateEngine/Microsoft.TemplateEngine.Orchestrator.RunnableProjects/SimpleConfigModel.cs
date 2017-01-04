@@ -765,12 +765,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 string localizedDescription = null;
+                IReadOnlyDictionary<string, string> localizedChoiceDescriptions = null;
                 if (localizationModel != null)
                 {
                     localizationModel.SymbolDescriptions.TryGetValue(prop.Name, out localizedDescription);
+                    localizationModel.ChoiceDescriptions.TryGetValue(prop.Name, out localizedChoiceDescriptions);
                 }
 
-                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, localizedDescription);
+                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, localizedDescription, localizedChoiceDescriptions);
 
                 if (model != null)
                 {
@@ -842,10 +844,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Name = source.ToString(nameof(model.Name)),
                 Description = source.ToString(nameof(model.Description)),
                 Identity = source.ToString(nameof(model.Identity)),
-
-                // symbol description localizations
-                SymbolDescriptions = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "symbols")
             };
+
+            // symbol description & choice localizations
+            Dictionary<string, string> descriptionMap = new Dictionary<string, string>();
+            Dictionary<string, IReadOnlyDictionary<string, string>> choiceDescriptions = new Dictionary<string, IReadOnlyDictionary<string, string>>();
+            IReadOnlyDictionary<string, JToken> symbolInfoList = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
+
+            foreach (KeyValuePair<string, JToken> symbolDetail in symbolInfoList)
+            {
+                string symbol = symbolDetail.Key;
+                string description = symbolDetail.Value.ToString("description");
+                descriptionMap.Add(symbol, description);
+                Dictionary<string, string> choiceDescForSymbol = new Dictionary<string, string>();
+                choiceDescriptions.Add(symbol, choiceDescForSymbol);
+
+                foreach (JObject choiceObject in symbolDetail.Value.Items<JObject>("choices"))
+                {
+                    string choice = choiceObject.ToString("choice");
+                    string choiceDescription = choiceObject.ToString("description");
+
+                    if (!string.IsNullOrEmpty(choice) && !string.IsNullOrEmpty(choiceDescription))
+                    {
+                        choiceDescForSymbol.Add(choice, choiceDescription);
+                    }
+                }
+            }
+
+            model.SymbolDescriptions = descriptionMap;
+            model.ChoiceDescriptions = choiceDescriptions;
 
             // post action localizations
             Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();
