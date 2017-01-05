@@ -76,6 +76,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DelaySign Condition="'$(DelaySign)'==''">false</DelaySign>
     <GeneratePackageOnBuild Condition="'$(GeneratePackageOnBuild)'==''">false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance Condition="'$(PackageRequireLicenseAcceptance)'==''">false</PackageRequireLicenseAcceptance>
+    
+    <!-- When adding a project to a .sln file, the .NET CLI needs to know what project type Guid to use.  So here we
+         specify the CPS project type Guid, as all .NET Sdk projects should load with the CPS project system. -->
+    <DefaultProjectTypeGuid>{13B669BE-BB05-4DDF-9536-439F39A36129}</DefaultProjectTypeGuid>
+    
   </PropertyGroup>
   
   <!-- Default glob settings -->
