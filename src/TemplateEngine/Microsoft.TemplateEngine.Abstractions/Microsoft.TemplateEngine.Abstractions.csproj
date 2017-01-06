@@ -4,11 +4,4 @@
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <Description>Contracts for extending Template Engine</Description>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
-  </ItemGroup>
 </Project>
