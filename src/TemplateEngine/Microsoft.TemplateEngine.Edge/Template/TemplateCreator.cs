@@ -210,7 +210,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 if (parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
                 {
-                    while (host.OnParameterError(parameter, null, "Missing required parameter", out string newParamValue)
+                    string newParamValue;
+                    while (host.OnParameterError(parameter, null, "Missing required parameter", out newParamValue)
                         && string.IsNullOrEmpty(newParamValue))
                     {
                     }

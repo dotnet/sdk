@@ -267,7 +267,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
                     // which takes care of making null bool -> true as appropriate.
                     // This else can also happen if there is a value but it can't be converted.
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val) && !bool.TryParse(val, out boolVal))
+                    string val;
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
                     {
                     }
 
@@ -292,7 +293,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return param.DefaultValue;
                 }
 
-                while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out string val) && (val == null || !param.Choices.Keys.Contains(literal)))
+                string val;
+                while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) && (val == null || !param.Choices.Keys.Contains(literal)))
                 {
                 }
 
@@ -308,7 +310,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out string val) && (val == null || !double.TryParse(val, out convertedFloat)))
+                    string val;
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !double.TryParse(val, out convertedFloat)))
                     {
                     }
 
@@ -324,7 +327,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out string val) && (val == null || !long.TryParse(val, out convertedInt)))
+                    string val;
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
                     {
                     }
 
@@ -340,7 +344,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out string val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
+                    string val;
+                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
                     {
                     }
 

@@ -5,10 +5,6 @@
     <Description>An extension for Template Engine that allows projects that still run to be used as templates</Description>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
     <ProjectReference Include="..\Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
@@ -16,8 +12,5 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
   </ItemGroup>
 </Project>
