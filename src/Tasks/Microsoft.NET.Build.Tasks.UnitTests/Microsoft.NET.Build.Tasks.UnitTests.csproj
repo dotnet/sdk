@@ -1,14 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Common.props'))\Common.props" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <ProjectGuid>{6A698C1D-F604-4295-B6FC-7FC726F9FE5F}</ProjectGuid>
-    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.NET.Build.Tasks.UnitTests</RootNamespace>
-    <AssemblyName>Microsoft.NET.Build.Tasks.UnitTests</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetFramework>netstandard1.3</TargetFramework>
     <PackageTargetFallback>dotnet5.4;portable-net451+win8</PackageTargetFallback>
@@ -23,10 +16,6 @@
     <DebugEngines>{2E36F1D4-B23C-435D-AB41-18E608940038}</DebugEngines>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk">
-      <Version>$(SdkStage0Version)</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="NuGet.ProjectModel">
       <Version>$(NuGetVersion)</Version>
     </PackageReference>
@@ -47,62 +36,42 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GivenAProjectContext.cs" />
-    <Compile Include="GivenACompilationOptionsConverter.cs" />
-    <Compile Include="GivenAProduceContentsAssetsTask.cs" />
-    <Compile Include="GivenAResolvePackageDependenciesTask.cs" />
-    <Compile Include="LockFileSnippets.cs" />
-    <Compile Include="Mocks\MockContentAssetPreprocessor.cs" />
-    <Compile Include="Mocks\MockPackageResolver.cs" />
-    <Compile Include="Mocks\MockTaskItem.cs" />
-    <Compile Include="GivenThatWeWantToGetDependenciesViaDesignTimeBuild.cs" />
-    <Compile Include="GivenAPublishAssembliesResolver.cs" />
-    <Compile Include="GivenADependencyContextBuilder.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="TestLockFiles.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="all.asset.types.portable.deps.json">
+    <None Update="all.asset.types.portable.deps.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="all.asset.types.osx.deps.json">
+    <None Update="all.asset.types.osx.deps.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dotnet.new.resources.deps.json">
+    <None Update="dotnet.new.resources.deps.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dotnet.new.deps.json">
+    <None Update="dotnet.new.deps.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="LockFiles\all.asset.types.project.lock.json">
+    <None Update="LockFiles\all.asset.types.project.lock.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="LockFiles\dependencies.withgraphs.project.lock.json">
+    <None Update="LockFiles\dependencies.withgraphs.project.lock.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="LockFiles\dotnet.new.project.lock.json">
+    <None Update="LockFiles\dotnet.new.project.lock.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="simple.dependencies.compilerOptions.deps.json">
+    <None Update="simple.dependencies.compilerOptions.deps.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="simple.dependencies.deps.json">
+    <None Update="simple.dependencies.deps.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="LockFiles\simple.dependencies.project.lock.json">
+    <None Update="LockFiles\simple.dependencies.project.lock.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj">
-      <Project>{df7d2697-b3b4-45c2-8297-27245f528a99}</Project>
-      <Name>Microsoft.NET.Build.Tasks</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Targets\Signing.Imports.targets" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild">
+  <Target Name="MyAfterBuild" AfterTargets="AfterBuild">
     <ItemGroup>
       <CopyLocalAssembly Include="Microsoft.Build.Framework">
         <Version>$(MsBuildPackagesVersion)</Version>
