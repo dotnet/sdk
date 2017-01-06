@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -17,8 +15,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         // This is not localized info, more like a key
         string Identity { get; }
 
-        // symbol name -> localized description
-        IReadOnlyDictionary<string, string> SymbolDescriptions { get; }
+        IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; }
 
         IReadOnlyDictionary<Guid, IPostActionLocalizationModel> PostActions { get; }
 

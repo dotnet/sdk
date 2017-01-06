@@ -279,7 +279,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (literal != null)
                 {
-                    string match = param.Choices.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
+                    string match = param.Choices.Keys.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
 
                     if (match != null)
                     {
@@ -292,11 +292,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return param.DefaultValue;
                 }
 
-                while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices), out string val) && (val == null || !param.Choices.Contains(literal)))
+                while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out string val) && (val == null || !param.Choices.Keys.Contains(literal)))
                 {
                 }
 
-                valueResolutionError = !param.Choices.Contains(literal);
+                valueResolutionError = !param.Choices.ContainsKey(literal);
                 return val;
             }
 

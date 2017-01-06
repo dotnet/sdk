@@ -764,13 +764,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                string localizedDescription = null;
+                IParameterSymbolLocalizationModel symbolLocalization = null;
                 if (localizationModel != null)
                 {
-                    localizationModel.SymbolDescriptions.TryGetValue(prop.Name, out localizedDescription);
+                    localizationModel.ParameterSymbols.TryGetValue(prop.Name, out symbolLocalization);
                 }
 
-                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, localizedDescription);
+                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, symbolLocalization);
 
                 if (model != null)
                 {
@@ -836,25 +836,49 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return null;
             }
 
-            LocalizationModel model = new LocalizationModel()
+            LocalizationModel locModel = new LocalizationModel()
             {
-                Author = source.ToString(nameof(model.Author)),
-                Name = source.ToString(nameof(model.Name)),
-                Description = source.ToString(nameof(model.Description)),
-                Identity = source.ToString(nameof(model.Identity)),
-
-                // symbol description localizations
-                SymbolDescriptions = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "symbols")
+                Author = source.ToString(nameof(locModel.Author)),
+                Name = source.ToString(nameof(locModel.Name)),
+                Description = source.ToString(nameof(locModel.Description)),
+                Identity = source.ToString(nameof(locModel.Identity)),
             };
+
+            // symbol description & choice localizations
+            Dictionary<string, IParameterSymbolLocalizationModel> parameterLocalizations = new Dictionary<string, IParameterSymbolLocalizationModel>();
+            IReadOnlyDictionary<string, JToken> symbolInfoList = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "symbols");
+
+            foreach (KeyValuePair<string, JToken> symbolDetail in symbolInfoList)
+            {
+                string symbol = symbolDetail.Key;
+                string description = symbolDetail.Value.ToString("description");
+                Dictionary<string, string> choicesAndDescriptionsForSymbol = new Dictionary<string, string>();
+
+                foreach (JObject choiceObject in symbolDetail.Value.Items<JObject>("choices"))
+                {
+                    string choice = choiceObject.ToString("choice");
+                    string choiceDescription = choiceObject.ToString("description");
+
+                    if (!string.IsNullOrEmpty(choice) && !string.IsNullOrEmpty(choiceDescription))
+                    {
+                        choicesAndDescriptionsForSymbol.Add(choice, choiceDescription);
+                    }
+                }
+
+                IParameterSymbolLocalizationModel symbolLocalization = new ParameterSymbolLocalizationModel(symbol, description, choicesAndDescriptionsForSymbol);
+                parameterLocalizations.Add(symbol, symbolLocalization);
+            }
+
+            locModel.ParameterSymbols = parameterLocalizations;
 
             // post action localizations
             Dictionary<Guid, IPostActionLocalizationModel> postActions = new Dictionary<Guid, IPostActionLocalizationModel>();
-            foreach (JObject item in source.Items<JObject>(nameof(model.PostActions)))
+            foreach (JObject item in source.Items<JObject>(nameof(locModel.PostActions)))
             {
                 IPostActionLocalizationModel postActionModel = PostActionLocalizationModel.FromJObject(item);
                 postActions.Add(postActionModel.ActionId, postActionModel);
             }
-            model.PostActions = postActions;
+            locModel.PostActions = postActions;
 
             // regular file localizations
             IReadOnlyDictionary<string, JToken> fileLocalizationJson = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, "localizations");
@@ -870,9 +894,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     fileLocalizations.Add(fileModel);
                 }
             }
-            model.FileLocalizations = fileLocalizations;
+            locModel.FileLocalizations = fileLocalizations;
 
-            return model;
+            return locModel;
         }
     }
 }

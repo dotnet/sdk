@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -19,35 +20,41 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string DataType { get; set; }
 
-        public IReadOnlyList<string> Choices { get; set; }
+        public IReadOnlyDictionary<string, string> Choices { get; set; }
 
-        public static ISymbolModel FromJObject(JObject jObject, string localizedDescription = null)
+        public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization)
         {
-            ParameterSymbol sym = new ParameterSymbol
+            ParameterSymbol symbol = new ParameterSymbol
             {
                 Binding = jObject.ToString(nameof(Binding)),
                 DefaultValue = jObject.ToString(nameof(DefaultValue)),
-                Description = localizedDescription ?? jObject.ToString(nameof(Description)),
+                Description = localization?.Description ?? jObject.ToString(nameof(Description)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),
                 Type = jObject.ToString(nameof(Type)),
                 Replaces = jObject.ToString(nameof(Replaces)),
                 DataType = jObject.ToString(nameof(DataType))
             };
 
-            if (sym.DataType == "choice")
+            Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
+
+            if (symbol.DataType == "choice")
             {
-                List<string> choiceList = new List<string>();
-
-                JArray choices = (JArray)jObject["choices"];
-                foreach (JToken choice in choices)
+                foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))
                 {
-                    choiceList.Add(choice.ToString());
-                }
+                    string choice = choiceObject.ToString("choice");
 
-                sym.Choices = choiceList;
+                    if (localization == null
+                        || ! localization.ChoicesAndDescriptions.TryGetValue(choice, out string choiceDescription))
+                    {
+                        choiceDescription = choiceObject.ToString("description");
+                    }
+                    choicesAndDescriptions.Add(choice, choiceDescription);
+                }
             }
 
-            return sym;
+            symbol.Choices = choicesAndDescriptions;
+
+            return symbol;
         }
     }
 }
