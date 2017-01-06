@@ -15,13 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TemplateEngine.Utils" Version="$(PackageVersion)" />
-    <PackageReference Include="Microsoft.TemplateEngine.Abstractions" Version="$(PackageVersion)" />
-    <PackageReference Include="Microsoft.TemplateEngine.Edge" Version="$(PackageVersion)" />
+    <PackageReference Include="Microsoft.TemplateEngine.Cli" Version="$(PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
     <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.0-preview2-003121" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
