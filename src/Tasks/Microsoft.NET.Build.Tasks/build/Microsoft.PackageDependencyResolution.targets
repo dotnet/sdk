@@ -280,6 +280,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Private>false</Private>
         <NuGetIsFrameworkReference>false</NuGetIsFrameworkReference>
         <NuGetSourceType>Package</NuGetSourceType>
+        <NuGetPackageId>%(_CompileFileDefinitions.PackageName)</NuGetPackageId>
+        <NuGetPackageVersion>%(_CompileFileDefinitions.PackageVersion)</NuGetPackageVersion>
       </ResolvedCompileFileDefinitions>
 
     </ItemGroup>
@@ -296,6 +298,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Private>false</Private>
         <NuGetIsFrameworkReference>true</NuGetIsFrameworkReference>
         <NuGetSourceType>Package</NuGetSourceType>
+        <NuGetPackageId>%(_FrameworkAssemblies.PackageName)</NuGetPackageId>
+        <NuGetPackageVersion>%(_FrameworkAssemblies.PackageVersion)</NuGetPackageVersion>
       </ResolvedFrameworkAssemblies>
 
     </ItemGroup>
@@ -401,10 +405,22 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResourceCopyLocalItems Include="%(_ResourceCopyLocalItems.ResolvedPath)" />
 
       <!-- ALL -->
-      <AllCopyLocalItems Include="@(NativeCopyLocalItems);@(RuntimeCopyLocalItems);@(ResourceCopyLocalItems);@(_ContentCopyLocalItems)">
+      <_AllCopyLocalItems Include="@(_NativeCopyLocalItems);@(_RuntimeCopyLocalItems);@(_ResourceCopyLocalItems)" />
+
+      <AllCopyLocalItems Include="%(_AllCopyLocalItems.ResolvedPath)">
         <Private>false</Private>
         <NuGetIsFrameworkReference>false</NuGetIsFrameworkReference>
         <NuGetSourceType>Package</NuGetSourceType>
+        <NuGetPackageId>%(_AllCopyLocalItems.PackageName)</NuGetPackageId>
+        <NuGetPackageVersion>%(_AllCopyLocalItems.PackageVersion)</NuGetPackageVersion>
+      </AllCopyLocalItems>
+
+      <AllCopyLocalItems Include="@(_ContentCopyLocalItems)">
+        <Private>false</Private>
+        <NuGetIsFrameworkReference>false</NuGetIsFrameworkReference>
+        <NuGetSourceType>Package</NuGetSourceType>
+        <NuGetPackageId>%(_ContentCopyLocalItems.PackageName)</NuGetPackageId>
+        <NuGetPackageVersion>%(_ContentCopyLocalItems.PackageVersion)</NuGetPackageVersion>
       </AllCopyLocalItems>
 
     </ItemGroup>
