@@ -426,8 +426,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (symbol.Value.Replaces != null)
                     {
-                        //Replace the literal value in the "replaces" property with the evaluated value of the symbol
-                        macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Key, symbol.Value.Replaces));
+                        if (symbol.Value.Type == "bind")
+                        {
+                            if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
+                            {
+                                EngineEnvironmentSettings.Host.LogMessage($"Binding wasn't specified for bind-type symbol {symbol.Key}");
+                            }
+                            else
+                            {
+                                //Since this is a bind symbol, don't replace the literal with this symbol's value, 
+                                //  replace it with the value of the bound symbol
+                                macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Value.Binding, symbol.Value.Replaces));
+                            }
+                        }
+                        else
+                        {
+                            //Replace the literal value in the "replaces" property with the evaluated value of the symbol
+                            macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Key, symbol.Value.Replaces));
+                        }
                     }
                 }
             }

@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Utils
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
             _hostDefaults = defaults;
-            _hostBuiltInComponents = builtIns;
+            _hostBuiltInComponents = builtIns ?? NoComponents;
         }
 
         public IPhysicalFileSystem FileSystem { get; }
