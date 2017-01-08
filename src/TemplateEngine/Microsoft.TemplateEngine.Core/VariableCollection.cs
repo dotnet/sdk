@@ -101,12 +101,12 @@ namespace Microsoft.TemplateEngine.Core
         public static VariableCollection Environment(VariableCollection parent, bool changeCase, bool upperCase, string formatString)
         {
             VariableCollection vc = new VariableCollection(parent);
-            IDictionary variables = System.Environment.GetEnvironmentVariables();
+            IReadOnlyDictionary<string, string> variables = EngineEnvironmentSettings.Environment.GetEnvironmentVariables();
 
-            foreach (string key in variables.Keys.OfType<string>())
+            foreach (KeyValuePair<string, string> entry in variables)
             {
-                string name = string.Format(formatString, !changeCase ? key : upperCase ? key.ToUpperInvariant() : key.ToLowerInvariant());
-                vc[name] = variables[key];
+                string name = string.Format(formatString, !changeCase ? entry.Key : upperCase ? entry.Key.ToUpperInvariant() : entry.Key.ToLowerInvariant());
+                vc[name] = entry.Value;
             }
 
             return vc;

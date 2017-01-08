@@ -17,18 +17,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public static IOperationProvider Setup(IReplacementTokens tokens, IParameterSet parameters)
         {
-            if (parameters.TryGetParameterDefinition(tokens.VariableName, out ITemplateParameter param))
+            if (RuntimeValueUtil.TryGetRuntimeValue(parameters, tokens.VariableName, out object newValueObject))
             {
-                if (parameters.ResolvedValues.TryGetValue(param, out object newValueObject) && newValueObject != null)
-                {
-                    string newValue = (string)newValueObject;
-                    return new Replacement(tokens.OriginalValue, newValue, null);
-                }
-                else
-                {
-                    EngineEnvironmentSettings.Host.LogMessage($"Couldn't bind {tokens.OriginalValue} to unset parameter {param.Name}");
-                    return null;
-                }
+                string newValue = newValueObject.ToString();
+                return new Replacement(tokens.OriginalValue, newValue, null);
             }
             else
             {

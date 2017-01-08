@@ -1,10 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
-using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -15,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         public void VerifyVariables()
         {
             string value = @"test %PATH% test";
-            string expected = @"test " + Environment.GetEnvironmentVariable("PATH") + " test";
+            string expected = @"test " + EngineEnvironmentSettings.Environment.GetEnvironmentVariable("PATH") + " test";
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             MemoryStream input = new MemoryStream(valueBytes);
