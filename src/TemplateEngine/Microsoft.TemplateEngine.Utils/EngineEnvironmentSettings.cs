@@ -1,12 +1,12 @@
-﻿using Microsoft.TemplateEngine.Abstractions;
-
-#if !NET45
-using System;
-#endif
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 #if !NET45
 using System.Runtime.InteropServices;
 #endif
+using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
@@ -15,9 +15,12 @@ namespace Microsoft.TemplateEngine.Utils
         static EngineEnvironmentSettings()
         {
             Paths = new DefaultPathInfo();
+            Environment = new DefaultEnvironment();
         }
 
         public static ITemplateEngineHost Host { get; set; }
+
+        public static IEnvironment Environment { get; set; }
 
         public static IPathInfo Paths { get; set; }
 
@@ -38,7 +41,7 @@ namespace Microsoft.TemplateEngine.Utils
                             ? "USERPROFILE"
                             : "HOME");
 #else
-                        string profileDir = System.Environment.GetEnvironmentVariable("USERPROFILE");
+                        string profileDir = Environment.GetEnvironmentVariable("USERPROFILE");
 #endif
 
                         _userProfileDir = profileDir;
@@ -59,6 +62,43 @@ namespace Microsoft.TemplateEngine.Utils
 
                     return _baseDir;
                 }
+            }
+        }
+
+        private class DefaultEnvironment : IEnvironment
+        {
+            private readonly IReadOnlyDictionary<string, string> _environmentVariables;
+
+            public DefaultEnvironment()
+            {
+                Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                IDictionary env = System.Environment.GetEnvironmentVariables();
+
+                foreach(string key in env.Keys.OfType<string>())
+                {
+                    variables[key] = (env[key] as string) ?? string.Empty;
+                }
+
+                _environmentVariables = variables;
+                NewLine = System.Environment.NewLine;
+            }
+
+            public string NewLine { get; }
+
+            public string ExpandEnvironmentVariables(string name)
+            {
+                return System.Environment.ExpandEnvironmentVariables(name);
+            }
+
+            public string GetEnvironmentVariable(string name)
+            {
+                _environmentVariables.TryGetValue(name, out string result);
+                return result;
+            }
+
+            public IReadOnlyDictionary<string, string> GetEnvironmentVariables()
+            {
+                return _environmentVariables;
             }
         }
     }

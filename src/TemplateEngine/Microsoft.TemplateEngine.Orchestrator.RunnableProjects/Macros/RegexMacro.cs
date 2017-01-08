@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
@@ -26,13 +27,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             if (!vars.TryGetValue(config.SourceVariable, out object working))
             {
-                if (!parameters.TryGetParameterDefinition(config.SourceVariable, out ITemplateParameter param) || !parameters.ResolvedValues.TryGetValue(param, out object resolvedValue))
+                if (RuntimeValueUtil.TryGetRuntimeValue(parameters, config.SourceVariable, out object resolvedValue, true))
                 {
-                    value = string.Empty;
+                    value = resolvedValue.ToString();
                 }
                 else
                 {
-                    value = (string)resolvedValue;
+                    value = string.Empty;
                 }
             }
             else
