@@ -617,6 +617,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
                     }
+                    else if (symbol.Value.Type == "bind")
+                    {
+                        if (parameters.TryGetRuntimeValue(symbol.Value.Binding, out object bindValue) && bindValue != null)
+                        {
+                            rootVariableCollection[symbol.Key] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindValue.ToString());
+                        }
+                    }
                 }
             }
 

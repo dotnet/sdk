@@ -90,5 +90,6 @@ namespace Microsoft.TemplateEngine.Utils
 
             return _hostDefaults.TryGetValue(paramName, out value);
         }
+
     }
 }
