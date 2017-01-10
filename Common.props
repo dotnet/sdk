@@ -29,7 +29,8 @@
          Additionally, in order ensure the value fits in the 16-bit PE header fields, we will only take the last five digits of the BuildNumber, so
          in the case of 20160615, we will set BuildNumberFiveDigitDateStamp to 60615. Unfortunately for releases in 2017 we can't go any higher, so
          we will continue the month counting instead: the build after 61231 is 61301. -->
-    <BuildNumberFiveDigitDateStamp Condition="'$(BuildNumber)' != ''">$([MSBuild]::Subtract($(BuildNumber.Split('.')[0].Substring(3).Trim()), 8800))</BuildNumberFiveDigitDateStamp>
+    <BuildNumberPart1 Condition="'$(BuildNumber)' != ''">$(BuildNumber.Split('.')[0].Substring(3).Trim())</BuildNumberPart1>
+    <BuildNumberFiveDigitDateStamp Condition="'$(BuildNumber)' != ''">$([MSBuild]::Subtract($(BuildNumberPart1), 8800))</BuildNumberFiveDigitDateStamp>
     <BuildNumberBuildOfTheDayPadded Condition="('$(BuildNumber)' != '') AND ($(BuildNumber.Split('.').Length) == 2)">$(BuildNumber.Split('.')[1].PadLeft(2,'0'))</BuildNumberBuildOfTheDayPadded>
 
     <VersionPrefix Condition="'$(VersionPrefix)' == ''">1.0.0</VersionPrefix>

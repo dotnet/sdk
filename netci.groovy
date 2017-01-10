@@ -45,7 +45,7 @@ osList.each { os ->
             }
         }
 
-        Utilities.setMachineAffinity(newJob, os, 'latest-or-auto-internal')
+        Utilities.setMachineAffinity(newJob, os, 'latest-or-auto-dev15-rc')
         InternalUtilities.standardJobSetup(newJob, project, isPR, "*/${branch}")
         Utilities.addXUnitDotNETResults(newJob, "bin/$config/Tests/TestResults.xml", false)
         Utilities.addGithubPRTriggerForBranch(newJob, branch, "$os $config")
