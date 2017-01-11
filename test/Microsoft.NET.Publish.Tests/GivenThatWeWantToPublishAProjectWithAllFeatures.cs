@@ -33,6 +33,16 @@ namespace Microsoft.NET.Publish.Tests
 
                         var targetFrameworkElement = project.Root.Elements(ns + "PropertyGroup").Elements(ns + "TargetFramework").Single();
                         targetFrameworkElement.SetValue(targetFramework);
+
+                        if (targetFramework == "netcoreapp1.1")
+                        {
+                            var netcoreAppReference = project.Root.Elements(ns + "ItemGroup").Elements(ns + "PackageReference")
+                                .Where(element => element.Attribute("Include").Value == "Microsoft.NETCore.App")
+                                .Single();
+
+                            netcoreAppReference.Attribute("Version").SetValue("1.1.0");
+                        }
+                        
                     }
                 });
 
