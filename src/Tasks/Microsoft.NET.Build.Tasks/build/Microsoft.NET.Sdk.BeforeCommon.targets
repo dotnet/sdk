@@ -111,13 +111,20 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(NetCoreAppImplicitPackageVersion)' == ''" >
+    <NetCoreAppImplicitPackageVersion>1.1.0</NetCoreAppImplicitPackageVersion>
+  </PropertyGroup>
+
+  <!-- Set the version of the framework runtime to use (which will be written to the runtimeconfig.json file -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(RuntimeFrameworkVersion)' == ''" >
+    <!-- When the TFM is .NET Core 1.0, target version 1.0.3 of the framework runtime-->
+    <RuntimeFrameworkVersion Condition=" '$(_TargetFrameworkVersionWithoutV)' == '1.0' ">1.0.3</RuntimeFrameworkVersion>
     
-    <!-- For Microsoft.NETCore.App, default to using the version of the package that matches the target framework version -->
-    <NetCoreAppImplicitPackageVersion>$(_TargetFrameworkVersionWithoutV)</NetCoreAppImplicitPackageVersion>
-    
-    <!-- When the TFM is .NET Core 1.0, use version 1.0.3 of the Microsoft.NETCore.App package -->
-    <NetCoreAppImplicitPackageVersion Condition=" '$(_TargetFrameworkVersionWithoutV)' == '1.0' ">1.0.3</NetCoreAppImplicitPackageVersion>
-    
+    <!-- Otherwise, use the version of the framework runtime matching the target framework version-->
+    <RuntimeFrameworkVersion Condition=" '$(RuntimeFrameworkVersion)' == '' ">$(_TargetFrameworkVersionWithoutV)</RuntimeFrameworkVersion>
+
+    <!-- Normalize RuntimeFrameworkVersion to 3 digits -->
+    <RuntimeFrameworkVersion Condition=" $(RuntimeFrameworkVersion.Split('.').Length) == 1">$(RuntimeFrameworkVersion).0.0</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion Condition=" $(RuntimeFrameworkVersion.Split('.').Length) == 2">$(RuntimeFrameworkVersion).0</RuntimeFrameworkVersion>
   </PropertyGroup>
 
 
