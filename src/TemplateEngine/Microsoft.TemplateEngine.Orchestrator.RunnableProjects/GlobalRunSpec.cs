@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (specialEntry.Value != null)
                     {
                         specialOps = ResolveOperations(specialEntry.Value, templateRoot, variables, parameters);
-                        specialVariables = VariableCollection.SetupVariables(parameters, specialEntry.Value.VariableSetup);
+                        specialVariables = VariableCollection.SetupVariables(templateRoot.MountPoint.EnvironmentSettings, parameters, specialEntry.Value.VariableSetup);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables, specialEntry.Value.VariableSetup.FallbackFormat);
@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
         {
             IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(runConfig.CustomOperations, templateRoot, variables);
-            IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(parameters, runConfig);
+            IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(templateRoot.MountPoint.EnvironmentSettings, parameters, runConfig);
 
             List<IOperationProvider> operations = new List<IOperationProvider>(customOperations);
 
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupOperations(IParameterSet parameters, IGlobalRunConfig runConfig)
+        private static IReadOnlyList<IOperationProvider> SetupOperations(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IGlobalRunConfig runConfig)
         {
             // default operations
             List<IOperationProvider> operations = new List<IOperationProvider>();
@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (IReplacementTokens replaceSetup in runConfig.Replacements)
                 {
-                    IOperationProvider replacement = ReplacementConfig.Setup(replaceSetup, parameters);
+                    IOperationProvider replacement = ReplacementConfig.Setup(environmentSettings, replaceSetup, parameters);
                     if (replacement != null)
                     {
                         operations.Add(replacement);
@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private static IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<ICustomOperationModel> customModel, IDirectory templateRoot, IVariableCollection variables)
         {
-            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
+            ITemplateEngineHost host = templateRoot.MountPoint.EnvironmentSettings.Host;
             List<IOperationProvider> customOperations = new List<IOperationProvider>();
 
             foreach (ICustomOperationModel opModelUntyped in customModel)
@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string condition = opModel.Condition;
 
                 if (string.IsNullOrEmpty(condition)
-                    || CppStyleEvaluatorDefinition.EvaluateFromString(condition, variables))
+                    || CppStyleEvaluatorDefinition.EvaluateFromString(templateRoot.MountPoint.EnvironmentSettings, condition, variables))
                 {
                     IOperationConfig realConfigObject;
                     if (_operationConfigLookup.TryGetValue(opType, out realConfigObject))
@@ -207,9 +207,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal class ProcessorState : IProcessorState
         {
-            public ProcessorState(IVariableCollection vars, byte[] buffer, Encoding encoding)
+            public ProcessorState(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, byte[] buffer, Encoding encoding)
             {
-                Config = new EngineConfig(vars);
+                Config = new EngineConfig(environmentSettings, vars);
                 CurrentBuffer = buffer;
                 CurrentBufferPosition = 0;
                 Encoding = encoding;

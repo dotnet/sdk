@@ -7,10 +7,11 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class CaseChangeMacroTests
+    public class CaseChangeMacroTests : TestBase
     {
         [Fact(DisplayName = nameof(TestCaseChangeToLowerConfig))]
         public void TestCaseChangeToLowerConfig()
@@ -24,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             string sourceValue = "Original Value SomethingCamelCase";
             Parameter sourceParam = new Parameter
@@ -35,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(sourceParam, sourceValue);
 
             CaseChangeMacro macro = new CaseChangeMacro();
-            macro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
 
             ITemplateParameter convertedParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out convertedParam));
@@ -55,7 +56,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             string sourceValue = "Original Value SomethingCamelCase";
             Parameter sourceParam = new Parameter
@@ -66,7 +67,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(sourceParam, sourceValue);
 
             CaseChangeMacro macro = new CaseChangeMacro();
-            macro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
 
             ITemplateParameter convertedParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out convertedParam));
@@ -89,7 +90,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             string sourceValue = "Original Value SomethingCamelCase";
             Parameter sourceParam = new Parameter
@@ -99,7 +100,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
             setter(sourceParam, sourceValue);
 
-            macro.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
             ITemplateParameter convertedParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out convertedParam));
             string convertedValue = (string)parameters.ResolvedValues[convertedParam];

@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public static readonly string DefaultEvaluator = "C++";
 
-        public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             EvaluateMacroConfig config = rawConfig as EvaluateMacroConfig;
 
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             byte[] data = Encoding.UTF8.GetBytes(config.Value);
             int len = data.Length;
             int pos = 0;
-            IProcessorState state = new GlobalRunSpec.ProcessorState(vars, data, Encoding.UTF8);
+            IProcessorState state = new GlobalRunSpec.ProcessorState(environmentSettings, vars, data, Encoding.UTF8);
             bool result = evaluator(state, ref len, ref pos, out bool faulted);
 
             Parameter p = new Parameter

@@ -9,9 +9,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class InlineMarkupConditionalTests : TestBase
     {
-        private static IProcessor SetupXmlPlusMsBuildProcessor(IVariableCollection vc)
+        private IProcessor SetupXmlPlusMsBuildProcessor(IVariableCollection vc)
         {
-            EngineConfig cfg = new EngineConfig(vc, "$({0})");
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
             return Processor.Create(cfg, new InlineMarkupConditional(
                 new MarkupTokens("<", "</", ">", "/>", "Condition=\"", "\""),
                 true,

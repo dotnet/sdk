@@ -11,24 +11,24 @@ namespace Microsoft.TemplateEngine.Edge
     public static class AssemblyLoadContextHelper
     {
 #if !NET45
-        public static IEnumerable<Assembly> LoadAllFromCodebase(this AssemblyLoadContext context, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<Assembly> LoadAllFromCodebase(this AssemblyLoadContext context, Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #else
-        public static IEnumerable<Assembly> LoadAllFromCodebase(this AppDomain context, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<Assembly> LoadAllFromCodebase(this AppDomain context, Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #endif
         {
-            return LoadAllFromPath(context, out loadFailures, Paths.Global.BaseDir, pattern, searchOption);
+            return LoadAllFromPath(context, paths, out loadFailures, paths.Global.BaseDir, pattern, searchOption);
         }
 
 #if !NET45
-        public static IEnumerable<Assembly> LoadAllFromPath(this AssemblyLoadContext context, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<Assembly> LoadAllFromPath(this AssemblyLoadContext context, Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #else
-        public static IEnumerable<Assembly> LoadAllFromPath(this AppDomain context, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<Assembly> LoadAllFromPath(this AppDomain context, Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
 #endif
         {
             List<Assembly> loaded = new List<Assembly>();
             List<string> failures = new List<string>();
 
-            foreach (string file in path.EnumerateFiles(pattern, searchOption))
+            foreach (string file in paths.EnumerateFiles(path, pattern, searchOption))
             {
                 try
                 {

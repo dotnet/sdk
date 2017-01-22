@@ -6,6 +6,8 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
 
         IDirectory Root { get; }
 
+        IEngineEnvironmentSettings EnvironmentSettings { get; }
+
         IFile FileInfo(string fullPath);
 
         IDirectory DirectoryInfo(string fullPath);

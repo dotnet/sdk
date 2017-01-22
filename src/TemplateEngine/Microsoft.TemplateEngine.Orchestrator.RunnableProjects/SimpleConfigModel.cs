@@ -359,6 +359,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        public IEngineEnvironmentSettings EnvironmentSettings { get; private set; }
+
         private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, ICustomFileGlobModel customGlobModel = null)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
@@ -430,7 +432,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         {
                             if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
                             {
-                                EngineEnvironmentSettings.Host.LogMessage($"Binding wasn't specified for bind-type symbol {symbol.Key}");
+                                EnvironmentSettings.Host.LogMessage($"Binding wasn't specified for bind-type symbol {symbol.Key}");
                             }
                             else
                             {
@@ -612,14 +614,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (symbol.Value.Type == "computed")
                     {
                         ComputedSymbol sym = (ComputedSymbol)symbol.Value;
-                        bool value = CppStyleEvaluatorDefinition.EvaluateFromString(sym.Value, rootVariableCollection);
+                        bool value = CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, sym.Value, rootVariableCollection);
                         stable &= computed.TryGetValue(symbol.Key, out bool currentValue) && currentValue == value;
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
                     }
                     else if (symbol.Value.Type == "bind")
                     {
-                        if (parameters.TryGetRuntimeValue(symbol.Value.Binding, out object bindValue) && bindValue != null)
+                        if (parameters.TryGetRuntimeValue(EnvironmentSettings, symbol.Value.Binding, out object bindValue) && bindValue != null)
                         {
                             rootVariableCollection[symbol.Key] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindValue.ToString());
                         }
@@ -631,7 +633,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // the result is needed for SpecialOperationConfig
             foreach (ICustomFileGlobModel fileGlobModel in SpecialCustomSetup)
             {
-                fileGlobModel.EvaluateCondition(rootVariableCollection);
+                fileGlobModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
             }
 
             parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
@@ -639,7 +641,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
             foreach (ICreationPathModel pathModel in PrimaryOutputs)
             {
-                pathModel.EvaluateCondition(rootVariableCollection);
+                pathModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
 
                 if (pathModel.ConditionResult && (resolvedNameParamValue != null))
                 {   // this path will be included in the outputs, replace the name (same thing we do to other file paths)
@@ -649,7 +651,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (ExtendedFileSource source in Sources)
             {
-                if (!string.IsNullOrEmpty(source.Condition) && !CppStyleEvaluatorDefinition.EvaluateFromString(source.Condition, rootVariableCollection))
+                if (!string.IsNullOrEmpty(source.Condition) && !CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, source.Condition, rootVariableCollection))
                 {
                     continue;
                 }
@@ -662,7 +664,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     foreach (SourceModifier modifier in source.Modifiers)
                     {
-                        if (string.IsNullOrEmpty(modifier.Condition) || CppStyleEvaluatorDefinition.EvaluateFromString(modifier.Condition, rootVariableCollection))
+                        if (string.IsNullOrEmpty(modifier.Condition) || CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, modifier.Condition, rootVariableCollection))
                         {
                             includePattern.AddRange(JTokenToCollection(modifier.Include, SourceFile, new string[0]));
                             excludePattern.AddRange(JTokenToCollection(modifier.Exclude, SourceFile, new string[0]));
@@ -727,7 +729,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _sources = sources;
         }
 
-        public static SimpleConfigModel FromJObject(JObject source, JObject localeSource = null)
+        public static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, JObject localeSource = null)
         {
             ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
 
@@ -743,7 +745,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
                 ShortName = source.ToString(nameof(config.ShortName)),
                 SourceName = source.ToString(nameof(config.SourceName)),
-                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename))
+                PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename)),
+                EnvironmentSettings = environmentSettings
             };
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();

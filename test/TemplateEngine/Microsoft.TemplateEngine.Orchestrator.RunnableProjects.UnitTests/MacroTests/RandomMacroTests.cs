@@ -27,10 +27,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             RandomMacro macro = new RandomMacro();
-            macro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
 
             ITemplateParameter valueParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out valueParam));
@@ -63,10 +63,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             RandomMacro macro = new RandomMacro();
-            macro.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
             ITemplateParameter valueParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out valueParam));
             long randomValue = (long)parameters.ResolvedValues[valueParam];

@@ -23,10 +23,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             ConstantMacro macro = new ConstantMacro();
-            macro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
 
             ITemplateParameter constParameter;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out constParameter));
@@ -46,10 +46,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             ConstantMacro macro = new ConstantMacro();
-            macro.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
             ITemplateParameter constParameter;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out constParameter));
             string constParamValue = (parameters.ResolvedValues[constParameter]).ToString();

@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string IPostAction.ConfigFile => ConfigFile;
 
-        public static List<IPostAction> ListFromModel(IReadOnlyList<IPostActionModel> modelList, IVariableCollection rootVariableCollection)
+        public static List<IPostAction> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IPostActionModel> modelList, IVariableCollection rootVariableCollection)
         {
             List<IPostAction> actionList = new List<IPostAction>();
 
@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             chosenInstruction = modelInstruction.Key;
                         }
                     }
-                    else if (CppStyleEvaluatorDefinition.EvaluateFromString(modelInstruction.Value, rootVariableCollection))
+                    else if (CppStyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Value, rootVariableCollection))
                     {   // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
                         chosenInstruction = modelInstruction.Key;
                     }

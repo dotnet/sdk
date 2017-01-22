@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "constant";
 
-        public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             ConstantMacroConfig config = rawConfig as ConstantMacroConfig;
 
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, config.Value);
         }
 
-        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             string value = valueToken.ToString();
             IMacroConfig realConfig = new ConstantMacroConfig(deferredConfig.VariableName, value);
-            EvaluateConfig(vars, realConfig, parameters, setter);
+            EvaluateConfig(environmentSettings, vars, realConfig, parameters, setter);
         }
     }
 }

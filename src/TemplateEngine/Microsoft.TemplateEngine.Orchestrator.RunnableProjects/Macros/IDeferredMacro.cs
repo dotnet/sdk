@@ -8,6 +8,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     {
         string Type { get; }
 
-        void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter);
+        void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter);
     }
 }

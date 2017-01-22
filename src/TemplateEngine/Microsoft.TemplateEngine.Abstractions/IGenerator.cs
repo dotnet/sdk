@@ -6,14 +6,14 @@ namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IGenerator : IIdentifiedComponent
     {
-        Task<ICreationResult> CreateAsync(ITemplate template, IParameterSet parameters, IComponentManager componentManager, string targetDirectory);
+        Task<ICreationResult> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplate template, IParameterSet parameters, IComponentManager componentManager, string targetDirectory);
 
-        IParameterSet GetParametersForTemplate(ITemplate template);
+        IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template);
 
         bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig, IFile hostTemplateConfigFile);
 
         IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations);
 
-        object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue, out bool valueResolutionError);
+        object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError);
     }
 }

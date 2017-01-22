@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "regex";
 
-        public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             string value = null;
             RegexMacroConfig config = rawConfig as RegexMacroConfig;
@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             if (!vars.TryGetValue(config.SourceVariable, out object working))
             {
-                if (RuntimeValueUtil.TryGetRuntimeValue(parameters, config.SourceVariable, out object resolvedValue, true))
+                if (parameters.TryGetRuntimeValue(environmentSettings, config.SourceVariable, out object resolvedValue, true))
                 {
                     value = resolvedValue.ToString();
                 }
@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, value);
         }
 
-        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
 
             IMacroConfig realConfig = new RegexMacroConfig(deferredConfig.VariableName, sourceVariable, replacementSteps);
-            EvaluateConfig(vars, realConfig, parameters, setter);
+            EvaluateConfig(environmentSettings, vars, realConfig, parameters, setter);
         }
     }
 }

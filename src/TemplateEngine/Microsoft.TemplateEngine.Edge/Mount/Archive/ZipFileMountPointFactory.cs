@@ -1,5 +1,6 @@
 using System;
 using System.IO.Compression;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
 
@@ -11,18 +12,18 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         public Guid Id => FactoryId;
 
-        public bool TryMount(IMountPoint parent, string place, out IMountPoint mountPoint)
+        public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string place, out IMountPoint mountPoint)
         {
-            return TryMount(parent, Guid.NewGuid(), place, out mountPoint);
+            return TryMount(environmentSettings, parent, Guid.NewGuid(), place, out mountPoint);
         }
 
-        private static bool TryMount(IMountPoint parent, Guid id, string place, out IMountPoint mountPoint)
+        private static bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, Guid id, string place, out IMountPoint mountPoint)
         {
             ZipArchive archive;
 
             if (parent == null)
             {
-                if (!EngineEnvironmentSettings.Host.FileSystem.FileExists(place))
+                if (!environmentSettings.Host.FileSystem.FileExists(place))
                 {
                     mountPoint = null;
                     return false;
@@ -30,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
                 try
                 {
-                    archive = new ZipArchive(EngineEnvironmentSettings.Host.FileSystem.OpenRead(place), ZipArchiveMode.Read, false);
+                    archive = new ZipArchive(environmentSettings.Host.FileSystem.OpenRead(place), ZipArchiveMode.Read, false);
                 }
                 catch
                 {
@@ -60,7 +61,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             }
 
             MountPointInfo info = new MountPointInfo(parent?.Info?.MountPointId ?? Guid.Empty, FactoryId, id, place);
-            mountPoint = new ZipFileMountPoint(info, archive);
+            mountPoint = new ZipFileMountPoint(environmentSettings, info, archive);
             return true;
         }
 
@@ -77,7 +78,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                 }
             }
 
-            return TryMount(parent, info.MountPointId, info.Place, out mountPoint);
+            return TryMount(manager.EnvironmentSettings, parent, info.MountPointId, info.Place, out mountPoint);
         }
 
         public void DisposeMountPoint(IMountPoint mountPoint)

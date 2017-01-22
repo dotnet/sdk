@@ -8,9 +8,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class PhasedOperationTests : TestBase
     {
-        private static IProcessor SetupConfig(IVariableCollection vc, params Phase[] phases)
+        private IProcessor SetupConfig(IVariableCollection vc, params Phase[] phases)
         {
-            EngineConfig cfg = new EngineConfig(vc, "$({0})");
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
             return Processor.Create(cfg, new PhasedOperation(null, phases));
         }
 

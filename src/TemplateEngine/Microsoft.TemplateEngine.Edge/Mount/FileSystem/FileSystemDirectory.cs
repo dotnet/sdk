@@ -8,11 +8,13 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
     internal class FileSystemDirectory : DirectoryBase
     {
         private readonly string _physicalPath;
+        private readonly Paths _paths;
 
         public FileSystemDirectory(IMountPoint mountPoint, string fullPath, string name, string physicalPath)
             : base(mountPoint, EnsureTrailingSlash(fullPath), name)
         {
             _physicalPath = physicalPath;
+            _paths = new Paths(mountPoint.EnvironmentSettings);
         }
 
         private static string EnsureTrailingSlash(string path)
@@ -27,11 +29,11 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
             }
         }
 
-        public override bool Exists => _physicalPath.DirectoryExists();
+        public override bool Exists => _paths.DirectoryExists(_physicalPath);
 
         public override IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos(string pattern, SearchOption searchOption)
         {
-            return _physicalPath.EnumerateFileSystemEntries(pattern, searchOption).Select(x =>
+            return _paths.EnumerateFileSystemEntries(_physicalPath, pattern, searchOption).Select(x =>
             {
                 string baseName = x.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
@@ -45,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = "/" + baseName;
                 }
 
-                if (x.DirectoryExists() && baseName[baseName.Length - 1] != '/')
+                if (_paths.DirectoryExists(x) && baseName[baseName.Length - 1] != '/')
                 {
                     baseName = baseName + "/";
                 }
@@ -56,7 +58,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public override IEnumerable<IDirectory> EnumerateDirectories(string pattern, SearchOption searchOption)
         {
-            return _physicalPath.EnumerateDirectories(pattern, searchOption).Select(x =>
+            return _paths.EnumerateDirectories(_physicalPath, pattern, searchOption).Select(x =>
             {
                 string baseName = x.Substring(MountPoint.Info.Place.Length).Replace(Path.DirectorySeparatorChar, '/');
 
@@ -75,13 +77,13 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = baseName + "/";
                 }
 
-                return new FileSystemDirectory(MountPoint, baseName, x.Name(), x);
+                return new FileSystemDirectory(MountPoint, baseName, _paths.Name(x), x);
             });
         }
 
         public override IEnumerable<IFile> EnumerateFiles(string pattern, SearchOption searchOption)
         {
-            return _physicalPath.EnumerateFiles(pattern, searchOption).Select(x =>
+            return _paths.EnumerateFiles(_physicalPath, pattern, searchOption).Select(x =>
             {
                 string baseName = x.Substring(new DirectoryInfo(MountPoint.Info.Place).FullName.Length).Replace(Path.DirectorySeparatorChar, '/');
 
@@ -95,7 +97,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = "/" + baseName;
                 }
 
-                return new FileSystemFile(MountPoint, baseName, x.Name(), x);
+                return new FileSystemFile(MountPoint, baseName, _paths.Name(x), x);
             });
         }
     }

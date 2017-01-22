@@ -1,6 +1,5 @@
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
@@ -14,11 +13,11 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
             _physicalPath = physicalPath;
         }
 
-        public override bool Exists => _physicalPath.FileExists();
+        public override bool Exists => MountPoint.EnvironmentSettings.Host.FileSystem.FileExists(_physicalPath);
 
         public override Stream OpenRead()
         {
-            return EngineEnvironmentSettings.Host.FileSystem.OpenRead(_physicalPath);
+            return MountPoint.EnvironmentSettings.Host.FileSystem.OpenRead(_physicalPath);
         }
     }
 }

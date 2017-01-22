@@ -3,13 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge
 {
-    public static class Paths
+    public class Paths
     {
-        public static string ProcessPath(this string path)
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+
+        public GlobalPaths Global { get; }
+
+        public UserPaths User { get; }
+
+        public Paths(IEngineEnvironmentSettings environmentSettings)
+        {
+            _environmentSettings = environmentSettings;
+            Global = new GlobalPaths(this);
+            User = new UserPaths(this);
+        }
+
+        public string ProcessPath(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -21,24 +34,24 @@ namespace Microsoft.TemplateEngine.Edge
                 return path;
             }
 
-            return Path.Combine(EngineEnvironmentSettings.Paths.UserProfileDir, path.Substring(1));
+            return Path.Combine(_environmentSettings.Paths.UserProfileDir, path.Substring(1));
         }
 
-        public static void Copy(this string path, string targetPath)
+        public void Copy(string path, string targetPath)
         {
-            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
+            if (_environmentSettings.Host.FileSystem.FileExists(path))
             {
-                EngineEnvironmentSettings.Host.FileSystem.FileCopy(path, targetPath, true);
+                _environmentSettings.Host.FileSystem.FileCopy(path, targetPath, true);
                 return;
             }
 
-            foreach (string p in path.EnumerateFiles("*", SearchOption.AllDirectories).OrderBy(x => x.Length))
+            foreach (string p in EnumerateFiles(path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length))
             {
                 string localPath = p.Substring(path.Length).TrimStart('\\', '/');
 
-                if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(p))
+                if (_environmentSettings.Host.FileSystem.DirectoryExists(p))
                 {
-                    localPath.CreateDirectory(targetPath);
+                    CreateDirectory(localPath, targetPath);
                 }
                 else
                 {
@@ -48,15 +61,15 @@ namespace Microsoft.TemplateEngine.Edge
                     if (parentDirEndIndex > -1)
                     {
                         string parentDir = localPath.Substring(0, parentDirEndIndex);
-                        parentDir.CreateDirectory(targetPath);
+                        CreateDirectory(parentDir, targetPath);
                     }
 
-                    EngineEnvironmentSettings.Host.FileSystem.FileCopy(p, wholeTargetPath, true);
+                    _environmentSettings.Host.FileSystem.FileCopy(p, wholeTargetPath, true);
                 }
             }
         }
 
-        public static void CreateDirectory(this string path, string parent)
+        public void CreateDirectory(string path, string parent)
         {
             string[] parts = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
             string current = parent;
@@ -64,156 +77,162 @@ namespace Microsoft.TemplateEngine.Edge
             for (int i = 0; i < parts.Length; ++i)
             {
                 current = Path.Combine(current, parts[i]);
-                EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(current);
+                _environmentSettings.Host.FileSystem.CreateDirectory(current);
             }
         }
 
-        public static void CreateDirectory(this string path)
+        public void CreateDirectory(string path)
         {
-            EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(path);
+            _environmentSettings.Host.FileSystem.CreateDirectory(path);
         }
 
-        public static void Delete(this string path)
+        public void Delete(string path)
         {
-            path.DeleteDirectory();
-            path.DeleteFile();
+            DeleteDirectory(path);
+            DeleteFile(path);
         }
 
-        public static void Delete(this string path, params string[] patterns)
+        public void Delete(string path, params string[] patterns)
         {
-            path.Delete(SearchOption.TopDirectoryOnly, patterns);
+            Delete(path, SearchOption.TopDirectoryOnly, patterns);
         }
 
-        public static void Delete(this string path, SearchOption searchOption, params string[] patterns)
+        public void Delete(string path, SearchOption searchOption, params string[] patterns)
         {
-            if (!path.DirectoryExists())
+            if (!DirectoryExists(path))
             {
                 return;
             }
 
             foreach (string pattern in patterns)
             {
-                foreach (string entry in path.EnumerateFileSystemEntries(pattern, searchOption).ToList())
+                foreach (string entry in EnumerateFileSystemEntries(path, pattern, searchOption).ToList())
                 {
-                    entry.Delete();
+                    Delete(entry);
                 }
             }
         }
 
-        public static void DeleteDirectory(this string path)
+        public void DeleteDirectory(string path)
         {
-            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
+            if (_environmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                EngineEnvironmentSettings.Host.FileSystem.DirectoryDelete(path, true);
+                _environmentSettings.Host.FileSystem.DirectoryDelete(path, true);
             }
         }
 
-        public static void DeleteFile(this string path)
+        public void DeleteFile(string path)
         {
-            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
+            if (_environmentSettings.Host.FileSystem.FileExists(path))
             {
-                EngineEnvironmentSettings.Host.FileSystem.FileDelete(path);
+                _environmentSettings.Host.FileSystem.FileDelete(path);
             }
         }
 
-        public static bool DirectoryExists(this string path)
+        public bool DirectoryExists(string path)
         {
-            return EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path);
+            return _environmentSettings.Host.FileSystem.DirectoryExists(path);
         }
 
-        public static IEnumerable<string> EnumerateDirectories(this string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        public IEnumerable<string> EnumerateDirectories(string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
+            if (_environmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                return EngineEnvironmentSettings.Host.FileSystem.EnumerateDirectories(path, pattern, searchOption);
+                return _environmentSettings.Host.FileSystem.EnumerateDirectories(path, pattern, searchOption);
             }
 
             return Enumerable.Empty<string>();
         }
 
-        public static IEnumerable<string> EnumerateFiles(this string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        public IEnumerable<string> EnumerateFiles(string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
+            if (_environmentSettings.Host.FileSystem.FileExists(path))
             {
                 return new[] { path };
             }
 
-            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
+            if (_environmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                return EngineEnvironmentSettings.Host.FileSystem.EnumerateFiles(path.ProcessPath(), pattern, searchOption);
+                return _environmentSettings.Host.FileSystem.EnumerateFiles(ProcessPath(path), pattern, searchOption);
             }
 
             return Enumerable.Empty<string>();
         }
 
-        public static IEnumerable<string> EnumerateFileSystemEntries(this string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        public IEnumerable<string> EnumerateFileSystemEntries(string path, string pattern = "*", SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            if (EngineEnvironmentSettings.Host.FileSystem.FileExists(path))
+            if (_environmentSettings.Host.FileSystem.FileExists(path))
             {
                 return new[] { path };
             }
 
-            if (EngineEnvironmentSettings.Host.FileSystem.DirectoryExists(path))
+            if (_environmentSettings.Host.FileSystem.DirectoryExists(path))
             {
-                return EngineEnvironmentSettings.Host.FileSystem.EnumerateFileSystemEntries(path.ProcessPath(), pattern, searchOption);
+                return _environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(ProcessPath(path), pattern, searchOption);
             }
 
             return Enumerable.Empty<string>();
         }
 
-        public static bool Exists(this string path)
+        public bool Exists(string path)
         {
-            return path.FileExists() || path.DirectoryExists();
+            return FileExists(path) || DirectoryExists(path);
         }
 
-        public static bool FileExists(this string path)
+        public bool FileExists(string path)
         {
-            return EngineEnvironmentSettings.Host.FileSystem.FileExists(path);
+            return _environmentSettings.Host.FileSystem.FileExists(path);
         }
 
-        public static string Name(this string path)
+        public string Name(string path)
         {
             path = path.TrimEnd('/', '\\');
             return Path.GetFileName(path);
         }
 
-        public static string ReadAllText(this string path, string defaultValue = "")
+        public string ReadAllText(string path, string defaultValue = "")
         {
-            return path.Exists() ? EngineEnvironmentSettings.Host.FileSystem.ReadAllText(path) : defaultValue;
+            return Exists(path) ? _environmentSettings.Host.FileSystem.ReadAllText(path) : defaultValue;
         }
 
-        public static string ToPath(this string codebase)
+        public string ToPath(string codebase)
         {
             Uri cb = new Uri(codebase, UriKind.Absolute);
             string localPath = cb.LocalPath;
             return localPath;
         }
 
-        public static void WriteAllText(this string path, string value)
+        public void WriteAllText(string path, string value)
         {
             string parentDir = Path.GetDirectoryName(path);
 
-            if (!parentDir.Exists())
+            if (!Exists(parentDir))
             {
-                EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(parentDir);
+                _environmentSettings.Host.FileSystem.CreateDirectory(parentDir);
             }
 
-            EngineEnvironmentSettings.Host.FileSystem.WriteAllText(path, value);
+            _environmentSettings.Host.FileSystem.WriteAllText(path, value);
         }
 
-        private static string GetOrComputePath(ref string cache, params string[] paths)
+        private string GetOrComputePath(ref string cache, params string[] paths)
         {
             return cache ?? (cache = Path.Combine(paths));
         }
 
-        public static class Global
+        public class GlobalPaths
         {
-            private static string _baseDir;
-            private static string _builtInsFeed;
-            private static string _defaultInstallPackageList;
-            private static string _defaultInstallTemplateList;
+            private string _baseDir;
+            private string _builtInsFeed;
+            private string _defaultInstallPackageList;
+            private string _defaultInstallTemplateList;
+            private readonly Paths _parent;
 
-            public static string BaseDir
+            public GlobalPaths(Paths parent)
+            {
+                _parent = parent;
+            }
+
+            public string BaseDir
             {
                 get
                 {
@@ -229,41 +248,46 @@ namespace Microsoft.TemplateEngine.Edge
                 }
             }
 
-            public static string BuiltInsFeed => GetOrComputePath(ref _builtInsFeed, BaseDir, "BuiltIns");
+            public string BuiltInsFeed => _parent.GetOrComputePath(ref _builtInsFeed, BaseDir, "BuiltIns");
 
-            public static string DefaultInstallPackageList => GetOrComputePath(ref _defaultInstallPackageList, BaseDir, "defaultinstall.package.list");
+            public string DefaultInstallPackageList => _parent.GetOrComputePath(ref _defaultInstallPackageList, BaseDir, "defaultinstall.package.list");
 
-            public static string DefaultInstallTemplateList => GetOrComputePath(ref _defaultInstallTemplateList, BaseDir, "defaultinstall.template.list");
+            public string DefaultInstallTemplateList => _parent.GetOrComputePath(ref _defaultInstallTemplateList, BaseDir, "defaultinstall.template.list");
         }
 
-        public static class User
+        public class UserPaths
         {
-            private static string _aliasesFile;
-            private static string _firstRunCookie;
-            private static string _nuGetConfig;
-            private static string _packageCache;
-            private static string _scratchDir;
-            private static string _settingsFile;
-            private static string _contentDir;
-            private static string _packagesDir;
+            private string _aliasesFile;
+            private string _firstRunCookie;
+            private string _nuGetConfig;
+            private string _packageCache;
+            private string _scratchDir;
+            private string _settingsFile;
+            private string _contentDir;
+            private string _packagesDir;
 
-            public static string AliasesFile => GetOrComputePath(ref _aliasesFile, BaseDir, "aliases.json");
+            public UserPaths(Paths parent)
+            {
+                _parent = parent;
+            }
 
-            public static string BaseDir => EngineEnvironmentSettings.Paths.BaseDir;
+            public string AliasesFile => _parent.GetOrComputePath(ref _aliasesFile, BaseDir, "aliases.json");
 
-            public static string Content => GetOrComputePath(ref _contentDir, BaseDir, "content");
+            public string BaseDir => _parent._environmentSettings.Paths.BaseDir;
 
-            public static string Packages => GetOrComputePath(ref _packagesDir, BaseDir, "packages");
+            public string Content => _parent.GetOrComputePath(ref _contentDir, BaseDir, "content");
 
-            public static string FirstRunCookie => GetOrComputePath(ref _firstRunCookie, BaseDir, ".firstrun");
+            public string Packages => _parent.GetOrComputePath(ref _packagesDir, BaseDir, "packages");
 
-            public static string PackageCache => GetOrComputePath(ref _packageCache, EngineEnvironmentSettings.Paths.UserProfileDir, ".nuget", "packages");
+            public string FirstRunCookie => _parent.GetOrComputePath(ref _firstRunCookie, BaseDir, ".firstrun");
 
-            public static string ScratchDir => GetOrComputePath(ref _scratchDir, BaseDir, "scratch");
+            public string PackageCache => _parent.GetOrComputePath(ref _packageCache, _parent._environmentSettings.Paths.UserProfileDir, ".nuget", "packages");
 
-            public static string SettingsFile => GetOrComputePath(ref _settingsFile, BaseDir, "settings.json");
+            public string ScratchDir => _parent.GetOrComputePath(ref _scratchDir, BaseDir, "scratch");
 
-            public static string CultureNeutralTemplateCacheFile
+            public string SettingsFile => _parent.GetOrComputePath(ref _settingsFile, BaseDir, "settings.json");
+
+            public string CultureNeutralTemplateCacheFile
             {
                 get
                 {
@@ -271,17 +295,18 @@ namespace Microsoft.TemplateEngine.Edge
                 }
             }
 
-            public static string CurrentLocaleTemplateCacheFile
+            public string CurrentLocaleTemplateCacheFile
             {
                 get
                 {
-                    return ExplicitLocaleTemplateCacheFile(EngineEnvironmentSettings.Host.Locale);
+                    return ExplicitLocaleTemplateCacheFile(_parent._environmentSettings.Host.Locale);
                 }
             }
 
-            public static readonly string TemplateCacheFileBaseName = "templatecache.json";
+            public readonly string TemplateCacheFileBaseName = "templatecache.json";
+            private readonly Paths _parent;
 
-            public static string ExplicitLocaleTemplateCacheFile(string locale)
+            public string ExplicitLocaleTemplateCacheFile(string locale)
             {
                 string filename;
 
@@ -295,10 +320,10 @@ namespace Microsoft.TemplateEngine.Edge
                 }
 
                 string tempCache = null;    // don't cache, the locale could change
-                return GetOrComputePath(ref tempCache, BaseDir, filename);
+                return _parent.GetOrComputePath(ref tempCache, BaseDir, filename);
             }
 
-            public static string NuGetConfig => GetOrComputePath(ref _nuGetConfig, BaseDir, "NuGet.config");
+            public string NuGetConfig => _parent.GetOrComputePath(ref _nuGetConfig, BaseDir, "NuGet.config");
         }
     }
 }

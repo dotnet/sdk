@@ -10,24 +10,34 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public static class EngineEnvironmentSettings
+    public class EngineEnvironmentSettings : IEngineEnvironmentSettings
     {
-        static EngineEnvironmentSettings()
+        public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory)
         {
-            Paths = new DefaultPathInfo();
+            Host = host;
+            Paths = new DefaultPathInfo(this);
             Environment = new DefaultEnvironment();
+            SettingsLoader = settingsLoaderFactory(this);
         }
 
-        public static ITemplateEngineHost Host { get; set; }
+        public ISettingsLoader SettingsLoader { get; }
 
-        public static IEnvironment Environment { get; set; }
+        public ITemplateEngineHost Host { get; set; }
 
-        public static IPathInfo Paths { get; set; }
+        public IEnvironment Environment { get; set; }
+
+        public IPathInfo Paths { get; set; }
 
         private class DefaultPathInfo : IPathInfo
         {
-            private static string _userProfileDir;
-            private static string _baseDir;
+            private string _userProfileDir;
+            private string _baseDir;
+            private readonly IEngineEnvironmentSettings _parent;
+
+            public DefaultPathInfo(IEngineEnvironmentSettings parent)
+            {
+                _parent = parent;
+            }
 
             public string UserProfileDir
             {
@@ -37,11 +47,11 @@ namespace Microsoft.TemplateEngine.Utils
                     {
 #if !NET45
                     string profileDir =
-                        Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        _parent.Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                             ? "USERPROFILE"
                             : "HOME");
 #else
-                        string profileDir = Environment.GetEnvironmentVariable("USERPROFILE");
+                        string profileDir = _parent.Environment.GetEnvironmentVariable("USERPROFILE");
 #endif
 
                         _userProfileDir = profileDir;
@@ -57,7 +67,7 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     if (_baseDir == null)
                     {
-                        _baseDir = Path.Combine(UserProfileDir, ".templateengine", Host.HostIdentifier, Host.Version);
+                        _baseDir = Path.Combine(UserProfileDir, ".templateengine", _parent.Host.HostIdentifier, _parent.Host.Version);
                     }
 
                     return _baseDir;
