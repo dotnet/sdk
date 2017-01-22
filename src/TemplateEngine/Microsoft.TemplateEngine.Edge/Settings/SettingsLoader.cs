@@ -216,7 +216,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public IEngineEnvironmentSettings EnvironmentSettings => throw new NotImplementedException();
+        public IEngineEnvironmentSettings EnvironmentSettings => _environmentSettings;
 
         public void GetTemplates(HashSet<ITemplateInfo> templates)
         {
