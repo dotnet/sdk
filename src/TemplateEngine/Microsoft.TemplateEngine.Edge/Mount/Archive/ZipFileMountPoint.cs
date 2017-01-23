@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO.Compression;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.Archive
@@ -8,8 +9,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
     {
         private IReadOnlyDictionary<string, IFileSystemInfo> _universe;
 
-        public ZipFileMountPoint(MountPointInfo info, ZipArchive archive)
+        public ZipFileMountPoint(IEngineEnvironmentSettings environmentSettings, MountPointInfo info, ZipArchive archive)
         {
+            EnvironmentSettings = environmentSettings;
             Archive = archive;
             Info = info;
             Root = new ZipFileDirectory(this, "/", "");
@@ -94,5 +96,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                 return _universe;
             }
         }
+
+        public IEngineEnvironmentSettings EnvironmentSettings { get; }
     }
 }

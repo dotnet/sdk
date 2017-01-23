@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         public string Path { get; set; }
 
-        public static IReadOnlyList<ICreationPath> ListFromModel(IReadOnlyList<ICreationPathModel> modelList, IVariableCollection rootVariableCollection)
+        public static IReadOnlyList<ICreationPath> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<ICreationPathModel> modelList, IVariableCollection rootVariableCollection)
         {
             List<ICreationPath> pathList = new List<ICreationPath>();
 
@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 // Note: this check is probably superfluous. The Model has evaluation info.
                 // OTOH: this is probaby a cleaner way to do it. 
                 if (string.IsNullOrEmpty(model.Condition)
-                    || CppStyleEvaluatorDefinition.EvaluateFromString(model.Condition, rootVariableCollection))
+                    || CppStyleEvaluatorDefinition.EvaluateFromString(environmentSettings, model.Condition, rootVariableCollection))
                 {
                     ICreationPath path = new CreationPath()
                     {

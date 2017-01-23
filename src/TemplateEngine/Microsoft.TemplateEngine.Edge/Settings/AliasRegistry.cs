@@ -1,33 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public static class AliasRegistry
+    public class AliasRegistry
     {
-        private static JObject _source;
-        private static readonly Dictionary<string, string> AliasesToTemplates = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        private static readonly Dictionary<string, string> TemplatesToAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private JObject _source;
+        private readonly Dictionary<string, string> AliasesToTemplates = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> TemplatesToAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+        private readonly Paths _paths;
 
-        private static void Load()
+        public AliasRegistry(IEngineEnvironmentSettings environmentSettings)
+        {
+            _environmentSettings = environmentSettings;
+            _paths = new Paths(environmentSettings);
+        }
+
+        private void Load()
         {
             if (TemplatesToAliases.Count > 0)
             {
                 return;
             }
 
-            if (!Paths.User.AliasesFile.Exists())
+            if (!_paths.Exists(_paths.User.AliasesFile))
             {
                 _source = new JObject();
                 return;
             }
 
-            string sourcesText = Paths.User.AliasesFile.ReadAllText("{}");
+            string sourcesText = _paths.ReadAllText(_paths.User.AliasesFile, "{}");
             _source = JObject.Parse(sourcesText);
 
             foreach (JProperty child in _source.Properties())
@@ -37,7 +43,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public static string GetTemplateNameForAlias(string alias)
+        public string GetTemplateNameForAlias(string alias)
         {
             if(alias == null)
             {
@@ -54,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return null;
         }
 
-        public static IReadOnlyDictionary<string, ITemplateInfo> GetTemplatesForAlias(string alias, IReadOnlyCollection<ITemplateInfo> templates)
+        public IReadOnlyDictionary<string, ITemplateInfo> GetTemplatesForAlias(string alias, IReadOnlyCollection<ITemplateInfo> templates)
         {
             Dictionary<string, ITemplateInfo> aliasVsTemplate = new Dictionary<string, ITemplateInfo>();
 
@@ -92,7 +98,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return aliasVsTemplate;
         }
 
-        public static string GetAliasForTemplate(ITemplateInfo template)
+        public string GetAliasForTemplate(ITemplateInfo template)
         {
             Load();
             string alias;
@@ -105,7 +111,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         // returns -1 if the alias already exists, zero otherwise
-        public static int SetTemplateAlias(string alias, ITemplateInfo template)
+        public int SetTemplateAlias(string alias, ITemplateInfo template)
         {
             Load();
             if (AliasesToTemplates.ContainsKey(alias))
@@ -114,7 +120,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             _source[alias] = template.Name;
-            EngineEnvironmentSettings.Host.FileSystem.WriteAllText(Paths.User.AliasesFile, _source.ToString());
+            _environmentSettings.Host.FileSystem.WriteAllText(_paths.User.AliasesFile, _source.ToString());
             return 0;
         }
     }

@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             string sourceValue = "QQQ121222112";
             string expectedValue = "QQQZZ1Z";
@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(sourceParam, sourceValue);
 
             RegexMacro macro = new RegexMacro();
-            macro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
 
             ITemplateParameter newParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out newParam));
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             string sourceValue = "ABCAABBCC";
             string expectedValue = "ZBCZZBBCC";
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(sourceParam, sourceValue);
 
             RegexMacro macro = new RegexMacro();
-            macro.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
             ITemplateParameter newParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out newParam));
             string newValue = (string)parameters.ResolvedValues[newParam];

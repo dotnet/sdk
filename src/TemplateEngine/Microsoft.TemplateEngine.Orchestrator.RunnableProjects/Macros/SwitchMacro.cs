@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public static readonly string DefaultEvaluator = "C++";
 
-        public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             SwitchMacroConfig config = rawConfig as SwitchMacroConfig;
 
@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     byte[] conditionBytes = Encoding.UTF8.GetBytes(condition);
                     int length = conditionBytes.Length;
                     int position = 0;
-                    IProcessorState state = new GlobalRunSpec.ProcessorState(vars, conditionBytes, Encoding.UTF8);
+                    IProcessorState state = new GlobalRunSpec.ProcessorState(environmentSettings, vars, conditionBytes, Encoding.UTF8);
 
                     if (evaluator(state, ref length, ref position, out bool faulted))
                     {
@@ -63,7 +63,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, result.ToString());
         }
 
-        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
 
             IMacroConfig realConfig = new SwitchMacroConfig(deferredConfig.VariableName, evaluator, dataType, switchList);
-            EvaluateConfig(vars, realConfig, parameters, setter);
+            EvaluateConfig(environmentSettings, vars, realConfig, parameters, setter);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Core.Util
@@ -9,13 +10,14 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public static IReadOnlyList<string> DefaultWhitespaces = new[] {" ", "\t"};
 
-        public EngineConfig(IVariableCollection variables, string variableFormatString = "{0}")
-            : this(DefaultWhitespaces, DefaultLineEndings, variables, variableFormatString)
+        public EngineConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, string variableFormatString = "{0}")
+            : this(environmentSettings, DefaultWhitespaces, DefaultLineEndings, variables, variableFormatString)
         {
         }
 
-        public EngineConfig(IReadOnlyList<string> whitespaces, IReadOnlyList<string> lineEndings, IVariableCollection variables, string variableFormatString = "{0}")
+        public EngineConfig(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<string> whitespaces, IReadOnlyList<string> lineEndings, IVariableCollection variables, string variableFormatString = "{0}")
         {
+            EnvironmentSettings = environmentSettings;
             Whitespaces = whitespaces;
             LineEndings = lineEndings;
             Variables = variables;
@@ -32,5 +34,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         public IReadOnlyList<string> Whitespaces { get; }
 
         public IDictionary<string, bool> Flags { get; }
+
+        public IEngineEnvironmentSettings EnvironmentSettings { get; }
     }
 }

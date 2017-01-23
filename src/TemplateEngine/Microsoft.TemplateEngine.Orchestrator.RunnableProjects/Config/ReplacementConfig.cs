@@ -15,16 +15,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public Guid Id => new Guid("62DB7F1F-A10E-46F0-953F-A28A03A81CD1");
 
-        public static IOperationProvider Setup(IReplacementTokens tokens, IParameterSet parameters)
+        public static IOperationProvider Setup(IEngineEnvironmentSettings environmentSettings, IReplacementTokens tokens, IParameterSet parameters)
         {
-            if (RuntimeValueUtil.TryGetRuntimeValue(parameters, tokens.VariableName, out object newValueObject))
+            if (parameters.TryGetRuntimeValue(environmentSettings, tokens.VariableName, out object newValueObject))
             {
                 string newValue = newValueObject.ToString();
                 return new Replacement(tokens.OriginalValue, newValue, null);
             }
             else
             {
-                EngineEnvironmentSettings.Host.LogMessage($"Couldn't find a parameter called {tokens.VariableName}");
+                environmentSettings.Host.LogMessage($"Couldn't find a parameter called {tokens.VariableName}");
                 return null;
             }
         }

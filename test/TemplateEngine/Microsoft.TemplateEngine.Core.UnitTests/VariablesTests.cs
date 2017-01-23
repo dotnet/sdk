@@ -14,14 +14,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         public void VerifyVariables()
         {
             string value = @"test %PATH% test";
-            string expected = @"test " + EngineEnvironmentSettings.Environment.GetEnvironmentVariable("PATH") + " test";
+            string expected = @"test " + EnvironmentSettings.Environment.GetEnvironmentVariable("PATH") + " test";
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new ExpandVariables(null) };
-            EngineConfig cfg = new EngineConfig(VariableCollection.Environment(), "%{0}%");
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, VariableCollection.Environment(EnvironmentSettings), "%{0}%");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["NULL"] = null
             };
-            EngineConfig cfg = new EngineConfig(vc, "%{0}%");
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "%{0}%");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made

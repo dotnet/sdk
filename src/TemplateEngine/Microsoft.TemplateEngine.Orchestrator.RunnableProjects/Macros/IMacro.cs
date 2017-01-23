@@ -7,6 +7,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     {
         string Type { get; }
 
-        void EvaluateConfig(IVariableCollection vars, IMacroConfig config, IParameterSet parameters, ParameterSetter setter);
+        void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config, IParameterSet parameters, ParameterSetter setter);
     }
 }

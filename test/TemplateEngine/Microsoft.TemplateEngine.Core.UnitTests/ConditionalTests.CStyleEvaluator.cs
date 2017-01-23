@@ -8,8 +8,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        #region Original Tests
-
         [Fact(DisplayName=nameof(VerifyIfEndifTrueCondition))]
         public void VerifyIfEndifTrueCondition()
         {
@@ -1514,7 +1512,5 @@ There";
             //  pretend it's false because the inputs and outputs are the same
             Verify(Encoding.UTF8, output, false, value, expected);
         }
-
-        #endregion Original Tests
     }
 }

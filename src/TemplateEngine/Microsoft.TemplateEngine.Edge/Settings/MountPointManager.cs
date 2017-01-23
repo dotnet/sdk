@@ -9,10 +9,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     {
         private readonly IComponentManager _componentManager;
 
-        public MountPointManager(IComponentManager componentManager)
+        public MountPointManager(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager)
         {
             _componentManager = componentManager;
+            EnvironmentSettings = environmentSettings;
         }
+
+        public IEngineEnvironmentSettings EnvironmentSettings { get; }
 
         public bool TryDemandMountPoint(MountPointInfo info, out IMountPoint mountPoint)
         {
@@ -34,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             using (Timing.Over("Get mount point"))
             {
                 MountPointInfo info;
-                if (SettingsLoader.TryGetMountPointInfo(mountPointId, out info))
+                if (EnvironmentSettings.SettingsLoader.TryGetMountPointInfo(mountPointId, out info))
                 {
                     return TryDemandMountPoint(info, out mountPoint);
                 }

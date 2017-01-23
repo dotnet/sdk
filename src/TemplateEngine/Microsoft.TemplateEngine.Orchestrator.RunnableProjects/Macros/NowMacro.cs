@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "now";
          
-        public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             NowMacroConfig config = rawConfig as NowMacroConfig;
 
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, value);
         }
 
-        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
 
             IMacroConfig realConfig = new NowMacroConfig(deferredConfig.VariableName, format, utc);
-            EvaluateConfig(vars, realConfig, parameters, setter);
+            EvaluateConfig(environmentSettings, vars, realConfig, parameters, setter);
         }
     }
 }

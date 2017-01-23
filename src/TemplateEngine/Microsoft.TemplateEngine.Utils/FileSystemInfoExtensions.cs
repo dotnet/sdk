@@ -9,11 +9,11 @@ namespace Microsoft.TemplateEngine.Utils
     {
         public static void CopyTo(this IDirectory source, string target)
         {
-            EngineEnvironmentSettings.Host.FileSystem.CreateDirectory(target);
+            source.MountPoint.EnvironmentSettings.Host.FileSystem.CreateDirectory(target);
 
             foreach (IFile file in source.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
             {
-                using (Stream f = EngineEnvironmentSettings.Host.FileSystem.CreateFile(Path.Combine(target, file.Name)))
+                using (Stream f = source.MountPoint.EnvironmentSettings.Host.FileSystem.CreateFile(Path.Combine(target, file.Name)))
                 using (Stream s = file.OpenRead())
                 {
                     s.CopyTo(f);

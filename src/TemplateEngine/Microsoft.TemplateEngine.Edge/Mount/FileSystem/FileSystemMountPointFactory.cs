@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
@@ -10,7 +11,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public Guid Id => FactoryId;
 
-        public bool TryMount(IMountPoint parent, string place, out IMountPoint mountPoint)
+        public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string place, out IMountPoint mountPoint)
         {
             if (parent != null || !Directory.Exists(place))
             {
@@ -20,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
             Guid mountPointId = Guid.NewGuid();
             MountPointInfo info = new MountPointInfo(Guid.Empty, Id, mountPointId, place);
-            mountPoint = new FileSystemMountPoint(info);
+            mountPoint = new FileSystemMountPoint(environmentSettings, info);
             return true;
         }
 
@@ -32,7 +33,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                 return false;
             }
 
-            mountPoint = new FileSystemMountPoint(info);
+            mountPoint = new FileSystemMountPoint(manager.EnvironmentSettings, info);
             return true;
         }
 

@@ -26,10 +26,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             NowMacro macro = new NowMacro();
-            macro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
             string macroNowString = (string)parameters.ResolvedValues[resultParam];
@@ -57,10 +57,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             NowMacro macro = new NowMacro();
-            macro.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
             string macroNowString = (string)parameters.ResolvedValues[resultParam];

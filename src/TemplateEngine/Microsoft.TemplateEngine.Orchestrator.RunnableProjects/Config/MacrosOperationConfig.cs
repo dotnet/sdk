@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         // Warning: if there are unknown macro "types", they are quietly ignored here.
         // This applies to both the regular and deferred macros.
-        public IEnumerable<IOperationProvider> ProcessMacros(IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
+        public IEnumerable<IOperationProvider> ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
         {
             EnsureMacros(componentManager);
             EnsureDeferredMacros(componentManager);
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             ParameterSetter setter = (p, value) =>
             {
                 ((RunnableProjectGenerator.ParameterSet)parameters).AddParameter(p);
-                parameters.ResolvedValues[p] = RunnableProjectGenerator.InternalConvertParameterValueToType(p, value, out bool valueResolutionError);
+                parameters.ResolvedValues[p] = RunnableProjectGenerator.InternalConvertParameterValueToType(environmentSettings, p, value, out bool valueResolutionError);
                 // TODO: consider checking the valueResolutionError and act on it, if needed.
                 // Should be safe to ignore, params should be verified by the time this occurs.
             };
@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
                 if (_macroObjects.TryGetValue(config.Type, out IMacro macroObject))
                 {
-                    macroObject.EvaluateConfig(variables, config, parameters, setter);
+                    macroObject.EvaluateConfig(environmentSettings, variables, config, parameters, setter);
                 }
             }
 
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 IDeferredMacro deferredMacroObject;
                 if (_deferredMacroObjects.TryGetValue(deferredConfig.Type, out deferredMacroObject))
                 {
-                    deferredMacroObject.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+                    deferredMacroObject.EvaluateDeferredConfig(environmentSettings, variables, deferredConfig, parameters, setter);
                 }
             }
 

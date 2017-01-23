@@ -54,7 +54,7 @@ After Conditional processing = off
 Final stuff";
 
             VariableCollection vc = new VariableCollection();
-            IProcessor partialProcessor = ConditionalTests.SetupCStyleWithCommentsProcessor(vc);
+            IProcessor partialProcessor = new ConditionalTests().SetupCStyleWithCommentsProcessor(vc);
 
             string on = "//+:cnd";
             string off = "//-:cnd";
@@ -108,7 +108,7 @@ After Conditional processing = off
 Final stuff";
 
             VariableCollection vc = new VariableCollection();
-            IProcessor partialProcessor = ConditionalTests.SetupCStyleWithCommentsProcessor(vc);
+            IProcessor partialProcessor = new ConditionalTests().SetupCStyleWithCommentsProcessor(vc);
 
             string on = "//+:cnd";
             string onNoEmit = on + ":noEmit";
@@ -134,7 +134,7 @@ End";
 End";
 
             VariableCollection vc = new VariableCollection();
-            EngineConfig engineConfig = new EngineConfig(vc);
+            EngineConfig engineConfig = new EngineConfig(EnvironmentSettings, vc);
 
             string on = "//+:cnd";
             string onNoEmit = on + ":noEmit";

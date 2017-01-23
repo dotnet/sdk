@@ -4,7 +4,7 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class RuntimeValueUtil
     {
-        public static bool TryGetRuntimeValue(this IParameterSet parameters, string name, out object value, bool skipEnvironmentVariableSearch = false)
+        public static bool TryGetRuntimeValue(this IParameterSet parameters, IEngineEnvironmentSettings environmentSettings, string name, out object value, bool skipEnvironmentVariableSearch = false)
         {
             if (parameters.TryGetParameterDefinition(name, out ITemplateParameter param)
                 && parameters.ResolvedValues.TryGetValue(param, out object newValueObject)
@@ -14,8 +14,8 @@ namespace Microsoft.TemplateEngine.Utils
                 return true;
             }
 
-            if ((EngineEnvironmentSettings.Host.TryGetHostParamDefault(name, out string newValue) && newValue != null)
-                || (!skipEnvironmentVariableSearch && EngineEnvironmentSettings.Environment.GetEnvironmentVariables().TryGetValue(name, out newValue) && newValue != null))
+            if ((environmentSettings.Host.TryGetHostParamDefault(name, out string newValue) && newValue != null)
+                || (!skipEnvironmentVariableSearch && environmentSettings.Environment.GetEnvironmentVariables().TryGetValue(name, out newValue) && newValue != null))
             {
                 value = newValue;
                 return true;

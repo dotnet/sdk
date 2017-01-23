@@ -18,6 +18,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Guid, string> _componentIdToAssemblyQualifiedTypeName = new Dictionary<Guid, string>();
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
+        private readonly ISettingsLoader _loader;
 
         private interface ICache
         {
@@ -37,8 +38,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public ComponentManager(SettingsStore userSettings)
+        public ComponentManager(ISettingsLoader loader, SettingsStore userSettings)
         {
+            _loader = loader;
             _settings = userSettings;
             _loadLocations.AddRange(userSettings.ProbingPaths);
 
@@ -81,7 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Cache<IMountPointFactory>.Instance.AddPart(new ZipFileMountPointFactory());
             }
 
-            foreach(KeyValuePair<Guid, Func<Type>> components in EngineEnvironmentSettings.Host.BuiltInComponents)
+            foreach(KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
             {
                 if (!ids.Contains(components.Key))
                 {
@@ -159,7 +161,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 try
                 {
-                    _settings.Save();
+                    _loader.Save();
                     successfulWrite = true;
                 }
                 catch (IOException)

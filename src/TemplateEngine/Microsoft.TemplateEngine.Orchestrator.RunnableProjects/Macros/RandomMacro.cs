@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "random";
 
-        public void EvaluateConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             RandomMacroConfig config = rawConfig as RandomMacroConfig;
 
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, value.ToString());
         }
 
-        public void EvaluateDeferredConfig(IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
             GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
 
             IMacroConfig realConfig = new RandomMacroConfig(deferredConfig.VariableName, low, high);
-            EvaluateConfig(vars, realConfig, parameters, setter);
+            EvaluateConfig(environmentSettings, vars, realConfig, parameters, setter);
         }
     }
 }

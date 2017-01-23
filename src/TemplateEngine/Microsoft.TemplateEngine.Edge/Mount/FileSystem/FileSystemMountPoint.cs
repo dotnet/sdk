@@ -1,12 +1,17 @@
 using System.IO;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
     public class FileSystemMountPoint : IMountPoint
     {
-        public FileSystemMountPoint(MountPointInfo info)
+        private Paths _paths;
+
+        public FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, MountPointInfo info)
         {
+            EnvironmentSettings = environmentSettings;
+            _paths = new Paths(environmentSettings);
             Info = info;
             Root = new FileSystemDirectory(this, "/", "", info.Place);
         }
@@ -15,16 +20,18 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public IDirectory Root { get; }
 
+        public IEngineEnvironmentSettings EnvironmentSettings { get; }
+
         public IFile FileInfo(string fullPath)
         {
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
-            return new FileSystemFile(this, realPath, realPath.Name(), realPath);
+            return new FileSystemFile(this, realPath, _paths.Name(realPath), realPath);
         }
 
         public IDirectory DirectoryInfo(string fullPath)
         {
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
-            return new FileSystemDirectory(this, fullPath, realPath.Name(), realPath);
+            return new FileSystemDirectory(this, fullPath, _paths.Name(realPath), realPath);
         }
 
         public IFileSystemInfo FileSystemInfo(string fullPath)
@@ -32,10 +39,10 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
             if (Directory.Exists(realPath))
             {
-                return new FileSystemDirectory(this, fullPath, realPath.Name(), realPath);
+                return new FileSystemDirectory(this, fullPath, _paths.Name(realPath), realPath);
             }
 
-            return new FileSystemFile(this, fullPath, realPath.Name(), realPath);
+            return new FileSystemFile(this, fullPath, _paths.Name(realPath), realPath);
         }
     }
 }

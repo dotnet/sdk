@@ -1,13 +1,15 @@
 ﻿using System.IO;
 using System.Linq;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockMountPoint : IMountPoint
     {
-        public MockMountPoint()
+        public MockMountPoint(IEngineEnvironmentSettings environmentSettings)
         {
+            EnvironmentSettings = environmentSettings;
             MockRoot = new MockDirectory("/", "/", this, null);
         }
 
@@ -16,6 +18,8 @@ namespace Microsoft.TemplateEngine.Mocks
         public IDirectory Root => MockRoot;
 
         public MockDirectory MockRoot { get; }
+
+        public IEngineEnvironmentSettings EnvironmentSettings { get; set; }
 
         public IFileSystemInfo FileSystemInfo(string fullPath)
         {

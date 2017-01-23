@@ -17,19 +17,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class TemplateCache
     {
-        private static IDictionary<string, ITemplate> _templateMemoryCache = new Dictionary<string, ITemplate>();
+        private IDictionary<string, ITemplate> _templateMemoryCache = new Dictionary<string, ITemplate>();
 
         // locale -> identity -> locator
-        private static IDictionary<string, IDictionary<string, ILocalizationLocator>> _localizationMemoryCache
-                = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
+        private readonly IDictionary<string, IDictionary<string, ILocalizationLocator>> _localizationMemoryCache = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+        private readonly Paths _paths;
 
-        public TemplateCache()
+        public TemplateCache(IEngineEnvironmentSettings environmentSettings)
         {
+            _environmentSettings = environmentSettings;
+            _paths = new Paths(environmentSettings);
             TemplateInfo = new List<TemplateInfo>();
         }
 
-        public TemplateCache(JObject parsed)
-            : this()
+        public TemplateCache(IEngineEnvironmentSettings environmentSettings, JObject parsed)
+            : this(environmentSettings)
         {
             if (parsed.TryGetValue("TemplateInfo", StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken))
             {
@@ -49,7 +52,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public List<TemplateInfo> TemplateInfo { get; set; }
 
-        public static void Scan(IReadOnlyList<string> templateRoots)
+        public void Scan(IReadOnlyList<string> templateRoots)
         {
             foreach (string templateDir in templateRoots)
             {
@@ -58,12 +61,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         // reads all the templates and langpacks for the current dir.
-        // stores info about them in static members.
+        // stores info about them in members.
         // can't correctly write locale cache(s) until all of both are read.
-        public static void Scan(string templateDir)
+        public void Scan(string templateDir)
         {
-            string searchTarget = Path.Combine(EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory(), templateDir.Trim());
-            List<string> matches = EngineEnvironmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
+            string searchTarget = Path.Combine(_environmentSettings.Host.FileSystem.GetCurrentDirectory(), templateDir.Trim());
+            List<string> matches = _environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
 
             if (matches.Count == 1)
             {
@@ -79,33 +82,33 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            if (SettingsLoader.TryGetMountPointFromPlace(searchTarget, out IMountPoint existingMountPoint))
+            if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(searchTarget, out IMountPoint existingMountPoint))
             {
                 ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir);
             }
             else
             {
-                foreach (IMountPointFactory factory in SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
+                foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>().ToList())
                 {
-                    if (factory.TryMount(null, templateDir, out IMountPoint mountPoint))
+                    if (factory.TryMount(_environmentSettings, null, templateDir, out IMountPoint mountPoint))
                     {
                         // TODO: consider not adding the mount point if there is nothing to install.
                         // It'd require choosing to not write it upstream from here, which might be better anyway.
                         // "nothing to install" could have a couple different meanings:
                         // 1) no templates, and no langpacks were found.
                         // 2) only langpacks were found, but they aren't for any existing templates - but we won't know that at this point.
-                        SettingsLoader.AddMountPoint(mountPoint);
+                        _environmentSettings.SettingsLoader.AddMountPoint(mountPoint);
                         ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir);
                     }
                 }
             }
         }
 
-        private static void ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
+        private void ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
         {
             ScanForComponents(mountPoint, templateDir);
 
-            foreach (IGenerator generator in SettingsLoader.Components.OfType<IGenerator>())
+            foreach (IGenerator generator in _environmentSettings.SettingsLoader.Components.OfType<IGenerator>())
             {
                 IEnumerable<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out IList<ILocalizationLocator> localizationInfo);
 
@@ -121,14 +124,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private static void ScanForComponents(IMountPoint mountPoint, string templateDir)
+        private void ScanForComponents(IMountPoint mountPoint, string templateDir)
         {
             if (mountPoint.Root.EnumerateFiles("*.dll", SearchOption.AllDirectories).Any())
             {
                 string diskPath = templateDir;
                 if (mountPoint.Info.MountPointFactoryId != FileSystemMountPointFactory.FactoryId)
                 {
-                    string path = Path.Combine(Paths.User.Content, Path.GetFileName(templateDir));
+                    string path = Path.Combine(_paths.User.Content, Path.GetFileName(templateDir));
 
                     try
                     {
@@ -142,16 +145,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     diskPath = path;
                 }
 
-                foreach (Assembly asm in AssemblyLoader.LoadAllAssemblies(out IEnumerable<string> failures))
+                foreach (KeyValuePair<string, Assembly> asm in AssemblyLoader.LoadAllAssemblies(_paths, out IEnumerable<string> failures))
                 {
                     try
                     {
-                        foreach (Type type in asm.GetTypes())
+                        foreach (Type type in asm.Value.GetTypes())
                         {
-                            SettingsLoader.Components.Register(type);
+                            _environmentSettings.SettingsLoader.Components.Register(type);
                         }
 
-                        SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Location));
+                        _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
                     }
                     catch
                     {
@@ -160,9 +163,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public static List<TemplateInfo> LoadTemplateCacheForLocale(string locale)
+        public List<TemplateInfo> LoadTemplateCacheForLocale(string locale)
         {
-            string cacheContent = Paths.User.ExplicitLocaleTemplateCacheFile(locale).ReadAllText("{}");
+            string cacheContent = _paths.ReadAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), "{}");
             JObject parsed = JObject.Parse(cacheContent);
             List<TemplateInfo> templates = new List<TemplateInfo>();
 
@@ -188,9 +191,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         //  - cultures for which new langpacks are installed
         //  - other locales with existing caches are regenerated.
         //  - neutral locale
-        public static void WriteTemplateCaches()
+        public void WriteTemplateCaches()
         {
-            string currentLocale = EngineEnvironmentSettings.Host.Locale;
+            string currentLocale = _environmentSettings.Host.Locale;
             HashSet<string> localesWritten = new HashSet<string>();
 
             // If the current locale exists, always write it.
@@ -209,15 +212,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             // read the cache dir for other locale caches, and re-write them.
             // there may be new templates to add to them.
-            string fileSearchPattern = "*." + Paths.User.TemplateCacheFileBaseName;
-            foreach (string fullFilename in Paths.User.BaseDir.EnumerateFiles(fileSearchPattern, System.IO.SearchOption.TopDirectoryOnly))
+            string fileSearchPattern = "*." + _paths.User.TemplateCacheFileBaseName;
+            foreach (string fullFilename in _paths.EnumerateFiles(_paths.User.BaseDir, fileSearchPattern, SearchOption.TopDirectoryOnly))
             {
                 string filename = Path.GetFileName(fullFilename);
                 string[] fileParts = filename.Split(new char[] { '.' }, 2);
                 string fileLocale = fileParts[0];
 
                 if (!string.IsNullOrEmpty(fileLocale) &&
-                    (fileParts[1] == Paths.User.TemplateCacheFileBaseName)
+                    (fileParts[1] == _paths.User.TemplateCacheFileBaseName)
                     && !localesWritten.Contains(fileLocale))
                 {
                     WriteTemplateCacheForLocale(fileLocale);
@@ -235,26 +238,26 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             WriteTemplateCacheForLocale(null);
         }
 
-        public static void DeleteAllLocaleCacheFiles()
+        public void DeleteAllLocaleCacheFiles()
         {
-            string fileSearchPattern = "*." + Paths.User.TemplateCacheFileBaseName;
-            foreach (string fullFilename in Paths.User.BaseDir.EnumerateFiles(fileSearchPattern, System.IO.SearchOption.TopDirectoryOnly))
+            string fileSearchPattern = "*." + _paths.User.TemplateCacheFileBaseName;
+            foreach (string fullFilename in _paths.EnumerateFiles(_paths.User.BaseDir, fileSearchPattern, SearchOption.TopDirectoryOnly))
             {
                 string filename = Path.GetFileName(fullFilename);
                 string[] fileParts = filename.Split(new char[] { '.' }, 2);
                 string fileLocale = fileParts[0];
 
                 if (!string.IsNullOrEmpty(fileLocale) &&
-                    (fileParts[1] == Paths.User.TemplateCacheFileBaseName))
+                    (fileParts[1] == _paths.User.TemplateCacheFileBaseName))
                 {
-                    fullFilename.Delete();
+                    _paths.Delete(fullFilename);
                 }
             }
 
-            Paths.User.CultureNeutralTemplateCacheFile.Delete();
+            _paths.Delete(_paths.User.CultureNeutralTemplateCacheFile);
         }
 
-        private static void WriteTemplateCacheForLocale(string locale)
+        private void WriteTemplateCacheForLocale(string locale)
         {
             List<TemplateInfo> existingTemplatesForLocale = LoadTemplateCacheForLocale(locale);
             IDictionary<string, ILocalizationLocator> existingLocatorsForLocale;
@@ -270,7 +273,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             HashSet<string> foundTemplates = new HashSet<string>();
-            List<TemplateInfo> mergedTemplateList = new List<TemplateInfo>();
+            List<ITemplateInfo> mergedTemplateList = new List<ITemplateInfo>();
 
             // These are from langpacks being installed... identity -> locator
             if (string.IsNullOrEmpty(locale)
@@ -299,13 +302,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             bool isCurrentLocale = string.IsNullOrEmpty(locale)
-                && string.IsNullOrEmpty(EngineEnvironmentSettings.Host.Locale)
-                || (locale == EngineEnvironmentSettings.Host.Locale);
-            SettingsLoader.WriteTemplateCache(mergedTemplateList, locale, isCurrentLocale);
+                && string.IsNullOrEmpty(_environmentSettings.Host.Locale)
+                || (locale == _environmentSettings.Host.Locale);
+            _environmentSettings.SettingsLoader.WriteTemplateCache(mergedTemplateList, locale, isCurrentLocale);
         }
 
         // find the best locator (if any). New is preferred over old
-        private static ILocalizationLocator GetPreferredLocatorForTemplate(string identity, IDictionary<string, ILocalizationLocator> existingLocatorsForLocale, IDictionary<string, ILocalizationLocator> newLocatorsForLocale)
+        private ILocalizationLocator GetPreferredLocatorForTemplate(string identity, IDictionary<string, ILocalizationLocator> existingLocatorsForLocale, IDictionary<string, ILocalizationLocator> newLocatorsForLocale)
         {
             if (!newLocatorsForLocale.TryGetValue(identity, out ILocalizationLocator locatorForTemplate))
             {
@@ -315,7 +318,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return locatorForTemplate;
         }
 
-        private static TemplateInfo LocalizeTemplate(ITemplateInfo template, ILocalizationLocator localizationInfo)
+        private TemplateInfo LocalizeTemplate(ITemplateInfo template, ILocalizationLocator localizationInfo)
         {
             TemplateInfo localizedTemplate = new TemplateInfo
             {
@@ -339,7 +342,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         // return dict is: Identity -> locator
-        private static IDictionary<string, ILocalizationLocator> GetLocalizationsFromTemplates(IList<TemplateInfo> templateList, string locale)
+        private IDictionary<string, ILocalizationLocator> GetLocalizationsFromTemplates(IList<TemplateInfo> templateList, string locale)
         {
             IDictionary<string, ILocalizationLocator> locatorLookup = new Dictionary<string, ILocalizationLocator>();
 
@@ -371,12 +374,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // Adds the template to the memory cache, keyed on identity.
         // If the identity is the same as an existing one, it's overwritten.
         // (last in wins)
-        private static void AddTemplateToMemoryCache(ITemplate template)
+        private void AddTemplateToMemoryCache(ITemplate template)
         {
             _templateMemoryCache[template.Identity] = template;
         }
 
-        private static void AddLocalizationToMemoryCache(ILocalizationLocator locator)
+        private void AddLocalizationToMemoryCache(ILocalizationLocator locator)
         {
             if (!_localizationMemoryCache.TryGetValue(locator.Locale, out IDictionary<string, ILocalizationLocator> localeLocators))
             {

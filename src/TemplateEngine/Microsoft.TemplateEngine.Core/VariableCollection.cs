@@ -86,22 +86,22 @@ namespace Microsoft.TemplateEngine.Core
             }
         }
 
-        public static VariableCollection Environment() => Environment(null, true, true, "{0}");
+        public static VariableCollection Environment(IEngineEnvironmentSettings environmentSettings) => Environment(environmentSettings, null, true, true, "{0}");
 
-        public static VariableCollection Environment(string formatString) => Environment(null, true, true, formatString);
+        public static VariableCollection Environment(IEngineEnvironmentSettings environmentSettings, string formatString) => Environment(environmentSettings, null, true, true, formatString);
 
-        public static VariableCollection Environment(VariableCollection parent) => Environment(parent, true, true, "{0}");
+        public static VariableCollection Environment(IEngineEnvironmentSettings environmentSettings, VariableCollection parent) => Environment(environmentSettings, parent, true, true, "{0}");
 
-        public static VariableCollection Environment(VariableCollection parent, string formatString) => Environment(parent, true, true, formatString);
+        public static VariableCollection Environment(IEngineEnvironmentSettings environmentSettings, VariableCollection parent, string formatString) => Environment(environmentSettings, parent, true, true, formatString);
 
-        public static VariableCollection Environment(bool changeCase, bool upperCase) => Environment(null, changeCase, upperCase, "{0}");
+        public static VariableCollection Environment(IEngineEnvironmentSettings environmentSettings, bool changeCase, bool upperCase) => Environment(environmentSettings, null, changeCase, upperCase, "{0}");
 
-        public static VariableCollection Environment(bool changeCase, bool upperCase, string formatString) => Environment(null, changeCase, upperCase, formatString);
+        public static VariableCollection Environment(IEngineEnvironmentSettings environmentSettings, bool changeCase, bool upperCase, string formatString) => Environment(environmentSettings, null, changeCase, upperCase, formatString);
 
-        public static VariableCollection Environment(VariableCollection parent, bool changeCase, bool upperCase, string formatString)
+        public static VariableCollection Environment(IEngineEnvironmentSettings environmentSettings, VariableCollection parent, bool changeCase, bool upperCase, string formatString)
         {
             VariableCollection vc = new VariableCollection(parent);
-            IReadOnlyDictionary<string, string> variables = EngineEnvironmentSettings.Environment.GetEnvironmentVariables();
+            IReadOnlyDictionary<string, string> variables = environmentSettings.Environment.GetEnvironmentVariables();
 
             foreach (KeyValuePair<string, string> entry in variables)
             {
@@ -221,7 +221,7 @@ namespace Microsoft.TemplateEngine.Core
         }
 
 
-        public static IVariableCollection SetupVariables(IParameterSet parameters, IVariableConfig variableConfig)
+        public static IVariableCollection SetupVariables(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IVariableConfig variableConfig)
         {
             IVariableCollection variables = Root();
 
@@ -235,19 +235,19 @@ namespace Microsoft.TemplateEngine.Core
                 switch (source.Key)
                 {
                     case "environment":
-                        variablesForSource = Environment(format);
+                        variablesForSource = Environment(environmentSettings, format);
 
                         if (variableConfig.FallbackFormat != null)
                         {
-                            variablesForSource = Environment(variablesForSource, variableConfig.FallbackFormat);
+                            variablesForSource = Environment(environmentSettings, variablesForSource, variableConfig.FallbackFormat);
                         }
                         break;
                     case "user":
-                        variablesForSource = VariableCollectionFromParameters(parameters, format);
+                        variablesForSource = VariableCollectionFromParameters(environmentSettings, parameters, format);
 
                         if (variableConfig.FallbackFormat != null)
                         {
-                            VariableCollection variablesFallback = VariableCollectionFromParameters(parameters, variableConfig.FallbackFormat);
+                            VariableCollection variablesFallback = VariableCollectionFromParameters(environmentSettings, parameters, variableConfig.FallbackFormat);
                             variablesFallback.Parent = variablesForSource;
                             variablesForSource = variablesFallback;
                         }
@@ -274,7 +274,7 @@ namespace Microsoft.TemplateEngine.Core
             return variables;
         }
 
-        public static VariableCollection VariableCollectionFromParameters(IParameterSet parameters, string format)
+        public static VariableCollection VariableCollectionFromParameters(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, string format)
         {
             VariableCollection vc = new VariableCollection();
             foreach (ITemplateParameter param in parameters.ParameterDefinitions)
@@ -285,7 +285,7 @@ namespace Microsoft.TemplateEngine.Core
                 {
                     if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
                     {
-                        while(!EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val))
+                        while(!environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out string val))
                         {
                         }
 
@@ -296,7 +296,7 @@ namespace Microsoft.TemplateEngine.Core
                 {
                     if (param.Priority != TemplateParameterPriority.Optional && param.Priority != TemplateParameterPriority.Suggested)
                     {
-                        while (!EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNull", out string val))
+                        while (!environmentSettings.Host.OnParameterError(param, null, "ParameterValueNull", out string val))
                         {
                         }
 

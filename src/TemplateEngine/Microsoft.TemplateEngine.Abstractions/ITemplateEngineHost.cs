@@ -32,5 +32,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         bool TryGetHostParamDefault(string paramName, out string value);
 
         void UpdateLocale(string newLocale);
+
+        void VirtualizeDirectory(string path);
     }
 }

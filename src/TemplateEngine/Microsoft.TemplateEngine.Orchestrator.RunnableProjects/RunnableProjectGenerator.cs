@@ -25,12 +25,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public static readonly string TemplateConfigDirectoryName = ".template.config";
         public static readonly string TemplateConfigFileName = "template.json";
 
-        public Task<ICreationResult> CreateAsync(ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
+        public Task<ICreationResult> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
-            ProcessMacros(componentManager, template.Config.OperationConfig, parameters);
+            ProcessMacros(environmentSettings, componentManager, template.Config.OperationConfig, parameters);
 
-            IVariableCollection variables = VariableCollection.SetupVariables(parameters, template.Config.OperationConfig.VariableSetup);
+            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, template.Config.OperationConfig.VariableSetup);
             template.Config.Evaluate(parameters, variables, template.ConfigFile);
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
@@ -48,32 +48,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // todo: add anything else we'd want to report to the broker
             return Task.FromResult<ICreationResult>(new CreationResult()
             {
-                PostActions = PostAction.ListFromModel(template.Config.PostActionModel, variables),
-                PrimaryOutputs = CreationPath.ListFromModel(template.Config.PrimaryOutputs, variables)
+                PostActions = PostAction.ListFromModel(environmentSettings, template.Config.PostActionModel, variables),
+                PrimaryOutputs = CreationPath.ListFromModel(environmentSettings, template.Config.PrimaryOutputs, variables)
             });
         }
 
         // Note the deferred-config macros (generated) are part of the runConfig.Macros
         //      and not in the ComputedMacros.
         //  Possibly make a separate property for the deferred-config macros
-        private static void ProcessMacros(IComponentManager componentManager, IGlobalRunConfig runConfig, IParameterSet parameters)
+        private static void ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IGlobalRunConfig runConfig, IParameterSet parameters)
         {
             if (runConfig.Macros != null)
             {
-                IVariableCollection varsForMacros = VariableCollection.SetupVariables(parameters, runConfig.VariableSetup);
+                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(componentManager, runConfig.Macros, varsForMacros, parameters);
+                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.Macros, varsForMacros, parameters);
             }
 
             if (runConfig.ComputedMacros != null)
             {
-                IVariableCollection varsForMacros = VariableCollection.SetupVariables(parameters, runConfig.VariableSetup);
+                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
+                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
             }
         }
 
-        public IParameterSet GetParametersForTemplate(ITemplate template)
+        public IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template)
         {
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
             return new ParameterSet(tmplt.Config);
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             catch (Exception ex)
             {
-                ITemplateEngineHost host = EngineEnvironmentSettings.Host;
+                ITemplateEngineHost host = file.MountPoint.EnvironmentSettings.Host;
                 host.LogMessage($"Error reading Langpack from file: {file.FullPath} | Error = {ex.ToString()}");
             }
 
@@ -182,13 +182,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
 
-                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(srcObject, localeSourceObject);
+                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(file.MountPoint.EnvironmentSettings, srcObject, localeSourceObject);
                 template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null, hostTemplateConfigFile);
                 return true;
             }
             catch (Exception ex)
             {
-                ITemplateEngineHost host = EngineEnvironmentSettings.Host;
+                ITemplateEngineHost host = config.MountPoint.EnvironmentSettings.Host;
                 host.LogMessage($"Error reading template from file: {file.FullPath} | Error = {ex.ToString()}");
             }
 
@@ -211,12 +211,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // If the param has a datatype specified, use that. Otherwise attempt to infer the type.
         // Throws a TemplateParamException if the conversion fails for any reason.
         //
-        public object ConvertParameterValueToType(ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
+        public object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
         {
-            return InternalConvertParameterValueToType(parameter, untypedValue, out valueResolutionError);
+            return InternalConvertParameterValueToType(environmentSettings, parameter, untypedValue, out valueResolutionError);
         }
 
-        internal static object InternalConvertParameterValueToType(ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
+        internal static object InternalConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
         { 
             if (untypedValue == null)
             {
@@ -226,7 +226,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (!string.IsNullOrEmpty(parameter.DataType))
             {
-                object convertedValue = DataTypeSpecifiedConvertLiteral(parameter, untypedValue, out valueResolutionError);
+                object convertedValue = DataTypeSpecifiedConvertLiteral(environmentSettings, parameter, untypedValue, out valueResolutionError);
                 return convertedValue;
             }
             else
@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // The data type names are case insensitive.
         //
         // Returns the converted value if it can be converted, throw otherwise
-        internal static object DataTypeSpecifiedConvertLiteral(ITemplateParameter param, string literal, out bool valueResolutionError)
+        internal static object DataTypeSpecifiedConvertLiteral(IEngineEnvironmentSettings environmentSettings, ITemplateParameter param, string literal, out bool valueResolutionError)
         {
             valueResolutionError = false;
 
@@ -268,7 +268,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // which takes care of making null bool -> true as appropriate.
                     // This else can also happen if there is a value but it can't be converted.
                     string val;
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
+                    while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
                     {
                     }
 
@@ -294,7 +294,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 string val;
-                while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) && (val == null || !param.Choices.Keys.Contains(literal)))
+                while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) && (val == null || !param.Choices.Keys.Contains(literal)))
                 {
                 }
 
@@ -311,7 +311,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 else
                 {
                     string val;
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !double.TryParse(val, out convertedFloat)))
+                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !double.TryParse(val, out convertedFloat)))
                     {
                     }
 
@@ -328,7 +328,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 else
                 {
                     string val;
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
+                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
                     {
                     }
 
@@ -345,7 +345,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 else
                 {
                     string val;
-                    while (EngineEnvironmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
+                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
                     {
                     }
 

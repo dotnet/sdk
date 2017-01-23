@@ -23,10 +23,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             GuidMacro guidMacro = new GuidMacro();
-            guidMacro.EvaluateConfig(variables, macroConfig, parameters, setter);
+            guidMacro.EvaluateConfig(EngineEnvironmentSettings, variables, macroConfig, parameters, setter);
             ValidateGuidMacroCreatedParametersWithResolvedValues(paramName, parameters);
         }
 
@@ -42,9 +42,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
             IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(parameters);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
-            guidMacro.EvaluateDeferredConfig(variables, deferredConfig, parameters, setter);
+            guidMacro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
             ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, parameters);
         }
 

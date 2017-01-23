@@ -9,21 +9,32 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
-    public static class TemplateCreator
+    public class TemplateCreator
     {
-        public static IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] filters)
+        private readonly IEngineEnvironmentSettings _environmentSettings;
+        private readonly AliasRegistry _aliasRegistry;
+        private readonly Paths _paths;
+
+        public TemplateCreator(IEngineEnvironmentSettings environmentSettings)
+        {
+            _environmentSettings = environmentSettings;
+            _aliasRegistry = new AliasRegistry(environmentSettings);
+            _paths = new Paths(environmentSettings);
+        }
+
+        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] filters)
         {
             HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
             HashSet<ITemplateInfo> allTemplates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
 
             using (Timing.Over("load"))
             {
-                SettingsLoader.GetTemplates(allTemplates);
+                _environmentSettings.SettingsLoader.GetTemplates(allTemplates);
             }
 
             foreach(ITemplateInfo template in allTemplates)
             {
-                string alias = AliasRegistry.GetAliasForTemplate(template);
+                string alias = _aliasRegistry.GetAliasForTemplate(template);
                 List<MatchInfo> matchInformation = new List<MatchInfo>();
 
                 foreach(Func<ITemplateInfo, string, MatchInfo?> filter in filters)
@@ -51,11 +62,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
 #endif
         }
 
-        public static async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
         {
             // SettingsLoader.LoadTemplate is where the loc info should be read!!!
             // templateInfo knows enough to get at the loc, if any
-            ITemplate template = SettingsLoader.LoadTemplate(templateInfo);
+            ITemplate template = _environmentSettings.SettingsLoader.LoadTemplate(templateInfo);
 
             string realName = name ?? template.DefaultName ?? fallbackName;
             // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
@@ -89,13 +100,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             try
             {
-                string targetDir = outputPath ?? EngineEnvironmentSettings.Host.FileSystem.GetCurrentDirectory();
-                targetDir.CreateDirectory();
+                string targetDir = outputPath ?? _environmentSettings.Host.FileSystem.GetCurrentDirectory();
+                _paths.CreateDirectory(targetDir);
                 Stopwatch sw = Stopwatch.StartNew();
-                IComponentManager componentManager = SettingsLoader.Components;
-                creationResult = await template.Generator.CreateAsync(template, templateParams, componentManager, targetDir).ConfigureAwait(false);
+                IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
+                creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
                 sw.Stop();
-                EngineEnvironmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
+                _environmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
             finally
             {
@@ -113,10 +124,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // Reads the parameters from the template and the host and setup their values in the return IParameterSet.
         // Host param values override template defaults.
         //
-        public static IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate template, string realName, out IList<string> paramsWithInvalidValues)
+        public IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate template, string realName, out IList<string> paramsWithInvalidValues)
         {
-            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
-            IParameterSet templateParams = template.Generator.GetParametersForTemplate(template);
+            ITemplateEngineHost host = _environmentSettings.Host;
+            IParameterSet templateParams = template.Generator.GetParametersForTemplate(_environmentSettings, template);
             paramsWithInvalidValues = new List<string>();
 
             foreach (ITemplateParameter param in templateParams.ParameterDefinitions)
@@ -127,7 +138,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (host.TryGetHostParamDefault(param.Name, out string hostParamValue) && hostParamValue != null)
                 {
-                    object resolvedValue = template.Generator.ConvertParameterValueToType(param, hostParamValue, out bool valueResolutionError);
+                    object resolvedValue = template.Generator.ConvertParameterValueToType(_environmentSettings, param, hostParamValue, out bool valueResolutionError);
                     if (!valueResolutionError)
                     {
                         templateParams.ResolvedValues[param] = resolvedValue;
@@ -139,7 +150,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
                 {
-                    object resolvedValue = template.Generator.ConvertParameterValueToType(param, param.DefaultValue, out bool valueResolutionError);
+                    object resolvedValue = template.Generator.ConvertParameterValueToType(_environmentSettings, param, param.DefaultValue, out bool valueResolutionError);
                     if (!valueResolutionError)
                     {
                         templateParams.ResolvedValues[param] = resolvedValue;
@@ -158,7 +169,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // The template params for which there are same-named input parameters have their values set to the corresponding input parameters value.
         // input parameters that do not have corresponding template params are ignored.
         //
-        public static void ResolveUserParameters(ITemplate template, IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters, out IList<string> paramsWithInvalidValues)
+        public void ResolveUserParameters(ITemplate template, IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters, out IList<string> paramsWithInvalidValues)
         {
             paramsWithInvalidValues = new List<string>();
 
@@ -176,7 +187,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                             // could probably directly assign bool true here, but best to have everything go through the same process
                             // ... in case something changes downstream.
                             // ignore the valueResolutionError
-                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, "true", out bool valueResolutionError);
+                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, "true", out bool valueResolutionError);
                         }
                         else
                         {
@@ -185,7 +196,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(paramFromTemplate, inputParam.Value, out bool valueResolutionError);
+                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, inputParam.Value, out bool valueResolutionError);
                         if (valueResolutionError)
                         {
                             paramsWithInvalidValues.Add(paramFromTemplate.Name);
@@ -200,9 +211,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // but it's up to the caller / UI to decide how to act.
         // Returns true if there are any missing params, false otherwise.
         //
-        public static bool CheckForMissingRequiredParameters(IParameterSet templateParams, out IList<string> missingParamNames)
+        public bool CheckForMissingRequiredParameters(IParameterSet templateParams, out IList<string> missingParamNames)
         {
-            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
+            ITemplateEngineHost host = _environmentSettings.Host;
             bool anyMissingParams = false;
             missingParamNames = new List<string>();
 
@@ -235,7 +246,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // Direct copy of commented out code from the old TemplateCreator.Instantiate()
         // This won't build, much less work, but it will be revived someday.
         //
-        //public static void UpdateCheck()
+        //public void UpdateCheck()
         //{
         //    //TODO: Implement check for updates over mount points
         //    bool updatesReady;

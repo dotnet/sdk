@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class BalancedNestingTests : TestBase
     {
-        private static IProcessor SetupXmlBalancedNestingProcessor(bool? isCommentFixingInitiallyOn = null)
+        private IProcessor SetupXmlBalancedNestingProcessor(bool? isCommentFixingInitiallyOn = null)
         {
             string commentFixOperationId = "Fix Comments";
             string resetId = "Reset";
@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new BalancedNesting("<!--", "-->", "-- >", commentFixOperationId, resetId),
             };
             VariableCollection variables = new VariableCollection();
-            EngineConfig engineConfig = new EngineConfig(variables);
+            EngineConfig engineConfig = new EngineConfig(EnvironmentSettings, variables);
             IProcessor processor = Processor.Create(engineConfig, operations);
 
             if (isCommentFixingInitiallyOn.HasValue)

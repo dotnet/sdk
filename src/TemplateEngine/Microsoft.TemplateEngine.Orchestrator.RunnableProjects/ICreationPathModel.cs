@@ -1,18 +1,11 @@
-﻿
-using Microsoft.TemplateEngine.Core.Contracts;
+﻿using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface ICreationPathModel
+    public interface ICreationPathModel : IConditionedConfigurationElement
     {
         string PathOriginal { get; }
 
         string PathResolved { get; set; }
-
-        string Condition { get; }
-
-        bool ConditionResult { get; }
-
-        void EvaluateCondition(IVariableCollection variables);
     }
 }
