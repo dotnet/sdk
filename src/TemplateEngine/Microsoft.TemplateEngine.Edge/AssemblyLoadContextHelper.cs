@@ -37,12 +37,13 @@ namespace Microsoft.TemplateEngine.Edge
 #if !NET45
                     if(file.IndexOf("netcoreapp", StringComparison.OrdinalIgnoreCase) > -1 || file.IndexOf("netstandard", StringComparison.OrdinalIgnoreCase) > -1)
                     {
-                        assembly = context.LoadFromAssemblyPath(file);
+                        assembly = context.LoadFromStream(paths.OpenRead(file));
                     }
 #else
                     if (file.IndexOf("net4", StringComparison.OrdinalIgnoreCase) > -1)
                     {
-                        assembly = Assembly.LoadFile(file);
+                        byte[] fileBytes = paths.ReadAllBytes(file);
+                        assembly = Assembly.Load(fileBytes);
                     }
 #endif
 

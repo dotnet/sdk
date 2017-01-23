@@ -69,6 +69,26 @@ namespace Microsoft.TemplateEngine.Edge
             }
         }
 
+        public Stream OpenRead(string path)
+        {
+            return _environmentSettings.Host.FileSystem.OpenRead(path);
+        }
+
+        public byte[] ReadAllBytes(string path)
+        {
+            if (Exists(path))
+            {
+                using (Stream s = _environmentSettings.Host.FileSystem.OpenRead(path))
+                {
+                    byte[] buffer = new byte[s.Length];
+                    s.Read(buffer, 0, buffer.Length);
+                    return buffer;
+                }
+            }
+            
+            return null;
+        }
+
         public void CreateDirectory(string path, string parent)
         {
             string[] parts = path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);

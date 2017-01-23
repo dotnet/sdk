@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Utils
             _hostBuiltInComponents = builtIns ?? NoComponents;
         }
 
-        public IPhysicalFileSystem FileSystem { get; }
+        public IPhysicalFileSystem FileSystem { get; private set; }
 
         public string Locale { get; private set; }
 
@@ -91,5 +91,9 @@ namespace Microsoft.TemplateEngine.Utils
             return _hostDefaults.TryGetValue(paramName, out value);
         }
 
+        public void VirtualizeDirectory(string path)
+        {
+            FileSystem = new InMemoryFileSystem(path, FileSystem);
+        }
     }
 }
