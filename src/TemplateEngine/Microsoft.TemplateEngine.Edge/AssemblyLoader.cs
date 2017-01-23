@@ -22,14 +22,14 @@ namespace Microsoft.TemplateEngine.Edge
 #endif
         }
 
-        public static IEnumerable<Assembly> LoadAllAssemblies(Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllAssemblies(Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
-            IEnumerable<Assembly> loaded = LoadAllFromUserDir(paths, out IEnumerable<string> failures1, pattern, searchOption).Union(LoadAllFromCodebase(paths, out IEnumerable<string> failures2, pattern, searchOption));
+            IEnumerable<KeyValuePair<string, Assembly>> loaded = LoadAllFromUserDir(paths, out IEnumerable<string> failures1, pattern, searchOption).Union(LoadAllFromCodebase(paths, out IEnumerable<string> failures2, pattern, searchOption));
             loadFailures = failures1.Union(failures2);
             return loaded;
         }
 
-        public static IEnumerable<Assembly> LoadAllFromCodebase(Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromCodebase(Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
 #if !NET45
             return AssemblyLoadContext.Default.LoadAllFromCodebase(paths, out loadFailures, pattern, searchOption);
@@ -38,12 +38,12 @@ namespace Microsoft.TemplateEngine.Edge
 #endif
         }
 
-        public static IEnumerable<Assembly> LoadAllFromUserDir(Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromUserDir(Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
             return LoadAllFromPath(paths, out loadFailures, paths.User.Content, pattern, searchOption);
         }
 
-        public static IEnumerable<Assembly> LoadAllFromPath(Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
+        public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
 #if !NET45
             return AssemblyLoadContext.Default.LoadAllFromPath(paths, out loadFailures, path, pattern, searchOption);

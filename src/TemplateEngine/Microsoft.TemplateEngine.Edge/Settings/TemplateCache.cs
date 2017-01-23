@@ -145,16 +145,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     diskPath = path;
                 }
 
-                foreach (Assembly asm in AssemblyLoader.LoadAllAssemblies(_paths, out IEnumerable<string> failures))
+                foreach (KeyValuePair<string, Assembly> asm in AssemblyLoader.LoadAllAssemblies(_paths, out IEnumerable<string> failures))
                 {
                     try
                     {
-                        foreach (Type type in asm.GetTypes())
+                        foreach (Type type in asm.Value.GetTypes())
                         {
                             _environmentSettings.SettingsLoader.Components.Register(type);
                         }
 
-                        _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Location));
+                        _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
                     }
                     catch
                     {
