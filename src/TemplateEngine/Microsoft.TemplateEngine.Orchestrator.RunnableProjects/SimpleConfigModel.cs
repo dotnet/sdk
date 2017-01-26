@@ -301,6 +301,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.css", "/*", "C++", ConditionalType.CBlockComments),
                         new SpecialOperationConfigParams("**/*.cshtml", "@*", "C++", ConditionalType.Razor),
                         new SpecialOperationConfigParams("**/*.cs", "//", "C++", ConditionalType.CNoComments),
+                        new SpecialOperationConfigParams("**/*.fs", "//", "C++", ConditionalType.CNoComments),
                         new SpecialOperationConfigParams("**/*.cpp", "//", "C++", ConditionalType.CNoComments),
                         new SpecialOperationConfigParams("**/*.h", "//", "C++", ConditionalType.CNoComments),
                         new SpecialOperationConfigParams("**/*.hpp", "//", "C++", ConditionalType.CNoComments),
