@@ -2,7 +2,7 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.NETCore.App" Version="1.1.0" />
