@@ -4,8 +4,8 @@
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <Description>Contracts for extending Template Engine</Description>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <PackageReference Update="NETStandard.Library" Version="1.6.0" />
+    <PackageReference Update="NETStandard.Library" Version="1.6.1" />
   </ItemGroup>
 </Project>

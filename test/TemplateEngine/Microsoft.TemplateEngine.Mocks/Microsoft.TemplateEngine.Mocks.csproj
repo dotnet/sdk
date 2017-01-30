@@ -2,10 +2,10 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Update="Microsoft.NETCore.App" Version="1.0.3" />
+    <PackageReference Update="Microsoft.NETCore.App" Version="1.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
