@@ -21,7 +21,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string ConfigFile { get; private set; }
 
-
         string IPostAction.Description => Description;
 
         Guid IPostAction.ActionId => ActionId;
@@ -45,6 +44,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (IPostActionModel model in modelList)
             {
+                model.EvaluateCondition(environmentSettings, rootVariableCollection);
+
+                if (!model.ConditionResult)
+                {   // Condition on the post action is blank, or not true. Don't include this post action.
+                    continue;
+                }
+
                 string chosenInstruction = string.Empty;
 
                 foreach (KeyValuePair<string, string> modelInstruction in model.ManualInstructionInfo)
