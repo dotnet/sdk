@@ -4,11 +4,12 @@
 
   <PropertyGroup>
     <SignTool>$(NuGet_Packages)\roslyntools.microsoft.signtool\0.2.0-beta\tools\SignTool.exe</SignTool>
+    <SignToolTest Condition="'$(SignType)'!='real'"> -test</SignToolTest>
+    <SigningConfig Condition="'$(BuildTemplates)' != 'true'">$(MSBuildThisFileDirectory)SignToolConfig.json</SigningConfig>
+    <SigningConfig Condition="'$(BuildTemplates)' == 'true'">$(MSBuildThisFileDirectory)SignToolTemplateConfig.json</SigningConfig>
   </PropertyGroup>
 
   <ItemGroup>
-    <SigningConfig Include="$(MSBuildThisFileDirectory)SignToolConfig.json" Condition="'$(BuildTemplates)' != 'true'"/>
-    <SigningConfig Include="$(MSBuildThisFileDirectory)SignToolTemplateConfig.json" Condition="'$(BuildTemplates)' == 'true'"/>
 
     <!-- Make note, without actually knowing what's included in the SigningConfig,
          we just assume that everything in the output dir is, and treat them
@@ -17,12 +18,9 @@
   </ItemGroup>
 
   <Target Name="Build" Outputs="@(PackageAssets)">
-    <!-- If not RealSigning -->
-    <Message Text="Skipping Real Signing" Condition="'$(SignType)'!='real'"/>
-
-    <!-- If RealSigning -->
     <Message Text="Performing Real Signing" Condition="'$(SignType)'=='real'"/>
-    <Exec Command="$(SignTool) -nugetPackagesPath &quot;$(NuGet_Packages)&quot; -config &quot;@(SigningConfig)&quot; &quot;$(OutDir.TrimEnd('\'))&quot;"
-          Condition="'$(SignType)'=='real'"/>
+    <Message Text="Performing Test Signing" Condition="'$(SignType)'!='real'"/>
+
+    <Exec Command="$(SignTool) $(SignToolTest) -nugetPackagesPath &quot;$(NuGet_Packages.TrimEnd('\'))&quot; -config &quot;$(SigningConfig)&quot; &quot;$(OutDir.TrimEnd('\'))&quot;" />
   </Target>
 </Project>

@@ -1,11 +1,11 @@
 {
-    sign: [
-        {
-            "certificate": "Microsoft402",
-            "strongName": "MsSharedLib72",
-            "values": [
-                "Microsoft.NET.Build.Tasks.dll"
-            ]
-        }
-    ]
+  "sign": [
+    {
+      "certificate": "Microsoft400",
+      "strongName": null,
+      "values": [
+        "netfx_NETCoreUWP.msi"
+      ]
+    }
+  ]
 }
