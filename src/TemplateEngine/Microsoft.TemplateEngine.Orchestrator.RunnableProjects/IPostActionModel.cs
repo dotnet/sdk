@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface IPostActionModel
+    public interface IPostActionModel : IConditionedConfigurationElement
     {
         string Description { get; }
 

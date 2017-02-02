@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class PostActionModel : IPostActionModel
+    public class PostActionModel : ConditionedConfigurationElementBase, IPostActionModel
     {
         public string Description { get; private set; }
 
@@ -74,6 +74,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 PostActionModel model = new PostActionModel()
                 {
+                    Condition = action.ToString(nameof(model.Condition)),
                     Description = actionLocalizations?.Description ?? action.ToString(nameof(model.Description)),
                     ActionId = actionId,
                     ContinueOnError = action.ToBool(nameof(model.ContinueOnError)),
