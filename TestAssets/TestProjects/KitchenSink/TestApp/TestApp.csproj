@@ -4,7 +4,18 @@
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <ProjectGuid>{C91F7F4C-47ED-4D1C-8990-B2E886B0FAD9}</ProjectGuid>
     <PackageTargetFallback>portable-net45+wp8+win8+wpa</PackageTargetFallback>
+    <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
+
+  <!-- Host configuration properties -->
+  <PropertyGroup>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
+    <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
+    <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="CompileCopyToOutput.cs">
@@ -44,9 +55,6 @@
     <ProjectReference Include="../TestLibrary/TestLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App">
-      <Version>1.0.1</Version>
-    </PackageReference>
 	<!-- 
 	  The TestLibrary has a hard dependency on Newtonsoft.Json.
 	  The TestApp has a PrivateAssets=All dependency on Microsoft.Extensions.DependencyModel.

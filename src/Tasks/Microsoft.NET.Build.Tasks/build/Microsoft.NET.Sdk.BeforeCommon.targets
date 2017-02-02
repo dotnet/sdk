@@ -19,11 +19,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DefaultOutputPaths.targets" />
   
   <!-- 
-    Expand TargetFramework (if set) to TargetFrameworkIdentifier and TargetFrameworkVersion,
+    Expand TargetFramework to TargetFrameworkIdentifier and TargetFrameworkVersion,
     and adjust intermediate and output paths to include it.
   -->
-  <Import Condition="'$(TargetFramework)' != ''"
-        Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" />
 
   <!--
     Use RuntimeIdentifier to determine PlatformTarget.
@@ -77,19 +76,30 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   
   <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
+
     <Reference Include="System"/>
-    <Reference Include="System.Core"/>
     <Reference Include="System.Data"/>
     <Reference Include="System.Drawing"/>
+    <Reference Include="System.Xml"/>
+
     <!-- When doing greater than/less than comparisons between strings, MSBuild will try to parse the strings as Version objects and compare them as
          such if the parse succeeds. -->
-    <Reference Include="System.IO.Compression.FileSystem" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.5' "/>
-    <Reference Include="System.IO.Compression" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.5' "/>
-    <Reference Include="System.Net.Http" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.5' "/>
+    
+    <!-- Framework assemblies introduced in .NET 3.5 -->
+    <Reference Include="System.Core" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
+    <Reference Include="System.Runtime.Serialization" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
+    <Reference Include="System.Xml.Linq" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
+
+    <!-- Framework assemblies introduced in .NET 4.0 -->
     <Reference Include="System.Numerics" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.0' "/>
-    <Reference Include="System.Runtime.Serialization"/>
-    <Reference Include="System.Xml.Linq"/>
-    <Reference Include="System.Xml"/>
+
+    <!-- Framework assemblies introduced in .NET 4.5 -->
+    <Reference Include="System.IO.Compression.FileSystem" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.5' "/>
+    
+    <!-- Don't automatically reference System.IO.Compression or System.Net.Http to help avoid hitting https://github.com/Microsoft/msbuild/issues/1329. -->
+    <!--<Reference Include="System.IO.Compression" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.5' "/>
+    <Reference Include="System.Net.Http" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.5' "/>-->
+
   </ItemGroup>
 
   <!-- Add conditional compilation symbols for the target framework (for example NET461, NETSTANDARD2_0, NETCOREAPP1_0) -->
@@ -103,8 +113,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_FrameworkVersionForImplicitDefine>$(_FrameworkVersionForImplicitDefine.Replace('.', '_'))</_FrameworkVersionForImplicitDefine>
     
     <_FrameworkVersionForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">$(_FrameworkVersionForImplicitDefine.Replace('_', ''))</_FrameworkVersionForImplicitDefine>
-    
-    <DefineConstants>$(DefineConstants);$(_FrameworkIdentifierForImplicitDefine)$(_FrameworkVersionForImplicitDefine)</DefineConstants>
+
+    <ImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)$(_FrameworkVersionForImplicitDefine)</ImplicitFrameworkDefine>
   </PropertyGroup>
 
   <!-- Handle XML documentation file settings -->
