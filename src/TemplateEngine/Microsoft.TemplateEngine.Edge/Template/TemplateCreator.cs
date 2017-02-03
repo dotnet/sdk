@@ -106,7 +106,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
                 creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
                 sw.Stop();
-                _environmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
             }
             finally
             {
