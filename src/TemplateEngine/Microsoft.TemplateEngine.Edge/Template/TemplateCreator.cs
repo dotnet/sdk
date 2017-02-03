@@ -68,27 +68,32 @@ namespace Microsoft.TemplateEngine.Edge.Template
             // templateInfo knows enough to get at the loc, if any
             ITemplate template = _environmentSettings.SettingsLoader.LoadTemplate(templateInfo);
 
+            if (template == null)
+            {
+                return new TemplateCreationResult("Could not load template", CreationResultStatus.NotFound, templateInfo.Name);
+            }
+
             string realName = name ?? template.DefaultName ?? fallbackName;
             // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
             IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
             if (defaultParamsWithInvalidValues.Any())
             {
                 string message = string.Join(", ", defaultParamsWithInvalidValues);
-                return new TemplateCreationResult(-1, message, CreationResultStatus.InvalidParamValues, template.Name);
+                return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
             }
 
             ResolveUserParameters(template, templateParams, inputParameters, out IList<string> userParamsWithInvalidValues);
             if (userParamsWithInvalidValues.Any())
             {
                 string message = string.Join(", ", userParamsWithInvalidValues);
-                return new TemplateCreationResult(-1, message, CreationResultStatus.InvalidParamValues, template.Name);
+                return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
             }
 
             bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
 
             if (missingParams)
             {
-                return new TemplateCreationResult(-1, string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
+                return new TemplateCreationResult(string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
             }
 
             if (template.IsNameAgreementWithFolderPreferred && string.IsNullOrEmpty(outputPath))
@@ -97,27 +102,22 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
 
             ICreationResult creationResult = null;
+            string targetDir = outputPath ?? _environmentSettings.Host.FileSystem.GetCurrentDirectory();
 
             try
             {
-                string targetDir = outputPath ?? _environmentSettings.Host.FileSystem.GetCurrentDirectory();
                 _paths.CreateDirectory(targetDir);
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
                 creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
                 sw.Stop();
                 _environmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
+                return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, outputPath);
             }
-            finally
+            catch (Exception ex)
             {
+                return new TemplateCreationResult(ex.Message, CreationResultStatus.CreateFailed, template.Name);
             }
-
-            if (creationResult != null)
-            {
-                return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateSucceeded, template.Name, creationResult);
-            }
-
-            return new TemplateCreationResult(0, string.Empty, CreationResultStatus.CreateFailed, template.Name);
         }
 
         // 

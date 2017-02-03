@@ -7,25 +7,28 @@ namespace Microsoft.TemplateEngine.Edge.Template
 {
     public enum CreationResultStatus
     {
-        CreateSucceeded,
-        CreateFailed,
-        MissingMandatoryParam,
-        InvalidParamValues
+        Success = 0,
+        CreateFailed = unchecked((int)0x80020009),
+        MissingMandatoryParam = unchecked((int)0x8002000F),
+        InvalidParamValues = unchecked((int)0x80020005),
+        OperationNotSpecified = unchecked((int)0x8002000E),
+        NotFound = unchecked((int)0x800200006)
     }
 
     public class TemplateCreationResult
     {
-        public TemplateCreationResult(int resultCode, string message, CreationResultStatus status, string templateFullName, ICreationResult creationOutputs = null)
+        public TemplateCreationResult(string message, CreationResultStatus status, string templateFullName)
+            :this(message, status, templateFullName, null, null)
+        { }
+
+        public TemplateCreationResult(string message, CreationResultStatus status, string templateFullName, ICreationResult creationOutputs, string outputBaseDir)
         {
-            ResultCode = resultCode;
             Message = message;
             Status = status;
             TemplateFullName = templateFullName;
-            PostActions = creationOutputs?.PostActions;
-            PrimaryOutputs = creationOutputs?.PrimaryOutputs;
+            ResultInfo = creationOutputs;
+            OutputBaseDirectory = outputBaseDir;
         }
-
-        public int ResultCode { get; }
 
         public string Message { get; }
 
@@ -33,8 +36,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public string TemplateFullName { get; }
 
-        public IReadOnlyList<IPostAction> PostActions { get; }
+        public ICreationResult ResultInfo { get; }
 
-        public IReadOnlyList<ICreationPath> PrimaryOutputs { get; }
+        public string OutputBaseDirectory { get; }
     }
 }
