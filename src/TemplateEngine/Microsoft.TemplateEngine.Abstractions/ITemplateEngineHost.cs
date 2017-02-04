@@ -12,6 +12,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string HostIdentifier { get; }
 
+        IReadOnlyList<string> FallbackHostTemplateConfigNames { get; }
+
         string Version { get; }
 
         string Locale { get; }

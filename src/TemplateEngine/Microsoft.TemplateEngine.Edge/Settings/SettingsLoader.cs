@@ -183,6 +183,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
             }
 
+            if (hostTemplateConfigFile == null && _environmentSettings.Host.FallbackHostTemplateConfigNames != null)
+            {
+                foreach (string fallbackName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
+                {
+                    string hostTemplateFileName = string.Join(string.Empty, fallbackName, HostTemplateFileConfigBaseName);
+                    hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
+
+                    if (hostTemplateConfigFile != null)
+                    {
+                        break;
+                    }
+                }
+            }
 
             ITemplate template;
             using (Timing.Over("Template from config"))

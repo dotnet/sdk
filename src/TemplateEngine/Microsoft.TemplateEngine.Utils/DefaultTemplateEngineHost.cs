@@ -17,11 +17,21 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults)
-            : this (hostIdentifier, version, locale, defaults, NoComponents)
+            : this (hostIdentifier, version, locale, defaults, NoComponents, null)
         {
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns)
+            : this(hostIdentifier, version, locale, defaults, builtIns, null)
+        {
+        }
+
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults, IReadOnlyList<string> fallbackHostTemplateConfigNames)
+            : this(hostIdentifier, version, locale, defaults, NoComponents, fallbackHostTemplateConfigNames)
+        {
+        }
+
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, string locale, Dictionary<string, string> defaults, IReadOnlyList<KeyValuePair<Guid, Func<Type>>> builtIns, IReadOnlyList<string> fallbackHostTemplateConfigNames)
         {
             HostIdentifier = hostIdentifier;
             Version = version;
@@ -30,6 +40,7 @@ namespace Microsoft.TemplateEngine.Utils
             FileSystem = new PhysicalFileSystem();
             _hostDefaults = defaults;
             _hostBuiltInComponents = builtIns ?? NoComponents;
+            FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames;
         }
 
         public IPhysicalFileSystem FileSystem { get; private set; }
@@ -42,6 +53,8 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public string HostIdentifier { get; }
+
+        public IReadOnlyList<string> FallbackHostTemplateConfigNames { get; }
 
         public string Version { get; }
 
