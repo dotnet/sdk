@@ -113,6 +113,16 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 sw.Stop();
                 _environmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
                 return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, outputPath);
+            }                
+            catch (ContentGenerationException cx)
+            {
+                string message = cx.Message;
+                if(cx.InnerException != null)
+                {
+                    message += Environment.NewLine + cx.InnerException.Message;
+                }
+
+                return new TemplateCreationResult(message, CreationResultStatus.CreateFailed, template.Name);
             }
             catch (Exception ex)
             {

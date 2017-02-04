@@ -88,7 +88,6 @@ namespace Microsoft.TemplateEngine.Utils
 
         public virtual void OnTimingCompleted(string label, TimeSpan timing)
         {
-            LogMessage(string.Format("{0}: {1} ms", label, timing.TotalMilliseconds));
         }
 
         // stub that will be built out soon.
