@@ -46,13 +46,14 @@ namespace Microsoft.TemplateEngine.Utils
                     if (_userProfileDir == null)
                     {
 #if !NET45
-                    string profileDir =
-                        _parent.Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#else
+                        bool isWindows = System.IO.Path.DirectorySeparatorChar == '\\';
+#endif
+
+                        string profileDir = _parent.Environment.GetEnvironmentVariable(isWindows
                             ? "USERPROFILE"
                             : "HOME");
-#else
-                        string profileDir = _parent.Environment.GetEnvironmentVariable("USERPROFILE");
-#endif
 
                         _userProfileDir = profileDir;
                     }
