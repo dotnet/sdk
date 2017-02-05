@@ -193,7 +193,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ResolvedFileToPublish>
 
       <!-- Copy the documentation file (.xml), if any -->
-      <ResolvedFileToPublish Include="@(_DebugSymbolsIntermediatePath)"
+      <ResolvedFileToPublish Include="@(FinalDocFile)"
                              Condition="'$(_DocumentationFileProduced)'=='true' and '$(CopyBuildOutputToPublishDirectory)' == 'true'">
         <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
       </ResolvedFileToPublish>
