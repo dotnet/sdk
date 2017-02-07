@@ -76,6 +76,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 case ConditionalType.RemLineComment:
                     setup = RemLineCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
+                case ConditionalType.JsxBlockComment:
+                    setup = JsxBlockCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
                 default:
                     throw new Exception($"Unrecognized conditional type {style}");
             }
@@ -331,6 +334,37 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 conditional,
                 reduceComment,
                 uncomment
+            };
+        }
+
+        public static List<IOperationProvider> JsxBlockCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            // This is the operationId (flag) for the balanced nesting
+            string commentFixingOperationId = "Fix pseudo comments (Jsx)";
+
+            // This is not an operationId (flag), it does not toggle the operation.
+            // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
+            // Tt lets BalanceNesting know it's been reset
+            string commentFixingResetId = "Reset pseudo comment fixer (Jsx)";
+
+            IOperationProvider balancedComments = new BalancedNesting("{/*", "*/}", "*/ }", commentFixingOperationId, commentFixingResetId);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                EndIfTokens = new[] { "#endif", "{/*#endif" },
+                ActionableIfTokens = new[] { "{/*#if" },
+                ActionableElseTokens = new[] { "#else", "{/*#else" },
+                ActionableElseIfTokens = new[] { "#elseif", "{/*#elseif" },
+                ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                balancedComments
             };
         }
     }

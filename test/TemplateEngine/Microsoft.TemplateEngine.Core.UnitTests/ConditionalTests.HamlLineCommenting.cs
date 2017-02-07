@@ -27,7 +27,7 @@ End";
                 ["CLAUSE"] = true,
             };
 
-            IProcessor processor = SetupHamlLineCommentConditionalOperations(vc);
+            IProcessor processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
 
             string originalValueEndifChanged = @"Start
@@ -92,7 +92,7 @@ End";
             {
                 ["IF"] = true,
             };
-            IProcessor processor = SetupHamlLineCommentConditionalOperations(vc);
+            IProcessor processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, ifExpectedValue, processor, 9999);
 
             string elseIfExpectedValue = @"Start
@@ -108,7 +108,7 @@ End";
                 ["IF"] = false,
                 ["ELSEIF"] = true
             };
-            processor = SetupHamlLineCommentConditionalOperations(vc);
+            processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, elseIfExpectedValue, processor, 9999);
 
             string elseExpectedValue = @"Start
@@ -124,7 +124,7 @@ End";
                 ["IF"] = false,
                 ["ELSEIF"] = false
             };
-            processor = SetupHamlLineCommentConditionalOperations(vc);
+            processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
@@ -154,7 +154,7 @@ End";
                 ["OUTER_IF"] = true,
                 ["INNER_IF"] = false
             };
-            IProcessor processor = SetupHamlLineCommentConditionalOperations(vc);
+            IProcessor processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, outerTrueInnerFalseExpectedValue, processor, 9999);
 
             string outerTrueInnerTrueExpectedValue = @"Start
@@ -170,7 +170,7 @@ End";
                 ["OUTER_IF"] = true,
                 ["INNER_IF"] = true
             };
-            processor = SetupHamlLineCommentConditionalOperations(vc);
+            processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
@@ -200,10 +200,9 @@ End";
                 ["OUTER_IF"] = true,
                 ["INNER_IF"] = false
             };
-            IProcessor processor = SetupHamlLineCommentConditionalOperations(vc);
+            IProcessor processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, outerTrueInnerFalseExpectedValue, processor, 9999);
 
-            // TODO: determine if this is correct, or if the inner should //-#if overrides the outer ////-#if
             string outerTrueInnerTrueExpectedValue = @"Start
     -# Comment: outer if
     content outer if
@@ -217,7 +216,7 @@ End";
                 ["OUTER_IF"] = true,
                 ["INNER_IF"] = true
             };
-            processor = SetupHamlLineCommentConditionalOperations(vc);
+            processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
@@ -266,7 +265,7 @@ moar trailing content";
                 ["LEVEL_2_ELSEIF"] = true,  // irrelevant
             };
 
-            IProcessor processor = SetupHamlLineCommentConditionalOperations(vc);
+            IProcessor processor = SetupHamlLineCommentsProcessor(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
     }
