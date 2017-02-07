@@ -11,6 +11,7 @@
         CBlockComments,
         HashSignLineComment,
         RemLineComment,
-        MSBuild
+        MSBuild,
+        HamlLineComment
     }
 }

@@ -50,6 +50,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return SetupTestProcessor(operations, vc);
         }
 
+        protected IProcessor SetupHamlLineCommentConditionalOperations(VariableCollection vc)
+        {
+            IOperationProvider[] operations = HamlLineCommentConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
         ///
         /// Sets up a processor with the input params.
         ///
@@ -270,6 +276,36 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new Replacement("rem rem", "rem", uncommentOperationId),
                     new Replacement("rem", "", replaceOperationId)
+                };
+
+                return operations;
+            }
+        }
+
+        private static IOperationProvider[] HamlLineCommentConditionalOperations
+        {
+            get
+            {
+                string reduceCommentOperationId = "Reduce comment (line): (-#-#) -> (-#)";
+                string uncommentOperationId = "Uncomment (line): (-#) -> ()";
+
+                ConditionalTokens tokens = new ConditionalTokens
+                {
+                    IfTokens = new[] { "-#if" },
+                    ElseTokens = new[] { "-#else" },
+                    ElseIfTokens = new[] { "-#elseif" },
+                    EndIfTokens = new[] { "-#endif", "-#-#endif" },
+                    ActionableIfTokens = new[] { "-#-#if" },
+                    ActionableElseIfTokens = new[] { "-#-#elseif" },
+                    ActionableElseTokens = new[] { "-#-#else" },
+                    ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
+                };
+
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
+                    new Replacement("-#-#", "-#", reduceCommentOperationId),
+                    new Replacement("-#", "", uncommentOperationId),
                 };
 
                 return operations;

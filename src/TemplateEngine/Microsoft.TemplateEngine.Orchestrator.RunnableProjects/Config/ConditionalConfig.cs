@@ -274,7 +274,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
         }
 
-        public static List<IOperationProvider> RemLineCommentConditionalSetup(String evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        public static List<IOperationProvider> RemLineCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             string uncommentOperationId = "Replacement (rem line): (rem) -> ()";
             string reduceCommentOperationId = "Uncomment (rem line): (rem rem) -> (rem)";
@@ -290,6 +290,36 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 ActionableIfTokens = new[] { "rem rem #if" },
                 ActionableElseIfTokens = new[] { "rem rem #elseif" },
                 ActionableElseTokens = new[] { "rem rem #else" },
+                ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
+            };
+
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+
+            return new List<IOperationProvider>()
+            {
+                conditional,
+                reduceComment,
+                uncomment
+            };
+        }
+
+        public static List<IOperationProvider> HamlLineCommentConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        {
+            string uncommentOperationId = "Uncomment (line): (-#) -> ()";
+            string reduceCommentOperationId = "Reduce comment (line): (-#-#) -> (-#)";
+            IOperationProvider uncomment = new Replacement("-#", string.Empty, uncommentOperationId);
+            IOperationProvider reduceComment = new Replacement("-#-#", "-#", reduceCommentOperationId);
+
+            ConditionalTokens tokens = new ConditionalTokens
+            {
+                IfTokens = new[] { "-#if" },
+                ElseTokens = new[] { "-#else" },
+                ElseIfTokens = new[] { "-#elseif" },
+                EndIfTokens = new[] { "-#endif", "-#-#endif" },
+                ActionableIfTokens = new[] { "-#-#if" },
+                ActionableElseIfTokens = new[] { "-#-#elseif" },
+                ActionableElseTokens = new[] { "-#-#else" },
                 ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
             };
 
