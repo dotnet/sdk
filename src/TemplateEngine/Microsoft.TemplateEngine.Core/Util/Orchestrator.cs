@@ -205,7 +205,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
             catch(Exception ex)
             {
-                throw new Exception($"Error while processing file {sourceFile.FullPath}.\nCheck InnerException for details", ex);
+                throw new ContentGenerationException($"Error while processing file {sourceFile.FullPath}", ex);
             }
         }
     }
