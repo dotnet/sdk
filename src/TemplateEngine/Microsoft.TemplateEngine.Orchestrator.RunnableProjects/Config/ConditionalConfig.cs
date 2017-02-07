@@ -76,6 +76,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 case ConditionalType.RemLineComment:
                     setup = RemLineCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
+                case ConditionalType.HamlLineComment:
+                    setup = HamlLineCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    break;
                 case ConditionalType.JsxBlockComment:
                     setup = JsxBlockCommentConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
