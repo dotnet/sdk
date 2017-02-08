@@ -188,7 +188,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     IfTokens = new[] { "//#if" },
                     ElseTokens = new[] { "//#else" },
                     ElseIfTokens = new[] { "//#elseif" },
-                    //EndIfTokens = new[] { "//#endif" },
                     EndIfTokens = new[] { "//#endif", "////#endif" },
                     ActionableIfTokens = new[] { "////#if" },
                     ActionableElseIfTokens = new[] { "////#elseif" },
@@ -330,7 +329,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 // This is not an operationId (flag), it does not toggle the operation.
                 // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
-                // Tt lets BalanceNesting know it's been reset
+                // It lets BalanceNesting know it's been reset
                 string commentFixingResetId = "Reset pseudo comment fixer";
 
                 ConditionalTokens tokenVariants = new ConditionalTokens
