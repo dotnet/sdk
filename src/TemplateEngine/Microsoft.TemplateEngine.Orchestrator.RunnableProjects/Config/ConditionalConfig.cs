@@ -73,7 +73,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("/*", "*/");
                     break;
                 case ConditionalType.HashSignLineComment:
-                    setup = ConditionalLineCommentConfig.GenerateConditionalSetup("#");
+                    ConditionalKeywords keywords = new ConditionalKeywords()
+                    {
+                        KeywordPrefix = string.Empty
+                    };
+                    setup = ConditionalLineCommentConfig.GenerateConditionalSetup("#", keywords, new ConditionalOperationOptions());
                     break;
                 case ConditionalType.RemLineComment:
                     setup = ConditionalLineCommentConfig.GenerateConditionalSetup("rem ");
