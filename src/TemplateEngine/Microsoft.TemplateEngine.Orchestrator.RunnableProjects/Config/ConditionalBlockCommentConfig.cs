@@ -2,11 +2,37 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class ConditionalBlockCommentConfig
+    public static class ConditionalBlockCommentConfig
     {
+        public static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
+        {
+            string startComment = rawConfiguration.ToString("startComment");
+            string endComment = rawConfiguration.ToString("endComment");
+
+            if (string.IsNullOrWhiteSpace(startComment) || string.IsNullOrWhiteSpace(endComment))
+            {
+                throw new Exception($"Template authoring error. StartComment and EndComment must be defined");
+            }
+
+            string pseudoEndComment = rawConfiguration.ToString("pseudoEndComment");
+
+            ConditionalKeywords keywords = ConditionalKeywords.FromJObject(rawConfiguration);
+            ConditionalOperationOptions options = ConditionalOperationOptions.FromJObject(rawConfiguration);
+
+            if (string.IsNullOrWhiteSpace(pseudoEndComment))
+            {
+                return GenerateConditionalSetup(startComment, endComment, keywords, options);
+            }
+            else
+            {
+                return GenerateConditionalSetup(startComment, endComment, pseudoEndComment, keywords, options);
+            }
+        }
+
         public static List<IOperationProvider> GenerateConditionalSetup(string startComment, string endComment)
         {
             return GenerateConditionalSetup(startComment, endComment, new ConditionalKeywords(), new ConditionalOperationOptions());
@@ -42,6 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             {
                 EndIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.EndIfKeyword}", $"{startComment}{keywords.KeywordPrefix}{keywords.EndIfKeyword}" },
                 ActionableIfTokens = new[] { $"{startComment}{keywords.KeywordPrefix}{keywords.IfKeyword}" },
+                ActionableElseTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseKeyword}", $"{startComment}{keywords.KeywordPrefix}{keywords.ElseKeyword}" },
                 ActionableElseIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseIfKeyword}", $"{startComment}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" },
             };
 

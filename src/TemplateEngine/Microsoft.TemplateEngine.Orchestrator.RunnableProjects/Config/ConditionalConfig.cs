@@ -13,39 +13,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public Guid Id => new Guid("3E8BCBF0-D631-45BA-A12D-FBF1DE03AA38");
 
-        // TODO: create handling for the new-style (simplified) setup
-        //
-        // This is the old-style configuration - before conditional setup was unified
         public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
         {
-            IReadOnlyList<string> ifToken = rawConfiguration.ArrayAsStrings("if");
-            IReadOnlyList<string> elseToken = rawConfiguration.ArrayAsStrings("else");
-            IReadOnlyList<string> elseIfToken = rawConfiguration.ArrayAsStrings("elseif");
-            IReadOnlyList<string> actionableIfToken = rawConfiguration.ArrayAsStrings("actionableIf");
-            IReadOnlyList<string> actionableElseToken = rawConfiguration.ArrayAsStrings("actionableElse");
-            IReadOnlyList<string> actionableElseIfToken = rawConfiguration.ArrayAsStrings("actionableElseif");
-            IReadOnlyList<string> actionsToken = rawConfiguration.ArrayAsStrings("actions");
-            IReadOnlyList<string> endIfToken = rawConfiguration.ArrayAsStrings("endif");
-            string id = rawConfiguration.ToString("id");
-            bool trim = rawConfiguration.ToBool("trim");
-            bool wholeLine = rawConfiguration.ToBool("wholeLine");
+            string commentStyle = rawConfiguration.ToString("commentStyle");
+            IEnumerable<IOperationProvider> operations = null;
 
-            string evaluatorName = rawConfiguration.ToString("evaluator");
-            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorName);
-
-            ConditionalTokens tokenVariants = new ConditionalTokens
+            if (string.IsNullOrEmpty(commentStyle) || string.Equals(commentStyle, "custom", StringComparison.OrdinalIgnoreCase))
             {
-                IfTokens = ifToken,
-                ElseTokens = elseToken,
-                ElseIfTokens = elseIfToken,
-                EndIfTokens = endIfToken,
-                ActionableElseIfTokens = actionableElseIfToken,
-                ActionableElseTokens = actionableElseToken,
-                ActionableIfTokens = actionableIfToken,
-                ActionableOperations = actionsToken
-            };
+                operations = ConditionalCustomConfig.ConfigureFromJObject(rawConfiguration);
+            }
+            else if (string.Equals(commentStyle, "line", StringComparison.OrdinalIgnoreCase))
+            {
+                operations = ConditionalLineCommentConfig.ConfigureFromJObject(rawConfiguration);
+            }
+            else if (string.Equals(commentStyle, "block", StringComparison.OrdinalIgnoreCase))
+            {
+                operations = ConditionalBlockCommentConfig.ConfigureFromJObject(rawConfiguration);
+            }
+            else
+            {
+                throw new Exception($"Template authoring error. Invalid comment style [{commentStyle}].");
+            }
 
-            yield return new Conditional(tokenVariants, wholeLine, trim, evaluator, id);
+            foreach (IOperationProvider op in operations)
+            {
+                yield return op;
+            }
         }
 
         public static IReadOnlyList<IOperationProvider> ConditionalSetup(ConditionalType style, string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
@@ -73,6 +66,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("/*", "*/");
                     break;
                 case ConditionalType.HashSignLineComment:
+                    // Most line comment conditional tags use: <comment symbol><keyword prefix><keyword>
+                    // But for this one, the '#' comment symbol is all that's needed, so it uses an empty keyword prefix.
+                    // So we end up with regular conditionals suchs as '#if', '#else'
+                    // and actionables such as '##if'
                     ConditionalKeywords keywords = new ConditionalKeywords()
                     {
                         KeywordPrefix = string.Empty
@@ -95,6 +92,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             return setup;
         }
 
+        // Nice to have: Generalize this type of setup similarly to Line, Block, & Custom
         public static List<IOperationProvider> MSBuildConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
@@ -113,6 +111,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
         }
 
+        // Nice to have: Generalize this type of setup similarly to Line, Block, & Custom
         public static List<IOperationProvider> CStyleNoCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
             ConditionalTokens tokens = new ConditionalTokens

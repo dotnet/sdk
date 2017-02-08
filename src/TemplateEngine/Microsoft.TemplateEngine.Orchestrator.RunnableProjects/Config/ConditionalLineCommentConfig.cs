@@ -1,11 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
-    public class ConditionalLineCommentConfig
+    public static class ConditionalLineCommentConfig
     {
+        public static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
+        {
+            string commentToken = rawConfiguration.ToString("comment");
+
+            if (string.IsNullOrWhiteSpace(commentToken))
+            {   // this is the only required data, all the rest is optional
+                throw new Exception("Template authoring error. Comment must be defined");
+            }
+
+            ConditionalKeywords keywords = ConditionalKeywords.FromJObject(rawConfiguration);
+            ConditionalOperationOptions options = ConditionalOperationOptions.FromJObject(rawConfiguration);
+
+            return GenerateConditionalSetup(commentToken, keywords, options);
+        }
+
         public static List<IOperationProvider> GenerateConditionalSetup(string commentToken)
         {
             return GenerateConditionalSetup(commentToken, new ConditionalKeywords(), new ConditionalOperationOptions());

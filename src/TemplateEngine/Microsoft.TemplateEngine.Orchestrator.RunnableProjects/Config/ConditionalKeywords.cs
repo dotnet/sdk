@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
+﻿using Newtonsoft.Json.Linq;
+
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 {
     public class ConditionalKeywords
     {
@@ -22,5 +24,35 @@
         public string ElseIfKeyword { get; set; }
         public string ElseKeyword { get; set; }
         public string EndIfKeyword { get; set; }
+
+        public static ConditionalKeywords FromJObject(JObject rawConfiguration)
+        {
+            ConditionalKeywords keywords = new ConditionalKeywords();
+            string ifKeyword = rawConfiguration.ToString("ifKeyword");
+            if (!string.IsNullOrWhiteSpace(ifKeyword))
+            {
+                keywords.IfKeyword = ifKeyword;
+            }
+
+            string elseIfKeyword = rawConfiguration.ToString("elseIfKeyword");
+            if (!string.IsNullOrWhiteSpace(elseIfKeyword))
+            {
+                keywords.ElseIfKeyword = elseIfKeyword;
+            }
+
+            string elseKeyword = rawConfiguration.ToString("elseKeyword");
+            if (!string.IsNullOrWhiteSpace(elseKeyword))
+            {
+                keywords.ElseKeyword = elseKeyword;
+            }
+
+            string endIfKeyword = rawConfiguration.ToString("endIfKeyword");
+            if (!string.IsNullOrWhiteSpace(endIfKeyword))
+            {
+                keywords.EndIfKeyword = endIfKeyword;
+            }
+
+            return keywords;
+        }
     }
 }
