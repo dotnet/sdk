@@ -58,10 +58,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     setup = MSBuildConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
                 case ConditionalType.Xml:
-                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("<!--", "-->", "-- >");
+                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("<!--", "-->");
                     break;
                 case ConditionalType.Razor:
-                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("@*", "*@", "* @");
+                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("@*", "*@");
                     break;
                 case ConditionalType.CLineComments:
                     setup = ConditionalLineCommentConfig.GenerateConditionalSetup("//");
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     setup = CStyleNoCommentsConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
                     break;
                 case ConditionalType.CBlockComments:
-                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("/*", "*/", "* /");
+                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("/*", "*/");
                     break;
                 case ConditionalType.HashSignLineComment:
                     setup = ConditionalLineCommentConfig.GenerateConditionalSetup("#");
@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                     setup = ConditionalLineCommentConfig.GenerateConditionalSetup("-#");
                     break;
                 case ConditionalType.JsxBlockComment:
-                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("{/*", "*/}", "*/ }");
+                    setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("{/*", "*/}");
                     break;
                 default:
                     throw new Exception($"Unrecognized conditional type {style}");
