@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 string configString = @"
 {
-             ""commentStyle"": ""custom"",
+             ""style"": ""custom"",
              ""actionableIf"": [ ""<!--#if"" ],
              ""actionableElse"": [ ""#else"", ""<!--#else"" ],
              ""actionableElseif"": [ ""#elseif"", ""<!--#elseif"" ],
@@ -116,8 +116,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 string configString = @"
 {
-        ""commentStyle"": ""line"",
-        ""comment"": ""//""
+        ""style"": ""line"",
+        ""token"": ""//""
 }
 ";
                 return JObject.Parse(configString);
@@ -167,10 +167,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 string configString = @"
 {
-        ""commentStyle"": ""block"",
-        ""startComment"": ""/*"",
-        ""endComment"": ""*/"",
-        ""pseudoEndComment"": ""* /""
+        ""style"": ""block"",
+        ""startToken"": ""/*"",
+        ""endToken"": ""*/"",
+        ""pseudoEndToken"": ""* /""
 }";
                 return JObject.Parse(configString);
             }

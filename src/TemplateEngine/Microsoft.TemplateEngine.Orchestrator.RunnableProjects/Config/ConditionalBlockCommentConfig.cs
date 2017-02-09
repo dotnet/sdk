@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
@@ -10,77 +11,81 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
     {
         public static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
         {
-            string startComment = rawConfiguration.ToString("startComment");
-            string endComment = rawConfiguration.ToString("endComment");
+            string startToken = rawConfiguration.ToString("startToken");
+            string endToken = rawConfiguration.ToString("endToken");
 
-            if (string.IsNullOrWhiteSpace(startComment) || string.IsNullOrWhiteSpace(endComment))
+            if (string.IsNullOrWhiteSpace(startToken))
             {
-                throw new Exception($"Template authoring error. StartComment and EndComment must be defined");
+                throw new TemplateAuthoringException($"Template authoring error. StartToken must be defined", "StartToken");
+            }
+            else if (string.IsNullOrWhiteSpace(endToken))
+            {
+                throw new TemplateAuthoringException($"Template authoring error. EndToken must be defined", "EndToken");
             }
 
-            string pseudoEndComment = rawConfiguration.ToString("pseudoEndComment");
+            string pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
 
             ConditionalKeywords keywords = ConditionalKeywords.FromJObject(rawConfiguration);
             ConditionalOperationOptions options = ConditionalOperationOptions.FromJObject(rawConfiguration);
 
-            if (string.IsNullOrWhiteSpace(pseudoEndComment))
+            if (string.IsNullOrWhiteSpace(pseudoEndToken))
             {
-                return GenerateConditionalSetup(startComment, endComment, keywords, options);
+                return GenerateConditionalSetup(startToken, endToken, keywords, options);
             }
             else
             {
-                return GenerateConditionalSetup(startComment, endComment, pseudoEndComment, keywords, options);
+                return GenerateConditionalSetup(startToken, endToken, pseudoEndToken, keywords, options);
             }
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startComment, string endComment)
+        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken)
         {
-            return GenerateConditionalSetup(startComment, endComment, new ConditionalKeywords(), new ConditionalOperationOptions());
+            return GenerateConditionalSetup(startToken, endToken, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startComment, string endComment, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
             string pseudoEndComment;
 
-            if (endComment.Length < 2)
+            if (endToken.Length < 2)
             {   // end comment must be at least two characters to have a programmatically determined pseudo-comment
                 pseudoEndComment = null;
             }
             else
             {
                 // add a space just before the final character of the end comment
-                pseudoEndComment = endComment.Substring(0, endComment.Length - 1) + " " + endComment.Substring(endComment.Length - 1);
+                pseudoEndComment = endToken.Substring(0, endToken.Length - 1) + " " + endToken.Substring(endToken.Length - 1);
             }
 
-            return GenerateConditionalSetup(startComment, endComment, pseudoEndComment, keywords, options);
+            return GenerateConditionalSetup(startToken, endToken, pseudoEndComment, keywords, options);
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startComment, string endComment, string pseudoEndComment)
+        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken)
         {
-            return GenerateConditionalSetup(startComment, endComment, pseudoEndComment, new ConditionalKeywords(), new ConditionalOperationOptions());
+            return GenerateConditionalSetup(startToken, endToken, pseudoEndToken, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        public static List<IOperationProvider> GenerateConditionalSetup(string startComment, string endComment, string pseudoEndComment, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        public static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(options.EvaluatorType);
 
             ConditionalTokens tokens = new ConditionalTokens
             {
-                EndIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.EndIfKeyword}", $"{startComment}{keywords.KeywordPrefix}{keywords.EndIfKeyword}" },
-                ActionableIfTokens = new[] { $"{startComment}{keywords.KeywordPrefix}{keywords.IfKeyword}" },
-                ActionableElseTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseKeyword}", $"{startComment}{keywords.KeywordPrefix}{keywords.ElseKeyword}" },
-                ActionableElseIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseIfKeyword}", $"{startComment}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" },
+                EndIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.EndIfKeyword}", $"{startToken}{keywords.KeywordPrefix}{keywords.EndIfKeyword}" },
+                ActionableIfTokens = new[] { $"{startToken}{keywords.KeywordPrefix}{keywords.IfKeyword}" },
+                ActionableElseTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseKeyword}", $"{startToken}{keywords.KeywordPrefix}{keywords.ElseKeyword}" },
+                ActionableElseIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseIfKeyword}", $"{startToken}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" },
             };
 
-            if (!string.IsNullOrWhiteSpace(pseudoEndComment))
+            if (!string.IsNullOrWhiteSpace(pseudoEndToken))
             {
                 Guid operationIdGuid = new Guid();
-                string commentFixOperationId = $"Fix pseudo comments ({pseudoEndComment} {operationIdGuid.ToString()})";
-                string commentFixResetId = $"Reset pseudo comment fixer ({pseudoEndComment} {operationIdGuid.ToString()})";
+                string commentFixOperationId = $"Fix pseudo tokens ({pseudoEndToken} {operationIdGuid.ToString()})";
+                string commentFixResetId = $"Reset pseudo token fixer ({pseudoEndToken} {operationIdGuid.ToString()})";
 
                 tokens.ActionableOperations = new[] { commentFixOperationId, commentFixResetId };
 
-                IOperationProvider balancedComments = new BalancedNesting(startComment, endComment, pseudoEndComment, commentFixOperationId, commentFixResetId);
+                IOperationProvider balancedComments = new BalancedNesting(startToken, endToken, pseudoEndToken, commentFixOperationId, commentFixResetId);
                 IOperationProvider conditional = new Conditional(tokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id);
 
                 return new List<IOperationProvider>()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
@@ -15,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
         {
-            string commentStyle = rawConfiguration.ToString("commentStyle");
+            string commentStyle = rawConfiguration.ToString("style");
             IEnumerable<IOperationProvider> operations = null;
 
             if (string.IsNullOrEmpty(commentStyle) || string.Equals(commentStyle, "custom", StringComparison.OrdinalIgnoreCase))
@@ -32,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
             else
             {
-                throw new Exception($"Template authoring error. Invalid comment style [{commentStyle}].");
+                throw new TemplateAuthoringException($"Template authoring error. Invalid comment style [{commentStyle}].", "style");
             }
 
             foreach (IOperationProvider op in operations)
