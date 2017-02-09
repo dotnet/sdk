@@ -50,9 +50,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return SetupTestProcessor(operations, vc);
         }
 
-        protected IProcessor SetupHamlLineCommentConditionalOperations(VariableCollection vc)
+        protected IProcessor SetupHamlLineCommentsProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = HamlLineCommentConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupJsxBlockCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = JsxBlockCommentConditionalsOperations;
             return SetupTestProcessor(operations, vc);
         }
 
@@ -133,7 +139,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             }
         }
 
-
         /// <summary>
         /// This started as a proof-of-concept / demonstration of having multiple tokens of each type,
         /// not to mention the arbitrariness of the conditional tokens.
@@ -183,7 +188,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     IfTokens = new[] { "//#if" },
                     ElseTokens = new[] { "//#else" },
                     ElseIfTokens = new[] { "//#elseif" },
-                    EndIfTokens = new[] { "//#endif" },
+                    EndIfTokens = new[] { "//#endif", "////#endif" },
                     ActionableIfTokens = new[] { "////#if" },
                     ActionableElseIfTokens = new[] { "////#elseif" },
                     ActionableElseTokens = new[] { "////#else" },
@@ -306,6 +311,40 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
                     new Replacement("-#-#", "-#", reduceCommentOperationId),
                     new Replacement("-#", "", uncommentOperationId),
+                };
+
+                return operations;
+            }
+        }
+
+        /// <summary>
+        /// Returns an IOperationProvider setup for razor style comment processing.
+        /// </summary>
+        private static IOperationProvider[] JsxBlockCommentConditionalsOperations
+        {
+            get
+            {
+                // This is the operationId (flag) for the balanced nesting
+                string commentFixingOperationId = "Fix pseudo comments";
+
+                // This is not an operationId (flag), it does not toggle the operation.
+                // But conditional doesn't care, it takes the flags its given and sets them as appropriate.
+                // It lets BalanceNesting know it's been reset
+                string commentFixingResetId = "Reset pseudo comment fixer";
+
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    EndIfTokens = new[] { "#endif", "{/*#endif" },
+                    ActionableIfTokens = new[] { "{/*#if" },
+                    ActionableElseTokens = new[] { "#else", "{/*#else" },
+                    ActionableElseIfTokens = new[] { "#elseif", "{/*#elseif" },
+                    ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
+                };
+
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
+                    new BalancedNesting("{/*", "*/}", "*/ }", commentFixingOperationId, commentFixingResetId)
                 };
 
                 return operations;

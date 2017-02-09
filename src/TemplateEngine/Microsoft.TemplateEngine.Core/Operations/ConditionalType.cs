@@ -12,6 +12,7 @@
         HashSignLineComment,
         RemLineComment,
         MSBuild,
-        HamlLineComment
+        HamlLineComment,
+        JsxBlockComment
     }
 }

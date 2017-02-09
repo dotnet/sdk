@@ -203,7 +203,6 @@ End";
             IProcessor processor = SetupHashSignLineCommentsProcessor(vc);
             RunAndVerify(originalValue, outerTrueInnerFalseExpectedValue, processor, 9999);
 
-            // TODO: determine if this is correct, or if the inner should //#if overrides the outer ////#if
             string outerTrueInnerTrueExpectedValue = @"Start
     # Comment: outer if
     content outer if
