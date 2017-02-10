@@ -12,7 +12,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
         MissingMandatoryParam = unchecked((int)0x8002000F),
         InvalidParamValues = unchecked((int)0x80020005),
         OperationNotSpecified = unchecked((int)0x8002000E),
-        NotFound = unchecked((int)0x800200006)
+        NotFound = unchecked((int)0x800200006),
+        Cancelled = unchecked((int)0x80004004)
     }
 
     public class TemplateCreationResult
