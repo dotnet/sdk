@@ -31,9 +31,34 @@ namespace Microsoft.TemplateEngine.Core.Util
             RunInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
         }
 
+        public IReadOnlyList<IFileChange> GetFileChanges(string runSpecPath, IDirectory sourceDir, string targetDir)
+        {
+            IGlobalRunSpec spec;
+            using (Stream stream = sourceDir.MountPoint.EnvironmentSettings.Host.FileSystem.OpenRead(runSpecPath))
+            {
+                spec = RunSpecLoader(stream);
+                EngineConfig config = new EngineConfig(sourceDir.MountPoint.EnvironmentSettings, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
+                IProcessor processor = Processor.Create(config, spec.Operations);
+                stream.Position = 0;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    processor.Run(stream, ms);
+                    ms.Position = 0;
+                    spec = RunSpecLoader(ms);
+                }
+            }
+
+            return GetFileChangesInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
+        }
+
         public void Run(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir)
         {
             RunInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
+        }
+
+        public IReadOnlyList<IFileChange> GetFileChanges(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir)
+        {
+            return GetFileChangesInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
         }
 
         protected virtual IGlobalRunSpec RunSpecLoader(Stream runSpec)
@@ -70,6 +95,67 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
 
             return processorList;
+        }
+
+        private IReadOnlyList<IFileChange> GetFileChangesInternal(IEngineEnvironmentSettings environmentSettings, IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)
+        {
+            EngineConfig cfg = new EngineConfig(environmentSettings, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
+            IProcessor fallback = Processor.Create(cfg, spec.Operations);
+
+            List<IFileChange> changes = new List<IFileChange>();
+            List<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors = CreateFileGlobProcessors(sourceDir.MountPoint.EnvironmentSettings, spec);
+
+            foreach (IFile file in sourceDir.EnumerateFiles("*", SearchOption.AllDirectories))
+            {
+                string sourceRel = file.PathRelativeTo(sourceDir);
+                string fileName = Path.GetFileName(sourceRel);
+
+                if (fileName == spec.PlaceholderFilename)
+                {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
+                    // So this happens before all the include / exclude / copy checks.
+                    CreateTargetDir(environmentSettings, sourceRel, targetDir, spec);
+                    continue;
+                }
+
+                foreach (IPathMatcher include in spec.Include)
+                {
+                    if (include.IsMatch(sourceRel))
+                    {
+                        bool excluded = false;
+                        foreach (IPathMatcher exclude in spec.Exclude)
+                        {
+                            if (exclude.IsMatch(sourceRel))
+                            {
+                                excluded = true;
+                                break;
+                            }
+                        }
+
+                        if (!excluded)
+                        {
+                            if (!spec.TryGetTargetRelPath(sourceRel, out string targetRel))
+                            {
+                                targetRel = sourceRel;
+                            }
+
+                            string targetPath = Path.Combine(targetDir, targetRel);
+
+                            if (environmentSettings.Host.FileSystem.FileExists(targetPath))
+                            {
+                                changes.Add(new FileChange(targetRel, ChangeKind.Overwrite));
+                            }
+                            else
+                            {
+                                changes.Add(new FileChange(targetRel, ChangeKind.Create));
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            return changes;
         }
 
         private void RunInternal(IEngineEnvironmentSettings environmentSettings, IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)

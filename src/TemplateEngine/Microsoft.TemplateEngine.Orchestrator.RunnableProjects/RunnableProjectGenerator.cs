@@ -414,6 +414,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return literal.Substring(1, literal.Length - 2);
         }
 
+        public IReadOnlyList<IFileChange> GetFileChanges(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
+        {
+            RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
+            ProcessMacros(environmentSettings, componentManager, template.Config.OperationConfig, parameters);
+
+            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, template.Config.OperationConfig.VariableSetup);
+            template.Config.Evaluate(parameters, variables, template.ConfigFile);
+
+            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
+            RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
+
+            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.PlaceholderFilename);
+            List<IFileChange> changes = new List<IFileChange>();
+
+            foreach (FileSource source in template.Config.Sources)
+            {
+                runSpec.SetupFileSource(source);
+                string target = Path.Combine(targetDirectory, source.Target);
+                changes.AddRange(orchestrator.GetFileChanges(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target));
+            }
+
+            return changes;
+        }
 
         internal class ParameterSet : IParameterSet
         {
