@@ -112,5 +112,10 @@ namespace Microsoft.TemplateEngine.Utils
         {
             return true;
         }
+
+        public bool OnConfirmPartialMatch(string name)
+        {
+            return true;
+        }
     }
 }

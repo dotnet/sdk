@@ -38,5 +38,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         void UpdateLocale(string newLocale);
 
         void VirtualizeDirectory(string path);
+
+        bool OnConfirmPartialMatch(string name);
     }
 }
