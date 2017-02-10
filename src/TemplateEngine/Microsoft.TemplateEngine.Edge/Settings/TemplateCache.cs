@@ -92,6 +92,23 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     if (factory.TryMount(_environmentSettings, null, templateDir, out IMountPoint mountPoint))
                     {
+                        //Force any local package installs into the content directory
+                        if(!(mountPoint is FileSystemMountPoint))
+                        {
+                            string path = Path.Combine(_paths.User.Packages, Path.GetFileName(templateDir));
+
+                            if (!string.Equals(path, templateDir))
+                            {
+                                _paths.CreateDirectory(_paths.User.Packages);
+                                _paths.Copy(templateDir, path);
+                                if(factory.TryMount(_environmentSettings, null, path, out IMountPoint mountPoint2))
+                                {
+                                    mountPoint = mountPoint2;
+                                    templateDir = path;
+                                }
+                            }
+                        }
+
                         // TODO: consider not adding the mount point if there is nothing to install.
                         // It'd require choosing to not write it upstream from here, which might be better anyway.
                         // "nothing to install" could have a couple different meanings:
