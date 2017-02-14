@@ -30,6 +30,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         };
         private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
 
+        private static readonly IReadOnlyDictionary<string, string> RenameDefaults = new Dictionary<string, string>();
+
         public SimpleConfigModel()
         {
             Sources = new[] { new ExtendedFileSource() };
@@ -195,6 +197,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         IReadOnlyList<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults);
                         IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
                         IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
+                        IReadOnlyDictionary<string, string> renamePatterns = source.Rename ?? RenameDefaults;
 
                         sources.Add(new FileSource
                         {
@@ -203,7 +206,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Include = includePattern,
                             Source = source.Source ?? "./",
                             Target = source.Target ?? "./",
-                            Rename = null
+                            Rename = renamePatterns
                         });
                     }
 
@@ -690,7 +693,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                 }
 
-                Dictionary<string, string> renames = new Dictionary<string, string>();
+                Dictionary<string, string> renames = new Dictionary<string, string>(source.Rename);
 
                 if (resolvedNameParamValue != null && SourceName != null)
                 {
