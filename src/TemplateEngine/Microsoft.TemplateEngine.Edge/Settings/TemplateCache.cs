@@ -65,6 +65,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // can't correctly write locale cache(s) until all of both are read.
         public void Scan(string templateDir)
         {
+            if(templateDir[templateDir.Length - 1] == '/' || templateDir[templateDir.Length - 1] == '\\')
+            {
+                templateDir = templateDir.Substring(0, templateDir.Length - 1);
+            }
+
             string searchTarget = Path.Combine(_environmentSettings.Host.FileSystem.GetCurrentDirectory(), templateDir.Trim());
             List<string> matches = _environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
 
