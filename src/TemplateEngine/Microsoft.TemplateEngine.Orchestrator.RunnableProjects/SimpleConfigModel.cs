@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         };
         private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
 
-        private static readonly IReadOnlyDictionary<string, string> RenameDefaults = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>();
 
         public SimpleConfigModel()
         {
@@ -679,7 +679,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 List<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults).ToList();
                 List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults).ToList();
                 List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
-                Dictionary<string, string> renames = new Dictionary<string, string>(source.Rename);
+                Dictionary<string, string> renames = new Dictionary<string, string>(source.Rename ?? RenameDefaults);
 
                 if (source.Modifiers != null)
                 {
