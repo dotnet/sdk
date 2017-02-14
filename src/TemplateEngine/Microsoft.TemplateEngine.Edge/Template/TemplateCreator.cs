@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,46 +19,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
             _environmentSettings = environmentSettings;
             _aliasRegistry = new AliasRegistry(environmentSettings);
             _paths = new Paths(environmentSettings);
-        }
-
-        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] filters)
-        {
-            HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
-            HashSet<ITemplateInfo> allTemplates = new HashSet<ITemplateInfo>(TemplateEqualityComparer.Default);
-
-            using (Timing.Over("load"))
-            {
-                _environmentSettings.SettingsLoader.GetTemplates(allTemplates);
-            }
-
-            foreach(ITemplateInfo template in allTemplates)
-            {
-                string alias = _aliasRegistry.GetAliasForTemplate(template);
-                List<MatchInfo> matchInformation = new List<MatchInfo>();
-
-                foreach(Func<ITemplateInfo, string, MatchInfo?> filter in filters)
-                {
-                    MatchInfo? result = filter(template, alias);
-
-                    if (result.HasValue)
-                    {
-                        matchInformation.Add(result.Value);
-                    }
-                }
-
-                FilteredTemplateInfo info = new FilteredTemplateInfo(template, matchInformation);
-
-                if (info.IsMatch || (!exactMatchesOnly && info.IsPartialMatch))
-                {
-                    matchingTemplates.Add(info);
-                }
-            }
-
-#if !NET45
-            return matchingTemplates;
-#else
-            return matchingTemplates.ToList();
-#endif
         }
 
         public async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation)
@@ -146,10 +105,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // Reads the parameters from the template and the host and setup their values in the return IParameterSet.
         // Host param values override template defaults.
         //
-        public IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate template, string realName, out IList<string> paramsWithInvalidValues)
+        public IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate templateInfo, string realName, out IList<string> paramsWithInvalidValues)
         {
             ITemplateEngineHost host = _environmentSettings.Host;
-            IParameterSet templateParams = template.Generator.GetParametersForTemplate(_environmentSettings, template);
+            IParameterSet templateParams = templateInfo.Generator.GetParametersForTemplate(_environmentSettings, templateInfo);
             paramsWithInvalidValues = new List<string>();
 
             foreach (ITemplateParameter param in templateParams.ParameterDefinitions)
@@ -160,7 +119,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (host.TryGetHostParamDefault(param.Name, out string hostParamValue) && hostParamValue != null)
                 {
-                    object resolvedValue = template.Generator.ConvertParameterValueToType(_environmentSettings, param, hostParamValue, out bool valueResolutionError);
+                    object resolvedValue = templateInfo.Generator.ConvertParameterValueToType(_environmentSettings, param, hostParamValue, out bool valueResolutionError);
                     if (!valueResolutionError)
                     {
                         templateParams.ResolvedValues[param] = resolvedValue;
@@ -172,7 +131,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
                 {
-                    object resolvedValue = template.Generator.ConvertParameterValueToType(_environmentSettings, param, param.DefaultValue, out bool valueResolutionError);
+                    object resolvedValue = templateInfo.Generator.ConvertParameterValueToType(_environmentSettings, param, param.DefaultValue, out bool valueResolutionError);
                     if (!valueResolutionError)
                     {
                         templateParams.ResolvedValues[param] = resolvedValue;

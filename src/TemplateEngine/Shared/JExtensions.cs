@@ -182,6 +182,30 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
+        // reads a dictionary whose values can either be string literals, or arrays of strings.
+        public static IReadOnlyDictionary<string, IReadOnlyList<string>> ToStringListDictionary(this JToken token, StringComparer comparer = null, string propertyName = null)
+        {
+            Dictionary<string, IReadOnlyList<string>> result = new Dictionary<string, IReadOnlyList<string>>(comparer ?? StringComparer.Ordinal);
+
+            foreach (JProperty property in token.PropertiesOf(propertyName))
+            {
+                if (property.Value == null)
+                {
+                    continue;
+                }
+                else if (property.Value.Type == JTokenType.String)
+                {
+                    result[property.Name] = new List<string>() { property.Value.ToString() };
+                }
+                else if (property.Value.Type == JTokenType.Array)
+                {
+                    result[property.Name] = property.ArrayAsStrings();
+                }
+            }
+
+            return result;
+        }
+
         // Leaves the values as JTokens.
         public static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer comparaer = null, string propertyName = null)
         {

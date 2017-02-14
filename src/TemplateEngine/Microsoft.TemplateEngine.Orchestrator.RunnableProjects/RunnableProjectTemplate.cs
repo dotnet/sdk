@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -23,6 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ShortName = config.ShortName;
             Author = config.Author;
             Tags = config.Tags;
+            CacheParameters = config.CacheParameters;
             Description = config.Description;
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;
@@ -39,6 +41,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return ConfigFile.Parent.Parent;
             }
+        }
+
+        public IParameterSet GetParametersForTemplate()
+        {
+            IList<ITemplateParameter> parameters = new List<ITemplateParameter>();
+
+            foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
+            {
+                ITemplateParameter param = new TemplateParameter
+                {
+                    Name = tagInfo.Key,
+                    Documentation = tagInfo.Value.Description,
+                    DefaultValue = tagInfo.Value.DefaultValue,
+                    Choices = tagInfo.Value.ChoicesAndDescriptions
+                };
+
+                parameters.Add(param);
+            }
+
+            foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
+            {
+                ITemplateParameter param = new TemplateParameter
+                {
+                    Name = paramInfo.Key,
+                    Documentation = paramInfo.Value.Description,
+                    DataType = paramInfo.Value.DataType,
+                    DefaultValue = paramInfo.Value.DefaultValue
+                };
+
+                parameters.Add(param);
+            }
+
+            return new TemplateParameterSet(parameters);
         }
 
         public string Identity { get; }
@@ -65,7 +100,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IMountPoint Source { get; }
 
-        public IReadOnlyDictionary<string, string> Tags { get; }
+        public IReadOnlyDictionary<string, ICacheTag> Tags { get; }
+
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; }
 
         public IFile ConfigFile { get; }
 

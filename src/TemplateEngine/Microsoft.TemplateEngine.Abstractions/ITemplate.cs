@@ -24,7 +24,11 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string ShortName { get; }
 
-        IReadOnlyDictionary<string, string> Tags { get; }
+        IReadOnlyDictionary<string, ICacheTag> Tags { get; }
+
+        IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; }
+
+        IParameterSet GetParametersForTemplate();
 
         Guid ConfigMountPointId { get; }
 
@@ -33,6 +37,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         Guid LocaleConfigMountPointId { get; }
 
         string LocaleConfigPlace { get; }
+
+        Guid HostConfigMountPointId { get; }
+
+        string HostConfigPlace { get; }
     }
 
     public interface ITemplate : ITemplateInfo
@@ -46,9 +54,5 @@ namespace Microsoft.TemplateEngine.Abstractions
         IDirectory TemplateSourceRoot { get; }
 
         bool IsNameAgreementWithFolderPreferred { get; }
-
-        Guid HostConfigMountPointId { get; }
-
-        string HostConfigPlace { get; }
     }
 }

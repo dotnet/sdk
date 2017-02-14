@@ -155,6 +155,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             IMountPoint mountPoint;
+            EnsureLoaded();
             if (!_mountPointManager.TryDemandMountPoint(info.ConfigMountPointId, out mountPoint))
             {
                 return null;
@@ -179,8 +180,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             IFile hostTemplateConfigFile = null;
             if (!string.IsNullOrEmpty(_environmentSettings.Host.HostIdentifier))
             {
-                string hostTemplateFileName = string.Join(string.Empty, _environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
-                hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
+                hostTemplateConfigFile = HostTemplateConfigFile(config);
             }
 
             if (hostTemplateConfigFile == null && _environmentSettings.Host.FallbackHostTemplateConfigNames != null)
@@ -209,6 +209,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
             return null;
+        }
+
+        public IFile HostTemplateConfigFile(IFileSystemInfo config)
+        {
+            string hostTemplateFileName = string.Join(string.Empty, _environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
+            return config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
         }
 
         public IComponentManager Components
@@ -329,6 +335,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file)
         {
+            EnsureLoaded();
             if (!string.IsNullOrEmpty(place) && _mountPointManager.TryDemandMountPoint(mountPointId, out IMountPoint mountPoint))
             {
                 file = mountPoint.FileInfo(place);

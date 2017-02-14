@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -18,5 +19,7 @@ namespace Microsoft.TemplateEngine.Utils
         public string Name { get; set; }
 
         public string Description { get; set; }
+
+        public IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; set; }
     }
 }

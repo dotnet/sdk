@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Edge.Template;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
@@ -68,6 +67,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
+        // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
         public static Func<ITemplateInfo, string, MatchInfo?> ContextFilter(string context)
         {
             return (template, alias) =>
@@ -77,9 +77,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     return null;
                 }
 
-                if (template.Tags != null && template.Tags.TryGetValue("type", out string type))
+                if (template.Tags != null && template.Tags.TryGetValue("type", out ICacheTag typeTag))
                 {
-                    if (string.Equals(context, type, StringComparison.OrdinalIgnoreCase))
+                    if (typeTag.ChoicesAndDescriptions.ContainsKey(context))
                     {
                         return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Exact };
                     }
@@ -93,6 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
+        // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
         public static Func<ITemplateInfo, string, MatchInfo?> LanguageFilter(string language)
         {
             return (template, alias) =>
@@ -102,9 +103,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     return null;
                 }
 
-                if (template.Tags != null && template.Tags.TryGetValue("language", out string lang))
+                if (template.Tags != null && template.Tags.TryGetValue("language", out ICacheTag languageTag))
                 {
-                    if (string.Equals(language, lang, StringComparison.OrdinalIgnoreCase))
+                    if (languageTag.ChoicesAndDescriptions.ContainsKey(language))
                     {
                         return new MatchInfo { Location = MatchLocation.Language, Kind = MatchKind.Exact };
                     }

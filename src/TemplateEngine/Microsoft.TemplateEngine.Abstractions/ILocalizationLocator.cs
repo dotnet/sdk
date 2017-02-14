@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -17,5 +18,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         string Name { get; }
 
         string Description { get; }
+
+        IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; }
     }
 }

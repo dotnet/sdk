@@ -75,9 +75,102 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
 
-        public IReadOnlyDictionary<string, string> Tags { get; set; }
+        private IReadOnlyDictionary<string, string> _tagsDeprecated { get; set; }
 
-        IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
+        public IReadOnlyDictionary<string, ICacheTag> Tags
+        {
+            get
+            {
+                Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
+
+                foreach (KeyValuePair<string, ParameterSymbol> tagParameter in TagDetails)
+                {
+                    string defaultValue;
+
+                    if (string.IsNullOrEmpty(tagParameter.Value.DefaultValue)
+                        && (tagParameter.Value.Choices.Keys.Count() == 1))
+                    {
+                        defaultValue = tagParameter.Value.Choices.Keys.First();
+                    }
+                    else
+                    {
+                        defaultValue = tagParameter.Value.DefaultValue;
+                    }
+
+                    ICacheTag cacheTag = new CacheTag
+                    {
+                        Description = tagParameter.Value.Description,
+                        ChoicesAndDescriptions = tagParameter.Value.Choices,
+                        DefaultValue = defaultValue,
+                    };
+
+                    tags.Add(tagParameter.Key, cacheTag);
+                }
+
+                return tags;
+            }
+        }
+
+        private IReadOnlyDictionary<string, ParameterSymbol> _tagDetails;
+
+        // Converts "choice" datatype parameter symbols to tags
+        public IReadOnlyDictionary<string, ParameterSymbol> TagDetails
+        {
+            get
+            {
+                if (_tagDetails == null)
+                {
+                    Dictionary<string, ParameterSymbol> tempTagDetails = new Dictionary<string, ParameterSymbol>();
+
+                    foreach (KeyValuePair<string, ISymbolModel> symbolInfo in Symbols)
+                    {
+                        ParameterSymbol tagSymbol = symbolInfo.Value as ParameterSymbol;
+
+                        if (tagSymbol != null && tagSymbol.DataType == "choice")
+                        {
+                            tempTagDetails.Add(symbolInfo.Key, tagSymbol);
+                        }
+                    }
+
+                    _tagDetails = tempTagDetails;
+                }
+
+                return _tagDetails;
+            }
+        }
+
+        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
+
+        // Converts non-choice parameter symbols to cache parameters
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
+        {
+            get
+            {
+                if (_cacheParameters == null)
+                {
+                    Dictionary<string, ICacheParameter> cacheParameters = new Dictionary<string, ICacheParameter>();
+
+                    foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                    {
+                        if (symbol.Value is ParameterSymbol param && param.DataType != "choice")
+                        {
+                            ICacheParameter cacheParam = new CacheParameter
+                            {
+                                DataType = param.DataType,
+                                DefaultValue = param.DefaultValue,
+                                Description = param.Description
+                            };
+
+                            cacheParameters.Add(symbol.Key, cacheParam);
+                        }
+                    }
+
+                    _cacheParameters = cacheParameters;
+                }
+
+                return _cacheParameters;
+            }
+        }
 
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
@@ -282,7 +375,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return _Defaults;
                 }
             }
-
         }
 
         // file -> replacements
@@ -823,6 +915,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
+
+            // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
+            // They're turned into symbols here, which eventually become tags in the 
+            config._tagsDeprecated = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
+            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tagsDeprecated);
+
+            foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
+            {
+                if (!symbols.ContainsKey(tagSymbol.Key))
+                {
+                    symbols.Add(tagSymbol.Key, tagSymbol.Value);
+                }
+            }
+
             config.Symbols = symbols;
             foreach (JProperty prop in source.PropertiesOf(nameof(config.Symbols)))
             {
@@ -895,6 +1001,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.LocalizationOperations = localizations;
 
             return config;
+        }
+
+        private static IReadOnlyDictionary<string, ISymbolModel> ConvertDeprecatedTagsToParameterSymbols(IReadOnlyDictionary<string, string> tagsDeprecated)
+        {
+            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>();
+
+            foreach (KeyValuePair<string, string> tagInfo in tagsDeprecated)
+            {
+                symbols[tagInfo.Key] = ParameterSymbol.FromDeprecatedConfigTag(tagInfo.Value);
+            }
+
+            return symbols;
         }
 
         public static ILocalizationModel LocalizationFromJObject(JObject source)

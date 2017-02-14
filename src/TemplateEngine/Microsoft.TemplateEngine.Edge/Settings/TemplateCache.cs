@@ -9,6 +9,7 @@ using System.Runtime.Loader;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
+using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,12 +24,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly IDictionary<string, IDictionary<string, ILocalizationLocator>> _localizationMemoryCache = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
+        private readonly AliasRegistry _aliasRegistry;
 
         public TemplateCache(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
             TemplateInfo = new List<TemplateInfo>();
+            _aliasRegistry = new AliasRegistry(environmentSettings);
         }
 
         public TemplateCache(IEngineEnvironmentSettings environmentSettings, JObject parsed)
@@ -49,10 +52,46 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+        // TODO: unify this with the _templateMemoryCache
+        // TemplateInfo is used for reading, the _templateMemoryCache is used for writing. 
         [JsonProperty]
         public List<TemplateInfo> TemplateInfo { get; set; }
 
-        public void Scan(IReadOnlyList<string> templateRoots)
+        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] fitlers)
+        {
+            HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
+            List<TemplateInfo> templatesInCache = LoadTemplateCacheForLocale(_environmentSettings.Host.Locale);
+
+            foreach (ITemplateInfo template in templatesInCache)
+            {
+                string alias = _aliasRegistry.GetAliasForTemplate(template);
+                List<MatchInfo> matchInformation = new List<MatchInfo>();
+
+                foreach (Func<ITemplateInfo, string, MatchInfo?> filter in fitlers)
+                {
+                    MatchInfo? result = filter(template, alias);
+
+                    if (result.HasValue)
+                    {
+                        matchInformation.Add(result.Value);
+                    }
+                }
+
+                FilteredTemplateInfo info = new FilteredTemplateInfo(template, matchInformation);
+                if (info.IsMatch || (!exactMatchesOnly && info.IsPartialMatch))
+                {
+                    matchingTemplates.Add(info);
+                }
+            }
+
+#if !NET45
+            return matchingTemplates;
+#else
+            return matchingTemplates.ToList();
+#endif
+        }
+
+    public void Scan(IReadOnlyList<string> templateRoots)
         {
             foreach (string templateDir in templateRoots)
             {
@@ -348,7 +387,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 ConfigPlace = template.ConfigPlace,
                 ConfigMountPointId = template.ConfigMountPointId,
                 Name = localizationInfo?.Name ?? template.Name,
-                Tags = template.Tags,
+                Tags = LocalizeCacheTags(template, localizationInfo),
+                CacheParameters = LocalizeCacheParameters(template, localizationInfo),
                 ShortName = template.ShortName,
                 Classifications = template.Classifications,
                 Author = localizationInfo?.Author ?? template.Author,
@@ -357,10 +397,95 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Identity = template.Identity,
                 DefaultName = template.DefaultName,
                 LocaleConfigPlace = localizationInfo?.ConfigPlace ?? null,
-                LocaleConfigMountPointId = localizationInfo?.MountPointId ?? Guid.Empty
+                LocaleConfigMountPointId = localizationInfo?.MountPointId ?? Guid.Empty,
+                HostConfigMountPointId = template.HostConfigMountPointId,
+                HostConfigPlace = template.HostConfigPlace
             };
 
             return localizedTemplate;
+        }
+
+        private IReadOnlyDictionary<string, ICacheTag> LocalizeCacheTags(ITemplateInfo template, ILocalizationLocator localizationInfo)
+        {
+            if (localizationInfo == null || localizationInfo.ParameterSymbols == null)
+            {
+                return template.Tags;
+            }
+
+            IReadOnlyDictionary<string, ICacheTag> templateTags = template.Tags;
+            IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> localizedParameterSymbols = localizationInfo.ParameterSymbols;
+
+            Dictionary<string, ICacheTag> localizedCacheTags = new Dictionary<string, ICacheTag>();
+
+            foreach (KeyValuePair<string, ICacheTag> templateTag in templateTags)
+            {
+                if (localizedParameterSymbols.TryGetValue(templateTag.Key, out IParameterSymbolLocalizationModel localizationForTag))
+                {   // there is loc for this symbol
+                    Dictionary<string, string> localizedChoicesAndDescriptions = new Dictionary<string, string>();
+
+                    foreach (KeyValuePair<string, string> templateChoice in templateTag.Value.ChoicesAndDescriptions)
+                    {
+                        if (localizationForTag.ChoicesAndDescriptions.TryGetValue(templateChoice.Key, out string localizedDesc) && !string.IsNullOrWhiteSpace(localizedDesc))
+                        {
+                            localizedChoicesAndDescriptions.Add(templateChoice.Key, localizedDesc);
+                        }
+                        else
+                        {
+                            localizedChoicesAndDescriptions.Add(templateChoice.Key, templateChoice.Value);
+                        }
+                    }
+
+                    ICacheTag localizedTag = new CacheTag
+                    {
+                        Description = localizationForTag.Description ?? templateTag.Value.Description,
+                        DefaultValue = templateTag.Value.DefaultValue,
+                        ChoicesAndDescriptions = localizedChoicesAndDescriptions
+                    };
+
+                    localizedCacheTags.Add(templateTag.Key, localizedTag);
+                }
+                else
+                {
+                    localizedCacheTags.Add(templateTag.Key, templateTag.Value);
+                }
+            }
+
+            return localizedCacheTags;
+        }
+
+        private IReadOnlyDictionary<string, ICacheParameter> LocalizeCacheParameters(ITemplateInfo template, ILocalizationLocator localizationInfo)
+        {
+            if (localizationInfo == null || localizationInfo.ParameterSymbols == null)
+            {
+                return template.CacheParameters;
+            }
+
+            IReadOnlyDictionary<string, ICacheParameter> templateCacheParameters = template.CacheParameters;
+            IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> localizedParameterSymbols = localizationInfo.ParameterSymbols;
+
+
+            Dictionary<string, ICacheParameter> localizedCacheParams = new Dictionary<string, ICacheParameter>();
+
+            foreach (KeyValuePair<string, ICacheParameter> templateParam in templateCacheParameters)
+            {
+                if (localizedParameterSymbols.TryGetValue(templateParam.Key, out IParameterSymbolLocalizationModel localizationForParam))
+                {   // there is loc info for this symbol
+                    ICacheParameter localizedParam = new CacheParameter
+                    {
+                        DataType = templateParam.Value.DataType,
+                        DefaultValue = templateParam.Value.DefaultValue,
+                        Description = localizationForParam.Description ?? templateParam.Value.Description
+                    };
+
+                    localizedCacheParams.Add(templateParam.Key, localizedParam);
+                }
+                else
+                {
+                    localizedCacheParams.Add(templateParam.Key, templateParam.Value);
+                }
+            }
+
+            return localizedCacheParams;
         }
 
         // return dict is: Identity -> locator

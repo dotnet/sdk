@@ -6,6 +6,8 @@
         Unspecified,
         Exact,
         Partial,
-        Mismatch
+        Mismatch,
+        InvalidParameterName,
+        InvalidParameterValue
     }
 }

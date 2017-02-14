@@ -125,7 +125,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (string.Equals(file.Name, TemplateConfigFileName, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (TryGetTemplateFromConfigInfo(file, out ITemplate template))
+                    IFile hostConfigFile = file.MountPoint.EnvironmentSettings.SettingsLoader.HostTemplateConfigFile(file);
+
+                    if (TryGetTemplateFromConfigInfo(file, out ITemplate template, hostTemplateConfigFile: hostConfigFile))
                     {
                         templateList.Add(template);
                     }
@@ -148,7 +150,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Identity = locModel.Identity,
                             Author = locModel.Author,
                             Name = locModel.Name,
-                            Description = locModel.Description
+                            Description = locModel.Description,
+                            ParameterSymbols = locModel.ParameterSymbols
                         };
                         localizations.Add(locator);
                     }
@@ -278,14 +281,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
             {
-                if (literal != null)
+                if (TryResolveChoiceValue(literal, param, out string match))
                 {
-                    string match = param.Choices.Keys.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
-
-                    if (match != null)
-                    {
-                        return match;
-                    }
+                    return match;
                 }
 
                 if (literal == null && param.Priority != TemplateParameterPriority.Required)
@@ -294,11 +292,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 string val;
-                while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) && (val == null || !param.Choices.Keys.Contains(literal)))
+                while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) 
+                        && !TryResolveChoiceValue(literal, param, out val))
                 {
                 }
 
-                valueResolutionError = !param.Choices.ContainsKey(literal);
+                valueResolutionError = val == null;
                 return val;
             }
 
@@ -361,6 +360,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return literal;
             }
+        }
+
+        private static bool TryResolveChoiceValue(string literal, ITemplateParameter param, out string match)
+        {
+            if (literal == null)
+            {
+                match = null;
+                return false;
+            }
+
+            match = param.Choices.Keys.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
+
+            if (match == null && param.Choices.Keys.Count(x => x.StartsWith(literal)) == 1)
+            {
+                match = param.Choices.Keys.FirstOrDefault(x => x.StartsWith(literal));
+            }
+
+            return match != null;
         }
 
         internal static object InferTypeAndConvertLiteral(string literal)
