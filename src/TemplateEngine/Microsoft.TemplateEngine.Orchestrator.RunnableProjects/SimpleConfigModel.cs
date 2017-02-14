@@ -405,27 +405,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 macros = ProduceMacroConfig(computedMacros);
             }
 
-            if(SourceName.ToLower() != SourceName)
+            if (SourceName != null)
             {
-                if(SourceName.IndexOf('.') > -1)
+                if (SourceName.ToLower() != SourceName)
                 {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant()));
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_')));
+                    if (SourceName.IndexOf('.') > -1)
+                    {
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant()));
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_')));
+                    }
+                    else
+                    {
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant()));
+                    }
+                }
+
+                if (SourceName.IndexOf('.') > -1)
+                {
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_')));
                 }
                 else
                 {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant()));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
                 }
-            }
-
-            if (SourceName.IndexOf('.') > -1)
-            {
-                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName));
-                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_')));
-            }
-            else
-            {
-                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
             }
 
             if (Symbols != null)
@@ -649,9 +652,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 pathModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
 
-                if (pathModel.ConditionResult && (resolvedNameParamValue != null))
-                {   // this path will be included in the outputs, replace the name (same thing we do to other file paths)
-                    pathModel.PathResolved = pathModel.PathOriginal.Replace(SourceName, (string)resolvedNameParamValue);
+                if (pathModel.ConditionResult && resolvedNameParamValue != null)
+                {
+                    if (SourceName != null)
+                    {
+                        // this path will be included in the outputs, replace the name (same thing we do to other file paths)
+                        pathModel.PathResolved = pathModel.PathOriginal.Replace(SourceName, (string)resolvedNameParamValue);
+                    }
+                    else
+                    {
+                        pathModel.PathResolved = pathModel.PathOriginal;
+                    }
                 }
             }
 
@@ -681,7 +692,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 Dictionary<string, string> renames = new Dictionary<string, string>();
 
-                if (resolvedNameParamValue != null)
+                if (resolvedNameParamValue != null && SourceName != null)
                 {
                     string targetName = ((string)resolvedNameParamValue).Trim();
 
@@ -711,13 +722,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
 
                 Dictionary<string, string> renames = new Dictionary<string, string>();
-                if (parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedValue))
+
+                if (SourceName != null)
                 {
-                    foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                    if (parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedValue))
                     {
-                        string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
-                        string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
-                        renames[tmpltRel] = outRel;
+                        foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                        {
+                            string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
+                            string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
+                            renames[tmpltRel] = outRel;
+                        }
                     }
                 }
 
