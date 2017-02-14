@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -16,5 +17,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         [JsonProperty]
         public JToken Exclude { get; set; }
+
+        [JsonProperty]
+        public Dictionary<string, string> Rename { get; set; }
     }
 }
