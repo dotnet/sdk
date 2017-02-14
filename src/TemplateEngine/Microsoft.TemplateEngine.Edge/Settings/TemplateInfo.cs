@@ -79,6 +79,39 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             HostConfigPlace = entry.ToString(nameof(HostConfigPlace));
         }
 
+        public IParameterSet GetParametersForTemplate()
+        {
+            IList<ITemplateParameter> parameters = new List<ITemplateParameter>();
+            
+            foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
+            {
+                ITemplateParameter param = new TemplateParameter
+                {
+                    Name = tagInfo.Key,
+                    Documentation = tagInfo.Value.Description,
+                    DefaultValue = tagInfo.Value.DefaultValue,
+                    Choices = tagInfo.Value.ChoicesAndDescriptions
+                };
+
+                parameters.Add(param);
+            }
+
+            foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
+            {
+                ITemplateParameter param = new TemplateParameter
+                {
+                    Name = paramInfo.Key,
+                    Documentation = paramInfo.Value.Description,
+                    DataType = paramInfo.Value.DataType,
+                    DefaultValue = paramInfo.Value.DefaultValue
+                };
+
+                parameters.Add(param);
+            }
+
+            return new TemplateParameterSet(parameters);
+        }
+
         [JsonProperty]
         public Guid ConfigMountPointId { get; set; }
 
