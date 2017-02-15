@@ -510,6 +510,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     Author = template.Author,
                     Name = template.Name,
                     Description = template.Description
+                    // ParameterSymbols are not needed here. If things get refactored too much, they might become needed
                 };
 
                 locatorLookup.Add(locator.Identity, locator);

@@ -372,9 +372,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             match = param.Choices.Keys.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
 
-            if (match == null && param.Choices.Keys.Count(x => x.StartsWith(literal)) == 1)
+            if (match == null && param.Choices.Keys.Count(x => x.StartsWith(literal, StringComparison.OrdinalIgnoreCase)) == 1)
             {
-                match = param.Choices.Keys.FirstOrDefault(x => x.StartsWith(literal));
+                match = param.Choices.Keys.FirstOrDefault(x => x.StartsWith(literal, StringComparison.OrdinalIgnoreCase));
             }
 
             return match != null;
