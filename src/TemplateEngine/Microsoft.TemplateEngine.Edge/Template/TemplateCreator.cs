@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 #endif
         }
 
-        public async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck)
+        public async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation)
         {
             // SettingsLoader.LoadTemplate is where the loc info should be read!!!
             // templateInfo knows enough to get at the loc, if any
@@ -109,6 +109,18 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 _paths.CreateDirectory(targetDir);
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
+
+                IReadOnlyList<IFileChange> changes = template.Generator.GetFileChanges(_environmentSettings, template, templateParams, componentManager, targetDir);
+                IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
+
+                if (!forceCreation && destructiveChanges.Count > 0)
+                {
+                    if(!_environmentSettings.Host.OnPotentiallyDestructiveChangesDetected(changes, destructiveChanges))
+                    {
+                        return new TemplateCreationResult("Cancelled", CreationResultStatus.Cancelled, template.Name);
+                    }
+                }
+
                 creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
                 sw.Stop();
                 _environmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);

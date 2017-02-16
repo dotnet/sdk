@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Abstractions
     {
         Task<ICreationResult> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplate template, IParameterSet parameters, IComponentManager componentManager, string targetDirectory);
 
+        IReadOnlyList<IFileChange> GetFileChanges(IEngineEnvironmentSettings environmentSettings, ITemplate template, IParameterSet parameters, IComponentManager componentManager, string targetDirectory);
+
         IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template);
 
         bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig, IFile hostTemplateConfigFile);

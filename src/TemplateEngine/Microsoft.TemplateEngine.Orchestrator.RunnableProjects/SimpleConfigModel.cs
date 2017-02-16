@@ -30,6 +30,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         };
         private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
 
+        private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>();
+
         public SimpleConfigModel()
         {
             Sources = new[] { new ExtendedFileSource() };
@@ -195,6 +197,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         IReadOnlyList<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults);
                         IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
                         IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
+                        IReadOnlyDictionary<string, string> renamePatterns = source.Rename ?? RenameDefaults;
 
                         sources.Add(new FileSource
                         {
@@ -203,7 +206,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Include = includePattern,
                             Source = source.Source ?? "./",
                             Target = source.Target ?? "./",
-                            Rename = null
+                            Rename = renamePatterns
                         });
                     }
 
@@ -405,27 +408,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 macros = ProduceMacroConfig(computedMacros);
             }
 
-            if(SourceName.ToLower() != SourceName)
+            if (SourceName != null)
             {
-                if(SourceName.IndexOf('.') > -1)
+                if (SourceName.ToLower() != SourceName)
                 {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant()));
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_')));
+                    if (SourceName.IndexOf('.') > -1)
+                    {
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant()));
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_')));
+                    }
+                    else
+                    {
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant()));
+                    }
+                }
+
+                if (SourceName.IndexOf('.') > -1)
+                {
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_')));
                 }
                 else
                 {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant()));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
                 }
-            }
-
-            if (SourceName.IndexOf('.') > -1)
-            {
-                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName));
-                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_')));
-            }
-            else
-            {
-                macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
             }
 
             if (Symbols != null)
@@ -649,9 +655,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 pathModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
 
-                if (pathModel.ConditionResult && (resolvedNameParamValue != null))
-                {   // this path will be included in the outputs, replace the name (same thing we do to other file paths)
-                    pathModel.PathResolved = pathModel.PathOriginal.Replace(SourceName, (string)resolvedNameParamValue);
+                if (pathModel.ConditionResult && resolvedNameParamValue != null)
+                {
+                    if (SourceName != null)
+                    {
+                        // this path will be included in the outputs, replace the name (same thing we do to other file paths)
+                        pathModel.PathResolved = pathModel.PathOriginal.Replace(SourceName, (string)resolvedNameParamValue);
+                    }
+                    else
+                    {
+                        pathModel.PathResolved = pathModel.PathOriginal;
+                    }
                 }
             }
 
@@ -665,6 +679,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 List<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults).ToList();
                 List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults).ToList();
                 List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
+                Dictionary<string, string> renames = new Dictionary<string, string>(source.Rename ?? RenameDefaults);
 
                 if (source.Modifiers != null)
                 {
@@ -675,15 +690,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             includePattern.AddRange(JTokenToCollection(modifier.Include, SourceFile, new string[0]));
                             excludePattern.AddRange(JTokenToCollection(modifier.Exclude, SourceFile, new string[0]));
                             copyOnlyPattern.AddRange(JTokenToCollection(modifier.CopyOnly, SourceFile, new string[0]));
+
+                            if (modifier.Rename != null)
+                            {
+                                foreach (JProperty property in modifier.Rename.Properties())
+                                {
+                                    renames[property.Name] = property.Value.Value<string>();
+                                }
+                            }
                         }
                     }
                 }
 
-                Dictionary<string, string> renames = new Dictionary<string, string>();
+                Dictionary<string, string> coreRenames = new Dictionary<string, string>(renames);
+                string sourceTargetName = source.Target ?? "./";
 
-                if (resolvedNameParamValue != null)
+                if (resolvedNameParamValue != null && SourceName != null)
                 {
                     string targetName = ((string)resolvedNameParamValue).Trim();
+
+                    foreach (KeyValuePair<string, string> entry in coreRenames)
+                    {
+                        string outRel = entry.Value.Replace(SourceName, targetName);
+                        renames[entry.Key] = outRel;
+                    }
 
                     foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
@@ -691,6 +721,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         string outRel = tmpltRel.Replace(SourceName, targetName);
                         renames[tmpltRel] = outRel;
                     }
+
+                    sourceTargetName = sourceTargetName.Replace(SourceName, targetName);
                 }
 
                 sources.Add(new FileSource
@@ -699,7 +731,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     Exclude = excludePattern.ToArray(),
                     Include = includePattern.ToArray(),
                     Source = source.Source ?? "./",
-                    Target = source.Target ?? "./",
+                    Target = sourceTargetName,
                     Rename = renames
                 });
             }
@@ -711,13 +743,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
 
                 Dictionary<string, string> renames = new Dictionary<string, string>();
-                if (parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedValue))
+
+                if (SourceName != null)
                 {
-                    foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                    if (parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedValue))
                     {
-                        string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
-                        string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
-                        renames[tmpltRel] = outRel;
+                        foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                        {
+                            string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
+                            string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
+                            renames[tmpltRel] = outRel;
+                        }
                     }
                 }
 
@@ -771,12 +807,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 src.Modifiers = modifiers;
                 foreach (JObject entry in item.Items<JObject>(nameof(src.Modifiers)))
                 {
-                    SourceModifier modifier = new SourceModifier()
+                    SourceModifier modifier = new SourceModifier
                     {
                         Condition = entry.ToString(nameof(modifier.Condition)),
                         CopyOnly = entry.Get<JToken>(nameof(modifier.CopyOnly)),
                         Exclude = entry.Get<JToken>(nameof(modifier.Exclude)),
-                        Include = entry.Get<JToken>(nameof(modifier.Include))
+                        Include = entry.Get<JToken>(nameof(modifier.Include)),
+                        Rename = entry.Get<JObject>(nameof(modifier.Rename))
                     };
                     modifiers.Add(modifier);
                 }

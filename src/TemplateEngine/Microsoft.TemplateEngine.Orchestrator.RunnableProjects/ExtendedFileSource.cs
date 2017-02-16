@@ -16,6 +16,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public JToken Exclude { get; set; }
 
         [JsonProperty]
+        public Dictionary<string, string> Rename { get; set; }
+
+        [JsonProperty]
         public string Source { get; set; }
 
         [JsonProperty]

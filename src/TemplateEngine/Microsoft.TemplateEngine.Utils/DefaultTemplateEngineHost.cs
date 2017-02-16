@@ -107,5 +107,15 @@ namespace Microsoft.TemplateEngine.Utils
         {
             FileSystem = new InMemoryFileSystem(path, FileSystem);
         }
+
+        public bool OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges)
+        {
+            return true;
+        }
+
+        public bool OnConfirmPartialMatch(string name)
+        {
+            return true;
+        }
     }
 }

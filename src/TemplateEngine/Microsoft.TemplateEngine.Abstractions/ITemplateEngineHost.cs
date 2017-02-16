@@ -27,6 +27,8 @@ namespace Microsoft.TemplateEngine.Abstractions
         // return of true means a new value was provided
         bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue);
 
+        bool OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges);
+
         void OnSymbolUsed(string symbol, object value);
 
         void OnTimingCompleted(string label, TimeSpan timing);
@@ -36,5 +38,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         void UpdateLocale(string newLocale);
 
         void VirtualizeDirectory(string path);
+
+        bool OnConfirmPartialMatch(string name);
     }
 }
