@@ -35,6 +35,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
             IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
             if (defaultParamsWithInvalidValues.Any())
             {
+                // TODO: create a separate status for this specific error.
+                // OR, better yet: sanity check templates at install time.
                 string message = string.Join(", ", defaultParamsWithInvalidValues);
                 return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
             }
