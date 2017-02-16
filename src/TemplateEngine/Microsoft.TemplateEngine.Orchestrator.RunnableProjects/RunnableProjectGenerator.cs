@@ -163,21 +163,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return templateList;
         }
 
-        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig = null, IFile hostTemplateConfigFile = null)
+        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo templateFileConfig, out ITemplate template, IFileSystemInfo localeFileConfig = null, IFile hostTemplateConfigFile = null)
         {
-            IFile file = config as IFile;
+            IFile templateFile = templateFileConfig as IFile;
 
-            if (file == null)
+            if (templateFile == null)
             {
                 template = null;
                 return false;
             }
 
-            IFile localeFile = localeConfig as IFile;
+            IFile localeFile = localeFileConfig as IFile;
 
             try
             {
-                JObject srcObject = ReadJObjectFromIFile(file);
+                JObject baseSrcObject = ReadJObjectFromIFile(templateFile);
+                JObject srcObject = MergeAdditionalConfiguration(baseSrcObject, templateFileConfig);
 
                 JObject localeSourceObject = null;
                 if (localeFile != null)
@@ -185,18 +186,56 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
 
-                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(file.MountPoint.EnvironmentSettings, srcObject, localeSourceObject);
-                template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null, hostTemplateConfigFile);
+                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, localeSourceObject);
+                template = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
                 return true;
             }
             catch (Exception ex)
             {
-                ITemplateEngineHost host = config.MountPoint.EnvironmentSettings.Host;
-                host.LogMessage($"Error reading template from file: {file.FullPath} | Error = {ex.ToString()}");
+                ITemplateEngineHost host = templateFileConfig.MountPoint.EnvironmentSettings.Host;
+                host.LogMessage($"Error reading template from file: {templateFile.FullPath} | Error = {ex.Message}");
             }
 
             template = null;
             return false;
+        }
+
+        private static readonly string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
+
+        // Checks the primarySource for additional configuration files.
+        // If found, merges them all together.
+        // Returns the merged JObject (or the original if there was nothing to merge).
+        // Additional files must be in the same dir as the template file.
+        private JObject MergeAdditionalConfiguration(JObject primarySource, IFileSystemInfo primarySourceConfig)
+        {
+            IReadOnlyList<string> otherFiles = primarySource.ArrayAsStrings(AdditionalConfigFilesIndicator);
+
+            if (!otherFiles.Any())
+            {
+                return primarySource;
+            }
+
+            JObject combinedSource = (JObject)primarySource.DeepClone();
+
+            foreach (string partialConfigFileName in otherFiles)
+            {
+                if (!partialConfigFileName.EndsWith("." + TemplateConfigFileName))
+                {
+                    throw new TemplateAuthoringException($"Split configuration error with file [{partialConfigFileName}]. Additional configuration file names must end with '.{TemplateConfigFileName}'.", partialConfigFileName);
+                }
+
+                IFile partialConfigFile = primarySourceConfig.Parent.EnumerateFiles(partialConfigFileName, SearchOption.TopDirectoryOnly).FirstOrDefault(x => string.Equals(x.Name, partialConfigFileName));
+
+                if (partialConfigFile == null)
+                {
+                    throw new TemplateAuthoringException($"Split configuration file [{partialConfigFileName}] could not be found.", partialConfigFileName);
+                }
+
+                JObject partialConfigJson = ReadJObjectFromIFile(partialConfigFile);
+                combinedSource.Merge(partialConfigJson);
+            }
+
+            return combinedSource;
         }
 
         private JObject ReadJObjectFromIFile(IFile file)
