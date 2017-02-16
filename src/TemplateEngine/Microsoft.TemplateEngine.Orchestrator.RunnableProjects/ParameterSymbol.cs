@@ -47,8 +47,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ParameterSymbol symbol = new ParameterSymbol
             {
                 Binding = jObject.ToString(nameof(Binding)),
-                DefaultValue = jObject.ToString(nameof(DefaultValue)),
-                Description = localization?.Description ?? jObject.ToString(nameof(Description)),
+                DefaultValue = jObject.ToString(nameof(DefaultValue)) ?? string.Empty,
+                Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty,
                 IsRequired = jObject.ToBool(nameof(IsRequired)),
                 Type = jObject.ToString(nameof(Type)),
                 Replaces = jObject.ToString(nameof(Replaces)),
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         choiceDescription = choiceObject.ToString("description");
                     }
-                    choicesAndDescriptions.Add(choice, choiceDescription);
+                    choicesAndDescriptions.Add(choice, choiceDescription ?? string.Empty);
                 }
             }
 
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Type = "parameter",
                 DataType = "choice",
                 IsTag = true,
-                Choices = new Dictionary<string, string>() { { value, null } },
+                Choices = new Dictionary<string, string>() { { value, string.Empty } },
             };
 
             return symbol;

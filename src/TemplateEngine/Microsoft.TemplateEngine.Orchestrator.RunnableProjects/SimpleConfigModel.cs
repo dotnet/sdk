@@ -860,7 +860,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Author = localizationModel?.Author ?? source.ToString(nameof(config.Author)),
                 Classifications = source.ArrayAsStrings(nameof(config.Classifications)),
                 DefaultName = source.ToString(nameof(DefaultName)),
-                Description = localizationModel?.Description ?? source.ToString(nameof(Description)),
+                Description = localizationModel?.Description ?? source.ToString(nameof(Description)) ?? string.Empty,
                 GroupIdentity = source.ToString(nameof(GroupIdentity)),
                 Guids = source.ArrayAsGuids(nameof(config.Guids)),
                 Identity = source.ToString(nameof(config.Identity)),
