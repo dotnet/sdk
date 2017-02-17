@@ -848,9 +848,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
-            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray((JArray)source["PostActions"], localizationModel?.PostActions);
-
-            config.PrimaryOutputs = CreationPathModel.ListFromJArray((JArray)source["PrimaryOutputs"]);
+            config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions);
+            config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
             // Custom operations at the global level
             JToken globalCustomConfigData = source[nameof(config.CustomOperations)];
