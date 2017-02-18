@@ -1,0 +1,15 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinmac' or '$(_ShortFrameworkIdentifier)' == 'xamarin.mac' ">
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <!-- Default to full until Xamarin supports PPDB's -->
+    <DebugType>full</DebugType>
+    <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.$(_SdkLanguageName).targets</LanguageTargets>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinmac' or '$(_ShortFrameworkIdentifier)' == 'xamarin.mac' ">
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.Mac" />
+  </ItemGroup>
+</Project>

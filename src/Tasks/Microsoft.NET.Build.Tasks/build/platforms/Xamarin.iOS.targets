@@ -1,0 +1,23 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinios' or '$(_ShortFrameworkIdentifier)' == 'Xamarin.iOS' ">
+    <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+    <IPhoneResourcePrefix Condition="'$(IPhoneResourcePrefix)' == ''">Resources</IPhoneResourcePrefix>
+    <!-- Default to full until Xamarin supports PPDB's -->
+    <DebugType>full</DebugType>
+    <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.$(_SdkLanguageName).targets</LanguageTargets>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinios' or '$(_ShortFrameworkIdentifier)' == 'Xamarin.iOS' ">
+    <Reference Include="System" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Collections" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="Xamarin.iOS" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,17 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarintvos' or '$(_ShortFrameworkIdentifier)' == 'xamarin.tvos' ">
+    <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+    <IPhoneResourcePrefix Condition="'$(IPhoneResourcePrefix)' == ''">Resources</IPhoneResourcePrefix>
+    <!-- Default to full until Xamarin supports PPDB's -->
+    <DebugType>full</DebugType>
+    <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\TVOS\Xamarin.TVOS.$(_SdkLanguageName).targets</LanguageTargets>
+    <ConsolePause Condition="'$(ConsolePause)' == ''">false</ConsolePause>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarintvos' or '$(_ShortFrameworkIdentifier)' == 'xamarin.tvos' ">
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.TVOS" />
+  </ItemGroup>
+</Project>

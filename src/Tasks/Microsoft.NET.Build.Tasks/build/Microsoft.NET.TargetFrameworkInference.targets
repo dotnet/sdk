@@ -46,6 +46,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- This is needed for the Appx targets -->
+    <DefaultLanguage Condition="'$(DefaultLanguage)' == ''">en-US</DefaultLanguage>
+    
+    <!-- Many of the targets use the VS Version in the path -->
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">15.0</VisualStudioVersion>
+  </PropertyGroup>
+
   <!-- Split $(TargetFramework) (e.g. net45) into short identifier and short version (e.g. 'net' and '45'). -->
   <PropertyGroup Condition="'$(TargetFramework)' != '' and !$(TargetFramework.Contains(',')) and !$(TargetFramework.Contains('+'))">
    <_ShortFrameworkIdentifier>$(TargetFramework.TrimEnd('.0123456789'))</_ShortFrameworkIdentifier>
@@ -57,6 +65,34 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'netstandard'">.NETStandard</TargetFrameworkIdentifier>
     <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'netcoreapp'">.NETCoreApp</TargetFrameworkIdentifier>
     <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'net'">.NETFramework</TargetFrameworkIdentifier>
+
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'sl'">Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'wp'">WindowsPhone</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'wpa'">WindowsPhoneApp</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'win'">.NETCore</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'uap'">.NETCore</TargetFrameworkIdentifier>
+
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinios'">Xamarin.iOS</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarin.ios'">Xamarin.iOS</TargetFrameworkIdentifier>
+
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'monoandroid'">MonoAndroid</TargetFrameworkIdentifier>
+
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarintvos'">Xamarin.TVOS</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarin.tvos'">Xamarin.TVOS</TargetFrameworkIdentifier>
+
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinwatchos'">Xamarin.WatchOS</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarin.watchos'">Xamarin.WatchOS</TargetFrameworkIdentifier>
+
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinmac'">Xamarin.Mac</TargetFrameworkIdentifier>
+    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarin.mac'">Xamarin.Mac</TargetFrameworkIdentifier>
+  </PropertyGroup>
+
+  <!-- Handle legacy PCL profiles  -->
+  <PropertyGroup Condition="'$(TargetFramework)' != '' and $(TargetFramework.ToLowerInvariant().Contains('portable-'))" >
+    <_ShortFrameworkIdentifier>portable</_ShortFrameworkIdentifier>
+    <_PortableTfms>$(TargetFramework.Substring(9).ToLowerInvariant())</_PortableTfms>
+    <_PortableTfmCount>$(_PortableTfms.Split('+').Length)</_PortableTfmCount>
+    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
   </PropertyGroup>
 
   <!-- Versions with dots are taken as is and just given leading 'v'. -->
@@ -71,6 +107,32 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetFrameworkVersion Condition="$(_ShortFrameworkVersion.Length) == 3">v$(_ShortFrameworkVersion[0]).$(_ShortFrameworkVersion[1]).$(_ShortFrameworkVersion[2])</TargetFrameworkVersion>
   </PropertyGroup>
 
+
+  <!-- Import the platforms with to determine the rest -->
+  <Import Project="$(MSBuildThisFileDirectory)platforms\*.targets"/>
+
+  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'portable'">
+    <!--Version = v0.0 https://github.com/dotnet/sdk/issues/492-->
+    <NugetTargetMoniker>.NETPortable,Version=v0.0,Profile=$(TargetFrameworkProfile)</NugetTargetMoniker>
+    <LanguageTargets>$(MSBuildExtensionsPath)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.$(_SdkLanguageName).targets</LanguageTargets>
+  </PropertyGroup>
+
+
+  <!-- Check to see if the Lang targets exist and if not, trigger an error on Compile -->
+  <!-- We clear out the lang targets so the defaults are used for the error to show -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' != '' and !Exists('$(LanguageTargets)')">
+    <_SdkMissingLanguageTargets>true</_SdkMissingLanguageTargets>
+    <_SdkCalculatedLanguageTargets>$(LanguageTargets)</_SdkCalculatedLanguageTargets>
+    <LanguageTargets></LanguageTargets>
+  </PropertyGroup>
+
+
+  <Target Name="_DisplayMissingLanguageTargetsError" Condition="'$(_SdkMissingLanguageTargets)' == 'true'" BeforeTargets="_CheckForUnsupportedTargetFramework">
+    <Error Condition="'$(_ShortFrameworkIdentifier)' != 'portable'" Text="The specified language targets for $(TargetFramework) is missing. Ensure correct tooling is installed." />
+    <Error Condition="'$(_ShortFrameworkIdentifier)' != 'portable'" Text="Missing File: $(_SdkCalculatedLanguageTargets)" />
+    <Error Condition="'$(_ShortFrameworkIdentifier)' == 'portable'" Text="The specified TFM '$(TargetFramework)' is not valid. Check that it's a valid combination: http://portablelibraryprofiles.apps.stephencleary.com/"  />
+  </Target>
+  
   <!-- 
     Trigger an error if we're unable to infer the framework identifier and version. 
 
@@ -94,7 +156,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     This is also an extra safeguard to ensure we never end up with common targets default of .NetFramework,Version=v4.0
   -->
   <PropertyGroup Condition="'$(TargetFrameworkVersion)' == ''">
-    <TargetFrameworkVersion >v0.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v0.0</TargetFrameworkVersion>
   </PropertyGroup>
 
 

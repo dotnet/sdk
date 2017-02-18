@@ -1,0 +1,29 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'monoandroid' ">
+    <!-- Default to full until Xamarin supports PPDB's -->
+    <DebugType>full</DebugType>
+    <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.$(_SdkLanguageName).targets</LanguageTargets>
+    <AndroidUseLatestPlatformSdk Condition="'$(AndroidUseLatestPlatformSdk)' == ''">false</AndroidUseLatestPlatformSdk>
+    <_SdkSetAndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">true</_SdkSetAndroidResgenFile>
+    <AndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">$(IntermediateOutputPath)$(TargetFramework)\Resource.Designer$(DefaultLanguageSourceExtension)</AndroidResgenFile>
+    <!-- Workaround for https://github.com/NuGet/Home/issues/4547 -->
+    <!-- Remove after validated on RTW -->
+    <NoStdLib>false</NoStdLib>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'monoandroid'">
+    <Reference Include="Mono.Android" />
+    <Reference Include="System" />
+    <Reference Include="System.Collections" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
+    <Compile Include="$(AndroidResgenFile)" Condition="'$(_SdkSetAndroidResgenFile)' == 'true'" />
+  </ItemGroup>
+</Project>

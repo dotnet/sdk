@@ -1,0 +1,42 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Condition="$(_PortableTfmCount) == 2 and                             
+                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
+                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1')))">
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(_PortableTfmCount) == 2 and                             
+                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
+                            ($(_PortableTfms.Contains('wp8')) and !$(_PortableTfms.Contains('wp81')))">
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile49</TargetFrameworkProfile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(_PortableTfmCount) == 3 and                             
+                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
+                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1'))) and
+                            ($(_PortableTfms.Contains('wp8')) and !$(_PortableTfms.Contains('wp81')))">
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile78</TargetFrameworkProfile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(_PortableTfmCount) == 3 and                             
+                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
+                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1'))) and
+                            ($(_PortableTfms.Contains('wpa81')) or $(_PortableTfms.Contains('wpa')))">
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(_PortableTfmCount) == 4 and                             
+                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
+                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1'))) and
+                            ($(_PortableTfms.Contains('wpa')) or $(_PortableTfms.Contains('wpa81'))) and
+                            ($(_PortableTfms.Contains('wp8')) and !$(_PortableTfms.Contains('wp81')))">
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+  </PropertyGroup>
+  
+</Project>

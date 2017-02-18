@@ -1,0 +1,23 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'sl5'">
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <LanguageTargets>$(MSBuildProgramFiles32)\MSBuild\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.$(_SdkLanguageName).targets</LanguageTargets>
+    <DefineConstants>$(DefineConstants);SILVERLIGHT</DefineConstants>
+    <ValidateXaml Condition="'$(ValidateXaml)' == ''">true</ValidateXaml>
+    <AppDesignerFolder Condition="'$(AppDesignerFolder)' == ''">Properties</AppDesignerFolder>
+    <SilverlightApplication Condition="'$(SilverlightApplication)' == ''">false</SilverlightApplication>
+    <ThrowErrorsInValidation Condition="'$(ThrowErrorsInValidation)' == ''">true</ThrowErrorsInValidation>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'sl5'">
+    <Reference Include="mscorlib" />
+    <Reference Include="System.Windows" />
+    <Reference Include="system" />
+    <Reference Include="System.Core">
+      <HintPath>$(TargetFrameworkDirectory)System.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Windows.Browser" />
+  </ItemGroup>
+</Project>
