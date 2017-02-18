@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinios' or '$(_ShortFrameworkIdentifier)' == 'Xamarin.iOS' ">
-    <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v1.0</TargetFrameworkVersion>
     <IPhoneResourcePrefix Condition="'$(IPhoneResourcePrefix)' == ''">Resources</IPhoneResourcePrefix>
     <!-- Default to full until Xamarin supports PPDB's -->
     <DebugType>full</DebugType>
