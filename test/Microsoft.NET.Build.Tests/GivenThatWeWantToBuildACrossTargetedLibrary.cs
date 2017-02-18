@@ -105,7 +105,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: "");
-            outputDirectory.Should().OnlyHaveFiles(new[] {
+            outputDirectory.Should().HaveFiles(new[] {
                 "net40/AllSupported.dll",
                 "net40/AllSupported.pdb",
                 "net40/Newtonsoft.Json.dll",
@@ -132,39 +132,41 @@ namespace Microsoft.NET.Build.Tests
 
                 "xamarinios/AllSupported.dll",
                 "xamarinios/AllSupported.pdb",
-                "xamarinios/Newtonsoft.Json.dll",
+                "xamarinios/AllSupported.dll.mdb",
 
                 "win8/AllSupported.dll",
                 "win8/AllSupported.pdb",
+                "win8/AllSupported.pri",
                 "win8/Newtonsoft.Json.dll",
 
                 "win81/AllSupported.dll",
                 "win81/AllSupported.pdb",
+                "win81/AllSupported.pri",
                 "win81/Newtonsoft.Json.dll",
 
                 "wpa81/AllSupported.dll",
                 "wpa81/AllSupported.pdb",
+                "wpa81/AllSupported.pri",
                 "wpa81/Newtonsoft.Json.dll",
 
                 "uap10.0/AllSupported.dll",
+                "uap10.0/AllSupported.pri",
                 "uap10.0/AllSupported.pdb",
                 "uap10.0/Newtonsoft.Json.dll",
 
                 "xamarinmac/AllSupported.dll",
                 "xamarinmac/AllSupported.pdb",
-                "xamarinmac/Newtonsoft.Json.dll",
 
                 "monoandroid/AllSupported.dll",
                 "monoandroid/AllSupported.pdb",
-                "monoandroid/Newtonsoft.Json.dll",
 
                 "xamarintvos/AllSupported.dll",
+                "xamarintvos/AllSupported.dll.mdb",
                 "xamarintvos/AllSupported.pdb",
-                "xamarintvos/Newtonsoft.Json.dll",
 
                 "xamarinwatchos/AllSupported.dll",
+                "xamarinwatchos/AllSupported.dll.mdb",
                 "xamarinwatchos/AllSupported.pdb",
-                "xamarinwatchos/Newtonsoft.Json.dll",
 
                 "wp8/AllSupported.dll",
                 "wp8/AllSupported.pdb",
