@@ -120,7 +120,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Check to see if the Lang targets exist and if not, trigger an error on Compile -->
   <!-- We clear out the lang targets so the defaults are used for the error to show -->
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' != '' and !Exists('$(LanguageTargets)')">
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' != '' and '$(LanguageTargets)' != '' and !Exists('$(LanguageTargets)')">
     <_SdkMissingLanguageTargets>true</_SdkMissingLanguageTargets>
     <_SdkCalculatedLanguageTargets>$(LanguageTargets)</_SdkCalculatedLanguageTargets>
     <LanguageTargets></LanguageTargets>
