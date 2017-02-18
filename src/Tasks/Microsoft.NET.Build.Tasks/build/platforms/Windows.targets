@@ -37,4 +37,10 @@
     <_SdkMissingLanguageTargets>true</_SdkMissingLanguageTargets>
     <_SdkCalculatedLanguageTargets>$(MSBuildProgramFiles32)\MSBuild\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(_SdkLanguageName).targets</_SdkCalculatedLanguageTargets>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net40-client' or '$(TargetFramework)' == 'net4-client'">    
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
 </Project>
