@@ -53,6 +53,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' And '$(NetStandardImplicitPackageVersion)' == ''">
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'uap' And '$(UapImplicitPackageVersion)' == ''">
+    <UapImplicitPackageVersion>5.3.0</UapImplicitPackageVersion>
+  </PropertyGroup>
   
   <!--  
     Determine the NetCoreImplicitPackageVersion and RuntimeFrameworkVersion when targeting .NET Core
@@ -119,6 +123,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true'">
     <_ImplicitPackageName Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'">NETStandard.Library</_ImplicitPackageName>
     <_ImplicitPackageName Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">Microsoft.NETCore.App</_ImplicitPackageName>
+    <_ImplicitPackageName Condition="'$(_ShortFrameworkIdentifier)' == 'uap'">Microsoft.NETCore.UniversalWindowsPlatform</_ImplicitPackageName>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(_ImplicitPackageName)' != ''">

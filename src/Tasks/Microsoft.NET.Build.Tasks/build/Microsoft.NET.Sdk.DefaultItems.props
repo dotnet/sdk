@@ -37,4 +37,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' and '$(_ShortFrameworkIdentifier)' == 'uap'">
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(UapImplicitPackageVersion)" IsImplicitlyDefined="true" />
+  </ItemGroup>
 </Project>
