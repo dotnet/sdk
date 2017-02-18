@@ -1,4 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  
   <PropertyGroup Condition="'$(TargetFramework)' == 'win' or '$(TargetFramework)' == 'win8' or '$(TargetFramework)' == 'win80'">
     <NugetTargetMoniker>Windows,Version=v8.0</NugetTargetMoniker>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>

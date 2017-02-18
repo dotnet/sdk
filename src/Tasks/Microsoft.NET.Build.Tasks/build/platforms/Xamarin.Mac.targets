@@ -1,4 +1,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinmac' or '$(_ShortFrameworkIdentifier)' == 'xamarin.mac' ">
     <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v2.0</TargetFrameworkVersion>
     <!-- Default to full until Xamarin supports PPDB's -->

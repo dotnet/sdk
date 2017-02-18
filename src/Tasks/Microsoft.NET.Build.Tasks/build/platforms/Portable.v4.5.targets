@@ -1,5 +1,10 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+
   <PropertyGroup Condition="$(_PortableTfmCount) == 2 and                             
                             ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
                             ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1')))">

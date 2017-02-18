@@ -105,7 +105,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: "");
-            outputDirectory.Should().HaveFiles(new[] {
+            outputDirectory.Should().OnlyHaveFiles(new[] {
                 "net40/AllSupported.dll",
                 "net40/AllSupported.pdb",
                 "net40/Newtonsoft.Json.dll",
@@ -152,7 +152,6 @@ namespace Microsoft.NET.Build.Tests
                 "uap10.0/AllSupported.dll",
                 "uap10.0/AllSupported.pri",
                 "uap10.0/AllSupported.pdb",
-                "uap10.0/Newtonsoft.Json.dll",
 
                 "xamarinmac/AllSupported.dll",
                 "xamarinmac/AllSupported.pdb",
