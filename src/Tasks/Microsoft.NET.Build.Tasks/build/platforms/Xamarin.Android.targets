@@ -6,7 +6,7 @@
     <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.$(_SdkLanguageName).targets</LanguageTargets>
     <AndroidUseLatestPlatformSdk Condition="'$(AndroidUseLatestPlatformSdk)' == ''">false</AndroidUseLatestPlatformSdk>
     <_SdkSetAndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">true</_SdkSetAndroidResgenFile>
-    <AndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">$(IntermediateOutputPath)$(TargetFramework)\Resource.Designer$(DefaultLanguageSourceExtension)</AndroidResgenFile>
+    <AndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">$(IntermediateOutputPath)$(TargetFramework)\Resource.Designer$(_SdkLangExtention)</AndroidResgenFile>
     <!-- Workaround for https://github.com/NuGet/Home/issues/4547 -->
     <!-- Remove after validated on RTW -->
     <NoStdLib>false</NoStdLib>

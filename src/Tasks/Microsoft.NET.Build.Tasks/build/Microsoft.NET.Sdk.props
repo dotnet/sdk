@@ -133,10 +133,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <_SdkLanguageName>CSharp</_SdkLanguageName>
+    <_SdkLangExtention>.cs</_SdkLangExtention>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vbproj'">
     <_SdkLanguageName>VisualBasic</_SdkLanguageName>
+    <_SdkLangExtention>.vb</_SdkLangExtention>
   </PropertyGroup>
   
 </Project>
