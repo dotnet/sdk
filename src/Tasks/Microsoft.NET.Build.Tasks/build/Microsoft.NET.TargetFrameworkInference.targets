@@ -128,7 +128,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 
   <Target Name="_DisplayMissingLanguageTargetsError" Condition="'$(_SdkMissingLanguageTargets)' == 'true'" BeforeTargets="_CheckForUnsupportedTargetFramework">
-    <Error Condition="'$(_ShortFrameworkIdentifier)' != 'portable'" Text="The specified language targets for $(TargetFramework) is missing. Ensure correct tooling is installed." />
+    <Error Condition="'$(_ShortFrameworkIdentifier)' != 'portable'" ContinueOnError="true"  Text="The specified language targets for $(TargetFramework) is missing. Ensure correct tooling is installed." />
     <Error Condition="'$(_ShortFrameworkIdentifier)' != 'portable'" Text="Missing File: $(_SdkCalculatedLanguageTargets)" />
     <Error Condition="'$(_ShortFrameworkIdentifier)' == 'portable'" Text="The specified TFM '$(TargetFramework)' is not valid. Check that it's a valid combination: http://portablelibraryprofiles.apps.stephencleary.com/"  />
   </Target>
