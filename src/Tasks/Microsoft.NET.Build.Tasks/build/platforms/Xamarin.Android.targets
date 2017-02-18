@@ -17,7 +17,7 @@
     <NoStdLib>false</NoStdLib>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'monoandroid'">
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' and '$(_ShortFrameworkIdentifier)' == 'monoandroid'">
     <Reference Include="Mono.Android" />
     <Reference Include="System" />
     <Reference Include="System.Collections" />
@@ -30,6 +30,8 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'monoandroid'">
     <Compile Include="$(AndroidResgenFile)" Condition="'$(_SdkSetAndroidResgenFile)' == 'true'" />
   </ItemGroup>
 </Project>

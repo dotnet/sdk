@@ -12,7 +12,7 @@
     <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.$(_SdkLanguageName).targets</LanguageTargets>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinios' or '$(_ShortFrameworkIdentifier)' == 'Xamarin.iOS' ">
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' and ('$(_ShortFrameworkIdentifier)' == 'xamarinios' or '$(_ShortFrameworkIdentifier)' == 'Xamarin.iOS') ">
     <Reference Include="System" />
     <Reference Include="System.Runtime" />
     <Reference Include="System.Collections" />

@@ -11,7 +11,7 @@
     <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.$(_SdkLanguageName).targets</LanguageTargets>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinmac' or '$(_ShortFrameworkIdentifier)' == 'xamarin.mac' ">
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' and ('$(_ShortFrameworkIdentifier)' == 'xamarinmac' or '$(_ShortFrameworkIdentifier)' == 'xamarin.mac') ">
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />

@@ -13,7 +13,7 @@
     <ConsolePause Condition="'$(ConsolePause)' == ''">false</ConsolePause>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'xamarintvos' or '$(_ShortFrameworkIdentifier)' == 'xamarin.tvos' ">
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' and ('$(_ShortFrameworkIdentifier)' == 'xamarintvos' or '$(_ShortFrameworkIdentifier)' == 'xamarin.tvos') ">
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
