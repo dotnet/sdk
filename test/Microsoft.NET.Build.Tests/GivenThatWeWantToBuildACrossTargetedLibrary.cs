@@ -106,6 +106,10 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: "");
             outputDirectory.Should().OnlyHaveFiles(new[] {
+
+                "monoandroid/AllSupported.dll",
+                "monoandroid/AllSupported.pdb",
+
                 "net40/AllSupported.dll",
                 "net40/AllSupported.pdb",
                 "net40/Newtonsoft.Json.dll",
@@ -130,9 +134,14 @@ namespace Microsoft.NET.Build.Tests
                 "portable-net45+win8+wp8+wpa81/AllSupported.pdb",
                 "portable-net45+win8+wp8+wpa81/Newtonsoft.Json.dll",
 
-                "xamarinios/AllSupported.dll",
-                "xamarinios/AllSupported.pdb",
-                "xamarinios/AllSupported.dll.mdb",
+                "portable-win81+wpa81/AllSupported.dll",
+                "portable-win81+wpa81/AllSupported.pri",
+                "portable-win81+wpa81/AllSupported.pdb",
+                "portable-win81+wpa81/Newtonsoft.Json.dll",
+
+                "sl5/AllSupported.dll",
+                "sl5/AllSupported.pdb",
+                "sl5/Newtonsoft.Json.dll",
 
                 "win8/AllSupported.dll",
                 "win8/AllSupported.pdb",
@@ -143,7 +152,15 @@ namespace Microsoft.NET.Build.Tests
                 "win81/AllSupported.pdb",
                 "win81/AllSupported.pri",
                 "win81/Newtonsoft.Json.dll",
-
+                
+                "wp8/AllSupported.dll",
+                "wp8/AllSupported.pdb",
+                "wp8/Newtonsoft.Json.dll",
+                
+                "wp81/AllSupported.dll",
+                "wp81/AllSupported.pdb",
+                "wp81/Newtonsoft.Json.dll",
+                
                 "wpa81/AllSupported.dll",
                 "wpa81/AllSupported.pdb",
                 "wpa81/AllSupported.pri",
@@ -153,11 +170,12 @@ namespace Microsoft.NET.Build.Tests
                 "uap10.0/AllSupported.pri",
                 "uap10.0/AllSupported.pdb",
 
+                "xamarinios/AllSupported.dll",
+                "xamarinios/AllSupported.pdb",
+                "xamarinios/AllSupported.dll.mdb",
+
                 "xamarinmac/AllSupported.dll",
                 "xamarinmac/AllSupported.pdb",
-
-                "monoandroid/AllSupported.dll",
-                "monoandroid/AllSupported.pdb",
 
                 "xamarintvos/AllSupported.dll",
                 "xamarintvos/AllSupported.dll.mdb",
@@ -166,19 +184,6 @@ namespace Microsoft.NET.Build.Tests
                 "xamarinwatchos/AllSupported.dll",
                 "xamarinwatchos/AllSupported.dll.mdb",
                 "xamarinwatchos/AllSupported.pdb",
-
-                "wp8/AllSupported.dll",
-                "wp8/AllSupported.pdb",
-                "wp8/Newtonsoft.Json.dll",
-
-
-                "wp81/AllSupported.dll",
-                "wp81/AllSupported.pdb",
-                "wp81/Newtonsoft.Json.dll",
-
-                "sl5/AllSupported.dll",
-                "sl5/AllSupported.pdb",
-                "sl5/Newtonsoft.Json.dll",
             });
         }
 
