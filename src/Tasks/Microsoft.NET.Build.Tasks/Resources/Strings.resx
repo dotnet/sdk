@@ -237,6 +237,12 @@
   <data name="FolderAlreadyExists" xml:space="preserve">
     <value>Folder '{0}' already exists either delete it or provide a different ComposeWorkingDir</value>
   </data>
+  <data name="InvalidPortableTfm" xml:space="preserve">
+    <value>The specified TFM '{0}' is not valid. Check that it's a valid combination.</value>
+  </data>
+  <data name="MissingLanguageTargets" xml:space="preserve">
+    <value>The specified language targets for '{0}' is missing. Ensure correct tooling is installed. Missing file: '{1}'</value>
+  </data>
   <data name="IncorrectFilterFormat" xml:space="preserve">
     <value>The filter profile {0} provided is of not the correct format</value>
   </data>
