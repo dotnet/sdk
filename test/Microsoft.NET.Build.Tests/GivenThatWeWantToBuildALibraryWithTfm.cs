@@ -45,9 +45,9 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb"
+            outputDirectory.Should().HaveFiles(new[] {
+                $"{tfm}.dll",
+                $"{tfm}.pdb"
             });
         }
 
@@ -77,9 +77,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -104,9 +104,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -131,9 +131,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.deps.json"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.deps.json"
             });
         }
 
@@ -163,10 +163,10 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory("portable-win81+wpa81");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.pri",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.pri",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -196,9 +196,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory("portable-net451+wpa81+win81");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -228,9 +228,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory("portable-net45+win8+wp8+wpa81");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -260,9 +260,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -292,10 +292,10 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.pri",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.pri",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -325,10 +325,10 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.pri",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.pri",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -358,9 +358,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -390,9 +390,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -422,10 +422,10 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.pri",
-                $"{tfm}/Newtonsoft.Json.dll"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.pri",
+                $"Newtonsoft.Json.dll"
             });
         }
 
@@ -455,9 +455,9 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.pri"
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.pri"
             });
         }
 
@@ -486,10 +486,10 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.dll.mdb"
+            outputDirectory.Should().HaveFiles(new[] {
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.dll.mdb"
             });
         }
 
@@ -518,9 +518,9 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb"
+            outputDirectory.Should().HaveFiles(new[] {
+                $"{tfm}.dll",
+                $"{tfm}.pdb"
             });
         }
 
@@ -549,10 +549,10 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.dll.mdb"
+            outputDirectory.Should().HaveFiles(new[] {
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.dll.mdb"
             });
         }
 
@@ -581,10 +581,10 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}/{tfm}.dll",
-                $"{tfm}/{tfm}.pdb",
-                $"{tfm}/{tfm}.dll.mdb"
+            outputDirectory.Should().HaveFiles(new[] {
+                $"{tfm}.dll",
+                $"{tfm}.pdb",
+                $"{tfm}.dll.mdb"
             });
         }
     }

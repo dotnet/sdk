@@ -105,7 +105,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: "");
-            outputDirectory.Should().OnlyHaveFiles(new[] {
+            outputDirectory.Should().HaveFiles(new[] {
 
                 "monoandroid/AllSupported.dll",
                 "monoandroid/AllSupported.pdb",
