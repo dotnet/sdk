@@ -129,7 +129,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_DisplayMissingLanguageTargetsError" Condition="'$(_SdkMissingLanguageTargets)' == 'true'" BeforeTargets="_CheckForUnsupportedTargetFramework">
     <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' != 'portable'" >
-      <_ErrorInputParams>$(TargetFramework);$(_SdkCalculatedLanguageTargets)</_ErrorInputParams>
+      <_ErrorInputParams Include="$(TargetFramework)" />
+      <_ErrorInputParams Include="$(_SdkCalculatedLanguageTargets)" />
     </ItemGroup>
     
     <NETSdkError Condition="'$(_ShortFrameworkIdentifier)' != 'portable"
