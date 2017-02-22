@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>portable-net45+win8+wp8+wpa81;</TargetFramework>
+    <TargetFramework>portable-net45+win8+wp8+wpa81</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
