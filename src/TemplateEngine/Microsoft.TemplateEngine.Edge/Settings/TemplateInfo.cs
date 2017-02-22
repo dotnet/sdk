@@ -45,13 +45,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
                 }
 
-                CacheTag cacheTag = new CacheTag
-                {
-                    Description = item.Value[nameof(ICacheTag.Description)].ToString(),
-                    ChoicesAndDescriptions = choicesAndDescriptions,
-                    DefaultValue = item.Value[nameof(ICacheTag.DefaultValue)].ToString()
-                };
-
+                ICacheTag cacheTag = new CacheTag(item.Value[nameof(ICacheTag.Description)].ToString(), choicesAndDescriptions, item.Value[nameof(ICacheTag.DefaultValue)].ToString());
                 tags.Add(item.Name.ToString(), cacheTag);
             }
             Tags = tags;

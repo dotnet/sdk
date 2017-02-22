@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -26,7 +28,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // only relevant for choice datatype
         public string TagName { get; set; }
 
-        public IReadOnlyDictionary<string, string> Choices { get; set; }
+        private IReadOnlyDictionary<string, string> _choices;
+
+        public IReadOnlyDictionary<string, string> Choices
+        {
+            get
+            {
+                return _choices;
+            }
+            set
+            {
+                _choices = value.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization)
         {

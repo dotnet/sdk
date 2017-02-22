@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
 
-        private IReadOnlyDictionary<string, string> _tagsDeprecated { get; set; }
+        private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
         public IReadOnlyDictionary<string, ICacheTag> Tags
         {
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     string defaultValue;
 
                     if (string.IsNullOrEmpty(tagParameter.Value.DefaultValue)
-                        && (tagParameter.Value.Choices.Keys.Count() == 1))
+                        && (tagParameter.Value.Choices.Count == 1))
                     {
                         defaultValue = tagParameter.Value.Choices.Keys.First();
                     }
@@ -97,13 +97,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         defaultValue = tagParameter.Value.DefaultValue;
                     }
 
-                    ICacheTag cacheTag = new CacheTag
-                    {
-                        Description = tagParameter.Value.Description,
-                        ChoicesAndDescriptions = tagParameter.Value.Choices,
-                        DefaultValue = defaultValue,
-                    };
-
+                    ICacheTag cacheTag = new CacheTag(tagParameter.Value.Description, tagParameter.Value.Choices, defaultValue);
                     tags.Add(tagParameter.Key, cacheTag);
                 }
 
@@ -917,7 +911,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
 
             // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
-            // They're turned into symbols here, which eventually become tags in the 
+            // They're turned into symbols here, which eventually become tags.
             config._tagsDeprecated = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
             IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tagsDeprecated);
 

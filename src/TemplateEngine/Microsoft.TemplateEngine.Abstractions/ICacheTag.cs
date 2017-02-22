@@ -6,10 +6,10 @@ namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ICacheTag
     {
-        string Description { get; set; }
+        string Description { get; }
 
-        IReadOnlyDictionary<string, string> ChoicesAndDescriptions { get; set; }
+        IReadOnlyDictionary<string, string> ChoicesAndDescriptions { get; }
 
-        string DefaultValue { get; set; }
+        string DefaultValue { get; }
     }
 }

@@ -435,13 +435,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         }
                     }
 
-                    ICacheTag localizedTag = new CacheTag
-                    {
-                        Description = localizationForTag.Description ?? templateTag.Value.Description,
-                        DefaultValue = templateTag.Value.DefaultValue,
-                        ChoicesAndDescriptions = localizedChoicesAndDescriptions
-                    };
-
+                    string tagDescription = localizationForTag.Description ?? templateTag.Value.Description;
+                    ICacheTag localizedTag = new CacheTag(tagDescription, localizedChoicesAndDescriptions, templateTag.Value.DefaultValue);
                     localizedCacheTags.Add(templateTag.Key, localizedTag);
                 }
                 else

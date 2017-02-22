@@ -23,8 +23,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Identity = config.Identity ?? config.Name;
             ShortName = config.ShortName;
             Author = config.Author;
-            Tags = config.Tags;
-            CacheParameters = config.CacheParameters;
+            Tags = config.Tags ?? new Dictionary<string, ICacheTag>(StringComparer.OrdinalIgnoreCase);
+            CacheParameters = config.CacheParameters ?? new Dictionary<string, ICacheParameter>(StringComparer.OrdinalIgnoreCase);
             Description = config.Description;
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;

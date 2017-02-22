@@ -370,13 +370,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return false;
             }
 
-            match = param.Choices.Keys.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
+            string partialMatch = null;
 
-            if (match == null && param.Choices.Keys.Count(x => x.StartsWith(literal, StringComparison.OrdinalIgnoreCase)) == 1)
+            foreach (string choiceValue in param.Choices.Keys)
             {
-                match = param.Choices.Keys.FirstOrDefault(x => x.StartsWith(literal, StringComparison.OrdinalIgnoreCase));
+                if (string.Equals(choiceValue, literal, StringComparison.OrdinalIgnoreCase))
+                {   // exact match is good, regardless of partial matches
+                    match = choiceValue;
+                    return true;
+                }
+                else if (choiceValue.StartsWith(literal, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (partialMatch == null)
+                    {
+                        partialMatch = choiceValue;
+                    }
+                    else
+                    {   // multiple partial matches, can't take one.
+                        match = null;
+                        return false;
+                    }
+                }
             }
 
+            match = partialMatch;
             return match != null;
         }
 
