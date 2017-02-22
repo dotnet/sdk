@@ -947,7 +947,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
             config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions);
             config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
