@@ -15,7 +15,7 @@ namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishAHelloWorldProject : SdkTest
     {
-        //[Fact]
+        [Fact]
         public void It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run()
         {
             var helloWorldAsset = _testAssetsManager
@@ -46,10 +46,11 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        //[Fact]
+        [Fact]
         public void It_publishes_self_contained_apps_to_the_publish_folder_and_the_app_should_run()
         {
-            var rid = RuntimeEnvironment.GetRuntimeIdentifier();
+            var targetFramework = "netcoreapp1.0";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var helloWorldAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", "SelfContained")
@@ -61,7 +62,9 @@ namespace Microsoft.NET.Publish.Tests
 
             publishResult.Should().Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory(selfContained: true);
+            var publishDirectory = publishCommand.GetOutputDirectory(
+                targetFramework: targetFramework,
+                runtimeIdentifier: rid);
             var selfContainedExecutable = $"HelloWorld{Constants.ExeSuffix}";
 
             var libPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
@@ -88,7 +91,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        //[Fact]
+        [Fact]
         public void A_deployment_project_can_reference_the_hello_world_project()
         {
             var rid = RuntimeEnvironment.GetRuntimeIdentifier();

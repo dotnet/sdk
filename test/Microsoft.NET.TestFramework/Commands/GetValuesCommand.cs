@@ -24,6 +24,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public bool ShouldCompile { get; set; } = true;
 
+        public string DependsOnTargets { get; set; } = "Compile";
+
         public string Configuration { get; set; }
 
         public GetValuesCommand(MSBuildTest msbuild, string projectPath, string targetFramework,
@@ -58,9 +60,9 @@ namespace Microsoft.NET.TestFramework.Commands
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <Target Name=`WriteValuesToFile` " + (ShouldCompile ? "DependsOnTargets=`Compile`" : "") + $@">
+  <Target Name=`WriteValuesToFile` " + (ShouldCompile ? $"DependsOnTargets=`{DependsOnTargets}`" : "") + $@">
     <WriteLinesToFile
-      File=`$(OutputPath)\{_valueName}Values.txt`
+      File=`bin\$(Configuration)\$(TargetFramework)\{_valueName}Values.txt`
       {linesAttribute}
       Overwrite=`true`
       Encoding=`Unicode`

@@ -3,18 +3,22 @@
 
 using System.IO;
 using Microsoft.DotNet.Cli.Utils;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit;
 using static Microsoft.NET.TestFramework.Commands.MSBuildTest;
+using Microsoft.DotNet.InternalAbstractions;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishAProjectWithDependencies : SdkTest
     {
-        //[Fact]
+        [Fact]
         public void It_publishes_projects_with_simple_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -61,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(expectedOutput);
         }
 
-        //[Fact]
+        [Fact]
         public void It_publishes_the_app_config_if_necessary()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -89,7 +93,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        //[Fact]
+        [Fact]
         public void It_publishes_projects_targeting_netcoreapp11_with_p2p_targeting_netcoreapp11()
         {
             // Microsoft.NETCore.App 1.1.0 added a dependency on Microsoft.DiaSymReader.Native.
@@ -108,6 +112,95 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute()
                 .Should()
                 .Pass();
+        }
+
+        [Fact]
+        public void It_publishes_projects_with_simple_dependencies_with_filter_profile()
+        {
+            string project = "SimpleDependencies";
+            string tfm = "netcoreapp1.0";
+            TestAsset simpleDependenciesAsset = _testAssetsManager
+                .CopyTestAsset(project)
+                .WithSource()
+                .Restore("", $"/p:TargetFramework={tfm}");
+
+            string filterProjDir = _testAssetsManager.GetAndValidateTestProjectDirectory("NewtonsoftFilterProfile");
+            string filterProjFile = Path.Combine(filterProjDir, "NewtonsoftFilterProfile.csproj");
+
+            PublishCommand publishCommand = new PublishCommand(Stage0MSBuild, simpleDependenciesAsset.TestRoot);
+            publishCommand
+                .Execute($"/p:TargetFramework={tfm}", $"/p:FilterProjFile={filterProjFile}")
+                .Should()
+                .Pass();
+
+            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory();
+
+            publishDirectory.Should().OnlyHaveFiles(new[] {
+                $"{project}.dll",
+                $"{project}.pdb",
+                $"{project}.deps.json",
+                $"{project}.runtimeconfig.json",
+                "System.Collections.NonGeneric.dll"
+            });
+
+           var runtimeConfig = ReadJson(System.IO.Path.Combine(publishDirectory.ToString(), $"{project}.runtimeconfig.json"));
+
+           runtimeConfig["runtimeOptions"]["tfm"].ToString().Should().Be(tfm);
+            
+//TODO: Enable testing the run once dotnet host has the notion of looking up shared packages
+        }
+
+        [Fact]
+        public void It_publishes_projects_with_filter_and_rid()
+        {
+            string project = "SimpleDependencies";
+            var rid = RuntimeEnvironment.GetRuntimeIdentifier();
+            TestAsset simpleDependenciesAsset = _testAssetsManager
+                .CopyTestAsset(project)
+                .WithSource()
+                .Restore("", $"/p:RuntimeIdentifier={rid}");
+
+            string filterProjDir = _testAssetsManager.GetAndValidateTestProjectDirectory("NewtonsoftFilterProfile");
+            string filterProjFile = Path.Combine(filterProjDir, "NewtonsoftFilterProfile.csproj");
+            
+
+            PublishCommand publishCommand = new PublishCommand(Stage0MSBuild, simpleDependenciesAsset.TestRoot);
+            publishCommand
+                .Execute($"/p:RuntimeIdentifier={rid}", $"/p:FilterProjFile={filterProjFile}")
+                .Should()
+                .Pass();
+
+            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(runtimeIdentifier: rid);
+
+            string libPrefix = "";
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                libPrefix = "lib";
+            }
+
+            publishDirectory.Should().HaveFiles(new[] {
+                $"{project}.dll",
+                $"{project}.pdb",
+                $"{project}.deps.json",
+                $"{project}.runtimeconfig.json",
+                "System.Collections.NonGeneric.dll",
+                $"{libPrefix}coreclr{Constants.DynamicLibSuffix}"
+            });
+
+            publishDirectory.Should().NotHaveFiles(new[] {
+                "Newtonsoft.Json.dll",
+                "System.Runtime.Serialization.Primitives.dll"
+            });
+
+//TODO: Enable testing the run once dotnet host has the notion of looking up shared packages
+        }
+        private static JObject ReadJson(string path)
+        {
+            using (JsonTextReader jsonReader = new JsonTextReader(File.OpenText(path)))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                return serializer.Deserialize<JObject>(jsonReader);
+            }
         }
     }
 }

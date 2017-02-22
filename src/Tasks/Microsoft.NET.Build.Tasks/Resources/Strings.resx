@@ -121,7 +121,7 @@
     <value>At least one possible target framework must be specified.</value>
   </data>
   <data name="NoCompatibleTargetFramework" xml:space="preserve">
-    <value>Project '{0}' has no target framework compatible with '{1}'.</value>
+    <value>Project '{0}' targets '{2}'. It cannot be referenced by a project that targets '{1}'.</value>
   </data>
   <data name="InvalidFrameworkName" xml:space="preserve">
     <value>Invalid framework name: '{0}'.</value>
@@ -174,9 +174,6 @@
   <data name="UnexpectedDependencyWithNoVersionNumber" xml:space="preserve">
     <value>Unexpected dependency '{0}' with no version number.</value>
   </data>
-  <data name="RuntimeIdentifierMustBeSetForNETFramework" xml:space="preserve">
-    <value>RuntimeIdentifier must be set for .NETFramework executables. Consider RuntimeIdentifier=win7-x86 or RuntimeIdentifier=win7-x64.</value>
-  </data>
   <data name="AssetPreprocessorMustBeConfigured" xml:space="preserve">
     <value>Asset preprocessor must be configured before assets are processed.</value>
   </data>
@@ -224,5 +221,20 @@
   </data>
   <data name="NU1012" xml:space="preserve">
     <value>Dependency conflict. '{0}' expected '{1}' but received '{2}'</value>
+  </data>
+  <data name="IncorrectPackageRoot" xml:space="preserve">
+    <value>Package Root {0} was incorrectly given for Resolved library {1}</value>
+  </data>
+  <data name="MultipleFilesResolved" xml:space="preserve">
+    <value>More than one file found for {0}</value>
+  </data>
+  <data name="DuplicateItemsError" xml:space="preserve">
+    <value>Duplicate '{0}' items were included. The .NET SDK includes '{0}' items from your project directory by default. You can either remove these items from your project file, or set the '{1}' property to '{2}' if you want to explicitly include them in your project file. For more information, see {4}. The duplicate items were: {3}</value>
+  </data>
+  <data name="PackageReferenceOverrideWarning" xml:space="preserve">
+    <value>A PackageReference for '{0}' was included in your project. This package is implicitly referenced by the .NET SDK and you do not typically need to reference it from your project. For more information, see {1}</value>
+  </data>
+  <data name="FolderAlreadyExists" xml:space="preserve">
+    <value>Folder '{0}' already exists either delete it or provide a different ComposeWorkingDir</value>
   </data>
 </root>

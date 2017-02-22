@@ -154,7 +154,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolvePackageDependencies
       ProjectPath="$(MSBuildProjectFullPath)"
       ProjectAssetsFile="$(ProjectAssetsFile)"
-      ProjectLanguage="$(Language)">
+      ProjectLanguage="$(Language)"
+      ContinueOnError="ErrorAndContinue">
 
       <Output TaskParameter="TargetDefinitions" ItemName="TargetDefinitions" />
       <Output TaskParameter="PackageDefinitions" ItemName="PackageDefinitions" />
@@ -188,12 +189,58 @@ Copyright (c) .NET Foundation. All rights reserved.
           FileDefinitions="@(FileDefinitions)"
           PackageDependencies="@(PackageDependencies)"
           FileDependencies="@(FileDependencies)"
+          DefaultImplicitPackages="$(DefaultImplicitPackages)"
           InputDiagnosticMessages="@(DiagnosticMessages)">
 
       <Output TaskParameter="DependenciesDesignTime" ItemName="_DependenciesDesignTime" />
     </PreprocessPackageDependenciesDesignTime>
   </Target>
+    
+  <!--
+    ============================================================
+                     CollectSDKReferencesDesignTime
 
+    Aggregates the sdk specified as project items and implicit
+    packages references.
+    ============================================================
+    -->
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.CollectResolvedSDKReferencesDesignTime"
+             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  
+  <Target Name="CollectSDKReferencesDesignTime"
+          Returns="@(_SDKReference)"
+          DependsOnTargets="ResolvePackageDependenciesDesignTime">
+
+    <CollectResolvedSDKReferencesDesignTime
+          ResolvedSdkReferences="@(SdkReference)"
+          DependenciesDesignTime="@(_DependenciesDesignTime)">
+
+      <Output TaskParameter="ResolvedSDKReferencesDesignTime" ItemName="_SDKReference" />
+
+    </CollectResolvedSDKReferencesDesignTime>
+  </Target>
+          
+  <!--
+    ============================================================
+                     CollectResolvedSDKReferencesDesignTime
+
+    Aggregates the sdk specified as project items and implicit
+    packages produced by ResolvePackageDependencies.
+    ============================================================
+    -->
+
+  <Target Name="CollectResolvedSDKReferencesDesignTime"
+          Returns="@(_ResolvedSDKReference)"
+          DependsOnTargets="ResolveSDKReferencesDesignTime;ResolvePackageDependenciesDesignTime">
+
+    <CollectResolvedSDKReferencesDesignTime
+          ResolvedSdkReferences="@(ResolvedSdkReference)"
+          DependenciesDesignTime="@(_DependenciesDesignTime)">
+
+      <Output TaskParameter="ResolvedSDKReferencesDesignTime" ItemName="_ResolvedSDKReference" />
+    </CollectResolvedSDKReferencesDesignTime>
+  </Target>
+  
   <!--
     ============================================================
                      RunProduceContentAssets
@@ -257,6 +304,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="_ComputeTFMOnlyFileDependencies"
+          DependsOnTargets="RunResolvePackageDependencies"
+          Returns="_TFMOnlyFileDependencies">
+    <ItemGroup>
+      <_TFMOnlyFileDependencies Include="@(FileDependencies->WithMetadataValue('ParentTarget', '$(NuGetTargetMoniker)'))" />
+    </ItemGroup>
+  </Target>
+
   <!--
     ============================================================
     Reference Targets: For populating References based on lock file
@@ -267,10 +322,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="_ComputeLockFileReferences"
-          DependsOnTargets="_ComputeActiveTFMFileDependencies"
+          DependsOnTargets="_ComputeTFMOnlyFileDependencies"
           Returns="ResolvedCompileFileDefinitions">
     <ItemGroup>
-      <_CompileFileItems Include="@(_ActiveTFMFileDependencies->WithMetadataValue('FileGroup', 'CompileTimeAssembly'))" />
+      <_CompileFileItems Include="@(_TFMOnlyFileDependencies->WithMetadataValue('FileGroup', 'CompileTimeAssembly'))" />
 
       <!-- Get corresponding file definitions -->
       <__CompileFileDefinitions Include="@(FileDefinitions)" Exclude="@(_CompileFileItems)" />
@@ -289,10 +344,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ComputeLockFileFrameworks"
           Condition="'$(DisableLockFileFrameworks)' != 'true'"
-          DependsOnTargets="_ComputeActiveTFMFileDependencies"
+          DependsOnTargets="_ComputeTFMOnlyFileDependencies"
           Returns="ResolvedFrameworkAssemblies">
     <ItemGroup>
-      <_FrameworkAssemblies Include="@(_ActiveTFMFileDependencies->WithMetadataValue('FileGroup', 'FrameworkAssembly'))" />
+      <_FrameworkAssemblies Include="@(_TFMOnlyFileDependencies->WithMetadataValue('FileGroup', 'FrameworkAssembly'))" />
 
       <ResolvedFrameworkAssemblies Include="%(_FrameworkAssemblies.FrameworkAssembly)">
         <Private>false</Private>
@@ -311,6 +366,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Add the references we computed -->
       <Reference Include="@(ResolvedCompileFileDefinitions)" />
       <Reference Include="@(ResolvedFrameworkAssemblies)" />
+
+      <!-- Remove simple name references if we're directly providing a reference assembly to the compiler. For example,
+           consider a project with an Reference Include="System", and some NuGet package is providing System.dll.
+           Simple references can also come from NuGet framework assemblies, hence this statement should occur after
+           including all computed references. -->
+      <Reference Remove="%(ResolvedCompileFileDefinitions.FileName)" />
     </ItemGroup>
   </Target>
 

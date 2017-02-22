@@ -28,6 +28,9 @@ namespace Microsoft.NET.Build.Tasks
         public string TargetFramework { get; set; }
 
         [Required]
+        public string TargetFrameworkMoniker { get; set; }
+
+        [Required]
         public string RuntimeConfigPath { get; set; }
 
         public string RuntimeConfigDevPath { get; set; }
@@ -36,13 +39,9 @@ namespace Microsoft.NET.Build.Tasks
 
         public string PlatformLibraryName { get; set; }
 
-        /// <summary>
-        /// The version of the shared framework that should be used.  If not specified, it will
-        /// be the package version of the <see cref="PlatformLibraryName"/> package.
-        /// </summary>
-        public string RuntimeFrameworkVersion { get; set; }
-
         public string UserRuntimeConfig { get; set; }
+
+        public ITaskItem[] HostConfigurationOptions { get; set; }
 
         List<ITaskItem> _filesWritten = new List<ITaskItem>();
 
@@ -56,7 +55,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             LockFile lockFile = new LockFileCache(BuildEngine4).GetLockFile(AssetsFilePath);
             ProjectContext projectContext = lockFile.CreateProjectContext(
-                NuGetUtils.ParseFrameworkName(TargetFramework),
+                NuGetUtils.ParseFrameworkName(TargetFrameworkMoniker),
                 RuntimeIdentifier,
                 PlatformLibraryName);
 
@@ -76,6 +75,11 @@ namespace Microsoft.NET.Build.Tasks
             AddFramework(config.RuntimeOptions, projectContext);
             AddUserRuntimeOptions(config.RuntimeOptions);
 
+            // HostConfigurationOptions are added after AddUserRuntimeOptions so if there are
+            // conflicts the HostConfigurationOptions win. The reasoning is that HostConfigurationOptions
+            // can be changed using MSBuild properties, which can be specified at build time.
+            AddHostConfigurationOptions(config.RuntimeOptions);
+
             WriteToJsonFile(RuntimeConfigPath, config);
             _filesWritten.Add(new TaskItem(RuntimeConfigPath));
         }
@@ -89,16 +93,10 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     RuntimeConfigFramework framework = new RuntimeConfigFramework();
                     framework.Name = platformLibrary.Name;
-                    if (!string.IsNullOrEmpty(RuntimeFrameworkVersion))
-                    {
-                        framework.Version = RuntimeFrameworkVersion;
-                    }
-                    else
-                    {
-                        framework.Version = platformLibrary.Version.ToNormalizedString();
-                    }
+                    framework.Version = platformLibrary.Version.ToNormalizedString();
 
                     runtimeOptions.Framework = framework;
+                    runtimeOptions.tfm = TargetFramework;
                 }
             }
         }
@@ -117,6 +115,54 @@ namespace Microsoft.NET.Build.Tasks
             {
                 runtimeOptions.RawOptions.Add(runtimeOption.Key, runtimeOption.Value);
             }
+        }
+
+        private void AddHostConfigurationOptions(RuntimeOptions runtimeOptions)
+        {
+            if (HostConfigurationOptions == null || !HostConfigurationOptions.Any())
+            {
+                return;
+            }
+
+            JObject configProperties = GetConfigProperties(runtimeOptions);
+
+            foreach (var hostConfigurationOption in HostConfigurationOptions)
+            {
+                configProperties[hostConfigurationOption.ItemSpec] = GetConfigPropertyValue(hostConfigurationOption);
+            }
+        }
+
+        private static JObject GetConfigProperties(RuntimeOptions runtimeOptions)
+        {
+            JToken configProperties;
+            if (!runtimeOptions.RawOptions.TryGetValue("configProperties", out configProperties)
+                || configProperties == null
+                || configProperties.Type != JTokenType.Object)
+            {
+                configProperties = new JObject();
+                runtimeOptions.RawOptions["configProperties"] = configProperties;
+            }
+
+            return (JObject)configProperties;
+        }
+
+        private static JToken GetConfigPropertyValue(ITaskItem hostConfigurationOption)
+        {
+            string valueString = hostConfigurationOption.GetMetadata("Value");
+
+            bool boolValue;
+            if (bool.TryParse(valueString, out boolValue))
+            {
+                return new JValue(boolValue);
+            }
+
+            int intValue;
+            if (int.TryParse(valueString, out intValue))
+            {
+                return new JValue(intValue);
+            }
+
+            return new JValue(valueString);
         }
 
         private void WriteDevRuntimeConfig(ProjectContext projectContext)

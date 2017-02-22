@@ -18,9 +18,16 @@ namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantAllResourcesInSatellite : SdkTest
     {
-        //[Fact]
+        [Fact]
         public void It_retrieves_strings_successfully()
         {
+            if (UsingFullFrameworkMSBuild)
+            {
+                //  Disable this test on full framework, as generating strong named satellite assemblies with AL.exe requires Admin permissions
+                //  See https://github.com/dotnet/sdk/issues/732
+                return;
+            }
+
             TestSatelliteResources(_testAssetsManager);
         }
 

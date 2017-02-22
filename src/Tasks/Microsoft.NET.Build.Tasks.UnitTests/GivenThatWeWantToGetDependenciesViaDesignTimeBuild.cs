@@ -69,6 +69,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.FileDefinitions = new ITaskItem[] { };
             task.PackageDependencies = new ITaskItem[] { };
             task.FileDependencies = new ITaskItem[] { };
+            task.DefaultImplicitPackages = string.Empty;
 
             // Act
             var result = task.Execute();
@@ -144,6 +145,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.FileDefinitions = new ITaskItem[] { };
             task.PackageDependencies = new ITaskItem[] { mockPackageDepNoType, mockPackageDepUnknown };
             task.FileDependencies = new ITaskItem[] { };
+            task.DefaultImplicitPackages = string.Empty;
 
             // Act
             var result = task.Execute();
@@ -201,6 +203,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.FileDefinitions = new ITaskItem[] { };
             task.PackageDependencies = new ITaskItem[] { mockPackageDepUnresolved };
             task.FileDependencies = new ITaskItem[] { };
+            task.DefaultImplicitPackages = string.Empty;
 
             // Act
             var result = task.Execute();
@@ -412,6 +415,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 mockPackageReferenceDep
             };
             task.FileDependencies = new ITaskItem[] { };
+            task.DefaultImplicitPackages = string.Empty;
 
             // Act
             var result = task.Execute();
@@ -454,7 +458,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.ResolvedPath, "some resolved path" },
                     { MetadataKeys.Type, "Package" },
                     { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" },
-                    { PreprocessPackageDependenciesDesignTime.DependenciesMetadata, "ChildPackage1/1.0.0;ChildPackage2/2.0.0" }
+                    { PreprocessPackageDependenciesDesignTime.DependenciesMetadata, "ChildPackage1/1.0.0;ChildPackage2/2.0.0" },
+                    { MetadataKeys.IsTopLevelDependency, "True" }
                 });
 
             var mockChildPackage1 = new MockTaskItem(
@@ -467,7 +472,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.ResolvedPath, "some resolved path" },
                     { MetadataKeys.Type, "Package" },
                     { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" },
-                    { PreprocessPackageDependenciesDesignTime.DependenciesMetadata, "ChildPackage11/1.0.0" }
+                    { PreprocessPackageDependenciesDesignTime.DependenciesMetadata, "ChildPackage11/1.0.0" },
+                    { MetadataKeys.IsTopLevelDependency, "False" }
                 });
 
             var mockChildPackage11 = new MockTaskItem(
@@ -479,7 +485,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.Path, "some path" },
                     { MetadataKeys.ResolvedPath, "some resolved path" },
                     { MetadataKeys.Type, "Package" },
-                    { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" }
+                    { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" },
+                    { MetadataKeys.IsTopLevelDependency, "False" }
                 });
 
             var mockChildPackage2 = new MockTaskItem(
@@ -491,7 +498,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.Path, "some path" },
                     { MetadataKeys.ResolvedPath, "some resolved path" },
                     { MetadataKeys.Type, "Package" },
-                    { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" }
+                    { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" },
+                    { MetadataKeys.IsTopLevelDependency, "False" }
                 });
 
             // package dependencies
@@ -525,6 +533,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.ParentTarget, ".Net Framework,Version=v4.5" },
                     { MetadataKeys.ParentPackage, "Package3/1.0.0" }
                 });
+
             var task = new PreprocessPackageDependenciesDesignTime();
             task.TargetDefinitions = new[] { mockTarget };
             task.PackageDefinitions = new ITaskItem[] {
@@ -541,6 +550,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 mockChildPackageDep2
             };
             task.FileDependencies = new ITaskItem[] { };
+            task.DefaultImplicitPackages = string.Empty;
 
             // Act
             var result = task.Execute();
@@ -750,6 +760,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 mockWinmdDep,
                 mockReferenceDep
             };
+            task.DefaultImplicitPackages = string.Empty;
 
             // Act
             var result = task.Execute();
@@ -793,7 +804,21 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.Type, "Package" },
                     { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" },
                     { PreprocessPackageDependenciesDesignTime.DependenciesMetadata,
-                      @"mockChildAssembly1;somepath/mockChildAssembly2;somepath/mockChildAnalyzerAssembly" }
+                      @"mockChildAssembly1;somepath/mockChildAssembly2;somepath/mockChildAnalyzerAssembly" },
+                    { MetadataKeys.IsImplicitlyDefined, "True" }
+                });
+
+            var mockPackage4 = new MockTaskItem(
+                itemSpec: "Package4/1.0.0",
+                metadata: new Dictionary<string, string>
+                {
+                    { MetadataKeys.Name, "Package4" },
+                    { MetadataKeys.Version, "1.0.0" },
+                    { MetadataKeys.Path, "some path" },
+                    { MetadataKeys.ResolvedPath, "some resolved path" },
+                    { MetadataKeys.Type, "Package" },
+                    { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" },
+                    { MetadataKeys.IsImplicitlyDefined, "True" }
                 });
 
             var mockChildAssembly1 = new MockTaskItem(
@@ -804,7 +829,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.Path, "some path" },
                     { MetadataKeys.ResolvedPath, "some resolved path" },
                     { MetadataKeys.Type, "Assembly" },
-                    { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" }                   
+                    { PreprocessPackageDependenciesDesignTime.ResolvedMetadata, "True" }
                 });
 
             var mockChildAssembly2 = new MockTaskItem(
@@ -848,6 +873,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.ParentTarget, ".Net Framework,Version=v4.5" }
                 });
 
+            var mockPackageDep4 = new MockTaskItem(
+                itemSpec: "Package4/1.0.0",
+                metadata: new Dictionary<string, string>
+                {
+                    { MetadataKeys.ParentTarget, ".Net Framework,Version=v4.5" }
+                });
+
             var mockChildAssemblyDep1 = new MockTaskItem(
                 itemSpec: "mockChildAssembly1",
                 metadata: new Dictionary<string, string>
@@ -885,7 +917,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new PreprocessPackageDependenciesDesignTime();
             task.TargetDefinitions = new[] { mockTarget };
             task.PackageDefinitions = new ITaskItem[] {
-                mockPackage
+                mockPackage,
+                mockPackage4
             };
             task.FileDefinitions = new ITaskItem[] {
                 mockChildAssembly1,
@@ -894,7 +927,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 mockChildAnalyzerAssembly
             };
             task.PackageDependencies = new ITaskItem[] {
-                mockPackageDep
+                mockPackageDep,
+                mockPackageDep4
             };
             task.FileDependencies = new ITaskItem[] {
                 mockChildAssemblyDep1,
@@ -902,13 +936,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 mockChildAssemblyNoCompileMetadataDep,
                 mockChildAnalyzerAssemblyDep
             };
+            task.DefaultImplicitPackages = "Package3;Package4";
 
             // Act
             var result = task.Execute();
 
             // Assert
             result.Should().BeTrue();
-            task.DependenciesDesignTime.Count().Should().Be(5);
+            task.DependenciesDesignTime.Count().Should().Be(6);
 
             var resultTargets = task.DependenciesDesignTime
                                                 .Where(x => x.ItemSpec.Equals(".Net Framework,Version=v4.5")).ToArray();
@@ -920,6 +955,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Where(x => x.ItemSpec.Equals(".Net Framework,Version=v4.5/Package3/1.0.0")).ToArray();
             resultPackage.Length.Should().Be(1);
             VerifyTargetTaskItem(DependencyType.Package, mockPackage, resultPackage[0]);
+
+            mockPackage4.SetMetadata(MetadataKeys.Path, mockPackage4.GetMetadata(MetadataKeys.ResolvedPath));
+            var resultPackage4 = task.DependenciesDesignTime
+                .Where(x => x.ItemSpec.Equals(".Net Framework,Version=v4.5/Package4/1.0.0")).ToArray();
+            resultPackage4.Length.Should().Be(1);
+            VerifyTargetTaskItem(DependencyType.Package, mockPackage4, resultPackage4[0]);
 
             mockChildAssembly1.SetMetadata(MetadataKeys.Path, mockChildAssembly1.GetMetadata(MetadataKeys.ResolvedPath));
             var resultChildAssembly1 = task.DependenciesDesignTime
@@ -947,7 +988,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // remove unnecessary metadata to keep only ones that would be in result task items
             var removeMetadata = new[] { MetadataKeys.Type, MetadataKeys.ResolvedPath };
 
-            foreach(var rm in removeMetadata)
+            foreach (var rm in removeMetadata)
             {
                 output.RemoveMetadata(rm);
                 input.RemoveMetadata(rm);
