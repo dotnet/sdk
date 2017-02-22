@@ -133,11 +133,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ErrorInputParams Include="$(_SdkCalculatedLanguageTargets)" />
     </ItemGroup>
     
-    <NETSdkError Condition="'$(_ShortFrameworkIdentifier)' != 'portable"
+    <NETSdkError Condition="'$(_ShortFrameworkIdentifier)' != 'portable'"
                  ResourceName="MissingLanguageTargets"
                  FormatArguments="@(_ErrorInputParams)" />
     
-    <NETSdkError Condition="'$(_ShortFrameworkIdentifier)' == 'portable"
+    <NETSdkError Condition="'$(_ShortFrameworkIdentifier)' == 'portable'"
                  ResourceName="InvalidPortableTfm"
                  FormatArguments="$(TargetFramework)" />
   </Target>
