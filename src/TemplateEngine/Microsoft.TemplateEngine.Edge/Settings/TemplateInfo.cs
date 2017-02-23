@@ -15,9 +15,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public TemplateInfo(JObject entry)
         {
-            ConfigMountPointId = Guid.Parse(entry[nameof(ConfigMountPointId)].ToString());
-            Author = entry[nameof(Author)].ToString();
-            JArray classificationsArray = (JArray)entry[nameof(Classifications)];
+            ConfigMountPointId = Guid.Parse(entry.ToString(nameof(ConfigMountPointId)));
+            Author = entry.ToString(nameof(Author));
+            JArray classificationsArray = entry.Get<JArray>(nameof(Classifications));
+
             List<string> classifications = new List<string>();
             Classifications = classifications;
             //using (Timing.Over("Read classifications"))
@@ -25,53 +26,57 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     classifications.Add(item.ToString());
                 }
-            DefaultName = entry[nameof(DefaultName)].ToString();
-            Description = entry[nameof(Description)].ToString();
-            Identity = entry[nameof(Identity)].ToString();
-            GeneratorId = Guid.Parse(entry[nameof(GeneratorId)].ToString());
-            GroupIdentity = entry[nameof(GroupIdentity)].ToString();
-            Name = entry[nameof(Name)].ToString();
-            ShortName = entry[nameof(ShortName)].ToString();
+
+            DefaultName = entry.ToString(nameof(DefaultName));
+            Description = entry.ToString(nameof(Description));
+            Identity = entry.ToString(nameof(Identity));
+            GeneratorId = Guid.Parse(entry.ToString(nameof(GeneratorId)));
+            GroupIdentity = entry.ToString(nameof(GroupIdentity));
+            Name = entry.ToString(nameof(Name));
+            ShortName = entry.ToString(nameof(ShortName));
 
             // parse the cached tags
             Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
-            JObject tagsObject = (JObject)entry[nameof(Tags)];
+            JObject tagsObject = entry.Get<JObject>(nameof(Tags));
             foreach (JProperty item in tagsObject.Properties())
             {
                 Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                JObject cdToken = (JObject)item.Value[nameof(ICacheTag.ChoicesAndDescriptions)];
+                JObject cdToken = item.Value.Get<JObject>(nameof(ICacheTag.ChoicesAndDescriptions));
                 foreach (JProperty cdPair in cdToken.Properties())
                 {
                     choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
                 }
 
-                ICacheTag cacheTag = new CacheTag(item.Value[nameof(ICacheTag.Description)].ToString(), choicesAndDescriptions, item.Value[nameof(ICacheTag.DefaultValue)].ToString());
+                ICacheTag cacheTag = new CacheTag(
+                    item.Value.ToString(nameof(ICacheTag.Description)),
+                    choicesAndDescriptions, 
+                    item.Value.ToString(nameof(ICacheTag.DefaultValue)));
                 tags.Add(item.Name.ToString(), cacheTag);
             }
             Tags = tags;
 
             // parse the cached params
-            JObject cacheParamsObject = (JObject)entry[nameof(CacheParameters)];
+            JObject cacheParamsObject = entry.Get<JObject>(nameof(CacheParameters));
             Dictionary<string, ICacheParameter> cacheParams = new Dictionary<string, ICacheParameter>();
             foreach (JProperty item in cacheParamsObject.Properties())
             {
                 ICacheParameter param = new CacheParameter
                 {
-                    DataType = item.Value[nameof(ICacheParameter.DataType)].ToString(),
-                    DefaultValue = item.Value[nameof(ICacheParameter.DefaultValue)].ToString(),
-                    Description = item.Value[nameof(ICacheParameter.Description)].ToString()
+                    DataType = item.Value.ToString(nameof(ICacheParameter.DataType)),
+                    DefaultValue = item.Value.ToString(nameof(ICacheParameter.DefaultValue)),
+                    Description = item.Value.ToString(nameof(ICacheParameter.Description))
                 };
 
                 cacheParams[item.Name.ToString()] = param;
             }
             CacheParameters = cacheParams;
 
-            ConfigPlace = entry[nameof(ConfigPlace)].ToString();
-            LocaleConfigMountPointId = Guid.Parse(entry[nameof(LocaleConfigMountPointId)].ToString());
-            LocaleConfigPlace = entry[nameof(LocaleConfigPlace)].ToString();
+            ConfigPlace = entry.ToString(nameof(ConfigPlace));
+            LocaleConfigMountPointId = Guid.Parse(entry.ToString(nameof(LocaleConfigMountPointId)));
+            LocaleConfigPlace = entry.ToString(nameof(LocaleConfigPlace));
 
-            HostConfigMountPointId = Guid.Parse(entry[nameof(HostConfigMountPointId)].ToString());
-            HostConfigPlace = entry[nameof(HostConfigPlace)].ToString();
+            HostConfigMountPointId = Guid.Parse(entry.ToString(nameof(HostConfigMountPointId)));
+            HostConfigPlace = entry.ToString(nameof(HostConfigPlace));
         }
 
         public IParameterSet GetParametersForTemplate()
