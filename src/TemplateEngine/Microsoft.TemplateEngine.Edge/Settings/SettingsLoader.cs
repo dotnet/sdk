@@ -155,7 +155,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             IMountPoint mountPoint;
-            EnsureLoaded();
             if (!_mountPointManager.TryDemandMountPoint(info.ConfigMountPointId, out mountPoint))
             {
                 return null;
