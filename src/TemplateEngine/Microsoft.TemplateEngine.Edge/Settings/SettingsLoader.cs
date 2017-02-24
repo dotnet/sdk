@@ -155,7 +155,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             IMountPoint mountPoint;
-            EnsureLoaded();
             if (!_mountPointManager.TryDemandMountPoint(info.ConfigMountPointId, out mountPoint))
             {
                 return null;
@@ -336,6 +335,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file)
         {
             EnsureLoaded();
+
             if (!string.IsNullOrEmpty(place) && _mountPointManager.TryDemandMountPoint(mountPointId, out IMountPoint mountPoint))
             {
                 file = mountPoint.FileInfo(place);
