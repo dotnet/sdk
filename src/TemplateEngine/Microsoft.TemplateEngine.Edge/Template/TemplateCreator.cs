@@ -12,13 +12,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
     public class TemplateCreator
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly AliasRegistry _aliasRegistry;
         private readonly Paths _paths;
 
         public TemplateCreator(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
-            _aliasRegistry = new AliasRegistry(environmentSettings);
             _paths = new Paths(environmentSettings);
         }
 
