@@ -2,10 +2,10 @@
 {
     public interface ICacheParameter
     {
-        string DataType { get; set; }
+        string DataType { get; }
 
-        string DefaultValue { get; set; }
+        string DefaultValue { get; }
 
-        string Description { get; set; }
+        string Description { get; }
     }
 }

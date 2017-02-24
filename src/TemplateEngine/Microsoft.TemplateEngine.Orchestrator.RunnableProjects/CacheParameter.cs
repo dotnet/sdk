@@ -5,13 +5,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class CacheParameter : ICacheParameter
     {
-        [JsonProperty]
-        public string DataType { get; set; }
+        public CacheParameter(string dataType, string defaultvalue, string description)
+        {
+            DataType = dataType;
+            DefaultValue = defaultvalue;
+            Description = description;
+        }
 
         [JsonProperty]
-        public string DefaultValue { get; set; }
+        public string DataType { get; }
 
         [JsonProperty]
-        public string Description { get; set; }
+        public string DefaultValue { get; }
+
+        [JsonProperty]
+        public string Description { get; }
     }
 }
