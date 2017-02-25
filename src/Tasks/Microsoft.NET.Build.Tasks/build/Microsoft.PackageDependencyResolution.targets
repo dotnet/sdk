@@ -468,20 +468,20 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- ALL -->
       <_AllCopyLocalItems Include="@(_NativeCopyLocalItems);@(_RuntimeCopyLocalItems);@(_ResourceCopyLocalItems)" />
 
-      <AllCopyLocalItems Include="%(_AllCopyLocalItems.ResolvedPath)">
+      <AllCopyLocalItems Include="@(_AllCopyLocalItems->'%(ResolvedPath)')">
         <Private>false</Private>
         <NuGetIsFrameworkReference>false</NuGetIsFrameworkReference>
         <NuGetSourceType>Package</NuGetSourceType>
-        <NuGetPackageId>%(_AllCopyLocalItems.PackageName)</NuGetPackageId>
-        <NuGetPackageVersion>%(_AllCopyLocalItems.PackageVersion)</NuGetPackageVersion>
+        <NuGetPackageId>%(PackageName)</NuGetPackageId>
+        <NuGetPackageVersion>%(PackageVersion)</NuGetPackageVersion>
       </AllCopyLocalItems>
 
       <AllCopyLocalItems Include="@(_ContentCopyLocalItems)">
         <Private>false</Private>
         <NuGetIsFrameworkReference>false</NuGetIsFrameworkReference>
         <NuGetSourceType>Package</NuGetSourceType>
-        <NuGetPackageId>%(_ContentCopyLocalItems.PackageName)</NuGetPackageId>
-        <NuGetPackageVersion>%(_ContentCopyLocalItems.PackageVersion)</NuGetPackageVersion>
+        <NuGetPackageId>%(PackageName)</NuGetPackageId>
+        <NuGetPackageVersion>%(PackageVersion)</NuGetPackageVersion>
       </AllCopyLocalItems>
 
     </ItemGroup>
