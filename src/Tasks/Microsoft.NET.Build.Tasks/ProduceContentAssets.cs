@@ -233,7 +233,8 @@ namespace Microsoft.NET.Build.Tasks
             {
                 throw new BuildErrorException(Strings.ContentFileDoesNotContainExpectedParentPackageInformation, contentFile.ItemSpec);
             }
-            string packageName = parts[0], packageVersion = parts[1];
+            string packageName = parts[0];
+            string packageVersion = parts[1];
 
             if (!string.IsNullOrEmpty(ppOutputPath))
             {
