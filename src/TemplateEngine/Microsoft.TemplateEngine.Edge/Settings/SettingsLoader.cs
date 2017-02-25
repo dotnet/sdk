@@ -176,7 +176,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
             }
 
-            IFile hostTemplateConfigFile = HostTemplateConfigFile(config);
+            IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
 
             ITemplate template;
             using (Timing.Over("Template from config"))
@@ -192,16 +192,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return null;
         }
 
-        public IFile HostTemplateConfigFile(IFileSystemInfo config)
+        public IFile FindBestHostTemplateConfigFile(IFileSystemInfo config)
         {
             IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
 
-            foreach (IFile hostFile in config.Parent.EnumerateFiles(HostTemplateFileConfigBaseName, SearchOption.TopDirectoryOnly))
+            foreach (IFile hostFile in config.Parent.EnumerateFiles($"*{HostTemplateFileConfigBaseName}", SearchOption.TopDirectoryOnly))
             {
                 allHostFilesForTemplate.Add(hostFile.Name, hostFile);
             }
 
-            string preferredHostFileName = string.Join(string.Empty, _environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
+            string preferredHostFileName = string.Concat(_environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
             if (allHostFilesForTemplate.TryGetValue(preferredHostFileName, out IFile preferredHostFile))
             {
                 return preferredHostFile;
@@ -209,7 +209,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (string fallbackHostName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
             {
-                string fallbackHostFileName = string.Join(string.Empty, fallbackHostName, HostTemplateFileConfigBaseName);
+                string fallbackHostFileName = string.Concat(fallbackHostName, HostTemplateFileConfigBaseName);
 
                 if (allHostFilesForTemplate.TryGetValue(fallbackHostFileName, out IFile fallbackHostFile))
                 {

@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool isCurrentCache);
 
-        IFile HostTemplateConfigFile(IFileSystemInfo config);
+        IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
     }
 
     public interface IEngineEnvironmentSettings

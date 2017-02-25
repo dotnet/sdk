@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (string.Equals(file.Name, TemplateConfigFileName, StringComparison.OrdinalIgnoreCase))
                 {
-                    IFile hostConfigFile = file.MountPoint.EnvironmentSettings.SettingsLoader.HostTemplateConfigFile(file);
+                    IFile hostConfigFile = file.MountPoint.EnvironmentSettings.SettingsLoader.FindBestHostTemplateConfigFile(file);
 
                     if (TryGetTemplateFromConfigInfo(file, out ITemplate template, hostTemplateConfigFile: hostConfigFile))
                     {
