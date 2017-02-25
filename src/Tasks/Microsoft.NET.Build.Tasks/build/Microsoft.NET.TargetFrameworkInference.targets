@@ -92,6 +92,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_ShortFrameworkIdentifier>portable</_ShortFrameworkIdentifier>
     <_PortableTfms>$(TargetFramework.Substring(9).ToLowerInvariant())</_PortableTfms>
     <_PortableTfmCount>$(_PortableTfms.Split('+').Length)</_PortableTfmCount>
+    <!-- Pre and post-pend the separator char + to the tfm list after counting so we can easily do a Contains() search -->
+    <_PortableTfms>+$(_PortableTfms)+</_PortableTfms>
     <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
   </PropertyGroup>
 

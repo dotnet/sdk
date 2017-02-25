@@ -6,40 +6,40 @@
 
 
   <PropertyGroup Condition="$(_PortableTfmCount) == 2 and                             
-                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
-                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1')))">
+                            $(_PortableTfms.Contains('+net45+')) and
+                            ($(_PortableTfms.Contains('+win+')) or $(_PortableTfms.Contains('+win8+')) or $(_PortableTfms.Contains('+win80+')))">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(_PortableTfmCount) == 2 and                             
-                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
-                            ($(_PortableTfms.Contains('wp8')) and !$(_PortableTfms.Contains('wp81')))">
+                            $(_PortableTfms.Contains('+net45+')) and
+                            ($(_PortableTfms.Contains('+wp8+')) or $(_PortableTfms.Contains('+wp80+')))">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile49</TargetFrameworkProfile>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(_PortableTfmCount) == 3 and                             
-                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
-                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1'))) and
-                            ($(_PortableTfms.Contains('wp8')) and !$(_PortableTfms.Contains('wp81')))">
+                            $(_PortableTfms.Contains('+net45+')) and
+                            ($(_PortableTfms.Contains('+win+')) or $(_PortableTfms.Contains('+win8+')) or $(_PortableTfms.Contains('+win80+'))) and
+                            ($(_PortableTfms.Contains('+wp8+')) or $(_PortableTfms.Contains('+wp80+')))">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile78</TargetFrameworkProfile>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(_PortableTfmCount) == 3 and                             
-                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
-                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1'))) and
-                            ($(_PortableTfms.Contains('wpa81')) or $(_PortableTfms.Contains('wpa')))">
+                            $(_PortableTfms.Contains('+net45+')) and
+                            ($(_PortableTfms.Contains('+win+')) or $(_PortableTfms.Contains('+win8+')) or $(_PortableTfms.Contains('+win80+'))) and
+                            ($(_PortableTfms.Contains('+wpa81+')) or $(_PortableTfms.Contains('+wpa+')))">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(_PortableTfmCount) == 4 and                             
-                            ($(_PortableTfms.Contains('net45')) and !$(_PortableTfms.Contains('net451'))) and
-                            ($(_PortableTfms.Contains('win')) and !$(_PortableTfms.Contains('win81')) and !$(_PortableTfms.Contains('win9')) and !$(_PortableTfms.Contains('win1'))) and
-                            ($(_PortableTfms.Contains('wpa')) or $(_PortableTfms.Contains('wpa81'))) and
-                            ($(_PortableTfms.Contains('wp8')) and !$(_PortableTfms.Contains('wp81')))">
+                            $(_PortableTfms.Contains('+net45+')) and
+                            ($(_PortableTfms.Contains('+win+')) or $(_PortableTfms.Contains('+win8+')) or $(_PortableTfms.Contains('+win80+'))) and
+                            ($(_PortableTfms.Contains('+wpa+')) or $(_PortableTfms.Contains('+wpa81+'))) and
+                            ($(_PortableTfms.Contains('+wp8+')) or $(_PortableTfms.Contains('+wp80+')))">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
   </PropertyGroup>
