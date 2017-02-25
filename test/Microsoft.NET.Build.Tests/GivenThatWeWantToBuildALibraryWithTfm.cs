@@ -84,8 +84,13 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_builds_the_net45_library_successfully()
+        public void It_builds_the_net45_library_successfully_on_windows()
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
             const string tfm = "net45";
 
             var testAsset = _testAssetsManager
