@@ -83,7 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     {
                         return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Exact };
                     }
-                    else if (context == "other" && !typeTag.ChoicesAndDescriptions.ContainsKey("project") && !typeTag.ChoicesAndDescriptions.ContainsKey("item"))
+                    else if (string.Equals(context, "other", StringComparison.OrdinalIgnoreCase) && !typeTag.ChoicesAndDescriptions.ContainsKey("project") && !typeTag.ChoicesAndDescriptions.ContainsKey("item"))
                     {
                         return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Exact };
                     }
