@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>portable-net451+wpa81+win81;portable-net45+win8+wp8+wpa81;portable-win81+wpa81;net45;net40;net40-client;netstandard1.5;xamarinios;win8;win81;wpa81;uap10.0;xamarinmac;monoandroid;xamarintvos;xamarinwatchos;wp8;wp81;sl5</TargetFrameworks>
+    <TargetFrameworks>portable-net4+sl50+win8+wpa81+wp8;portable-net451+wpa81+win81;portable-net45+win8+wp8+wpa81;portable-win81+wpa81;net45;net40;net40-client;netstandard1.5;xamarinios;win8;win81;wpa81;uap10.0;xamarinmac;monoandroid;xamarintvos;xamarinwatchos;wp8;wp81;sl5</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />

@@ -130,6 +130,10 @@ namespace Microsoft.NET.Build.Tests
                 "portable-net451+wpa81+win81/AllSupported.pdb",
                 "portable-net451+wpa81+win81/Newtonsoft.Json.dll",
 
+                "portable-net4+sl50+win8+wpa81+wp8/AllSupported.dll",
+                "portable-net4+sl50+win8+wpa81+wp8/AllSupported.pdb",
+                "portable-net4+sl50+win8+wpa81+wp8/Newtonsoft.Json.dll",
+
                 "portable-net45+win8+wp8+wpa81/AllSupported.dll",
                 "portable-net45+win8+wp8+wpa81/AllSupported.pdb",
                 "portable-net45+win8+wp8+wpa81/Newtonsoft.Json.dll",
