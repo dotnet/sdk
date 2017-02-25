@@ -176,25 +176,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
             }
 
-            IFile hostTemplateConfigFile = null;
-            if (!string.IsNullOrEmpty(_environmentSettings.Host.HostIdentifier))
-            {
-                hostTemplateConfigFile = HostTemplateConfigFile(config);
-            }
-
-            if (hostTemplateConfigFile == null && _environmentSettings.Host.FallbackHostTemplateConfigNames != null)
-            {
-                foreach (string fallbackName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
-                {
-                    string hostTemplateFileName = string.Join(string.Empty, fallbackName, HostTemplateFileConfigBaseName);
-                    hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
-
-                    if (hostTemplateConfigFile != null)
-                    {
-                        break;
-                    }
-                }
-            }
+            IFile hostTemplateConfigFile = HostTemplateConfigFile(config);
 
             ITemplate template;
             using (Timing.Over("Template from config"))
@@ -212,8 +194,30 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public IFile HostTemplateConfigFile(IFileSystemInfo config)
         {
-            string hostTemplateFileName = string.Join(string.Empty, _environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
-            return config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
+            IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
+
+            foreach (IFile hostFile in config.Parent.EnumerateFiles(HostTemplateFileConfigBaseName, SearchOption.TopDirectoryOnly))
+            {
+                allHostFilesForTemplate.Add(hostFile.Name, hostFile);
+            }
+
+            string preferredHostFileName = string.Join(string.Empty, _environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
+            if (allHostFilesForTemplate.TryGetValue(preferredHostFileName, out IFile preferredHostFile))
+            {
+                return preferredHostFile;
+            }
+
+            foreach (string fallbackHostName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
+            {
+                string fallbackHostFileName = string.Join(string.Empty, fallbackHostName, HostTemplateFileConfigBaseName);
+
+                if (allHostFilesForTemplate.TryGetValue(fallbackHostFileName, out IFile fallbackHostFile))
+                {
+                    return fallbackHostFile;
+                }
+            }
+
+            return null;
         }
 
         public IComponentManager Components
