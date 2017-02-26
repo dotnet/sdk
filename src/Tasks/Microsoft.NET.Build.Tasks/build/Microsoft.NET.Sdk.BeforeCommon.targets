@@ -122,7 +122,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)$(_FrameworkVersionForImplicitDefine)</ImplicitFrameworkDefine>
     
-    <!-- .NET Portable gets profiles as defines as that's how most people refer to them PORTABLE259, etc -->
+    <!-- .NET Portable gets profiles as defines as that's how most people refer to them PROFILE259, etc -->
     <ImplicitFrameworkDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETPortable' ">$(TargetFrameworkProfile.ToUpperInvariant())</ImplicitFrameworkDefine>
   </PropertyGroup>
   
