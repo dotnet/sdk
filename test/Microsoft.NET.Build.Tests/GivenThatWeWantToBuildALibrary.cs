@@ -456,7 +456,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net45", new[] { "NET45" }, true)]
         [InlineData("net461", new[] { "NET461" }, true)]
         [InlineData("netcoreapp1.0", new[] { "NETCOREAPP1_0" }, false)]
-        [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { }, false)]
+        [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { "PROFILE78" }, false)]
         [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NET40" }, false)]
         [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS1_0" }, false)]
         [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK3_14" }, false)]
