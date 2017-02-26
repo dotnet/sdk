@@ -109,7 +109,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!-- Add conditional compilation symbols for the target framework (for example NET461, NETSTANDARD2_0, NETCOREAPP1_0) -->
-  <PropertyGroup Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetFrameworkIdentifier)' != '.NETPortable'">
+  <PropertyGroup Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' ">
     <_FrameworkIdentifierForImplicitDefine>$(TargetFrameworkIdentifier.Replace('.', '').ToUpperInvariant())</_FrameworkIdentifierForImplicitDefine>
     <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">NET</_FrameworkIdentifierForImplicitDefine>
 
@@ -121,7 +121,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_FrameworkVersionForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">$(_FrameworkVersionForImplicitDefine.Replace('_', ''))</_FrameworkVersionForImplicitDefine>
 
     <ImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)$(_FrameworkVersionForImplicitDefine)</ImplicitFrameworkDefine>
+    
+    <!-- .NET Portable gets profiles as defines as that's how most people refer to them PORTABLE259, etc -->
+    <ImplicitFrameworkDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETPortable' ">$(TargetFrameworkProfile.ToUpperInvariant())</ImplicitFrameworkDefine>
   </PropertyGroup>
+  
 
   <!-- Handle XML documentation file settings -->
   <PropertyGroup Condition="'$(GenerateDocumentationFile)' == ''">
