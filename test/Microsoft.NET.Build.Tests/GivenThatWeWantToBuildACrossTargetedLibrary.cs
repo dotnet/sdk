@@ -86,7 +86,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_all_targets_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }

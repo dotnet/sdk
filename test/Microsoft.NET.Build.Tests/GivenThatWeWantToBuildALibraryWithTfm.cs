@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_monoandroid_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_net40_client_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_net45_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -145,7 +145,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_portable_profile44_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -178,7 +178,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_portable_profile151_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -210,7 +210,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_portable_profile259_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -242,7 +242,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_sl5_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -274,7 +274,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_win8_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -307,7 +307,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_win81_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_wp8_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -372,7 +372,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_wp81_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -404,7 +404,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_wpa81_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -437,7 +437,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_uap10_0_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -469,7 +469,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_xamarinios_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -501,7 +501,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_xamarinmac_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -532,7 +532,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_xamarintvos_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -564,7 +564,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_xamarinwatchos_library_successfully_on_windows()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
