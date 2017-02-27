@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
             }
 
-            ResolveUserParameters(template, templateParams, inputParameters, out IList<string> userParamsWithInvalidValues);
+            ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
             if (userParamsWithInvalidValues.Any())
             {
                 string message = string.Join(", ", userParamsWithInvalidValues);
@@ -150,9 +150,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // The template params for which there are same-named input parameters have their values set to the corresponding input parameters value.
         // input parameters that do not have corresponding template params are ignored.
         //
-        public void ResolveUserParameters(ITemplate template, IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters, out IList<string> paramsWithInvalidValues)
+        public void ResolveUserParameters(ITemplate template, IParameterSet templateParams, IReadOnlyDictionary<string, string> inputParameters, out IReadOnlyList<string> paramsWithInvalidValues)
         {
-            paramsWithInvalidValues = new List<string>();
+            List<string> tmpParamsWithInvalidValues = new List<string>();
+            paramsWithInvalidValues = tmpParamsWithInvalidValues;
 
             foreach (KeyValuePair<string, string> inputParam in inputParameters)
             {
@@ -180,7 +181,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, inputParam.Value, out bool valueResolutionError);
                         if (valueResolutionError)
                         {
-                            paramsWithInvalidValues.Add(paramFromTemplate.Name);
+                            tmpParamsWithInvalidValues.Add(paramFromTemplate.Name);
                         }
                     }
                 }
