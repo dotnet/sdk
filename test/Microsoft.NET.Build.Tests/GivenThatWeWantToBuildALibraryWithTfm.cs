@@ -20,22 +20,113 @@ namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildALibraryWithTfm : SdkTest
     {
-        [Fact]
-        public void It_builds_the_monoandroid_library_successfully_on_windows()
+
+
+        public static IEnumerable<object[]> GetTestData()
+        {
+            return new List<object[]>
+            {
+                new object[] 
+                {
+                    "monoandroid", "", false, false, false, false
+                },
+                new object[]
+                {
+                    "net40-client", null, true, false, false, false
+                },
+                new object[]
+                {
+                    "net45", null, true, false, false, false
+                },
+                new object[]
+                {
+                    "netstandard1.5", null, false, false, true, false
+                },
+                new object[]
+                {
+                    "portable-win81+wpa81", "", true, false, false, true
+                },
+                new object[]
+                {
+                    "portable-net451+wpa81+win81", "", true, false, false, false
+                },
+                new object[]
+                {
+                    "portable-net45+win8+wp8+wpa81", "", true, false, false, false
+                },
+                new object[]
+                {
+                    "sl5", "", true, false, false, false
+                },
+                new object[]
+                {
+                    "win8", "", true, false, false, true
+                },
+                new object[]
+                {
+                    "win81", "", true, false, false, true
+                },
+                new object[]
+                {
+                    "wp8", "", true, false, false, false
+                },
+                new object[]
+                {
+                    "wp81", "", true, false, false, false
+                },
+                new object[]
+                {
+                    "wpa81", "", true, false, false, true
+                },
+                new object[]
+                {
+                    "uap10.0", "", false, false, false, true
+                },
+                new object[]
+                {
+                    "xamarinios", "", false, true, false, false
+                },
+                new object[]
+                {
+                    "xamarinmac", "", false, false, false, false
+                },
+                new object[]
+                {
+                    "xamarintvos", "", false, true, false, false
+                },
+                new object[]
+                {
+                    "xamarinwatchos", "", false, true, false, false
+                },
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetTestData))]
+        public void It_builds_the_tfm_library_successfully_on_windows(string tfm, string langTargets, 
+                                                                      bool hasLocalRef, bool hasMdb, bool hasDeps, bool hasPri)
         {
             if (!UsingFullFrameworkMSBuild)
             {
                 return;
             }
 
-            const string tfm = "monoandroid";
+            // TODO: Check existence of targets
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("LibraryWithTfm")
                 .WithSource()
-                .Restore(tfm);
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propGroup = project.Root.Element(ns + "PropertyGroup");
+                    var targetFramework = propGroup.Element(ns + "TargetFramework");
+                    // Set the TFM
+                    targetFramework.Value = tfm;
+                })
+                .Restore("TheLibrary");
 
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
+            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TheLibrary");
 
             var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
             buildCommand
@@ -45,552 +136,22 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(tfm);
 
-            outputDirectory.Should().HaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_net40_client_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
+            var filesToCheck = new List<string>
             {
-                return;
-            }
-
-            const string tfm = "net40-client";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_net45_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "net45";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_netstandard15_library_successfully()
-        {
-            const string tfm = "netstandard1.5";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.deps.json"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_portable_profile44_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "portable-Profile44";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory("portable-win81+wpa81");
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.pri",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_portable_profile151_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "portable-Profile151";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory("portable-net451+wpa81+win81");
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_portable_profile259_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "portable-Profile259";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory("portable-net45+win8+wp8+wpa81");
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_sl5_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "sl5";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_win8_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "win8";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.pri",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_win81_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "win81";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.pri",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_wp8_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "wp8";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_wp81_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "wp81";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_wpa81_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "wpa81";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.pri",
-                $"Newtonsoft.Json.dll"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_uap10_0_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "uap10.0";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.pri"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_xamarinios_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "xamarinios";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().HaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.dll.mdb"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_xamarinmac_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "xamarinmac";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().HaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_xamarintvos_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "xamarintvos";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().HaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.dll.mdb"
-            });
-        }
-
-        [Fact]
-        public void It_builds_the_xamarinwatchos_library_successfully_on_windows()
-        {
-            if (!UsingFullFrameworkMSBuild)
-            {
-                return;
-            }
-
-            const string tfm = "xamarinwatchos";
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("LibraryWithTfm")
-                .WithSource()
-                .Restore(tfm);
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, tfm);
-
-            var buildCommand = new BuildCommand(Stage0MSBuild, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(tfm);
-
-            outputDirectory.Should().HaveFiles(new[] {
-                $"{tfm}.dll",
-                $"{tfm}.pdb",
-                $"{tfm}.dll.mdb"
-            });
+                "TheLibrary.dll",
+                "TheLibrary.pdb"
+            };
+
+            if (hasDeps)
+                filesToCheck.Add("TheLibrary.deps.json");
+            if (hasMdb)
+                filesToCheck.Add("TheLibrary.dll.mdb");
+            if (hasPri)
+                filesToCheck.Add("TheLibrary.pri");
+            if (hasLocalRef)
+                filesToCheck.Add("Newtonsoft.Json.dll");
+
+            outputDirectory.Should().HaveFiles(filesToCheck);
         }
     }
 }
