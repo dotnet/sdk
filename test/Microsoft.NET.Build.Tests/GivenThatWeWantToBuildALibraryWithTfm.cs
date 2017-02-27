@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 new object[] 
                 {
-                    "monoandroid", "", false, false, false, false
+                    "monoandroid", "$(MSBuildExtensionsPath)\\Xamarin\\Android\\Xamarin.Android.CSharp.targets", false, false, false, false
                 },
                 new object[]
                 {
@@ -44,59 +44,63 @@ namespace Microsoft.NET.Build.Tests
                 },
                 new object[]
                 {
-                    "portable-win81+wpa81", "", true, false, false, true
+                    "portable-win81+wpa81", "$(MSBuildExtensionsPath)\\Microsoft\\Portable\\v4.6\\Microsoft.Portable.CSharp.targets", true, false, false, true
                 },
                 new object[]
                 {
-                    "portable-net451+wpa81+win81", "", true, false, false, false
+                    "portable-net451+wpa81+win81", "$(MSBuildExtensionsPath)\\Microsoft\\Portable\\v4.6\\Microsoft.Portable.CSharp.targets", true, false, false, false
                 },
                 new object[]
                 {
-                    "portable-net45+win8+wp8+wpa81", "", true, false, false, false
+                    "portable-net45+win8+wp8+wpa81", "$(MSBuildExtensionsPath)\\Microsoft\\Portable\\v4.5\\Microsoft.Portable.CSharp.targets", true, false, false, false
                 },
                 new object[]
                 {
-                    "sl5", "", true, false, false, false
+                    "portable-net4+sl5+win8+wpa81+wp8", "$(MSBuildExtensionsPath)\\Microsoft\\Portable\\v4.0\\Microsoft.Portable.CSharp.targets", true, false, false, false
                 },
                 new object[]
                 {
-                    "win8", "", true, false, false, true
+                    "sl5", "$(MSBuildProgramFiles32)\\MSBuild\\Microsoft\\Silverlight\\v5.0\\Microsoft.Silverlight.CSharp.targets", true, false, false, false
                 },
                 new object[]
                 {
-                    "win81", "", true, false, false, true
+                    "win8", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", true, false, false, true
                 },
                 new object[]
                 {
-                    "wp8", "", true, false, false, false
+                    "win81", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", true, false, false, true
                 },
                 new object[]
                 {
-                    "wp81", "", true, false, false, false
+                    "wp8", "$(MSBuildProgramFiles32)\\MSBuild\\Microsoft\\WindowsPhone\\v8.0\\Microsoft.WindowsPhone.CSharp.targets", true, false, false, false
                 },
                 new object[]
                 {
-                    "wpa81", "", true, false, false, true
+                    "wp81", "$(MSBuildProgramFiles32)\\MSBuild\\Microsoft\\WindowsPhone\\v8.1\\Microsoft.WindowsPhone.CSharp.targets", true, false, false, false
                 },
                 new object[]
                 {
-                    "uap10.0", "", false, false, false, true
+                    "wpa81", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", true, false, false, true
                 },
                 new object[]
                 {
-                    "xamarinios", "", false, true, false, false
+                    "uap10.0", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", false, false, false, true
                 },
                 new object[]
                 {
-                    "xamarinmac", "", false, false, false, false
+                    "xamarinios", "$(MSBuildExtensionsPath)\\Xamarin\\iOS\\Xamarin.iOS.CSharp.targets", false, true, false, false
                 },
                 new object[]
                 {
-                    "xamarintvos", "", false, true, false, false
+                    "xamarinmac", "$(MSBuildExtensionsPath)\\Xamarin\\Mac\\Xamarin.Mac.CSharp.targets", false, false, false, false
                 },
                 new object[]
                 {
-                    "xamarinwatchos", "", false, true, false, false
+                    "xamarintvos", "$(MSBuildExtensionsPath)\\Xamarin\\TVOS\\Xamarin.TVOS.CSharp.targets", false, true, false, false
+                },
+                new object[]
+                {
+                    "xamarinwatchos", "$(MSBuildExtensionsPath)\\Xamarin\\WatchOS\\Xamarin.WatchOS.CSharp.targets", false, true, false, false
                 },
             };
         }
@@ -110,8 +114,10 @@ namespace Microsoft.NET.Build.Tests
             {
                 return;
             }
-
-            // TODO: Check existence of targets
+            
+            var targetsExist = TargetsExist(langTargets);
+            if (!targetsExist)
+                return;
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("LibraryWithTfm")
@@ -152,6 +158,30 @@ namespace Microsoft.NET.Build.Tests
                 filesToCheck.Add("Newtonsoft.Json.dll");
 
             outputDirectory.Should().HaveFiles(filesToCheck);
+        }
+
+        private bool TargetsExist(string targets)
+        {
+            if (!UsingFullFrameworkMSBuild)
+                return false;
+
+            if (targets == null)
+                return true; // default for SDK, not testing here
+            
+            // MSBuild\15.0\bin\MSBuild.exe
+            string msbuildPath = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILD_PATH");
+
+            // MSBuild
+            var msbuildRoot = new DirectoryInfo(Path.GetDirectoryName(msbuildPath)).Parent.Parent;
+
+            // program files (x86)
+            var progFiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+
+            // do our substitutions
+            var fullPathToTargets = targets.Replace("$(MSBuildExtensionsPath)", msbuildRoot.FullName)
+                                           .Replace("$(MSBuildProgramFiles32)", progFiles);
+
+            return File.Exists(fullPathToTargets);
         }
     }
 }
