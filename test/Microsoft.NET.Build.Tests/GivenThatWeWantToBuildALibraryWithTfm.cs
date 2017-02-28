@@ -60,30 +60,6 @@ namespace Microsoft.NET.Build.Tests
                 },
                 new object[]
                 {
-                    "sl5", "$(MSBuildProgramFiles32)\\MSBuild\\Microsoft\\Silverlight\\v5.0\\Microsoft.Silverlight.CSharp.targets", true, false, false, false
-                },
-                new object[]
-                {
-                    "win8", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", true, false, false, true
-                },
-                new object[]
-                {
-                    "win81", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", true, false, false, true
-                },
-                new object[]
-                {
-                    "wp8", "$(MSBuildProgramFiles32)\\MSBuild\\Microsoft\\WindowsPhone\\v8.0\\Microsoft.WindowsPhone.CSharp.targets", true, false, false, false
-                },
-                new object[]
-                {
-                    "wp81", "$(MSBuildProgramFiles32)\\MSBuild\\Microsoft\\WindowsPhone\\v8.1\\Microsoft.WindowsPhone.CSharp.targets", true, false, false, false
-                },
-                new object[]
-                {
-                    "wpa81", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", true, false, false, true
-                },
-                new object[]
-                {
                     "uap10.0", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsXaml\\v15.0\\Microsoft.Windows.UI.Xaml.CSharp.targets", false, false, false, true
                 },
                 new object[]

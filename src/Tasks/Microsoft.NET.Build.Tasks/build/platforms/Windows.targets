@@ -4,24 +4,6 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  
-  <PropertyGroup Condition="'$(TargetFramework)' == 'win' or '$(TargetFramework)' == 'win8' or '$(TargetFramework)' == 'win80'">
-    <NugetTargetMoniker>Windows,Version=v8.0</NugetTargetMoniker>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <DefineConstants>$(DefineConstants);NETFX_CORE;WINDOWS_APP</DefineConstants>
-    <LanguageTargets>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.$(_SdkLanguageName).targets</LanguageTargets>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'win81'">
-    <NugetTargetMoniker>Windows,Version=v8.1</NugetTargetMoniker>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <DefineConstants>$(DefineConstants);NETFX_CORE;WINDOWS_APP</DefineConstants>
-    <LanguageTargets>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.$(_SdkLanguageName).targets</LanguageTargets>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'wpa'">
-    <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
-    <LanguageTargets>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.$(_SdkLanguageName).targets</LanguageTargets>
-    <DefineConstants>$(DefineConstants);NETFX_CORE;WINDOWS_PHONE_APP</DefineConstants>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'uap'">
     <NugetTargetMoniker>UAP,Version=v10.0</NugetTargetMoniker>
     <CopyLocalLockFileAssemblies Condition="'$(CopyLocalLockFileAssemblies)' == ''">false</CopyLocalLockFileAssemblies>
@@ -30,19 +12,6 @@
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">10.0.10240.0</TargetPlatformMinVersion>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <LanguageTargets>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.$(_SdkLanguageName).targets</LanguageTargets>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'wp' and Exists('$(MSBuildProgramFiles32)\MSBuild\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(_SdkLanguageName).targets')">
-    <!-- WP uses 2 targets, so we need an intermediate to include both in the lang targets -->
-    <LanguageTargets>$(MSBuildThisFileDirectory)WP\WP.targets</LanguageTargets>
-    <DefineConstants>$(DefineConstants);SILVERLIGHT;WINDOWS_PHONE</DefineConstants>
-  </PropertyGroup>
-
-  <!-- Special case for WP targets validation checking as we need to verify the underlying targets existence not the local one -->
-  <!-- Check to see if the Lang targets exist and if not, trigger an error on Compile -->
-  <!-- We clear out the lang targets so the defaults are used for the error to show -->
-  <PropertyGroup Condition="'$(_ShortFrameworkIdentifier)' == 'wp' and !Exists('$(MSBuildProgramFiles32)\MSBuild\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(_SdkLanguageName).targets')">
-    <_SdkMissingLanguageTargets>true</_SdkMissingLanguageTargets>
-    <_SdkCalculatedLanguageTargets>$(MSBuildProgramFiles32)\MSBuild\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(_SdkLanguageName).targets</_SdkCalculatedLanguageTargets>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net40-client' or '$(TargetFramework)' == 'net4-client'">    

@@ -66,10 +66,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'netcoreapp'">.NETCoreApp</TargetFrameworkIdentifier>
     <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'net'">.NETFramework</TargetFrameworkIdentifier>
 
-    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'sl'">Silverlight</TargetFrameworkIdentifier>
-    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'wp'">WindowsPhone</TargetFrameworkIdentifier>
-    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'wpa'">WindowsPhoneApp</TargetFrameworkIdentifier>
-    <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'win'">.NETCore</TargetFrameworkIdentifier>
     <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'uap'">.NETCore</TargetFrameworkIdentifier>
 
     <TargetFrameworkIdentifier Condition="'$(_ShortFrameworkIdentifier)' == 'xamarinios'">Xamarin.iOS</TargetFrameworkIdentifier>
