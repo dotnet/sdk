@@ -394,6 +394,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Author = localizationInfo?.Author ?? template.Author,
                 Description = localizationInfo?.Description ?? template.Description,
                 GroupIdentity = template.GroupIdentity,
+                Precedence = template.Precedence,
                 Identity = template.Identity,
                 DefaultName = template.DefaultName,
                 LocaleConfigPlace = localizationInfo?.ConfigPlace ?? null,

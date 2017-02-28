@@ -32,6 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             Identity = entry.ToString(nameof(Identity));
             GeneratorId = Guid.Parse(entry.ToString(nameof(GeneratorId)));
             GroupIdentity = entry.ToString(nameof(GroupIdentity));
+            Precedence = entry.ToInt32(nameof(Precedence));
             Name = entry.ToString(nameof(Name));
             ShortName = entry.ToString(nameof(ShortName));
 
@@ -102,6 +103,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public string GroupIdentity { get; set; }
+
+        [JsonProperty]
+        public int Precedence { get; set; }
 
         [JsonProperty]
         public string Name { get; set; }

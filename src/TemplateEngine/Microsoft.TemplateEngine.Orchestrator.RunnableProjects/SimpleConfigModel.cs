@@ -59,6 +59,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string GroupIdentity { get; set; }
 
+        public int Precedence { get; set; }
+
         public IReadOnlyList<Guid> Guids { get; set; }
 
         public string Name { get; set; }
@@ -862,6 +864,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 DefaultName = source.ToString(nameof(DefaultName)),
                 Description = localizationModel?.Description ?? source.ToString(nameof(Description)) ?? string.Empty,
                 GroupIdentity = source.ToString(nameof(GroupIdentity)),
+                Precedence = source.ToInt32(nameof(Precedence)),
                 Guids = source.ArrayAsGuids(nameof(config.Guids)),
                 Identity = source.ToString(nameof(config.Identity)),
                 Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),

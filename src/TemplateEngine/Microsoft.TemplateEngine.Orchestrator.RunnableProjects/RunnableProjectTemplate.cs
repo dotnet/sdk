@@ -28,6 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Description = config.Description;
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;
+            Precedence = config.Precedence;
             LocaleConfigFile = localeConfigFile;
             IsNameAgreementWithFolderPreferred = raw.ToBool("preferNameDirectory", false);
             HostConfigMountPointId = hostConfigFile?.MountPoint?.Info?.MountPointId ?? Guid.Empty;
@@ -60,6 +61,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IGenerator Generator { get; }
 
         public string GroupIdentity { get; }
+
+        public int Precedence { get; set; }
 
         public string Name { get; }
 

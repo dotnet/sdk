@@ -20,6 +20,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string GroupIdentity { get; }
 
+        int Precedence { get; }
+
         string Name { get; }
 
         string ShortName { get; }

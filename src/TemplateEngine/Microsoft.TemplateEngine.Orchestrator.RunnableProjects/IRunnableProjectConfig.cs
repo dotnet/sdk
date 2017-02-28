@@ -35,6 +35,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string GroupIdentity { get; }
 
+        int Precedence { get; }
+
         IFile SourceFile { set; }
 
         string Identity { get; }
