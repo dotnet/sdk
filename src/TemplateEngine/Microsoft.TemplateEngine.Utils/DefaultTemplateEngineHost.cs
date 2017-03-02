@@ -38,7 +38,6 @@ namespace Microsoft.TemplateEngine.Utils
             Locale = locale;
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
-            _hostDefaults = defaults;
             _hostBuiltInComponents = builtIns ?? NoComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames;
         }
