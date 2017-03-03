@@ -708,8 +708,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return token.ArrayAsStrings();
         }
 
-        //private static IReadOnlyList<string>
-
         public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
         {
             List<FileSource> sources = new List<FileSource>();

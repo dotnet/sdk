@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26221.0
+VisualStudioVersion = 15.0.26212.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}"
 EndProject
@@ -30,6 +30,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestHelper", "test\Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj", "{FCB1B0F2-3067-4FE8-8A98-5EC80F38D534}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.TemplateEngine.Cli", "src\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj", "{23BE51C6-05FD-4573-A5D7-428B290BC9E0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Cli.UnitTests", "test\Microsoft.TemplateEngine.Cli.UnitTests\Microsoft.TemplateEngine.Cli.UnitTests.csproj", "{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.EndToEndTestHarness", "test\Microsoft.TemplateEngine.EndToEndTestHarness\Microsoft.TemplateEngine.EndToEndTestHarness.csproj", "{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -185,6 +189,30 @@ Global
 		{23BE51C6-05FD-4573-A5D7-428B290BC9E0}.Release|x64.Build.0 = Release|Any CPU
 		{23BE51C6-05FD-4573-A5D7-428B290BC9E0}.Release|x86.ActiveCfg = Release|Any CPU
 		{23BE51C6-05FD-4573-A5D7-428B290BC9E0}.Release|x86.Build.0 = Release|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Debug|x64.Build.0 = Debug|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Debug|x86.Build.0 = Debug|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Release|x64.ActiveCfg = Release|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Release|x64.Build.0 = Release|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Release|x86.ActiveCfg = Release|Any CPU
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F}.Release|x86.Build.0 = Release|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Debug|x64.Build.0 = Debug|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Debug|x86.Build.0 = Debug|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Release|x64.ActiveCfg = Release|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Release|x64.Build.0 = Release|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Release|x86.ActiveCfg = Release|Any CPU
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -202,5 +230,7 @@ Global
 		{D9B16B88-4B85-4208-8F1C-39DFB248250C} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{FCB1B0F2-3067-4FE8-8A98-5EC80F38D534} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{23BE51C6-05FD-4573-A5D7-428B290BC9E0} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
+		{B87FEC58-7768-4AF0-A6BF-1F95F8A37B2F} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
+		{7F621994-57DC-4AD9-8F0A-7F42B7F6F370} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 	EndGlobalSection
 EndGlobal
