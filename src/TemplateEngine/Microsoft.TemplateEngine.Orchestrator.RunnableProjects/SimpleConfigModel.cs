@@ -675,6 +675,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return generatedMacroConfigs;
         }
 
+        // If the token is a string:
+        //      check if its a valid file in the same directory as the sourceFile.
+        //          If so, read that files content as the exclude list.
+        //          Otherwise returns an array containing the string value as its only entry.
+        // Otherwise, interpret the token as an array and return the content.
         private static IReadOnlyList<string> JTokenToCollection(JToken token, IFile sourceFile, string[] defaultSet)
         {
             if (token == null)
@@ -684,15 +689,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (token.Type == JTokenType.String)
             {
-                using (Stream excludeList = sourceFile.Parent.Parent.FileInfo(token.ToString()).OpenRead())
-                using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
+                string tokenValue = token.ToString();
+                if ((tokenValue.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+                    || !sourceFile.Parent.FileInfo(tokenValue).Exists)
                 {
-                    return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    return new List<string>(new[] { tokenValue });
+                }
+                else
+                {
+                    using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToString()).OpenRead())
+                    using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
+                    {
+                        return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    }
                 }
             }
 
             return token.ArrayAsStrings();
         }
+
+        //private static IReadOnlyList<string>
 
         public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
         {
