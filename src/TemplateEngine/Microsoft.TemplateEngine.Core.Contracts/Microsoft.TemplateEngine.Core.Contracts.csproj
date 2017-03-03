@@ -5,7 +5,6 @@
     <Description>Contracts for extending Microsoft.TemplateEngine.Core</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Update="NETStandard.Library" Version="1.6.1" />
     <ProjectReference Include="..\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
   </ItemGroup>
 </Project>
