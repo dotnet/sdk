@@ -1,0 +1,16 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?include "Variables.wxi" ?>
+  <Product Id="*" Name="$(var.ProductName)" Language="$(var.ProductLanguage)" Version="$(var.MajorVersion).$(var.MinorVersion).$(var.Revision)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <MajorUpgrade AllowDowngrades="no" DowngradeErrorMessage="A newer version of this product is already installed." Schedule="afterInstallInitialize" />
+
+    <MediaTemplate CompressionLevel="high" />
+    <Feature Id="MainFeature" Title="Main Feature" Level="1">
+      <ComponentGroupRef Id="CG_NETCoreSDK_Packages" />
+    </Feature>
+
+    <SetProperty Id="MSIRESTARTMANAGERCONTROL" Value="Disable" Sequence="execute" Before="InstallInitialize">
+      UPGRADINGPRODUCTCODE AND VersionNT &lt; 602
+    </SetProperty>
+  </Product>
+</Wix>

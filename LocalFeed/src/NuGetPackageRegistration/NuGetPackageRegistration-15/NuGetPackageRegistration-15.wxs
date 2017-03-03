@@ -1,0 +1,34 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Fragment>
+    <DirectoryRef Id="ProgramFilesFolder">
+      <Directory Id="MicrosoftSdks" Name="Microsoft SDKs">
+        <Directory Id="NuGetPackages" Name="NuGetPackages" />
+      </Directory>
+      <Directory Id="ProgramFilesNuGet" Name="NuGet">
+        <Directory Id="ProgramFilesNuGetConfig" Name="Config" />
+      </Directory>
+    </DirectoryRef>
+
+    <!-- Register the packages folder as a machine-wide feed -->
+    <DirectoryRef Id="ProgramFilesNuGetConfig">
+      <Component Id="C_OfflinePackagesConfig15" Guid="*">
+        <File Id="filOfflinePackagesConfig" KeyPath="yes" Source="Microsoft.VisualStudio.Offline.config" />
+        <util:XmlConfig Id="xmlConfigSetOfflinePackagesFolder"
+                        Action="create"
+                        ElementPath="/configuration/packageSources/add"
+                        File="[#filOfflinePackagesConfig]"
+                        Name="value"
+                        Node="value"
+                        On="install"
+                        PreserveModifiedDate="yes"
+                        Value="[NuGetPackages]" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="CG_NuGetPkgLib15">
+      <ComponentRef Id="C_OfflinePackagesConfig15" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>

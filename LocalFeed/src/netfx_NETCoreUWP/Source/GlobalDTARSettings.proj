@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <OutputPath>DTAR_08E86330_4835_4B5C_9E5A_61F37AE1A077_DTAR</OutputPath>
+        <TargetFrameworkIdentifier>.NETCore</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+        <TargetFrameworkProfile></TargetFrameworkProfile>
+        <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+        <TargetPlatformVersion>10.0</TargetPlatformVersion>
+        <FrameworkRegistryBase></FrameworkRegistryBase>
+        <ProcessorArchitecture>msil</ProcessorArchitecture>
+        <!-- Tell DTAR to read the @(Reference) items from our nuget packages -->
+        <DTARUseReferencesFromProject>true</DTARUseReferencesFromProject>
+        <!-- Ensure we use .NETCore,Version=v5.0 for resolution since that is what is in the project.json -->
+        <NuGetTargetMoniker>.NETCore,Version=v5.0</NuGetTargetMoniker>
+        <!-- We don't need implementations, so just don't compute them -->
+        <CopyNuGetImplementations>false</CopyNuGetImplementations>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(GlobalDTARTargetsImport)' == '' or !Exists('$(GlobalDTARTargetsImport)')">
+        <GlobalDTARTargetsImport>$(MSBuildToolsPath)\Microsoft.Common.targets</GlobalDTARTargetsImport>
+    </PropertyGroup>
+
+    <Target Name="PrepareForResolveNuGetPackageAssets">
+        <ItemGroup>
+            <_ProjectLockJsonDirectoryRoots Include="$(TargetFrameworkDirectory)" />
+        </ItemGroup>
+        <PropertyGroup>
+            <!-- This project file content is copied to another directory when consumed by VS, 
+                 make sure they can still find the Project.lock.json -->
+            <ProjectLockFile Condition="Exists('%(_ProjectLockJsonDirectoryRoots.Identity)project.lock.json')">%(_ProjectLockJsonDirectoryRoots.Identity)project.lock.json</ProjectLockFile>
+            <!-- This project may be run before a restore has been done, so resolve from the 
+                 pre-installed package location -->
+            <NugetPackagesDirectory>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\NuGet\Repository', 'NETCoreSDK', null, RegistryView.Registry32, RegistryView.Default))</NugetPackagesDirectory>
+        </PropertyGroup>
+    </Target>
+
+    <PropertyGroup>
+        <GlobalDesignTimeResolveAssemblyReferencesDependsOn>
+            GetFrameworkPaths;
+            GetReferenceAssemblyPaths;
+            PrepareForResolveNuGetPackageAssets;
+            ResolveAssemblyReferences;
+        </GlobalDesignTimeResolveAssemblyReferencesDependsOn>
+    </PropertyGroup>
+
+    <Target
+        Name="GlobalDesignTimeResolveAssemblyReferences"
+        DependsOnTargets="$(GlobalDesignTimeResolveAssemblyReferencesDependsOn)" />
+
+    <Import Project="$(GlobalDTARTargetsImport)" />
+
+    <!-- Override these targets as they are not needed for resolving
+         references and contribute to build time and have side effects -->
+    <Target Name="_CheckForInvalidConfigurationAndPlatform" />
+    <Target Name="PrepareForBuild" />
+</Project>

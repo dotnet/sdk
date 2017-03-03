@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory),Build.cmd))\tools\Setup.settings.props" Condition="'$(ToolsPath)'==''" />
+  <Import Project="$(BuildNumberProps)" Condition="EXISTS('$(BuildNumberProps)')" />
+  <Import Project="$(ToolsPath)\Wix.targets" />
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Lang>enu</Lang>
+    <ProductFamily>netfx</ProductFamily>
+    <ProductGroupsToBuild>FX</ProductGroupsToBuild>
+    <UpgradeCode>A5947861-BD74-4F60-B0F5-F3D42F6A09C5</UpgradeCode>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>netfx_NETCoreSDK</OutputName>
+    <OutputType>package</OutputType>
+    <NuGetPath>$(ToolsPath)\NuGet.exe</NuGetPath>
+    <PackageCacheDirectory>https://www.nuget.org/api/v2</PackageCacheDirectory>
+    <FrameworkSourceDir>$(MSBuildProjectDirectory)\Source</FrameworkSourceDir>
+    <AdditionalSourceDir>$(MSBuildProjectDirectory)\Additional</AdditionalSourceDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageRestoreDir>$(IntermediateOutputPath)packages</PackageRestoreDir>
+    <DefineConstants>
+      $(DefineConstants);
+      UpgradeCode=$(UpgradeCode);
+      PackageRestoreDir=$(PackageRestoreDir);
+      PackageCacheDirectory = $(PackageCacheDirectory);
+      FrameworkSourceDir=$(FrameworkSourceDir);
+      AdditionalSourceDir=$(AdditionalSourceDir);
+    </DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <HarvestDirectory Include="$(PackageRestoreDir)">
+      <DirectoryRefId>NuGetPackages</DirectoryRefId>
+      <ComponentGroupName>CG_NETCoreSDK</ComponentGroupName>
+      <PreprocessorVariable>var.PackageRestoreDir</PreprocessorVariable>
+      <SuppressCom>true</SuppressCom>
+      <SuppressRegistry>true</SuppressRegistry>
+      <SuppressRootDirectory>true</SuppressRootDirectory>
+      <Transforms>IlcComponents.xslt</Transforms>
+    </HarvestDirectory>
+
+  </ItemGroup>
+
+  <!-- Product-related content and user extension point -->
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+    <Compile Include="Content.wxs" />
+    <Compile Include="Provider.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixDependencyExtension">
+      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
+      <Name>WixDependencyExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <Target Name="RestoreProjects"  BeforeTargets="PrepareForBuild">
+
+      <!-- clean up the directory -->
+    <RemoveDir Condition="Exists('$(PackageRestoreDir)')" Directories="$(PackageRestoreDir)" />
+    <MakeDir Directories="$(PackageRestoreDir)" />
+
+    <!-- "nuget restore" the metapackage (pcl)  into PackageRestoreDir -->
+    <Exec Command="$(NuGetPath) restore &quot;$(AdditionalSourceDir)\NetStandard\project.json&quot; -NoCache -Source &quot;$(PackageCacheDirectory)&quot; -PackagesDirectory &quot;$(PackageRestoreDir)&quot;" />
+
+    <!-- "nuget restore" the metapackage (pcl)  into PackageRestoreDir -->
+    <Exec Command="$(NuGetPath) restore &quot;$(AdditionalSourceDir)\PCL\project.json&quot; -NoCache -Source &quot;$(PackageCacheDirectory)&quot; -PackagesDirectory &quot;$(PackageRestoreDir)&quot;" />
+
+    <!-- get a list of the packages that were restored -->
+    <ItemGroup>
+      <RestoredPackage Include="$(PackageRestoreDir)\**\*.nupkg" />
+    </ItemGroup>
+    <Message Text="Number of packages restored is '@(RestoredPackage->Count())'" />
+    <Message Text="Restored package '%(RestoredPackage.Identity)'" />
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SrcPath)\NuGetPackageRegistration\NuGetPackageRegistration-15\NuGetPackageRegistration-15.wixproj">
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" />
+</Project>

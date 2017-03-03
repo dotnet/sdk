@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory),Build.cmd))\tools\Setup.settings.props" Condition="'$(ToolsPath)'==''" />
+    <Import Project="$(ToolsPath)\Wix.props"/>
+
+    <Target Name="CopyInstallers" AfterTargets="AfterBuild" Condition="$(DefineConstants.Contains('SETUP'))">
+        <ItemGroup>
+            <Installers Include="$(OutDir)en-us\*.msi" />
+            <Installers Include="$(OutDir)en-us\*.cab" />
+            <Installers Include="$(OutDir)*.exe" />
+        </ItemGroup>
+        <Copy SourceFiles="@(Installers)" DestinationFolder="$(OutputPath)" />
+    </Target>
+</Project>

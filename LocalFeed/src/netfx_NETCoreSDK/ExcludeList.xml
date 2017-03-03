@@ -1,0 +1,18 @@
+<ExcludeList>
+  <Assembly File="msdia120.dll"/>
+  <Assembly File="msvcdis120.dll"/>
+  <Assembly File="mspdb120.dll"/>
+  <Assembly File="mspdbcore.dll"/>
+  <Assembly File="mspdbsrv.exe"/>
+  <Assembly File="msvcp120.dll"/>
+  <Assembly File="msvcr120.dll"/>
+  <Assembly File="pgocvt.exe"/>
+  <Assembly File="pgodb120.dll"/>
+  <Assembly File="pgomgr.exe"/>
+  <Assembly File="msdia140.dll"/>
+  <Assembly File="msvcdis140.dll"/>
+  <Assembly File="mspdb140.dll"/>
+  <Assembly File="msvcp140.dll"/>
+  <Assembly File="msvcr140.dll"/>
+  <Assembly File="pgodb140.dll"/>
+</ExcludeList>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory),Build.cmd))\tools\Setup.settings.props" Condition="'$(ToolsPath)' == ''" />
+    <Import Project="Build.tasks" />  
+    <Target Name="CreateOutputFolders">
+        <ItemGroup>
+            <OutputFolders Include="$(RootOutputPath);$(RootIntermediateOutputPath)" />
+        </ItemGroup>
+
+        <MakeDir Directories="@(OutputFolders)" />
+    </Target>
+
+    <Target Name="DeleteOutputFolders">
+        <ItemGroup>
+            <OutputFolders Include="$(RootOutputPath);$(RootIntermediateOutputPath)" />
+        </ItemGroup>
+
+        <MakeDir Directories="@(OutputFolders)" />
+    </Target>
+
+    <!-- Build environment initialization -->
+    <ItemGroup>
+        <InitBuildEnvironmentDependsOnTargets Include="CreateOutputFolders;InstallNuGet;InstallSevenZip;InstallWix" />
+    </ItemGroup>
+
+    <Target Name="InitBuildEnvironment" DependsOnTargets="@(InitBuildEnvironmentDependsOnTargets)" />
+
+    <Target Name="BeforeInitBuildEnvironment" BeforeTargets="InitBuildEnvironment">
+        <Message Text="Initializing build environment..." Importance="high" />
+    </Target>
+
+    <Target Name="AfterInitBuildEnvironment" AfterTargets="InitBuildEnvironment">
+        <Message Text="Build environment initialized" Importance="high" />
+    </Target>
+
+  <Target Name="InstallSevenZip" Condition="!EXISTS('$(SevenZipExe)')">
+    <MakeDir Directories="$(SevenZipToolPath)" />
+    <DownloadFile Address="http://www.7-zip.org/a/7z1604-x64.exe" FileName="$(SevenZipExeInstaller)" />
+    <Exec Command="start /wait $(SevenZipExeInstaller) /S" />
+  </Target>
+  
+
+  <Target Name="InstallNuGet">
+      <DownloadFile Address="https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe" FileName="$(ToolsPath)\Nuget.exe" />
+  </Target>
+
+  <Target Name="InstallWix" DependsOnTargets="InstallSevenZip" Condition="!EXISTS('$(WixToolsPath)')">
+    <Exec Command="powershell -executionPolicy bypass -noexit -file $(WixInstallScriptPath) $(WixToolsPath)"/>
+    <Exec Command="$(SevenZipExe) x $(WixToolsPath)\wix310-binaries.zip -y -o$(WixToolsPath)" />
+  </Target> 
+  
+  <!-- Diagnostic information -->
+    <Target Name="Diagnostics">
+        <MSBuild Projects="$(MSBuildProjectFile)" Properties="VSVersion=%(VSVersions.Identity)" Targets="Diagnostic" />
+    </Target>
+
+    <Target Name="Diagnostic">
+        <Message Text="***************** Diagnostics for VSVersion: $(VSVersion)" />
+        <Message Text="MajorVersion=$(MajorVersion)" />
+        <Message Text="MinorVersion=$(MinorVersion)" />
+        <Message Text="BrandingVersion=$(BrandingVersion)" />
+    </Target>
+</Project>
