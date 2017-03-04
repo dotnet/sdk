@@ -93,7 +93,16 @@ namespace Microsoft.NET.Build.Tests
             
             var targetsExist = TargetsExist(langTargets);
             if (!targetsExist)
-                return;
+                return; // Generate warning
+
+            // for UAP, verify the SDK is installed
+            if (tfm == "uap10.0")
+            {
+                var progFiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+                var sdkDir = Path.Combine(progFiles, @"Windows Kits\10\Platforms\UAP\10.0.10240.0");
+                if (!Directory.Exists(sdkDir))
+                    return; // Generate warning
+            }
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("LibraryWithTfm")
@@ -156,6 +165,7 @@ namespace Microsoft.NET.Build.Tests
             // do our substitutions
             var fullPathToTargets = targets.Replace("$(MSBuildExtensionsPath)", msbuildRoot.FullName)
                                            .Replace("$(MSBuildProgramFiles32)", progFiles);
+
 
             return File.Exists(fullPathToTargets);
         }
