@@ -8,6 +8,7 @@
     <NugetTargetMoniker>UAP,Version=v10.0</NugetTargetMoniker>
     <CopyLocalLockFileAssemblies Condition="'$(CopyLocalLockFileAssemblies)' == ''">false</CopyLocalLockFileAssemblies>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <DefineConstants>$(DefineConstants);NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == ''">10.0.10240.0</TargetPlatformVersion>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">10.0.10240.0</TargetPlatformMinVersion>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
