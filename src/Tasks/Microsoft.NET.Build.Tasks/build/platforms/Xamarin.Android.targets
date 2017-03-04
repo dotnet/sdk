@@ -12,9 +12,6 @@
     <AndroidUseLatestPlatformSdk Condition="'$(AndroidUseLatestPlatformSdk)' == ''">false</AndroidUseLatestPlatformSdk>
     <_SdkSetAndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">true</_SdkSetAndroidResgenFile>
     <AndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">$(IntermediateOutputPath)$(TargetFramework)\Resource.Designer$(_SdkLangExtention)</AndroidResgenFile>
-    <!-- Workaround for https://github.com/NuGet/Home/issues/4547 -->
-    <!-- Remove after validated on RTW -->
-    <NoStdLib>false</NoStdLib>
     <!-- This is here to prevent a warning in the  Xamarin.Android.Common.Debugging.targets when a blank is passed into _GetPrimaryCpuAbi -->
     <AdbTarget Condition="'$(AdbTarget)' == ''">none</AdbTarget>
   </PropertyGroup>
@@ -34,6 +31,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup Condition="'$(_ShortFrameworkIdentifier)' == 'monoandroid'">
-    <Compile Include="$(AndroidResgenFile)" Condition="'$(_SdkSetAndroidResgenFile)' == 'true'" />
+    <Compile Include="$(AndroidResgenFile)" Condition="'$(_SdkSetAndroidResgenFile)' == 'true'" Visible="false" />
   </ItemGroup>
 </Project>
