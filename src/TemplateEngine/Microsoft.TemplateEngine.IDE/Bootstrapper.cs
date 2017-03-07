@@ -83,12 +83,13 @@ namespace Microsoft.TemplateEngine.IDE
 
         public IReadOnlyCollection<IFilteredTemplateInfo> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] filters)
         {
+            EnsureInitialized();
             return _templateCreator.List(exactMatchesOnly, filters);
         }
 
         public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck)
         {
-            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck).ConfigureAwait(false);
+            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck, forceCreation: false).ConfigureAwait(false);
             return instantiateResult.ResultInfo;
         }
     }
