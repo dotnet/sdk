@@ -525,7 +525,7 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private string GetAbsolutePathFromProjectRelativePath(string path)
-        {            
+        {
             return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(ProjectAssetsFile)), path));
         }
     }
