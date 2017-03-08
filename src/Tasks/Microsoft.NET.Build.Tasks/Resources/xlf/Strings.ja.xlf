@@ -93,11 +93,6 @@
         <target state="translated">解決された '{0}' のパスが見つかりません。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UnexpectedDependencyWithNoVersionNumber">
-        <source>Unexpected dependency '{0}' with no version number.</source>
-        <target state="translated">バージョン番号のない予期しない依存関係 '{0}' です。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>Asset preprocessor must be configured before assets are processed.</source>
         <target state="translated">資産を処理する前に、資産プリプロセッサを構成する必要があります。</target>
@@ -221,6 +216,11 @@
       <trans-unit id="RuntimeIdentifierWasNotSpecified">
         <source>Specify a RuntimeIdentifier</source>
         <target state="new">Specify a RuntimeIdentifier</target>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="UnexpectedPackageDependency">
+        <source>Unexpected dependency '{0}' in package '{1}'.</source>
+        <target state="new">Unexpected dependency '{0}' in package '{1}'.</target>
         <note></note>
       </trans-unit>
     </body>

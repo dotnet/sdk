@@ -93,11 +93,6 @@
         <target state="translated">找不到“{0}”的已解析路径。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UnexpectedDependencyWithNoVersionNumber">
-        <source>Unexpected dependency '{0}' with no version number.</source>
-        <target state="translated">不具有版本号的意外依赖项“{0}”。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>Asset preprocessor must be configured before assets are processed.</source>
         <target state="translated">必须在处理资产之前配置资产预处理器。</target>
@@ -221,6 +216,11 @@
       <trans-unit id="RuntimeIdentifierWasNotSpecified">
         <source>Specify a RuntimeIdentifier</source>
         <target state="new">Specify a RuntimeIdentifier</target>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="UnexpectedPackageDependency">
+        <source>Unexpected dependency '{0}' in package '{1}'.</source>
+        <target state="new">Unexpected dependency '{0}' in package '{1}'.</target>
         <note></note>
       </trans-unit>
     </body>

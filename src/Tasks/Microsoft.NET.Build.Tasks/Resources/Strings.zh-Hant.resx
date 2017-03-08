@@ -171,9 +171,6 @@
   <data name="UnableToFindResolvedPath" xml:space="preserve">
     <value>找不到 '{0}' 的解析路徑。</value>
   </data>
-  <data name="UnexpectedDependencyWithNoVersionNumber" xml:space="preserve">
-    <value>未預期的相依性 '{0}'，沒有版本號碼。</value>
-  </data>
   <data name="AssetPreprocessorMustBeConfigured" xml:space="preserve">
     <value>必須設定資產前置處理器，才能處理資產。</value>
   </data>
@@ -248,5 +245,8 @@
   </data>
   <data name="RuntimeIdentifierWasNotSpecified" xml:space="preserve">
     <value>Specify a RuntimeIdentifier</value>
+  </data>
+  <data name="UnexpectedPackageDependency" xml:space="preserve">
+    <value>Unexpected dependency '{0}' in package '{1}'.</value>
   </data>
 </root>

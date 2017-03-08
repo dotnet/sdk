@@ -434,11 +434,11 @@ namespace Microsoft.NET.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unexpected dependency &apos;{0}&apos; with no version number..
+        ///   Looks up a localized string similar to Unexpected dependency &apos;{0}&apos; in package &apos;{1}&apos;..
         /// </summary>
-        internal static string UnexpectedDependencyWithNoVersionNumber {
+        internal static string UnexpectedPackageDependency {
             get {
-                return ResourceManager.GetString("UnexpectedDependencyWithNoVersionNumber", resourceCulture);
+                return ResourceManager.GetString("UnexpectedPackageDependency", resourceCulture);
             }
         }
         

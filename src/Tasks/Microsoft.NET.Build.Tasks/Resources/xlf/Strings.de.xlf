@@ -93,11 +93,6 @@
         <target state="translated">Der aufgelöste Pfad für "{0}" wurde nicht gefunden.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UnexpectedDependencyWithNoVersionNumber">
-        <source>Unexpected dependency '{0}' with no version number.</source>
-        <target state="translated">Unerwartete Abhängigkeit "{0}" ohne Versionsnummer.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>Asset preprocessor must be configured before assets are processed.</source>
         <target state="translated">Der Ressourcenpräprozessor muss konfiguriert werden, bevor Ressourcen verarbeitet werden.</target>
@@ -221,6 +216,11 @@
       <trans-unit id="RuntimeIdentifierWasNotSpecified">
         <source>Specify a RuntimeIdentifier</source>
         <target state="new">Specify a RuntimeIdentifier</target>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="UnexpectedPackageDependency">
+        <source>Unexpected dependency '{0}' in package '{1}'.</source>
+        <target state="new">Unexpected dependency '{0}' in package '{1}'.</target>
         <note></note>
       </trans-unit>
     </body>

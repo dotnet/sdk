@@ -350,7 +350,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (!resolvedPackageVersions.TryGetValue(deps.Id, out version) &&
                     !unexpectedDeps.Contains(deps.Id))
                 {
-                    Log.LogError(Strings.UnexpectedDependencyWithNoVersionNumber, deps.Id);
+                    Log.LogError(Strings.UnexpectedPackageDependency, deps.Id, packageId);
                     unexpectedDeps.Add(deps.Id);
                     continue;
                 }
