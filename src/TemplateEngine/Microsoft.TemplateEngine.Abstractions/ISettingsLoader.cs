@@ -29,6 +29,8 @@ namespace Microsoft.TemplateEngine.Abstractions
         bool TryGetMountPointInfo(Guid mountPointId, out MountPointInfo info);
 
         void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool isCurrentCache);
+
+        IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
     }
 
     public interface IEngineEnvironmentSettings

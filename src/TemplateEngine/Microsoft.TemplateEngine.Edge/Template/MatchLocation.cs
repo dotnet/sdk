@@ -9,6 +9,7 @@
         Alias,
         Classification,
         Language,
-        Context
+        Context,
+        OtherParameter
     }    
 }

@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine
 
         public static int ToInt32(this JToken token, string key = null, int defaultValue = 0)
         {
-            int value;
+            int value = defaultValue;
             if (key == null)
             {
                 if (token == null || token.Type != JTokenType.Integer || !int.TryParse(token.ToString(), out value))
@@ -85,12 +85,20 @@ namespace Microsoft.TemplateEngine
             }
 
             JToken element;
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element) || element.Type != JTokenType.Integer || !int.TryParse(element.ToString(), out value))
+            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element))
             {
                 return defaultValue;
             }
+            else if (element.Type == JTokenType.Integer)
+            {
+                return element.ToInt32();
+            }
+            else if (int.TryParse(element.ToString(), out value))
+            {
+                return value;
+            }
 
-            return value;
+            return defaultValue;
         }
 
         public static T ToEnum<T>(this JToken token, string key = null, T defaultValue = default(T))
@@ -177,6 +185,30 @@ namespace Microsoft.TemplateEngine
                 }
 
                 result[property.Name] = property.Value.ToString();
+            }
+
+            return result;
+        }
+
+        // reads a dictionary whose values can either be string literals, or arrays of strings.
+        public static IReadOnlyDictionary<string, IReadOnlyList<string>> ToStringListDictionary(this JToken token, StringComparer comparer = null, string propertyName = null)
+        {
+            Dictionary<string, IReadOnlyList<string>> result = new Dictionary<string, IReadOnlyList<string>>(comparer ?? StringComparer.Ordinal);
+
+            foreach (JProperty property in token.PropertiesOf(propertyName))
+            {
+                if (property.Value == null)
+                {
+                    continue;
+                }
+                else if (property.Value.Type == JTokenType.String)
+                {
+                    result[property.Name] = new List<string>() { property.Value.ToString() };
+                }
+                else if (property.Value.Type == JTokenType.Array)
+                {
+                    result[property.Name] = property.ArrayAsStrings();
+                }
             }
 
             return result;

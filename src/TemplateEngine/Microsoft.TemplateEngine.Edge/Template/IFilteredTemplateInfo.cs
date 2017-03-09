@@ -12,5 +12,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
         bool IsMatch { get; }
 
         bool IsPartialMatch { get; }
+
+        bool HasParameterMismatch { get; }
+
+        bool IsParameterMatch { get; }
     }
 }

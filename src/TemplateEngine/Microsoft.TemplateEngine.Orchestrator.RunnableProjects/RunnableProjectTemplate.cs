@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -22,10 +23,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Identity = config.Identity ?? config.Name;
             ShortName = config.ShortName;
             Author = config.Author;
-            Tags = config.Tags;
+            Tags = config.Tags ?? new Dictionary<string, ICacheTag>(StringComparer.OrdinalIgnoreCase);
+            CacheParameters = config.CacheParameters ?? new Dictionary<string, ICacheParameter>(StringComparer.OrdinalIgnoreCase);
             Description = config.Description;
             Classifications = config.Classifications;
             GroupIdentity = config.GroupIdentity;
+            Precedence = config.Precedence;
             LocaleConfigFile = localeConfigFile;
             IsNameAgreementWithFolderPreferred = raw.ToBool("preferNameDirectory", false);
             HostConfigMountPointId = hostConfigFile?.MountPoint?.Info?.MountPointId ?? Guid.Empty;
@@ -59,13 +62,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string GroupIdentity { get; }
 
+        public int Precedence { get; set; }
+
         public string Name { get; }
 
         public string ShortName { get; }
 
         public IMountPoint Source { get; }
 
-        public IReadOnlyDictionary<string, string> Tags { get; }
+        public IReadOnlyDictionary<string, ICacheTag> Tags { get; }
+
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; }
 
         public IFile ConfigFile { get; }
 

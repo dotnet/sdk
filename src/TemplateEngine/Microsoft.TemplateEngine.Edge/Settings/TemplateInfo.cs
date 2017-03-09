@@ -12,37 +12,28 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
         }
 
-        public TemplateInfo(JObject entry)
-        {
-            ConfigMountPointId = Guid.Parse(entry[nameof(ConfigMountPointId)].ToString());
-            Author = entry[nameof(Author)].ToString();
-            JArray classificationsArray = (JArray)entry[nameof(Classifications)];
-            List<string> classifications = new List<string>();
-            Classifications = classifications;
-            //using (Timing.Over("Read classifications"))
-                foreach (JToken item in classificationsArray)
-                {
-                    classifications.Add(item.ToString());
-                }
-            DefaultName = entry[nameof(DefaultName)].ToString();
-            Description = entry[nameof(Description)].ToString();
-            Identity = entry[nameof(Identity)].ToString();
-            GeneratorId = Guid.Parse(entry[nameof(GeneratorId)].ToString());
-            GroupIdentity = entry[nameof(GroupIdentity)].ToString();
-            Name = entry[nameof(Name)].ToString();
-            ShortName = entry[nameof(ShortName)].ToString();
-            JObject tagsObject = (JObject) entry[nameof(Tags)];
-            Dictionary<string, string> tags = new Dictionary<string, string>();
-            Tags = tags;
-            //using (Timing.Over("Read tags"))
-                foreach (JProperty item in tagsObject.Properties())
-                {
-                    tags[item.Name] = item.Value.ToString();
-                }
-            ConfigPlace = entry[nameof(ConfigPlace)].ToString();
+        private static readonly Func<JObject, TemplateInfo> _defaultReader;
+        private static readonly IReadOnlyDictionary<string, Func<JObject, TemplateInfo>> _infoVersionReaders;
 
-            LocaleConfigMountPointId = Guid.Parse(entry[nameof(LocaleConfigMountPointId)].ToString());
-            LocaleConfigPlace = entry[nameof(LocaleConfigPlace)].ToString();
+        static TemplateInfo()
+        {
+            Dictionary<string, Func<JObject, TemplateInfo>> versionReaders = new Dictionary<string, Func<JObject, TemplateInfo>>();
+            versionReaders.Add("1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject);
+            _infoVersionReaders = versionReaders;
+
+            _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
+        }
+
+        public static TemplateInfo FromJObject(JObject entry, string cacheVersion)
+        {
+            Func<JObject, TemplateInfo> infoReader;
+
+            if (string.IsNullOrEmpty(cacheVersion) || !_infoVersionReaders.TryGetValue(cacheVersion, out infoReader))
+            {
+                infoReader = _defaultReader;
+            }
+
+            return infoReader(entry);
         }
 
         [JsonProperty]
@@ -70,13 +61,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public string GroupIdentity { get; set; }
 
         [JsonProperty]
+        public int Precedence { get; set; }
+
+        [JsonProperty]
         public string Name { get; set; }
 
         [JsonProperty]
         public string ShortName { get; set; }
 
         [JsonProperty]
-        public IReadOnlyDictionary<string, string> Tags { get; set; }
+        public IReadOnlyDictionary<string, ICacheTag> Tags { get; set; }
+
+        [JsonProperty]
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; set; }
 
         [JsonProperty]
         public string ConfigPlace { get; set; }
@@ -86,5 +83,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public string LocaleConfigPlace { get; set; }
+
+        [JsonProperty]
+        public Guid HostConfigMountPointId { get; set; }
+
+        [JsonProperty]
+        public string HostConfigPlace { get; set; }
     }
 }

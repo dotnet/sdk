@@ -125,7 +125,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (string.Equals(file.Name, TemplateConfigFileName, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (TryGetTemplateFromConfigInfo(file, out ITemplate template))
+                    IFile hostConfigFile = file.MountPoint.EnvironmentSettings.SettingsLoader.FindBestHostTemplateConfigFile(file);
+
+                    if (TryGetTemplateFromConfigInfo(file, out ITemplate template, hostTemplateConfigFile: hostConfigFile))
                     {
                         templateList.Add(template);
                     }
@@ -148,7 +150,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Identity = locModel.Identity,
                             Author = locModel.Author,
                             Name = locModel.Name,
-                            Description = locModel.Description
+                            Description = locModel.Description,
+                            ParameterSymbols = locModel.ParameterSymbols
                         };
                         localizations.Add(locator);
                     }
@@ -160,21 +163,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return templateList;
         }
 
-        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig = null, IFile hostTemplateConfigFile = null)
+        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo templateFileConfig, out ITemplate template, IFileSystemInfo localeFileConfig = null, IFile hostTemplateConfigFile = null)
         {
-            IFile file = config as IFile;
+            IFile templateFile = templateFileConfig as IFile;
 
-            if (file == null)
+            if (templateFile == null)
             {
                 template = null;
                 return false;
             }
 
-            IFile localeFile = localeConfig as IFile;
+            IFile localeFile = localeFileConfig as IFile;
 
             try
             {
-                JObject srcObject = ReadJObjectFromIFile(file);
+                JObject baseSrcObject = ReadJObjectFromIFile(templateFile);
+                JObject srcObject = MergeAdditionalConfiguration(baseSrcObject, templateFileConfig);
 
                 JObject localeSourceObject = null;
                 if (localeFile != null)
@@ -182,18 +186,56 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
 
-                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(file.MountPoint.EnvironmentSettings, srcObject, localeSourceObject);
-                template = new RunnableProjectTemplate(srcObject, this, file, templateModel, null, hostTemplateConfigFile);
+                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, localeSourceObject);
+                template = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
                 return true;
             }
             catch (Exception ex)
             {
-                ITemplateEngineHost host = config.MountPoint.EnvironmentSettings.Host;
-                host.LogMessage($"Error reading template from file: {file.FullPath} | Error = {ex.ToString()}");
+                ITemplateEngineHost host = templateFileConfig.MountPoint.EnvironmentSettings.Host;
+                host.LogMessage($"Error reading template from file: {templateFile.FullPath} | Error = {ex.Message}");
             }
 
             template = null;
             return false;
+        }
+
+        private static readonly string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
+
+        // Checks the primarySource for additional configuration files.
+        // If found, merges them all together.
+        // Returns the merged JObject (or the original if there was nothing to merge).
+        // Additional files must be in the same dir as the template file.
+        private JObject MergeAdditionalConfiguration(JObject primarySource, IFileSystemInfo primarySourceConfig)
+        {
+            IReadOnlyList<string> otherFiles = primarySource.ArrayAsStrings(AdditionalConfigFilesIndicator);
+
+            if (!otherFiles.Any())
+            {
+                return primarySource;
+            }
+
+            JObject combinedSource = (JObject)primarySource.DeepClone();
+
+            foreach (string partialConfigFileName in otherFiles)
+            {
+                if (!partialConfigFileName.EndsWith("." + TemplateConfigFileName))
+                {
+                    throw new TemplateAuthoringException($"Split configuration error with file [{partialConfigFileName}]. Additional configuration file names must end with '.{TemplateConfigFileName}'.", partialConfigFileName);
+                }
+
+                IFile partialConfigFile = primarySourceConfig.Parent.EnumerateFiles(partialConfigFileName, SearchOption.TopDirectoryOnly).FirstOrDefault(x => string.Equals(x.Name, partialConfigFileName));
+
+                if (partialConfigFile == null)
+                {
+                    throw new TemplateAuthoringException($"Split configuration file [{partialConfigFileName}] could not be found.", partialConfigFileName);
+                }
+
+                JObject partialConfigJson = ReadJObjectFromIFile(partialConfigFile);
+                combinedSource.Merge(partialConfigJson);
+            }
+
+            return combinedSource;
         }
 
         private JObject ReadJObjectFromIFile(IFile file)
@@ -278,14 +320,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
             {
-                if (literal != null)
+                if (TryResolveChoiceValue(literal, param, out string match))
                 {
-                    string match = param.Choices.Keys.FirstOrDefault(x => string.Equals(x, literal, StringComparison.OrdinalIgnoreCase));
-
-                    if (match != null)
-                    {
-                        return match;
-                    }
+                    return match;
                 }
 
                 if (literal == null && param.Priority != TemplateParameterPriority.Required)
@@ -294,11 +331,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 string val;
-                while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) && (val == null || !param.Choices.Keys.Contains(literal)))
+                while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) 
+                        && !TryResolveChoiceValue(literal, param, out val))
                 {
                 }
 
-                valueResolutionError = !param.Choices.ContainsKey(literal);
+                valueResolutionError = val == null;
                 return val;
             }
 
@@ -361,6 +399,41 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 return literal;
             }
+        }
+
+        private static bool TryResolveChoiceValue(string literal, ITemplateParameter param, out string match)
+        {
+            if (literal == null)
+            {
+                match = null;
+                return false;
+            }
+
+            string partialMatch = null;
+
+            foreach (string choiceValue in param.Choices.Keys)
+            {
+                if (string.Equals(choiceValue, literal, StringComparison.OrdinalIgnoreCase))
+                {   // exact match is good, regardless of partial matches
+                    match = choiceValue;
+                    return true;
+                }
+                else if (choiceValue.StartsWith(literal, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (partialMatch == null)
+                    {
+                        partialMatch = choiceValue;
+                    }
+                    else
+                    {   // multiple partial matches, can't take one.
+                        match = null;
+                        return false;
+                    }
+                }
+            }
+
+            match = partialMatch;
+            return match != null;
         }
 
         internal static object InferTypeAndConvertLiteral(string literal)

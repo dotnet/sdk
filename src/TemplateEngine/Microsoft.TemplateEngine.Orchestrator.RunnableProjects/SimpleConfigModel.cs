@@ -59,6 +59,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string GroupIdentity { get; set; }
 
+        public int Precedence { get; set; }
+
         public IReadOnlyList<Guid> Guids { get; set; }
 
         public string Name { get; set; }
@@ -75,9 +77,90 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
 
-        public IReadOnlyDictionary<string, string> Tags { get; set; }
+        private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
-        IReadOnlyDictionary<string, string> IRunnableProjectConfig.Tags => Tags;
+        public IReadOnlyDictionary<string, ICacheTag> Tags
+        {
+            get
+            {
+                Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
+
+                foreach (KeyValuePair<string, ParameterSymbol> tagParameter in TagDetails)
+                {
+                    string defaultValue;
+
+                    if (string.IsNullOrEmpty(tagParameter.Value.DefaultValue)
+                        && (tagParameter.Value.Choices.Count == 1))
+                    {
+                        defaultValue = tagParameter.Value.Choices.Keys.First();
+                    }
+                    else
+                    {
+                        defaultValue = tagParameter.Value.DefaultValue;
+                    }
+
+                    ICacheTag cacheTag = new CacheTag(tagParameter.Value.Description, tagParameter.Value.Choices, defaultValue);
+                    tags.Add(tagParameter.Key, cacheTag);
+                }
+
+                return tags;
+            }
+        }
+
+        private IReadOnlyDictionary<string, ParameterSymbol> _tagDetails;
+
+        // Converts "choice" datatype parameter symbols to tags
+        public IReadOnlyDictionary<string, ParameterSymbol> TagDetails
+        {
+            get
+            {
+                if (_tagDetails == null)
+                {
+                    Dictionary<string, ParameterSymbol> tempTagDetails = new Dictionary<string, ParameterSymbol>();
+
+                    foreach (KeyValuePair<string, ISymbolModel> symbolInfo in Symbols)
+                    {
+                        ParameterSymbol tagSymbol = symbolInfo.Value as ParameterSymbol;
+
+                        if (tagSymbol != null && tagSymbol.DataType == "choice")
+                        {
+                            tempTagDetails.Add(symbolInfo.Key, tagSymbol);
+                        }
+                    }
+
+                    _tagDetails = tempTagDetails;
+                }
+
+                return _tagDetails;
+            }
+        }
+
+        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
+
+        // Converts non-choice parameter symbols to cache parameters
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
+        {
+            get
+            {
+                if (_cacheParameters == null)
+                {
+                    Dictionary<string, ICacheParameter> cacheParameters = new Dictionary<string, ICacheParameter>();
+
+                    foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
+                    {
+                        if (symbol.Value is ParameterSymbol param && param.DataType != "choice")
+                        {
+                            ICacheParameter cacheParam = new CacheParameter(param.DataType, param.DefaultValue, param.Description);
+                            cacheParameters.Add(symbol.Key, cacheParam);
+                        }
+                    }
+
+                    _cacheParameters = cacheParameters;
+                }
+
+                return _cacheParameters;
+            }
+        }
 
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
@@ -282,7 +365,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return _Defaults;
                 }
             }
-
         }
 
         // file -> replacements
@@ -593,6 +675,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return generatedMacroConfigs;
         }
 
+        // If the token is a string:
+        //      check if its a valid file in the same directory as the sourceFile.
+        //          If so, read that files content as the exclude list.
+        //          Otherwise returns an array containing the string value as its only entry.
+        // Otherwise, interpret the token as an array and return the content.
         private static IReadOnlyList<string> JTokenToCollection(JToken token, IFile sourceFile, string[] defaultSet)
         {
             if (token == null)
@@ -602,10 +689,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (token.Type == JTokenType.String)
             {
-                using (Stream excludeList = sourceFile.Parent.Parent.FileInfo(token.ToString()).OpenRead())
-                using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
+                string tokenValue = token.ToString();
+                if ((tokenValue.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+                    || !sourceFile.Parent.FileInfo(tokenValue).Exists)
                 {
-                    return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    return new List<string>(new[] { tokenValue });
+                }
+                else
+                {
+                    using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToString()).OpenRead())
+                    using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
+                    {
+                        return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    }
                 }
             }
 
@@ -780,8 +876,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Author = localizationModel?.Author ?? source.ToString(nameof(config.Author)),
                 Classifications = source.ArrayAsStrings(nameof(config.Classifications)),
                 DefaultName = source.ToString(nameof(DefaultName)),
-                Description = localizationModel?.Description ?? source.ToString(nameof(Description)),
+                Description = localizationModel?.Description ?? source.ToString(nameof(Description)) ?? string.Empty,
                 GroupIdentity = source.ToString(nameof(GroupIdentity)),
+                Precedence = source.ToInt32(nameof(Precedence)),
                 Guids = source.ArrayAsGuids(nameof(config.Guids)),
                 Identity = source.ToString(nameof(config.Identity)),
                 Name = localizationModel?.Name ?? source.ToString(nameof(config.Name)),
@@ -823,6 +920,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
+
+            // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
+            // They're turned into symbols here, which eventually become tags.
+            config._tagsDeprecated = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
+            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(config._tagsDeprecated);
+
+            foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
+            {
+                if (!symbols.ContainsKey(tagSymbol.Key))
+                {
+                    symbols.Add(tagSymbol.Key, tagSymbol.Value);
+                }
+            }
+
             config.Symbols = symbols;
             foreach (JProperty prop in source.PropertiesOf(nameof(config.Symbols)))
             {
@@ -847,7 +958,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            config.Tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(config.Tags));
             config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions);
             config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
@@ -895,6 +1005,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.LocalizationOperations = localizations;
 
             return config;
+        }
+
+        private static IReadOnlyDictionary<string, ISymbolModel> ConvertDeprecatedTagsToParameterSymbols(IReadOnlyDictionary<string, string> tagsDeprecated)
+        {
+            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>();
+
+            foreach (KeyValuePair<string, string> tagInfo in tagsDeprecated)
+            {
+                symbols[tagInfo.Key] = ParameterSymbol.FromDeprecatedConfigTag(tagInfo.Value);
+            }
+
+            return symbols;
         }
 
         public static ILocalizationModel LocalizationFromJObject(JObject source)

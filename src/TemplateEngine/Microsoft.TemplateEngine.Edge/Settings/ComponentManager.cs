@@ -130,35 +130,36 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
+
+            foreach (Type t in registerFor)
+            {
+                FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
+                ICache cache = (ICache)instanceField.GetValue(null);
+                cache.AddPart(instance);
+                _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
+                _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
+
+                if (!_componentIdsByType.TryGetValue(t, out HashSet<Guid> ids))
+                {
+                    _componentIdsByType[t] = ids = new HashSet<Guid>();
+                }
+
+                ids.Add(instance.Id);
+
+                if (!_settings.ComponentTypeToGuidList.TryGetValue(t.FullName, out ids))
+                {
+                    _settings.ComponentTypeToGuidList[t.FullName] = ids = new HashSet<Guid>();
+                }
+
+                ids.Add(instance.Id);
+            }
+
             bool successfulWrite = false;
             const int maxAttempts = 10;
             int attemptCount = 0;
 
             while (!successfulWrite && attemptCount++ < maxAttempts)
             {
-                foreach (Type t in registerFor)
-                {
-                    FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
-                    ICache cache = (ICache)instanceField.GetValue(null);
-                    cache.AddPart(instance);
-                    _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
-                    _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
-
-                    if (!_componentIdsByType.TryGetValue(t, out HashSet<Guid> ids))
-                    {
-                        _componentIdsByType[t] = ids = new HashSet<Guid>();
-                    }
-
-                    ids.Add(instance.Id);
-
-                    if (!_settings.ComponentTypeToGuidList.TryGetValue(t.FullName, out ids))
-                    {
-                        _settings.ComponentTypeToGuidList[t.FullName] = ids = new HashSet<Guid>();
-                    }
-
-                    ids.Add(instance.Id);
-                }
-
                 try
                 {
                     _loader.Save();

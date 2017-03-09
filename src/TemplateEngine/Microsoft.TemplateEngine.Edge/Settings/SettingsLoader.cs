@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public static readonly string HostTemplateFileConfigBaseName = ".host.json";
 
         private SettingsStore _userSettings;
-        private TemplateCache _userTemplateCache;
+        private readonly TemplateCache _userTemplateCache;
         private IMountPointManager _mountPointManager;
         private IComponentManager _componentManager;
         private bool _isLoaded;
@@ -29,12 +29,28 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
+            _userTemplateCache = new TemplateCache(environmentSettings);
         }
 
         public void Save()
         {
+            // When writing the template caches, we need the existing cache version to read the existing caches for before updating.
+            // so don't update it until after the template caches are written.
+            _userTemplateCache.WriteTemplateCaches(_userSettings.Version);
+
+            // now it's safe to update the cache version, which is written in the settings file.
+            _userSettings.SetVersionToCurrent();
             JObject serialized = JObject.FromObject(_userSettings);
             _paths.WriteAllText(_paths.User.SettingsFile, serialized.ToString());
+        }
+
+        public TemplateCache UserTemplateCache
+        {
+            get
+            {
+                EnsureLoaded();
+                return _userTemplateCache;
+            }
         }
 
         private void EnsureLoaded()
@@ -129,7 +145,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             using (Timing.Over("Parse template cache"))
                 parsed = JObject.Parse(userTemplateCache);
             using (Timing.Over("Init template cache"))
-                _userTemplateCache = new TemplateCache(_environmentSettings, parsed);
+                _userTemplateCache.Reinitialize(parsed, _userSettings.Version);
 
             _templatesLoaded = true;
         }
@@ -144,6 +160,73 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             using (Timing.Over("Enumerate infos"))
                 templates.UnionWith(cache.TemplateInfo);
+        }
+
+        public void RebuildCacheFromSettingsIfNotCurrent(bool forceRebuild)
+        {
+            EnsureLoaded();
+
+            if (IsVersionCurrent && !forceRebuild)
+            {
+                return;
+            }
+
+            // load up the culture neutral cache
+            // and get the mount points for templates from the culture neutral cache
+            IReadOnlyList<TemplateInfo> cultureNeutralTemplates = _userTemplateCache.GetTemplatesForLocale(null, _userSettings.Version);
+            HashSet<Guid> templateMountPointIds = new HashSet<Guid>(cultureNeutralTemplates.Select(x => x.ConfigMountPointId));
+
+            _userTemplateCache.TemplateInfo.Clear();
+            HashSet<Guid> scannedMountPoints = new HashSet<Guid>();
+
+            // Scan the unique mount points for the templates.
+            foreach (MountPointInfo mountPoint in MountPoints)
+            {
+                if (templateMountPointIds.Contains(mountPoint.MountPointId) && scannedMountPoints.Add(mountPoint.MountPointId))
+                {
+                    _userTemplateCache.Scan(mountPoint.Place);
+                }
+            }
+
+            // loop through the localized caches and get all the locale mount points
+            HashSet<Guid> localeMountPointIds = new HashSet<Guid>();
+            foreach (string locale in _userTemplateCache.AllLocalesWithCacheFiles)
+            {
+                IReadOnlyList<TemplateInfo> templatesForLocale = _userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version);
+                localeMountPointIds.UnionWith(templatesForLocale.Select(x => x.LocaleConfigMountPointId));
+            }
+
+            // Scan the unique local mount points
+            foreach (MountPointInfo mountPoint in MountPoints)
+            {
+                if (localeMountPointIds.Contains(mountPoint.MountPointId) && scannedMountPoints.Add(mountPoint.MountPointId))
+                {
+                    _userTemplateCache.Scan(mountPoint.Place);
+                }
+            }
+
+            Save();
+
+            ReloadTemplates();
+        }
+
+        public void ReloadTemplates()
+        {
+            _templatesLoaded = false;
+            EnsureTemplatesLoaded();
+        }
+
+        public bool IsVersionCurrent
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_userSettings.Version) || !string.Equals(_userSettings.Version, SettingsStore.CurrentVersion, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         public ITemplate LoadTemplate(ITemplateInfo info)
@@ -176,26 +259,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
             }
 
-            IFile hostTemplateConfigFile = null;
-            if (!string.IsNullOrEmpty(_environmentSettings.Host.HostIdentifier))
-            {
-                string hostTemplateFileName = string.Join(string.Empty, _environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
-                hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
-            }
-
-            if (hostTemplateConfigFile == null && _environmentSettings.Host.FallbackHostTemplateConfigNames != null)
-            {
-                foreach (string fallbackName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
-                {
-                    string hostTemplateFileName = string.Join(string.Empty, fallbackName, HostTemplateFileConfigBaseName);
-                    hostTemplateConfigFile = config.Parent.EnumerateFiles(hostTemplateFileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
-
-                    if (hostTemplateConfigFile != null)
-                    {
-                        break;
-                    }
-                }
-            }
+            IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
 
             ITemplate template;
             using (Timing.Over("Template from config"))
@@ -207,6 +271,34 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     //TODO: Log the failure to read the template info
                 }
+
+            return null;
+        }
+
+        public IFile FindBestHostTemplateConfigFile(IFileSystemInfo config)
+        {
+            IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
+
+            foreach (IFile hostFile in config.Parent.EnumerateFiles($"*{HostTemplateFileConfigBaseName}", SearchOption.TopDirectoryOnly))
+            {
+                allHostFilesForTemplate.Add(hostFile.Name, hostFile);
+            }
+
+            string preferredHostFileName = string.Concat(_environmentSettings.Host.HostIdentifier, HostTemplateFileConfigBaseName);
+            if (allHostFilesForTemplate.TryGetValue(preferredHostFileName, out IFile preferredHostFile))
+            {
+                return preferredHostFile;
+            }
+
+            foreach (string fallbackHostName in _environmentSettings.Host.FallbackHostTemplateConfigNames)
+            {
+                string fallbackHostFileName = string.Concat(fallbackHostName, HostTemplateFileConfigBaseName);
+
+                if (allHostFilesForTemplate.TryGetValue(fallbackHostFileName, out IFile fallbackHostFile))
+                {
+                    return fallbackHostFile;
+                }
+            }
 
             return null;
         }
@@ -239,16 +331,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 UpdateTemplateListFromCache(_userTemplateCache, templates);
         }
 
-        public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool isCurrentCache)
+        public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool isCurrentLocale)
         {
-            TemplateCache cache = new TemplateCache(_environmentSettings);
-            cache.TemplateInfo.AddRange(templates.Cast<TemplateInfo>());
-            JObject serialized = JObject.FromObject(cache);
-            _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
-
-            if (isCurrentCache)
-            {
-                _userTemplateCache = cache;
+            if (isCurrentLocale)
+            {   // update the existing cache
+                _userTemplateCache.TemplateInfo = templates.Cast<TemplateInfo>().ToList();
+                JObject serialized = JObject.FromObject(_userTemplateCache);
+                _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
+            }
+            else
+            {   // create a throwaway cache for this locale, just for writing
+                TemplateCache cache = new TemplateCache(_environmentSettings);
+                cache.TemplateInfo.AddRange(templates.Cast<TemplateInfo>());
+                JObject serialized = JObject.FromObject(cache);
+                _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
             }
         }
 
@@ -329,6 +425,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file)
         {
+            EnsureLoaded();
             if (!string.IsNullOrEmpty(place) && _mountPointManager.TryDemandMountPoint(mountPointId, out IMountPoint mountPoint))
             {
                 file = mountPoint.FileInfo(place);
