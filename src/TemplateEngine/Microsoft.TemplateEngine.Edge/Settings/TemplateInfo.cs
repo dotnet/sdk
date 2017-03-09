@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,71 +12,28 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
         }
 
-        public TemplateInfo(JObject entry)
+        private static readonly Func<JObject, TemplateInfo> _defaultReader;
+        private static readonly IReadOnlyDictionary<string, Func<JObject, TemplateInfo>> _infoVersionReaders;
+
+        static TemplateInfo()
         {
-            ConfigMountPointId = Guid.Parse(entry.ToString(nameof(ConfigMountPointId)));
-            Author = entry.ToString(nameof(Author));
-            JArray classificationsArray = entry.Get<JArray>(nameof(Classifications));
+            Dictionary<string, Func<JObject, TemplateInfo>> versionReaders = new Dictionary<string, Func<JObject, TemplateInfo>>();
+            versionReaders.Add("1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject);
+            _infoVersionReaders = versionReaders;
 
-            List<string> classifications = new List<string>();
-            Classifications = classifications;
-            //using (Timing.Over("Read classifications"))
-                foreach (JToken item in classificationsArray)
-                {
-                    classifications.Add(item.ToString());
-                }
+            _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
+        }
 
-            DefaultName = entry.ToString(nameof(DefaultName));
-            Description = entry.ToString(nameof(Description));
-            Identity = entry.ToString(nameof(Identity));
-            GeneratorId = Guid.Parse(entry.ToString(nameof(GeneratorId)));
-            GroupIdentity = entry.ToString(nameof(GroupIdentity));
-            Precedence = entry.ToInt32(nameof(Precedence));
-            Name = entry.ToString(nameof(Name));
-            ShortName = entry.ToString(nameof(ShortName));
+        public static TemplateInfo FromJObject(JObject entry, string cacheVersion)
+        {
+            Func<JObject, TemplateInfo> infoReader;
 
-            // parse the cached tags
-            Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
-            JObject tagsObject = entry.Get<JObject>(nameof(Tags));
-            foreach (JProperty item in tagsObject.Properties())
+            if (string.IsNullOrEmpty(cacheVersion) || !_infoVersionReaders.TryGetValue(cacheVersion, out infoReader))
             {
-                Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                JObject cdToken = item.Value.Get<JObject>(nameof(ICacheTag.ChoicesAndDescriptions));
-                foreach (JProperty cdPair in cdToken.Properties())
-                {
-                    choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
-                }
-
-                ICacheTag cacheTag = new CacheTag(
-                    item.Value.ToString(nameof(ICacheTag.Description)),
-                    choicesAndDescriptions, 
-                    item.Value.ToString(nameof(ICacheTag.DefaultValue)));
-                tags.Add(item.Name.ToString(), cacheTag);
+                infoReader = _defaultReader;
             }
-            Tags = tags;
 
-            // parse the cached params
-            JObject cacheParamsObject = entry.Get<JObject>(nameof(CacheParameters));
-            Dictionary<string, ICacheParameter> cacheParams = new Dictionary<string, ICacheParameter>();
-            foreach (JProperty item in cacheParamsObject.Properties())
-            {
-                ICacheParameter param = new CacheParameter
-                {
-                    DataType = item.Value.ToString(nameof(ICacheParameter.DataType)),
-                    DefaultValue = item.Value.ToString(nameof(ICacheParameter.DefaultValue)),
-                    Description = item.Value.ToString(nameof(ICacheParameter.Description))
-                };
-
-                cacheParams[item.Name.ToString()] = param;
-            }
-            CacheParameters = cacheParams;
-
-            ConfigPlace = entry.ToString(nameof(ConfigPlace));
-            LocaleConfigMountPointId = Guid.Parse(entry.ToString(nameof(LocaleConfigMountPointId)));
-            LocaleConfigPlace = entry.ToString(nameof(LocaleConfigPlace));
-
-            HostConfigMountPointId = Guid.Parse(entry.ToString(nameof(HostConfigMountPointId)));
-            HostConfigPlace = entry.ToString(nameof(HostConfigPlace));
+            return infoReader(entry);
         }
 
         [JsonProperty]
