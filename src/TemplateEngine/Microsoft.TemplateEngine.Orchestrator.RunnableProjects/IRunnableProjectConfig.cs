@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IGlobalRunConfig OperationConfig { get; }
 
-        IReadOnlyList<FileSource> Sources { get; }
+        IReadOnlyList<FileSourceMatchInfo> Sources { get; }
 
         string DefaultName { get; }
 
