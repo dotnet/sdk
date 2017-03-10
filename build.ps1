@@ -10,6 +10,7 @@ param(
     [switch]$SkipTests,
     [switch]$FullMSBuild,
     [switch]$RealSign,
+    [switch]$SkipBuild,
     [switch]$Help)
 
 if($Help)
@@ -23,6 +24,7 @@ if($Help)
     Write-Host "  -SkipTests                         Skip executing unit tests"
     Write-Host "  -FullMSBuild                       Run tests with the full .NET Framework version of MSBuild instead of the .NET Core version"
     Write-Host "  -RealSign                          Sign the output DLLs"
+    Write-Host "  -SkipBuild                         Only initialise tooling and skip product build"
     Write-Host "  -Help                              Display this help message"
     exit 0
 }
@@ -38,25 +40,29 @@ if (!$env:DOTNET_INSTALL_DIR)
     $env:DOTNET_INSTALL_DIR="$RepoRoot\.dotnet_cli\"
 }
 
-if (!(Test-Path $env:DOTNET_INSTALL_DIR))
-{
-    mkdir $env:DOTNET_INSTALL_DIR | Out-Null
-}
-
 if ($Verbosity -eq 'diagnostic') {
     $dotnetInstallVerbosity = "-Verbose"
 }
+Write-Host Checking $env:DOTNET_INSTALL_DIR
+if(!(Test-Path $env:DOTNET_INSTALL_DIR))
+{
+    # Install a stage 0
+    $DOTNET_INSTALL_SCRIPT_URL="https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1"
+    New-Item "$env:DOTNET_INSTALL_DIR" -Type directory -ErrorAction Ignore
+    try{
+    Invoke-WebRequest $DOTNET_INSTALL_SCRIPT_URL -OutFile "$env:DOTNET_INSTALL_DIR\dotnet-install.ps1"
+    } catch {
+      Write-Host "failed $_.Exception"
+      exit 1
+    }
 
-# Install a stage 0
-$DOTNET_INSTALL_SCRIPT_URL="https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1"
-Invoke-WebRequest $DOTNET_INSTALL_SCRIPT_URL -OutFile "$env:DOTNET_INSTALL_DIR\dotnet-install.ps1"
-
-& "$env:DOTNET_INSTALL_DIR\dotnet-install.ps1" -Version $DotnetCLIVersion $dotnetInstallVerbosity
-if($LASTEXITCODE -ne 0) { throw "Failed to install stage0" }
-
+    Write-Host "$env:DOTNET_INSTALL_DIR\dotnet-install.ps1 -Version $DotnetCLIVersion $dotnetInstallVerbosity"
+    Invoke-Expression "$env:DOTNET_INSTALL_DIR\dotnet-install.ps1 -Version $DotnetCLIVersion $dotnetInstallVerbosity"
+    if($LASTEXITCODE -ne 0) { throw "Failed to install stage0" }
+}
 if (!(Test-Path "$env:DOTNET_INSTALL_DIR\shared\Microsoft.NETCore.App\1.1.1"))
 {
-    & "$env:DOTNET_INSTALL_DIR\dotnet-install.ps1" -Channel "Release/1.1.0" -Version 1.1.1 -SharedRuntime
+    Invoke-Expression "$env:DOTNET_INSTALL_DIR\dotnet-install.ps1 -Channel Release/1.1.0 -Version 1.1.1 -SharedRuntime"
     if($LASTEXITCODE -ne 0) { throw "Failed to install stage0" }
 }
 
@@ -69,6 +75,11 @@ $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 $logPath = "$RepoRoot\bin\log"
 if (!(Test-Path -Path $logPath)) {
     New-Item -Path $logPath -Force -ItemType 'Directory' | Out-Null
+}
+
+if($SkipBuild)
+{
+  exit 0
 }
 
 $signType = 'public'
@@ -101,10 +112,10 @@ $msbuildSummaryLog = Join-Path -path $logPath -childPath "templates.log"
 $msbuildWarningLog = Join-Path -path $logPath -childPath "templates.wrn"
 $msbuildFailureLog = Join-Path -path $logPath -childPath "templates.err"
 
-msbuild /t:restore /p:RestorePackagesPath=$PackagesPath $RepoRoot\sdk-templates.sln /verbosity:$Verbosity
+dotnet msbuild /t:restore /p:RestorePackagesPath=$PackagesPath $RepoRoot\sdk-templates.sln /verbosity:$Verbosity
 if($LASTEXITCODE -ne 0) { throw "Failed to restore nuget packages for templates" }
 
-msbuild  /t:$buildTarget $commonBuildArgs /nr:false /p:BuildTemplates=true /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog
+dotnet msbuild /t:$buildTarget $commonBuildArgs /p:BuildTemplates=true /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog
 if($LASTEXITCODE -ne 0) { throw "Failed to build templates" }
 
 # Modern VSIX build
@@ -112,6 +123,6 @@ $msbuildSummaryLog = Join-Path -path $logPath -childPath "modernvsix.log"
 $msbuildWarningLog = Join-Path -path $logPath -childPath "modernvsix.wrn"
 $msbuildFailureLog = Join-Path -path $logPath -childPath "modernvsix.err"
 
-msbuild /t:BuildModernVsixPackages $commonBuildArgs /nr:false /p:BuildTemplates=true /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog
+dotnet msbuild /t:BuildModernVsixPackages $commonBuildArgs /p:BuildTemplates=true /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog
 if($LASTEXITCODE -ne 0) { throw "Failed to build modern vsix packages" }
 

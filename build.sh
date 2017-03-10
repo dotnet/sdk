@@ -18,6 +18,8 @@ DOTNET_CLI_VERSION="$(cat "$REPOROOT/DotnetCLIVersion.txt")"
 
 CONFIGURATION="Debug"
 PLATFORM="Any CPU"
+SKIP_BUILD=false
+SKIP_TESTS=false
 
 args=( "$@" )
 
@@ -36,6 +38,14 @@ while [[ $# > 0 ]]; do
             args=( "${args[@]/$2}" )
             shift
             ;;
+        --skip-tests)
+            SKIP_TESTS=true
+            args=( "${args[@]/$1}" )
+            ;;  
+        --skip-build)
+            SKIP_BUILD=true
+            args=( "${args[@]/$1}" )
+            ;;               
         --help)
             echo "Usage: $0 [--configuration <CONFIGURATION>] [--platform <PLATFORM>] [--help]"
             echo ""
@@ -61,8 +71,8 @@ temp="${args[@]}"
 args=($temp)
 
 # Set nuget package cache under the repo
-export NUGET_PACKAGES="$REPOROOT/packages"
-export NUGET_HTTP_CACHE_PATH="$REPOROOT/packages"
+[ -z "$NUGET_HTTP_CACHE_PATH" ] && export NUGET_HTTP_CACHE_PATH="$REPOROOT/packages"
+[ -z "$NUGET_PACKAGES" ] && export NUGET_PACKAGES="$REPOROOT/packages"
 
 # Use a repo-local install directory (but not the artifacts directory because that gets cleaned a lot
 [ -z "$DOTNET_INSTALL_DIR" ] && export DOTNET_INSTALL_DIR=$REPOROOT/.dotnet_cli
@@ -76,16 +86,27 @@ if [ -z "$HOME" ]; then
     mkdir -p $HOME
 fi
 
-# Install a stage 0
-DOTNET_INSTALL_SCRIPT_URL="https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh"
-curl -sSL "$DOTNET_INSTALL_SCRIPT_URL" | bash /dev/stdin  --version $DOTNET_CLI_VERSION --verbose
+if [ ! -f $sdkInstallPath/dotnet ]; then
+    # Install a stage 0
+    DOTNET_INSTALL_SCRIPT_URL="https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh"
+    curl -sSL "$DOTNET_INSTALL_SCRIPT_URL" | bash /dev/stdin  --version $DOTNET_CLI_VERSION --verbose
+    
+    [ -d "$DOTNET_INSTALL_DIR/shared/Microsoft.NETCore.App/1.1.1" ] || curl -sSL "$DOTNET_INSTALL_SCRIPT_URL" | bash /dev/stdin  --channel "Release/1.1.0" --version "1.1.1" --shared-runtime
 
-[ -d "$DOTNET_INSTALL_DIR/shared/Microsoft.NETCore.App/1.1.1" ] || curl -sSL "$DOTNET_INSTALL_SCRIPT_URL" | bash /dev/stdin  --channel "Release/1.1.0" --version "1.1.1" --shared-runtime
+    # Put stage 0 on the PATH
+    export PATH="$DOTNET_INSTALL_DIR:$PATH"
 
-# Put stage 0 on the PATH
-export PATH="$DOTNET_INSTALL_DIR:$PATH"
+    # Disable first run since we want to control all package sources
+    export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
-# Disable first run since we want to control all package sources
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+fi
 
-dotnet msbuild $REPOROOT/build/build.proj /m:1 /nologo /p:Configuration=$CONFIGURATION /p:Platform="$PLATFORM" "${args[@]}"
+if [[ "$SKIP_BUILD" = true ]]; then
+  exit 0
+fi
+
+if [[ "$SKIP_TESTS" = true ]]; then
+    dotnet msbuild $REPOROOT/build/build.proj /t:BuildWithoutTesting /m:1 /nologo /p:Configuration=$CONFIGURATION /p:Platform="$PLATFORM" "${args[@]}"
+else
+    dotnet msbuild $REPOROOT/build/build.proj /m:1 /nologo /p:Configuration=$CONFIGURATION /p:Platform="$PLATFORM" "${args[@]}"
+fi
