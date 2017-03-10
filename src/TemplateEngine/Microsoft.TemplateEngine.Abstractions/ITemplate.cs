@@ -30,6 +30,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; }
 
+        IReadOnlyList<ITemplateParameter> Parameters { get; }
+
         Guid ConfigMountPointId { get; }
 
         string ConfigPlace { get; }

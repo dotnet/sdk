@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -35,6 +36,51 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             return infoReader(entry);
         }
+
+        [JsonIgnore]
+        public IReadOnlyList<ITemplateParameter> Parameters
+        {
+            get
+            {
+                if (_parameters == null)
+                {
+                    List<ITemplateParameter> parameters = new List<ITemplateParameter>();
+
+                    foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
+                    {
+                        ITemplateParameter param = new TemplateParameter
+                        {
+                            Name = tagInfo.Key,
+                            Documentation = tagInfo.Value.Description,
+                            DefaultValue = tagInfo.Value.DefaultValue,
+                            Choices = tagInfo.Value.ChoicesAndDescriptions,
+                            DataType = "choice"
+                        };
+
+                        parameters.Add(param);
+                    }
+
+                    foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
+                    {
+                        ITemplateParameter param = new TemplateParameter
+                        {
+                            Name = paramInfo.Key,
+                            Documentation = paramInfo.Value.Description,
+                            DataType = paramInfo.Value.DataType,
+                            DefaultValue = paramInfo.Value.DefaultValue
+                        };
+
+                        parameters.Add(param);
+                    }
+
+                    _parameters = parameters;
+                }
+
+                return _parameters;
+            }
+        }
+        private IReadOnlyList<ITemplateParameter> _parameters;
+
 
         [JsonProperty]
         public Guid ConfigMountPointId { get; set; }
@@ -70,10 +116,34 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public string ShortName { get; set; }
 
         [JsonProperty]
-        public IReadOnlyDictionary<string, ICacheTag> Tags { get; set; }
+        public IReadOnlyDictionary<string, ICacheTag> Tags
+        {
+            get
+            {
+                return _tags;
+            }
+            set
+            {
+                _tags = value;
+                _parameters = null;
+            }
+        }
+        private IReadOnlyDictionary<string, ICacheTag> _tags;
 
         [JsonProperty]
-        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; set; }
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
+        {
+            get
+            {
+                return _cacheParameters;
+            }
+            set
+            {
+                _cacheParameters = value;
+                _parameters = null;
+            }
+        }
+        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
 
         [JsonProperty]
         public string ConfigPlace { get; set; }
