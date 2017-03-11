@@ -51,7 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultLanguage Condition="'$(DefaultLanguage)' == ''">en-US</DefaultLanguage>
     
     <!-- Many of the targets use the VS Version in the path -->
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">15.0</VisualStudioVersion>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0' ">15.0</VisualStudioVersion>
   </PropertyGroup>
 
   <!-- Split $(TargetFramework) (e.g. net45) into short identifier and short version (e.g. 'net' and '45'). -->
@@ -84,7 +84,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!-- Handle legacy PCL profiles  -->
-  <PropertyGroup Condition="'$(TargetFramework)' != '' and $(TargetFramework.ToLowerInvariant().Contains('portable-'))" >
+  <PropertyGroup Condition="'$(TargetFramework)' != '' and $(TargetFramework.ToLowerInvariant().StartsWith('portable-'))" >
     <_ShortFrameworkIdentifier>portable</_ShortFrameworkIdentifier>
     <_PortableTfms>$(TargetFramework.Substring(9).ToLowerInvariant())</_PortableTfms>
     <_PortableTfmCount>$(_PortableTfms.Split('+').Length)</_PortableTfmCount>

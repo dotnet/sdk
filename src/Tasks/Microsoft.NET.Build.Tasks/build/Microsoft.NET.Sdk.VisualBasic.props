@@ -13,6 +13,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <VBRuntime>Embed</VBRuntime>
+    <_SdkLanguageName>VisualBasic</_SdkLanguageName>
+    <_SdkLangExtension>.vb</_SdkLangExtension>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

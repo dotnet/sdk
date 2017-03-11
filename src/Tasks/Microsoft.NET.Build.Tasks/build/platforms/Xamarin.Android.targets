@@ -11,7 +11,7 @@
     <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.$(_SdkLanguageName).targets</LanguageTargets>
     <AndroidUseLatestPlatformSdk Condition="'$(AndroidUseLatestPlatformSdk)' == ''">false</AndroidUseLatestPlatformSdk>
     <_SdkSetAndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">true</_SdkSetAndroidResgenFile>
-    <AndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">$(IntermediateOutputPath)$(TargetFramework)\Resource.Designer$(_SdkLangExtention)</AndroidResgenFile>
+    <AndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">$(IntermediateOutputPath)$(TargetFramework)\Resource.Designer$(_SdkLangExtension)</AndroidResgenFile>
     <!-- This is here to prevent a warning in the  Xamarin.Android.Common.Debugging.targets when a blank is passed into _GetPrimaryCpuAbi -->
     <AdbTarget Condition="'$(AdbTarget)' == ''">none</AdbTarget>
   </PropertyGroup>

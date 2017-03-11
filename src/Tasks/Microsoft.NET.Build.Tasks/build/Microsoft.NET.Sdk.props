@@ -130,15 +130,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.CSharp.props" Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.VisualBasic.props" Condition="'$(MSBuildProjectExtension)' == '.vbproj'" />
-
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <_SdkLanguageName>CSharp</_SdkLanguageName>
-    <_SdkLangExtention>.cs</_SdkLangExtention>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vbproj'">
-    <_SdkLanguageName>VisualBasic</_SdkLanguageName>
-    <_SdkLangExtention>.vb</_SdkLangExtention>
-  </PropertyGroup>
   
 </Project>
