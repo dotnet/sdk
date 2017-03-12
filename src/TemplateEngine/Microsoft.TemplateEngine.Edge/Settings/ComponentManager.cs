@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Mount.Archive;
@@ -118,12 +118,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void Register(Type type)
         {
-            if (!typeof(IIdentifiedComponent).IsAssignableFrom(type) || type.GetConstructor(Type.EmptyTypes) == null || !type.GetTypeInfo().IsClass)
+            if (!typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(type) || type.GetTypeInfo().GetConstructor(Type.EmptyTypes) == null || !type.GetTypeInfo().IsClass)
             {
                 return;
             }
 
-            IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).IsAssignableFrom(x)).ToList();
+            IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
             if (registerFor.Count == 0)
             {
                 return;
@@ -133,7 +133,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (Type t in registerFor)
             {
-                FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
+                FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetTypeInfo().GetField("Instance", BindingFlags.Public | BindingFlags.Static);
                 ICache cache = (ICache)instanceField.GetValue(null);
                 cache.AddPart(instance);
                 _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
@@ -167,7 +167,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch (IOException)
                 {
-                    Thread.Sleep(10);
+                    Task.Delay(10).Wait();
                 }
             }
         }
