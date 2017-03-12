@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -13,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         private readonly Stream _target;
         private readonly OperationTrie _trie;
         private Encoding _encoding;
-        private static readonly Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>> TrieLookup = new Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>>();
+        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>>();
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IEngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
@@ -54,11 +55,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             CurrentBufferPosition = bom.Length;
             target.Write(bom, 0, bom.Length);
 
-            Dictionary<Encoding, OperationTrie> byEncoding;
-            if(!TrieLookup.TryGetValue(operationProviders, out byEncoding))
-            {
-                TrieLookup[operationProviders] = byEncoding = new Dictionary<Encoding, OperationTrie>();
-            }
+            Dictionary<Encoding, OperationTrie> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, OperationTrie>());
 
             if (!byEncoding.TryGetValue(encoding, out _trie))
             {
