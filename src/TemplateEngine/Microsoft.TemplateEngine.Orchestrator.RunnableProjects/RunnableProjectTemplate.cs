@@ -70,9 +70,76 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IMountPoint Source { get; }
 
-        public IReadOnlyDictionary<string, ICacheTag> Tags { get; }
+        public IReadOnlyDictionary<string, ICacheTag> Tags
+        {
+            get
+            {
+                return _tags;
+            }
+            set
+            {
+                _tags = value;
+                _parameters = null;
+            }
+        }
+        private IReadOnlyDictionary<string, ICacheTag> _tags;
 
-        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; }
+        public IReadOnlyDictionary<string, ICacheParameter> CacheParameters
+        {
+            get
+            {
+                return _cacheParameters;
+            }
+            set
+            {
+                _cacheParameters = value;
+                _parameters = null;
+            }
+        }
+        private IReadOnlyDictionary<string, ICacheParameter> _cacheParameters;
+
+        public IReadOnlyList<ITemplateParameter> Parameters
+        {
+            get
+            {
+                if (_parameters == null)
+                {
+                    List<ITemplateParameter> parameters = new List<ITemplateParameter>();
+
+                    foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
+                    {
+                        ITemplateParameter param = new TemplateParameter
+                        {
+                            Name = tagInfo.Key,
+                            Documentation = tagInfo.Value.Description,
+                            DefaultValue = tagInfo.Value.DefaultValue,
+                            Choices = tagInfo.Value.ChoicesAndDescriptions,
+                            DataType = "choice"
+                        };
+
+                        parameters.Add(param);
+                    }
+
+                    foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
+                    {
+                        ITemplateParameter param = new TemplateParameter
+                        {
+                            Name = paramInfo.Key,
+                            Documentation = paramInfo.Value.Description,
+                            DataType = paramInfo.Value.DataType,
+                            DefaultValue = paramInfo.Value.DefaultValue
+                        };
+
+                        parameters.Add(param);
+                    }
+
+                    _parameters = parameters;
+                }
+
+                return _parameters;
+            }
+        }
+        private IReadOnlyList<ITemplateParameter> _parameters;
 
         public IFile ConfigFile { get; }
 

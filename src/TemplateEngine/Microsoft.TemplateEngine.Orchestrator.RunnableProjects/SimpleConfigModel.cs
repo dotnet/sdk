@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         private IReadOnlyDictionary<string, Parameter> _parameters;
-        private IReadOnlyList<FileSource> _sources;
+        private IReadOnlyList<FileSourceMatchInfo> _sources;
         private IGlobalRunConfig _operationConfig;
         private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
         private Parameter _nameParameter;
@@ -267,30 +267,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        IReadOnlyList<FileSource> IRunnableProjectConfig.Sources
+        IReadOnlyList<FileSourceMatchInfo> IRunnableProjectConfig.Sources
         {
             get
             {
                 if (_sources == null)
                 {
-                    List<FileSource> sources = new List<FileSource>();
+                    List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
 
                     foreach (ExtendedFileSource source in Sources)
                     {
                         IReadOnlyList<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults);
                         IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
                         IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
+                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
                         IReadOnlyDictionary<string, string> renamePatterns = source.Rename ?? RenameDefaults;
 
-                        sources.Add(new FileSource
-                        {
-                            CopyOnly = copyOnlyPattern,
-                            Exclude = excludePattern,
-                            Include = includePattern,
-                            Source = source.Source ?? "./",
-                            Target = source.Target ?? "./",
-                            Rename = renamePatterns
-                        });
+                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
+                            source.Source ?? "./",
+                            source.Target ?? "./",
+                            topLevelEvaluable,
+                            renamePatterns,
+                            new List<FileSourceEvaluable>());
+                        sources.Add(matchInfo);
                     }
 
                     if (sources.Count == 0)
@@ -298,16 +297,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         IReadOnlyList<string> includePattern = IncludePatternDefaults;
                         IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
                         IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
+                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
 
-                        sources.Add(new FileSource
-                        {
-                            CopyOnly = copyOnlyPattern,
-                            Exclude = excludePattern,
-                            Include = includePattern,
-                            Source = "./",
-                            Target = "./",
-                            Rename = null
-                        });
+                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
+                            "./",
+                            "./",
+                            topLevelEvaluable,
+                            new Dictionary<string, string>(),
+                            new List<FileSourceEvaluable>());
+                        sources.Add(matchInfo);
                     }
 
                     _sources = sources;
@@ -710,7 +708,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile)
         {
-            List<FileSource> sources = new List<FileSource>();
             bool stable = Symbols == null;
             Dictionary<string, bool> computed = new Dictionary<string, bool>();
 
@@ -765,6 +762,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
+            _sources = EvaluateSources(parameters, rootVariableCollection, configFile, resolvedNameParamValue);
+        }
+
+        private List<FileSourceMatchInfo> EvaluateSources(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile, object resolvedNameParamValue)
+        {
+            List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
+
             foreach (ExtendedFileSource source in Sources)
             {
                 if (!string.IsNullOrEmpty(source.Condition) && !CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, source.Condition, rootVariableCollection))
@@ -772,10 +776,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                List<string> includePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults).ToList();
-                List<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults).ToList();
-                List<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
-                Dictionary<string, string> renames = new Dictionary<string, string>(source.Rename ?? RenameDefaults);
+                IReadOnlyList<string> topIncludePattern = JTokenToCollection(source.Include, SourceFile, IncludePatternDefaults).ToList();
+                IReadOnlyList<string> topExcludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults).ToList();
+                IReadOnlyList<string> topCopyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
+                FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(topIncludePattern, topExcludePattern, topCopyOnlyPattern);
+
+                Dictionary<string, string> fileRenames = new Dictionary<string, string>(source.Rename ?? RenameDefaults);
+                List<FileSourceEvaluable> modifierList = new List<FileSourceEvaluable>();
 
                 if (source.Modifiers != null)
                 {
@@ -783,22 +790,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (string.IsNullOrEmpty(modifier.Condition) || CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, modifier.Condition, rootVariableCollection))
                         {
-                            includePattern.AddRange(JTokenToCollection(modifier.Include, SourceFile, new string[0]));
-                            excludePattern.AddRange(JTokenToCollection(modifier.Exclude, SourceFile, new string[0]));
-                            copyOnlyPattern.AddRange(JTokenToCollection(modifier.CopyOnly, SourceFile, new string[0]));
+                            IReadOnlyList<string> modifierIncludes = JTokenToCollection(modifier.Include, SourceFile, new string[0]);
+                            IReadOnlyList<string> modifierExcludes = JTokenToCollection(modifier.Exclude, SourceFile, new string[0]);
+                            IReadOnlyList<string> modifierCopyOnly = JTokenToCollection(modifier.CopyOnly, SourceFile, new string[0]);
+                            FileSourceEvaluable modifierPatterns = new FileSourceEvaluable(modifierIncludes, modifierExcludes, modifierCopyOnly);
+                            modifierList.Add(modifierPatterns);
 
                             if (modifier.Rename != null)
                             {
                                 foreach (JProperty property in modifier.Rename.Properties())
                                 {
-                                    renames[property.Name] = property.Value.Value<string>();
+                                    fileRenames[property.Name] = property.Value.Value<string>();
                                 }
                             }
                         }
                     }
                 }
 
-                Dictionary<string, string> coreRenames = new Dictionary<string, string>(renames);
+                Dictionary<string, string> coreRenames = new Dictionary<string, string>(fileRenames);
                 string sourceTargetName = source.Target ?? "./";
 
                 if (resolvedNameParamValue != null && SourceName != null)
@@ -808,28 +817,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     foreach (KeyValuePair<string, string> entry in coreRenames)
                     {
                         string outRel = entry.Value.Replace(SourceName, targetName);
-                        renames[entry.Key] = outRel;
+                        fileRenames[entry.Key] = outRel;
                     }
 
                     foreach (IFileSystemInfo entry in configFile.Parent.Parent.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
                     {
                         string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
                         string outRel = tmpltRel.Replace(SourceName, targetName);
-                        renames[tmpltRel] = outRel;
+                        fileRenames[tmpltRel] = outRel;
                     }
 
                     sourceTargetName = sourceTargetName.Replace(SourceName, targetName);
                 }
 
-                sources.Add(new FileSource
-                {
-                    CopyOnly = copyOnlyPattern.ToArray(),
-                    Exclude = excludePattern.ToArray(),
-                    Include = includePattern.ToArray(),
-                    Source = source.Source ?? "./",
-                    Target = sourceTargetName,
-                    Rename = renames
-                });
+                FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
+                    source.Source ?? "./",
+                    sourceTargetName,
+                    topLevelPatterns,
+                    fileRenames,
+                    modifierList);
+                sources.Add(sourceMatcher);
             }
 
             if (Sources.Count == 0)
@@ -837,8 +844,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IReadOnlyList<string> includePattern = IncludePatternDefaults;
                 IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
                 IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
+                FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
 
-                Dictionary<string, string> renames = new Dictionary<string, string>();
+                Dictionary<string, string> fileRenames = new Dictionary<string, string>();
 
                 if (SourceName != null)
                 {
@@ -848,23 +856,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         {
                             string tmpltRel = entry.PathRelativeTo(configFile.Parent.Parent);
                             string outRel = tmpltRel.Replace(SourceName, (string)resolvedValue);
-                            renames[tmpltRel] = outRel;
+                            fileRenames[tmpltRel] = outRel;
                         }
                     }
                 }
 
-                sources.Add(new FileSource
-                {
-                    CopyOnly = copyOnlyPattern,
-                    Exclude = excludePattern,
-                    Include = includePattern,
-                    Source = "./",
-                    Target = "./",
-                    Rename = renames
-                });
+                FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
+                    "./",
+                    "./",
+                    topLevelPatterns,
+                    fileRenames,
+                    new List<FileSourceEvaluable>());
+                sources.Add(sourceMatcher);
             }
 
-            _sources = sources;
+            return sources;
         }
 
         public static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, JObject localeSource = null)

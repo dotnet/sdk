@@ -10,7 +10,6 @@ using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -96,12 +95,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        public void SetupFileSource(FileSource source)
+        public void SetupFileSource(FileSourceMatchInfo source)
         {
-            Include = SetupPathInfoFromSource(source.Include);
-            CopyOnly = SetupPathInfoFromSource(source.CopyOnly);
-            Exclude = SetupPathInfoFromSource(source.Exclude);
-            Rename = source.Rename ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            FileSourceHierarchicalPathMatcher matcher = new FileSourceHierarchicalPathMatcher(source);
+            Include = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Include, matcher) };
+            Exclude = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Exclude, matcher) };
+            CopyOnly = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.CopyOnly, matcher) };
+            Rename = source.Renames ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         // Returns a list of operations which contains the custom operations and the default operations.
