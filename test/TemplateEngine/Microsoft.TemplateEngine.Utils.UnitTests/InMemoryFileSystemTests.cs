@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class InMemoryFileSystemTests
     {
-        [Fact]
+        [Fact(DisplayName = nameof(VerifyMultipleVirtualizationsAreHandled))]
         public void VerifyMultipleVirtualizationsAreHandled()
         {
             IPhysicalFileSystem mockFileSystem = new MockFileSystem();
