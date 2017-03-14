@@ -634,7 +634,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public string GetCurrentDirectory()
         {
-            return _basis.GetCurrentDirectory();
+            return Directory.GetCurrentDirectory();
         }
 
         public Stream OpenRead(string path)
