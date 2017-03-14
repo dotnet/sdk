@@ -21,3 +21,4 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
     // Compares the templates, irrespective of the match result
 }
+
