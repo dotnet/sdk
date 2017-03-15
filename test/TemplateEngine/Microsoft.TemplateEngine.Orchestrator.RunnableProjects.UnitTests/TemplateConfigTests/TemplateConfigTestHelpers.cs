@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     public class TemplateConfigTestHelpers
     {
         public static readonly Guid FileSystemMountPointFactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
-        public static readonly string DefaultConfigRelativePath = "template.json/.template.config";
+        public static readonly string DefaultConfigRelativePath = ".template.config/template.json";
 
         public static IEngineEnvironmentSettings GetTestEnvironment()
         {
