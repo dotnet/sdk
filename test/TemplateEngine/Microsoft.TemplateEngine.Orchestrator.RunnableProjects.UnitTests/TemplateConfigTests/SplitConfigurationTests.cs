@@ -1,24 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 using Microsoft.TemplateEngine.TestHelper;
-using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     public class SplitConfigurationTests : TestBase
     {
-        // TODO: find a home for this within the tests
-        private static readonly Guid FileSystemMountPointFactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
-
-        [Fact(DisplayName = nameof(SplitConfigurationMergesCorrectlyTest))]
-        public void SplitConfigurationMergesCorrectlyTest()
+        [Fact(DisplayName = nameof(SplitConfigTest))]
+        public void SplitConfigTest()
         {
-            string templateJsonString = @"
+            string sourcePath = TemplateConfigTestHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            TestTemplateSetup setup = SetupSplitConfigTestTemplate(EngineEnvironmentSettings, sourcePath);
+
+            IGenerator generator = new RunnableProjectGenerator();
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
+            generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
+
+            IDictionary<string, ITemplateParameter> parameters = template.Parameters.ToDictionary(p => p.Name, p => p);
+            Assert.Equal(5, parameters.Count);
+            Assert.True(parameters.ContainsKey("type"));
+            Assert.True(parameters.ContainsKey("language"));
+            Assert.True(parameters.ContainsKey("RuntimeFrameworkVersion"));
+            Assert.True(parameters.ContainsKey("Framework"));
+            Assert.True(parameters.ContainsKey("MyThing"));
+        }
+
+        private static TestTemplateSetup SetupSplitConfigTestTemplate(IEngineEnvironmentSettings environment, string basePath)
+        {
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add("template.json/.template.config", TemplateJsonString);
+            templateSourceFiles.Add("template.json/symbols.template.json", SymbolsTemplateJsonString);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
+        }
+
+        private static string TemplateJsonString
+        {
+            get
+            {
+                string templateJsonString = @"
 {
   ""author"": ""Microsoft"",
   ""classifications"": [""Common"", ""Console""],
@@ -53,8 +77,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   }
 }
 ";
+                return templateJsonString;
+            }
+        }
 
-            string symbolsTemplateJsonString = @"
+        private static string SymbolsTemplateJsonString
+        {
+            get
+            {
+                string symbolsTemplateJsonString = @"
 {
   ""symbols"": {
     ""RuntimeFrameworkVersion"": {
@@ -99,46 +130,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   }
 }
 ";
-
-
-            ITemplateEngineHost host = EngineEnvironmentSettings.Host;
-            string mountPointPlace = @"/temp/testMountPoint/";
-            host.VirtualizeDirectory(mountPointPlace);
-            host.FileSystem.CreateDirectory(mountPointPlace);
-
-            MountPointInfo mountPointInfo = new MountPointInfo(Guid.Empty, FileSystemMountPointFactoryId, Guid.NewGuid(), mountPointPlace);
-            if (!new FileSystemMountPointFactory().TryMount(EngineEnvironmentSettings, null, mountPointPlace, out IMountPoint mountPoint))
-            {
-                Assert.True(false, "couldn't create mount point");
+                return symbolsTemplateJsonString;
             }
-
-            string configDir = ".template.config";
-            string configFilePlace = mountPointPlace.CombinePaths(configDir);
-            host.FileSystem.CreateDirectory(configFilePlace);
-
-            string templateJsonPath = configFilePlace.CombinePaths("template.json");
-            string symbolsJsonPath = configFilePlace.CombinePaths("symbols.template.json");
-            host.FileSystem.WriteAllText(templateJsonPath, templateJsonString);
-            host.FileSystem.WriteAllText(symbolsJsonPath, symbolsTemplateJsonString);
-
-            string reRead = host.FileSystem.ReadAllText(templateJsonPath);
-            Assert.Equal(templateJsonString, reRead);
-
-            string mountRelTemplateJsonPath = configDir.CombinePaths("template.json");
-            IFileSystemInfo templateConfigFileInfo = mountPoint.FileSystemInfo(mountRelTemplateJsonPath);
-
-            IFileSystemInfo infoTemplateConfigFileInfo = mountPoint.FileInfo(mountRelTemplateJsonPath);
-
-            IGenerator generator = new RunnableProjectGenerator();
-            generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
-
-            IDictionary<string, ITemplateParameter> parameters = template.Parameters.ToDictionary(p => p.Name, p => p);
-            Assert.Equal(5, parameters.Count);
-            Assert.True(parameters.ContainsKey("type"));
-            Assert.True(parameters.ContainsKey("language"));
-            Assert.True(parameters.ContainsKey("RuntimeFrameworkVersion"));
-            Assert.True(parameters.ContainsKey("Framework"));
-            Assert.True(parameters.ContainsKey("MyThing"));
         }
     }
 }

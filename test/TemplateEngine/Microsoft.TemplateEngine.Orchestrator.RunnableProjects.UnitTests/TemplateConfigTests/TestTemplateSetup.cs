@@ -11,7 +11,7 @@ using Xunit;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     /// <summary>
-    /// Generator-agnostic test class for testing aspects of template creation without installing the templates.
+    /// Test class for testing aspects of template creation without installing the templates.
     /// </summary>
     public class TestTemplateSetup
     {
@@ -62,6 +62,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
                 return _sourceMountPoint;
             }
+        }
+
+        public IFileSystemInfo InfoForSourceFile(string filePath)
+        {
+            return SourceMountPoint.FileSystemInfo(filePath);
         }
 
         public void WriteSource()

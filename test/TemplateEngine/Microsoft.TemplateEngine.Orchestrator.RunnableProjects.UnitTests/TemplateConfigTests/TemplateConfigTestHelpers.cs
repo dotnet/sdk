@@ -25,6 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return new EngineEnvironmentSettings(host, x => null);
         }
 
+        // Note: this does not deal with configs split into multiple files.
         public static IRunnableProjectConfig ConfigFromSource(IEngineEnvironmentSettings environment, IMountPoint mountPoint, string configFile = null)
         {
             if (string.IsNullOrEmpty(configFile))
