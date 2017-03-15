@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IFile FileInfo(string fullPath)
         {
-            IFileSystemInfo info = FileInfo(fullPath);
+            IFileSystemInfo info = FileSystemInfo(fullPath);
             IFile resultFile = info as IFile;
 
             if (resultFile != null)
