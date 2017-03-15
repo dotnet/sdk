@@ -51,7 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     with the referencing project's target framework.
   ============================================================
    -->
-  <Target Name="GetTargetFrameworkProperties" Returns="TargetFramework=$(NearestTargetFramework);ProjectHasSingleTargetFramework=$(_HasSingleTargetFramework);ProjectIsRidAgnostic=$(_IsRidAgnostic)">
+  <Target Name="GetTargetFrameworkProperties" Returns="@(ProjectBuildInstructions)">
 
     <PropertyGroup>
       <!-- indicate to caller that project is RID agnostic so that a global property RuntimeIdentifier value can be removed -->
@@ -76,6 +76,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                                Condition="'$(_SkipNearestTargetFrameworkResolution)' != 'true'">
       <Output PropertyName="NearestTargetFramework" TaskParameter="NearestTargetFramework" />
     </GetNearestTargetFramework>
+
+    <ItemGroup>
+      <ProjectBuildInstructions Include="$(MSBuildProjectFullPath)">
+        <DesiredTargetFrameworkProperties>TargetFramework=$(NearestTargetFramework)</DesiredTargetFrameworkProperties>
+        <HasSingleTargetFramework>$(_HasSingleTargetFramework)</HasSingleTargetFramework>
+        <IsRidAgnostic>$(_IsRidAgnostic)</IsRidAgnostic>
+      </ProjectBuildInstructions>
+    </ItemGroup>
   </Target>
   
 </Project>
