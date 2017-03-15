@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Operations;
@@ -494,23 +495,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (SourceName.IndexOf('.') > -1)
                     {
-                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant()));
-                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_')));
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant().TokenConfig()));
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_').TokenConfig()));
                     }
                     else
                     {
-                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant()));
+                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().TokenConfig()));
                     }
                 }
 
                 if (SourceName.IndexOf('.') > -1)
                 {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName));
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_')));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName.TokenConfig()));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_').TokenConfig()));
                 }
                 else
                 {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.TokenConfig()));
                 }
             }
 
@@ -520,6 +521,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (symbol.Value.Replaces != null)
                     {
+                        string sourceVariable = null;
+
                         if (symbol.Value.Type == "bind")
                         {
                             if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
@@ -530,13 +533,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             {
                                 //Since this is a bind symbol, don't replace the literal with this symbol's value, 
                                 //  replace it with the value of the bound symbol
-                                macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Value.Binding, symbol.Value.Replaces));
+                                sourceVariable = symbol.Value.Binding;
                             }
                         }
                         else
                         {
                             //Replace the literal value in the "replaces" property with the evaluated value of the symbol
-                            macroGeneratedReplacements.Add(new ReplacementTokens(symbol.Key, symbol.Value.Replaces));
+                            sourceVariable = symbol.Key;
+                        }
+
+                        if (sourceVariable != null)
+                        {
+                            TokenConfig replacementConfig = symbol.Value.Replaces.TokenConfigBuilder();
+                            foreach (IReplacementContext context in symbol.Value.ReplacementContexts)
+                            {
+                                TokenConfig builder = replacementConfig;
+                                if (!string.IsNullOrEmpty(context.OnlyIfAfter))
+                                {
+                                    builder = builder.OnlyIfAfter(context.OnlyIfAfter);
+                                }
+
+                                if (!string.IsNullOrEmpty(context.OnlyIfBefore))
+                                {
+                                    builder = builder.OnlyIfBefore(context.OnlyIfBefore);
+                                }
+
+                                macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, builder));
+                            }
                         }
                     }
                 }
@@ -547,7 +570,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 foreach (char format in GuidMacroConfig.DefaultFormats)
                 {
                     string newGuid = char.IsUpper(format) ? map.Key.ToString(format.ToString()).ToUpperInvariant() : map.Key.ToString(format.ToString()).ToLowerInvariant();
-                    macroGeneratedReplacements.Add(new ReplacementTokens(map.Value + "-" + format, newGuid));
+                    macroGeneratedReplacements.Add(new ReplacementTokens(map.Value + "-" + format, newGuid.TokenConfig()));
                 }
             }
 
@@ -1002,7 +1025,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     List<IOperationProvider> localizationsForFile = new List<IOperationProvider>();
                     foreach (KeyValuePair<string, string> localizationInfo in fileLocalization.Localizations)
                     {
-                        localizationsForFile.Add(new Replacement(localizationInfo.Key, localizationInfo.Value, null));
+                        localizationsForFile.Add(new Replacement(localizationInfo.Key.TokenConfig(), localizationInfo.Value, null));
                     }
 
                     localizations.Add(fileLocalization.File, localizationsForFile);

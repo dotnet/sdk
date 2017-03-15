@@ -59,7 +59,7 @@ Final stuff";
             string on = "//+:cnd";
             string off = "//-:cnd";
             List<IOperationProvider> flagOperations = new List<IOperationProvider>();
-            flagOperations.Add(new SetFlag(Conditional.OperationName, on, off, string.Empty, string.Empty, null));
+            flagOperations.Add(new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), string.Empty.TokenConfig(), string.Empty.TokenConfig(), null));
 
             IProcessor processor = partialProcessor.CloneAndAppendOperations(flagOperations);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
@@ -115,7 +115,7 @@ Final stuff";
             string off = "//-:cnd";
             string offNoEmit = off + ":noEmit";
             List<IOperationProvider> flagOperations = new List<IOperationProvider>();
-            flagOperations.Add(new SetFlag(Conditional.OperationName, on, off, onNoEmit, offNoEmit, null));
+            flagOperations.Add(new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), null));
 
             IProcessor processor = partialProcessor.CloneAndAppendOperations(flagOperations);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
@@ -142,7 +142,7 @@ End";
             string offNoEmit = off + ":noEmit";
             IOperationProvider[] operations =
             {
-                new SetFlag(Conditional.OperationName, on, off, onNoEmit, offNoEmit, null),
+                new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), null),
             };
             IProcessor processor = Processor.Create(engineConfig, operations);
             RunAndVerify(originalValue, expectedValue, processor, 9999);

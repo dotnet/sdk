@@ -4,7 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Edge.Settings
+namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 {
     public static class TemplateInfoReaderInitialVersion
     {

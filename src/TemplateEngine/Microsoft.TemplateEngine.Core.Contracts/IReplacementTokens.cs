@@ -4,6 +4,6 @@
     {
         string VariableName { get; }
 
-        string OriginalValue { get; }
+        ITokenConfig OriginalValue { get; }
     }
 }

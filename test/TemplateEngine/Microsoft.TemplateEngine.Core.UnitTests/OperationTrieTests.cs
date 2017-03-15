@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.Core.Matching;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -14,14 +14,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             private readonly MatchHandler _onMatch;
 
-            public MockOperation(string id, MatchHandler onMatch, params byte[][] tokens)
+            public MockOperation(string id, MatchHandler onMatch, params IToken[] tokens)
             {
                 Tokens = tokens;
                 Id = id;
                 _onMatch = onMatch;
             }
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id { get; }
 
@@ -36,15 +36,13 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
             {
-                new MockOperation("Test1", null, new byte[] {1, 2, 3, 4}),
-                new MockOperation("Test2", null, new byte[] {2, 3})
+                new MockOperation("Test1", null, TokenConfig.LiteralToken(new byte[]{1, 2, 3, 4})),
+                new MockOperation("Test2", null, TokenConfig.LiteralToken(new byte[] {2, 3}))
             });
 
-            byte[] buffer = {1, 2, 3, 4, 5};
+            byte[] buffer = { 1, 2, 3, 4, 5 };
             int currentBufferPosition = 0;
-            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int
-            token)
-            ;
+            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
             Assert.NotNull(match);
             Assert.Equal("Test1", match.Id);
@@ -57,8 +55,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
             {
-                new MockOperation("Test1", null, new byte[] {5, 2, 3, 4}),
-                new MockOperation("Test2", null, new byte[] {4, 6}, new byte[] {2, 3})
+                new MockOperation("Test1", null, TokenConfig.LiteralToken(new byte[] {5, 2, 3, 4})),
+                new MockOperation("Test2", null, TokenConfig.LiteralToken(new byte[] {4, 6}), TokenConfig.LiteralToken(new byte[] {2, 3}))
             });
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
@@ -81,8 +79,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
             {
-                new MockOperation("Test1", null, new byte[] {5, 2, 3, 4}),
-                new MockOperation("Test2", null, new byte[] {4, 5}, new byte[] {2, 3})
+                new MockOperation("Test1", null, TokenConfig.LiteralToken(new byte[] {5, 2, 3, 4})),
+                new MockOperation("Test2", null, TokenConfig.LiteralToken(new byte[] {4, 5}), TokenConfig.LiteralToken(new byte[] {2, 3}))
             });
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
@@ -93,6 +91,69 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.Equal("Test2", match.Id);
             Assert.Equal(0, token);
             Assert.Equal(buffer.Length, currentBufferPosition);
+        }
+
+        private class OperationTrie : Trie<OperationTerminal>
+        {
+            public static OperationTrie Create(IEnumerable<IOperation> operations)
+            {
+                OperationTrie trie = new OperationTrie();
+
+                foreach (IOperation operation in operations)
+                {
+                    int tokenNumber = 0;
+                    foreach (IToken token in operation.Tokens)
+                    {
+                        trie.AddPath(token.Value, new OperationTerminal(operation, tokenNumber++, token.Length, token.Start, token.End));
+                    }
+                }
+
+                return trie;
+            }
+
+            public IOperation GetOperation(byte[] buffer, int bufferLength, ref int bufferPosition, out int token)
+            {
+                int originalPosition = bufferPosition;
+                TrieEvaluator<OperationTerminal> evaluator = new TrieEvaluator<OperationTerminal>(this);
+                int sn = originalPosition;
+
+                for (; bufferPosition < bufferLength; ++bufferPosition)
+                {
+                    if (evaluator.Accept(buffer[bufferPosition], ref sn, out TerminalLocation<OperationTerminal> terminal))
+                    {
+                        if (terminal.Location == originalPosition)
+                        {
+                            bufferPosition -= sn - terminal.Location - terminal.Terminal.End;
+                            token = terminal.Terminal.Token;
+                            return terminal.Terminal.Operation;
+                        }
+                        else
+                        {
+                            token = -1;
+                            bufferPosition = originalPosition;
+                            return null;
+                        }
+                    }
+
+                    ++sn;
+                }
+
+                if (bufferPosition == bufferLength)
+                {
+                    evaluator.FinalizeMatchesInProgress(ref sn, out TerminalLocation<OperationTerminal> terminal);
+
+                    if (terminal != null)
+                    {
+                        bufferPosition -= sn - terminal.Location - terminal.Terminal.End;
+                        token = terminal.Terminal.Token;
+                        return terminal.Terminal.Operation;
+                    }
+                }
+
+                bufferPosition = originalPosition;
+                token = -1;
+                return null;
+            }
         }
     }
 }

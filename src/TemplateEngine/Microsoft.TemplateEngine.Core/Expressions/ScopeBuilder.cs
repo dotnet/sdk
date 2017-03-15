@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     int oldBufferPos = bufferPosition;
                     if (_tokens.GetOperation(_processor.CurrentBuffer, bufferLength, ref bufferPosition, out int token))
                     {
-                        allData.AddRange(_tokens.Tokens[token]);
+                        allData.AddRange(_tokens.Tokens[token].Value);
                         TToken mappedToken = (TToken)(object)token;
 
                         if (_badSyntaxTokens.Contains(mappedToken))
@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             }
                             else
                             {
-                                currentLiteral.AddRange(_tokens.Tokens[token]);
+                                currentLiteral.AddRange(_tokens.Tokens[token].Value);
                             }
                         }
                         else

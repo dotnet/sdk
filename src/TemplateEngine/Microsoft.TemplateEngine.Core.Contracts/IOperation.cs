@@ -5,7 +5,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 {
     public interface IOperation
     {
-        IReadOnlyList<byte[]> Tokens { get; }
+        IReadOnlyList<IToken> Tokens { get; }
 
         int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
 

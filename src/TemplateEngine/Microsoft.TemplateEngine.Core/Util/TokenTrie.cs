@@ -1,129 +1,89 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Matching;
 
 namespace Microsoft.TemplateEngine.Core.Util
 {
-    public class TokenTrie : ITokenTrie
+    public class TokenTrie : Trie<Token>, ITokenTrie
     {
-        private readonly Dictionary<byte, TokenTrie> _map = new Dictionary<byte, TokenTrie>();
-        private readonly List<int> _tokenLength;
-        private readonly List<byte[]> _tokens;
+        private List<IToken> _tokens = new List<IToken>();
+        private List<int> _lengths = new List<int>();
 
-        public TokenTrie()
-        {
-            Index = -1;
-            _tokenLength = new List<int>();
-            _tokens = new List<byte[]>();
-        }
-
-        public int Count { get; private set; }
-
-        public int Index { get; private set; }
+        public int Count => _tokens.Count;
 
         public int MaxLength { get; private set; }
 
-        public int MinLength { get; private set; }
+        public int MinLength { get; private set; } = int.MaxValue;
 
-        public IReadOnlyList<byte[]> Tokens => _tokens;
+        public IReadOnlyList<int> TokenLength => _lengths;
 
-        public IReadOnlyList<int> TokenLength => _tokenLength;
+        public IReadOnlyList<IToken> Tokens => _tokens;
 
-        public int AddToken(byte[] token)
+        public int AddToken(byte[] literalToken)
         {
-            int result = Count;
-            AddToken(token, result);
-            return result;
+            return AddToken(TokenConfig.LiteralToken(literalToken));
         }
 
-        public void AddToken(byte[] token, int index)
+        public void AddToken(byte[] literalToken, int index)
         {
-            ++Count;
-            TokenTrie current = this;
-            _tokenLength.Add(token.Length);
+            AddToken(TokenConfig.LiteralToken(literalToken), index);
+        }
+
+        public int AddToken(IToken token)
+        {
+            int count = _tokens.Count;
+            AddToken(token, count);
+            return count;
+        }
+
+        public void AddToken(IToken token, int index)
+        {
             _tokens.Add(token);
+            _lengths.Add(token.Length);
+            Token t = new Token(token.Value, index, token.Start, token.End);
+            AddPath(token.Value, t);
 
-            MaxLength = Math.Max(MaxLength, token.Length);
-
-            MinLength = MinLength == 0
-                ? token.Length
-                : Math.Min(MinLength, token.Length);
-
-            for (int i = 0; i < token.Length; ++i)
+            if (token.Length > MaxLength)
             {
-                TokenTrie child;
-                if (!current._map.TryGetValue(token[i], out child))
-                {
-                    child = new TokenTrie();
-                    current._map[token[i]] = child;
-                }
-
-                if (i == token.Length - 1)
-                {
-                    child.Index = index;
-                }
-
-                current = child;
-            }
-        }
-
-        public bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token)
-        {
-            if (bufferLength < MinLength)
-            {
-                token = -1;
-                return false;
+                MaxLength = token.Length;
             }
 
-            int i = currentBufferPosition;
-            TokenTrie current = this;
-            int index = -1;
-            int offsetToMatch = 0;
-
-            while (i < bufferLength)
+            if (token.Length < MinLength)
             {
-                if (!current._map.TryGetValue(buffer[i], out current))
-                {
-                    token = index;
-
-                    if (index != -1)
-                    {
-                        currentBufferPosition = i - offsetToMatch;
-                        token = index;
-                        return true;
-                    }
-
-                    return false;
-                }
-
-                if (current.Index != -1)
-                {
-                    index = current.Index;
-                    offsetToMatch = 0;
-                }
-                else
-                {
-                    ++offsetToMatch;
-                }
-
-                ++i;
+                MinLength = token.Length;
             }
-
-            if (index != -1)
-            {
-                currentBufferPosition = i;
-            }
-
-            token = index;
-            return index != -1;
         }
 
         public void Append(ITokenTrie trie)
         {
-            foreach (byte[] token in trie.Tokens)
+            foreach (IToken token in trie.Tokens)
             {
                 AddToken(token);
             }
+        }
+
+        public ITokenTrieEvaluator CreateEvaluator()
+        {
+            return new TokenTrieEvaluator(this); 
+        }
+
+        public bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token)
+        {
+            int originalPosition = currentBufferPosition;
+            TrieEvaluator<Token> evaluator = new TrieEvaluator<Token>(this);
+            TrieEvaluationDriver<Token> driver = new TrieEvaluationDriver<Token>(evaluator);
+            TerminalLocation<Token> location = driver.Evaluate(buffer, bufferLength, true, 0, ref currentBufferPosition);
+
+            if (location != null && currentBufferPosition - location.Terminal.Value.Length == originalPosition)
+            {
+                token = location.Terminal.Index;
+                currentBufferPosition = location.Location + location.Terminal.End - location.Terminal.Start;
+                return true;
+            }
+
+            currentBufferPosition = originalPosition;
+            token = -1;
+            return false;
         }
     }
 }

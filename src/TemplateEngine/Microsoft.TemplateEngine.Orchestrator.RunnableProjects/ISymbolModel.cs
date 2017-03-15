@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public interface ISymbolModel
@@ -7,5 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         string Binding { get; set; }
 
         string Replaces { get; set; }
+
+        IReadOnlyList<IReplacementContext> ReplacementContexts { get; }
     }
 }

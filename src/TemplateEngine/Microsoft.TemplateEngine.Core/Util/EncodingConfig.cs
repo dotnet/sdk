@@ -8,11 +8,11 @@ namespace Microsoft.TemplateEngine.Core.Util
     public class EncodingConfig : IEncodingConfig
     {
         private readonly Func<object>[] _values;
-        private readonly List<byte[]> _variableKeys;
+        private readonly List<IToken> _variableKeys;
 
         public EncodingConfig(IEngineConfig config, Encoding encoding)
         {
-            _variableKeys = new List<byte[]>();
+            _variableKeys = new List<IToken>();
             Encoding = encoding;
             LineEndings = new TokenTrie();
             Whitespace = new TokenTrie();
@@ -21,14 +21,14 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             foreach (string token in config.LineEndings)
             {
-                byte[] tokenBytes = encoding.GetBytes(token);
+                IToken tokenBytes = token.Token(encoding);
                 LineEndings.AddToken(tokenBytes);
                 WhitespaceOrLineEnding.AddToken(tokenBytes);
             }
 
             foreach (string token in config.Whitespaces)
             {
-                byte[] tokenBytes = encoding.GetBytes(token);
+                IToken tokenBytes = token.Token(encoding);
                 Whitespace.AddToken(tokenBytes);
                 WhitespaceOrLineEnding.AddToken(tokenBytes);
             }
@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public ITokenTrie LineEndings { get; }
 
-        public IReadOnlyList<byte[]> VariableKeys => _variableKeys;
+        public IReadOnlyList<IToken> VariableKeys => _variableKeys;
 
         public IReadOnlyList<Func<object>> VariableValues => _values;
 
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             foreach (string key in config.Variables.Keys)
             {
                 string formattedKey = string.Format(config.VariableFormatString, key);
-                byte[] keyBytes = encoding.GetBytes(formattedKey);
+                IToken keyBytes = formattedKey.Token(encoding);
                 _variableKeys.Add(keyBytes);
                 _values[Variables.AddToken(keyBytes)] = () => config.Variables[key];
             }

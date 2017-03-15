@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _id = id;
             }
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
 
@@ -40,9 +40,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 bool flag;
                 if (processor.Config.Flags.TryGetValue("expandVariables", out flag) && !flag)
                 {
-                    byte[] tokenValue = Tokens[token];
-                    target.Write(tokenValue, 0, tokenValue.Length);
-                    return tokenValue.Length;
+                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    return Tokens[token].Length;
                 }
 
                 object result = processor.EncodingConfig[token];

@@ -6,9 +6,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public string VariableName { get; }
 
-        public string OriginalValue { get; }
+        public ITokenConfig OriginalValue { get; }
 
-        public ReplacementTokens(string identity, string originalValue)
+        public ReplacementTokens(string identity, ITokenConfig originalValue)
         {
             VariableName = identity;
             OriginalValue = originalValue;

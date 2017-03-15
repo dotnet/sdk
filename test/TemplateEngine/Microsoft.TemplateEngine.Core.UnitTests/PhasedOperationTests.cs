@@ -35,22 +35,22 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             VariableCollection vc = new VariableCollection();
 
-            Phase root = new Phase("package", new[] { "/>" });
+            Phase root = new Phase("package".TokenConfig(), new[] { "/>" }.TokenConfigs());
 
             //package > name
-            Phase name = new Phase("name", new[] { "/>" });
+            Phase name = new Phase("name".TokenConfig(), new[] { "/>" }.TokenConfigs());
             root.Next.Add(name);
 
             //package > name > test > 1.0.0
-            Phase test = new Phase("test", new[] { "/>" });
+            Phase test = new Phase("test".TokenConfig(), new[] { "/>" }.TokenConfigs());
             name.Next.Add(test);
-            Phase testValue = new Phase("1.0.0", "9.9.9", new[] { "/>" });
+            Phase testValue = new Phase("1.0.0".TokenConfig(), "9.9.9", new[] { "/>" }.TokenConfigs());
             test.Next.Add(testValue);
 
             //package > name > foo > 1.0.0
-            Phase foo = new Phase("foo", new[] { "/>" });
+            Phase foo = new Phase("foo".TokenConfig(), new[] { "/>" }.TokenConfigs());
             name.Next.Add(foo);
-            Phase fooValue = new Phase("1.0.0", "1.2.3", new[] { "/>" });
+            Phase fooValue = new Phase("1.0.0".TokenConfig(), "1.2.3", new[] { "/>" }.TokenConfigs());
             foo.Next.Add(fooValue);
 
             IProcessor processor = SetupConfig(vc, root);

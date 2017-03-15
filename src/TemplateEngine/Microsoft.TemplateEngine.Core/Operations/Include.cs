@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "include";
 
-        public Include(string startToken, string endToken, Func<string, Stream> sourceStreamOpener, string id)
+        public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream> sourceStreamOpener, string id)
         {
             SourceStreamOpener = sourceStreamOpener;
             StartToken = startToken;
@@ -19,9 +19,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _id = id;
         }
 
-        public string EndToken { get; }
+        public ITokenConfig EndToken { get; }
 
-        public string StartToken { get; }
+        public ITokenConfig StartToken { get; }
 
         public Func<string, Stream> SourceStreamOpener { get; }
 
@@ -29,8 +29,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
-            byte[] tokenBytes = encoding.GetBytes(StartToken);
-            byte[] endTokenBytes = encoding.GetBytes(EndToken);
+            IToken tokenBytes = StartToken.ToToken(encoding);
+            IToken endTokenBytes = EndToken.ToToken(encoding);
             TokenTrie endTokenMatcher = new TokenTrie();
             endTokenMatcher.AddToken(endTokenBytes);
             return new Impl(tokenBytes, endTokenMatcher, this, _id);
@@ -39,10 +39,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private class Impl : IOperation
         {
             private readonly Include _source;
-            private readonly TokenTrie _endTokenMatcher;
+            private readonly ITokenTrie _endTokenMatcher;
             private readonly string _id;
 
-            public Impl(byte[] token, TokenTrie endTokenMatcher, Include source, string id)
+            public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string id)
             {
                 Tokens = new[] {token};
                 _source = source;
@@ -50,18 +50,17 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _id = id;
             }
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;
-                if (processor.Config.Flags.TryGetValue(Include.OperationName, out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(OperationName, out flag) && !flag)
                 {
-                    byte[] tokenValue = Tokens[token];
-                    target.Write(tokenValue, 0, tokenValue.Length);
-                    return tokenValue.Length;
+                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    return Tokens[token].Length;
                 }
 
                 List<byte> pathBytes = new List<byte>();

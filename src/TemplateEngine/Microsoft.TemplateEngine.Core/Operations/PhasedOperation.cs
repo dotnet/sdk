@@ -19,8 +19,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
-            Dictionary<string, int> tokenMap = new Dictionary<string, int>();
-            List<byte[]> tokens = new List<byte[]>();
+            Dictionary<ITokenConfig, int> tokenMap = new Dictionary<ITokenConfig, int>();
+            List<IToken> tokens = new List<IToken>();
 
             Stack<IEnumerator<Phase>> sourceParents = new Stack<IEnumerator<Phase>>();
             Stack<List<SpecializedPhase>> targetParents = new Stack<List<SpecializedPhase>>();
@@ -34,24 +34,24 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     Phase c = currentSource.Current;
                     if (!tokenMap.TryGetValue(c.Match, out int existingMatchToken))
                     {
-                        byte[] bytes = encoding.GetBytes(c.Match);
+                        IToken bytes = c.Match.ToToken(encoding);
                         existingMatchToken = tokenMap[c.Match] = tokens.Count;
                         tokens.Add(bytes);
                     }
 
                     SpecializedPhase target = new SpecializedPhase
                     {
-                        Replacement = c.Replacement != null ? encoding.GetBytes(c.Replacement) : tokens[existingMatchToken],
+                        Replacement = c.Replacement != null ? encoding.GetBytes(c.Replacement) : tokens[existingMatchToken].Value,
                         Match = existingMatchToken,
                     };
 
-                    foreach (string reset in c.ResetsWith)
+                    foreach (ITokenConfig reset in c.ResetsWith)
                     {
                         if (!tokenMap.TryGetValue(reset, out int existingResetToken))
                         {
-                            byte[] bytes = encoding.GetBytes(reset);
+                            IToken token = reset.ToToken(encoding);
                             existingResetToken = tokenMap[reset] = tokens.Count;
-                            tokens.Add(bytes);
+                            tokens.Add(token);
                         }
                         target.ResetsWith.Add(existingResetToken);
                     }
@@ -80,11 +80,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 }
             }
 
-            return new Impl(this, new SpecializedPhasedOperationConfig
-            {
-                Tokens = tokens,
-                EntryPoints = currentTarget
-            });
+            return new Impl(this, tokens, currentTarget);
         }
 
         private class Impl : IOperation
@@ -93,16 +89,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly IReadOnlyList<SpecializedPhase> _entryPoints;
             private SpecializedPhase _currentPhase;
 
-            public Impl(PhasedOperation definition, SpecializedPhasedOperationConfig config)
+            public Impl(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints)
             {
                 _definition = definition;
-                Tokens = config.Tokens;
-                _entryPoints = config.EntryPoints;
+                Tokens = config;
+                _entryPoints = entryPoints;
             }
 
             public string Id => _definition._id;
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
@@ -121,7 +117,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     _currentPhase = null;
                 }
 
-                target.Write(Tokens[token], 0, Tokens[token].Length);
+                target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                 return Tokens[token].Length;
             }
         }
@@ -147,7 +143,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
             public IReadOnlyList<SpecializedPhase> EntryPoints { get; set; }
 
-            public IReadOnlyList<byte[]> Tokens { get; set; }
+            public IReadOnlyList<ITokenConfig> Tokens { get; set; }
         }
     }
 }

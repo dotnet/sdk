@@ -2,7 +2,6 @@
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core.Operations
 {
@@ -18,13 +17,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "balancednesting";
 
-        private readonly string _startToken;
-        private readonly string _realEndToken;
-        private readonly string _pseudoEndToken;
+        private readonly ITokenConfig _startToken;
+        private readonly ITokenConfig _realEndToken;
+        private readonly ITokenConfig _pseudoEndToken;
         private readonly string _id;
         private readonly string _resetFlag;
 
-        public BalancedNesting(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)
+        public BalancedNesting(ITokenConfig startToken, ITokenConfig realEndToken, ITokenConfig pseudoEndToken, string id, string resetFlag)
         {
             _startToken = startToken;
             _realEndToken = realEndToken;
@@ -35,18 +34,18 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
-            byte[] startToken = encoding.GetBytes(_startToken);
-            byte[] realEndToken = encoding.GetBytes(_realEndToken);
-            byte[] pseudoEndToken = encoding.GetBytes(_pseudoEndToken);
+            IToken startToken = _startToken.ToToken(encoding);
+            IToken realEndToken = _realEndToken.ToToken(encoding);
+            IToken pseudoEndToken = _pseudoEndToken.ToToken(encoding);
 
             return new Impl(startToken, realEndToken, pseudoEndToken, _id, _resetFlag);
         }
 
         private class Impl : IOperation
         {
-            private readonly byte[] _startToken;
-            private readonly byte[] _realEndToken;
-            private readonly byte[] _psuedoEndToken;
+            private readonly IToken _startToken;
+            private readonly IToken _realEndToken;
+            private readonly IToken _psuedoEndToken;
             private readonly string _id;
             private readonly string _resetFlag;
             private int _depth;
@@ -56,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private const int RealEndTokenIndex = 1;
             private const int PseudoEndTokenIndex = 2;
 
-            public Impl(byte[] start, byte[] realEnd, byte[] pseudoEnd, string id, string resetFlag)
+            public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string id, string resetFlag)
             {
                 _startToken = start;
                 _realEndToken = realEnd;
@@ -69,7 +68,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public string Id => _id;
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
@@ -104,12 +103,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (_depth == 0 && token == PseudoEndTokenIndex)
                 {
-                    target.Write(_realEndToken, 0, _realEndToken.Length);
+                    target.Write(_realEndToken.Value, _realEndToken.Start, _realEndToken.Length);
                     return _psuedoEndToken.Length;  // the source buffer needs to skip over this token.
                 }
                 else
                 {
-                    target.Write(Tokens[token], 0, Tokens[token].Length);
+                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                 }
 
                 return 0;

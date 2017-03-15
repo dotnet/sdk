@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Utils;
@@ -35,7 +36,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string replacement = rawConfiguration.ToString("replacement");
             string id = rawConfiguration.ToString("id");
 
-            yield return new Replacement(original, replacement, id);
+            JArray onlyIf = rawConfiguration.Get<JArray>("onlyIf");
+            TokenConfig coreConfig = original.TokenConfigBuilder();
+
+            if (onlyIf != null)
+            {
+                foreach (JToken entry in onlyIf.Children())
+                {
+                    if (!(entry is JObject x))
+                    {
+                        continue;
+                    }
+
+                    string before = entry.ToString("before");
+                    string after = entry.ToString("after");
+                    TokenConfig entryConfig = coreConfig;
+
+                    if (!string.IsNullOrEmpty(before))
+                    {
+                        entryConfig = entryConfig.OnlyIfBefore(before);
+                    }
+
+                    if (!string.IsNullOrEmpty(after))
+                    {
+                        entryConfig = entryConfig.OnlyIfAfter(after);
+                    }
+
+                    yield return new Replacement(entryConfig, replacement, id);
+                }
+            }
+            else
+            {
+                yield return new Replacement(coreConfig, replacement, id);
+            }
         }
     }
 }

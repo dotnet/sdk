@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             IOperationProvider[] operations =
             {
-                new BalancedNesting("<!--", "-->", "-- >", commentFixOperationId, resetId),
+                new BalancedNesting("<!--".TokenConfig(), "-->".TokenConfig(), "-- >".TokenConfig(), commentFixOperationId, resetId),
             };
             VariableCollection variables = new VariableCollection();
             EngineConfig engineConfig = new EngineConfig(EnvironmentSettings, variables);

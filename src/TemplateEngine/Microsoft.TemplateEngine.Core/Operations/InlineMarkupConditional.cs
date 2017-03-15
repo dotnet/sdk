@@ -37,19 +37,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
             TokenTrie closeConditionTrie = new TokenTrie();
             TokenTrie scanBackTrie = new TokenTrie();
 
-            byte[] openOpenElementTokenBytes = processorState.Encoding.GetBytes(Tokens.OpenOpenElementToken);
+            IToken openOpenElementTokenBytes = Tokens.OpenOpenElementToken.ToToken(processorState.Encoding);
             scanBackTrie.AddToken(openOpenElementTokenBytes);
             int openOpenElementToken = structureTrie.AddToken(openOpenElementTokenBytes);
-            int openCloseElementToken = structureTrie.AddToken(processorState.Encoding.GetBytes(Tokens.OpenCloseElementToken));
-            int closeCloseElementToken = structureTrie.AddToken(processorState.Encoding.GetBytes(Tokens.CloseElementTagToken));
+            int openCloseElementToken = structureTrie.AddToken(Tokens.OpenCloseElementToken.ToToken(processorState.Encoding));
+            int closeCloseElementToken = structureTrie.AddToken(Tokens.CloseElementTagToken.ToToken(processorState.Encoding));
 
             int selfClosingElementEndToken = -1;
             if (Tokens.SelfClosingElementEndToken != null)
             {
-                selfClosingElementEndToken = structureTrie.AddToken(processorState.Encoding.GetBytes(Tokens.SelfClosingElementEndToken));
+                selfClosingElementEndToken = structureTrie.AddToken(Tokens.SelfClosingElementEndToken.ToToken(processorState.Encoding));
             }
 
-            closeConditionTrie.AddToken(processorState.Encoding.GetBytes(Tokens.CloseConditionExpression));
+            closeConditionTrie.AddToken(Tokens.CloseConditionExpression.ToToken(processorState.Encoding));
             MarkupTokenMapping mapping = new MarkupTokenMapping(
                 openOpenElementToken,
                 openCloseElementToken,
@@ -57,19 +57,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 selfClosingElementEndToken
             );
 
-            IReadOnlyList<byte[]> start = new[] { processorState.Encoding.GetBytes(Tokens.OpenConditionExpression) };
+            IReadOnlyList<IToken> start = new[] { Tokens.OpenConditionExpression.ToToken(processorState.Encoding) };
             return new Impl(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id);
         }
 
         public class Impl : IOperation
         {
-            private readonly TokenTrie _closeConditionTrie;
+            private readonly ITokenTrie _closeConditionTrie;
             private readonly InlineMarkupConditional _definition;
             private readonly MarkupTokenMapping _mapping;
-            private readonly TokenTrie _scanBackTrie;
-            private readonly TokenTrie _structureTrie;
+            private readonly ITokenTrie _scanBackTrie;
+            private readonly ITokenTrie _structureTrie;
 
-            public Impl(InlineMarkupConditional definition, IReadOnlyList<byte[]> tokens, TokenTrie structureTrie, TokenTrie closeConditionTrie, TokenTrie scanBackTrie, MarkupTokenMapping mapping, string id)
+            public Impl(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string id)
             {
                 _definition = definition;
                 Id = id;
@@ -82,16 +82,15 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public string Id { get; }
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;
                 if (processor.Config.Flags.TryGetValue(Conditional.OperationName, out flag) && !flag)
                 {
-                    byte[] tokenValue = Tokens[token];
-                    target.Write(tokenValue, 0, tokenValue.Length);
-                    return tokenValue.Length;
+                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    return Tokens[token].Length;
                 }
 
                 List<byte> conditionBytes = new List<byte>();
@@ -107,9 +106,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (faulted)
                 {
-                    target.Write(Tokens[0], 0, Tokens[0].Length);
+                    target.Write(Tokens[0].Value, Tokens[0].Start, Tokens[0].Length);
                     target.Write(condition, 0, condition.Length);
-                    target.Write(_closeConditionTrie.Tokens[0], 0, _closeConditionTrie.Tokens[0].Length);
+                    target.Write(_closeConditionTrie.Tokens[0].Value, _closeConditionTrie.Tokens[0].Start, _closeConditionTrie.Tokens[0].Length);
                     int written = Tokens[0].Length + condition.Length + _closeConditionTrie.Tokens[0].Length;
                     return written;
                 }

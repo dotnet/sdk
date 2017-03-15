@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
@@ -22,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             bool regionTrim = rawConfiguration.ToBool("trim");
             bool regionWholeLine = rawConfiguration.ToBool("wholeLine");
 
-            yield return new Region(start, end, include, regionWholeLine, regionTrim, id);
+            yield return new Region(start.TokenConfig(), end.TokenConfig(), include, regionWholeLine, regionTrim, id);
         }
     }
 }

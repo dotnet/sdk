@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string id = rawConfiguration.ToString("id");
             string resetFlag = rawConfiguration.ToString("resetFlag");
 
-            yield return new BalancedNesting(startToken, realEndToken, pseudoEndToken, id, resetFlag);
+            yield return new BalancedNesting(startToken.TokenConfig(), realEndToken.TokenConfig(), pseudoEndToken.TokenConfig(), id, resetFlag);
         }
 
         public static JObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)

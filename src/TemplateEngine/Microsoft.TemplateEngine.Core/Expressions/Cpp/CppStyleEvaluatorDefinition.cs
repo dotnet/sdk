@@ -191,12 +191,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                             if (inQuoteType == QuotedRegionKind.None)
                             {   // starting quote found
-                                currentTokenBytes.AddRange(trie.Tokens[token]);
+                                currentTokenBytes.AddRange(trie.Tokens[token].Value);
                                 inQuoteType = incomingQuoteKind;
                             }
                             else if (incomingQuoteKind == inQuoteType)
                             {   // end quote found
-                                currentTokenBytes.AddRange(trie.Tokens[token]);
+                                currentTokenBytes.AddRange(trie.Tokens[token].Value);
                                 tokens.Add(new TokenRef
                                 {
                                     Family = TokenFamily.Literal,
@@ -207,13 +207,13 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             }
                             else
                             {   // this is a different quote type. Treat it like a non-match, just add the token to the currentTokenBytes
-                                currentTokenBytes.AddRange(trie.Tokens[token]);
+                                currentTokenBytes.AddRange(trie.Tokens[token].Value);
                             }
                         }
                         else if (inQuoteType != QuotedRegionKind.None)
                         {
                             // we're inside a quoted literal, the token found by the trie should not be processed, just included with the literal
-                            currentTokenBytes.AddRange(trie.Tokens[token]);
+                            currentTokenBytes.AddRange(trie.Tokens[token].Value);
                         }
                         else if (token > ReservedTokenMaxIndex)
                         {

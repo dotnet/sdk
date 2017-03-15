@@ -88,17 +88,17 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokenVariants = new ConditionalTokens
                 {
-                    EndIfTokens = new[] { "#endif", "<!--#endif" },
-                    ActionableIfTokens = new[] { "<!--#if" },
-                    ActionableElseTokens = new[] { "#else", "<!--#else" },
-                    ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" },
+                    EndIfTokens = new[] { "#endif", "<!--#endif" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "<!--#if" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "#else", "<!--#else" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" }.TokenConfigs(),
                     ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new BalancedNesting("<!--", "-->", "-- >", commentFixingOperationId, commentFixingResetId)
+                    new BalancedNesting("<!--".TokenConfig(), "-->".TokenConfig(), "-- >".TokenConfig(), commentFixingOperationId, commentFixingResetId)
                 };
 
                 return operations;
@@ -122,17 +122,17 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokenVariants = new ConditionalTokens
                 {
-                    EndIfTokens = new[] { "#endif", "@*#endif" },
-                    ActionableIfTokens = new[] { "@*#if" },
-                    ActionableElseTokens = new[] { "#else", "@*#else" },
-                    ActionableElseIfTokens = new[] { "#elseif", "@*#elseif" },
+                    EndIfTokens = new[] { "#endif", "@*#endif" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "@*#if" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "#else", "@*#else" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "#elseif", "@*#elseif" }.TokenConfigs(),
                     ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new BalancedNesting("@*", "*@", "* @", commentFixingOperationId, commentFixingResetId)
+                    new BalancedNesting("@*".TokenConfig(), "*@".TokenConfig(), "* @".TokenConfig(), commentFixingOperationId, commentFixingResetId)
                 };
 
                 return operations;
@@ -154,21 +154,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokenVariants = new ConditionalTokens
                 {
-                    IfTokens = new[] { "//#if", "//#check" },
-                    ElseTokens = new[] { "//#else", "//#otherwise" },
-                    ElseIfTokens = new[] { "//#elseif", "//#nextcheck" },
-                    EndIfTokens = new[] { "//#endif", "//#stop", "//#done", "//#nomore" },
-                    ActionableIfTokens = new[] { "////#if", "////#check", "//#Z_if" },
-                    ActionableElseTokens = new[] { "////#else", "////#otherwise", "//#Z_else" },
-                    ActionableElseIfTokens = new[] { "////#elseif", "////#nextcheck", "//#Z_elseif" },
+                    IfTokens = new[] { "//#if", "//#check" }.TokenConfigs(),
+                    ElseTokens = new[] { "//#else", "//#otherwise" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "//#elseif", "//#nextcheck" }.TokenConfigs(),
+                    EndIfTokens = new[] { "//#endif", "//#stop", "//#done", "//#nomore" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "////#if", "////#check", "//#Z_if" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "////#else", "////#otherwise", "//#Z_else" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "////#elseif", "////#nextcheck", "//#Z_elseif" }.TokenConfigs(),
                     ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("////", "//", uncommentOperationId),
-                    new Replacement("//", string.Empty, replaceOperationId)
+                    new Replacement("////".TokenConfig(), "//", uncommentOperationId),
+                    new Replacement("//".TokenConfig(), string.Empty, replaceOperationId)
                 };
 
                 return operations;
@@ -185,21 +185,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokenVariants = new ConditionalTokens
                 {
-                    IfTokens = new[] { "//#if" },
-                    ElseTokens = new[] { "//#else" },
-                    ElseIfTokens = new[] { "//#elseif" },
-                    EndIfTokens = new[] { "//#endif", "////#endif" },
-                    ActionableIfTokens = new[] { "////#if" },
-                    ActionableElseIfTokens = new[] { "////#elseif" },
-                    ActionableElseTokens = new[] { "////#else" },
+                    IfTokens = new[] { "//#if" }.TokenConfigs(),
+                    ElseTokens = new[] { "//#else" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "//#elseif" }.TokenConfigs(),
+                    EndIfTokens = new[] { "//#endif", "////#endif" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "////#if" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "////#elseif" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "////#else" }.TokenConfigs(),
                     ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("////", "//", uncommentOperationId),
-                    new Replacement("//", string.Empty, replaceOperationId)
+                    new Replacement("////".TokenConfig(), "//", uncommentOperationId),
+                    new Replacement("//".TokenConfig(), string.Empty, replaceOperationId)
                 };
 
                 return operations;
@@ -212,10 +212,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ConditionalTokens tokenVariants = new ConditionalTokens
                 {
-                    IfTokens = new[] { "#if" },
-                    ElseTokens = new[] { "#else" },
-                    ElseIfTokens = new[] { "#elseif" },
-                    EndIfTokens = new[] { "#endif" }
+                    IfTokens = new[] { "#if" }.TokenConfigs(),
+                    ElseTokens = new[] { "#else" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "#elseif" }.TokenConfigs(),
+                    EndIfTokens = new[] { "#endif" }.TokenConfigs()
                 };
 
                 IOperationProvider[] operations =
@@ -236,21 +236,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokens = new ConditionalTokens
                 {
-                    IfTokens = new[] { "#if" },
-                    ElseTokens = new[] { "#else" },
-                    ElseIfTokens = new[] { "#elseif" },
-                    EndIfTokens = new[] { "#endif", "##endif" },
-                    ActionableIfTokens = new[] { "##if" },
-                    ActionableElseIfTokens = new[] { "##elseif" },
-                    ActionableElseTokens = new[] { "##else" },
+                    IfTokens = new[] { "#if" }.TokenConfigs(),
+                    ElseTokens = new[] { "#else" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "#elseif" }.TokenConfigs(),
+                    EndIfTokens = new[] { "#endif", "##endif" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "##if" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "##elseif" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "##else" }.TokenConfigs(),
                     ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("##", "#", uncommentOperationId),
-                    new Replacement("#", "", replaceOperationId),
+                    new Replacement("##".TokenConfig(), "#", uncommentOperationId),
+                    new Replacement("#".TokenConfig(), "", replaceOperationId),
                 };
 
                 return operations;
@@ -266,21 +266,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokens = new ConditionalTokens
                 {
-                    IfTokens = new[] { "rem #if" },
-                    ElseTokens = new[] { "rem #else" },
-                    ElseIfTokens = new[] { "rem #elseif" },
-                    EndIfTokens = new[] { "rem #endif", "rem rem #endif" },
-                    ActionableIfTokens = new[] { "rem rem #if" },
-                    ActionableElseIfTokens = new[] { "rem rem #elseif" },
-                    ActionableElseTokens = new[] { "rem rem #else" },
+                    IfTokens = new[] { "rem #if" }.TokenConfigs(),
+                    ElseTokens = new[] { "rem #else" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "rem #elseif" }.TokenConfigs(),
+                    EndIfTokens = new[] { "rem #endif", "rem rem #endif" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "rem rem #if" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "rem rem #elseif" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "rem rem #else" }.TokenConfigs(),
                     ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("rem rem", "rem", uncommentOperationId),
-                    new Replacement("rem", "", replaceOperationId)
+                    new Replacement("rem rem".TokenConfig(), "rem", uncommentOperationId),
+                    new Replacement("rem".TokenConfig(), "", replaceOperationId)
                 };
 
                 return operations;
@@ -296,21 +296,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokens = new ConditionalTokens
                 {
-                    IfTokens = new[] { "-#if" },
-                    ElseTokens = new[] { "-#else" },
-                    ElseIfTokens = new[] { "-#elseif" },
-                    EndIfTokens = new[] { "-#endif", "-#-#endif" },
-                    ActionableIfTokens = new[] { "-#-#if" },
-                    ActionableElseIfTokens = new[] { "-#-#elseif" },
-                    ActionableElseTokens = new[] { "-#-#else" },
+                    IfTokens = new[] { "-#if" }.TokenConfigs(),
+                    ElseTokens = new[] { "-#else" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "-#elseif" }.TokenConfigs(),
+                    EndIfTokens = new[] { "-#endif", "-#-#endif" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "-#-#if" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "-#-#elseif" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "-#-#else" }.TokenConfigs(),
                     ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("-#-#", "-#", reduceCommentOperationId),
-                    new Replacement("-#", "", uncommentOperationId),
+                    new Replacement("-#-#".TokenConfig(), "-#", reduceCommentOperationId),
+                    new Replacement("-#".TokenConfig(), "", uncommentOperationId),
                 };
 
                 return operations;
@@ -334,17 +334,17 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 ConditionalTokens tokenVariants = new ConditionalTokens
                 {
-                    EndIfTokens = new[] { "#endif", "{/*#endif" },
-                    ActionableIfTokens = new[] { "{/*#if" },
-                    ActionableElseTokens = new[] { "#else", "{/*#else" },
-                    ActionableElseIfTokens = new[] { "#elseif", "{/*#elseif" },
+                    EndIfTokens = new[] { "#endif", "{/*#endif" }.TokenConfigs(),
+                    ActionableIfTokens = new[] { "{/*#if" }.TokenConfigs(),
+                    ActionableElseTokens = new[] { "#else", "{/*#else" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "#elseif", "{/*#elseif" }.TokenConfigs(),
                     ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
                 };
 
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new BalancedNesting("{/*", "*/}", "*/ }", commentFixingOperationId, commentFixingResetId)
+                    new BalancedNesting("{/*".TokenConfig(), "*/}".TokenConfig(), "*/ }".TokenConfig(), commentFixingOperationId, commentFixingResetId)
                 };
 
                 return operations;

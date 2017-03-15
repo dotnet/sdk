@@ -8,7 +8,6 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Mount.Archive;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {

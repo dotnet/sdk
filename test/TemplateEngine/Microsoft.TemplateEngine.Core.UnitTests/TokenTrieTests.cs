@@ -6,6 +6,36 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class TokenTrieTests
     {
+        [Theory(DisplayName = nameof(VerifyTokenTrieLookArounds))]
+        [InlineData("Hello There!", 0, 5, true, null, "Hello", null)]
+        [InlineData("Hello There!", 0, 6, true, "Hello", " ", null)]
+        [InlineData("Hello There!", 1, 1, false, "Hello", " ", null)]
+        [InlineData("Hello There!", 5, 6, true, null, " ", "There!")]
+        [InlineData("Hello There!", 0, 6, true, "Hello", " ", "There!")]
+        public void VerifyTokenTrieLookArounds(string original, int checkPosition, int expectedPosition, bool success, string after, string value, string before)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(original);
+
+            TokenTrie t = new TokenTrie();
+            TokenConfig builder = (value ?? "").TokenConfigBuilder();
+
+            if (!string.IsNullOrEmpty(after))
+            {
+                builder = builder.OnlyIfAfter(after);
+            }
+
+            if (!string.IsNullOrEmpty(before))
+            {
+                builder = builder.OnlyIfBefore(before);
+            }
+
+            t.AddToken(builder.ToToken(Encoding.UTF8));
+
+            int pos = checkPosition;
+            Assert.Equal(success, t.GetOperation(data, data.Length, ref pos, out int token));
+            Assert.Equal(expectedPosition, pos);
+        }
+
         [Fact(DisplayName = nameof(VerifyTokenTrieAtBegin))]
         public void VerifyTokenTrieAtBegin()
         {

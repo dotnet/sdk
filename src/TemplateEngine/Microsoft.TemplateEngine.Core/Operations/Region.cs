@@ -9,42 +9,42 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "region";
 
-        private readonly string _end;
+        private readonly ITokenConfig _end;
         private readonly bool _include;
-        private readonly string _start;
+        private readonly ITokenConfig _start;
         private readonly bool _toggle;
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
         private readonly string _id;
 
-        public Region(string start, string end, bool include, bool wholeLine, bool trimWhitespace, string id)
+        public Region(ITokenConfig start, ITokenConfig end, bool include, bool wholeLine, bool trimWhitespace, string id)
         {
             _wholeLine = wholeLine;
             _trimWhitespace = trimWhitespace;
             _start = start;
             _end = end;
             _include = include;
-            _toggle = _start == _end;
+            _toggle = _start.Equals(_end);
             _id = id;
         }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
-            byte[] startToken = encoding.GetBytes(_start);
-            byte[] endToken = encoding.GetBytes(_end);
+            IToken startToken = _start.ToToken(encoding);
+            IToken endToken = _end.ToToken(encoding);
             return new Impl(this, startToken, endToken, _include, _toggle, _id);
         }
 
         private class Impl : IOperation
         {
-            private readonly byte[] _endToken;
+            private readonly IToken _endToken;
             private readonly bool _includeRegion;
             private readonly bool _startAndEndAreSame;
             private bool _waitingForEnd;
             private readonly Region _definition;
             private readonly string _id;
 
-            public Impl(Region owner, byte[] startToken, byte[] endToken, bool include, bool toggle, string id)
+            public Impl(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string id)
             {
                 _definition = owner;
                 _endToken = endToken;
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _id = id;
             }
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
 
@@ -64,9 +64,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 bool flag;
                 if (processor.Config.Flags.TryGetValue(Region.OperationName, out flag) && !flag)
                 {
-                    byte[] tokenValue = Tokens[token];
-                    target.Write(tokenValue, 0, tokenValue.Length);
-                    return tokenValue.Length;
+                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    return Tokens[token].Length;
                 }
 
                 processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
@@ -112,7 +111,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
                         i = -j;
                     }
 
-                    if (processor.CurrentBuffer[i + j] != _endToken[j])
+                    //TODO: This should be using one of the tries rather than looking for the byte run directly
+                    if (processor.CurrentBuffer[i + j] != _endToken.Value[j])
                     {
                         ++i;
                         j = -1;
