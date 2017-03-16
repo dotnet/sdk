@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
@@ -40,14 +39,6 @@ namespace Microsoft.TemplateEngine.Mocks
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
             return TargetRelativePaths.TryGetValue(sourceRelPath, out targetRelPath);
-        }
-
-        public void SetupFileSource(FileSourceMatchInfo source)
-        {
-            FileSourceHierarchicalPathMatcher matcher = new FileSourceHierarchicalPathMatcher(source);
-            Include = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Include, matcher) };
-            Exclude = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Exclude, matcher) };
-            CopyOnly = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.CopyOnly, matcher) };
         }
     }
 }
