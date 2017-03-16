@@ -12,7 +12,6 @@ namespace Microsoft.TemplateEngine.Mocks
             Include = new List<IPathMatcher>();
             CopyOnly = new List<IPathMatcher>();
             Operations = new List<IOperationProvider>();
-            RootVariableCollection = new VariableCollection();
             Special = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
             LocalizationOperations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
             TargetRelativePaths = new Dictionary<string, string>();

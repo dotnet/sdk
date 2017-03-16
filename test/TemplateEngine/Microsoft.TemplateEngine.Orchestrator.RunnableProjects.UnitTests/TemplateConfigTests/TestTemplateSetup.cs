@@ -97,6 +97,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             runnableConfig.Evaluate(parameters, variables, configFileInfo);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
+            runSpec.RootVariableCollection = variables;
             IDirectory sourceDir = SourceMountPoint.DirectoryInfo("/");
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
@@ -104,7 +105,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             foreach (FileSourceMatchInfo source in runnableConfig.Sources)
             {
-                runSpec.SetupFileSource(source);
+                TemplateConfigTestHelpers.SetupFileSourceMatchersOnGlobalRunSpec(runSpec, source);
                 string targetDirForSource = Path.Combine(targetBaseDir, source.Target);
                 orchestrator.Run(runSpec, sourceDir, targetDirForSource);
             }
@@ -136,7 +137,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             foreach (FileSourceMatchInfo source in runnableConfig.Sources)
             {
-                runSpec.SetupFileSource(source);
+                TemplateConfigTestHelpers.SetupFileSourceMatchersOnGlobalRunSpec(runSpec, source);
                 string targetDirForSource = Path.Combine(targetBaseDir, source.Target);
                 IReadOnlyList<IFileChange> changes = orchestrator.GetFileChanges(runSpec, sourceDir, targetDirForSource);
                 changesByTarget[source.Target] = changes;
