@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     public class TestTemplateSetup
     {
         /// <summary>
-        /// Setup a template at the given mount point defined by the file names & contents in the sourceFiles.
+        /// Setup a template at the given mount point defined by the file names and contents in the sourceFiles.
         /// </summary>
         /// <param name="environment">The environment</param>
         /// <param name="sourceBaseDir">

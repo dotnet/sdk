@@ -2,7 +2,6 @@
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
-using System;
 
 namespace Microsoft.TemplateEngine.Mocks
 {

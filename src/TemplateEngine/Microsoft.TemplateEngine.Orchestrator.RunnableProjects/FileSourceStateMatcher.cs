@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool IsMatch(string path)
         {
-            return _stateMatcher.Evaluate(path).HasFlag(_checkState);
+            return _stateMatcher.Evaluate(path).Has(_checkState);
         }
 
         public string Pattern
