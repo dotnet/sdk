@@ -4,8 +4,9 @@ using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Mocks;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -68,6 +69,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             runSpec.Include = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Include, matcher) };
             runSpec.Exclude = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Exclude, matcher) };
             runSpec.CopyOnly = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.CopyOnly, matcher) };
+        }
+
+        public static IComponentManager SetupMockComponentManager()
+        {
+            MockComponentManager components = new MockComponentManager();
+
+            components.Register(typeof(CaseChangeMacro));
+            components.Register(typeof(ConstantMacro));
+            components.Register(typeof(EvaluateMacro));
+            components.Register(typeof(GuidMacro));
+            components.Register(typeof(NowMacro));
+            components.Register(typeof(RandomMacro));
+            components.Register(typeof(RegexMacro));
+            components.Register(typeof(SwitchMacro));
+            components.Register(typeof(BalancedNestingConfig));
+            components.Register(typeof(ConditionalConfig));
+            components.Register(typeof(FlagsConfig));
+            components.Register(typeof(IncludeConfig));
+            components.Register(typeof(RegionConfig));
+            components.Register(typeof(ReplacementConfig));
+
+            // would need the CLI project (or other implementer)
+            //components.Register(typeof(DotnetRestorePostActionProcessor));
+            //components.Register(typeof(InstructionDisplayPostActionProcessor));
+
+            return components;
         }
     }
 }

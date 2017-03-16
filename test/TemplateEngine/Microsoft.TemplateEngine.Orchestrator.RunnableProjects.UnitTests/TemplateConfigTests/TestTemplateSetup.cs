@@ -11,7 +11,8 @@ using Xunit;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     /// <summary>
-    /// Test class for testing aspects of template creation without installing the templates.
+    /// Test class for testing file manipulation aspects of template creation without installing the templates.
+    /// This does not deal with parameters or variables, it's beyond the scope of this class.
     /// </summary>
     public class TestTemplateSetup
     {
