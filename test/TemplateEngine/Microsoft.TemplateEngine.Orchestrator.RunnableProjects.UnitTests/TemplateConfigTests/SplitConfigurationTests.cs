@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   ""shortName"": ""splitconfigtest"",
   ""sourceName"": ""Company.ConsoleApplication1"",
   ""preferNameDirectory"": true,
-  ""AdditionalConfigFiles"": [ 
+  ""additionalConfigFiles"": [
     ""symbols.template.json""
   ],
   ""symbols"": {
@@ -188,7 +188,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 string templateJsonString = @"
 {
-  ""AdditionalConfigFiles"": [
+  ""additionalConfigFiles"": [
     ""../../improper.template.json""
   ]
 }
