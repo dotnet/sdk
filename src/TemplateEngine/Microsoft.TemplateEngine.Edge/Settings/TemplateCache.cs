@@ -309,7 +309,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 foreach (string fullFilename in _paths.EnumerateFiles(_paths.User.BaseDir, fileSearchPattern, SearchOption.TopDirectoryOnly))
                 {
                     string filename = Path.GetFileName(fullFilename);
-                    string[] fileParts = filename.Split(new char[] { '.' }, 2);
+                    string[] fileParts = filename.Split(new[] { '.' }, 2);
                     string fileLocale = fileParts[0];
 
                     if (!string.IsNullOrEmpty(fileLocale) &&
@@ -409,7 +409,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Classifications = template.Classifications,
                 Author = localizationInfo?.Author ?? template.Author,
                 Description = localizationInfo?.Description ?? template.Description,
-                GroupIdentity = template.GroupIdentity,
+                GroupIdentity = template.GroupIdentity ?? string.Empty,
                 Precedence = template.Precedence,
                 Identity = template.Identity,
                 DefaultName = template.DefaultName,

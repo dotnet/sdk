@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Utils;
@@ -33,18 +33,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         {
             string uncommentOperationId = $"Uncomment (line): {token} -> ()";
             string reduceCommentOperationId = $"Reduce comment (line): ({token}{token}) -> ({token})";
-            IOperationProvider uncomment = new Replacement(token, string.Empty, uncommentOperationId);
-            IOperationProvider reduceComment = new Replacement($"{token}{token}", token, reduceCommentOperationId);
+            IOperationProvider uncomment = new Replacement(token.TokenConfig(), string.Empty, uncommentOperationId);
+            IOperationProvider reduceComment = new Replacement($"{token}{token}".TokenConfig(), token, reduceCommentOperationId);
 
             ConditionalTokens conditionalTokens = new ConditionalTokens
             {
-                IfTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.IfKeyword}" },
-                ElseTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.ElseKeyword}" },
-                ElseIfTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" },
-                EndIfTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.EndIfKeyword}", $"{token}{token}{keywords.KeywordPrefix}{keywords.EndIfKeyword}" },
-                ActionableIfTokens = new[] { $"{token}{token}{keywords.KeywordPrefix}{keywords.IfKeyword}" },
-                ActionableElseTokens = new[] { $"{token}{token}{keywords.KeywordPrefix}{keywords.ElseKeyword}" },
-                ActionableElseIfTokens = new[] { $"{token}{token}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" },
+                IfTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.IfKeyword}" }.TokenConfigs(),
+                ElseTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.ElseKeyword}" }.TokenConfigs(),
+                ElseIfTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" }.TokenConfigs(),
+                EndIfTokens = new[] { $"{token}{keywords.KeywordPrefix}{keywords.EndIfKeyword}", $"{token}{token}{keywords.KeywordPrefix}{keywords.EndIfKeyword}" }.TokenConfigs(),
+                ActionableIfTokens = new[] { $"{token}{token}{keywords.KeywordPrefix}{keywords.IfKeyword}" }.TokenConfigs(),
+                ActionableElseTokens = new[] { $"{token}{token}{keywords.KeywordPrefix}{keywords.ElseKeyword}" }.TokenConfigs(),
+                ActionableElseIfTokens = new[] { $"{token}{token}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" }.TokenConfigs(),
                 ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
             };
 

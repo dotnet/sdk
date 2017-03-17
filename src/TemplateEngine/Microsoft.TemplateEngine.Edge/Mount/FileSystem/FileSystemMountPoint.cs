@@ -37,7 +37,8 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         public IFileSystemInfo FileSystemInfo(string fullPath)
         {
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
-            if (Directory.Exists(realPath))
+
+            if (EnvironmentSettings.Host.FileSystem.DirectoryExists(realPath))
             {
                 return new FileSystemDirectory(this, fullPath, _paths.Name(realPath), realPath);
             }

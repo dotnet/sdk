@@ -13,17 +13,17 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public string Name { get; }
 
-        public string On { get; }
+        public ITokenConfig On { get; }
 
-        public string Off { get; }
+        public ITokenConfig Off { get; }
 
         public bool? Default { get; }
 
-        public string OnNoEmit { get; }
+        public ITokenConfig OnNoEmit { get; }
 
-        public string OffNoEmit { get; }
+        public ITokenConfig OffNoEmit { get; }
 
-        public SetFlag(string name, string on, string off, string onNoEmit, string offNoEmit, string id, bool? @default = null)
+        public SetFlag(string name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string id, bool? @default = null)
         {
             Name = name;
             On = on;
@@ -36,12 +36,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
-            byte[][] tokens = new byte[][]
+            IToken[] tokens = new[]
             {
-                encoding.GetBytes(On),
-                encoding.GetBytes(Off),
-                encoding.GetBytes(OnNoEmit),
-                encoding.GetBytes(OffNoEmit)
+                On.ToToken(encoding),
+                Off.ToToken(encoding),
+                OnNoEmit.ToToken(encoding),
+                OffNoEmit.ToToken(encoding)
             };
 
             if (Default.HasValue)
@@ -57,14 +57,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly SetFlag _owner;
             private readonly string _id;
 
-            public Impl(SetFlag owner, IReadOnlyList<byte[]> tokens, string id)
+            public Impl(SetFlag owner, IReadOnlyList<IToken> tokens, string id)
             {
                 _owner = owner;
                 Tokens = tokens;
                 _id = id;
             }
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
 
@@ -81,9 +81,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (emit)
                 {
-                    byte[] tokenValue = Tokens[token];
-                    target.Write(tokenValue, 0, tokenValue.Length);
-                    written = tokenValue.Length;
+                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    written = Tokens[token].Length;
                 }
                 else
                 {

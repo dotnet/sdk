@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
             return Processor.Create(cfg, new InlineMarkupConditional(
-                new MarkupTokens("<", "</", ">", "/>", "Condition=\"", "\""),
+                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
                 true,
                 true,
                 MSBuildStyleEvaluatorDefinition.Evaluate,

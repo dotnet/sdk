@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Utils;
@@ -71,21 +72,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             ConditionalTokens tokens = new ConditionalTokens
             {
-                EndIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.EndIfKeyword}", $"{startToken}{keywords.KeywordPrefix}{keywords.EndIfKeyword}" },
-                ActionableIfTokens = new[] { $"{startToken}{keywords.KeywordPrefix}{keywords.IfKeyword}" },
-                ActionableElseTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseKeyword}", $"{startToken}{keywords.KeywordPrefix}{keywords.ElseKeyword}" },
-                ActionableElseIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseIfKeyword}", $"{startToken}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}" },
+                EndIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.EndIfKeyword}".TokenConfig(), $"{startToken}{keywords.KeywordPrefix}{keywords.EndIfKeyword}".TokenConfig() },
+                ActionableIfTokens = new[] { $"{startToken}{keywords.KeywordPrefix}{keywords.IfKeyword}".TokenConfig() },
+                ActionableElseTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseKeyword}".TokenConfig(), $"{startToken}{keywords.KeywordPrefix}{keywords.ElseKeyword}".TokenConfig() },
+                ActionableElseIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseIfKeyword}".TokenConfig(), $"{startToken}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}".TokenConfig() },
             };
 
             if (!string.IsNullOrWhiteSpace(pseudoEndToken))
             {
                 Guid operationIdGuid = new Guid();
-                string commentFixOperationId = $"Fix pseudo tokens ({pseudoEndToken} {operationIdGuid.ToString()})";
-                string commentFixResetId = $"Reset pseudo token fixer ({pseudoEndToken} {operationIdGuid.ToString()})";
+                string commentFixOperationId = $"Fix pseudo tokens ({pseudoEndToken} {operationIdGuid})";
+                string commentFixResetId = $"Reset pseudo token fixer ({pseudoEndToken} {operationIdGuid})";
 
                 tokens.ActionableOperations = new[] { commentFixOperationId, commentFixResetId };
 
-                IOperationProvider balancedComments = new BalancedNesting(startToken, endToken, pseudoEndToken, commentFixOperationId, commentFixResetId);
+                IOperationProvider balancedComments = new BalancedNesting(startToken.TokenConfig(), endToken.TokenConfig(), pseudoEndToken.TokenConfig(), commentFixOperationId, commentFixResetId);
                 IOperationProvider conditional = new Conditional(tokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id);
 
                 return new List<IOperationProvider>()

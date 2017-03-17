@@ -10,11 +10,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "replacement";
 
-        private readonly string _match;
+        private readonly ITokenConfig _match;
         private readonly string _replaceWith;
         private readonly string _id;
 
-        public Replacement(string match, string replaceWith, string id)
+        public Replacement(ITokenConfig match, string replaceWith, string id)
         {
             _match = match;
             _replaceWith = replaceWith;
@@ -23,10 +23,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
-            byte[] token = encoding.GetBytes(_match);
+            IToken token = _match.ToToken(encoding);
             byte[] replaceWith = encoding.GetBytes(_replaceWith);
-
-            if(token.SequenceEqual(replaceWith))
+            
+            if(token.Value.Skip(token.Start).Take(token.Length).SequenceEqual(replaceWith))
             {
                 return null;
             }
@@ -37,10 +37,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private class Impl : IOperation
         {
             private readonly byte[] _replacement;
-            private readonly byte[] _token;
+            private readonly IToken _token;
             private readonly string _id;
 
-            public Impl(byte[] token, byte[] replaceWith, string id)
+            public Impl(IToken token, byte[] replaceWith, string id)
             {
                 _replacement = replaceWith;
                 _token = token;
@@ -48,18 +48,17 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 Tokens = new[] {token};
             }
 
-            public IReadOnlyList<byte[]> Tokens { get; }
+            public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
                 bool flag;
-                if (processor.Config.Flags.TryGetValue(Replacement.OperationName, out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(OperationName, out flag) && !flag)
                 {
-                    byte[] tokenValue = Tokens[token];
-                    target.Write(tokenValue, 0, tokenValue.Length);
-                    return tokenValue.Length;
+                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    return Tokens[token].Length;
                 }
 
                 target.Write(_replacement, 0, _replacement.Length);

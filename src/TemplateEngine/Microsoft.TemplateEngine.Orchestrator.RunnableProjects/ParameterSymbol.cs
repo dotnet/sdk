@@ -42,6 +42,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
+
         public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization)
         {
             ParameterSymbol symbol = new ParameterSymbol
@@ -53,6 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Type = jObject.ToString(nameof(Type)),
                 Replaces = jObject.ToString(nameof(Replaces)),
                 DataType = jObject.ToString(nameof(DataType)),
+                ReplacementContexts = ReadReplacementContexts(jObject),
             };
 
             Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
@@ -92,6 +95,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             };
 
             return symbol;
+        }
+
+        private static IReadOnlyList<IReplacementContext> ReadReplacementContexts(JObject jObject)
+        {
+            JArray onlyIf = jObject.Get<JArray>("onlyIf");
+
+            if (onlyIf != null)
+            {
+                List<IReplacementContext> contexts = new List<IReplacementContext>();
+                foreach (JToken entry in onlyIf.Children())
+                {
+                    if (!(entry is JObject x))
+                    {
+                        continue;
+                    }
+
+                    string before = entry.ToString("before");
+                    string after = entry.ToString("after");
+                    contexts.Add(new ReplacementContext(before, after));
+                }
+
+                return contexts;
+            }
+            else
+            {
+                return Empty<IReplacementContext>.List.Value;
+            }
         }
     }
 }

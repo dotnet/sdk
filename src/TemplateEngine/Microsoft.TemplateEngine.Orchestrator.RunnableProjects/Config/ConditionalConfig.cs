@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Utils;
@@ -98,7 +99,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
             IOperationProvider conditional = new InlineMarkupConditional(
-                new MarkupTokens("<", "</", ">", "/>", "Condition=\"", "\""),
+                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
                 wholeLine,
                 trimWhiteSpace,
                 evaluator,
@@ -117,10 +118,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         {
             ConditionalTokens tokens = new ConditionalTokens
             {
-                IfTokens = new[] { "#if" },
-                ElseTokens = new[] { "#else" },
-                ElseIfTokens = new[] { "#elseif" },
-                EndIfTokens = new[] { "#endif" }
+                IfTokens = new[] { "#if".TokenConfig() },
+                ElseTokens = new[] { "#else".TokenConfig() },
+                ElseIfTokens = new[] { "#elseif".TokenConfig() },
+                EndIfTokens = new[] { "#endif".TokenConfig() }
             };
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);

@@ -21,5 +21,3 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         }
     }
 }
-
-    

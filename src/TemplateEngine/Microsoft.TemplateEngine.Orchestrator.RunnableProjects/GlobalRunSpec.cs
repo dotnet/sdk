@@ -228,6 +228,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IEncodingConfig EncodingConfig { get; }
 
+            public int CurrentSequenceNumber => throw new NotImplementedException();
+
             public bool AdvanceBuffer(int bufferPosition)
             {
                 byte[] tmp = new byte[CurrentBufferLength - bufferPosition];

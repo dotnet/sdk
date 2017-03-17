@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         ITokenTrie LineEndings { get; }
 
-        IReadOnlyList<byte[]> VariableKeys { get; }
+        IReadOnlyList<IToken> VariableKeys { get; }
 
         IReadOnlyList<Func<object>> VariableValues { get; }
 

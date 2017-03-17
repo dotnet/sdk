@@ -15,13 +15,13 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             string originalValue = @"Lead content
 ////#if (OUTER_IF)
 //      outer if content
-//		////#if (INNER_IF)
+//      ////#if (INNER_IF)
 //          // inner if content
 //      ////#elseif (INNER_ELSEIF)
 //          // inner elseif content
-//		////#else
+//      ////#else
 //          // inner else content
-//		//#endif
+//      //#endif
 ////#else
 //      outer else content
 //#endif

@@ -1,36 +1,54 @@
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Net.Sockets;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Matching;
 
 namespace Microsoft.TemplateEngine.Core.Util
 {
     public class ProcessorState : IProcessorState
     {
-        private readonly int _flushThreshold;
         private readonly Stream _source;
         private readonly Stream _target;
-        private readonly OperationTrie _trie;
+        private readonly TrieEvaluator<OperationTerminal> _trie;
         private Encoding _encoding;
-        private static readonly Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>> TrieLookup = new Dictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, OperationTrie>>();
+        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>>();
+        private readonly int _flushThreshold;
+
+        public IEngineConfig Config { get; }
+
+        public byte[] CurrentBuffer { get; }
+
+        public int CurrentBufferLength { get; private set; }
+
+        public int CurrentBufferPosition { get; private set; }
+
+        public int CurrentSequenceNumber { get; private set; }
+
+        public IEncodingConfig EncodingConfig { get; private set; }
+
+        public Encoding Encoding
+        {
+            get { return _encoding; }
+            set
+            {
+                _encoding = value;
+                EncodingConfig = new EncodingConfig(Config, _encoding);
+            }
+        }
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IEngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
-            bool sizedToStream = false;
-
-            //Buffer has to be at least as large as the largest BOM we could expect
-            if (bufferSize < 4)
-            {
-                bufferSize = 4;
-            }
-            else
+            if (!(source is GZipStream) && !(source is NetworkStream))
             {
                 try
                 {
                     if (source.Length < bufferSize)
                     {
-                        sizedToStream = true;
                         bufferSize = (int) source.Length;
                     }
                 }
@@ -39,6 +57,11 @@ namespace Microsoft.TemplateEngine.Core.Util
                     //The stream may not support getting the length property (in NetworkStream for instance, which throw a NotSupportedException), suppress any errors in
                     //  accessing the property and continue with the specified buffer size
                 }
+            }
+            //Buffer has to be at least as large as the largest BOM we could expect
+            else if (bufferSize < 4)
+            {
+                bufferSize = 4;
             }
 
             _source = source;
@@ -54,31 +77,36 @@ namespace Microsoft.TemplateEngine.Core.Util
             CurrentBufferPosition = bom.Length;
             target.Write(bom, 0, bom.Length);
 
-            Dictionary<Encoding, OperationTrie> byEncoding;
-            if(!TrieLookup.TryGetValue(operationProviders, out byEncoding))
-            {
-                TrieLookup[operationProviders] = byEncoding = new Dictionary<Encoding, OperationTrie>();
-            }
+            Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
 
-            if (!byEncoding.TryGetValue(encoding, out _trie))
+            if (!byEncoding.TryGetValue(encoding, out Trie<OperationTerminal> trie))
             {
-                List<IOperation> operations = new List<IOperation>(operationProviders.Count);
+                trie = new Trie<OperationTerminal>();
 
                 for (int i = 0; i < operationProviders.Count; ++i)
                 {
                     IOperation op = operationProviders[i].GetOperation(encoding, this);
+
                     if (op != null)
                     {
-                        operations.Add(op);
+                        for (int j = 0; j < op.Tokens.Count; ++j)
+                        {
+                            if (op.Tokens[j] != null)
+                            {
+                                trie.AddPath(op.Tokens[j].Value, new OperationTerminal(op, j, op.Tokens[j].Length, op.Tokens[j].Start, op.Tokens[j].End));
+                            }
+                        }
                     }
                 }
 
-                byEncoding[encoding] = _trie = OperationTrie.Create(operations);
+                byEncoding[encoding] = trie;
             }
 
-            if (bufferSize < _trie.MaxLength && !sizedToStream)
+            _trie = new TrieEvaluator<OperationTerminal>(trie);
+
+            if (bufferSize < _trie.MaxLength + 1)
             {
-                byte[] tmp = new byte[_trie.MaxLength];
+                byte[] tmp = new byte[_trie.MaxLength + 1];
                 Buffer.BlockCopy(CurrentBuffer, CurrentBufferPosition, tmp, 0, CurrentBufferLength - CurrentBufferPosition);
                 int nRead = _source.Read(tmp, CurrentBufferLength - CurrentBufferPosition, tmp.Length - CurrentBufferLength);
                 CurrentBuffer = tmp;
@@ -87,154 +115,183 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
         }
 
-        public IEngineConfig Config { get; }
-
-        public byte[] CurrentBuffer { get; }
-
-        public int CurrentBufferLength { get; private set; }
-
-        public int CurrentBufferPosition { get; private set; }
-
-        public Encoding Encoding
-        {
-            get { return _encoding; }
-            set
-            {
-                _encoding = value;
-                EncodingConfig = new EncodingConfig(Config, _encoding);
-            }
-        }
-
-        public IEncodingConfig EncodingConfig { get; private set; }
-
         public bool AdvanceBuffer(int bufferPosition)
         {
-            if (CurrentBufferLength == 0)
+            if(CurrentBufferLength == 0 || bufferPosition == 0)
             {
+                return false;
+            }
+
+            //The number of bytes away from the current buffer position being 
+            //  retargeted to the buffer head
+            int netMove = bufferPosition - CurrentBufferPosition;
+            //Since the CurrentSequenceNumber and CurrentBufferPosition are
+            //  different mappings over the same value, the same net move
+            //  applies to the current sequence number
+            CurrentSequenceNumber += netMove;
+            //Calculate the number of bytes at the end of the buffer that
+            //  should be preserved
+            int bytesToPreserveInBuffer = CurrentBufferLength - bufferPosition;
+
+            if (CurrentBufferLength < CurrentBuffer.Length && bytesToPreserveInBuffer == 0)
+            {
+                CurrentBufferLength = 0;
                 CurrentBufferPosition = 0;
                 return false;
             }
 
-            int offset = 0;
-            if (bufferPosition != CurrentBufferLength)
+            //If we actually have to preserve any data, shift it to the start
+            if (bytesToPreserveInBuffer > 0)
             {
-                offset = CurrentBufferLength - bufferPosition;
-                Array.Copy(CurrentBuffer, bufferPosition, CurrentBuffer, 0, offset);
+                //Shift the relevant number of bytes back to the head of the buffer
+                Buffer.BlockCopy(CurrentBuffer, bufferPosition, CurrentBuffer, 0, bytesToPreserveInBuffer);
             }
 
-            int bytesRead = _source.Read(CurrentBuffer, offset, CurrentBuffer.Length - offset);
-            CurrentBufferLength = bytesRead + offset;
+            //Fill the remaining spaces in the buffer with new data, save how
+            //  many we've read for recalculating the new effective buffer size
+            int nRead = _source.Read(CurrentBuffer, bytesToPreserveInBuffer, CurrentBufferLength - bytesToPreserveInBuffer);
+            CurrentBufferLength = bytesToPreserveInBuffer + nRead;
+
+            //The new buffer position is set to point at the byte that buffer
+            //  position pointed at (which is now at the head of the buffer)
             CurrentBufferPosition = 0;
 
-            return bytesRead != 0;
+            return true;
         }
 
         public bool Run()
         {
-            bool modified = false;
-            int lastWritten = CurrentBufferPosition;
-            int writtenSinceFlush = lastWritten;
+            int nextSequenceNumberThatCouldBeWritten = 0;
+            int bytesWrittenSinceLastFlush = 0;
+            bool anyOperationsExecuted = false;
 
-            if(CurrentBufferPosition == CurrentBufferLength)
+            while (true)
             {
-                AdvanceBuffer(CurrentBufferPosition);
-                lastWritten = 0;
+                //Loop until we run out of data in the buffer
+                while (CurrentBufferPosition < CurrentBufferLength)
+                {
+                    int posedPosition = CurrentSequenceNumber;
+                    bool skipAdvanceBuffer = false;
+                    if (_trie.Accept(CurrentBuffer[CurrentBufferPosition], ref posedPosition, out TerminalLocation<OperationTerminal> terminal))
+                    {
+                        IOperation operation = terminal.Terminal.Operation;
+                        int matchLength = terminal.Terminal.End - terminal.Terminal.Start;
+                        int handoffBufferPosition = CurrentBufferPosition + matchLength - (CurrentSequenceNumber - terminal.Location);
+
+                        if (terminal.Location > nextSequenceNumberThatCouldBeWritten)
+                        {
+                            int toWrite = terminal.Location - nextSequenceNumberThatCouldBeWritten;
+                            _target.Write(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite);
+                            bytesWrittenSinceLastFlush += toWrite;
+                            nextSequenceNumberThatCouldBeWritten = posedPosition - matchLength;
+                        }
+
+                        if(operation.Id == null || (Config.Flags.TryGetValue(operation.Id, out bool opEnabledFlag) && opEnabledFlag))
+                        {
+                            CurrentSequenceNumber += handoffBufferPosition - CurrentBufferPosition;
+                            CurrentBufferPosition = handoffBufferPosition;
+                            posedPosition = handoffBufferPosition;
+                            int bytesWritten = operation.HandleMatch(this, CurrentBufferLength, ref posedPosition, terminal.Terminal.Token, _target);
+                            bytesWrittenSinceLastFlush += bytesWritten;
+
+                            CurrentSequenceNumber += posedPosition - CurrentBufferPosition;
+                            CurrentBufferPosition = posedPosition;
+                            nextSequenceNumberThatCouldBeWritten = CurrentSequenceNumber;
+                            skipAdvanceBuffer = true;
+                            anyOperationsExecuted = true;
+                        }
+                        else
+                        {
+                            int oldSequenceNumber = CurrentSequenceNumber;
+                            CurrentSequenceNumber = terminal.Location + terminal.Terminal.End;
+                            CurrentBufferPosition += CurrentSequenceNumber - oldSequenceNumber;
+                        }
+
+                        if (bytesWrittenSinceLastFlush >= _flushThreshold)
+                        {
+                            _target.Flush();
+                        }
+                    }
+
+                    if (!skipAdvanceBuffer)
+                    {
+                        ++CurrentSequenceNumber;
+                        ++CurrentBufferPosition;
+                    }
+                }
+
+                //Calculate the sequence number at the head of the buffer
+                int headSequenceNumber = CurrentSequenceNumber - CurrentBufferPosition;
+                int bufferPositionToAdvanceTo = _trie.OldestRequiredSequenceNumber - headSequenceNumber;
+                int numberOfUncommittedBytesBeforeThePositionToAdvanceTo = _trie.OldestRequiredSequenceNumber - nextSequenceNumberThatCouldBeWritten;
+
+                //If we'd advance data out of the buffer that hasn't been
+                //  handled already, write it out
+                if (numberOfUncommittedBytesBeforeThePositionToAdvanceTo > 0)
+                {
+                    int toWrite = numberOfUncommittedBytesBeforeThePositionToAdvanceTo;
+                    _target.Write(CurrentBuffer, bufferPositionToAdvanceTo - toWrite, toWrite);
+                    bytesWrittenSinceLastFlush += toWrite;
+                    nextSequenceNumberThatCouldBeWritten = _trie.OldestRequiredSequenceNumber;
+                }
+
+                //We ran out of data in the buffer, so attempt to advance
+                //  if we fail, 
+                if (!AdvanceBuffer(bufferPositionToAdvanceTo))
+                {
+                    int posedPosition = CurrentSequenceNumber;
+                    _trie.FinalizeMatchesInProgress(ref posedPosition, out TerminalLocation<OperationTerminal> terminal);
+
+                    while (terminal != null)
+                    {
+                        IOperation operation = terminal.Terminal.Operation;
+                        int matchLength = terminal.Terminal.End - terminal.Terminal.Start;
+                        int handoffBufferPosition = CurrentBufferPosition + matchLength - (CurrentSequenceNumber - terminal.Location);
+
+                        if (terminal.Location > nextSequenceNumberThatCouldBeWritten)
+                        {
+                            int toWrite = terminal.Location - nextSequenceNumberThatCouldBeWritten;
+                            _target.Write(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite);
+                            bytesWrittenSinceLastFlush += toWrite;
+                            nextSequenceNumberThatCouldBeWritten = terminal.Location;
+                        }
+
+                        if (operation.Id == null || (Config.Flags.TryGetValue(operation.Id, out bool opEnabledFlag) && opEnabledFlag))
+                        {
+                            CurrentSequenceNumber += handoffBufferPosition - CurrentBufferPosition;
+                            CurrentBufferPosition = handoffBufferPosition;
+                            posedPosition = handoffBufferPosition;
+                            int bytesWritten = operation.HandleMatch(this, CurrentBufferLength, ref posedPosition, terminal.Terminal.Token, _target);
+                            bytesWrittenSinceLastFlush += bytesWritten;
+
+                            CurrentSequenceNumber += posedPosition - CurrentBufferPosition;
+                            CurrentBufferPosition = posedPosition;
+                            nextSequenceNumberThatCouldBeWritten = CurrentSequenceNumber;
+                            anyOperationsExecuted = true;
+                        }
+                        else
+                        {
+                            int oldSequenceNumber = CurrentSequenceNumber;
+                            CurrentSequenceNumber = terminal.Location + terminal.Terminal.End;
+                            CurrentBufferPosition += CurrentSequenceNumber - oldSequenceNumber;
+                        }
+
+                        _trie.FinalizeMatchesInProgress(ref posedPosition, out terminal);
+                    }
+
+                    break;
+                }
             }
 
-            while (CurrentBufferLength > 0)
+            int endSequenceNumber = CurrentSequenceNumber - CurrentBufferPosition + CurrentBufferLength;
+            if (endSequenceNumber > nextSequenceNumberThatCouldBeWritten)
             {
-                int token;
-                int posedPosition = CurrentBufferPosition;
-
-                if (CurrentBufferLength == CurrentBuffer.Length && CurrentBufferLength - CurrentBufferPosition < _trie.MaxLength)
-                {
-                    int writeCount = CurrentBufferPosition - lastWritten;
-
-                    if (writeCount > 0)
-                    {
-                        _target.Write(CurrentBuffer, lastWritten, writeCount);
-                        writtenSinceFlush += writeCount;
-                    }
-
-                    AdvanceBuffer(CurrentBufferPosition);
-                    lastWritten = 0;
-                    posedPosition = 0;
-                }
-
-                IOperation op = _trie.GetOperation(CurrentBuffer, CurrentBufferLength, ref posedPosition, out token);
-                bool opEnabledFlag;
-
-                if ((op != null)
-                        && ((op.Id == null)
-                            || (Config.Flags.TryGetValue(op.Id, out opEnabledFlag) && opEnabledFlag))
-                    )
-                {
-                    // The operation will be processed because one of these conditions are met:
-                    // - The operation doesn't have an id (thus can't be disabled)
-                    // - The flag for the Id exists and is true.
-
-                    int writeCount = CurrentBufferPosition - lastWritten;
-
-                    if (writeCount > 0)
-                    {
-                        _target.Write(CurrentBuffer, lastWritten, writeCount);
-                        writtenSinceFlush += writeCount;
-                    }
-
-                    CurrentBufferPosition = posedPosition;
-
-                    try
-                    {
-                        writtenSinceFlush += op.HandleMatch(this, CurrentBufferLength, ref posedPosition, token, _target);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"Error running handler {op} at position {CurrentBufferPosition} in {Encoding.EncodingName} bytes of {Encoding.GetString(CurrentBuffer, 0, CurrentBufferLength)}.\n\nStart: {Encoding.GetString(CurrentBuffer, CurrentBufferPosition, CurrentBufferLength - CurrentBufferPosition)} \n\nCheck InnerException for details.", ex);
-                    }
-
-                    CurrentBufferPosition = posedPosition;
-                    lastWritten = posedPosition;
-                    modified = true;
-                }
-                else
-                {
-                    // If the operation is disabled, it's as if the token were just arbitrary text, so do nothing special with it.
-                    ++CurrentBufferPosition;
-                }
-
-                if (CurrentBufferPosition == CurrentBufferLength)
-                {
-                    int writeCount = CurrentBufferPosition - lastWritten;
-
-                    if (writeCount > 0)
-                    {
-                        _target.Write(CurrentBuffer, lastWritten, writeCount);
-                        writtenSinceFlush += writeCount;
-                    }
-
-                    AdvanceBuffer(CurrentBufferPosition);
-                    lastWritten = 0;
-                }
-
-                if (writtenSinceFlush >= _flushThreshold)
-                {
-                    writtenSinceFlush = 0;
-                    _target.Flush();
-                }
-            }
-
-            if (lastWritten < CurrentBufferPosition)
-            {
-                int writeCount = CurrentBufferPosition - lastWritten;
-
-                if (writeCount > 0)
-                {
-                    _target.Write(CurrentBuffer, lastWritten, writeCount);
-                }
+                int toWrite = endSequenceNumber - nextSequenceNumberThatCouldBeWritten;
+                _target.Write(CurrentBuffer, CurrentBufferLength - toWrite, toWrite);
             }
 
             _target.Flush();
-            return modified;
+            return anyOperationsExecuted;
         }
 
         public void SeekBackUntil(ITokenTrie match)
@@ -346,14 +403,39 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
         }
 
-        public void SeekForwardThrough(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition)
+        public void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
         {
-            BaseSeekForward(match, ref bufferLength, ref currentBufferPosition, true);
+            BaseSeekForward(trie, ref bufferLength, ref currentBufferPosition, true);
         }
 
-        public void SeekForwardUntil(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition)
+        public void SeekForwardUntil(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
         {
-            BaseSeekForward(match, ref bufferLength, ref currentBufferPosition, false);
+            BaseSeekForward(trie, ref bufferLength, ref currentBufferPosition, false);
+        }
+
+        public void SeekForwardWhile(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
+        {
+            while (bufferLength > trie.MinLength)
+            {
+                while (currentBufferPosition < bufferLength - trie.MinLength + 1)
+                {
+                    if (bufferLength == 0)
+                    {
+                        currentBufferPosition = 0;
+                        return;
+                    }
+
+                    int token;
+                    if (!trie.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                    {
+                        return;
+                    }
+                }
+
+                AdvanceBuffer(currentBufferPosition);
+                currentBufferPosition = CurrentBufferPosition;
+                bufferLength = CurrentBufferLength;
+            }
         }
 
         private void BaseSeekForward(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken)
@@ -393,31 +475,6 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             //Ran out of places to check and haven't reached the actual match, consume all the way to the end
             currentBufferPosition = bufferLength;
-        }
-
-        public void SeekForwardWhile(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition)
-        {
-            while (bufferLength > match.MinLength)
-            {
-                while (currentBufferPosition < bufferLength - match.MinLength + 1)
-                {
-                    if (bufferLength == 0)
-                    {
-                        currentBufferPosition = 0;
-                        return;
-                    }
-
-                    int token;
-                    if (!match.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
-                    {
-                        return;
-                    }
-                }
-
-                AdvanceBuffer(currentBufferPosition);
-                currentBufferPosition = CurrentBufferPosition;
-                bufferLength = CurrentBufferLength;
-            }
         }
     }
 }

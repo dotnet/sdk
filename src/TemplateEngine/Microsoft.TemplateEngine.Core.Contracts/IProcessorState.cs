@@ -12,6 +12,8 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         int CurrentBufferPosition { get; }
 
+        int CurrentSequenceNumber { get; }
+
         IEncodingConfig EncodingConfig { get; }
 
         Encoding Encoding { get; set; }

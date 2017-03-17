@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Mocks
@@ -10,13 +12,18 @@ namespace Microsoft.TemplateEngine.Mocks
         private readonly MatchHandler _onMatch;
 
         public MockOperation(string id, MatchHandler onMatch, params byte[][] tokens)
+            : this(id, onMatch, tokens.Select(token => TokenConfig.LiteralToken(token)).ToArray())
+        {
+        }
+
+        public MockOperation(string id, MatchHandler onMatch, params IToken[] tokens)
         {
             Tokens = tokens;
             Id = id;
             _onMatch = onMatch;
         }
 
-        public IReadOnlyList<byte[]> Tokens { get; }
+        public IReadOnlyList<IToken> Tokens { get; }
 
         public string Id { get; }
 

@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string place, out IMountPoint mountPoint)
         {
-            if (parent != null || !Directory.Exists(place))
+            if (parent != null || !environmentSettings.Host.FileSystem.DirectoryExists(place))
             {
                 mountPoint = null;
                 return false;
@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public bool TryMount(IMountPointManager manager, MountPointInfo info, out IMountPoint mountPoint)
         {
-            if (info.ParentMountPointId != Guid.Empty || !Directory.Exists(info.Place))
+            if (info.ParentMountPointId != Guid.Empty || !manager.EnvironmentSettings.Host.FileSystem.DirectoryExists(info.Place))
             {
                 mountPoint = null;
                 return false;

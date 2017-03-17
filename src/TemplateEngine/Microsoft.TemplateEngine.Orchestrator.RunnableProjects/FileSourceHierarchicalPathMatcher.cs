@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -12,6 +13,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         Include = 0x01,
         CopyOnly = 0x02,
         Exclude = 0x04
+    }
+
+    public static class EnumExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Has(this FileDispositionStates value, FileDispositionStates check)
+        {
+            return (value & check) == check;
+        }
     }
 
     public class FileSourceHierarchicalPathMatcher
@@ -40,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public FileDispositionStates Evaluate(string path)
         {
-            if (!string.Equals(path, _cachedEvaluatedPath))
+            if (!string.Equals(path, _cachedEvaluatedPath, StringComparison.Ordinal))
             {
                 _cachedStatesForFile = EvaluatePath(path);
                 _cachedEvaluatedPath = path;
@@ -57,20 +67,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 FileDispositionStates state = evaluator.Evaluate(path);
 
-                if (state.HasFlag(FileDispositionStates.Exclude))
+                if (state.Has(FileDispositionStates.Exclude))
                 {
                     return  FileDispositionStates.Exclude;
                 }
-                else if (state.HasFlag(FileDispositionStates.CopyOnly))
+                else if (state.Has(FileDispositionStates.CopyOnly))
                 {
-                    if (state.HasFlag(FileDispositionStates.Include))
+                    if (state.Has(FileDispositionStates.Include))
                     {
                         return FileDispositionStates.CopyOnly;
                     }
 
                     continuationReason = FileDispositionStates.CopyOnly;
                 }
-                else if (state.HasFlag(FileDispositionStates.Include))
+                else if (state.Has(FileDispositionStates.Include))
                 {
                     if (continuationReason == FileDispositionStates.CopyOnly)
                     {

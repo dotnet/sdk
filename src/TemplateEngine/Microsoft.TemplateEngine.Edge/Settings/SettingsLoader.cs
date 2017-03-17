@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             throw;
                         }
 
-                        Thread.Sleep(2);
+                        Task.Delay(2).Wait();
                     }
                 }
             JObject parsed;
@@ -369,7 +369,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch
                 {
-                    Thread.Sleep(10);
+                    Task.Delay(10).Wait();
                     Reload();
                 }
             }

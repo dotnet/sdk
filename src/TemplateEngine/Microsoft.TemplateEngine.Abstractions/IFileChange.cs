@@ -5,5 +5,7 @@
         string TargetRelativePath { get; }
 
         ChangeKind ChangeKind { get; }
+
+        byte[] Contents { get; }
     }
 }

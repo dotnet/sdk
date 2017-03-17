@@ -196,128 +196,95 @@ Past endif
         /// Tests that the if block is uncommented in each of the scenarios
         /// because the if token is special and the clause is true in each case.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifySpecialIfTrueUncomments))]
-        public void VerifySpecialIfTrueUncomments()
+        [Theory(DisplayName = nameof(VerifySpecialIfTrueUncomments))]
+        [InlineData(@"Hello
+////#if (VALUE_IF)
+    //if value
+    //...if commented in original
+//#endif
+Past endif
+    ...uncommented in original
+// dont uncomment", "special #if (true)")]
+        [InlineData(@"Hello
+////#if (VALUE_IF)
+    //if value
+    //...if commented in original
+//#else
+    //else value
+    //...else commented in original
+//#endif
+Past endif
+    ...uncommented in original
+// dont uncomment", "special #if (true), regular #else")]
+        [InlineData(@"Hello
+////#if (VALUE_IF)
+    //if value
+    //...if commented in original
+////#else
+    //else value
+    //...else commented in original
+//#endif
+Past endif
+    ...uncommented in original
+// dont uncomment", "special #if (true), special #else ignored")]
+        [InlineData(@"Hello
+////#if (VALUE_IF)
+    //if value
+    //...if commented in original
+//#elseif (VALUE_ELSEIF)
+    //elseif value
+    //...elseif commented in original
+//#else
+    //else value
+    //...else commented in original
+//#endif
+Past endif
+    ...uncommented in original
+// dont uncomment", "special #if (true), regular #elseif, regular #else")]
+        [InlineData(@"Hello
+////#if (VALUE_IF)
+    //if value
+    //...if commented in original
+////#elseif (VALUE_ELSEIF)
+    //elseif value
+    //...elseif commented in original
+//#else
+    //else value
+    //...else commented in original
+//#endif
+Past endif
+    ...uncommented in original
+// dont uncomment", "special #if (true), special #elseif, regular #else")]
+        [InlineData(@"Hello
+////#if (VALUE_IF)
+    //if value
+    //...if commented in original
+//#elseif (VALUE_ELSEIF)
+    //elseif value
+    //...elseif commented in original
+////#else
+    //else value
+    //...else commented in original
+//#endif
+Past endif
+    ...uncommented in original
+// dont uncomment", "special #if (true), regular #elseif, special #else")]
+        [InlineData(@"Hello
+////#if (VALUE_IF)
+    //if value
+    //...if commented in original
+////#elseif (VALUE_ELSEIF)
+    //elseif value
+    //...elseif commented in original
+////#else
+    //else value
+    //...else commented in original
+//#endif
+Past endif
+    ...uncommented in original
+// dont uncomment", "special #if (true), special #elseif, special #else")]
+        public void VerifySpecialIfTrueUncomments(string test, string comment)
         {
-            IList<string> testCases = new List<string>();
-
-            // special #if (true)
-            string ifOnlyValue = @"Hello
-////#if (VALUE_IF)
-    //if value
-    //...if commented in original
-//#endif
-Past endif
-    ...uncommented in original
-// dont uncomment";
-            testCases.Add(ifOnlyValue);
-
-            // special #if (true)
-            // regular #else
-            string ifElseRegularValue = @"Hello
-////#if (VALUE_IF)
-    //if value
-    //...if commented in original
-//#else
-    //else value
-    //...else commented in original
-//#endif
-Past endif
-    ...uncommented in original
-// dont uncomment";
-            testCases.Add(ifElseRegularValue);
-
-            // special #if (true)
-            // special #else ignored
-            string ifElseSpecialValue = @"Hello
-////#if (VALUE_IF)
-    //if value
-    //...if commented in original
-////#else
-    //else value
-    //...else commented in original
-//#endif
-Past endif
-    ...uncommented in original
-// dont uncomment";
-            testCases.Add(ifElseSpecialValue);
-
-            // special #if (true)
-            // regular #elseif
-            // regular #else
-            string ifElseifRegularElseRegularValue = @"Hello
-////#if (VALUE_IF)
-    //if value
-    //...if commented in original
-//#elseif (VALUE_ELSEIF)
-    //elseif value
-    //...elseif commented in original
-//#else
-    //else value
-    //...else commented in original
-//#endif
-Past endif
-    ...uncommented in original
-// dont uncomment";
-            testCases.Add(ifElseifRegularElseRegularValue);
-
-            // special #if (true)
-            // special #elseif
-            // regular #else
-            string ifElseifSpecialElseRegularValue = @"Hello
-////#if (VALUE_IF)
-    //if value
-    //...if commented in original
-////#elseif (VALUE_ELSEIF)
-    //elseif value
-    //...elseif commented in original
-//#else
-    //else value
-    //...else commented in original
-//#endif
-Past endif
-    ...uncommented in original
-// dont uncomment";
-            testCases.Add(ifElseifSpecialElseRegularValue);
-
-            // special #if (true)
-            // regular #elseif
-            // special #else
-            string ifElseifRegularElseSpecialValue = @"Hello
-////#if (VALUE_IF)
-    //if value
-    //...if commented in original
-//#elseif (VALUE_ELSEIF)
-    //elseif value
-    //...elseif commented in original
-////#else
-    //else value
-    //...else commented in original
-//#endif
-Past endif
-    ...uncommented in original
-// dont uncomment";
-            testCases.Add(ifElseifRegularElseSpecialValue);
-
-            // special #if (true)
-            // special #elseif
-            // special #else
-            string ifElseifSpecialElseSpecialValue = @"Hello
-////#if (VALUE_IF)
-    //if value
-    //...if commented in original
-////#elseif (VALUE_ELSEIF)
-    //elseif value
-    //...elseif commented in original
-////#else
-    //else value
-    //...else commented in original
-//#endif
-Past endif
-    ...uncommented in original
-// dont uncomment";
-            testCases.Add(ifElseifSpecialElseSpecialValue);
-
             // with the if is true, all of the above test cases should emit this
             string expectedValue = @"Hello
     if value
@@ -329,15 +296,11 @@ Past endif
             // setup for the if being true - always take the if
             VariableCollection vc = new VariableCollection
             {
-                ["VALUE_IF"] = true,            // should be true to get the if to process
-                ["VALUE_ELSEIF"] = false        // shouldn't matter, since the if is always true
+                ["VALUE_IF"] = true, // should be true to get the if to process
+                ["VALUE_ELSEIF"] = false // shouldn't matter, since the if is always true
             };
             IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
-
-            foreach (string test in testCases)
-            {
-                RunAndVerify(test, expectedValue, processor, 28);
-            }
+            RunAndVerify(test, expectedValue, processor, 28);
         }
 
         /// <summary>

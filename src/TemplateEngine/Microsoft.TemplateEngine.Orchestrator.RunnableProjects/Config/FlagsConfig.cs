@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Newtonsoft.Json.Linq;
@@ -29,9 +30,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 @default = bool.Parse(defaultStr);
             }
 
-            yield return new SetFlag(flag, on, off, onNoEmit, offNoEmit, id, @default);
+            yield return new SetFlag(flag, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), id, @default);
         }
 
+        private static readonly string NoEmitSuffix = ":noEmit";
         private static readonly string FlagConditionalSuffix = ":cnd";
         private static readonly string FlagReplacementSuffix = ":replacements";
         private static readonly string FlagExpandVariablesSuffix = ":vars";
@@ -44,23 +46,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             List<IOperationProvider> flagOperations = new List<IOperationProvider>();
             string on = string.Format("{0}+{1}", switchPrefix, FlagConditionalSuffix);
             string off = string.Format("{0}-{1}", switchPrefix, FlagConditionalSuffix);
-            flagOperations.Add(new SetFlag(Conditional.OperationName, on, off, string.Empty, string.Empty, null));
+            flagOperations.Add(new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), (on + NoEmitSuffix).TokenConfig(), (off + NoEmitSuffix).TokenConfig(), null));
 
             on = string.Format("{0}+{1}", switchPrefix, FlagReplacementSuffix);
             off = string.Format("{0}-{1}", switchPrefix, FlagReplacementSuffix);
-            flagOperations.Add(new SetFlag(Replacement.OperationName, on, off, string.Empty, string.Empty, null));
+            flagOperations.Add(new SetFlag(Replacement.OperationName, on.TokenConfig(), off.TokenConfig(), (on + NoEmitSuffix).TokenConfig(), (off + NoEmitSuffix).TokenConfig(), null));
 
             on = string.Format("{0}+{1}", switchPrefix, FlagExpandVariablesSuffix);
             off = string.Format("{0}-{1}", switchPrefix, FlagExpandVariablesSuffix);
-            flagOperations.Add(new SetFlag(ExpandVariables.OperationName, on, off, string.Empty, string.Empty, null));
+            flagOperations.Add(new SetFlag(ExpandVariables.OperationName, on.TokenConfig(), off.TokenConfig(), (on + NoEmitSuffix).TokenConfig(), (off + NoEmitSuffix).TokenConfig(), null));
 
             on = string.Format("{0}+{1}", switchPrefix, FlagIncludeSuffix);
             off = string.Format("{0}-{1}", switchPrefix, FlagIncludeSuffix);
-            flagOperations.Add(new SetFlag(Include.OperationName, on, off, string.Empty, string.Empty, null));
+            flagOperations.Add(new SetFlag(Include.OperationName, on.TokenConfig(), off.TokenConfig(), (on + NoEmitSuffix).TokenConfig(), (off + NoEmitSuffix).TokenConfig(), null));
 
             // no off for the flag-flag
             on = string.Format("{0}+{1}", switchPrefix, FlagFlagsSuffix);
-            flagOperations.Add(new SetFlag(SetFlag.OperationName, on, off, string.Empty, string.Empty, null));
+            flagOperations.Add(new SetFlag(SetFlag.OperationName, on.TokenConfig(), string.Empty.TokenConfig(), (on + NoEmitSuffix).TokenConfig(), string.Empty.TokenConfig(), null));
 
             return flagOperations;
         }

@@ -8,10 +8,13 @@ namespace Microsoft.TemplateEngine.Core
 
         public ChangeKind ChangeKind { get; }
 
-        public FileChange(string path, ChangeKind changeKind)
+        public byte[] Contents { get; }
+
+        public FileChange(string path, ChangeKind changeKind, byte[] contents = null)
         {
             TargetRelativePath = path;
             ChangeKind = changeKind;
+            Contents = contents;
         }
     }
 }

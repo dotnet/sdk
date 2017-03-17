@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -9,6 +11,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string Type { get; private set; }
 
         public string Evaluator { get; private set; }
+
+        public IReadOnlyList<IReplacementContext> ReplacementContexts => Empty<IReplacementContext>.List.Value;
 
         string ISymbolModel.Binding
         {
