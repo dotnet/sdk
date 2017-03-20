@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Xunit;
 using static Microsoft.NET.TestFramework.Commands.MSBuildTest;
@@ -561,7 +562,7 @@ namespace Microsoft.NET.Build.Tests
             //      { AssemblyName}.AssemblyInfo.cs in the intermediate output path
             var itemsToRemove = compileItems.Where(i =>
                     i.EndsWith("AssemblyAttributes.cs", System.StringComparison.OrdinalIgnoreCase) ||
-                    i.EndsWith("AssemblyInfo.cs", StringComparison.OrdinalIgnoreCase))
+                    Regex.IsMatch(i, ".*AssemblyInfo(.[0-9a-z]{6})?.cs$"))
                 .ToList();
 
             foreach (var itemToRemove in itemsToRemove)
