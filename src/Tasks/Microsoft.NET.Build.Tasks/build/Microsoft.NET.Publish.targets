@@ -56,6 +56,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <MakeDir Directories="$(PublishDir)" />
+    
+    <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true' ">
+      <!-- Include any files from wwwroot that may not have existed before a prepublish target -->
+      <Content Include="wwwroot/**" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(Content)" />
+    </ItemGroup>
 
   </Target>
 
@@ -337,12 +342,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Get items from this project last so that they will be copied last. -->
     <ItemGroup>
+      <_ContentItemsToPublish Include="@(Content->'%(FullPath)')"
+                              Condition="'%(Content.CopyToPublishDirectory)'=='Always' or '%(Content.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <AssignTargetPath Files="@(_ContentItemsToPublish)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_ContentItemsToPublishWithTargetPath" />
+    </AssignTargetPath>
+    
+    <ItemGroup>
       <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
-                                                  Include="@(ContentWithTargetPath->'%(FullPath)')"
-                                                  Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
+                                                  Include="@(_ContentItemsToPublishWithTargetPath)"
+                                                  Condition="'%(_ContentItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
       <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
-                                            Include="@(ContentWithTargetPath->'%(FullPath)')"
-                                            Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+                                            Include="@(_ContentItemsToPublishWithTargetPath)"
+                                            Condition="'%(_ContentItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
     </ItemGroup>
 
     <ItemGroup>
