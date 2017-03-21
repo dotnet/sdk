@@ -20,13 +20,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public static IEngineEnvironmentSettings GetTestEnvironment()
         {
-            ITemplateEngineHost host = new TestHost
+            TestHost host = new TestHost
             {
                 HostIdentifier = "TestRunner",
                 Version = "1.0.0.0",
                 Locale = "en-US"
             };
 
+            host.FileSystem = new PhysicalFileSystem();
             return new EngineEnvironmentSettings(host, x => null);
         }
 
