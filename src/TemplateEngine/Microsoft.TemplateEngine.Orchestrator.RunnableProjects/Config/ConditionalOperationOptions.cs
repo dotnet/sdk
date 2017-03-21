@@ -21,6 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         public bool WholeLine { get; set; }
         public bool TrimWhitespace { get; set; }
         public string Id { get; set; }
+        public bool OnByDefault { get; set; }
 
         public static ConditionalOperationOptions FromJObject(JObject rawConfiguration)
         {
@@ -34,6 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             options.TrimWhitespace = rawConfiguration.ToBool("trim", true);
             options.WholeLine = rawConfiguration.ToBool("wholeLine", true);
+            options.OnByDefault = rawConfiguration.ToBool("onByDefault");
 
             string id = rawConfiguration.ToString("id");
             if (!string.IsNullOrWhiteSpace(id))

@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     foreach (KeyValuePair<string, ICacheTag> tagInfo in Tags)
                     {
-                        ITemplateParameter param = new TemplateParameter
+                        ITemplateParameter param = new Parameter
                         {
                             Name = tagInfo.Key,
                             Documentation = tagInfo.Value.Description,
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
                     {
-                        ITemplateParameter param = new TemplateParameter
+                        ITemplateParameter param = new Parameter
                         {
                             Name = paramInfo.Key,
                             Documentation = paramInfo.Value.Description,

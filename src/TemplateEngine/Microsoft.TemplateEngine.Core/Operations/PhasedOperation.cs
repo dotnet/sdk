@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,12 +11,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         private readonly IReadOnlyList<Phase> _config;
         private readonly string _id;
+        private readonly bool _initialState;
 
-        public PhasedOperation(string id, IReadOnlyList<Phase> config)
+        public PhasedOperation(string id, IReadOnlyList<Phase> config, bool initialState)
         {
             _id = id;
             _config = config;
+            _initialState = initialState;
         }
+
+        public string Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -80,7 +85,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 }
             }
 
-            return new Impl(this, tokens, currentTarget);
+            return new Impl(this, tokens, currentTarget, _initialState);
         }
 
         private class Impl : IOperation
@@ -89,16 +94,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly IReadOnlyList<SpecializedPhase> _entryPoints;
             private SpecializedPhase _currentPhase;
 
-            public Impl(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints)
+            public Impl(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints, bool initialState)
             {
                 _definition = definition;
                 Tokens = config;
                 _entryPoints = entryPoints;
+                IsInitialStateOn = string.IsNullOrEmpty(_definition._id) || initialState;
             }
 
             public string Id => _definition._id;
 
             public IReadOnlyList<IToken> Tokens { get; }
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

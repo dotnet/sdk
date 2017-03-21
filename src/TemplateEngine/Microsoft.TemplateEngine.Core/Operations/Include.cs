@@ -11,12 +11,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "include";
 
-        public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream> sourceStreamOpener, string id)
+        public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream> sourceStreamOpener, string id, bool initialState)
         {
             SourceStreamOpener = sourceStreamOpener;
             StartToken = startToken;
             EndToken = endToken;
             _id = id;
+            _initialState = initialState;
         }
 
         public ITokenConfig EndToken { get; }
@@ -26,6 +27,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public Func<string, Stream> SourceStreamOpener { get; }
 
         private readonly string _id;
+        private readonly bool _initialState;
+
+        public string Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -33,7 +37,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken endTokenBytes = EndToken.ToToken(encoding);
             TokenTrie endTokenMatcher = new TokenTrie();
             endTokenMatcher.AddToken(endTokenBytes);
-            return new Impl(tokenBytes, endTokenMatcher, this, _id);
+            return new Impl(tokenBytes, endTokenMatcher, this, _id, _initialState);
         }
 
         private class Impl : IOperation
@@ -42,17 +46,20 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly ITokenTrie _endTokenMatcher;
             private readonly string _id;
 
-            public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string id)
+            public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string id, bool initialState)
             {
                 Tokens = new[] {token};
                 _source = source;
                 _endTokenMatcher = endTokenMatcher;
                 _id = id;
+                IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

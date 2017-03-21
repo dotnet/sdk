@@ -50,7 +50,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             switch (style)
             {
                 case ConditionalType.MSBuild:
-                    setup = MSBuildConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, id);
+                    setup = new List<IOperationProvider>();
+                    setup.AddRange(MSBuildConditionalSetup(evaluatorType, wholeLine, trimWhiteSpace, "msbuild-conditional"));
+                    setup.AddRange(ConditionalBlockCommentConfig.GenerateConditionalSetup("<!--", "-->"));
                     break;
                 case ConditionalType.Xml:
                     setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("<!--", "-->");
@@ -104,7 +106,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 trimWhiteSpace,
                 evaluator,
                 "$({0})",
-                id
+                id,
+                true
             );
 
             return new List<IOperationProvider>()
@@ -125,7 +128,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
-            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id);
+            IOperationProvider conditional = new Conditional(tokens, wholeLine, trimWhiteSpace, evaluator, id, true);
 
             return new List<IOperationProvider>()
             {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -22,15 +23,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly ITokenConfig _pseudoEndToken;
         private readonly string _id;
         private readonly string _resetFlag;
+        private readonly bool _initialState;
 
-        public BalancedNesting(ITokenConfig startToken, ITokenConfig realEndToken, ITokenConfig pseudoEndToken, string id, string resetFlag)
+        public BalancedNesting(ITokenConfig startToken, ITokenConfig realEndToken, ITokenConfig pseudoEndToken, string id, string resetFlag, bool initialState)
         {
             _startToken = startToken;
             _realEndToken = realEndToken;
             _pseudoEndToken = pseudoEndToken;
             _id = id;
             _resetFlag = resetFlag;
+            _initialState = initialState;
         }
+
+        public string Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -38,7 +43,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken realEndToken = _realEndToken.ToToken(encoding);
             IToken pseudoEndToken = _pseudoEndToken.ToToken(encoding);
 
-            return new Impl(startToken, realEndToken, pseudoEndToken, _id, _resetFlag);
+            return new Impl(startToken, realEndToken, pseudoEndToken, _id, _resetFlag, _initialState);
         }
 
         private class Impl : IOperation
@@ -55,7 +60,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private const int RealEndTokenIndex = 1;
             private const int PseudoEndTokenIndex = 2;
 
-            public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string id, string resetFlag)
+            public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string id, string resetFlag, bool initialState)
             {
                 _startToken = start;
                 _realEndToken = realEnd;
@@ -64,11 +69,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _resetFlag = resetFlag;
                 Tokens = new[] { _startToken, _realEndToken, _psuedoEndToken };
                 _depth = 0;
+                IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public string Id => _id;
 
             public IReadOnlyList<IToken> Tokens { get; }
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

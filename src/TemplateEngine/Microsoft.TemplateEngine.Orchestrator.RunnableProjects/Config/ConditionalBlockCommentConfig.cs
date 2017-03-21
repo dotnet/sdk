@@ -86,8 +86,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
                 tokens.ActionableOperations = new[] { commentFixOperationId, commentFixResetId };
 
-                IOperationProvider balancedComments = new BalancedNesting(startToken.TokenConfig(), endToken.TokenConfig(), pseudoEndToken.TokenConfig(), commentFixOperationId, commentFixResetId);
-                IOperationProvider conditional = new Conditional(tokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id);
+                IOperationProvider balancedComments = new BalancedNesting(startToken.TokenConfig(), endToken.TokenConfig(), pseudoEndToken.TokenConfig(), commentFixOperationId, commentFixResetId, options.OnByDefault);
+                IOperationProvider conditional = new Conditional(tokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id, options.OnByDefault);
 
                 return new List<IOperationProvider>()
                 {
@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
             else
             {
-                IOperationProvider conditional = new Conditional(tokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id);
+                IOperationProvider conditional = new Conditional(tokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id, options.OnByDefault);
                 return new List<IOperationProvider>()
                 {
                     conditional

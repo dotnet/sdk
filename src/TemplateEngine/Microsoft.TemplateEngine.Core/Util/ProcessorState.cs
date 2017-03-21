@@ -17,6 +17,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         private readonly TrieEvaluator<OperationTerminal> _trie;
         private Encoding _encoding;
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>>();
+        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>> OperationsToExplicitlySetOnByDefault = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>>();
         private readonly int _flushThreshold;
 
         public IEngineConfig Config { get; }
@@ -77,7 +78,13 @@ namespace Microsoft.TemplateEngine.Core.Util
             CurrentBufferPosition = bom.Length;
             target.Write(bom, 0, bom.Length);
 
+            bool explicitOnConfigurationRequired = false;
             Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
+            List<string> turnOnByDefault = OperationsToExplicitlySetOnByDefault.GetOrAdd(operationProviders, x =>
+            {
+                explicitOnConfigurationRequired = true;
+                return new List<string>();
+            });
 
             if (!byEncoding.TryGetValue(encoding, out Trie<OperationTerminal> trie))
             {
@@ -96,7 +103,17 @@ namespace Microsoft.TemplateEngine.Core.Util
                                 trie.AddPath(op.Tokens[j].Value, new OperationTerminal(op, j, op.Tokens[j].Length, op.Tokens[j].Start, op.Tokens[j].End));
                             }
                         }
+
+                        if (explicitOnConfigurationRequired && op.IsInitialStateOn && !string.IsNullOrEmpty(op.Id))
+                        {
+                            turnOnByDefault.Add(op.Id);
+                        }
                     }
+                }
+
+                foreach(string state in turnOnByDefault)
+                {
+                    config.Flags[state] = true;
                 }
 
                 byEncoding[encoding] = trie;

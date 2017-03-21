@@ -22,6 +22,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string DataType { get; set; }
 
+        public string FileRename { get; set; }
+
         // only relevant for choice datatype
         public bool IsTag { get; set; }
 
@@ -51,6 +53,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Binding = jObject.ToString(nameof(Binding)),
                 DefaultValue = jObject.ToString(nameof(DefaultValue)) ?? string.Empty,
                 Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty,
+                FileRename = jObject.ToString(nameof(FileRename)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),
                 Type = jObject.ToString(nameof(Type)),
                 Replaces = jObject.ToString(nameof(Replaces)),

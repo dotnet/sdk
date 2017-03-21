@@ -20,8 +20,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string startToken = rawConfiguration.ToString("start");
             string endToken = rawConfiguration.ToString("end");
             string id = rawConfiguration.ToString("id");
+            bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
-            yield return new Include(startToken.TokenConfig(), endToken.TokenConfig(), x => templateRoot.FileInfo(x).OpenRead(), id);
+            yield return new Include(startToken.TokenConfig(), endToken.TokenConfig(), x => templateRoot.FileInfo(x).OpenRead(), id, onByDefault);
         }
     }
 }

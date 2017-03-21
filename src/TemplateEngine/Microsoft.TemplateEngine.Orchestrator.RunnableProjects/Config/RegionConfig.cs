@@ -22,8 +22,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             bool include = rawConfiguration.ToBool("include");
             bool regionTrim = rawConfiguration.ToBool("trim");
             bool regionWholeLine = rawConfiguration.ToBool("wholeLine");
+            bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
-            yield return new Region(start.TokenConfig(), end.TokenConfig(), include, regionWholeLine, regionTrim, id);
+            yield return new Region(start.TokenConfig(), end.TokenConfig(), include, regionWholeLine, regionTrim, id, onByDefault);
         }
     }
 }

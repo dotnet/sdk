@@ -18,7 +18,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 MSBuildStyleEvaluatorDefinition.Evaluate,
                 "$({0})",
-                null
+                null,
+                true
             ));
         }
 

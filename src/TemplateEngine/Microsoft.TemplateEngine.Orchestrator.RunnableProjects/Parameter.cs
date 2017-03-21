@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class Parameter : ITemplateParameter
+    public class Parameter : ITemplateParameter, IExtendedTemplateParameter
     {
         [JsonProperty]
         public string Description { get; set; }
@@ -31,9 +31,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string DataType { get; set; }
 
         [JsonProperty]
+        public string FileRename { get; set; }
+
+        [JsonProperty]
         public IReadOnlyDictionary<string, string> Choices { get; set; }
 
-        string ITemplateParameter.Documentation => Description;
+        [JsonIgnore]
+        public string Documentation
+        {
+            get { return Description; }
+            set { Description = value; }
+        }
 
         string ITemplateParameter.Name => Name;
 

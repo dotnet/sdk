@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.TrimWhitespace(true, false, ref length, ref position);
                     return 0;
-                }, Encoding.UTF8.GetBytes("Hello"));
+                }, true, Encoding.UTF8.GetBytes("Hello"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.TrimWhitespace(false, true, ref length, ref position);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.TrimWhitespace(true, true, ref length, ref position);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.TrimWhitespace(false, false, ref length, ref position);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.ConsumeWholeLine(ref length, ref position);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -151,7 +151,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.WhitespaceHandler(ref length, ref position, true, trim, trimForward, trimBackward);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -180,7 +180,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.WhitespaceHandler(ref length, ref position, false, true, trimForward, trimBackward);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -205,7 +205,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, true, false);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -230,7 +230,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, false, true);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
@@ -255,7 +255,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, true, true);
                     return 0;
-                }, Encoding.UTF8.GetBytes("There"));
+                }, true, Encoding.UTF8.GetBytes("There"));
 
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
