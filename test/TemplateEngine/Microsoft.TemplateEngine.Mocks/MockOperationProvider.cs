@@ -16,5 +16,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             return _operation;
         }
+
+        public string Id => _operation.Id;
     }
 }

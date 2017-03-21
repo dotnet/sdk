@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Core;
@@ -11,16 +12,17 @@ namespace Microsoft.TemplateEngine.Mocks
         public delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
         private readonly MatchHandler _onMatch;
 
-        public MockOperation(string id, MatchHandler onMatch, params byte[][] tokens)
-            : this(id, onMatch, tokens.Select(token => TokenConfig.LiteralToken(token)).ToArray())
+        public MockOperation(string id, MatchHandler onMatch, bool initialState, params byte[][] tokens)
+            : this(id, onMatch, initialState, tokens.Select(token => TokenConfig.LiteralToken(token)).ToArray())
         {
         }
 
-        public MockOperation(string id, MatchHandler onMatch, params IToken[] tokens)
+        public MockOperation(string id, MatchHandler onMatch, bool initialState, params IToken[] tokens)
         {
             Tokens = tokens;
             Id = id;
             _onMatch = onMatch;
+            IsInitialStateOn = initialState;
         }
 
         public IReadOnlyList<IToken> Tokens { get; }
@@ -33,5 +35,7 @@ namespace Microsoft.TemplateEngine.Mocks
         }
 
         public IOperationProvider Provider => new MockOperationProvider(this);
+
+        public bool IsInitialStateOn { get; }
     }
 }

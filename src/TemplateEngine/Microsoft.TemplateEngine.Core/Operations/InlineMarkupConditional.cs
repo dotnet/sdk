@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,8 +11,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
     public class InlineMarkupConditional : IOperationProvider
     {
         private readonly string _id;
+        private readonly bool _initialState;
 
-        public InlineMarkupConditional(MarkupTokens tokens, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string variableFormat, string id)
+        public InlineMarkupConditional(MarkupTokens tokens, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string variableFormat, string id, bool initialState)
         {
             Tokens = tokens;
             _id = id;
@@ -19,9 +21,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
             WholeLine = wholeLine;
             TrimWhitespace = trimWhitespace;
             VariableFormat = variableFormat;
+            _initialState = initialState;
         }
 
         public ConditionEvaluator Evaluator { get; }
+
+        public string Id => _id;
 
         public MarkupTokens Tokens { get; }
 
@@ -58,7 +63,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             );
 
             IReadOnlyList<IToken> start = new[] { Tokens.OpenConditionExpression.ToToken(processorState.Encoding) };
-            return new Impl(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id);
+            return new Impl(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id, _initialState);
         }
 
         public class Impl : IOperation
@@ -69,7 +74,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly ITokenTrie _scanBackTrie;
             private readonly ITokenTrie _structureTrie;
 
-            public Impl(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string id)
+            public Impl(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string id, bool initialState)
             {
                 _definition = definition;
                 Id = id;
@@ -78,11 +83,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 _structureTrie = structureTrie;
                 _scanBackTrie = scanBackTrie;
                 _closeConditionTrie = closeConditionTrie;
+                IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public string Id { get; }
 
             public IReadOnlyList<IToken> Tokens { get; }
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

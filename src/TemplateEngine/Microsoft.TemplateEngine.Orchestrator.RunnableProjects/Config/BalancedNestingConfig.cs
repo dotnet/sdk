@@ -21,8 +21,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
             string id = rawConfiguration.ToString("id");
             string resetFlag = rawConfiguration.ToString("resetFlag");
+            bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
-            yield return new BalancedNesting(startToken.TokenConfig(), realEndToken.TokenConfig(), pseudoEndToken.TokenConfig(), id, resetFlag);
+            yield return new BalancedNesting(startToken.TokenConfig(), realEndToken.TokenConfig(), pseudoEndToken.TokenConfig(), id, resetFlag, onByDefault);
         }
 
         public static JObject CreateConfiguration(string startToken, string realEndToken, string pseudoEndToken, string id, string resetFlag)

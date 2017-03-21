@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             if (parameters.TryGetRuntimeValue(environmentSettings, tokens.VariableName, out object newValueObject))
             {
                 string newValue = newValueObject.ToString();
-                return new Replacement(tokens.OriginalValue, newValue, null);
+                return new Replacement(tokens.OriginalValue, newValue, null, true);
             }
             else
             {
@@ -35,6 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string original = rawConfiguration.ToString("original");
             string replacement = rawConfiguration.ToString("replacement");
             string id = rawConfiguration.ToString("id");
+            bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
             JArray onlyIf = rawConfiguration.Get<JArray>("onlyIf");
             TokenConfig coreConfig = original.TokenConfigBuilder();
@@ -62,12 +63,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                         entryConfig = entryConfig.OnlyIfAfter(after);
                     }
 
-                    yield return new Replacement(entryConfig, replacement, id);
+                    yield return new Replacement(entryConfig, replacement, id, onByDefault);
                 }
             }
             else
             {
-                yield return new Replacement(coreConfig, replacement, id);
+                yield return new Replacement(coreConfig, replacement, id, onByDefault);
             }
         }
     }

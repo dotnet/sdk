@@ -21,6 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             string id = rawConfiguration.ToString("id");
             bool trim = rawConfiguration.ToBool("trim");
             bool wholeLine = rawConfiguration.ToBool("wholeLine");
+            bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
             string evaluatorName = rawConfiguration.ToString("evaluator");
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorName);
@@ -39,7 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             return new List<IOperationProvider>()
             {
-                new Conditional(tokenVariants, wholeLine, trim, evaluator, id)
+                new Conditional(tokenVariants, wholeLine, trim, evaluator, id, onByDefault)
             };
         }
     }

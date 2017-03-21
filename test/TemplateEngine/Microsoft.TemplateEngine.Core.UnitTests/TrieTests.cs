@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new IOperationProvider[]
                 {
                     new MockOperationProvider(
-                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, new byte[] { 1, 2, 3 })
+                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
                 }
                 , VariableCollection.Root());
@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new IOperationProvider[]
                 {
                     new MockOperationProvider(
-                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, new byte[] { 1, 2, 3 })
+                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
                 }
                 , VariableCollection.Root());
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new IOperationProvider[]
                 {
                     new MockOperationProvider(
-                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, new byte[] { 1, 2, 3 })
+                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
                 }
                 , VariableCollection.Root());
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new IOperationProvider[]
                 {
                     new MockOperationProvider(
-                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, new byte[] { 1, 2, 3 })
+                        new MockOperation(null, (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) => { testActivated = true; return 0; }, true, new byte[] { 1, 2, 3 })
                     )
                 }
                 , VariableCollection.Root());

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -10,30 +11,37 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public static readonly string OperationName = "expandvariables";
 
         private readonly string _id;
+        private readonly bool _initialState;
 
-        public ExpandVariables(string id)
+        public ExpandVariables(string id, bool initialState)
         {
             _id = id;
+            _initialState = initialState;
         }
+
+        public string Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processor)
         {
-            return new Impl(processor, _id);
+            return new Impl(processor, _id, _initialState);
         }
 
         private class Impl : IOperation
         {
             private readonly string _id;
 
-            public Impl(IProcessorState processor, string id)
+            public Impl(IProcessorState processor, string id, bool initialState)
             {
                 Tokens = processor.EncodingConfig.VariableKeys;
                 _id = id;
+                IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

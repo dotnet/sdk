@@ -1,7 +1,6 @@
 ﻿using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
-using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -11,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         private IProcessor SetupConfig(IVariableCollection vc, params Phase[] phases)
         {
             EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
-            return Processor.Create(cfg, new PhasedOperation(null, phases));
+            return Processor.Create(cfg, new PhasedOperation(null, phases, true));
         }
 
         [Fact(DisplayName = nameof(VerifyPhasedOperationStateProgression))]

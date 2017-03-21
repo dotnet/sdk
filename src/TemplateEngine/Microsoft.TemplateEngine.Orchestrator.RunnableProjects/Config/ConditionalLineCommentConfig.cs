@@ -33,8 +33,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         {
             string uncommentOperationId = $"Uncomment (line): {token} -> ()";
             string reduceCommentOperationId = $"Reduce comment (line): ({token}{token}) -> ({token})";
-            IOperationProvider uncomment = new Replacement(token.TokenConfig(), string.Empty, uncommentOperationId);
-            IOperationProvider reduceComment = new Replacement($"{token}{token}".TokenConfig(), token, reduceCommentOperationId);
+            IOperationProvider uncomment = new Replacement(token.TokenConfig(), string.Empty, uncommentOperationId, options.OnByDefault);
+            IOperationProvider reduceComment = new Replacement($"{token}{token}".TokenConfig(), token, reduceCommentOperationId, options.OnByDefault);
 
             ConditionalTokens conditionalTokens = new ConditionalTokens
             {
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             };
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(options.EvaluatorType);
-            IOperationProvider conditional = new Conditional(conditionalTokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id);
+            IOperationProvider conditional = new Conditional(conditionalTokens, options.WholeLine, options.TrimWhitespace, evaluator, options.Id, options.OnByDefault);
 
             return new List<IOperationProvider>()
             {

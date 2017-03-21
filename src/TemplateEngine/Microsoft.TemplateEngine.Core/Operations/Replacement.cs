@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,12 +14,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly ITokenConfig _match;
         private readonly string _replaceWith;
         private readonly string _id;
+        private readonly bool _initialState;
 
-        public Replacement(ITokenConfig match, string replaceWith, string id)
+        public string Id => _id;
+
+        public Replacement(ITokenConfig match, string replaceWith, string id, bool initialState)
         {
             _match = match;
             _replaceWith = replaceWith;
             _id = id;
+            _initialState = initialState;
         }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
@@ -31,7 +36,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 return null;
             }
 
-            return new Impl(token, replaceWith, _id);
+            return new Impl(token, replaceWith, _id, _initialState);
         }
 
         private class Impl : IOperation
@@ -40,17 +45,20 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly IToken _token;
             private readonly string _id;
 
-            public Impl(IToken token, byte[] replaceWith, string id)
+            public Impl(IToken token, byte[] replaceWith, string id, bool initialState)
             {
                 _replacement = replaceWith;
                 _token = token;
                 _id = id;
                 Tokens = new[] {token};
+                IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

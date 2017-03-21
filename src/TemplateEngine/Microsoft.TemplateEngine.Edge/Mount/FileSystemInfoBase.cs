@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount
 
         protected FileSystemInfoBase(IMountPoint mountPoint, string fullPath, string name, FileSystemInfoKind kind)
         {
-            FullPath = fullPath;
+            FullPath = fullPath.Replace('\\', '/');
             Name = name;
             Kind = kind;
             MountPoint = mountPoint;

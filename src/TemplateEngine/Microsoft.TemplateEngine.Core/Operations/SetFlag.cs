@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -10,6 +11,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public static readonly string OperationName = "flags";
 
         private readonly string _id;
+        private readonly bool _initialState;
+
+        public string Id => _id;
 
         public string Name { get; }
 
@@ -23,7 +27,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public ITokenConfig OffNoEmit { get; }
 
-        public SetFlag(string name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string id, bool? @default = null)
+        public SetFlag(string name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string id, bool initialState, bool? @default = null)
         {
             Name = name;
             On = on;
@@ -32,6 +36,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             OffNoEmit = offNoEmit;
             Default = @default;
             _id = id;
+            _initialState = initialState;
         }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
@@ -49,7 +54,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 processorState.Config.Flags[Name] = Default.Value;
             }
 
-            return new Impl(this, tokens, _id);
+            return new Impl(this, tokens, _id, _initialState);
         }
 
         private class Impl : IOperation
@@ -57,16 +62,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly SetFlag _owner;
             private readonly string _id;
 
-            public Impl(SetFlag owner, IReadOnlyList<IToken> tokens, string id)
+            public Impl(SetFlag owner, IReadOnlyList<IToken> tokens, string id, bool initialState)
             {
                 _owner = owner;
                 Tokens = tokens;
                 _id = id;
+                IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
             public string Id => _id;
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {

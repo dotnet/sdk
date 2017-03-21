@@ -148,7 +148,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (runConfig.VariableSetup.Expand)
             {
-                operations?.Add(new ExpandVariables(null));
+                operations?.Add(new ExpandVariables(null, true));
             }
 
             return operations;

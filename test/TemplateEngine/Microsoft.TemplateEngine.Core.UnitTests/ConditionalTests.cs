@@ -97,8 +97,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new BalancedNesting("<!--".TokenConfig(), "-->".TokenConfig(), "-- >".TokenConfig(), commentFixingOperationId, commentFixingResetId)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new BalancedNesting("<!--".TokenConfig(), "-->".TokenConfig(), "-- >".TokenConfig(), commentFixingOperationId, commentFixingResetId, false)
                 };
 
                 return operations;
@@ -131,8 +131,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new BalancedNesting("@*".TokenConfig(), "*@".TokenConfig(), "* @".TokenConfig(), commentFixingOperationId, commentFixingResetId)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new BalancedNesting("@*".TokenConfig(), "*@".TokenConfig(), "* @".TokenConfig(), commentFixingOperationId, commentFixingResetId, false)
                 };
 
                 return operations;
@@ -166,9 +166,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("////".TokenConfig(), "//", uncommentOperationId),
-                    new Replacement("//".TokenConfig(), string.Empty, replaceOperationId)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new Replacement("////".TokenConfig(), "//", uncommentOperationId, false),
+                    new Replacement("//".TokenConfig(), string.Empty, replaceOperationId, false)
                 };
 
                 return operations;
@@ -197,9 +197,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("////".TokenConfig(), "//", uncommentOperationId),
-                    new Replacement("//".TokenConfig(), string.Empty, replaceOperationId)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new Replacement("////".TokenConfig(), "//", uncommentOperationId, false),
+                    new Replacement("//".TokenConfig(), string.Empty, replaceOperationId, false)
                 };
 
                 return operations;
@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true)
                 };
 
                 return operations;
@@ -248,9 +248,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("##".TokenConfig(), "#", uncommentOperationId),
-                    new Replacement("#".TokenConfig(), "", replaceOperationId),
+                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new Replacement("##".TokenConfig(), "#", uncommentOperationId, false),
+                    new Replacement("#".TokenConfig(), "", replaceOperationId, false),
                 };
 
                 return operations;
@@ -278,9 +278,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("rem rem".TokenConfig(), "rem", uncommentOperationId),
-                    new Replacement("rem".TokenConfig(), "", replaceOperationId)
+                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new Replacement("rem rem".TokenConfig(), "rem", uncommentOperationId, false),
+                    new Replacement("rem".TokenConfig(), "", replaceOperationId, false)
                 };
 
                 return operations;
@@ -308,9 +308,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new Replacement("-#-#".TokenConfig(), "-#", reduceCommentOperationId),
-                    new Replacement("-#".TokenConfig(), "", uncommentOperationId),
+                    new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new Replacement("-#-#".TokenConfig(), "-#", reduceCommentOperationId, false),
+                    new Replacement("-#".TokenConfig(), "", uncommentOperationId, false),
                 };
 
                 return operations;
@@ -343,8 +343,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 IOperationProvider[] operations =
                 {
-                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null),
-                    new BalancedNesting("{/*".TokenConfig(), "*/}".TokenConfig(), "*/ }".TokenConfig(), commentFixingOperationId, commentFixingResetId)
+                    new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
+                    new BalancedNesting("{/*".TokenConfig(), "*/}".TokenConfig(), "*/ }".TokenConfig(), commentFixingOperationId, commentFixingResetId, false)
                 };
 
                 return operations;

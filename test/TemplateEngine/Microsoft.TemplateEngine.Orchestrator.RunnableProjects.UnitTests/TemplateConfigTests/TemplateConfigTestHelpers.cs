@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public static string GetNewVirtualizedPath(IEngineEnvironmentSettings environment)
         {
-            string basePath = Directory.GetCurrentDirectory() + "/sandbox/" + Guid.NewGuid() + "/";
+            string basePath = Path.Combine(Directory.GetCurrentDirectory(), "sandbox", Guid.NewGuid().ToString()) + Path.DirectorySeparatorChar;
             environment.Host.VirtualizeDirectory(basePath);
 
             return basePath;

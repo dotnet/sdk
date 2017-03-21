@@ -34,6 +34,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         // must be > the highest token type index
         private const int TokenTypeModulus = 10;
+        private bool _initialState;
+
+        public string Id => _id;
 
         public bool WholeLine => _wholeLine;
 
@@ -43,13 +46,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public ConditionalTokens Tokens => _tokens;
 
-        public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id)
+        public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id, bool initialState)
         {
             _trimWhitespace = trimWhitespace;
             _wholeLine = wholeLine;
             _evaluator = evaluator;
             _tokens = tokenVariants;
             _id = id;
+            _initialState = initialState;
         }
 
         /// <summary>
@@ -88,7 +92,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.ActionableElseTokens, ElseTokenActionableBaseIndex, encoding);
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.ActionableElseIfTokens, ElseIfTokenActionableBaseIndex, encoding);
 
-            return new Impl(this, tokens, trie, _id);
+            return new Impl(this, tokens, trie, _id, _initialState);
         }
 
         /// <summary>
@@ -132,17 +136,20 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly ITokenTrie _trie;
             private readonly string _id;
 
-            public Impl(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string id)
+            public Impl(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string id, bool initialState)
             {
                 _trie = trie;
                 _definition = definition;
                 Tokens = tokens;
                 _id = id;
+                IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public string Id => _id;
 
             public IReadOnlyList<IToken> Tokens { get; }
+
+            public bool IsInitialStateOn { get; }
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
             {
