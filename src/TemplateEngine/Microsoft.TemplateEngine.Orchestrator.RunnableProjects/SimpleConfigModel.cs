@@ -545,20 +545,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (sourceVariable != null)
                         {
                             TokenConfig replacementConfig = symbol.Value.Replaces.TokenConfigBuilder();
-                            foreach (IReplacementContext context in symbol.Value.ReplacementContexts)
+                            if (symbol.Value.ReplacementContexts.Count > 0)
                             {
-                                TokenConfig builder = replacementConfig;
-                                if (!string.IsNullOrEmpty(context.OnlyIfAfter))
+                                foreach (IReplacementContext context in symbol.Value.ReplacementContexts)
                                 {
-                                    builder = builder.OnlyIfAfter(context.OnlyIfAfter);
-                                }
+                                    TokenConfig builder = replacementConfig;
+                                    if (!string.IsNullOrEmpty(context.OnlyIfAfter))
+                                    {
+                                        builder = builder.OnlyIfAfter(context.OnlyIfAfter);
+                                    }
 
-                                if (!string.IsNullOrEmpty(context.OnlyIfBefore))
-                                {
-                                    builder = builder.OnlyIfBefore(context.OnlyIfBefore);
-                                }
+                                    if (!string.IsNullOrEmpty(context.OnlyIfBefore))
+                                    {
+                                        builder = builder.OnlyIfBefore(context.OnlyIfBefore);
+                                    }
 
-                                macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, builder));
+                                    macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, builder));
+                                }
+                            }
+                            else
+                            {
+                                macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));
                             }
                         }
                     }
