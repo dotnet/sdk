@@ -31,6 +31,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
 
             string realName = name ?? template.DefaultName ?? fallbackName;
+
+            if(string.IsNullOrEmpty(realName))
+            {
+                return new TemplateCreationResult("--name", CreationResultStatus.InvalidParamValues, template.Name);
+            }
+
             // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
             IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
             if (defaultParamsWithInvalidValues.Any())
