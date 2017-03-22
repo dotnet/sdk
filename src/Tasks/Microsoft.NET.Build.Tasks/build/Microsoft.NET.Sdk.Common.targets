@@ -37,11 +37,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                         ShouldQueryForProperties
 
     Indicate that this project cross-targets, so before building
-    it, a referring project must call GetReferenceProperties
+    it, a referring project must call GetDesiredProperties
     to get the matching TargetFramework to specify.
   -->
   <Target Name="ShouldQueryForProperties"
-          Returns="$(_ReferringProjectShouldCallGetReferenceProperties)">
+          Returns="$(_ReferringProjectShouldCallGetDesiredProperties)">
     <PropertyGroup>
       <!-- indicate to caller that project is RID agnostic so that a global property RuntimeIdentifier value can be removed -->
       <_IsRidAgnostic>false</_IsRidAgnostic>
@@ -51,14 +51,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_HasSingleTargetFramework Condition="'$(IsCrossTargetingBuild)' != 'true'">true</_HasSingleTargetFramework>
       <_HasSingleTargetFramework Condition="'$(_HasSingleTargetFramework)' == ''">false</_HasSingleTargetFramework>
 
-      <_ReferringProjectShouldCallGetReferenceProperties>true</_ReferringProjectShouldCallGetReferenceProperties>
-      <_ReferringProjectShouldCallGetReferenceProperties Condition="$(_HasSingleTargetFramework) and $(_IsRidAgnostic)">false</_ReferringProjectShouldCallGetReferenceProperties>
+      <_ReferringProjectShouldCallGetDesiredProperties>true</_ReferringProjectShouldCallGetDesiredProperties>
+      <_ReferringProjectShouldCallGetDesiredProperties Condition="$(_HasSingleTargetFramework) and $(_IsRidAgnostic)">false</_ReferringProjectShouldCallGetDesiredProperties>
     </PropertyGroup>
   </Target>
 
   <!--
   ============================================================
-                              GetReferenceProperties
+                              GetDesiredProperties
 
     Invoked by common targets to return the set of properties 
     (in the form  "key1=value1;...keyN=valueN") needed to build 
@@ -75,7 +75,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     with the referencing project's target framework.
   ============================================================
    -->
-  <Target Name="GetReferenceProperties"
+  <Target Name="GetDesiredProperties"
           DependsOnTargets="ShouldQueryForProperties"
           Returns="@(ProjectBuildInstructions)">
 
@@ -104,7 +104,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <!-- This target is a compat shim, allowing the SDK to continue to function with older common targets that haven't switched to GetReferenceProperties.
+  <!-- This target is a compat shim, allowing the SDK to continue to function with older common targets that haven't switched to GetDesiredProperties.
 
        TODO: After the SDK has picked up an MSBuild with https://github.com/Microsoft/msbuild/pull/1866, it should be deleted. -->
   <Target Name="GetTargetFrameworkProperties" Returns="TargetFramework=$(NearestTargetFramework);ProjectHasSingleTargetFramework=$(_HasSingleTargetFramework);ProjectIsRidAgnostic=$(_IsRidAgnostic)"
