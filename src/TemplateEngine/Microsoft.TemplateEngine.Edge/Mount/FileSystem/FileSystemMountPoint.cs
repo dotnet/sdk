@@ -25,7 +25,13 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         public IFile FileInfo(string fullPath)
         {
             string realPath = Path.Combine(Info.Place, fullPath.TrimStart('/'));
-            return new FileSystemFile(this, realPath, _paths.Name(realPath), realPath);
+
+            if (!fullPath.StartsWith("/"))
+            {
+                fullPath = "/" + fullPath;
+            }
+
+            return new FileSystemFile(this, fullPath, _paths.Name(realPath), realPath);
         }
 
         public IDirectory DirectoryInfo(string fullPath)

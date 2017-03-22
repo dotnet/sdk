@@ -21,7 +21,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             };
 
             EnvironmentSettings = new EngineEnvironmentSettings(host, s => null);
-            host.VirtualizeDirectory(Environment.ExpandEnvironmentVariables("%USERPROFILE%/.templateengine"));
+            string home = "%USERPROFILE%";
+
+            if (Path.DirectorySeparatorChar == '/')
+            {
+                home = "%HOME%";
+            }
+
+            host.VirtualizeDirectory(Environment.ExpandEnvironmentVariables($"{home}/.templateengine"));
         }
 
         protected IEngineEnvironmentSettings EnvironmentSettings { get; }
