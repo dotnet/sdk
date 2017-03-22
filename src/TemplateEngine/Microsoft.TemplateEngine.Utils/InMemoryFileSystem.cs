@@ -712,12 +712,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 if (string.IsNullOrEmpty(parts[i]))
                 {
-                    if (i != 0)
-                    {
-                        continue;
-                    }
-
-                    realParts.Add(parts[i]);
+                    continue;
                 }
 
                 switch (parts[i])
