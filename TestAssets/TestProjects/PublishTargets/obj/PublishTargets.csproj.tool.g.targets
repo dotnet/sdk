@@ -1,0 +1,14 @@
+<!-- A tool (e.g. NuGet) may import targets via MSBuildProjectExtensionsPath -->
+<Project ToolsVersion="15.0">
+
+  <PropertyGroup>
+    <PublishDependsOn>$(PublishDependsOn);ImportedPublishDependsOn</PublishDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ImportedPublishDependsOn">
+    <WriteLinesToFile File="$(PublishDir)importedpublishdependson.txt"
+            Lines="$(PublishTimestamp)"
+            Overwrite="true" />
+  </Target>
+
+</Project>

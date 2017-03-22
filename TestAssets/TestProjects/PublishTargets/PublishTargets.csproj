@@ -1,0 +1,41 @@
+<Project ToolsVersion="15.0">
+  <Import Project="$(MSBuildSdksPath)\Microsoft.NET.Sdk\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netstandard1.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildSdksPath)\Microsoft.NET.Sdk\Sdk\Sdk.targets" />
+
+  <!-- common, well-known targets for user to override must be defined after Microsoft.Common.targets is imported -->
+
+  <Target Name="AfterPublish">
+      <WriteLinesToFile File="$(PublishDir)afterpublish.txt"
+            Lines="$(PublishTimestamp)"
+            Overwrite="true" />
+  </Target>
+
+  <Target Name="BeforePublish" DependsOnTargets="PrepareForPublish">
+      <WriteLinesToFile File="$(PublishDir)beforepublish.txt"
+            Lines="$(PublishTimestamp)"
+            Overwrite="true" />
+  </Target>
+
+  <!-- chaining into PublishDependsOn -->
+
+  <PropertyGroup>
+    <PublishDependsOn>$(PublishDependsOn);CustomAfterPublishDependsOn</PublishDependsOn>
+  </PropertyGroup>
+
+  <Target Name="CustomAfterPublishDependsOn">
+    <WriteLinesToFile File="$(PublishDir)publishdependson.txt"
+            Lines="$(PublishTimestamp)"
+            Overwrite="true" />
+  </Target>
+
+</Project>
