@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new TemplateCreationResult("Could not load template", CreationResultStatus.NotFound, templateInfo.Name);
             }
 
-            string realName = name ?? template.DefaultName ?? fallbackName;
+            string realName = name ?? fallbackName ?? template.DefaultName;
 
             if(string.IsNullOrEmpty(realName))
             {
