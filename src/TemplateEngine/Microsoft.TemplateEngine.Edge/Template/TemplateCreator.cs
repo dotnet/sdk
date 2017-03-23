@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             if(string.IsNullOrEmpty(realName))
             {
-                return new TemplateCreationResult("--name", CreationResultStatus.InvalidParamValues, template.Name);
+                return new TemplateCreationResult("--name", CreationResultStatus.MissingMandatoryParam, template.Name);
             }
 
             // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
