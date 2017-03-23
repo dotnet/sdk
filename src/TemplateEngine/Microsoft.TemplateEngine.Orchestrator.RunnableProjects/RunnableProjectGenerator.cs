@@ -45,12 +45,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 orchestrator.Run(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target);
             }
 
-            // todo: add anything else we'd want to report to the broker
-            return Task.FromResult<ICreationResult>(new CreationResult()
+            return Task.FromResult(GetCreationResult(environmentSettings, template, variables));
+        }
+
+        private static ICreationResult GetCreationResult(IEngineEnvironmentSettings environmentSettings, RunnableProjectTemplate template, IVariableCollection variables)
+        {
+            return new CreationResult()
             {
                 PostActions = PostAction.ListFromModel(environmentSettings, template.Config.PostActionModel, variables),
                 PrimaryOutputs = CreationPath.ListFromModel(environmentSettings, template.Config.PrimaryOutputs, variables)
-            });
+            };
         }
 
         // Note the deferred-config macros (generated) are part of the runConfig.Macros
@@ -487,7 +491,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return literal.Substring(1, literal.Length - 2);
         }
 
-        public IReadOnlyList<IFileChange> GetFileChanges(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
+        public ICreationEffects GetCreationEffects(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
             ProcessMacros(environmentSettings, componentManager, template.Config.OperationConfig, parameters);
@@ -508,7 +512,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 changes.AddRange(orchestrator.GetFileChanges(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target));
             }
 
-            return changes;
+            return new CreationEffects()
+            {
+                FileChanges = changes,
+                CreationResult = GetCreationResult(environmentSettings, template, variables)
+            };
         }
 
         internal class ParameterSet : IParameterSet

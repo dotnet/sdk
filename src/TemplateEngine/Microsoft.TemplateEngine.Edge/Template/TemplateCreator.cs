@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
 
-                IReadOnlyList<IFileChange> changes = template.Generator.GetFileChanges(_environmentSettings, template, templateParams, componentManager, targetDir);
+                IReadOnlyList<IFileChange> changes = template.Generator.GetCreationEffects(_environmentSettings, template, templateParams, componentManager, targetDir).FileChanges;
                 IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
 
                 if (!forceCreation && destructiveChanges.Count > 0)
