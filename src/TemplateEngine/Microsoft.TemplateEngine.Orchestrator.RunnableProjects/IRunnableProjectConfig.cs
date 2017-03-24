@@ -47,6 +47,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; }
 
+        string GeneratorVersions { get; }
+
         void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
     }
 }

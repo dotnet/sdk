@@ -30,7 +30,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new TemplateCreationResult("Could not load template", CreationResultStatus.NotFound, templateInfo.Name);
             }
 
-            string realName = name ?? template.DefaultName ?? fallbackName;
+            string realName = name ?? fallbackName ?? template.DefaultName;
+
+            if(string.IsNullOrEmpty(realName))
+            {
+                return new TemplateCreationResult("--name", CreationResultStatus.MissingMandatoryParam, template.Name);
+            }
+
             // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
             IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
             if (defaultParamsWithInvalidValues.Any())
@@ -69,7 +75,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 Stopwatch sw = Stopwatch.StartNew();
                 IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
 
-                IReadOnlyList<IFileChange> changes = template.Generator.GetFileChanges(_environmentSettings, template, templateParams, componentManager, targetDir);
+                IReadOnlyList<IFileChange> changes = template.Generator.GetCreationEffects(_environmentSettings, template, templateParams, componentManager, targetDir).FileChanges;
                 IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
 
                 if (!forceCreation && destructiveChanges.Count > 0)
