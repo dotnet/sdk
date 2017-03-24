@@ -77,6 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyList<IPostActionModel> PostActionModel { get; set; }
 
         public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
+        public string GeneratorVersions { get; set; }
 
         private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
@@ -958,7 +959,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 ShortName = source.ToString(nameof(config.ShortName)),
                 SourceName = source.ToString(nameof(config.SourceName)),
                 PlaceholderFilename = source.ToString(nameof(config.PlaceholderFilename)),
-                EnvironmentSettings = environmentSettings
+                EnvironmentSettings = environmentSettings,
+                GeneratorVersions = source.ToString(nameof(config.GeneratorVersions))
             };
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();

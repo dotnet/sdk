@@ -19,6 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     public class RunnableProjectGenerator : IGenerator
     {
         private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
+        private static readonly string GeneratorVersion = "1.0.0.0";
 
         public Guid Id => GeneratorId;
 
@@ -191,6 +192,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, localeSourceObject);
+
+                if (!CheckGeneratorVersionRequiredByTemplate(templateModel.GeneratorVersions))
+                {   // template isn't compatible with this generator version
+                    template = null;
+                    return false;
+                }
+
                 template = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
                 return true;
             }
@@ -202,6 +210,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             template = null;
             return false;
+        }
+
+        private bool CheckGeneratorVersionRequiredByTemplate(string generatorVersionsAllowed)
+        {
+            if (!VersionStringHelpers.TryParseVersionSpecification(generatorVersionsAllowed, out IVersionSpecification versionChecker))
+            {
+                return false;
+            }
+
+            return versionChecker.CheckIfVersionIsValid(GeneratorVersion);
         }
 
         private static readonly string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
