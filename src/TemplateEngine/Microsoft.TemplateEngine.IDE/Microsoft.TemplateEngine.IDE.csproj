@@ -2,7 +2,8 @@
   <Import Project="..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.1;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
+    <Description>Helper package for adding Template Engine to IDEs</Description>
   </PropertyGroup>
 
   <ItemGroup>

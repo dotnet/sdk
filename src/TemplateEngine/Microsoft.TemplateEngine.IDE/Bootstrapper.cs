@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -16,7 +19,6 @@ namespace Microsoft.TemplateEngine.IDE
         private readonly Action<IEngineEnvironmentSettings, IInstaller> _onFirstRun;
         private readonly Paths _paths;
         private readonly TemplateCreator _templateCreator;
-        private readonly TemplateCache _templateCache;
 
         private EngineEnvironmentSettings EnvironmentSettings { get; }
 
@@ -30,7 +32,6 @@ namespace Microsoft.TemplateEngine.IDE
             _onFirstRun = onFirstRun;
             _paths = new Paths(EnvironmentSettings);
             _templateCreator = new TemplateCreator(EnvironmentSettings);
-            _templateCache = new TemplateCache(EnvironmentSettings);
 
             if (virtualizeConfiguration)
             {
@@ -84,7 +85,7 @@ namespace Microsoft.TemplateEngine.IDE
         public IReadOnlyCollection<IFilteredTemplateInfo> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] filters)
         {
             EnsureInitialized();
-            return _templateCreator.List(exactMatchesOnly, filters);
+            return ((SettingsLoader)EnvironmentSettings.SettingsLoader).UserTemplateCache.List(exactMatchesOnly, filters);
         }
 
         public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck)

@@ -14,13 +14,11 @@ namespace Microsoft.TemplateEngine.IDE
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
-        private readonly TemplateCache _templateCache;
 
         public Installer(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
-            _templateCache = new TemplateCache(_environmentSettings);
         }
 
         public void InstallPackages(IEnumerable<string> installationRequests)
@@ -54,12 +52,12 @@ namespace Microsoft.TemplateEngine.IDE
                     {
                         string fullDirectory = new DirectoryInfo(pkg).FullName;
                         string fullPathGlob = Path.Combine(fullDirectory, pattern);
-                        _templateCache.Scan(fullPathGlob);
+                        ((SettingsLoader)_environmentSettings.SettingsLoader).UserTemplateCache.Scan(fullPathGlob);
                     }
                     else if (_environmentSettings.Host.FileSystem.DirectoryExists(pkg) || _environmentSettings.Host.FileSystem.FileExists(pkg))
                     {
                         string packageLocation = new DirectoryInfo(pkg).FullName;
-                        _templateCache.Scan(packageLocation);
+                        ((SettingsLoader)_environmentSettings.SettingsLoader).UserTemplateCache.Scan(packageLocation);
                     }
                     else
                     {
@@ -72,7 +70,7 @@ namespace Microsoft.TemplateEngine.IDE
                 }
             }
 
-            _templateCache.WriteTemplateCaches();
+            _environmentSettings.SettingsLoader.Save();
         }
     }
 }
