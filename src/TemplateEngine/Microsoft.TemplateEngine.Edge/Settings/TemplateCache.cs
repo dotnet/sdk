@@ -222,6 +222,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             catch
             {
+                Console.WriteLine($"CacheContent: {cacheContent}");
                 return Empty<TemplateInfo>.List.Value;
             }
         }
@@ -238,6 +239,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             catch
             {
+                Console.WriteLine($"CacheContent: {cacheContent}");
                 return TemplateInfo;
             }
         }
