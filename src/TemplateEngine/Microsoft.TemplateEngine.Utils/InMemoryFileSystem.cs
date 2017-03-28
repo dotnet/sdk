@@ -94,8 +94,6 @@ namespace Microsoft.TemplateEngine.Utils
 
                     ++_currentWriters;
                     MemoryStream target = new MemoryStream();
-                    target.Write(_data, 0, _data.Length);
-                    target.Position = 0;
                     return new DisposingStream(target, () =>
                     {
                         lock (_sync)
