@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     actionLocalizations = null;
                 }
 
-                Dictionary<string, string> args = new Dictionary<string, string>(StringComparison.OrdinalIgnoreCase);
+                Dictionary<string, string> args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (JProperty argInfo in action.PropertiesOf("Args"))
                 {
