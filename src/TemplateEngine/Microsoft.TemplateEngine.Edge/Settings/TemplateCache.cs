@@ -214,22 +214,37 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public IReadOnlyList<TemplateInfo> GetTemplatesForLocale(string locale, string existingCacheVersion)
         {
             string cacheContent = _paths.ReadAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), "{}");
-            JObject parsed = JObject.Parse(cacheContent);
-            return ParseCacheContent(parsed, existingCacheVersion);
+
+            try
+            {
+                JObject parsed = JObject.Parse(cacheContent);
+                return ParseCacheContent(parsed, existingCacheVersion);
+            }
+            catch
+            {
+                return Empty<TemplateInfo>.List.Value;
+            }
         }
 
         private IReadOnlyList<TemplateInfo> LoadTemplateCacheForLocale(string locale, string existingCacheVersion)
         {
             string cacheContent = _paths.ReadAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), "{}");
-            JObject parsed = JObject.Parse(cacheContent);
-            Reinitialize(parsed, existingCacheVersion);
-            return TemplateInfo;
+
+            try
+            {
+                JObject parsed = JObject.Parse(cacheContent);
+                Reinitialize(parsed, existingCacheVersion);
+                return TemplateInfo;
+            }
+            catch
+            {
+                return TemplateInfo;
+            }
         }
 
         public void Reinitialize(JObject unparsed, string cacheVersion)
         {
-            TemplateInfo.Clear();
-            TemplateInfo.AddRange(ParseCacheContent(unparsed, cacheVersion));
+            TemplateInfo = ParseCacheContent(unparsed, cacheVersion).ToList();
         }
 
         private static IReadOnlyList<TemplateInfo> ParseCacheContent(JObject contentJobject, string cacheVersion)
