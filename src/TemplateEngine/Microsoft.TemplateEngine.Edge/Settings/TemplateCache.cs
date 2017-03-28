@@ -34,14 +34,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _aliasRegistry = new AliasRegistry(environmentSettings);
         }
 
+        public TemplateCache(IEngineEnvironmentSettings environmentSettings, List<TemplateInfo> templatesInCache)
+            :this(environmentSettings)
+        {
+            TemplateInfo = templatesInCache;
+        }
+
         public TemplateCache(IEngineEnvironmentSettings environmentSettings, JObject parsed, string cacheVersion)
             : this(environmentSettings)
         {
-            Reinitialize(parsed, cacheVersion);
+            TemplateInfo = ParseCacheContent(parsed, cacheVersion);
         }
 
         [JsonProperty]
-        public List<TemplateInfo> TemplateInfo { get; set; }
+        public IReadOnlyList<TemplateInfo> TemplateInfo { get; set; }
 
         public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] fitlers)
         {
@@ -226,27 +232,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private IReadOnlyList<TemplateInfo> LoadTemplateCacheForLocale(string locale, string existingCacheVersion)
-        {
-            string cacheContent = _paths.ReadAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), "{}");
-
-            try
-            {
-                JObject parsed = JObject.Parse(cacheContent);
-                Reinitialize(parsed, existingCacheVersion);
-                return TemplateInfo;
-            }
-            catch
-            {
-                return TemplateInfo;
-            }
-        }
-
-        public void Reinitialize(JObject unparsed, string cacheVersion)
-        {
-            TemplateInfo = ParseCacheContent(unparsed, cacheVersion).ToList();
-        }
-
         private static IReadOnlyList<TemplateInfo> ParseCacheContent(JObject contentJobject, string cacheVersion)
         {
             List<TemplateInfo> templateList = new List<Settings.TemplateInfo>();
@@ -351,12 +336,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private void WriteTemplateCacheForLocale(string locale, string existingCacheVersion)
         {
-            IReadOnlyList<TemplateInfo> existingTemplatesForLocale = LoadTemplateCacheForLocale(locale, existingCacheVersion);
+            IReadOnlyList<TemplateInfo> existingTemplatesForLocale = GetTemplatesForLocale(locale, existingCacheVersion);
             IDictionary<string, ILocalizationLocator> existingLocatorsForLocale;
 
             if (existingTemplatesForLocale.Count == 0)
             {   // the cache for this locale didn't exist previously. Start with the neutral locale as if it were the existing (no locales)
-                existingTemplatesForLocale = LoadTemplateCacheForLocale(null, existingCacheVersion);
+                existingTemplatesForLocale = GetTemplatesForLocale(null, existingCacheVersion);
                 existingLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
             }
             else
@@ -393,10 +378,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            bool isCurrentLocale = string.IsNullOrEmpty(locale)
-                && string.IsNullOrEmpty(_environmentSettings.Host.Locale)
-                || (locale == _environmentSettings.Host.Locale);
-            _environmentSettings.SettingsLoader.WriteTemplateCache(mergedTemplateList, locale, isCurrentLocale);
+            _environmentSettings.SettingsLoader.WriteTemplateCache(mergedTemplateList, locale);
         }
 
         // find the best locator (if any). New is preferred over old

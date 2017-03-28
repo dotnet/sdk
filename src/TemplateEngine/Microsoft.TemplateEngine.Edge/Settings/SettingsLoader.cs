@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public static readonly string HostTemplateFileConfigBaseName = ".host.json";
 
         private SettingsStore _userSettings;
-        private readonly TemplateCache _userTemplateCache;
+        private TemplateCache _userTemplateCache;
         private IMountPointManager _mountPointManager;
         private IComponentManager _componentManager;
         private bool _isLoaded;
@@ -34,14 +34,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void Save()
         {
+            Save(_userTemplateCache);
+        }
+
+        private void Save(TemplateCache cacheToSave)
+        {
             // When writing the template caches, we need the existing cache version to read the existing caches for before updating.
             // so don't update it until after the template caches are written.
-            _userTemplateCache.WriteTemplateCaches(_userSettings.Version);
+            cacheToSave.WriteTemplateCaches(_userSettings.Version);
 
             // now it's safe to update the cache version, which is written in the settings file.
             _userSettings.SetVersionToCurrent();
             JObject serialized = JObject.FromObject(_userSettings);
             _paths.WriteAllText(_paths.User.SettingsFile, serialized.ToString());
+
+            if (_userTemplateCache != cacheToSave)  // object equals
+            {
+                ReloadTemplates();
+            }
         }
 
         public TemplateCache UserTemplateCache
@@ -145,7 +155,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             using (Timing.Over("Parse template cache"))
                 parsed = JObject.Parse(userTemplateCache);
             using (Timing.Over("Init template cache"))
-                _userTemplateCache.Reinitialize(parsed, _userSettings.Version);
+                _userTemplateCache = new TemplateCache(_environmentSettings, parsed, _userSettings.Version);
 
             _templatesLoaded = true;
         }
@@ -176,7 +186,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             IReadOnlyList<TemplateInfo> cultureNeutralTemplates = _userTemplateCache.GetTemplatesForLocale(null, _userSettings.Version);
             HashSet<Guid> templateMountPointIds = new HashSet<Guid>(cultureNeutralTemplates.Select(x => x.ConfigMountPointId));
 
-            _userTemplateCache.TemplateInfo.Clear();
+            TemplateCache workingCache = new TemplateCache(_environmentSettings);
             HashSet<Guid> scannedMountPoints = new HashSet<Guid>();
 
             // Scan the unique mount points for the templates.
@@ -184,7 +194,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 if (templateMountPointIds.Contains(mountPoint.MountPointId) && scannedMountPoints.Add(mountPoint.MountPointId))
                 {
-                    _userTemplateCache.Scan(mountPoint.Place);
+                    workingCache.Scan(mountPoint.Place);
                 }
             }
 
@@ -201,16 +211,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 if (localeMountPointIds.Contains(mountPoint.MountPointId) && scannedMountPoints.Add(mountPoint.MountPointId))
                 {
-                    _userTemplateCache.Scan(mountPoint.Place);
+                    workingCache.Scan(mountPoint.Place);
                 }
             }
 
-            Save();
+            Save(workingCache);
 
             ReloadTemplates();
         }
 
-        public void ReloadTemplates()
+        private void ReloadTemplates()
         {
             _templatesLoaded = false;
             EnsureTemplatesLoaded();
@@ -331,20 +341,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 UpdateTemplateListFromCache(_userTemplateCache, templates);
         }
 
-        public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool isCurrentLocale)
+        public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale) //, bool isCurrentLocale)
         {
+            TemplateCache cache = new TemplateCache(_environmentSettings, templates.Cast<TemplateInfo>().ToList());
+            JObject serialized = JObject.FromObject(cache);
+            _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
+
+            bool isCurrentLocale = string.IsNullOrEmpty(locale)
+                && string.IsNullOrEmpty(_environmentSettings.Host.Locale)
+                || (locale == _environmentSettings.Host.Locale);
             if (isCurrentLocale)
-            {   // update the existing cache
-                _userTemplateCache.TemplateInfo = templates.Cast<TemplateInfo>().ToList();
-                JObject serialized = JObject.FromObject(_userTemplateCache);
-                _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
-            }
-            else
-            {   // create a throwaway cache for this locale, just for writing
-                TemplateCache cache = new TemplateCache(_environmentSettings);
-                cache.TemplateInfo.AddRange(templates.Cast<TemplateInfo>());
-                JObject serialized = JObject.FromObject(cache);
-                _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
+            {
+                ReloadTemplates();
             }
         }
 
