@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 List<KeyValuePair<string, string>> instructionOptions = new List<KeyValuePair<string, string>>();
 
-                JArray manualInstructions = (JArray)action["ManualInstructions"];
+                JArray manualInstructions = action.Get<JArray>("ManualInstructions");
                 bool useLocalizedInstructions =
                     actionLocalizations != null
                     && manualInstructions != null
