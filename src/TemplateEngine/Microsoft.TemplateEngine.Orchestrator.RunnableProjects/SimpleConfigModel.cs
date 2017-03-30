@@ -8,6 +8,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
@@ -764,7 +765,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (symbol.Value.Type == "computed")
                     {
                         ComputedSymbol sym = (ComputedSymbol)symbol.Value;
-                        bool value = CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, sym.Value, rootVariableCollection);
+                        bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, sym.Value, rootVariableCollection);
                         stable &= computed.TryGetValue(symbol.Key, out bool currentValue) && currentValue == value;
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
@@ -816,7 +817,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (ExtendedFileSource source in Sources)
             {
-                if (!string.IsNullOrEmpty(source.Condition) && !CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, source.Condition, rootVariableCollection))
+                if (!string.IsNullOrEmpty(source.Condition) && !Cpp2StyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, source.Condition, rootVariableCollection))
                 {
                     continue;
                 }
@@ -833,7 +834,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     foreach (SourceModifier modifier in source.Modifiers)
                     {
-                        if (string.IsNullOrEmpty(modifier.Condition) || CppStyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, modifier.Condition, rootVariableCollection))
+                        if (string.IsNullOrEmpty(modifier.Condition) || Cpp2StyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, modifier.Condition, rootVariableCollection))
                         {
                             IReadOnlyList<string> modifierIncludes = JTokenToCollection(modifier.Include, SourceFile, new string[0]);
                             IReadOnlyList<string> modifierExcludes = JTokenToCollection(modifier.Exclude, SourceFile, new string[0]);
