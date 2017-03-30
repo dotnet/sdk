@@ -42,5 +42,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         Guid HostConfigMountPointId { get; }
 
         string HostConfigPlace { get; }
+
+        string ThirdPartyNotices { get; }
     }
 }

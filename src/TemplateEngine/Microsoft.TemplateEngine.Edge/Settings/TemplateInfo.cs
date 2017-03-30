@@ -160,5 +160,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public string HostConfigPlace { get; set; }
+
+        [JsonProperty]
+        public string ThirdPartyNotices { get; set; }
     }
 }

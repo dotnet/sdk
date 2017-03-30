@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -33,6 +32,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IsNameAgreementWithFolderPreferred = raw.ToBool("preferNameDirectory", false);
             HostConfigMountPointId = hostConfigFile?.MountPoint?.Info?.MountPointId ?? Guid.Empty;
             HostConfigPlace = hostConfigFile?.FullPath;
+            ThirdPartyNotices = raw.ToString("thirdPartyNotices");
             _raw = raw;
         }
 
@@ -162,5 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public Guid HostConfigMountPointId { get; }
 
         public string HostConfigPlace { get; }
+
+        public string ThirdPartyNotices { get; }
     }
 }
