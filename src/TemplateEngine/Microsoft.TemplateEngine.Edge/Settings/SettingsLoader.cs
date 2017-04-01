@@ -267,6 +267,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
+                _mountPointManager.ReleaseMountPoint(localeMountPoint);
             }
 
             IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
@@ -275,6 +276,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             using (Timing.Over("Template from config"))
                 if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile))
                 {
+                    _mountPointManager.ReleaseMountPoint(mountPoint);
                     return template;
                 }
                 else
@@ -282,6 +284,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     //TODO: Log the failure to read the template info
                 }
 
+            _mountPointManager.ReleaseMountPoint(mountPoint);
             return null;
         }
 
@@ -343,7 +346,31 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale) //, bool isCurrentLocale)
         {
-            TemplateCache cache = new TemplateCache(_environmentSettings, templates.Cast<TemplateInfo>().ToList());
+            List<TemplateInfo> toCache = templates.Cast<TemplateInfo>().ToList();
+
+            for(int i = 0; i < toCache.Count; ++i)
+            {
+                if(!_mountPoints.ContainsKey(toCache[i].ConfigMountPointId))
+                {
+                    toCache.RemoveAt(i);
+                    --i;
+                    continue;
+                }
+
+                if (!_mountPoints.ContainsKey(toCache[i].HostConfigMountPointId))
+                {
+                    toCache[i].HostConfigMountPointId = Guid.Empty;
+                    toCache[i].HostConfigPlace = null;
+                }
+
+                if (!_mountPoints.ContainsKey(toCache[i].LocaleConfigMountPointId))
+                {
+                    toCache[i].LocaleConfigMountPointId = Guid.Empty;
+                    toCache[i].LocaleConfigPlace = null;
+                }
+            }
+
+            TemplateCache cache = new TemplateCache(_environmentSettings, toCache);
             JObject serialized = JObject.FromObject(cache);
             _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
 
@@ -431,17 +458,41 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _paths.WriteAllText(_paths.User.SettingsFile, serialized.ToString());
         }
 
-        public bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file)
+        public bool TryGetFileFromIdAndPath(Guid mountPointId, string place, out IFile file, out IMountPoint mountPoint)
         {
             EnsureLoaded();
-            if (!string.IsNullOrEmpty(place) && _mountPointManager.TryDemandMountPoint(mountPointId, out IMountPoint mountPoint))
+            if (!string.IsNullOrEmpty(place) && _mountPointManager.TryDemandMountPoint(mountPointId, out mountPoint))
             {
                 file = mountPoint.FileInfo(place);
                 return file != null && file.Exists;
             }
 
+            mountPoint = null;
             file = null;
             return false;
+        }
+
+        public void RemoveMountPoints(IEnumerable<Guid> mountPoints)
+        {
+            foreach (Guid g in mountPoints)
+            {
+                if (_mountPoints.TryGetValue(g, out MountPointInfo info))
+                {
+                    _userSettings.MountPoints.Remove(info);
+                    _mountPoints.Remove(g);
+                }
+            }
+        }
+
+        public void ReleaseMountPoint(IMountPoint mountPoint)
+        {
+            _mountPointManager.ReleaseMountPoint(mountPoint);
+        }
+
+        public void RemoveMountPoint(IMountPoint mountPoint)
+        {
+            _mountPointManager.ReleaseMountPoint(mountPoint);
+            RemoveMountPoints(new[] { mountPoint.Info.MountPointId });
         }
     }
 }

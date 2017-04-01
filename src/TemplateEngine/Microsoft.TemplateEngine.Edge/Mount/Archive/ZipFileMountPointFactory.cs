@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             }
 
             MountPointInfo info = new MountPointInfo(parent?.Info?.MountPointId ?? Guid.Empty, FactoryId, id, place);
-            mountPoint = new ZipFileMountPoint(environmentSettings, info, archive);
+            mountPoint = new ZipFileMountPoint(environmentSettings, parent, info, archive);
             return true;
         }
 
@@ -84,7 +84,16 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
         public void DisposeMountPoint(IMountPoint mountPoint)
         {
             ZipFileMountPoint mp = mountPoint as ZipFileMountPoint;
-            mp?.Archive?.Dispose();
+
+            if (mp != null)
+            {
+                if (mp.Parent != null)
+                {
+                    mp.EnvironmentSettings.SettingsLoader.ReleaseMountPoint(mp.Parent);
+                }
+
+                mp.Archive?.Dispose();
+            }
         }
     }
 }
