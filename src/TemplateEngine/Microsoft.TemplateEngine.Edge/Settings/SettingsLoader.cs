@@ -267,7 +267,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 localeConfig = localeMountPoint.FileSystemInfo(info.LocaleConfigPlace);
-                _mountPointManager.ReleaseMountPoint(localeMountPoint);
             }
 
             IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
@@ -276,7 +275,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             using (Timing.Over("Template from config"))
                 if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile))
                 {
-                    _mountPointManager.ReleaseMountPoint(mountPoint);
                     return template;
                 }
                 else
@@ -284,7 +282,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     //TODO: Log the failure to read the template info
                 }
 
-            _mountPointManager.ReleaseMountPoint(mountPoint);
             return null;
         }
 
