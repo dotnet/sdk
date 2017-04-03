@@ -189,7 +189,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     AddTemplateToMemoryCache(template);
                 }
 
-                anythingFound |= templateList.Count > 0;
+                anythingFound |= templateList.Count > 0 || localizationInfo.Count > 0;
             }
 
             return anythingFound;
