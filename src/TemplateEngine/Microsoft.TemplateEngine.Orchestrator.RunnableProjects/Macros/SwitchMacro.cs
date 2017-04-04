@@ -61,6 +61,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 Name = config.VariableName,
                 DataType = config.DataType
             };
+
+            vars[config.VariableName] = result.ToString();
             setter(p, result.ToString());
         }
 

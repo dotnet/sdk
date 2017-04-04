@@ -36,6 +36,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 IsVariable = true,
                 Name = sourceVariable
             };
+
+            variables[sourceVariable] = sourceValue;
             setter(sourceParam, sourceValue);
 
             RegexMacro macro = new RegexMacro();
@@ -77,6 +79,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 IsVariable = true,
                 Name = sourceVariable
             };
+
+            variables[sourceVariable] = sourceValue;
             setter(sourceParam, sourceValue);
 
             RegexMacro macro = new RegexMacro();

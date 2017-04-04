@@ -30,6 +30,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     IsVariable = true,
                     Name = config.VariableName
                 };
+
+                vars[config.VariableName] = value;
                 setter(p, value);
             }
             else
@@ -44,7 +46,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                         IsVariable = true,
                         Name = config.VariableName + "-" + guidFormats[i]
                     };
-
+                    
+                    vars[config.VariableName] = value;
                     setter(p, value);
                 }
 
@@ -53,7 +56,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     IsVariable = true,
                     Name = config.VariableName
                 };
-
+                
+                vars[config.VariableName] = g.ToString("D");
                 setter(pd, g.ToString("D"));
             }
         }

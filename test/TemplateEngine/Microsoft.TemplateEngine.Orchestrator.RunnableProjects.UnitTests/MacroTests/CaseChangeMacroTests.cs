@@ -33,6 +33,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 IsVariable = true,
                 Name = sourceVariable
             };
+
+            variables[sourceVariable] = sourceValue;
             setter(sourceParam, sourceValue);
 
             CaseChangeMacro macro = new CaseChangeMacro();
@@ -64,6 +66,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 IsVariable = true,
                 Name = sourceVariable
             };
+
+            variables[sourceVariable] = sourceValue;
             setter(sourceParam, sourceValue);
 
             CaseChangeMacro macro = new CaseChangeMacro();
@@ -98,6 +102,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 IsVariable = true,
                 Name = sourceVariable
             };
+
+            variables[sourceVariable] = sourceValue;
             setter(sourceParam, sourceValue);
 
             macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
