@@ -116,5 +116,9 @@ namespace Microsoft.TemplateEngine.Utils
         {
             return true;
         }
+
+        public void LogDiagnosticMessage(string message, string category, params string[] details)
+        {
+        }
     }
 }
