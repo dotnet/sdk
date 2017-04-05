@@ -101,17 +101,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     _userSettings.ProbingPaths.Add(_paths.User.Content);
                 }
 
-            using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
-                _componentManager = new ComponentManager(this, _userSettings);
-            using (Timing.Over(_environmentSettings.Host, "Init Mount Point manager"))
-                _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
-
             _mountPoints = new Dictionary<Guid, MountPointInfo>();
             using (Timing.Over(_environmentSettings.Host, "Load mount points"))
                 foreach (MountPointInfo info in _userSettings.MountPoints)
                 {
                     _mountPoints[info.MountPointId] = info;
                 }
+
+            using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
+                _componentManager = new ComponentManager(this, _userSettings);
+            using (Timing.Over(_environmentSettings.Host, "Init Mount Point manager"))
+                _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
 
             using (Timing.Over(_environmentSettings.Host, "Demand template load"))
                 EnsureTemplatesLoaded();
