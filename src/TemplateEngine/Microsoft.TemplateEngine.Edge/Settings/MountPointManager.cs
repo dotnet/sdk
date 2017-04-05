@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public bool TryDemandMountPoint(MountPointInfo info, out IMountPoint mountPoint)
         {
-            using (Timing.Over("Get mount point - inner"))
+            using (Timing.Over(EnvironmentSettings.Host, "Get mount point - inner"))
             {
                 IMountPointFactory factory;
                 if (_componentManager.TryGetComponent(info.MountPointFactoryId, out factory))
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public bool TryDemandMountPoint(Guid mountPointId, out IMountPoint mountPoint)
         {
-            using (Timing.Over("Get mount point"))
+            using (Timing.Over(EnvironmentSettings.Host, "Get mount point"))
             {
                 MountPointInfo info;
                 if (EnvironmentSettings.SettingsLoader.TryGetMountPointInfo(mountPointId, out info))

@@ -46,6 +46,8 @@ namespace Microsoft.TemplateEngine.Utils
 
         public string Locale { get; private set; }
 
+        public Action<string, TimeSpan, int> OnLogTiming { get; set; }
+
         public void UpdateLocale(string newLocale)
         {
             Locale = newLocale;
@@ -85,10 +87,6 @@ namespace Microsoft.TemplateEngine.Utils
         {
         }
 
-        public virtual void OnTimingCompleted(string label, TimeSpan timing)
-        {
-        }
-
         // stub that will be built out soon.
         public virtual bool TryGetHostParamDefault(string paramName, out string value)
         {
@@ -119,6 +117,11 @@ namespace Microsoft.TemplateEngine.Utils
 
         public void LogDiagnosticMessage(string message, string category, params string[] details)
         {
+        }
+
+        public void LogTiming(string label, TimeSpan duration, int depth)
+        {
+            OnLogTiming?.Invoke(label, duration, depth);
         }
     }
 }
