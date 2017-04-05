@@ -167,6 +167,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<string> IRunnableProjectConfig.Classifications => Classifications;
 
+        public IReadOnlyDictionary<string, IValueForm> Forms { get; private set; }
+
         public string Identity { get; set; }
 
         private static readonly string DefaultPlaceholderFilename = "-.-";
@@ -547,28 +549,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                         if (sourceVariable != null)
                         {
-                            TokenConfig replacementConfig = symbol.Value.Replaces.TokenConfigBuilder();
-                            if (symbol.Value.ReplacementContexts.Count > 0)
+                            GenerateRemplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
+
+                            if (symbol.Value is ParameterSymbol p)
                             {
-                                foreach (IReplacementContext context in symbol.Value.ReplacementContexts)
+                                foreach (string form in p.Forms.GlobalForms)
                                 {
-                                    TokenConfig builder = replacementConfig;
-                                    if (!string.IsNullOrEmpty(context.OnlyIfAfter))
-                                    {
-                                        builder = builder.OnlyIfAfter(context.OnlyIfAfter);
-                                    }
-
-                                    if (!string.IsNullOrEmpty(context.OnlyIfBefore))
-                                    {
-                                        builder = builder.OnlyIfBefore(context.OnlyIfBefore);
-                                    }
-
-                                    macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, builder));
+                                    //TODO: These need to define parameters that get their values from a macro that processes
+                                    //  the actual value of the parameter. The current state of things results in all variations
+                                    //  expressed by the value forms being replaced with the user supplied value verbatim
+                                    string processedReplacement = Forms[form].Process(Forms, p.Replaces);
+                                    GenerateRemplacementsForParameter(symbol, processedReplacement, sourceVariable, macroGeneratedReplacements);
                                 }
-                            }
-                            else
-                            {
-                                macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));
                             }
                         }
                     }
@@ -618,6 +610,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             };
 
             return config;
+        }
+
+        private void GenerateRemplacementsForParameter(KeyValuePair<string, ISymbolModel> symbol, string replaces, string sourceVariable, List<IReplacementTokens> macroGeneratedReplacements)
+        {
+            TokenConfig replacementConfig = replaces.TokenConfigBuilder();
+            if (symbol.Value.ReplacementContexts.Count > 0)
+            {
+                foreach (IReplacementContext context in symbol.Value.ReplacementContexts)
+                {
+                    TokenConfig builder = replacementConfig;
+                    if (!string.IsNullOrEmpty(context.OnlyIfAfter))
+                    {
+                        builder = builder.OnlyIfAfter(context.OnlyIfAfter);
+                    }
+
+                    if (!string.IsNullOrEmpty(context.OnlyIfBefore))
+                    {
+                        builder = builder.OnlyIfBefore(context.OnlyIfBefore);
+                    }
+
+                    macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, builder));
+                }
+            }
+            else
+            {
+                macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));
+            }
         }
 
         private IReadOnlyList<IMacroConfig> ProduceMacroConfig(List<IMacroConfig> computedMacroConfigs)
@@ -963,6 +982,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 EnvironmentSettings = environmentSettings,
                 GeneratorVersions = source.ToString(nameof(config.GeneratorVersions))
             };
+
+            IReadOnlyDictionary<string, JToken> forms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
+            Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
+
+            foreach(KeyValuePair<string, JToken> form in forms)
+            {
+                if(form.Value is JObject o)
+                {
+                    formMap[form.Key] = ValueFormRegistry.GetForm(form.Key, o);
+                }
+            }
+
+            config.Forms = formMap;
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
             config.Sources = sources;

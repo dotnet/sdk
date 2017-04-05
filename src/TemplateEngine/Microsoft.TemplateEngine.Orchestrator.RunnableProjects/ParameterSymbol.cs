@@ -14,6 +14,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Description { get; set; }
 
+        public SymbolValueFormsModel Forms { get; set; }
+
         public bool IsRequired { get; set; }
 
         public string Type { get; private set; }
@@ -60,6 +62,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 DataType = jObject.ToString(nameof(DataType)),
                 ReplacementContexts = ReadReplacementContexts(jObject),
             };
+
+            if (!jObject.TryGetValue(nameof(symbol.Forms), StringComparison.OrdinalIgnoreCase, out JToken formsToken) || !(formsToken is JObject formsObject))
+            {
+                symbol.Forms = SymbolValueFormsModel.Empty;
+            }
+            else
+            {
+                symbol.Forms = SymbolValueFormsModel.FromJObject(formsObject);
+            }
 
             Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
 
