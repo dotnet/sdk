@@ -96,6 +96,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return SetupBinary(Operators.EqualTo, token, evaluate ?? EqualTo, precedesOperator);
         }
 
+        public OperatorSetBuilder<TToken> Exponentiate(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        {
+            return SetupBinary(Operators.Exponentiate, token, evaluate ?? Exponentiate, precedesOperator);
+        }
+
         public OperatorSetBuilder<TToken> GreaterThan(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
         {
             return SetupBinary(Operators.GreaterThan, token, evaluate ?? GreaterThan, precedesOperator);
@@ -424,6 +429,39 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             }
 
             throw new Exception($"Cannot divide {left?.GetType()} and {right?.GetType()}");
+        }
+
+        private object Exponentiate(object left, object right)
+        {
+            long longLeft, longRight;
+            int doubleLeft, doubleRight;
+
+            if (_converter.TryConvert(left, out longLeft))
+            {
+                if (_converter.TryConvert(right, out longRight))
+                {
+                    return Math.Pow(longLeft, longRight);
+                }
+
+                if (_converter.TryConvert(right, out doubleRight))
+                {
+                    return Math.Pow(longLeft, doubleRight);
+                }
+            }
+            else if (_converter.TryConvert(left, out doubleLeft))
+            {
+                if (_converter.TryConvert(right, out longRight))
+                {
+                    return Math.Pow(doubleLeft, longRight);
+                }
+
+                if (_converter.TryConvert(right, out doubleRight))
+                {
+                    return Math.Pow(doubleLeft, doubleRight);
+                }
+            }
+
+            throw new Exception($"Cannot exponentiate {left?.GetType()} and {right?.GetType()}");
         }
 
         private object LeftShift(object left, object right)

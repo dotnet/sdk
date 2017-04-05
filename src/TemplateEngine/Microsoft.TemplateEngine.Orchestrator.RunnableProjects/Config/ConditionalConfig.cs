@@ -89,6 +89,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 case ConditionalType.JsxBlockComment:
                     setup = ConditionalBlockCommentConfig.GenerateConditionalSetup("{/*", "*/}");
                     break;
+                case ConditionalType.VB:
+                    setup = ConditionalLineCommentConfig.GenerateConditionalSetup("#", new ConditionalKeywords
+                    {
+                        IfKeyword = "If",
+                        ElseIfKeyword = "ElseIf",
+                        ElseKeyword = "Else",
+                        EndIfKeyword = "End If"
+                    }, new ConditionalOperationOptions
+                    {
+                        EvaluatorType = "VB",
+                        WholeLine = true
+                    });
+                    break;
                 default:
                     throw new Exception($"Unrecognized conditional type {style}");
             }
