@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
     {
         private Paths _paths;
 
-        public FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, MountPointInfo info)
+        public FileSystemMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, MountPointInfo info)
         {
             EnvironmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
@@ -51,5 +51,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
             return new FileSystemFile(this, fullPath, _paths.Name(realPath), realPath);
         }
+
+        public IMountPoint Parent { get; }
     }
 }

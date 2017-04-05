@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
@@ -25,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as EvaluateMacroConfig");
             }
 
-            ConditionEvaluator evaluator = EvaluatorSelector.Select(config.Evaluator);
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(config.Evaluator, Cpp2StyleEvaluatorDefinition.Evaluate);
 
             byte[] data = Encoding.UTF8.GetBytes(config.Value);
             int len = data.Length;
@@ -39,6 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 Name = config.VariableName
             };
 
+            vars[config.VariableName] = result.ToString();
             setter(p, result.ToString());
         }
     }

@@ -3,6 +3,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -24,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 // Note: this check is probably superfluous. The Model has evaluation info.
                 // OTOH: this is probaby a cleaner way to do it. 
                 if (string.IsNullOrEmpty(model.Condition)
-                    || CppStyleEvaluatorDefinition.EvaluateFromString(environmentSettings, model.Condition, rootVariableCollection))
+                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, model.Condition, rootVariableCollection))
                 {
                     ICreationPath path = new CreationPath()
                     {

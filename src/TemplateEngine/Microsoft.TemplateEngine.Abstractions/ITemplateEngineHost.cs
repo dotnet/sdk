@@ -31,6 +31,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         void OnSymbolUsed(string symbol, object value);
 
+        void LogDiagnosticMessage(string message, string category, params string[] details);
+
         void OnTimingCompleted(string label, TimeSpan timing);
 
         bool TryGetHostParamDefault(string paramName, out string value);

@@ -7,6 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
@@ -172,7 +173,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string condition = opModel.Condition;
 
                 if (string.IsNullOrEmpty(condition)
-                    || CppStyleEvaluatorDefinition.EvaluateFromString(templateRoot.MountPoint.EnvironmentSettings, condition, variables))
+                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(templateRoot.MountPoint.EnvironmentSettings, condition, variables))
                 {
                     IOperationConfig realConfigObject;
                     if (_operationConfigLookup.TryGetValue(opType, out realConfigObject))

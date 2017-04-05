@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
             Guid mountPointId = Guid.NewGuid();
             MountPointInfo info = new MountPointInfo(Guid.Empty, Id, mountPointId, place);
-            mountPoint = new FileSystemMountPoint(environmentSettings, info);
+            mountPoint = new FileSystemMountPoint(environmentSettings, parent, info);
             return true;
         }
 
@@ -33,12 +33,18 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                 return false;
             }
 
-            mountPoint = new FileSystemMountPoint(manager.EnvironmentSettings, info);
+            mountPoint = new FileSystemMountPoint(manager.EnvironmentSettings, null, info);
             return true;
         }
 
         public void DisposeMountPoint(IMountPoint mountPoint)
         {
+            FileSystemMountPoint mp = mountPoint as FileSystemMountPoint;
+
+            if(mp?.Parent != null)
+            {
+                mp.EnvironmentSettings.SettingsLoader.ReleaseMountPoint(mp.Parent);
+            }
         }
     }
 }

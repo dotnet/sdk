@@ -9,8 +9,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
     {
         private IReadOnlyDictionary<string, IFileSystemInfo> _universe;
 
-        public ZipFileMountPoint(IEngineEnvironmentSettings environmentSettings, MountPointInfo info, ZipArchive archive)
+        public ZipFileMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, MountPointInfo info, ZipArchive archive)
         {
+            Parent = parent;
             EnvironmentSettings = environmentSettings;
             Archive = archive;
             Info = info;
@@ -98,5 +99,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
         }
 
         public IEngineEnvironmentSettings EnvironmentSettings { get; }
+
+        public IMountPoint Parent { get; }
     }
 }

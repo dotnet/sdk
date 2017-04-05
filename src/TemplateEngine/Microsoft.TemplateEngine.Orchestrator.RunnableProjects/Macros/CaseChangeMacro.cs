@@ -47,6 +47,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 IsVariable = true,
                 Name = config.VariableName
             };
+
+            vars[config.VariableName] = value;
             setter(p, value);
         }
 

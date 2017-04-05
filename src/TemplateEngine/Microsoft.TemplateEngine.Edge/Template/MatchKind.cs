@@ -6,6 +6,7 @@
         Unspecified,
         Exact,
         Partial,
+        AmbiguousParameterValue,
         InvalidParameterName,
         InvalidParameterValue,
         Mismatch

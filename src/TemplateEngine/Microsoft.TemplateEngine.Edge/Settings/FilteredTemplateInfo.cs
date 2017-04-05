@@ -26,5 +26,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         // There is at least one parameter match And all parameter matches are exact
         public bool IsParameterMatch => !HasParameterMismatch && MatchDisposition.Any(x => x.Location == MatchLocation.OtherParameter);
+
+        public bool HasInvalidParameterValue => MatchDisposition.Any(x => x.Location == MatchLocation.OtherParameter && x.Kind == MatchKind.InvalidParameterValue);
+
+        public bool HasAmbiguousParameterMatch => !HasInvalidParameterValue && MatchDisposition.Any(x => x.Location == MatchLocation.OtherParameter && x.Kind == MatchKind.AmbiguousParameterValue);
     }
 }

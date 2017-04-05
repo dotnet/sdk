@@ -2,6 +2,7 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -36,7 +37,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public void EvaluateCondition(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables)
         {
             if (string.IsNullOrEmpty(Condition)
-                || CppStyleEvaluatorDefinition.EvaluateFromString(environmentSettings, Condition, variables))
+                || Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, Condition, variables))
             {
                 ConditionResult = true;
             }

@@ -8,18 +8,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public static class EvaluatorSelector
     {
-        public static ConditionEvaluator Select(string name)
+        public static ConditionEvaluator Select(string name, ConditionEvaluator @default = null)
         {
+            @default = @default ?? CppStyleEvaluatorDefinition.Evaluate;
             string evaluatorName = name ?? string.Empty;
             ConditionEvaluator evaluator;
 
             switch (evaluatorName)
             {
+                case "":
+                    evaluator = @default;
+                    break;
                 case "C++2":
                     evaluator = Cpp2StyleEvaluatorDefinition.Evaluate;
                     break;
                 case "C++":
-                case "":
                     evaluator = CppStyleEvaluatorDefinition.Evaluate;
                     break;
                 case "MSBUILD":

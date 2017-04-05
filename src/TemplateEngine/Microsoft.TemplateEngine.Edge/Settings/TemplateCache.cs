@@ -120,6 +120,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(searchTarget, out IMountPoint existingMountPoint))
             {
                 ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir);
+                _environmentSettings.SettingsLoader.ReleaseMountPoint(existingMountPoint);
             }
             else
             {
@@ -150,19 +151,33 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         // 1) no templates, and no langpacks were found.
                         // 2) only langpacks were found, but they aren't for any existing templates - but we won't know that at this point.
                         _environmentSettings.SettingsLoader.AddMountPoint(mountPoint);
-                        ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir);
+                        if(!ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir))
+                        {
+                            _environmentSettings.SettingsLoader.RemoveMountPoint(mountPoint);
+
+                            if (mountPoint.Info.Place.StartsWith(_paths.User.Packages, StringComparison.Ordinal))
+                            {
+                                try
+                                {
+                                    _environmentSettings.Host.FileSystem.FileDelete(mountPoint.Info.Place);
+                                }
+                                catch
+                                {
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        private void ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
+        private bool ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
         {
-            ScanForComponents(mountPoint, templateDir);
+            bool anythingFound = ScanForComponents(mountPoint, templateDir);
 
             foreach (IGenerator generator in _environmentSettings.SettingsLoader.Components.OfType<IGenerator>())
             {
-                IEnumerable<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out IList<ILocalizationLocator> localizationInfo);
+                IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out IList<ILocalizationLocator> localizationInfo);
 
                 foreach (ILocalizationLocator locator in localizationInfo)
                 {
@@ -173,11 +188,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     AddTemplateToMemoryCache(template);
                 }
+
+                anythingFound |= templateList.Count > 0 || localizationInfo.Count > 0;
             }
+
+            return anythingFound;
         }
 
-        private void ScanForComponents(IMountPoint mountPoint, string templateDir)
+        private bool ScanForComponents(IMountPoint mountPoint, string templateDir)
         {
+            bool anythingFound = false;
+            bool isInOriginalInstallLocation = true;
             if (mountPoint.Root.EnumerateFiles("*.dll", SearchOption.AllDirectories).Any())
             {
                 string diskPath = templateDir;
@@ -185,13 +206,30 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     string path = Path.Combine(_paths.User.Content, Path.GetFileName(templateDir));
 
+                    if (templateDir.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
                     try
                     {
+                        isInOriginalInstallLocation = false;
                         mountPoint.Root.CopyTo(path);
                     }
                     catch (IOException)
                     {
-                        return;
+                        return false;
+                    }
+
+                    try
+                    {
+                        if (mountPoint.Info.Place.StartsWith(_paths.User.Packages))
+                        {
+                            _environmentSettings.Host.FileSystem.FileDelete(mountPoint.Info.Place);
+                        }
+                    }
+                    catch
+                    {
                     }
 
                     diskPath = path;
@@ -204,15 +242,32 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         foreach (Type type in asm.Value.GetTypes())
                         {
                             _environmentSettings.SettingsLoader.Components.Register(type);
+                            anythingFound = true;
                         }
 
-                        _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
+                        if (anythingFound)
+                        {
+                            _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                if (!anythingFound)
+                {
+                    try
+                    {
+                        _environmentSettings.Host.FileSystem.DirectoryDelete(diskPath, true);
                     }
                     catch
                     {
                     }
                 }
             }
+
+            return isInOriginalInstallLocation && anythingFound;
         }
 
         // returns a list of the templates with the specified localization.
@@ -234,7 +289,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private static IReadOnlyList<TemplateInfo> ParseCacheContent(JObject contentJobject, string cacheVersion)
         {
-            List<TemplateInfo> templateList = new List<Settings.TemplateInfo>();
+            List<TemplateInfo> templateList = new List<TemplateInfo>();
 
             if (contentJobject.TryGetValue("TemplateInfo", StringComparison.OrdinalIgnoreCase, out JToken templateInfoToken))
             {
@@ -413,7 +468,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 LocaleConfigPlace = localizationInfo?.ConfigPlace ?? null,
                 LocaleConfigMountPointId = localizationInfo?.MountPointId ?? Guid.Empty,
                 HostConfigMountPointId = template.HostConfigMountPointId,
-                HostConfigPlace = template.HostConfigPlace
+                HostConfigPlace = template.HostConfigPlace,
+                ThirdPartyNotices = template.ThirdPartyNotices
             };
 
             return localizedTemplate;

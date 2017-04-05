@@ -16,5 +16,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
         bool HasParameterMismatch { get; }
 
         bool IsParameterMatch { get; }
+
+        bool HasInvalidParameterValue { get; }
+
+        bool HasAmbiguousParameterMatch { get; }
     }
 }

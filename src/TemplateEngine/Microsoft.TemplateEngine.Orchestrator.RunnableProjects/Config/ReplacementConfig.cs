@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
             else
             {
-                environmentSettings.Host.LogMessage($"Couldn't find a parameter called {tokens.VariableName}");
+                environmentSettings.Host.LogDiagnosticMessage($"Couldn't find a parameter called {tokens.VariableName}", "Initialization", "ReplacementConfig.Setup");
                 return null;
             }
         }

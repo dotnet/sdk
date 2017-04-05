@@ -81,6 +81,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 
             info.HostConfigMountPointId = Guid.Parse(entry.ToString(nameof(TemplateInfo.HostConfigMountPointId)));
             info.HostConfigPlace = entry.ToString(nameof(TemplateInfo.HostConfigPlace));
+            info.ThirdPartyNotices = entry.ToString(nameof(TemplateInfo.ThirdPartyNotices));
 
             return info;
         }

@@ -50,14 +50,11 @@ namespace Microsoft.TemplateEngine.IDE
 
         public void Register(Type type)
         {
-            EnsureInitialized();
             EnvironmentSettings.SettingsLoader.Components.Register(type);
         }
 
         public void Register(Assembly assembly)
         {
-            EnsureInitialized();
-
             foreach (Type type in assembly.GetTypes())
             {
                 EnvironmentSettings.SettingsLoader.Components.Register(type);

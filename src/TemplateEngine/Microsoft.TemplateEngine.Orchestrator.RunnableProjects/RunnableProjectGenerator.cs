@@ -214,6 +214,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private bool CheckGeneratorVersionRequiredByTemplate(string generatorVersionsAllowed)
         {
+            if (string.IsNullOrEmpty(generatorVersionsAllowed))
+            {
+                return true;
+            }
+
             if (!VersionStringHelpers.TryParseVersionSpecification(generatorVersionsAllowed, out IVersionSpecification versionChecker))
             {
                 return false;

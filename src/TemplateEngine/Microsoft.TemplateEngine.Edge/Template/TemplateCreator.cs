@@ -25,85 +25,110 @@ namespace Microsoft.TemplateEngine.Edge.Template
             // templateInfo knows enough to get at the loc, if any
             ITemplate template = _environmentSettings.SettingsLoader.LoadTemplate(templateInfo);
 
-            if (template == null)
-            {
-                return new TemplateCreationResult("Could not load template", CreationResultStatus.NotFound, templateInfo.Name);
-            }
-
-            string realName = name ?? fallbackName ?? template.DefaultName;
-
-            if(string.IsNullOrEmpty(realName))
-            {
-                return new TemplateCreationResult("--name", CreationResultStatus.MissingMandatoryParam, template.Name);
-            }
-
-            // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
-            IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
-            if (defaultParamsWithInvalidValues.Any())
-            {
-                // TODO: create a separate status for this specific error.
-                // OR, better yet: sanity check templates at install time.
-                string message = string.Join(", ", defaultParamsWithInvalidValues);
-                return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
-            }
-
-            ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
-            if (userParamsWithInvalidValues.Any())
-            {
-                string message = string.Join(", ", userParamsWithInvalidValues);
-                return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
-            }
-
-            bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
-
-            if (missingParams)
-            {
-                return new TemplateCreationResult(string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
-            }
-
-            if (template.IsNameAgreementWithFolderPreferred && string.IsNullOrEmpty(outputPath))
-            {
-                outputPath = name;
-            }
-
-            ICreationResult creationResult = null;
-            string targetDir = outputPath ?? _environmentSettings.Host.FileSystem.GetCurrentDirectory();
-
             try
             {
-                _paths.CreateDirectory(targetDir);
-                Stopwatch sw = Stopwatch.StartNew();
-                IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
-
-                IReadOnlyList<IFileChange> changes = template.Generator.GetCreationEffects(_environmentSettings, template, templateParams, componentManager, targetDir).FileChanges;
-                IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
-
-                if (!forceCreation && destructiveChanges.Count > 0)
+                if (template == null)
                 {
-                    if(!_environmentSettings.Host.OnPotentiallyDestructiveChangesDetected(changes, destructiveChanges))
+                    return new TemplateCreationResult("Could not load template", CreationResultStatus.NotFound, templateInfo.Name);
+                }
+
+                string realName = name ?? fallbackName ?? template.DefaultName;
+
+                if (string.IsNullOrEmpty(realName))
+                {
+                    return new TemplateCreationResult("--name", CreationResultStatus.MissingMandatoryParam, template.Name);
+                }
+
+                // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
+                IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
+                if (defaultParamsWithInvalidValues.Any())
+                {
+                    // TODO: create a separate status for this specific error.
+                    // OR, better yet: sanity check templates at install time.
+                    string message = string.Join(", ", defaultParamsWithInvalidValues);
+                    return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
+                }
+
+                ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
+                if (userParamsWithInvalidValues.Any())
+                {
+                    string message = string.Join(", ", userParamsWithInvalidValues);
+                    return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
+                }
+
+                bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
+
+                if (missingParams)
+                {
+                    return new TemplateCreationResult(string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
+                }
+
+                if (template.IsNameAgreementWithFolderPreferred && string.IsNullOrEmpty(outputPath))
+                {
+                    outputPath = name;
+                }
+
+                ICreationResult creationResult = null;
+                string targetDir = outputPath ?? _environmentSettings.Host.FileSystem.GetCurrentDirectory();
+
+                try
+                {
+                    _paths.CreateDirectory(targetDir);
+                    Stopwatch sw = Stopwatch.StartNew();
+                    IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
+
+                    IReadOnlyList<IFileChange> changes = template.Generator.GetCreationEffects(_environmentSettings, template, templateParams, componentManager, targetDir).FileChanges;
+                    IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
+
+                    if (!forceCreation && destructiveChanges.Count > 0)
                     {
-                        return new TemplateCreationResult("Cancelled", CreationResultStatus.Cancelled, template.Name);
+                        if (!_environmentSettings.Host.OnPotentiallyDestructiveChangesDetected(changes, destructiveChanges))
+                        {
+                            return new TemplateCreationResult("Cancelled", CreationResultStatus.Cancelled, template.Name);
+                        }
                     }
-                }
 
-                creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
-                sw.Stop();
-                _environmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
-                return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, outputPath);
-            }                
-            catch (ContentGenerationException cx)
-            {
-                string message = cx.Message;
-                if(cx.InnerException != null)
+                    creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
+                    sw.Stop();
+                    _environmentSettings.Host.OnTimingCompleted("Content generation time", sw.Elapsed);
+                    return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, outputPath);
+                }
+                catch (ContentGenerationException cx)
                 {
-                    message += Environment.NewLine + cx.InnerException.Message;
-                }
+                    string message = cx.Message;
+                    if (cx.InnerException != null)
+                    {
+                        message += Environment.NewLine + cx.InnerException.Message;
+                    }
 
-                return new TemplateCreationResult(message, CreationResultStatus.CreateFailed, template.Name);
+                    return new TemplateCreationResult(message, CreationResultStatus.CreateFailed, template.Name);
+                }
+                catch (Exception ex)
+                {
+                    return new TemplateCreationResult(ex.Message, CreationResultStatus.CreateFailed, template.Name);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                return new TemplateCreationResult(ex.Message, CreationResultStatus.CreateFailed, template.Name);
+                ReleaseMountPoints(template);
+            }
+        }
+
+        public void ReleaseMountPoints(ITemplate template)
+        {
+            if(template.LocaleConfiguration != null)
+            {
+                _environmentSettings.SettingsLoader.ReleaseMountPoint(template.LocaleConfiguration.MountPoint);
+            }
+
+            if (template.Configuration != null)
+            {
+                _environmentSettings.SettingsLoader.ReleaseMountPoint(template.Configuration.MountPoint);
+            }
+
+            if (template.TemplateSourceRoot != null && template.TemplateSourceRoot != template.Configuration)
+            {
+                _environmentSettings.SettingsLoader.ReleaseMountPoint(template.TemplateSourceRoot.MountPoint);
             }
         }
 

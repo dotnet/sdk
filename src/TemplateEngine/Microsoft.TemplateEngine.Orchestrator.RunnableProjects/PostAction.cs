@@ -4,6 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -63,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             chosenInstruction = modelInstruction.Key;
                         }
                     }
-                    else if (CppStyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Value, rootVariableCollection))
+                    else if (Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Value, rootVariableCollection))
                     {   // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
                         chosenInstruction = modelInstruction.Key;
                     }
