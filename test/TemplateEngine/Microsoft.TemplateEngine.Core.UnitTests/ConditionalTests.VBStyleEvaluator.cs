@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         public void VBVerifyIfEndifTrueCondition()
         {
             string value = @"Hello
-    #If (VALUE)
+    #If (VALUE) Then
 value
     #End If
 There";
@@ -35,7 +35,7 @@ There";
         public void VBVerifyIfEndifFalseCondition()
         {
             string value = @"Hello
-    #If (VALUE)
+    #If (VALUE) Then
 value
     #End If
 There";
@@ -58,7 +58,7 @@ There";
         public void VBVerifyIfEndifTrueAndFalseCondition()
         {
             string value = @"Hello
-    #If (VALUE1 And Value2)
+    #If (VALUE1 And Value2) Then
 value
     #End If
 There";
@@ -85,7 +85,7 @@ There";
         public void VBVerifyIfEndifNotNotTrueAndFalseCondition()
         {
             string value = @"Hello
-    #If (Not (Not VALUE1 And VALUE2))
+    #If (Not (Not VALUE1 And VALUE2)) Then
 value
     #End If
 There";
@@ -113,7 +113,7 @@ There";
         public void VBVerifyIfEndifTrueAndAlsoTrueCondition()
         {
             string value = @"Hello
-    #If (VALUE1 AndAlso VALUE2)
+    #If (VALUE1 AndAlso VALUE2) Then
 value
     #End If
 There";
@@ -141,7 +141,7 @@ There";
         public void VBVerifyIfEndifTrueAndAlsoNotFalseCondition()
         {
             string value = @"Hello
-    #If (VALUE1 AndAlso Not VALUE2)
+    #If (VALUE1 AndAlso Not VALUE2) Then
 value
     #End If
 There";
@@ -169,7 +169,7 @@ There";
         public void VBVerifyIfEndifNotFalseAndNotFalseAndNotFalseCondition()
         {
             string value = @"Hello
-    #If (Not VALUE1 And Not VALUE2 And Not VALUE3)
+    #If (Not VALUE1 And Not VALUE2 And Not VALUE3) Then
 value
     #End If
 There";
@@ -198,7 +198,7 @@ There";
         public void VBVerifyIfEndifNotFalseAndNotFalseAndNotTrueCondition()
         {
             string value = @"Hello
-    #If (Not VALUE1 And Not VALUE2 And Not VALUE3)
+    #If (Not VALUE1 And Not VALUE2 And Not VALUE3) Then
 value
     #End If
 There";
@@ -226,7 +226,7 @@ There";
         public void VBVerifyIfEndifNotFalseOrTrueCondition()
         {
             string value = @"Hello
-    #If (Not VALUE1 Or VALUE2)
+    #If (Not VALUE1 Or VALUE2) Then
 value
     #End If
 There";
@@ -254,7 +254,7 @@ There";
         public void VBVerifyIfEndifNotFalseOrElseTrueCondition()
         {
             string value = @"Hello
-    #If (Not VALUE1 OrElse VALUE2)
+    #If (Not VALUE1 OrElse VALUE2) Then
 value
     #End If
 There";
@@ -282,7 +282,7 @@ There";
         public void VBVerifyIfEndifNotNotFalseAndNotFalseAndNotTrueCondition()
         {
             string value = @"Hello
-    #If (Not (Not VALUE1 And Not VALUE2 And Not VALUE3))
+    #If (Not (Not VALUE1 And Not VALUE2 And Not VALUE3)) Then
 value
     #End If
 There";
@@ -311,7 +311,7 @@ There";
         public void VBVerifyIfEndifExponentiateEqualsCondition()
         {
             string value = @"Hello
-    #If (2^3 = 8)
+    #If (2^3 = 8) Then
 value
     #End If
 There";
@@ -340,7 +340,7 @@ There";
         public void VBVerifyIfEndifNotExponentiateNotEqualsCondition()
         {
             string value = @"Hello
-    #If (Not (2^3 <> 8))
+    #If (Not (2^3 <> 8)) Then
 value
     #End If
 There";
