@@ -385,6 +385,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.js", "//", "C++", ConditionalType.CLineComments),
                         new SpecialOperationConfigParams("**/*.es", "//", "C++", ConditionalType.CLineComments),
                         new SpecialOperationConfigParams("**/*.es6", "//", "C++", ConditionalType.CLineComments),
+                        new SpecialOperationConfigParams("**/*.ts", "//", "C++", ConditionalType.CLineComments),
                         new SpecialOperationConfigParams("**/*.json", "//", "C++", ConditionalType.CLineComments),
                         new SpecialOperationConfigParams("**/*.jsonld", "//", "C++", ConditionalType.CLineComments),
                         new SpecialOperationConfigParams("**/*.hjson", "//", "C++", ConditionalType.CLineComments),
