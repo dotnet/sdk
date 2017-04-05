@@ -1,0 +1,12 @@
+{
+  "author": "Sayed Ibrahim Hashimi",
+  "classifications": [ "Web" ], 
+  "name": "Sayed Starter Web",
+  "identity": "SayedHa.StarterWeb",         
+  "shortName": "sayedweb",                 // You can create the project using this short name instead of the one above.
+  "tags": {
+    "language": "C#"                       // Specify that this template is in C#.
+  },
+  "sourceName": "SayedHa.StarterWeb",      // Will replace the string 'SayedHa.StarterWe' with the value provided via -n.
+  "preferNameDirectory":"true"
+}
