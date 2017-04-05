@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
@@ -9,10 +10,11 @@ namespace Microsoft.TemplateEngine.Utils
         private readonly Action<TimeSpan, int> _result;
         private readonly Stopwatch _stopwatch;
 
-        public static Timing Over(string label)
+        public static Timing Over(ITemplateEngineHost host, string label)
         {
             return new Timing((x, d) =>
             {
+                host.LogTiming(label, x, d);
                 //string indent = string.Join("", Enumerable.Repeat("  ", d));
                 //Console.WriteLine($"{indent} {label} {x.TotalMilliseconds}");
             });

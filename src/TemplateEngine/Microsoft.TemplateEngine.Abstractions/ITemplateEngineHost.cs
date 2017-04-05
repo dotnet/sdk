@@ -16,6 +16,8 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         string Version { get; }
 
+        void LogTiming(string label, TimeSpan duration, int depth);
+
         string Locale { get; }
         
         void LogMessage(string message);
@@ -32,8 +34,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         void OnSymbolUsed(string symbol, object value);
 
         void LogDiagnosticMessage(string message, string category, params string[] details);
-
-        void OnTimingCompleted(string label, TimeSpan timing);
 
         bool TryGetHostParamDefault(string paramName, out string value);
 

@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             string userSettings = null;
-            using (Timing.Over("Read settings"))
+            using (Timing.Over(_environmentSettings.Host, "Read settings"))
                 for (int i = 0; i < MaxLoadAttempts; ++i)
                 {
                     try
@@ -90,32 +90,31 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                 }
             JObject parsed;
-            using (Timing.Over("Parse settings"))
+            using (Timing.Over(_environmentSettings.Host, "Parse settings"))
                 parsed = JObject.Parse(userSettings);
-            using (Timing.Over("Deserialize user settings"))
+            using (Timing.Over(_environmentSettings.Host, "Deserialize user settings"))
                 _userSettings = new SettingsStore(parsed);
 
-            using (Timing.Over("Init probing paths"))
+            using (Timing.Over(_environmentSettings.Host, "Init probing paths"))
                 if (_userSettings.ProbingPaths.Count == 0)
                 {
                     _userSettings.ProbingPaths.Add(_paths.User.Content);
                 }
 
-            using (Timing.Over("Init Component manager"))
-                _componentManager = new ComponentManager(this, _userSettings);
-            using (Timing.Over("Init Mount Point manager"))
-                _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
-
-            using (Timing.Over("Demand template load"))
-                EnsureTemplatesLoaded();
-
             _mountPoints = new Dictionary<Guid, MountPointInfo>();
-
-            using (Timing.Over("Load mount points"))
+            using (Timing.Over(_environmentSettings.Host, "Load mount points"))
                 foreach (MountPointInfo info in _userSettings.MountPoints)
                 {
                     _mountPoints[info.MountPointId] = info;
                 }
+
+            using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
+                _componentManager = new ComponentManager(this, _userSettings);
+            using (Timing.Over(_environmentSettings.Host, "Init Mount Point manager"))
+                _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
+
+            using (Timing.Over(_environmentSettings.Host, "Demand template load"))
+                EnsureTemplatesLoaded();
 
             _isLoaded = true;
         }
@@ -132,7 +131,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             if (_paths.Exists(_paths.User.CurrentLocaleTemplateCacheFile))
             {
-                using (Timing.Over("Read template cache"))
+                using (Timing.Over(_environmentSettings.Host, "Read template cache"))
                     userTemplateCache = _paths.ReadAllText(_paths.User.CurrentLocaleTemplateCacheFile, "{}");
             }
             else if (_paths.Exists(_paths.User.CultureNeutralTemplateCacheFile))
@@ -140,7 +139,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 // clone the culture neutral cache
                 // this should not occur if there are any langpacks installed for this culture.
                 // when they got installed, the cache should have been created for that locale.
-                using (Timing.Over("Clone cultural neutral cache"))
+                using (Timing.Over(_environmentSettings.Host, "Clone cultural neutral cache"))
                 {
                     userTemplateCache = _paths.ReadAllText(_paths.User.CultureNeutralTemplateCacheFile, "{}");
                     _paths.WriteAllText(_paths.User.CurrentLocaleTemplateCacheFile, userTemplateCache);
@@ -152,9 +151,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             JObject parsed;
-            using (Timing.Over("Parse template cache"))
+            using (Timing.Over(_environmentSettings.Host, "Parse template cache"))
                 parsed = JObject.Parse(userTemplateCache);
-            using (Timing.Over("Init template cache"))
+            using (Timing.Over(_environmentSettings.Host, "Init template cache"))
                 _userTemplateCache = new TemplateCache(_environmentSettings, parsed, _userSettings.Version);
 
             _templatesLoaded = true;
@@ -168,7 +167,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private void UpdateTemplateListFromCache(TemplateCache cache, ISet<ITemplateInfo> templates)
         {
-            using (Timing.Over("Enumerate infos"))
+            using (Timing.Over(_environmentSettings.Host, "Enumerate infos"))
                 templates.UnionWith(cache.TemplateInfo);
         }
 
@@ -272,7 +271,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             IFile hostTemplateConfigFile = FindBestHostTemplateConfigFile(config);
 
             ITemplate template;
-            using (Timing.Over("Template from config"))
+            using (Timing.Over(_environmentSettings.Host, "Template from config"))
                 if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile))
                 {
                     return template;
@@ -335,9 +334,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void GetTemplates(HashSet<ITemplateInfo> templates)
         {
-            using (Timing.Over("Settings init"))
+            using (Timing.Over(_environmentSettings.Host, "Settings init"))
                 EnsureLoaded();
-            using (Timing.Over("Template load"))
+            using (Timing.Over(_environmentSettings.Host, "Template load"))
                 UpdateTemplateListFromCache(_userTemplateCache, templates);
         }
 
@@ -410,14 +409,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public bool TryGetMountPointInfo(Guid mountPointId, out MountPointInfo info)
         {
             EnsureLoaded();
-            using(Timing.Over("Mount point lookup"))
+            using(Timing.Over(_environmentSettings.Host, "Mount point lookup"))
             return _mountPoints.TryGetValue(mountPointId, out info);
         }
 
         public bool TryGetMountPointInfoFromPlace(string mountPointPlace, out MountPointInfo info)
         {
             EnsureLoaded();
-            using (Timing.Over("Mount point place lookup"))
+            using (Timing.Over(_environmentSettings.Host, "Mount point place lookup"))
                 foreach (MountPointInfo mountInfoToCheck in _mountPoints.Values)
                 {
                     if (mountPointPlace.Equals(mountInfoToCheck.Place, StringComparison.OrdinalIgnoreCase))
