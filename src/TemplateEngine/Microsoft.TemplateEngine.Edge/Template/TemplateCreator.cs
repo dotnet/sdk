@@ -108,19 +108,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
         }
 
-        // Any userParamsWithInvalidValues are considered invalid.
-        // A defaultParamsWithInvalidValues entry is considerd invalid if there wasn't a supplied value in inputParameters
-        public bool AnyParametersWithInvalidResolvedValues(IReadOnlyList<string> defaultParamsWithInvalidValues, IReadOnlyList<string> userParamsWithInvalidValues, IReadOnlyDictionary<string, string> inputParameters, out IReadOnlyList<string> invalidParameters)
-        {
-            HashSet<string> allInvalidParams = new HashSet<string>(userParamsWithInvalidValues);
-
-            IList<string> invalidDefaultsWithoutUserValues = defaultParamsWithInvalidValues.Where(x => !inputParameters.ContainsKey(x)).ToList();
-            allInvalidParams.UnionWith(invalidDefaultsWithoutUserValues);
-
-            invalidParameters = allInvalidParams.ToList();
-            return invalidParameters.Count > 0;
-        }
-
         public bool AnyParametersWithInvalidDefaultsUnresolved(IReadOnlyList<string> defaultParamsWithInvalidValues, IReadOnlyList<string> userParamsWithInvalidValues, IReadOnlyDictionary<string, string> inputParameters, out IReadOnlyList<string> invalidDefaultParameters)
         {
             invalidDefaultParameters = defaultParamsWithInvalidValues.Where(x => !inputParameters.ContainsKey(x)).ToList();
