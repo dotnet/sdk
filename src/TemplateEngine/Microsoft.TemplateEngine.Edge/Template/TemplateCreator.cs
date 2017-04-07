@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
                     sw.Stop();
                     _environmentSettings.Host.LogTiming("Content generation time", sw.Elapsed, 0);
-                    return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, outputPath);
+                    return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, targetDir);
                 }
                 catch (ContentGenerationException cx)
                 {
