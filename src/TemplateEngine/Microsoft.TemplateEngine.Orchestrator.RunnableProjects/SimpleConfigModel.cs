@@ -485,7 +485,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 variableConfig = VariableConfig.DefaultVariableSetup(defaultModel.VariableFormat);
             }
 
-            IReadOnlyList<IMacroConfig> macros = null;
+            List<IMacroConfig> macros = null;
             List<IMacroConfig> computedMacros = new List<IMacroConfig>();
             List<IReplacementTokens> macroGeneratedReplacements = new List<IReplacementTokens>();
 
@@ -549,17 +549,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                         if (sourceVariable != null)
                         {
-                            GenerateRemplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
+                            GenerateReplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
 
                             if (symbol.Value is ParameterSymbol p)
                             {
                                 foreach (string form in p.Forms.GlobalForms)
                                 {
+                                    string symbolName = symbol.Key + "{-VALUE-FORMS-}" + form;
                                     //TODO: These need to define parameters that get their values from a macro that processes
                                     //  the actual value of the parameter. The current state of things results in all variations
                                     //  expressed by the value forms being replaced with the user supplied value verbatim
                                     string processedReplacement = Forms[form].Process(Forms, p.Replaces);
-                                    GenerateRemplacementsForParameter(symbol, processedReplacement, sourceVariable, macroGeneratedReplacements);
+                                    GenerateReplacementsForParameter(symbol, processedReplacement, symbolName, macroGeneratedReplacements);
+
+                                    if (generateMacros)
+                                    {
+                                        macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, form, Forms));
+                                    }
                                 }
                             }
                         }
@@ -612,7 +618,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return config;
         }
 
-        private void GenerateRemplacementsForParameter(KeyValuePair<string, ISymbolModel> symbol, string replaces, string sourceVariable, List<IReplacementTokens> macroGeneratedReplacements)
+        private void GenerateReplacementsForParameter(KeyValuePair<string, ISymbolModel> symbol, string replaces, string sourceVariable, List<IReplacementTokens> macroGeneratedReplacements)
         {
             TokenConfig replacementConfig = replaces.TokenConfigBuilder();
             if (symbol.Value.ReplacementContexts.Count > 0)
@@ -639,7 +645,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private IReadOnlyList<IMacroConfig> ProduceMacroConfig(List<IMacroConfig> computedMacroConfigs)
+        private List<IMacroConfig> ProduceMacroConfig(List<IMacroConfig> computedMacroConfigs)
         {
             List<IMacroConfig> generatedMacroConfigs = new List<IMacroConfig>();
 
