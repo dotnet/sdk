@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ParameterSymbol symbol = new ParameterSymbol
             {
                 Binding = jObject.ToString(nameof(Binding)),
-                DefaultValue = jObject.ToString(nameof(DefaultValue)) ?? string.Empty,
+                DefaultValue = jObject.ToString(nameof(DefaultValue)),
                 Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty,
                 FileRename = jObject.ToString(nameof(FileRename)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),

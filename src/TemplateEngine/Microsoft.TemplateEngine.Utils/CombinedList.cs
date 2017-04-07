@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             public bool MoveNext()
             {
-                if (_index < _count)
+                if ((_index + 1) < _count)
                 {
                     ++_index;
                     return true;

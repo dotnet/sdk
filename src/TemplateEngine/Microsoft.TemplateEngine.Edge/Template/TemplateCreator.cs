@@ -40,19 +40,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
 
                 // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
-                IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IList<string> defaultParamsWithInvalidValues);
-                if (defaultParamsWithInvalidValues.Any())
-                {
-                    // TODO: create a separate status for this specific error.
-                    // OR, better yet: sanity check templates at install time.
-                    string message = string.Join(", ", defaultParamsWithInvalidValues);
-                    return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
-                }
-
+                IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IReadOnlyList<string> defaultParamsWithInvalidValues);
                 ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
-                if (userParamsWithInvalidValues.Any())
+
+                if (AnyParametersWithInvalidDefaultsUnresolved(defaultParamsWithInvalidValues, userParamsWithInvalidValues, inputParameters, out IReadOnlyList<string> defaultsWithUnresolvedInvalidValues)
+                        || userParamsWithInvalidValues.Count > 0)
                 {
-                    string message = string.Join(", ", userParamsWithInvalidValues);
+                    string message = string.Join(", ", new CombinedList<string>(userParamsWithInvalidValues, defaultsWithUnresolvedInvalidValues));
                     return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
                 }
 
@@ -91,7 +85,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
                     sw.Stop();
                     _environmentSettings.Host.LogTiming("Content generation time", sw.Elapsed, 0);
-                    return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, outputPath);
+                    return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, targetDir);
                 }
                 catch (ContentGenerationException cx)
                 {
@@ -112,6 +106,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 ReleaseMountPoints(template);
             }
+        }
+
+        public bool AnyParametersWithInvalidDefaultsUnresolved(IReadOnlyList<string> defaultParamsWithInvalidValues, IReadOnlyList<string> userParamsWithInvalidValues, IReadOnlyDictionary<string, string> inputParameters, out IReadOnlyList<string> invalidDefaultParameters)
+        {
+            invalidDefaultParameters = defaultParamsWithInvalidValues.Where(x => !inputParameters.ContainsKey(x)).ToList();
+            return invalidDefaultParameters.Count > 0;
         }
 
         public void ReleaseMountPoints(ITemplate template)
@@ -136,11 +136,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
         // Reads the parameters from the template and the host and setup their values in the return IParameterSet.
         // Host param values override template defaults.
         //
-        public IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate templateInfo, string realName, out IList<string> paramsWithInvalidValues)
+        public IParameterSet SetupDefaultParamValuesFromTemplateAndHost(ITemplate templateInfo, string realName, out IReadOnlyList<string> paramsWithInvalidValues)
         {
             ITemplateEngineHost host = _environmentSettings.Host;
             IParameterSet templateParams = templateInfo.Generator.GetParametersForTemplate(_environmentSettings, templateInfo);
-            paramsWithInvalidValues = new List<string>();
+            List<string> paramsWithInvalidValuesList = new List<string>();
 
             foreach (ITemplateParameter param in templateParams.ParameterDefinitions)
             {
@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        paramsWithInvalidValues.Add(param.Name);
+                        paramsWithInvalidValuesList.Add(param.Name);
                     }
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
@@ -169,11 +169,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        paramsWithInvalidValues.Add(param.Name);
+                        paramsWithInvalidValuesList.Add(param.Name);
                     }
                 }
             }
 
+            paramsWithInvalidValues = paramsWithInvalidValuesList;
             return templateParams;
         }
 
