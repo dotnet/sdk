@@ -6,7 +6,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    public class ProcessValueFormMacro : IMacro, IDeferredMacro
+    public class ProcessValueFormMacro : IMacro
     {
         public string Type => "processValueForm";
 
@@ -38,21 +38,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 value = working?.ToString() ?? "";
             }
 
-            value = realConfig.Forms[realConfig.Form].Process(realConfig.Forms, value);
-
-            Parameter p = new Parameter
+            if (realConfig.Forms.TryGetValue(realConfig.FormName, out IValueForm form))
             {
-                IsVariable = true,
-                Name = config.VariableName
-            };
+                value = form.Process(realConfig.Forms, value);
 
-            vars[config.VariableName] = value;
-            setter(p, value);
-        }
+                Parameter p = new Parameter
+                {
+                    IsVariable = true,
+                    Name = config.VariableName
+                };
 
-        public void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
-        {
-            EvaluateConfig(environmentSettings, vars, rawConfig, parameters, setter);
+                vars[config.VariableName] = value;
+                setter(p, value);
+            }
+            else
+            {
+                environmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{realConfig.FormName}'", "Authoring");
+            }
         }
     }
 }

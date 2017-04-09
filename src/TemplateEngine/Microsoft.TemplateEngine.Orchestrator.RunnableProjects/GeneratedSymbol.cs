@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
 
-        public static ISymbolModel FromJObject(JObject jObject)
+        public static GeneratedSymbol FromJObject(JObject jObject)
         {
             GeneratedSymbol sym = new GeneratedSymbol
             {

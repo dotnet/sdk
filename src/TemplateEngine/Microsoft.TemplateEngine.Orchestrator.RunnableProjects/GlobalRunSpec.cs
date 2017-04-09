@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; }
 
-        public string PlaceholderFilename { get; }
+        public IReadOnlyList<string> IgnoreFileNames { get; }
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
@@ -65,13 +65,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IGlobalRunConfig globalConfig,
             IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> fileGlobConfigs,
             IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> localizationOperations,
-            string placeholderFilename)
+            IReadOnlyList<string> ignoreFileNames)
         {
             EnsureOperationConfigs(componentManager);
 
             RootVariableCollection = variables;
             LocalizationOperations = localizationOperations;
-            PlaceholderFilename = placeholderFilename;
+            IgnoreFileNames = ignoreFileNames;
             Operations = ResolveOperations(globalConfig, templateRoot, variables, parameters);
             List<KeyValuePair<IPathMatcher, IRunSpec>> specials = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
 

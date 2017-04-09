@@ -79,7 +79,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             SwitchMacro macro = new SwitchMacro();
-            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter resultParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
             string resultValue = (string)parameters.ResolvedValues[resultParam];

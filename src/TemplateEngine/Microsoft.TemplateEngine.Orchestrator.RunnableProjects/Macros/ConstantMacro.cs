@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             setter(p, config.Value);
         }
 
-        public void EvaluateDeferredConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
             GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             string value = valueToken.ToString();
             IMacroConfig realConfig = new ConstantMacroConfig(deferredConfig.VariableName, value);
-            EvaluateConfig(environmentSettings, vars, realConfig, parameters, setter);
+            return realConfig;
         }
     }
 }

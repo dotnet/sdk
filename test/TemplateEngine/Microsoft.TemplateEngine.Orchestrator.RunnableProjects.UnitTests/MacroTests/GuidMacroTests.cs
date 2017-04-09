@@ -44,7 +44,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IParameterSet parameters = new ParameterSet(config);
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
-            guidMacro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
+            IMacroConfig realConfig = guidMacro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
+            guidMacro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
             ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, parameters);
         }
 

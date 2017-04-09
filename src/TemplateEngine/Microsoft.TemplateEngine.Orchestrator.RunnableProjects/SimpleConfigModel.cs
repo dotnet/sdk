@@ -7,7 +7,6 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
@@ -174,6 +173,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static readonly string DefaultPlaceholderFilename = "-.-";
 
         private string _placeholderValue;
+        private IReadOnlyList<string> _ignoreFileNames;
+        private bool _isPlaceholderFileNameCustomized;
+
 
         public string PlaceholderFilename
         {
@@ -184,6 +186,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             set
             {
                 _placeholderValue = value ?? DefaultPlaceholderFilename;
+
+                if (value != null)
+                {
+                    _isPlaceholderFileNameCustomized = true;
+                }
+            }
+        }
+
+        public IReadOnlyList<string> IgnoreFileNames
+        {
+            get { return _ignoreFileNames ?? (_isPlaceholderFileNameCustomized ? new[] { PlaceholderFilename } : new[] { PlaceholderFilename, "_._" }); }
+            set
+            {
+                _ignoreFileNames = value;
             }
         }
 
@@ -230,7 +246,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         }
                     }
 
-                    // TODO: move this into the above else. it only makes sense in that context
                     string nameParameter = parameters.FirstOrDefault(x => x.Value.IsName).Key;
 
                     if (nameParameter == null)
@@ -556,9 +571,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 foreach (string form in p.Forms.GlobalForms)
                                 {
                                     string symbolName = symbol.Key + "{-VALUE-FORMS-}" + form;
-                                    //TODO: These need to define parameters that get their values from a macro that processes
-                                    //  the actual value of the parameter. The current state of things results in all variations
-                                    //  expressed by the value forms being replaced with the user supplied value verbatim
                                     string processedReplacement = Forms[form].Process(Forms, p.Replaces);
                                     GenerateReplacementsForParameter(symbol, processedReplacement, symbolName, macroGeneratedReplacements);
 

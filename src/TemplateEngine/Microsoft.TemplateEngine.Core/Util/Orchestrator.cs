@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
 
-                if (fileName == spec.PlaceholderFilename)
+                if (spec.IgnoreFileNames.Contains(fileName))
                 {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
                     // So this happens before all the include / exclude / copy checks.
                     CreateTargetDir(environmentSettings, sourceRel, targetDir, spec);
@@ -170,7 +170,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
 
-                if (fileName == spec.PlaceholderFilename)
+                if (spec.IgnoreFileNames.Contains(fileName))
                 {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
                     // So this happens before all the include / exclude / copy checks.
                     CreateTargetDir(environmentSettings, sourceRel, targetDir, spec);

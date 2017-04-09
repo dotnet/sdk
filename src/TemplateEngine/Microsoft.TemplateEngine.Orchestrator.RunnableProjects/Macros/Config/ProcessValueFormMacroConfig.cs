@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         {
             SourceVariable = sourceSymbol;
             VariableName = symbolName;
-            Form = valueForm;
+            FormName = valueForm;
             Forms = forms;
         }
 
@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string SourceVariable { get; }
 
-        public string Form { get; }
+        public string FormName { get; }
 
         public IReadOnlyDictionary<string, IValueForm> Forms { get; }
     }

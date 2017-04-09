@@ -84,7 +84,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             setter(sourceParam, sourceValue);
 
             RegexMacro macro = new RegexMacro();
-            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter newParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out newParam));
             string newValue = (string)parameters.ResolvedValues[newParam];

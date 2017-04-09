@@ -66,7 +66,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             RandomMacro macro = new RandomMacro();
-            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter valueParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out valueParam));
             long randomValue = (long)parameters.ResolvedValues[valueParam];
