@@ -1,0 +1,24 @@
+{
+  "author": "Contoso",
+  "classifications": [ "Web" ], 
+  "name": "Contoso Starter Web",
+  "identity": "MyProject.StarterWeb",         
+  "shortName": "cweb",                 // You can create the project using this short name instead of the one above.
+  "tags": {
+    "language": "C#"                       // Specify that this template is in C#.
+  },
+  "sourceName": "MyProject.StarterWeb",      // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
+  "preferNameDirectory":"true",
+  "symbols":{
+    "copyrightName": {
+      "type": "parameter",
+      "defaultValue": "John Smith",
+      "replaces":"Contoso"
+    },
+    "title": {
+      "type": "parameter",
+      "defaultValue": "Hello Web",
+      "replaces":"Contoso Web"
+    }
+  }
+}

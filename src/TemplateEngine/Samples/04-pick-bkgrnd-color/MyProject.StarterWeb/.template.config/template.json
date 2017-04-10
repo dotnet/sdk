@@ -1,0 +1,61 @@
+{
+  "author": "Contoso",
+  "classifications": [ "Web" ], 
+  "name": "Contoso Starter Web",
+  "identity": "MyProject.StarterWeb",         
+  "shortName": "cweb",                 // You can create the project using this short name instead of the one above.
+  "tags": {
+    "language": "C#"                       // Specify that this template is in C#.
+  },
+  "preferNameDirectory":"true",
+  "sourceName": "MyProject.StarterWeb",       // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
+  "symbols":{
+    "CopyrightName": {
+      "type": "parameter",
+      "defaultValue": "John Smith",
+      "replaces":"Contoso"
+    },
+    "Title": {
+      "type": "parameter",
+      "defaultValue": "Hello Web",
+      "replaces":"Contoso Web"
+    },
+    "EnableContactPage":{
+      "type": "parameter",
+      "dataType":"bool",
+      "defaultValue": "false"
+    },
+    "BackgroundColor":{
+      "type":"parameter",
+      "datatype": "choice",
+      "defaultValue":"aliceblue",
+      "choices": [
+        {
+          "choice": "aliceblue",
+          "description": "Alice Blue"
+        },
+        {
+          "choice": "dimgray",
+          "description":"dimgray"
+        },
+        {
+          "choice":"skyblue",
+          "description":"skyblue"
+        }
+      ],
+      "replaces":"skyblue"
+    }
+  },
+"sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!EnableContactPage)",
+          "exclude": [
+            "Views/Home/Contact.cshtml"
+          ]
+        }
+      ]
+    }
+  ]
+}
