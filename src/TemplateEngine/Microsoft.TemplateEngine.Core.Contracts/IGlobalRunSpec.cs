@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; }
 
-        string PlaceholderFilename { get; }
+        IReadOnlyList<string> IgnoreFileNames { get; }
 
         bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath);
     }

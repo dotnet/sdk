@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string Identity { get; }
 
-        string PlaceholderFilename { get; set; }
+        IReadOnlyList<string> IgnoreFileNames { get; }
 
         IReadOnlyList<IPostActionModel> PostActionModel { get; }
 

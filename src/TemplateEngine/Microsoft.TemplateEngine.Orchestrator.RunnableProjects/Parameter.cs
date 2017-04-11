@@ -36,6 +36,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         [JsonProperty]
         public IReadOnlyDictionary<string, string> Choices { get; set; }
 
+        [JsonProperty]
+        public IReadOnlyDictionary<string, IReadOnlyList<string>> Forms { get; set; }
+
         [JsonIgnore]
         public string Documentation
         {

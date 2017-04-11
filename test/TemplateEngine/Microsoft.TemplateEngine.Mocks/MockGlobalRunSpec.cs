@@ -15,6 +15,7 @@ namespace Microsoft.TemplateEngine.Mocks
             Special = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
             LocalizationOperations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
             TargetRelativePaths = new Dictionary<string, string>();
+            IgnoreFileNames = new[] { "-.-", "_._" };
         }
 
         public IReadOnlyList<IPathMatcher> Exclude { get; set; }
@@ -31,8 +32,8 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyDictionary<string, IReadOnlyList<IOperationProvider>> LocalizationOperations { get; set; }
 
-        public string PlaceholderFilename { get; set; }
-
+        public IReadOnlyList<string> IgnoreFileNames { get; set; }
+        
         public Dictionary<string, string> TargetRelativePaths { get; set; }
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)

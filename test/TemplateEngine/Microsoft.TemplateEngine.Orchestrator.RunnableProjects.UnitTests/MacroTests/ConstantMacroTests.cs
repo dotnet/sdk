@@ -49,7 +49,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(EngineEnvironmentSettings, parameters);
 
             ConstantMacro macro = new ConstantMacro();
-            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter constParameter;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out constParameter));
             string constParamValue = (parameters.ResolvedValues[constParameter]).ToString();

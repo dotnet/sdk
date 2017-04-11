@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -45,14 +46,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 }
             }
 
-            // run the deferred macros
+            List<Tuple<IMacro, IMacroConfig>> deferredConfigs = new List<Tuple<IMacro, IMacroConfig>>();
+
+            // Set up all deferred macro configurations - this must be done separately from running them
+            //  as certain generation types may require (like generating port numbers) that a shared resource
+            //  be held in a particular state to influence the production of other values
             foreach (GeneratedSymbolDeferredMacroConfig deferredConfig in deferredConfigList)
             {
                 IDeferredMacro deferredMacroObject;
                 if (_deferredMacroObjects.TryGetValue(deferredConfig.Type, out deferredMacroObject))
                 {
-                    deferredMacroObject.EvaluateDeferredConfig(environmentSettings, variables, deferredConfig, parameters, setter);
+                    deferredConfigs.Add(Tuple.Create((IMacro)deferredMacroObject, deferredMacroObject.CreateConfig(environmentSettings, deferredConfig)));
                 }
+            }
+
+            foreach(Tuple<IMacro, IMacroConfig> config in deferredConfigs)
+            {
+                config.Item1.EvaluateConfig(environmentSettings, variables, config.Item2, parameters, setter);
             }
 
             return Empty<IOperationProvider>.List.Value;

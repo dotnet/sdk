@@ -106,7 +106,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             variables[sourceVariable] = sourceValue;
             setter(sourceParam, sourceValue);
 
-            macro.EvaluateDeferredConfig(EngineEnvironmentSettings, variables, deferredConfig, parameters, setter);
+            IMacroConfig realConfig = macro.CreateConfig(EngineEnvironmentSettings, deferredConfig);
+            macro.EvaluateConfig(EngineEnvironmentSettings, variables, realConfig, parameters, setter);
             ITemplateParameter convertedParam;
             Assert.True(parameters.TryGetParameterDefinition(variableName, out convertedParam));
             string convertedValue = (string)parameters.ResolvedValues[convertedParam];
