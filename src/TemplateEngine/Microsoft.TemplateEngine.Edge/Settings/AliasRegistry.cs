@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class AliasRegistry
     {
-        private AliasModel _aliases { get; set; }
+        private AliasModel _aliases;
 
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
@@ -58,34 +58,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _environmentSettings.Host.FileSystem.WriteAllText(_paths.User.AliasesFile, serialized.ToString());
         }
 
-        public AliasManipulationResult TryCreateOrRemoveAlias(IReadOnlyList<string> inputTokens)
+        public AliasManipulationResult TryCreateOrRemoveAlias(string aliasName, IReadOnlyList<string> aliasTokens)
         {
             EnsureLoaded();
-
-            IList<string> aliasTokens = new List<string>();
-            bool nextIsAliasName = false;
-            string aliasName = null;
-
-            foreach (string token in inputTokens)
-            {
-                if (nextIsAliasName)
-                {
-                    aliasName = token;
-                    nextIsAliasName = false;
-                }
-                else if (string.Equals(token, "-a", StringComparison.Ordinal) || string.Equals(token, "--alias", StringComparison.Ordinal))
-                {
-                    if (!string.IsNullOrEmpty(aliasName))
-                    {
-                        return new AliasManipulationResult(AliasManipulationStatus.InvalidInput);
-                    }
-                    nextIsAliasName = true;
-                }
-                else if (!string.Equals(token, "--debug:attach", StringComparison.Ordinal))
-                {
-                    aliasTokens.Add(token);
-                }
-            }
 
             if (aliasName == null)
             {
@@ -98,8 +73,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 if (_aliases.TryRemoveCommandAlias(aliasName, out string removedAliasValue))
                 {
                     Save();
+                    return new AliasManipulationResult(AliasManipulationStatus.Removed, aliasName, removedAliasValue);
                 }
-                return new AliasManipulationResult(AliasManipulationStatus.Removed, aliasName, removedAliasValue);
+                else
+                {
+                    return new AliasManipulationResult(AliasManipulationStatus.RemoveNonExistentFailed, aliasName, string.Empty);
+                }
             }
 
             string aliasValue = string.Join(" ", aliasTokens);
@@ -107,7 +86,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             aliasesWithCandidate[aliasName] = aliasValue;
             if (!TryExpandCommandAliases(aliasesWithCandidate, aliasValue, out string expandedInput))
             {
-                // TODO: more meaningful return info... alias would create a cycle
                 return new AliasManipulationResult(AliasManipulationStatus.WouldCreateCycle, aliasName, aliasValue);
             }
 
@@ -130,6 +108,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             string input = string.Join(" ", inputTokens);
             if (TryExpandCommandAliases(_aliases.CommandAliases, input, out string expandedInput))
             {
+                // splits on any whitespace (odd usage, but documented on msdn)
                 expandedInputTokens = expandedInput.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
                 return true;
             }

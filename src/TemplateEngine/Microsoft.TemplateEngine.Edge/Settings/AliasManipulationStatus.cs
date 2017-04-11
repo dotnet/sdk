@@ -5,6 +5,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     {
         Created,
         Removed,
+        RemoveNonExistentFailed,    // for trying to remove an alias that didn't exist.
         Updated,
         WouldCreateCycle,
         InvalidInput
