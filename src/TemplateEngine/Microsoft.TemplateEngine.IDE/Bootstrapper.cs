@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.IDE
             Installer.InstallPackages(paths);
         }
 
-        public IReadOnlyCollection<IFilteredTemplateInfo> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] filters)
+        public IReadOnlyCollection<IFilteredTemplateInfo> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             EnsureInitialized();
             return ((SettingsLoader)EnvironmentSettings.SettingsLoader).UserTemplateCache.List(exactMatchesOnly, filters);

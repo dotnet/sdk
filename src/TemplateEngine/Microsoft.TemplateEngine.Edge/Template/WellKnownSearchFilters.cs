@@ -6,9 +6,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
 {
     public static class WellKnownSearchFilters
     {
-        public static Func<ITemplateInfo, string, MatchInfo?> NameFilter(string name)
+        public static Func<ITemplateInfo, MatchInfo?> NameFilter(string name)
         {
-            return (template, alias) =>
+            return (template) =>
             {
                 if (string.IsNullOrEmpty(name))
                 {
@@ -42,35 +42,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
-        public static Func<ITemplateInfo, string, MatchInfo?> AliasFilter(string name)
-        {
-            return (template, alias) =>
-            {
-                if (string.IsNullOrEmpty(name))
-                {
-                    return null;
-                }
-
-                int index = alias?.IndexOf(name, StringComparison.OrdinalIgnoreCase) ?? -1;
-
-                if (index == 0 && string.Equals(alias, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return new MatchInfo { Location = MatchLocation.Alias, Kind = MatchKind.Exact };
-                }
-
-                if (index > -1)
-                {
-                    return new MatchInfo { Location = MatchLocation.Alias, Kind = MatchKind.Partial };
-                }
-
-                return null;
-            };
-        }
-
         // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
-        public static Func<ITemplateInfo, string, MatchInfo?> ContextFilter(string context)
+        public static Func<ITemplateInfo, MatchInfo?> ContextFilter(string context)
         {
-            return (template, alias) =>
+            return (template) =>
             {
                 if (string.IsNullOrEmpty(context))
                 {
@@ -98,9 +73,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
         // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
-        public static Func<ITemplateInfo, string, MatchInfo?> LanguageFilter(string language)
+        public static Func<ITemplateInfo, MatchInfo?> LanguageFilter(string language)
         {
-            return (template, alias) =>
+            return (template) =>
             {
                 if (string.IsNullOrEmpty(language))
                 {
@@ -123,9 +98,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
-        public static Func<ITemplateInfo, string, MatchInfo?> ClassificationsFilter(string name)
+        public static Func<ITemplateInfo, MatchInfo?> ClassificationsFilter(string name)
         {
-            return (template, alias) =>
+            return (template) =>
             {
                 if (string.IsNullOrEmpty(name))
                 {

@@ -24,14 +24,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly IDictionary<string, IDictionary<string, ILocalizationLocator>> _localizationMemoryCache = new Dictionary<string, IDictionary<string, ILocalizationLocator>>();
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
-        private readonly AliasRegistry _aliasRegistry;
 
         public TemplateCache(IEngineEnvironmentSettings environmentSettings)
         {
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
             TemplateInfo = new List<TemplateInfo>();
-            _aliasRegistry = new AliasRegistry(environmentSettings);
         }
 
         public TemplateCache(IEngineEnvironmentSettings environmentSettings, List<TemplateInfo> templatesInCache)
@@ -49,18 +47,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public IReadOnlyList<TemplateInfo> TemplateInfo { get; set; }
 
-        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, string, MatchInfo?>[] fitlers)
+        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
 
             foreach (ITemplateInfo template in TemplateInfo)
             {
-                string alias = _aliasRegistry.GetAliasForTemplate(template);
                 List<MatchInfo> matchInformation = new List<MatchInfo>();
 
-                foreach (Func<ITemplateInfo, string, MatchInfo?> filter in fitlers)
+                foreach (Func<ITemplateInfo, MatchInfo?> filter in filters)
                 {
-                    MatchInfo? result = filter(template, alias);
+                    MatchInfo? result = filter(template);
 
                     if (result.HasValue)
                     {

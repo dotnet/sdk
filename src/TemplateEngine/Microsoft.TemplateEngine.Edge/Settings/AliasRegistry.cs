@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
@@ -8,9 +7,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class AliasRegistry
     {
-        private JObject _source;
-        private readonly Dictionary<string, string> AliasesToTemplates = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, string> TemplatesToAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private AliasModel _aliases { get; set; }
+
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
 
@@ -20,108 +18,168 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _paths = new Paths(environmentSettings);
         }
 
-        private void Load()
+        public IReadOnlyDictionary<string, string> AllAliases
         {
-            if (TemplatesToAliases.Count > 0)
+            get
+            {
+                EnsureLoaded();
+                return new Dictionary<string, string>(_aliases.CommandAliases, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        private void EnsureLoaded()
+        {
+            if (_aliases != null)
             {
                 return;
             }
 
             if (!_paths.Exists(_paths.User.AliasesFile))
             {
-                _source = new JObject();
+                _aliases = new AliasModel();
                 return;
             }
 
             string sourcesText = _paths.ReadAllText(_paths.User.AliasesFile, "{}");
-            _source = JObject.Parse(sourcesText);
+            JObject parsed = JObject.Parse(sourcesText);
+            Dictionary<string, string> commandAliases = new Dictionary<string, string>();
 
-            foreach (JProperty child in _source.Properties())
+            foreach (JProperty entry in parsed.PropertiesOf(nameof(_aliases.CommandAliases)))
             {
-                AliasesToTemplates[child.Name] = child.Value.ToString();
-                TemplatesToAliases[child.Value.ToString()] = child.Name;
+                commandAliases.Add(entry.Name, entry.Value.ToString());
             }
+
+            _aliases = new AliasModel(commandAliases);
         }
 
-        public string GetTemplateNameForAlias(string alias)
+        private void Save()
         {
-            if(alias == null)
-            {
-                return null;
-            }
-
-            Load();
-            string templateName;
-            if (AliasesToTemplates.TryGetValue(alias, out templateName))
-            {
-                return templateName;
-            }
-
-            return null;
+            JObject serialized = JObject.FromObject(_aliases);
+            _environmentSettings.Host.FileSystem.WriteAllText(_paths.User.AliasesFile, serialized.ToString());
         }
 
-        public IReadOnlyDictionary<string, ITemplateInfo> GetTemplatesForAlias(string alias, IReadOnlyCollection<ITemplateInfo> templates)
+        public AliasManipulationResult TryCreateOrRemoveAlias(IReadOnlyList<string> inputTokens)
         {
-            Dictionary<string, ITemplateInfo> aliasVsTemplate = new Dictionary<string, ITemplateInfo>();
+            EnsureLoaded();
 
-            if(alias == null)
+            IList<string> aliasTokens = new List<string>();
+            bool nextIsAliasName = false;
+            string aliasName = null;
+
+            foreach (string token in inputTokens)
             {
-                return aliasVsTemplate;
-            }
-
-            Load();
-            string templateName;
-            if(AliasesToTemplates.TryGetValue(alias, out templateName))
-            {
-                ITemplateInfo match = templates.FirstOrDefault(x => string.Equals(x.Name, templateName, StringComparison.OrdinalIgnoreCase));
-
-                if (match != null)
+                if (nextIsAliasName)
                 {
-                    aliasVsTemplate[alias] = match;
-                    return aliasVsTemplate;
+                    aliasName = token;
+                    nextIsAliasName = false;
                 }
-            }
-
-            if (!string.IsNullOrWhiteSpace(alias))
-            {
-                Dictionary<string, string> matchedAliases = AliasesToTemplates.Where(x => x.Key.IndexOf(alias, StringComparison.OrdinalIgnoreCase) > -1).ToDictionary(x => x.Value, x => x.Key);
-
-                foreach (ITemplateInfo template in templates)
+                else if (string.Equals(token, "-a", StringComparison.Ordinal) || string.Equals(token, "--alias", StringComparison.Ordinal))
                 {
-                    if (matchedAliases.TryGetValue(template.Name, out string matchingAlias))
+                    if (!string.IsNullOrEmpty(aliasName))
                     {
-                        aliasVsTemplate[matchingAlias] = template;
+                        return new AliasManipulationResult(AliasManipulationStatus.InvalidInput);
                     }
+                    nextIsAliasName = true;
+                }
+                else if (!string.Equals(token, "--debug:attach", StringComparison.Ordinal))
+                {
+                    aliasTokens.Add(token);
                 }
             }
 
-            return aliasVsTemplate;
-        }
-
-        public string GetAliasForTemplate(ITemplateInfo template)
-        {
-            Load();
-            string alias;
-            if(!TemplatesToAliases.TryGetValue(template.Name, out alias))
+            if (aliasName == null)
             {
-                return null;
+                // the input was malformed. Alias flag without alias name
+                return new AliasManipulationResult(AliasManipulationStatus.InvalidInput);
+            }
+            else if (aliasTokens.Count == 0)
+            {   // the command was just "--alias <alias name>"
+                // remove the alias
+                if (_aliases.TryRemoveCommandAlias(aliasName, out string removedAliasValue))
+                {
+                    Save();
+                }
+                return new AliasManipulationResult(AliasManipulationStatus.Removed, aliasName, removedAliasValue);
             }
 
-            return alias;
-        }
-
-        // returns -1 if the alias already exists, zero otherwise
-        public int SetTemplateAlias(string alias, ITemplateInfo template)
-        {
-            Load();
-            if (AliasesToTemplates.ContainsKey(alias))
+            string aliasValue = string.Join(" ", aliasTokens);
+            Dictionary<string, string> aliasesWithCandidate = new Dictionary<string, string>(_aliases.CommandAliases);
+            aliasesWithCandidate[aliasName] = aliasValue;
+            if (!TryExpandCommandAliases(aliasesWithCandidate, aliasValue, out string expandedInput))
             {
-                return -1;
+                // TODO: more meaningful return info... alias would create a cycle
+                return new AliasManipulationResult(AliasManipulationStatus.WouldCreateCycle, aliasName, aliasValue);
             }
 
-            _source[alias] = template.Name;
-            _environmentSettings.Host.FileSystem.WriteAllText(_paths.User.AliasesFile, _source.ToString());
-            return 0;
+            _aliases.AddCommandAlias(aliasName, aliasValue);
+            Save();
+            return new AliasManipulationResult(AliasManipulationStatus.Created, aliasName, aliasValue);
+        }
+
+        // Attempts to expand aliases on the input string, using the aliases in _aliases
+        public bool TryExpandCommandAliases(IReadOnlyList<string> inputTokens, out IReadOnlyList<string> expandedInputTokens)
+        {
+            EnsureLoaded();
+
+            if (inputTokens.Count == 0)
+            {
+                expandedInputTokens = inputTokens;
+                return true;
+            }
+
+            string input = string.Join(" ", inputTokens);
+            if (TryExpandCommandAliases(_aliases.CommandAliases, input, out string expandedInput))
+            {
+                expandedInputTokens = expandedInput.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                return true;
+            }
+
+            // TryExpandCommandAliases() returned false because was an expansion error
+            expandedInputTokens = new List<string>();
+            return false;
+        }
+
+        // Attempts to perform alias expansion on the input string, using the dict of aliases passed in.
+        // TODO: consider making this be all token-based. Then just the expanded aliases would need to be tokenized as we go along.
+        private static bool TryExpandCommandAliases(IReadOnlyDictionary<string, string> aliases, string input, out string expandedInput)
+        {
+            bool expansionOccurred = false;
+            expandedInput = input;
+            HashSet<string> seenAliases = new HashSet<string>();
+
+            do
+            {
+                string[] parts = expandedInput.Split((char[])null, 2, StringSplitOptions.RemoveEmptyEntries);
+                string candidateAlias = parts[0];
+                string remainingInput;
+                if (parts.Length == 2)
+                {
+                    remainingInput = parts[1];
+                }
+                else
+                {
+                    remainingInput = string.Empty;
+                }
+
+                if (aliases.TryGetValue(candidateAlias, out string aliasExpansion))
+                {
+                    if (!seenAliases.Add(candidateAlias))
+                    {
+                        // a cycle has occurred... not allowed.
+                        expandedInput = null;
+                        return false;
+                    }
+
+                    expandedInput = aliasExpansion + " " + remainingInput;
+                    expansionOccurred = true;
+                }
+                else
+                {
+                    expansionOccurred = false;
+                }
+            } while (expansionOccurred);
+
+            return true;
         }
     }
 }
