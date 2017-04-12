@@ -1,0 +1,26 @@
+{
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Web" ], 
+  "name": "Console and unit test",
+  "identity": "MyProject.StarterWeb",         
+  "shortName": "conunit",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "MyProject.Console",
+  "preferNameDirectory":"true",
+  "symbols":{
+    "includetest": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "true"
+    }
+  },
+  "sources":[{
+    "modifiers": [{
+      "condition": "(!includetest)",
+      "exclude": [ "MyProject.Console.Test/**/*"]
+      }
+    ]
+  }]
+}
