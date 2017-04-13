@@ -1,3 +1,5 @@
-This folder contains a sample showing how to create a template that contains a paramter to set the background color of the website.
+The sample in this folder demonstrates:
 
-See [.template.config\template.json](template.json)
+ - **Creating a parameter based on a list of options** - The parameter is used to set the background color of the website
+
+See [`.tempalte.config/template.json`](./.template.config/template.json)
