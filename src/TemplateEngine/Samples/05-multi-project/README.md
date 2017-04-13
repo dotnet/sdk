@@ -1,5 +1,6 @@
-This folder contains a sample that shows how to create a multi project template. It contains a console and unit test project.
-There is also an option, `includetest`, to skip generating the unit test.
+The sample in this folder demonstrates:
 
+ - **Multi-project template** - Console with an optional unit test project 
 
-See [.template.config\template.json](template.json)
+See [`template.json`](./MyProject.StarterWeb/.template.config/template.json)
+

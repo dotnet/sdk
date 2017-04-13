@@ -1,3 +1,6 @@
-This folder contains a basic template for `dotnet new`.
+The sample in this folder demonstrates:
 
-See [.template.config\template.json](template.json)
+ - **How to create a basic template** 
+
+See [`template.json`](./MyProject.StarterWeb/.template.config/template.json)
+

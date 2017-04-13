@@ -1,7 +1,6 @@
-This folder contains a sample showing how to create a template with replacable parameters. The parameters it contains are:
+The sample in this folder demonstrates:
 
- - `copyrightName`
- - `title`
+ - **How to create a template with parameters** - The parameters are `copyrightName` and `title`
 
-See [.template.config\template.json](template.json)
+See [`template.json`](./MyProject.StarterWeb/.template.config/template.json)
 
