@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.VisualStudioWizard
             }
 
             wizardData = wizardData.Trim();
-            IFilteredTemplateInfo match = bootstrapper.ListTemplates(true, (x, a) =>
+            IFilteredTemplateInfo match = bootstrapper.ListTemplates(true, x =>
             {
                 if (string.Equals(x.Identity, wizardData, StringComparison.OrdinalIgnoreCase))
                 {

@@ -56,14 +56,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return mountPoint.FileInfo(configFile);
         }
 
-        public static string GetNewVirtualizedPath(IEngineEnvironmentSettings environment)
-        {
-            string basePath = Path.Combine(Directory.GetCurrentDirectory(), "sandbox", Guid.NewGuid().ToString()) + Path.DirectorySeparatorChar;
-            environment.Host.VirtualizeDirectory(basePath);
-
-            return basePath;
-        }
-
         public static void SetupFileSourceMatchersOnGlobalRunSpec(MockGlobalRunSpec runSpec, FileSourceMatchInfo source)
         {
             FileSourceHierarchicalPathMatcher matcher = new FileSourceHierarchicalPathMatcher(source);

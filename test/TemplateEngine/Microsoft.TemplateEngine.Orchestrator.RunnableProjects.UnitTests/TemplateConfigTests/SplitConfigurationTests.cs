@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SplitConfigCantReferenceFileOutsideBasePath))]
         public void SplitConfigCantReferenceFileOutsideBasePath()
         {
-            string sourcePath = TemplateConfigTestHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
             TestTemplateSetup setup = SetupSplitConfigWithAFileOutsideMountPoint(EngineEnvironmentSettings, sourcePath);
 
             IGenerator generator = new RunnableProjectGenerator();
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SplitConfigReadFailsIfAReferencedFileIsMissing))]
         public void SplitConfigReadFailsIfAReferencedFileIsMissing()
         {
-            string sourcePath = TemplateConfigTestHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
             TestTemplateSetup setup = SetupSplitConfigWithAMissingReferencedFile(EngineEnvironmentSettings, sourcePath);
             IGenerator generator = new RunnableProjectGenerator();
 
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(SplitConfigTest))]
         public void SplitConfigTest()
         {
-            string sourcePath = TemplateConfigTestHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
+            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(EngineEnvironmentSettings);
             TestTemplateSetup setup = SetupSplitConfigTestTemplate(EngineEnvironmentSettings, sourcePath);
 
             IGenerator generator = new RunnableProjectGenerator();
