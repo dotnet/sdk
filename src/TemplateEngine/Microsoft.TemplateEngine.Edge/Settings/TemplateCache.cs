@@ -134,9 +134,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             {
                                 _paths.CreateDirectory(_paths.User.Packages);
                                 _paths.Copy(templateDir, path);
-                                _environmentSettings.SettingsLoader.ReleaseMountPoint(mountPoint);
                                 if(_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(path, out IMountPoint mountPoint2) || factory.TryMount(_environmentSettings, null, path, out mountPoint2))
                                 {
+                                    _environmentSettings.SettingsLoader.ReleaseMountPoint(mountPoint);
                                     mountPoint = mountPoint2;
                                     templateDir = path;
                                 }
