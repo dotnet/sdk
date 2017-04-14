@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(searchTarget, out IMountPoint existingMountPoint))
+            if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(templateDir, out IMountPoint existingMountPoint))
             {
                 ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir);
                 _environmentSettings.SettingsLoader.ReleaseMountPoint(existingMountPoint);
@@ -134,8 +134,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             {
                                 _paths.CreateDirectory(_paths.User.Packages);
                                 _paths.Copy(templateDir, path);
-                                if(factory.TryMount(_environmentSettings, null, path, out IMountPoint mountPoint2))
+                                if(_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(path, out IMountPoint mountPoint2) || factory.TryMount(_environmentSettings, null, path, out mountPoint2))
                                 {
+                                    _environmentSettings.SettingsLoader.ReleaseMountPoint(mountPoint);
                                     mountPoint = mountPoint2;
                                     templateDir = path;
                                 }
@@ -163,6 +164,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                                 }
                             }
                         }
+
+                        _environmentSettings.SettingsLoader.ReleaseMountPoint(mountPoint);
                     }
                 }
             }
