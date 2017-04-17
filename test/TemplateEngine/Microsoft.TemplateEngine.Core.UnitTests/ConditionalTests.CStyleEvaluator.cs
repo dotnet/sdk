@@ -250,6 +250,36 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
+        [Fact(DisplayName = nameof(VerifyIfElifEndifTrueFalseCondition))]
+        public void VerifyIfElifEndifTrueFalseCondition()
+        {
+            string value = @"Hello
+    #if (VALUE)
+value
+    #elif (VALUE2)
+other
+    #endif
+There";
+            string expected = @"Hello
+value
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["VALUE"] = true,
+                ["VALUE2"] = false
+            };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
         [Fact(DisplayName = nameof(VerifyIfElseifEndifTrueTrueCondition))]
         public void VerifyIfElseifEndifTrueTrueCondition()
         {
@@ -280,6 +310,35 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
+        [Fact(DisplayName = nameof(VerifyIfElifEndifTrueTrueCondition))]
+        public void VerifyIfElifEndifTrueTrueCondition()
+        {
+            string value = @"Hello
+    #if (VALUE)
+value
+    #elif (VALUE2)
+other
+    #endif
+There";
+            string expected = @"Hello
+value
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection
+            {
+                ["VALUE"] = true,
+                ["VALUE2"] = true
+            };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
         [Fact(DisplayName = nameof(VerifyIfElseifEndifFalseTrueCondition))]
         public void VerifyIfElseifEndifFalseTrueCondition()
         {
