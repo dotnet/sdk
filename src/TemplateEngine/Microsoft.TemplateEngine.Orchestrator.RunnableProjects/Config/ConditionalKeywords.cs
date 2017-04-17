@@ -30,6 +30,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         public IReadOnlyList<string> EndIfKeywords { get; set; }
 
+        // TODO: Allow the rawConfiguration elements to be either strings (as-is) or arrays of strings.
+        // The code that consumes instances of this class is already setup to deal with multiple forms of each keyword type.
         public static ConditionalKeywords FromJObject(JObject rawConfiguration)
         {
             ConditionalKeywords keywords = new ConditionalKeywords();
