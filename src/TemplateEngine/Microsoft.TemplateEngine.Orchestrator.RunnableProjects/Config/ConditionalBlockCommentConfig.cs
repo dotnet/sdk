@@ -70,12 +70,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(options.EvaluatorType);
 
+            List<ITokenConfig> endIfTokens = new List<ITokenConfig>();
+            foreach (string endIfKeyword in keywords.EndIfKeywords)
+            {
+                endIfTokens.Add($"{keywords.KeywordPrefix}{endIfKeyword}".TokenConfig());
+                endIfTokens.Add($"{startToken}{keywords.KeywordPrefix}{endIfKeyword}".TokenConfig());
+            }
+
+            List<ITokenConfig> actionableIfTokens = new List<ITokenConfig>();
+            foreach (string ifKeyword in keywords.IfKeywords)
+            {
+                actionableIfTokens.Add($"{startToken}{keywords.KeywordPrefix}{ifKeyword}".TokenConfig());
+            }
+
+            List<ITokenConfig> actionableElseTokens = new List<ITokenConfig>();
+            foreach (string elseKeyword in keywords.ElseKeywords)
+            {
+                actionableElseTokens.Add($"{keywords.KeywordPrefix}{elseKeyword}".TokenConfig());
+                actionableElseTokens.Add($"{startToken}{keywords.KeywordPrefix}{elseKeyword}".TokenConfig());
+            }
+
+            List<ITokenConfig> actionableElseIfTokens = new List<ITokenConfig>();
+            foreach (string elseIfKeyword in keywords.ElseIfKeywords)
+            {
+                actionableElseIfTokens.Add($"{keywords.KeywordPrefix}{elseIfKeyword}".TokenConfig());
+                actionableElseIfTokens.Add($"{startToken}{keywords.KeywordPrefix}{elseIfKeyword}".TokenConfig());
+            }
+
             ConditionalTokens tokens = new ConditionalTokens
             {
-                EndIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.EndIfKeyword}".TokenConfig(), $"{startToken}{keywords.KeywordPrefix}{keywords.EndIfKeyword}".TokenConfig() },
-                ActionableIfTokens = new[] { $"{startToken}{keywords.KeywordPrefix}{keywords.IfKeyword}".TokenConfig() },
-                ActionableElseTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseKeyword}".TokenConfig(), $"{startToken}{keywords.KeywordPrefix}{keywords.ElseKeyword}".TokenConfig() },
-                ActionableElseIfTokens = new[] { $"{keywords.KeywordPrefix}{keywords.ElseIfKeyword}".TokenConfig(), $"{startToken}{keywords.KeywordPrefix}{keywords.ElseIfKeyword}".TokenConfig() },
+                EndIfTokens = endIfTokens,
+                ActionableIfTokens = actionableIfTokens,
+                ActionableElseTokens = actionableElseTokens,
+                ActionableElseIfTokens = actionableElseIfTokens
             };
 
             if (!string.IsNullOrWhiteSpace(pseudoEndToken))

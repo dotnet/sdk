@@ -91,7 +91,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     EndIfTokens = new[] { "#endif", "<!--#endif" }.TokenConfigs(),
                     ActionableIfTokens = new[] { "<!--#if" }.TokenConfigs(),
                     ActionableElseTokens = new[] { "#else", "<!--#else" }.TokenConfigs(),
-                    ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "#elseif", "<!--#elseif", "#elif", "<!--#elif" }.TokenConfigs(),
                     ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
                 };
 
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     EndIfTokens = new[] { "#endif", "@*#endif" }.TokenConfigs(),
                     ActionableIfTokens = new[] { "@*#if" }.TokenConfigs(),
                     ActionableElseTokens = new[] { "#else", "@*#else" }.TokenConfigs(),
-                    ActionableElseIfTokens = new[] { "#elseif", "@*#elseif" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "#elseif", "@*#elseif", "#elif", "@*#elif" }.TokenConfigs(),
                     ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
                 };
 
@@ -187,10 +187,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     IfTokens = new[] { "//#if" }.TokenConfigs(),
                     ElseTokens = new[] { "//#else" }.TokenConfigs(),
-                    ElseIfTokens = new[] { "//#elseif" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "//#elseif", "//#elif" }.TokenConfigs(),
                     EndIfTokens = new[] { "//#endif", "////#endif" }.TokenConfigs(),
                     ActionableIfTokens = new[] { "////#if" }.TokenConfigs(),
-                    ActionableElseIfTokens = new[] { "////#elseif" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "////#elseif", "////#elif" }.TokenConfigs(),
                     ActionableElseTokens = new[] { "////#else" }.TokenConfigs(),
                     ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
                 };
@@ -214,7 +214,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     IfTokens = new[] { "#if" }.TokenConfigs(),
                     ElseTokens = new[] { "#else" }.TokenConfigs(),
-                    ElseIfTokens = new[] { "#elseif" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "#elseif", "#elif" }.TokenConfigs(),
                     EndIfTokens = new[] { "#endif" }.TokenConfigs()
                 };
 
@@ -238,10 +238,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     IfTokens = new[] { "#if" }.TokenConfigs(),
                     ElseTokens = new[] { "#else" }.TokenConfigs(),
-                    ElseIfTokens = new[] { "#elseif" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "#elseif", "#elif" }.TokenConfigs(),
                     EndIfTokens = new[] { "#endif", "##endif" }.TokenConfigs(),
                     ActionableIfTokens = new[] { "##if" }.TokenConfigs(),
-                    ActionableElseIfTokens = new[] { "##elseif" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "##elseif", "##elif" }.TokenConfigs(),
                     ActionableElseTokens = new[] { "##else" }.TokenConfigs(),
                     ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
                 };
@@ -268,10 +268,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     IfTokens = new[] { "rem #if" }.TokenConfigs(),
                     ElseTokens = new[] { "rem #else" }.TokenConfigs(),
-                    ElseIfTokens = new[] { "rem #elseif" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "rem #elseif", "rem #elif" }.TokenConfigs(),
                     EndIfTokens = new[] { "rem #endif", "rem rem #endif" }.TokenConfigs(),
                     ActionableIfTokens = new[] { "rem rem #if" }.TokenConfigs(),
-                    ActionableElseIfTokens = new[] { "rem rem #elseif" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "rem rem #elseif", "rem rem #elif" }.TokenConfigs(),
                     ActionableElseTokens = new[] { "rem rem #else" }.TokenConfigs(),
                     ActionableOperations = new[] { replaceOperationId, uncommentOperationId }
                 };
@@ -298,10 +298,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     IfTokens = new[] { "-#if" }.TokenConfigs(),
                     ElseTokens = new[] { "-#else" }.TokenConfigs(),
-                    ElseIfTokens = new[] { "-#elseif" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "-#elseif", "-#elif" }.TokenConfigs(),
                     EndIfTokens = new[] { "-#endif", "-#-#endif" }.TokenConfigs(),
                     ActionableIfTokens = new[] { "-#-#if" }.TokenConfigs(),
-                    ActionableElseIfTokens = new[] { "-#-#elseif" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "-#-#elseif", "-#-#elif" }.TokenConfigs(),
                     ActionableElseTokens = new[] { "-#-#else" }.TokenConfigs(),
                     ActionableOperations = new[] { uncommentOperationId, reduceCommentOperationId }
                 };
@@ -337,7 +337,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     EndIfTokens = new[] { "#endif", "{/*#endif" }.TokenConfigs(),
                     ActionableIfTokens = new[] { "{/*#if" }.TokenConfigs(),
                     ActionableElseTokens = new[] { "#else", "{/*#else" }.TokenConfigs(),
-                    ActionableElseIfTokens = new[] { "#elseif", "{/*#elseif" }.TokenConfigs(),
+                    ActionableElseIfTokens = new[] { "#elseif", "{/*#elseif", "#elif", "{/*#elif" }.TokenConfigs(),
                     ActionableOperations = new[] { commentFixingOperationId, commentFixingResetId }
                 };
 
