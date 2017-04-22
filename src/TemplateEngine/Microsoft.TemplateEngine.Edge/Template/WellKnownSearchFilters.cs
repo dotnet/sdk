@@ -73,6 +73,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
         // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
+        // Note: This is specifically designed to provide match info against a user-input language.
+        //      All dealings with the host-default language should be separate from this.
         public static Func<ITemplateInfo, MatchInfo?> LanguageFilter(string language)
         {
             return (template) =>
@@ -93,8 +95,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         return new MatchInfo { Location = MatchLocation.Language, Kind = MatchKind.Mismatch };
                     }
                 }
-
-                return null;
+                else
+                {   // user specified a language, but the template didnt.
+                    return new MatchInfo { Location = MatchLocation.Language, Kind = MatchKind.Mismatch };
+                }
             };
         }
 
