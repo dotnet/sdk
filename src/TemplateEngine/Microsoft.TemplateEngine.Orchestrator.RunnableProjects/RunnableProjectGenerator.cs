@@ -168,7 +168,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return templateList;
         }
 
-        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo templateFileConfig, out ITemplate template, IFileSystemInfo localeFileConfig = null, IFile hostTemplateConfigFile = null)
+        public bool TryGetTemplateFromConfigInfo(IFileSystemInfo templateFileConfig, out ITemplate template, IFileSystemInfo localeFileConfig = null, IFile hostTemplateConfigFile = null, string baselineName = null)
         {
             IFile templateFile = templateFileConfig as IFile;
 
@@ -191,7 +191,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localeSourceObject = ReadJObjectFromIFile(localeFile);
                 }
 
-                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, localeSourceObject);
+                ISimpleConfigModifiers configModifiers = new SimpleConfigModifiers()
+                {
+                    BaselineName = baselineName
+                };
+                SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, configModifiers, localeSourceObject);
 
                 if (!CheckGeneratorVersionRequiredByTemplate(templateModel.GeneratorVersions))
                 {   // template isn't compatible with this generator version

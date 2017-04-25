@@ -163,5 +163,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public string ThirdPartyNotices { get; set; }
+
+        [JsonProperty]
+        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
     }
 }

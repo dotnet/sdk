@@ -44,5 +44,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         string HostConfigPlace { get; }
 
         string ThirdPartyNotices { get; }
+
+        IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
     }
 }

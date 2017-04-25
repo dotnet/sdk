@@ -85,9 +85,9 @@ namespace Microsoft.TemplateEngine.IDE
             return ((SettingsLoader)EnvironmentSettings.SettingsLoader).UserTemplateCache.List(exactMatchesOnly, filters);
         }
 
-        public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck)
+        public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck, string baselineName)
         {
-            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck, forceCreation: false).ConfigureAwait(false);
+            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck, forceCreation: false, baselineName: baselineName).ConfigureAwait(false);
             return instantiateResult.ResultInfo;
         }
     }

@@ -83,6 +83,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             info.HostConfigPlace = entry.ToString(nameof(TemplateInfo.HostConfigPlace));
             info.ThirdPartyNotices = entry.ToString(nameof(TemplateInfo.ThirdPartyNotices));
 
+            JObject baselineJObject = entry.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
+            Dictionary<string, IBaselineInfo> baselineInfo = new Dictionary<string, IBaselineInfo>();
+            if (baselineJObject != null)
+            {
+                foreach (JProperty item in baselineJObject.Properties())
+                {
+                    IBaselineInfo baseline = new BaselineCacheInfo()
+                    {
+                        Description = item.Value.ToString(nameof(IBaselineInfo.Description)),
+                        DefaultOverrides = item.Value.ToStringDictionary(propertyName: nameof(IBaselineInfo.DefaultOverrides))
+                    };
+                    baselineInfo.Add(item.Name, baseline);
+                }
+            }
+            info.BaselineInfo = baselineInfo;
+
             return info;
         }
 

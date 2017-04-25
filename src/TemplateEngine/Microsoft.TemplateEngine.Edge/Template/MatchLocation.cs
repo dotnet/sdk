@@ -10,6 +10,7 @@
         Classification,
         Language,
         Context,
-        OtherParameter
+        OtherParameter,
+        Baseline
     }    
 }

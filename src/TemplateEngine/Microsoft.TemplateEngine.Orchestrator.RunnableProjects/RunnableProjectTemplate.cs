@@ -34,6 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             HostConfigPlace = hostConfigFile?.FullPath;
             ThirdPartyNotices = raw.ToString("thirdPartyNotices");
             _raw = raw;
+            BaselineInfo = config.BaselineInfo;
         }
 
         public IDirectory TemplateSourceRoot
@@ -164,5 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string HostConfigPlace { get; }
 
         public string ThirdPartyNotices { get; }
+
+        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
     }
 }

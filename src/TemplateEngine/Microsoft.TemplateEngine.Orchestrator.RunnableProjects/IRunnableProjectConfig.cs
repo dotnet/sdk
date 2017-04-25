@@ -50,5 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         string GeneratorVersions { get; }
 
         void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile);
+
+        IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
     }
 }
