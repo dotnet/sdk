@@ -469,7 +469,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 LocaleConfigMountPointId = localizationInfo?.MountPointId ?? Guid.Empty,
                 HostConfigMountPointId = template.HostConfigMountPointId,
                 HostConfigPlace = template.HostConfigPlace,
-                ThirdPartyNotices = template.ThirdPartyNotices
+                ThirdPartyNotices = template.ThirdPartyNotices,
+                BaselineInfo = template.BaselineInfo,
             };
 
             return localizedTemplate;

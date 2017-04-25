@@ -238,7 +238,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public ITemplate LoadTemplate(ITemplateInfo info)
+        public ITemplate LoadTemplate(ITemplateInfo info, string baselineName)
         {
             IGenerator generator;
             if (!Components.TryGetComponent(info.GeneratorId, out generator))
@@ -272,7 +272,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             ITemplate template;
             using (Timing.Over(_environmentSettings.Host, "Template from config"))
-                if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile))
+                if (generator.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile, baselineName))
                 {
                     return template;
                 }

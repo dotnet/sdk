@@ -48,12 +48,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
 
-        public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization)
+        public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
         {
             ParameterSymbol symbol = new ParameterSymbol
             {
                 Binding = jObject.ToString(nameof(Binding)),
-                DefaultValue = jObject.ToString(nameof(DefaultValue)),
+                DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue)),
                 Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty,
                 FileRename = jObject.ToString(nameof(FileRename)),
                 IsRequired = jObject.ToBool(nameof(IsRequired)),

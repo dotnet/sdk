@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         void GetTemplates(HashSet<ITemplateInfo> templates);
 
-        ITemplate LoadTemplate(ITemplateInfo info);
+        ITemplate LoadTemplate(ITemplateInfo info, string baselineName);
 
         void Save();
 

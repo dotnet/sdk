@@ -7,12 +7,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         // Note: Only ParameterSymbol has a Description property, this it's the only one that gets localization
         // TODO: change how localization gets merged in, don't do it here.
-        public static ISymbolModel GetModelForObject(JObject jObject, IParameterSymbolLocalizationModel localization)
+        public static ISymbolModel GetModelForObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
         {
             switch (jObject.ToString(nameof(ISymbolModel.Type)))
             {
                 case "parameter":
-                    return ParameterSymbol.FromJObject(jObject, localization);
+                    return ParameterSymbol.FromJObject(jObject, localization, defaultOverride);
                 case "computed":
                     return ComputedSymbol.FromJObject(jObject);
                 case "bind":

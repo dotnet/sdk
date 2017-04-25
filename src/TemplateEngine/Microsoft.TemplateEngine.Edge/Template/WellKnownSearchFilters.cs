@@ -102,6 +102,26 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
+        public static Func<ITemplateInfo, MatchInfo?> BaselineFilter(string baselineName)
+        {
+            return (template) =>
+            {
+                if (string.IsNullOrEmpty(baselineName))
+                {
+                    return null;
+                }
+
+                if (template.BaselineInfo != null && template.BaselineInfo.ContainsKey(baselineName))
+                {
+                    return new MatchInfo { Location = MatchLocation.Baseline, Kind = MatchKind.Exact };
+                }
+                else
+                {
+                    return new MatchInfo { Location = MatchLocation.Baseline, Kind = MatchKind.Mismatch };
+                }
+            };
+        }
+
         public static Func<ITemplateInfo, MatchInfo?> ClassificationsFilter(string name)
         {
             return (template) =>

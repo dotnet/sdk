@@ -79,6 +79,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; set; }
         public string GeneratorVersions { get; set; }
 
+        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
+
         private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
         public IReadOnlyDictionary<string, ICacheTag> Tags
@@ -979,7 +981,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, JObject localeSource = null)
+        public static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, JObject localeSource = null)
         {
             ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
 
@@ -1046,6 +1048,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 src.Target = item.ToString(nameof(src.Target));
             }
 
+            IBaselineInfo baseline = null;
+            config.BaselineInfo = BaselineInfoFromJObject(source.PropertiesOf("baselines"));
+
+            if (configModifiers != null && !string.IsNullOrEmpty(configModifiers.BaselineName))
+            {
+                config.BaselineInfo.TryGetValue(configModifiers.BaselineName, out baseline);
+            }
+
             Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
 
             // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
@@ -1077,7 +1087,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     localizationModel.ParameterSymbols.TryGetValue(prop.Name, out symbolLocalization);
                 }
 
-                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, symbolLocalization);
+                string defaultOverride = null;
+                if (baseline != null && baseline.DefaultOverrides != null)
+                {
+                    baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
+                }
+
+                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, symbolLocalization, defaultOverride);
 
                 if (model != null)
                 {
@@ -1132,6 +1148,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             config.LocalizationOperations = localizations;
 
             return config;
+        }
+
+        private static IReadOnlyDictionary<string, IBaselineInfo> BaselineInfoFromJObject(IEnumerable<JProperty> baselineJProperties)
+        {
+            Dictionary<string, IBaselineInfo> allBaselines = new Dictionary<string, IBaselineInfo>();
+
+            foreach (JProperty property in baselineJProperties)
+            {
+                JObject obj = property.Value as JObject;
+
+                if (obj == null)
+                {
+                    continue;
+                }
+
+                BaselineInfo baseline = new BaselineInfo
+                {
+                    Description = obj.ToString(nameof(baseline.Description)),
+                    DefaultOverrides = obj.Get<JObject>(nameof(baseline.DefaultOverrides)).ToStringDictionary()
+                };
+
+                allBaselines[property.Name] = baseline;
+            }
+
+            return allBaselines;
         }
 
         private static IReadOnlyDictionary<string, ISymbolModel> ConvertDeprecatedTagsToParameterSymbols(IReadOnlyDictionary<string, string> tagsDeprecated)
