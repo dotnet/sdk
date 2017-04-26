@@ -9,12 +9,12 @@ namespace Microsoft.TemplateEngine.Utils
         private readonly IReadOnlyList<IMatcher> _matchers;
         private readonly bool _negate;
         private readonly bool _isNameOnlyMatch;
-
-        private Glob(bool negate, IReadOnlyList<IMatcher> matchers)
+        
+        private Glob(bool negate, IReadOnlyList<IMatcher> matchers, bool canBeNameOnlyMatch)
         {
             _negate = negate;
             _matchers = matchers;
-            _isNameOnlyMatch = !_matchers.Any(x => x is PathMatcher || x is ExactPathMatcher || (x as LiteralMatcher)?.Char?.FirstOrDefault() == '/');
+            _isNameOnlyMatch = canBeNameOnlyMatch && !_matchers.Any(x => x is PathMatcher || x is ExactPathMatcher || (x as LiteralMatcher)?.Char?.FirstOrDefault() == '/');
         }
 
         private interface IMatcher
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Utils
             bool CanConsume(string test, int startAt, out int endPosition);
         }
 
-        public static Glob Parse(string pattern)
+        public static Glob Parse(string pattern, bool canBeNameOnlyMatch = true)
         {
             List<IMatcher> matchers = new List<IMatcher>();
 
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            return new Glob(negate, matchers);
+            return new Glob(negate, matchers, canBeNameOnlyMatch);
         }
 
         public bool IsMatch(string test)

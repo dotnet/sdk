@@ -9,10 +9,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Pattern { get; }
 
-        public GlobbingPatternMatcher(string pattern)
+        public GlobbingPatternMatcher(string pattern, bool canBeNameOnlyMatch = true)
         {
             Pattern = pattern;
-            _pattern = Glob.Parse(pattern);
+            _pattern = Glob.Parse(pattern, canBeNameOnlyMatch);
         }
 
         public bool IsMatch(string path)

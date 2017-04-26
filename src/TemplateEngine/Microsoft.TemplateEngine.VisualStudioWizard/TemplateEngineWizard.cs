@@ -72,7 +72,9 @@ namespace Microsoft.TemplateEngine.VisualStudioWizard
             }
 
             ITemplateInfo info = match.Info;
-            ICreationResult result = bootstrapper.CreateAsync(info, replacementsDictionary[""], replacementsDictionary[""], ExtractParametersFromReplacementsDictionary(replacementsDictionary), SkipUpdatesCheck).Result;
+            // TODO: Determine where to get the baseline name from, as needed. baselineName is a placeholder so template engine builds. 
+            string baselineName = null;
+            ICreationResult result = bootstrapper.CreateAsync(info, replacementsDictionary[""], replacementsDictionary[""], ExtractParametersFromReplacementsDictionary(replacementsDictionary), SkipUpdatesCheck, baselineName).Result;
 
             foreach (ICreationPath path in result.PrimaryOutputs)
             {

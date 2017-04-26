@@ -191,21 +191,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return customOperations;
         }
 
-        private static IReadOnlyList<IPathMatcher> SetupPathInfoFromSource(IReadOnlyList<string> fileSources)
-        {
-            int expect = fileSources?.Count ?? 0;
-            List<IPathMatcher> paths = new List<IPathMatcher>(expect);
-            if (fileSources != null && expect > 0)
-            {
-                foreach (string source in fileSources)
-                {
-                    paths.Add(new GlobbingPatternMatcher(source));
-                }
-            }
-
-            return paths;
-        }
-
         internal class ProcessorState : IProcessorState
         {
             public ProcessorState(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, byte[] buffer, Encoding encoding)

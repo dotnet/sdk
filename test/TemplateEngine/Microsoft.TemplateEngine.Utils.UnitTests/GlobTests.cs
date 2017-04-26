@@ -4,6 +4,23 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class GlobTests
     {
+        [Fact(DisplayName = nameof(VerifyLeadGlobPathSpanning))]
+        public void VerifyLeadGlobPathSpanning()
+        {
+            Glob g = Glob.Parse("**/file");
+            Assert.True(g.IsMatch("file"));
+            Assert.True(g.IsMatch("a/file"));
+            Assert.True(g.IsMatch("a/b/file"));
+            Assert.True(g.IsMatch("a/b/c/file"));
+            Assert.False(g.IsMatch("other"));
+            Assert.False(g.IsMatch("a/other"));
+            Assert.False(g.IsMatch("a/b/other"));
+            Assert.False(g.IsMatch("a/b/c/other"));
+            Assert.False(g.IsMatch("file/stuff"));
+            Assert.False(g.IsMatch("file.txt"));
+            Assert.False(g.IsMatch("thefile"));
+        }
+
         [Fact(DisplayName = nameof(VerifyGlobExactPathSpanning))]
         public void VerifyGlobExactPathSpanning()
         {

@@ -146,7 +146,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     foreach (string source in fileSources)
                     {
-                        paths.Add(new GlobbingPatternMatcher(source));
+                        paths.Add(new GlobbingPatternMatcher(source, false));
                     }
                 }
 
