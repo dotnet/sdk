@@ -22,6 +22,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultNoneItems Condition=" '$(EnableDefaultNoneItems)' == '' ">true</EnableDefaultNoneItems>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="@(Compile)" Condition=" '$(EnableDefaultCompileItems)' != 'true' And '$(EnableDefaultNoneItems)' == 'true' " />
+  </ItemGroup>
+
   <PropertyGroup>    
     <!-- Set DefaultItemExcludes property for items that should be excluded from the default Compile, etc items.
          This is in the .targets because it needs to come after the final BaseOutputPath has been evaluated. -->
