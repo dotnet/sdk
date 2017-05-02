@@ -434,7 +434,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
         private object Exponentiate(object left, object right)
         {
             long longLeft, longRight;
-            int doubleLeft, doubleRight;
+            int intLeft, intRight;
 
             if (_converter.TryConvert(left, out longLeft))
             {
@@ -443,21 +443,21 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return Math.Pow(longLeft, longRight);
                 }
 
-                if (_converter.TryConvert(right, out doubleRight))
+                if (_converter.TryConvert(right, out intRight))
                 {
-                    return Math.Pow(longLeft, doubleRight);
+                    return Math.Pow(longLeft, intRight);
                 }
             }
-            else if (_converter.TryConvert(left, out doubleLeft))
+            else if (_converter.TryConvert(left, out intLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
-                    return Math.Pow(doubleLeft, longRight);
+                    return Math.Pow(intLeft, longRight);
                 }
 
-                if (_converter.TryConvert(right, out doubleRight))
+                if (_converter.TryConvert(right, out intRight))
                 {
-                    return Math.Pow(doubleLeft, doubleRight);
+                    return Math.Pow(intLeft, intRight);
                 }
             }
 

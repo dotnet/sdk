@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
-using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.Core.Expressions.Shared;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 {
-    public class Cpp2StyleEvaluatorDefinition
+    public class Cpp2StyleEvaluatorDefinition : SharedEvaluatorDefinition<Cpp2StyleEvaluatorDefinition, Cpp2StyleEvaluatorDefinition.Tokens>
     {
-        private static readonly IOperatorMap<Operators, Tokens> Map = new OperatorSetBuilder<Tokens>(Encode, Decode)
+        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(Encode, Decode)
             .And(Tokens.And)
             .Or(Tokens.Or)
             .Not(Tokens.Not)
@@ -38,11 +37,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
             .LiteralBoundsMarkers(Tokens.SingleQuote, Tokens.DoubleQuote)
             .TypeConverter<Cpp2StyleEvaluatorDefinition>(ConfigureConverters);
 
-        private static readonly IOperationProvider[] NoOperationProviders = new IOperationProvider[0];
-
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
-        private enum Tokens
+        protected override string NullTokenValue => "null";
+
+        public enum Tokens
         {
             And = 0,
             Or = 1,
@@ -72,162 +71,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
             SingleQuote = 25,
             DoubleQuote = 26,
             Literal = 27,
-        }
-
-        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
-        {
-            ITokenTrie tokens = GetSymbols(processor);
-            ScopeBuilder<Operators, Tokens> builder = processor.ScopeBuilder(tokens, Map, false);
-            bool isFaulted = false;
-            IEvaluable result = builder.Build(ref bufferLength, ref currentBufferPosition, x => isFaulted = true);
-
-            if (isFaulted)
-            {
-                faulted = true;
-                return false;
-            }
-
-            try
-            {
-                object evalResult = result.Evaluate();
-                bool r = (bool)Convert.ChangeType(evalResult, typeof(bool));
-                faulted = false;
-                return r;
-            }
-            catch
-            {
-                faulted = true;
-                return false;
-            }
-        }
-
-        public static bool EvaluateFromString(IEngineEnvironmentSettings environmentSettings, string text, IVariableCollection variables)
-        {
-            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new MemoryStream())
-            {
-                EngineConfig cfg = new EngineConfig(environmentSettings, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
-                int len = (int)ms.Length;
-                int pos = 0;
-                return Evaluate(state, ref len, ref pos, out bool faulted);
-            }
-        }
-
-        private static int? AttemptComparableComparison(object left, object right)
-        {
-            IComparable ls = left as IComparable;
-            IComparable rs = right as IComparable;
-
-            if (ls == null || rs == null)
-            {
-                return null;
-            }
-
-            return ls.CompareTo(rs);
-        }
-
-        private static int? AttemptLexographicComparison(object left, object right)
-        {
-            string ls = left as string;
-            string rs = right as string;
-
-            if (ls == null || rs == null)
-            {
-                return null;
-            }
-
-            return string.Compare(ls, rs, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static int? AttemptNumericComparison(object left, object right)
-        {
-            bool leftIsDouble = Map.TryConvert(left, out double ld);
-            bool rightIsDouble = Map.TryConvert(right, out double rd);
-
-            if (!leftIsDouble)
-            {
-                if (!Map.TryConvert(left, out long ll))
-                {
-                    return null;
-                }
-
-                ld = ll;
-            }
-
-            if (!rightIsDouble)
-            {
-                if (!Map.TryConvert(right, out long rl))
-                {
-                    return null;
-                }
-
-                rd = rl;
-            }
-
-            return ld.CompareTo(rd);
-        }
-
-        private static int? AttemptBooleanComparison(object left, object right)
-        {
-            bool leftIsBool = Map.TryConvert(left, out bool lb);
-            bool rightIsBool = Map.TryConvert(right, out bool rb);
-
-            if (!leftIsBool || !rightIsBool)
-            {
-                return null;
-            }
-
-            return lb.CompareTo(rb);
-        }
-
-        private static int? AttemptVersionComparison(object left, object right)
-        {
-            Version lv = left as Version;
-
-            if (lv == null)
-            {
-                string ls = left as string;
-                if (ls == null || !Version.TryParse(ls, out lv))
-                {
-                    return null;
-                }
-            }
-
-            Version rv = right as Version;
-
-            if (rv == null)
-            {
-                string rs = right as string;
-                if (rs == null || !Version.TryParse(rs, out rv))
-                {
-                    return null;
-                }
-            }
-
-            return lv.CompareTo(rv);
-        }
-
-        private static int Compare(object left, object right)
-        {
-            //TODO: Make "null" token configurable
-            if (Equals(right, "null"))
-            {
-                right = null;
-            }
-
-            //TODO: Make "null" token configurable
-            if (Equals(left, "null"))
-            {
-                left = null;
-            }
-
-            return AttemptNumericComparison(left, right)
-                   ?? AttemptBooleanComparison(left, right)
-                   ?? AttemptVersionComparison(left, right)
-                   ?? AttemptLexographicComparison(left, right)
-                   ?? AttemptComparableComparison(left, right)
-                   ?? 0;
         }
 
         private static void ConfigureConverters(ITypeConverter obj)
@@ -261,7 +104,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
             return arg.Replace("\"", "\\\"").Replace("'", "\\'");
         }
 
-        private static ITokenTrie GetSymbols(IProcessorState processor)
+        protected override ITokenTrie GetSymbols(IProcessorState processor)
         {
             if (!TokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
             {
