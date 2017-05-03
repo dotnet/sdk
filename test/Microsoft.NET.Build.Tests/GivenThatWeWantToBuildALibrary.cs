@@ -411,7 +411,7 @@ namespace Microsoft.NET.Build.Tests
 
             File.Move(oldProjectFile, newProjectFile);
 
-            var restoreCommand = new RestoreCommand(Stage0MSBuild, libraryProjectDirectory, "TestLibrary.fsproj");
+            var restoreCommand = new RestoreCommand(Stage0MSBuild, libraryProjectDirectory, "TestLibrary.different_language_proj");
 
             restoreCommand
                 .Execute()
