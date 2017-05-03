@@ -16,10 +16,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
       <PropertyGroup>
          <FSharpPropsShim>FSharp\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
-      <PropertyGroup>
+      </PropertyGroup>
     </When>
     <Otherwise>
+      <PropertyGroup>
         <FSharpPropsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
+      </PropertyGroup>
     </Otherwise>
   </Choose>
   <Import Condition="Exists('$(FSharpPropsShim)')" Project="$(FSharpPropsShim)" />
