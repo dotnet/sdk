@@ -17,7 +17,8 @@
   </TemplateData>
   <TemplateContent>
     <Project File="Project.csproj" ReplaceParameters="true">
-      <ProjectItem ReplaceParameters="true" OpenInEditor="true">Program.cs</ProjectItem>      
+      <ProjectItem ReplaceParameters="true" OpenInEditor="true">Program.cs</ProjectItem>
+      <ProjectItem>obj\project.assets.json</ProjectItem>      
     </Project>
   </TemplateContent>
 </VSTemplate>
