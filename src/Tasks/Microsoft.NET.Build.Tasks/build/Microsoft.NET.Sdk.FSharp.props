@@ -14,11 +14,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
-      <Import Condition="Exists('FSharp\Microsoft.NET.Sdk.FSharp.props')" Project="FSharp\Microsoft.NET.Sdk.FSharp.props" />
+      <PropertyGroup>
+         <FSharpPropsShim>FSharp\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
+      <PropertyGroup>
     </When>
     <Otherwise>
-      <Import Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props')" Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props" />
+        <FSharpPropsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
     </Otherwise>
   </Choose>
+  <Import Condition="Exists('$(FSharpPropsShim)')" Project="$(FSharpPropsShim)" />
 
 </Project>

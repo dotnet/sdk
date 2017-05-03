@@ -14,11 +14,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
-      <Import Condition="Exists('FSharp\Microsoft.FSharp.targets')" Project="FSharp\Microsoft.FSharp.targets" />
+      <PropertyGroup>
+         <FSharpTargetsShim>FSharp\FSharp\Microsoft.FSharp.targets</FSharpTargetsShim>
+      <PropertyGroup>
     </When>
     <Otherwise>
-      <Import Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.FSharp.targets')" Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.FSharp.targets" />
+      <PropertyGroup>
+         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.FSharp.targets')</FSharpTargetsShim>
+      <PropertyGroup>
     </Otherwise>
   </Choose>
+  <Import Condition="Exists('$(FSharpTargetsShim)')" Project="$(FSharpTargetsShim)" />
 
 </Project>
