@@ -15,12 +15,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
       <PropertyGroup>
-         <FSharpPropsShim>FSharp\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
+         <FSharpPropsShim>$(MSBuildToolsPath)\FSharp\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <FSharpPropsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
+        <FSharpPropsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.NET.Sdk.FSharp.props</FSharpPropsShim>
       </PropertyGroup>
     </Otherwise>
   </Choose>

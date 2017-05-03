@@ -15,12 +15,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
       <PropertyGroup>
-         <FSharpTargetsShim>FSharp\FSharp\Microsoft.FSharp.targets</FSharpTargetsShim>
+         <FSharpTargetsShim>$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.targets</FSharpTargetsShim>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.FSharp.targets')</FSharpTargetsShim>
+         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.targets</FSharpTargetsShim>
       </PropertyGroup>
     </Otherwise>
   </Choose>
