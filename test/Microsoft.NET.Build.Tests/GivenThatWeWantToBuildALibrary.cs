@@ -407,7 +407,7 @@ namespace Microsoft.NET.Build.Tests
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var oldProjectFile = Path.Combine(libraryProjectDirectory, "TestLibrary.csproj");
-            var newProjectFile = Path.Combine(libraryProjectDirectory, "TestLibrary.fsproj");
+            var newProjectFile = Path.Combine(libraryProjectDirectory, "TestLibrary.different_language_proj");
 
             File.Move(oldProjectFile, newProjectFile);
 
