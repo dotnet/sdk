@@ -12,6 +12,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- If any of these variables are set then we are building under the fsharp.sdk so use their logic -->
+  <PropertyGroup Condition = "'$(_FscTaskAssemblyPath_net)' == '' and '$(_FscTaskAssemblyPath_netcoreapp1_0)' == '' and '$(_FscToolFullPath_net)' == '' and '$(_FscToolFullPath_netcoreapp1_0)' == ''">
+    <NotBuildingUnderFSharpSdk>true</NotBuildingUnderFSharpSdk>
+  </PropertyGroup>
+
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
       <PropertyGroup>
@@ -24,6 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Import Condition="Exists('$(FSharpPropsShim)')" Project="$(FSharpPropsShim)" />
+
+  <Import Condition="Exists('$(FSharpPropsShim)') and '$(NotBuildingUnderFSharpSdk)' == 'true'" Project="$(FSharpPropsShim)" />
 
 </Project>
