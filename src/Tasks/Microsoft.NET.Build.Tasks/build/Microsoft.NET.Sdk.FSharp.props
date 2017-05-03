@@ -12,13 +12,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-    <Choose>
-        <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
-             <Import Project="FSharp\Microsoft.NET.Sdk.FSharp.props" />
-       </When>
-       <Otherwise>
-             <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props" />
-        </Otherwise>
-    </Choose>
+  <Choose>
+    <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
+      <Import Condition="Exists('FSharp\Microsoft.NET.Sdk.FSharp.props')" Project="FSharp\Microsoft.NET.Sdk.FSharp.props" />
+    </When>
+    <Otherwise>
+      <Import Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props')" Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Microsoft.NET.Sdk.FSharp.props" />
+    </Otherwise>
+  </Choose>
 
 </Project>
