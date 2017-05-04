@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -388,7 +388,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return convertedFloat;
                 }
             }
-            else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(param.DataType, "integer", StringComparison.OrdinalIgnoreCase))
             {
                 if (long.TryParse(literal, out long convertedInt))
                 {
@@ -422,7 +423,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return convertedHex;
                 }
             }
-            else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(param.DataType, "string", StringComparison.OrdinalIgnoreCase))
             {   // "text" is a valid data type, but doesn't need any special handling.
                 return literal;
             }
