@@ -8,7 +8,7 @@
     "language": "C#"                       // Specify that this template is in C#.
   },
   "sourceName": "MyProject.StarterWeb",      // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
-  "preferNameDirectory":"true",
+  "preferNameDirectory": true,
   "symbols":{
     "copyrightName": {
       "type": "parameter",

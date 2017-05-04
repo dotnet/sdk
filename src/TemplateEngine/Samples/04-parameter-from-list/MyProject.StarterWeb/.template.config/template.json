@@ -7,7 +7,7 @@
   "tags": {
     "language": "C#"                       // Specify that this template is in C#.
   },
-  "preferNameDirectory":"true",
+  "preferNameDirectory": true,
   "sourceName": "MyProject.StarterWeb",       // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
   "symbols":{
     "CopyrightName": {
