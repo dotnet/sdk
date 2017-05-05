@@ -26,18 +26,18 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
       <PropertyGroup>
-         <FSharpTargetsShim>$(MSBuildToolsPath)\FSharp\Microsoft.NET.Sdk.FSharp.targets</FSharpTargetsShim>
+         <FSharpTargetsShim>$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.NET.Sdk.FSharp.targets</FSharpTargetsShim>
+         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
       </PropertyGroup>
     </Otherwise>
   </Choose>
   <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and Exists('$(FSharpTargetsShim)') and '$(BuildingUnderFSharpSdk)' != 'true' " Project="$(FSharpTargetsShim)" />
 
-  <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' " Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets"                            Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' " />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.targets\ImportAfter\*" Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' and Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.targets\ImportAfter') "/>
 
 </Project>
