@@ -12,11 +12,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- If any of these variables are set then we are building under the fsharp.sdk so use their logic -->
-  <PropertyGroup Condition = "'$(_FscTaskAssemblyPath_net)' == '' and '$(_FscTaskAssemblyPath_netcoreapp1_0)' == '' and '$(_FscToolFullPath_net)' == '' and '$(_FscToolFullPath_netcoreapp1_0)' == ''">
-    <NotBuildingUnderFSharpSdk>true</NotBuildingUnderFSharpSdk>
+  <!-- If any of these variables are set then we are building under the FSharp.NET.Sdk so use their logic -->
+  <PropertyGroup Condition = " '$(_FscTaskAssemblyPath_net)' != '' or '$(_FscTaskAssemblyPath_netcoreapp1_0)' != '' or '$(_FscToolFullPath_net)' != '' or '$(_FscToolFullPath_netcoreapp1_0)' != '' ">
+    <BuildingUnderFSharpSdk>true</BuildingUnderFSharpSdk>
   </PropertyGroup>
 
+  <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.props file.   
+       If running under desktop select Microsoft.NET.Sdk.FSharp.props file from VS deployment, 
+       if running core msbuild select Microsoft.NET.Sdk.FSharp.props from dotnet cli deployment -->
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
       <PropertyGroup>
@@ -30,6 +33,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Otherwise>
   </Choose>
 
-  <Import Condition="Exists('$(FSharpPropsShim)') and '$(NotBuildingUnderFSharpSdk)' == 'true'" Project="$(FSharpPropsShim)" />
+  <Import Condition=" Exists('$(FSharpPropsShim)') and '$(BuildingUnderFSharpSdk)' != 'true' " Project="$(FSharpPropsShim)" />
 
 </Project>
