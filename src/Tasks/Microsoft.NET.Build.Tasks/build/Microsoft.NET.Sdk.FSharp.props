@@ -17,7 +17,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BuildingUnderFSharpSdk>true</BuildingUnderFSharpSdk>
   </PropertyGroup>
 
-  <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.props file.   
+ <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.props file.   
        If running under desktop select Microsoft.NET.Sdk.FSharp.props file from VS deployment, 
        if running core msbuild select Microsoft.NET.Sdk.FSharp.props from dotnet cli deployment -->
   <Choose>
@@ -33,6 +33,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Otherwise>
   </Choose>
 
-  <Import Condition=" Exists('$(FSharpPropsShim)') and '$(BuildingUnderFSharpSdk)' != 'true' " Project="$(FSharpPropsShim)" />
+  <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and Exists('$(FSharpPropsShim)') " Project="$(FSharpPropsShim)" />
 
 </Project>
