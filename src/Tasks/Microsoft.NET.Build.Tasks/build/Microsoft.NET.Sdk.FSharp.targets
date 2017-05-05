@@ -20,45 +20,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ImportByWildcardAfterMicrosoftCommonTargets>false</ImportByWildcardAfterMicrosoftCommonTargets>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(_DebugSymbolsProduced)' == 'true' and '$(PdbFile)' != '' ">
-    <_DebugSymbolsIntermediatePathTemporary Include="$(PdbFile)"/>
-    <!-- Add any missing .pdb extension, as the compiler does -->
-    <_DebugSymbolsIntermediatePath Include="@(_DebugSymbolsIntermediatePathTemporary->'%(RootDir)%(Directory)%(Filename).pdb')"/>
-  </ItemGroup>
-
-  <!-- Locate and add mscorlib, unless NoStdLib is set -->
-  <ItemGroup Condition=" '$(BuildingUnderFSharpSdk)' != 'true' ">
-    <_ExplicitReference Include="$(FrameworkPathOverride)\mscorlib.dll" Condition=" '$(NoStdLib)' != 'true' " />
-  </ItemGroup>
-
   <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.targets file.   
        If running under desktop select Microsoft.sFSharp.targets file from VS deployment, 
        if running core msbuild select Microsoft.FSharp.targets from dotnet cli deployment -->
   <Choose>
     <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
       <PropertyGroup>
-         <FSharpTargetsShim>$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.targets</FSharpTargetsShim>
+         <FSharpTargetsShim>$(MSBuildToolsPath)\FSharp\Microsoft.NET.Sdk.FSharp.targets</FSharpTargetsShim>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.targets</FSharpTargetsShim>
+         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.NET.Sdk.FSharp.targets</FSharpTargetsShim>
       </PropertyGroup>
     </Otherwise>
   </Choose>
-
-  <!-- Import design time targets for Roslyn Project System. These are only available if Visual Studio is installed. -->
-  <!-- Import design time targets before the common targets, which import targets from Nuget. -->
-  <PropertyGroup Condition=" '$(BuildingUnderFSharpSdk)' != 'true' ">
-    <FSharpDesignTimeTargetsPath Condition="'$(FSharpDesignTimeTargetsPath)'==''">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.FSharp.DesignTime.targets</FSharpDesignTimeTargetsPath>
-  </PropertyGroup>
-
-  <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and "Exists('$(FSharpDesignTimeTargetsPath)')" Project="$(FSharpDesignTimeTargetsPath) " />
   <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and Exists('$(FSharpTargetsShim)') and '$(BuildingUnderFSharpSdk)' != 'true' " Project="$(FSharpTargetsShim)" />
+
   <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' " Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.targets\ImportAfter\*" Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' and Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.targets\ImportAfter') "/>
 
-  <PropertyGroup Condition="'$(BuildingUnderFSharpSdk)' != 'true' and '$(PackProjectInputFile)' == ''">
-    <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
-  </PropertyGroup>    
 </Project>
