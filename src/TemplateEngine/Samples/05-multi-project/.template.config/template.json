@@ -2,7 +2,8 @@
   "author": "Sayed I. Hashimi",
   "classifications": [ "Web" ], 
   "name": "Console and unit test",
-  "identity": "MyProject.StarterWeb",         
+  "identity": "MyProject.StarterWeb.CSharp",         
+  "groupIdentity":"MyProject.StarterWeb",
   "shortName": "conunit",
   "tags": {
     "language": "C#"
