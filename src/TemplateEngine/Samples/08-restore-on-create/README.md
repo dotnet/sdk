@@ -1,6 +1,6 @@
 The sample in this folder demonstrates:
 
- - **Run `dotnet restore` after create**
+ - Run `dotnet restore` after create
 
 Using a *post action* you can run `dotnet restore` after the project is created.
 In this sample a parameter is configured so the user can skip the restore step if desired.
