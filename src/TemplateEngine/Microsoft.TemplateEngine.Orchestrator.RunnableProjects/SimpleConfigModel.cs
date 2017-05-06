@@ -421,10 +421,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.cmd", "rem --:", "C++", ConditionalType.RemLineComment),
                         new SpecialOperationConfigParams("**/nginx.conf", "#--", "C++", ConditionalType.HashSignLineComment),
                         new SpecialOperationConfigParams("**/robots.txt", "#--", "C++", ConditionalType.HashSignLineComment),
+                        new SpecialOperationConfigParams("**/*.sh", "#--", "C++", ConditionalType.HashSignLineComment),
                         new SpecialOperationConfigParams("**/*.haml", "-#", "C++", ConditionalType.HamlLineComment),
                         new SpecialOperationConfigParams("**/*.jsx", "{/*", "C++", ConditionalType.JsxBlockComment),
                         new SpecialOperationConfigParams("**/*.tsx", "{/*", "C++", ConditionalType.JsxBlockComment),
-                        new SpecialOperationConfigParams("**/*.xml", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/web.config", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/web.*.config", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/app.config", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/packages.config", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/*.xaml", "<!--", "C++", ConditionalType.Xml)
                     };
                     List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
