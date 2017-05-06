@@ -1,0 +1,13 @@
+{
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "My Custom Console",
+  "identity": "MyProject.StarterWeb.CSharp",         
+  "groupIdentity":"MyProject.StarterWeb",
+  "shortName": "mycon",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "MyProject.Console",
+  "preferNameDirectory": true
+}
