@@ -425,6 +425,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.haml", "-#", "C++", ConditionalType.HamlLineComment),
                         new SpecialOperationConfigParams("**/*.jsx", "{/*", "C++", ConditionalType.JsxBlockComment),
                         new SpecialOperationConfigParams("**/*.tsx", "{/*", "C++", ConditionalType.JsxBlockComment),
+                        new SpecialOperationConfigParams("**/*.xml", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/web.config", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/web.*.config", "<!--", "C++", ConditionalType.Xml),
                         new SpecialOperationConfigParams("**/app.config", "<!--", "C++", ConditionalType.Xml),
