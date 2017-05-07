@@ -12,12 +12,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup> 
+
   <!-- If any of these variables are set then we are building under the FSharp.NET.Sdk so use their logic -->
   <PropertyGroup Condition = " '$(_FscTaskAssemblyPath_net)' != '' or '$(_FscTaskAssemblyPath_netcoreapp1_0)' != '' or '$(_FscToolFullPath_net)' != '' or '$(_FscToolFullPath_netcoreapp1_0)' != '' ">
     <BuildingUnderFSharpSdk>true</BuildingUnderFSharpSdk>
   </PropertyGroup>
 
- <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.props file.   
+  <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.props file.   
        If running under desktop select Microsoft.NET.Sdk.FSharp.props file from VS deployment, 
        if running core msbuild select Microsoft.NET.Sdk.FSharp.props from dotnet cli deployment -->
   <Choose>
