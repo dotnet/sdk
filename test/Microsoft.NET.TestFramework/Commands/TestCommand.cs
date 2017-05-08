@@ -4,6 +4,7 @@
 using Microsoft.DotNet.Cli.Utils;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
@@ -33,11 +34,11 @@ namespace Microsoft.NET.TestFramework.Commands
                 return Path.Combine(ProjectRootPath, relativePathToProject);
             }
 
-            var buildProjectFiles = Directory.GetFiles(ProjectRootPath, "*.csproj");
+            var buildProjectFiles = Directory.GetFiles(ProjectRootPath, "*.csproj").Concat(Directory.GetFiles(ProjectRootPath, "*.fsproj")).ToArray();
 
             if (buildProjectFiles.Length != 1)
             {
-                var errorMsg = $"Found {buildProjectFiles.Length} csproj files under {ProjectRootPath} instead of just 1.";
+                var errorMsg = $"Found {buildProjectFiles.Length} .XXproj files under {ProjectRootPath} instead of just 1.";
                 throw new ArgumentException(errorMsg);
             }
 
