@@ -23,18 +23,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.targets file.   
        If running under desktop select Microsoft.sFSharp.targets file from VS deployment, 
        if running core msbuild select Microsoft.FSharp.targets from dotnet cli deployment -->
-  <Choose>
-    <When Condition=" '$(MSBuildRuntimeType)' == 'core' ">
-      <PropertyGroup>
-         <FSharpTargetsShim>$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <PropertyGroup>
-         <FSharpTargetsShim>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
+  <PropertyGroup>
+     <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
+     <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
+  </PropertyGroup>
   <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and Exists('$(FSharpTargetsShim)') and '$(BuildingUnderFSharpSdk)' != 'true' " Project="$(FSharpTargetsShim)" />
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets"                            Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' " />
