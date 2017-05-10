@@ -12,24 +12,34 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- This section loads the cross-targeting targets if we are doing a cross-targeting build -->
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' ">
-    <ImportByWildcardAfterMicrosoftCommonTargets>false</ImportByWildcardAfterMicrosoftCommonTargets>
+  <!-- ***************************************************************************************************************
+       This section loads the cross-targeting targets if we are doing a cross-targeting build
+       Import design time targets for Roslyn Project System. These are only available if Visual Studio is installed.
+       Import design time targets before the common crosstargeting targets, which import targets from Nuget.
+       *************************************************************************************************************** -->
+  <PropertyGroup Condition=" '$(IsCrossTargetingBuild)' == 'true' " >
+     <FSharpDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.FSharp.DesignTime.targets</FSharpDesignTimeTargetsPath>
   </PropertyGroup>
+  <Import Project="$(FSharpDesignTimeTargetsPath)" 
+          Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' and '$(FSharpDesignTimeTargetsPath)' != '' and Exists('$(FSharpDesignTimeTargetsPath)') " />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets"
+          Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' "/>
 
-  <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.targets file.   
-       If running under desktop select Microsoft.sFSharp.targets file from VS deployment, 
-       if running core msbuild select Microsoft.FSharp.targets from dotnet cli deployment -->
-  <PropertyGroup>
+  <!-- ***************************************************************************************************************
+       Shim to select the correct Microsoft.NET.Sdk.FSharp.targets file when not running 
+       under Cross-targeting build and not under FSharp.Sdk
+       If running under desktop select Microsoft.FSharp.targets file from VS deployment, 
+       if running core msbuild select Microsoft.FSharp.targets from dotnet cli deployment
+       *************************************************************************************************************** -->
+  <PropertyGroup Condition=" '$(IsCrossTargetingBuild)' != 'true' " >
      <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
      <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
   </PropertyGroup>
-  <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and Exists('$(FSharpTargetsShim)') and '$(BuildingUnderFSharpSdk)' != 'true' " Project="$(FSharpTargetsShim)" />
-
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets"                            Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' " />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.targets\ImportAfter\*" Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' and Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.targets\ImportAfter') "/>
+  <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and  '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpTargetsShim)') " Project="$(FSharpTargetsShim)" />
 
 </Project>
