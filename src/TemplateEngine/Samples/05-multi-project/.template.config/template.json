@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json.schemastore.org/template",
   "author": "Sayed I. Hashimi",
   "classifications": [ "Web" ], 
   "name": "Console and unit test",
