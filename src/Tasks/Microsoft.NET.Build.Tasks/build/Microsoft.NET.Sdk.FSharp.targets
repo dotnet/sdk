@@ -16,11 +16,11 @@ Copyright (c) .NET Foundation. All rights reserved.
      <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(BuildingUnderFSharpSdk)' != 'true' ">
+  <PropertyGroup Condition=" '$(UseBundledFSharpTargets)' == 'true' ">
     <AppDesignerFolder Condition="'$(AppDesignerFolder)' == ''">Properties</AppDesignerFolder>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(DisableImplicitConfigurationDefines)' != 'true' and '$(BuildingUnderFSharpSdk)' != 'true' ">
+  <PropertyGroup Condition=" '$(DisableImplicitConfigurationDefines)' != 'true' and '$(UseBundledFSharpTargets)' == 'true' ">
     <ImplicitConfigurationDefine>$(Configuration.ToUpperInvariant())</ImplicitConfigurationDefine>
 
     <!-- Replace dashes and periods in the configuration with underscores.  This makes it more likely that
@@ -36,7 +36,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ImplicitConfigurationDefine>$(ImplicitConfigurationDefine.Replace('.', '_'))</ImplicitConfigurationDefine>
     <DefineConstants>$(DefineConstants);$(ImplicitConfigurationDefine)</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup  Condition=" '$(BuildingUnderFSharpSdk)' != 'true' ">
+  <PropertyGroup  Condition=" '$(UseBundledFSharpTargets)' == 'true' ">
     <DefineConstants>$(DefineConstants);$(ImplicitFrameworkDefine)</DefineConstants>
   </PropertyGroup>
 
@@ -49,9 +49,9 @@ Copyright (c) .NET Foundation. All rights reserved.
      <FSharpDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.FSharp.DesignTime.targets</FSharpDesignTimeTargetsPath>
   </PropertyGroup>
   <Import Project="$(FSharpDesignTimeTargetsPath)" 
-          Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' and '$(FSharpDesignTimeTargetsPath)' != '' and Exists('$(FSharpDesignTimeTargetsPath)') " />
+          Condition=" '$(UseBundledFSharpTargets)' == 'true' and '$(IsCrossTargetingBuild)' == 'true' and '$(FSharpDesignTimeTargetsPath)' != '' and Exists('$(FSharpDesignTimeTargetsPath)') " />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets"
-          Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and '$(IsCrossTargetingBuild)' == 'true' "/>
+          Condition=" '$(UseBundledFSharpTargets)' == 'true' and '$(IsCrossTargetingBuild)' == 'true' "/>
 
   <!-- ***************************************************************************************************************
        Shim to select the correct Microsoft.NET.Sdk.FSharp.targets file when not running 
@@ -63,6 +63,6 @@ Copyright (c) .NET Foundation. All rights reserved.
      <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
      <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
   </PropertyGroup>
-  <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and  '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpTargetsShim)') " Project="$(FSharpTargetsShim)" />
+  <Import Condition=" '$(UseBundledFSharpTargets)' == 'true' and  '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpTargetsShim)') " Project="$(FSharpTargetsShim)" />
 
 </Project>
