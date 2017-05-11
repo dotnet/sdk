@@ -2,11 +2,11 @@
   "author": "Contoso",
   "classifications": [ "Web" ], 
   "name": "Contoso Starter Web",
-  "identity": "MyProject.StarterWeb.CSharp",         
-  "groupIdentity":"MyProject.StarterWeb",
-  "shortName": "cweb",                 // You can create the project using this short name instead of the one above.
+  "identity": "MyProject.02.StarterWeb.CSharp",         
+  "groupIdentity":"MyProject.02.StarterWeb",
+  "shortName": "cweb02",                     // You can create the project using this short name instead of the one above.
   "tags": {
-    "language": "C#"                       // Specify that this template is in C#.
+    "language": "C#"                         // Specify that this template is in C#.
   },
   "sourceName": "MyProject.StarterWeb",      // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
   "preferNameDirectory": true,

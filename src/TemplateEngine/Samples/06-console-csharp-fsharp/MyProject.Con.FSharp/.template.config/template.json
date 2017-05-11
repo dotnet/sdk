@@ -2,9 +2,9 @@
   "author": "Sayed I. Hashimi",
   "classifications": [ "Console" ], 
   "name": "My Custom Console",
-  "identity": "MyProject.StarterWeb.FSharp",         
-  "groupIdentity":"MyProject.StarterWeb",
-  "shortName": "mycon",
+  "identity": "MyProject.06.StarterWeb.FSharp",         
+  "groupIdentity":"MyProject.06.StarterWeb",
+  "shortName": "mycon06",
   "tags": {
     "language": "F#"
   },

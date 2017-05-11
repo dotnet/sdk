@@ -2,8 +2,8 @@
   "author": "Sayed I. Hashimi",
   "classifications": [ "Console" ], 
   "name": "Console",
-  "identity": "MyProject.Console.08.CSharp",         
-  "groupIdentity":"MyProject.Console.08",
+  "identity": "MyProject.08.Console.CSharp",         
+  "groupIdentity":"MyProject.Console",
   "shortName": "con08",
   "tags": {
     "language": "C#"

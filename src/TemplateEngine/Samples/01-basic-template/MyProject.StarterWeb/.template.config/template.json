@@ -2,9 +2,9 @@
   "author": "Contoso",
   "classifications": [ "Web" ], 
   "name": "Contoso Starter Web",
-  "identity": "MyProject.StarterWeb.CSharp",         
-  "groupIdentity":"MyProject.StarterWeb",
-  "shortName": "cweb",                      // You can create the project using this short name instead of the one above.
+  "identity": "MyProject.01.StarterWeb.CSharp",         
+  "groupIdentity":"MyProject.01.StarterWeb",
+  "shortName": "cweb01",                    // You can create the project using this short name instead of the one above.
   "tags": {
     "language": "C#"                        // Specify that this template is in C#.
   },
