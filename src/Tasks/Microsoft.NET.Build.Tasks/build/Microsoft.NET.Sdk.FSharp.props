@@ -26,7 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        if running core msbuild select Microsoft.NET.Sdk.FSharp.props from dotnet cli deployment -->
   <PropertyGroup>
      <FSharpPropsShim Condition = " '$(FSharpPropsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.props') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.props</FSharpPropsShim>
-     <FSharpPropsShim Condition = " '$(FSharpPropsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.props</FSharpPropsShim>
+     <FSharpPropsShim Condition = " '$(FSharpPropsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.props') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.props</FSharpPropsShim>
   </PropertyGroup>
   <Import Condition=" '$(BuildingUnderFSharpSdk)' != 'true' and Exists('$(FSharpPropsShim)') and '$(BuildingUnderFSharpSdk)' != 'true' " Project="$(FSharpPropsShim)" />
 
