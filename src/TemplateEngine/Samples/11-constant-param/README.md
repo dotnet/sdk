@@ -1,6 +1,6 @@
 The sample in this folder demonstrates:
 
- - Creating a parameter with a generated value
+ - Creating a constant parameter and using that in a replacement
 
 See 
 
@@ -8,3 +8,4 @@ See
 
 Related
  - [Available parameter generators](https://github.com/dotnet/templating/wiki/Available-Parameter-Generators)
+
