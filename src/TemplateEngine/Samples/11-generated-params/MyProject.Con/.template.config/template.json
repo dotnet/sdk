@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "MyConProject",
+  "identity": "MyProject.11.Con.CSharp",         
+  "groupIdentity":"MyProject.11.Con",
+  "shortName": "con11",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "MyProject.Console",
+  "preferNameDirectory": true,
+  "symbols":{
+
+    "createdate": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value":"5001"
+      },
+      "replaces":"1234"
+    },
+
+    "ownername":{
+      "type": "parameter",
+      "datatype":"text",
+      "replaces": "John Smith (a)",
+      "defaultValue": "John Doe"
+    },
+
+    "nameUpper":{
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source":"ownername",
+        "toLower": false
+      },
+      "replaces":"John Smith (U)"
+    },
+
+    "nameLower":{
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source":"ownername",
+        "toLower": true
+      },
+      "replaces":"John Smith (l)"
+    },
+
+    "myRandomNumber":{
+      "type": "generated",
+      "generator": "random",
+      "parameters": {
+        "low": 0,
+        "high": 10000
+      },
+      "replaces": "4321"
+    }
+
+  }
+}
