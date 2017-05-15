@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "MyConProject",
+  "identity": "MyProject.14.Con.CSharp",         
+  "groupIdentity":"MyProject.14.Con",
+  "shortName": "con14",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "MyProject.Console",
+  "preferNameDirectory": true,
+  "guids": [
+    "4BC5DF1F-B155-4A69-9719-0AB349B1ACB2"
+  ],
+  "symbols":{
+    "id01":{
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "myid01",
+      "parameters": {
+        "format":"N"
+      }
+    },
+    "id02":{
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "myid02",
+      "parameters": {
+        "format":"D"
+      }
+    },
+    "id03":{
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "myid03",
+      "parameters": {
+        "format":"B"
+      }
+    },
+    "id04":{
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "myid04",
+      "parameters": {
+        "format":"P"
+      }
+    },
+    "id05":{
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "myid05",
+      "parameters": {
+        "format":"X"
+      }
+    }
+  }
+}
