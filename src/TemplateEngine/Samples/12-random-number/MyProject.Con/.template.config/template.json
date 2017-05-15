@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "MyConProject",
+  "identity": "MyProject.12.Con.CSharp",         
+  "groupIdentity":"MyProject.12.Con",
+  "shortName": "con12",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "MyProject.Console",
+  "preferNameDirectory": true,
+  "symbols":{
+    "myRandomNumber":{
+      "type": "generated",
+      "generator": "random",
+      "parameters": {
+        "low": 0,
+        "high": 10000
+      },
+      "replaces": "4321"
+    }
+
+  }
+}

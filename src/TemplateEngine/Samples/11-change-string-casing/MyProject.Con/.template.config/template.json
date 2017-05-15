@@ -12,24 +12,6 @@
   "sourceName": "MyProject.Console",
   "preferNameDirectory": true,
   "symbols":{
-    "createdate": {
-      "type": "generated",
-      "generator": "now",
-      "parameters": {
-        "format": "MM/dd/yyyy"
-      },
-      "replaces":"01/01/1999"
-    },
-    
-    "myconstant": {
-      "type": "generated",
-      "generator": "constant",
-      "parameters": {
-        "value":"5001"
-      },
-      "replaces":"1234"
-    },
-
     "ownername":{
       "type": "parameter",
       "datatype":"text",
@@ -55,17 +37,6 @@
         "toLower": true
       },
       "replaces":"John Smith (l)"
-    },
-
-    "myRandomNumber":{
-      "type": "generated",
-      "generator": "random",
-      "parameters": {
-        "low": 0,
-        "high": 10000
-      },
-      "replaces": "4321"
     }
-
   }
 }

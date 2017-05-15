@@ -1,10 +1,6 @@
 The sample in this folder demonstrates:
 
- - Creating a parameter from the current date/time.
- - Creating a constant parameter and using that in a replacement.
- - Uppercasing a parameter value.
- - Lowercasing a parameter value.
- - Creating a random int in a given range.
+ - Creating a value based on a constant.
 
 See 
 
