@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
             ITokenTrie tokens = GetSymbols(processor);
-            ScopeBuilder<Operators, Tokens> builder = processor.ScopeBuilder(tokens, Map, true);
+            ScopeBuilder<Operators, Tokens> builder = processor.ScopeBuilder(tokens, Map, false);
             bool isFaulted = false;
             IEvaluable result = builder.Build(ref bufferLength, ref currentBufferPosition, x => isFaulted = true);
 

@@ -81,6 +81,12 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                                 universe[path] = parentDirEntry = new ZipFileDirectory(this, path, parts[i]);
                             }
 
+                            //If we mistakenly classified something with children as a file before, reclassify it as a directory
+                            if (parentDirEntry is IFile file)
+                            {
+                                universe[path] = parentDirEntry = new ZipFileDirectory(this, file.FullPath, file.Name);
+                            }
+
                             parentDir = parentDirEntry as IDirectory;
                         }
 
