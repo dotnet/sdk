@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildThisFileDirectory)\tools\Setup.settings.props" Condition="'$(ToolsPath)' == ''" />
+    <Import Project="$(ToolsPath)\Setup.targets" />
+
+    <Target Name="Clean" DependsOnTargets="DeleteOutputFolders" />
+
+    <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+
+    <Target Name="Build" DependsOnTargets="InitBuildEnvironment;BuildInstallers" />
+
+    <ItemGroup>
+      <ProjectsToBuild Include="$(SrcPath)\netfx_NETCoreSDK\netfx_NETCoreSDK.WIXPROJ" />
+      <ProjectsToBuild Include="$(SrcPath)\netfx_NETCoreUWP\netfx_NETCoreUWP.WIXPROJ" />  
+    </ItemGroup>
+
+    <Target Name="BuildInstallers"  DependsOnTargets="InitBuildEnvironment">
+        <MSBuild Projects="$(MSBuildProjectFile)" Properties="VSVersion=%(VSVersions.Identity)" Targets="BuildInstallersForVSVersion" />
+    </Target>
+
+    <Target Name="BuildInstallersForVSVersion">
+        <MSBuild Projects="%(ProjectsToBuild.Identity)" Properties="VSVersion=$(VSVersion)" />
+    </Target>
+</Project>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- Build environment properties -->
+    <PropertyGroup>
+        <RootPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory),Build.cmd))</RootPath>
+        <ToolsPath>$(RootPath)\tools</ToolsPath>
+        <SrcPath>$(RootPath)\src</SrcPath>
+    </PropertyGroup>
+
+    <!-- Output paths -->
+    <PropertyGroup>
+        <RootOutputPath>$(RootPath)\bin</RootOutputPath>
+        <RootIntermediateOutputPath>$(RootPath)\obj</RootIntermediateOutputPath>
+        <BinConfigPath>$(RootOutputPath)\$(Configuration)</BinConfigPath>
+        <OutputPath>$(BinConfigPath)</OutputPath>
+        <OutputType>Package</OutputType>
+    </PropertyGroup>
+
+    <!-- WiX -->
+    <PropertyGroup>
+      <PowershellToolPath>%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PowershellToolPath>
+      <WixInstallScriptPath>$(ToolsPath)\InstallWix.ps1</WixInstallScriptPath>
+        <WixToolsPath>$(ToolsPath)\WixToolSet</WixToolsPath>
+    </PropertyGroup>
+
+    <!-- 7z -->
+    <PropertyGroup>
+        <SevenZipToolPath>$(ToolsPath)\7zaInstaller</SevenZipToolPath>
+        <SevenZipExe>$(ToolsPath)\7z.Exe</SevenZipExe>
+        <SevenZipExeInstaller>$(SevenZipToolPath)\7zaInstaller.Exe</SevenZipExeInstaller>
+        </PropertyGroup>
+</Project>

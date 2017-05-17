@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+  <?include "Variables.wxi" ?>
+  <Fragment>
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="Microsoft.VS.NETCoreSDK_v14" DiskId="1" Guid="77AF756E-10ED-49C1-A705-A4C2F5ADABD3">
+        <dep:Provides Key="Microsoft.VS.NETCoreSDK,v14" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

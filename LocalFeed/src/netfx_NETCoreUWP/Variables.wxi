@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?define Manufacturer      =   "Microsoft Corporation" ?>
+  <?define ProductName      =   "Microsoft UniversalWindowsPlatform SDK" ?>
+  <?define ProductLanguage  =   "1033" ?>
+  <?define MajorVersion  =   "15" ?>
+  <?define MinorVersion  =   "0" ?>
+  <?define Revision  =   "26110" ?>
+</Include>

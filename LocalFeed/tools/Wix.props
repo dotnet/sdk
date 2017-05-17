@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory),Build.cmd))\tools\Setup.settings.props" Condition="'$(ToolsPath)'==''" />
+
+  <!-- Additional parameters for Light/Candle-->
+  <PropertyGroup>
+      <LinkerAdditionalOptions>-fv</LinkerAdditionalOptions>
+      <SuppressIces>ICE61</SuppressIces>
+      <SuppressWarnings>1033</SuppressWarnings>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
+      <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
+        <OutDir Condition="$(DefineConstants.Contains('SETUP'))">$(IntermediateOutputPath)</OutDir>
+        <WixTargetsPath Condition="Exists('$(WixToolsPath)\Wix.targets')">$(WixToolsPath)\Wix.targets</WixTargetsPath>
+        <WixToolPath Condition="Exists('$(WixToolsPath)\candle.exe')">$(WixToolsPath)\</WixToolPath>
+        <WixTasksPath Condition="Exists('$(WixToolsPath)\wixtasks.dll')">$(WixToolPath)\wixtasks.dll</WixTasksPath>
+        <DefineSolutionProperties>false</DefineSolutionProperties>
+    </PropertyGroup>    
+
+</Project>

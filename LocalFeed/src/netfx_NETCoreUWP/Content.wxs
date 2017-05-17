@@ -1,0 +1,74 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="RefAssms" Name="Reference Assemblies">
+          <Directory Id="RefAssmsMs" Name="Microsoft">
+            <Directory Id="RefAssmsMsFx" Name="Framework">
+              <Directory Id="RefAssmsMsFxNetCore" Name=".NETCore">
+                <Directory Id="RefAssmsMsFxNetCore5" Name="v5.0" />
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+    <!-- Setup the registry key to point to above directory -->
+    <DirectoryRef Id="NuGetPackages">
+      <Component Id="C_NuGetRepoRegKey">
+        <RegistryKey Root="HKLM" Key="Software\NuGet\Repository">
+          <RegistryValue Action="write" Type="string" Name="NETCoreSDK" Value="[NuGetPackages]" KeyPath="yes"/>
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winx86">
+          <RegistryValue Action="write" Type="string" Name="DbgShimPath" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\x86\mrt100dbgshim_winx86.dll" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winx64">
+          <RegistryValue Action="write" Type="string" Name="DbgShimPath" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\x64\mrt100dbgshim_winamd64.dll" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winarm">
+          <RegistryValue Action="write" Type="string" Name="DbgShimPath" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\arm\mrt100dbgshim_winarm.dll" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winrtarm">
+          <RegistryValue Action="write" Type="string" Name="DbgShimPath" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\arm\mrt100dbgshim_winrtarm.dll" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winx86\Mrt100SymbolDirectory">
+          <RegistryValue Action="write" Type="string" Name="Mrt100SymbolDirectory" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\x86" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winx64\Mrt100SymbolDirectory">
+          <RegistryValue Action="write" Type="string" Name="Mrt100SymbolDirectory" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\x64" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winarm\Mrt100SymbolDirectory">
+          <RegistryValue Action="write" Type="string" Name="Mrt100SymbolDirectory" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\arm" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winrtarm\Mrt100SymbolDirectory">
+          <RegistryValue Action="write" Type="string" Name="Mrt100SymbolDirectory" Value="[NuGetPackages]microsoft.net.native.compiler\1.6.0\tools\Runtime\arm" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winx86\SharedLibrarySymbolDirectory">
+          <RegistryValue Action="write" Type="string" Name="Ret" Value="[NuGetPackages]microsoft.net.native.sharedlibrary-x86\1.6.0\tools\SharedLibrary\ret\Native" />
+          <RegistryValue Action="write" Type="string" Name="Chk" Value="[NuGetPackages]microsoft.net.native.sharedlibrary-x86\1.6.0\tools\SharedLibrary\chk\Native" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winx64\SharedLibrarySymbolDirectory">
+          <RegistryValue Action="write" Type="string" Name="Ret" Value="[NuGetPackages]microsoft.net.native.sharedlibrary-x64\1.6.0\tools\SharedLibrary\ret\Native" />
+          <RegistryValue Action="write" Type="string" Name="Chk" Value="[NuGetPackages]microsoft.net.native.sharedlibrary-x64\1.6.0\tools\SharedLibrary\chk\Native" />
+        </RegistryKey>
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\.NETNative\nuget\winarm\SharedLibrarySymbolDirectory">
+          <RegistryValue Action="write" Type="string" Name="Ret" Value="[NuGetPackages]microsoft.net.native.sharedlibrary-arm\1.6.0\tools\SharedLibrary\ret\Native" />
+          <RegistryValue Action="write" Type="string" Name="Chk" Value="[NuGetPackages]microsoft.net.native.sharedlibrary-arm\1.6.0\tools\SharedLibrary\chk\Native" />
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <!-- Component group that should be referenced in Product to install NuGet packages and registry key-->
+    <ComponentGroup Id="CG_NETCoreUWP_Packages">
+      <!-- Reference the heat generated component group-->
+      <ComponentGroupRef Id="CG_NETCoreUWP" />
+      <ComponentGroupRef Id="CG_NETCoreFramework" />
+      <!-- Comes from netfx_NuGetPkgLib -->
+      <ComponentGroupRef Id="CG_NuGetPkgLib15" />
+      <ComponentRef Id="C_NuGetRepoRegKey" />
+      <ComponentRef Id="Microsoft.VS.NETCoreUWP_v14" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>
