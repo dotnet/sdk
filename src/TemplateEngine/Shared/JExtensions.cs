@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -207,7 +207,7 @@ namespace Microsoft.TemplateEngine
                 }
                 else if (property.Value.Type == JTokenType.Array)
                 {
-                    result[property.Name] = property.ArrayAsStrings();
+                    result[property.Name] = property.Value.ArrayAsStrings();
                 }
             }
 

@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -18,12 +20,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _paths = new Paths(environmentSettings);
         }
 
-        public IReadOnlyDictionary<string, string> AllAliases
+        public IReadOnlyDictionary<string, IReadOnlyList<string>> AllAliases
         {
             get
             {
                 EnsureLoaded();
-                return new Dictionary<string, string>(_aliases.CommandAliases, StringComparer.OrdinalIgnoreCase);
+                return new Dictionary<string, IReadOnlyList<string>>(_aliases.CommandAliases, StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -42,12 +44,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             string sourcesText = _paths.ReadAllText(_paths.User.AliasesFile, "{}");
             JObject parsed = JObject.Parse(sourcesText);
-            Dictionary<string, string> commandAliases = new Dictionary<string, string>();
-
-            foreach (JProperty entry in parsed.PropertiesOf(nameof(_aliases.CommandAliases)))
-            {
-                commandAliases.Add(entry.Name, entry.Value.ToString());
-            }
+            IReadOnlyDictionary<string, IReadOnlyList<string>> commandAliases = parsed.ToStringListDictionary(StringComparer.OrdinalIgnoreCase, "CommandAliases");
 
             _aliases = new AliasModel(commandAliases);
         }
@@ -70,28 +67,27 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             else if (aliasTokens.Count == 0)
             {   // the command was just "--alias <alias name>"
                 // remove the alias
-                if (_aliases.TryRemoveCommandAlias(aliasName, out string removedAliasValue))
+                if (_aliases.TryRemoveCommandAlias(aliasName, out IReadOnlyList<string> removedAliasTokens))
                 {
                     Save();
-                    return new AliasManipulationResult(AliasManipulationStatus.Removed, aliasName, removedAliasValue);
+                    return new AliasManipulationResult(AliasManipulationStatus.Removed, aliasName, removedAliasTokens);
                 }
                 else
                 {
-                    return new AliasManipulationResult(AliasManipulationStatus.RemoveNonExistentFailed, aliasName, string.Empty);
+                    return new AliasManipulationResult(AliasManipulationStatus.RemoveNonExistentFailed, aliasName, null);
                 }
             }
 
-            string aliasValue = string.Join(" ", aliasTokens);
-            Dictionary<string, string> aliasesWithCandidate = new Dictionary<string, string>(_aliases.CommandAliases);
-            aliasesWithCandidate[aliasName] = aliasValue;
-            if (!TryExpandCommandAliases(aliasesWithCandidate, aliasValue, out string expandedInput))
+            Dictionary<string, IReadOnlyList<string>> aliasesWithCandidate = new Dictionary<string, IReadOnlyList<string>>(_aliases.CommandAliases);
+            aliasesWithCandidate[aliasName] = aliasTokens;
+            if (!TryExpandCommandAliases(aliasesWithCandidate, aliasTokens, out IReadOnlyList<string> expandedInputTokens))
             {
-                return new AliasManipulationResult(AliasManipulationStatus.WouldCreateCycle, aliasName, aliasValue);
+                return new AliasManipulationResult(AliasManipulationStatus.WouldCreateCycle, aliasName, aliasTokens);
             }
 
-            _aliases.AddCommandAlias(aliasName, aliasValue);
+            _aliases.AddCommandAlias(aliasName, aliasTokens);
             Save();
-            return new AliasManipulationResult(AliasManipulationStatus.Created, aliasName, aliasValue);
+            return new AliasManipulationResult(AliasManipulationStatus.Created, aliasName, aliasTokens);
         }
 
         // Attempts to expand aliases on the input string, using the aliases in _aliases
@@ -101,15 +97,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             if (inputTokens.Count == 0)
             {
-                expandedInputTokens = inputTokens;
+                expandedInputTokens = new List<string>(inputTokens);
                 return true;
             }
 
-            string input = string.Join(" ", inputTokens);
-            if (TryExpandCommandAliases(_aliases.CommandAliases, input, out string expandedInput))
+            if (TryExpandCommandAliases(_aliases.CommandAliases, inputTokens, out expandedInputTokens))
             {
-                // splits on any whitespace (odd usage, but documented on msdn)
-                expandedInputTokens = expandedInput.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
                 return true;
             }
 
@@ -118,38 +111,28 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return false;
         }
 
-        // Attempts to perform alias expansion on the input string, using the dict of aliases passed in.
-        // TODO: consider making this be all token-based. Then just the expanded aliases would need to be tokenized as we go along.
-        private static bool TryExpandCommandAliases(IReadOnlyDictionary<string, string> aliases, string input, out string expandedInput)
+        private static bool TryExpandCommandAliases(IReadOnlyDictionary<string, IReadOnlyList<string>> aliases, IReadOnlyList<string> inputTokens, out IReadOnlyList<string> expandedTokens)
         {
             bool expansionOccurred = false;
-            expandedInput = input;
             HashSet<string> seenAliases = new HashSet<string>();
+            expandedTokens = new List<string>(inputTokens);
 
             do
             {
-                string[] parts = expandedInput.Split((char[])null, 2, StringSplitOptions.RemoveEmptyEntries);
-                string candidateAlias = parts[0];
-                string remainingInput;
-                if (parts.Length == 2)
-                {
-                    remainingInput = parts[1];
-                }
-                else
-                {
-                    remainingInput = string.Empty;
-                }
+                string candidateAliasName = expandedTokens[0];
 
-                if (aliases.TryGetValue(candidateAlias, out string aliasExpansion))
+                if (aliases.TryGetValue(candidateAliasName, out IReadOnlyList<string> aliasExpansion))
                 {
-                    if (!seenAliases.Add(candidateAlias))
+                    if (!seenAliases.Add(candidateAliasName))
                     {
-                        // a cycle has occurred... not allowed.
-                        expandedInput = null;
+                        // a cycle has occurred.... not allowed.
+                        expandedTokens = null;
                         return false;
                     }
 
-                    expandedInput = aliasExpansion + " " + remainingInput;
+                    // The expansion is the combination of the aliasExpansion (expands the 0th token of the previously expandedTokens)
+                    //  and the rest of the previously expandedTokens
+                    expandedTokens = new CombinedList<string>(aliasExpansion, expandedTokens.ToList().GetRange(1, expandedTokens.Count - 1));
                     expansionOccurred = true;
                 }
                 else

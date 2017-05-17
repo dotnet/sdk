@@ -1,29 +1,30 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class AliasModel
     {
         public AliasModel()
-            : this(new Dictionary<string, string>())
+            : this(new Dictionary<string, IReadOnlyList<string>>())
         {
         }
 
-        public AliasModel(Dictionary<string, string> commandAliases)
+        public AliasModel(IReadOnlyDictionary<string, IReadOnlyList<string>> commandAliases)
         {
-            CommandAliases = new Dictionary<string, string>(commandAliases, StringComparer.OrdinalIgnoreCase);
+            CommandAliases = new Dictionary<string, IReadOnlyList<string>>(commandAliases.ToDictionary(x => x.Key, x => x.Value), StringComparer.OrdinalIgnoreCase);
         }
 
-        public void AddCommandAlias(string aliasName, string aliasValue)
+        public void AddCommandAlias(string aliasName, IReadOnlyList<string> aliasTokens)
         {
-            CommandAliases.Add(aliasName, aliasValue);
+            CommandAliases.Add(aliasName, aliasTokens);
         }
 
-        public bool TryRemoveCommandAlias(string aliasName, out string aliasValue)
+        public bool TryRemoveCommandAlias(string aliasName, out IReadOnlyList<string> aliasTokens)
         {
-            if (CommandAliases.TryGetValue(aliasName, out aliasValue))
+            if (CommandAliases.TryGetValue(aliasName, out aliasTokens))
             {
                 CommandAliases.Remove(aliasName);
                 return true;
@@ -33,6 +34,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         }
 
         [JsonProperty]
-        public Dictionary<string, string> CommandAliases { get; set; }
+        public Dictionary<string, IReadOnlyList<string>> CommandAliases { get; set; }
     }
 }
