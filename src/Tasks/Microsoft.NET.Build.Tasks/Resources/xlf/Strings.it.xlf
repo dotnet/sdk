@@ -93,11 +93,6 @@
         <target state="translated">Il percorso risolto per '{0}' non è stato trovato.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UnexpectedDependencyWithNoVersionNumber">
-        <source>Unexpected dependency '{0}' with no version number.</source>
-        <target state="translated">La dipendenza '{0}' è imprevista e non ha numero di versione.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>Asset preprocessor must be configured before assets are processed.</source>
         <target state="translated">Prima di elaborare le risorse, è necessario configurare il preprocessore di risorse.</target>
@@ -221,6 +216,11 @@
       <trans-unit id="RuntimeIdentifierWasNotSpecified">
         <source>Specify a RuntimeIdentifier</source>
         <target state="new">Specify a RuntimeIdentifier</target>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="UnexpectedPackageDependency">
+        <source>Unexpected dependency '{0}' in package '{1}'.</source>
+        <target state="new">Unexpected dependency '{0}' in package '{1}'.</target>
         <note></note>
       </trans-unit>
     </body>

@@ -171,9 +171,6 @@
   <data name="UnableToFindResolvedPath" xml:space="preserve">
     <value>Der aufgelöste Pfad für "{0}" wurde nicht gefunden.</value>
   </data>
-  <data name="UnexpectedDependencyWithNoVersionNumber" xml:space="preserve">
-    <value>Unerwartete Abhängigkeit "{0}" ohne Versionsnummer.</value>
-  </data>
   <data name="AssetPreprocessorMustBeConfigured" xml:space="preserve">
     <value>Der Ressourcenpräprozessor muss konfiguriert werden, bevor Ressourcen verarbeitet werden.</value>
   </data>
@@ -248,5 +245,8 @@
   </data>
   <data name="RuntimeIdentifierWasNotSpecified" xml:space="preserve">
     <value>Specify a RuntimeIdentifier</value>
+  </data>
+  <data name="UnexpectedPackageDependency" xml:space="preserve">
+    <value>Unexpected dependency '{0}' in package '{1}'.</value>
   </data>
 </root>

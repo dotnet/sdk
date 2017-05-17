@@ -171,9 +171,6 @@
   <data name="UnableToFindResolvedPath" xml:space="preserve">
     <value>解決された '{0}' のパスが見つかりません。</value>
   </data>
-  <data name="UnexpectedDependencyWithNoVersionNumber" xml:space="preserve">
-    <value>バージョン番号のない予期しない依存関係 '{0}' です。</value>
-  </data>
   <data name="AssetPreprocessorMustBeConfigured" xml:space="preserve">
     <value>資産を処理する前に、資産プリプロセッサを構成する必要があります。</value>
   </data>
@@ -248,5 +245,8 @@
   </data>
   <data name="RuntimeIdentifierWasNotSpecified" xml:space="preserve">
     <value>Specify a RuntimeIdentifier</value>
+  </data>
+  <data name="UnexpectedPackageDependency" xml:space="preserve">
+    <value>Unexpected dependency '{0}' in package '{1}'.</value>
   </data>
 </root>

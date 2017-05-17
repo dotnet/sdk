@@ -171,8 +171,8 @@
   <data name="UnableToFindResolvedPath" xml:space="preserve">
     <value>Unable to find resolved path for '{0}'.</value>
   </data>
-  <data name="UnexpectedDependencyWithNoVersionNumber" xml:space="preserve">
-    <value>Unexpected dependency '{0}' with no version number.</value>
+  <data name="UnexpectedPackageDependency" xml:space="preserve">
+    <value>Unexpected dependency '{0}' in package '{1}'.</value>
   </data>
   <data name="AssetPreprocessorMustBeConfigured" xml:space="preserve">
     <value>Asset preprocessor must be configured before assets are processed.</value>

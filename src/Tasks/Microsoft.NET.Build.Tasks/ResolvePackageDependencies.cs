@@ -302,6 +302,8 @@ namespace Microsoft.NET.Build.Tasks
                     .Where(lib => IsTransitiveProjectReference(lib))
                     .Select(pkg => pkg.Name), 
                 StringComparer.OrdinalIgnoreCase);
+
+            var unexpectedDeps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             
             TaskItem item;
             foreach (var package in target.Libraries)
@@ -318,7 +320,8 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 // get sub package dependencies
-                GetPackageDependencies(package, target.Name, resolvedPackageVersions, transitiveProjectRefs);
+                GetPackageDependencies(package, target.Name, resolvedPackageVersions, 
+                    transitiveProjectRefs, unexpectedDeps);
 
                 // get file dependencies on this package
                 GetFileDependencies(package, target.Name);
@@ -336,16 +339,19 @@ namespace Microsoft.NET.Build.Tasks
             LockFileTargetLibrary package, 
             string targetName, 
             Dictionary<string, string> resolvedPackageVersions,
-            HashSet<string> transitiveProjectRefs)
+            HashSet<string> transitiveProjectRefs,
+            HashSet<string> unexpectedDeps)
         {
             string packageId = $"{package.Name}/{package.Version.ToNormalizedString()}";
             TaskItem item;
             foreach (var deps in package.Dependencies)
             {
                 string version;
-                if (!resolvedPackageVersions.TryGetValue(deps.Id, out version))
+                if (!resolvedPackageVersions.TryGetValue(deps.Id, out version) &&
+                    !unexpectedDeps.Contains(deps.Id))
                 {
-                    Log.LogError(Strings.UnexpectedDependencyWithNoVersionNumber, deps.Id);
+                    Log.LogError(Strings.UnexpectedPackageDependency, deps.Id, packageId);
+                    unexpectedDeps.Add(deps.Id);
                     continue;
                 }
 
