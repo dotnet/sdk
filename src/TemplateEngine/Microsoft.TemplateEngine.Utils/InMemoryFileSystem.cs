@@ -106,6 +106,8 @@ namespace Microsoft.TemplateEngine.Utils
                     });
                 }
             }
+
+            public FileAttributes Attributes { get; set; }
         }
 
         private class DisposingStream : Stream
@@ -740,6 +742,73 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 return false;
             }
+        }
+
+        public FileAttributes GetFileAttributes(string file)
+        {
+            if (!IsPathInCone(file, out string processedPath))
+            {
+                return _basis.GetFileAttributes(file);
+            }
+
+            file = processedPath;
+            string rel = file.Substring(_root.FullPath.Length).Trim('/', '\\');
+            string[] parts = rel.Split('/', '\\');
+            FileSystemDirectory currentDir = _root;
+
+            for (int i = 0; i < parts.Length - 1; ++i)
+            {
+                FileSystemDirectory dir;
+                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                {
+                    dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
+                    currentDir.Directories[parts[i]] = dir;
+                }
+
+                currentDir = dir;
+            }
+
+            FileSystemFile targetFile;
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            {
+                throw new FileNotFoundException("File not found", file);
+            }
+
+            return targetFile.Attributes;
+        }
+
+        public void SetFileAttributes(string file, FileAttributes attributes)
+        {
+            if (!IsPathInCone(file, out string processedPath))
+            {
+                _basis.SetFileAttributes(file, attributes);
+                return;
+            }
+
+            file = processedPath;
+            string rel = file.Substring(_root.FullPath.Length).Trim('/', '\\');
+            string[] parts = rel.Split('/', '\\');
+            FileSystemDirectory currentDir = _root;
+
+            for (int i = 0; i < parts.Length - 1; ++i)
+            {
+                FileSystemDirectory dir;
+                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                {
+                    dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
+                    currentDir.Directories[parts[i]] = dir;
+                }
+
+                currentDir = dir;
+            }
+
+            FileSystemFile targetFile;
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            {
+                throw new FileNotFoundException("File not found", file);
+            }
+
+            targetFile.Attributes = attributes;
         }
     }
 }

@@ -8,14 +8,32 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
+
+
     public class MockFileSystem : IPhysicalFileSystem
     {
+        private class FileSystemFile
+        {
+            public FileSystemFile()
+            {
+            }
+
+            public FileSystemFile(FileSystemFile file)
+            {
+                Data = file.Data;
+                Attributes = file.Attributes;
+            }
+
+            public byte[] Data;
+            public FileAttributes Attributes;
+        }
+
         private HashSet<string> _directories = new HashSet<string>(StringComparer.Ordinal);
-        private Dictionary<string, byte[]> _files = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        private Dictionary<string, FileSystemFile> _files = new Dictionary<string, FileSystemFile>(StringComparer.Ordinal);
 
         public MockFileSystem Add(string filePath, string contents, Encoding encoding = null)
         {
-            _files[filePath] = (encoding ?? Encoding.UTF8).GetBytes(contents);
+            _files[filePath] = new FileSystemFile() { Data = (encoding ?? Encoding.UTF8).GetBytes(contents) };
 
             string currentParent = Path.GetDirectoryName(filePath);
 
@@ -50,18 +68,22 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public Stream CreateFile(string path)
         {
-            _files[path] = new byte[0];
-            return new MockFileStream(d => _files[path] = d);
+            if (!FileExists(path))
+            {
+                _files[path] = new FileSystemFile();
+            }
+            _files[path].Data = new byte[0];
+            return new MockFileStream(d => _files[path].Data = d);
         }
 
         public Stream OpenRead(string path)
         {
-            if (!_files.TryGetValue(path, out byte[] contents))
+            if (!_files.TryGetValue(path, out FileSystemFile file))
             {
                 throw new Exception($"File {path} does no texist");
             }
 
-            MemoryStream s = new MemoryStream(contents);
+            MemoryStream s = new MemoryStream(file.Data);
             return s;
         }
 
@@ -89,12 +111,17 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public void WriteAllText(string path, string value)
         {
-            _files[path] = Encoding.UTF8.GetBytes(value);
+            if (!FileExists(path))
+            {
+                _files[path] = new FileSystemFile();
+            }
+
+            _files[path].Data = Encoding.UTF8.GetBytes(value);
         }
 
         public string ReadAllText(string path)
         {
-            return Encoding.UTF8.GetString(_files[path]);
+            return Encoding.UTF8.GetString(_files[path].Data);
         }
 
         public void DirectoryDelete(string path, bool recursive)
@@ -136,7 +163,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 throw new Exception($"File {sourcePath} doesn't exist");
             }
 
-            _files[targetPath] = _files[sourcePath];
+            _files[targetPath] = new FileSystemFile(_files[targetPath]);
         }
 
         public IEnumerable<string> EnumerateFileSystemEntries(string directoryName, string pattern, SearchOption searchOption)
@@ -151,6 +178,26 @@ namespace Microsoft.TemplateEngine.Mocks
                     yield return entry;
                 }
             }
+        }
+
+        public FileAttributes GetFileAttributes(string file)
+        {
+            if (!FileExists(file))
+            {
+                throw new Exception($"File {file} doesn't exist");
+            }
+
+            return _files[file].Attributes;
+        }
+
+        public void SetFileAttributes(string file, FileAttributes attributes)
+        {
+            if (!FileExists(file))
+            {
+                throw new Exception($"File {file} doesn't exist");
+            }
+
+            _files[file].Attributes = attributes;
         }
     }
 }

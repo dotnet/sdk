@@ -80,5 +80,15 @@ namespace Microsoft.TemplateEngine.Utils
         {
             File.Delete(path);
         }
+
+        public FileAttributes GetFileAttributes(string file)
+        {
+            return File.GetAttributes(file);
+        }
+
+        public void SetFileAttributes(string file, FileAttributes attributes)
+        {
+            File.SetAttributes(file, attributes);
+        }
     }
 }
