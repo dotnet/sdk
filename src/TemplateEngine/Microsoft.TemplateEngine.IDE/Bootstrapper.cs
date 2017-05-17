@@ -90,5 +90,23 @@ namespace Microsoft.TemplateEngine.IDE
             TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck, forceCreation: false, baselineName: baselineName).ConfigureAwait(false);
             return instantiateResult.ResultInfo;
         }
+
+        public IEnumerable<string>  Uninstall(string path)
+        {
+            EnsureInitialized();
+            return Installer.Uninstall(new[] { path });
+        }
+
+        public IEnumerable<string>  Uninstall(params string[] paths)
+        {
+            EnsureInitialized();
+            return Installer.Uninstall(paths);
+        }
+
+        public IEnumerable<string>  Uninstall(IEnumerable<string> paths)
+        {
+            EnsureInitialized();
+            return Installer.Uninstall(paths);
+        }
     }
 }
