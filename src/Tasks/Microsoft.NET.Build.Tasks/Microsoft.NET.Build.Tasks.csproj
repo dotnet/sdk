@@ -47,6 +47,7 @@
     <Compile Include="BuildErrorException.cs" />
     <Compile Include="CollectSDKReferencesDesignTime.cs" />
     <Compile Include="ReferenceInfo.cs" />
+    <Compile Include="ReportAssetsLogMessages.cs" />
     <Compile Include="Resources\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
