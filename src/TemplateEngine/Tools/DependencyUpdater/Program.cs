@@ -18,11 +18,11 @@ dotnet DependencyUpdater.dll [path to templates:string] [infer no-timestamp pack
                 return -1;
             }
 
-            bool NoTimestamp = bool.Parse(args[2]);
-            string root = args[1];
+            bool NoTimestamp = bool.Parse(args[1]);
+            string root = args[0];
             List<string> sources = new List<string>();
 
-            foreach(string arg in args.Skip(3))
+            foreach(string arg in args.Skip(2))
             {
                 if (Directory.Exists(arg))
                 {
