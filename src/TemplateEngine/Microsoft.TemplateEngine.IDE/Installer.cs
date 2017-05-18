@@ -100,6 +100,13 @@ namespace Microsoft.TemplateEngine.IDE
                     {
                         try
                         {
+                            var attributes = _environmentSettings.Host.FileSystem.GetFileAttributes(mountPoint.Place);
+                            if (attributes.HasFlag(FileAttributes.ReadOnly))
+                            {
+                                attributes &= ~FileAttributes.ReadOnly;
+                                _environmentSettings.Host.FileSystem.SetFileAttributes(mountPoint.Place, attributes);
+                            }
+
                             _environmentSettings.Host.FileSystem.FileDelete(mountPoint.Place);
                         }
                         catch

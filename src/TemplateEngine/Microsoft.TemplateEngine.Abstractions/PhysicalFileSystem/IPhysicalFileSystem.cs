@@ -32,5 +32,9 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         Stream OpenRead(string path);
 
         void FileDelete(string path);
+
+        FileAttributes GetFileAttributes(string file);
+
+        void SetFileAttributes(string file, FileAttributes attributes);
     }
 }

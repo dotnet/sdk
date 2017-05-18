@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,15 +11,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
         }
 
-        public AliasManipulationResult(AliasManipulationStatus status, string aliasName, string aliasValue)
+        public AliasManipulationResult(AliasManipulationStatus status, string aliasName, IReadOnlyList<string> aliasTokens)
         {
             Status = status;
             AliasName = aliasName;
-            AliasValue = aliasValue;
+            AliasTokens = aliasTokens;
         }
 
         public AliasManipulationStatus Status { get; }
         public string AliasName { get; }
-        public string AliasValue { get; }
+        public IReadOnlyList<string> AliasTokens { get; }
     }
 }
