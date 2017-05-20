@@ -1,0 +1,44 @@
+﻿{
+  "create": "api --no-restore",
+  "name": "WebAPI (C#, default framework, default auth)",
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "name": "RunApp",
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "exec bin\\Debug\\netcoreapp2.0\\%targetPathName%.dll",
+      "noExit": true,
+      "exitTimeout": 5000
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000/api/values",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000",
+      "statusCode": 404,
+      "verb": "GET"
+    },
+    {
+      "handler": "taskkill",
+      "name": "RunApp"
+    }
+  ]
+}
