@@ -39,6 +39,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
+        protected override bool DereferenceInLiterals => false;
+
         protected override string NullTokenValue => "null";
 
         public enum Tokens

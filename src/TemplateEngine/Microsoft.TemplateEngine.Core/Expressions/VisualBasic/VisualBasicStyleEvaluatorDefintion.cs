@@ -41,6 +41,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
 
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
+        protected override bool DereferenceInLiterals => false;
+
         protected override string NullTokenValue => "Nothing";
 
         public enum Tokens

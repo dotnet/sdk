@@ -13,6 +13,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
     {
         private static readonly TSelf Instance = new TSelf();
         private static readonly IOperatorMap<Operators, TTokens> Map = Instance.GenerateMap();
+        private static readonly bool DereferenceInLiteralsSetting = Instance.DereferenceInLiterals;
         private static readonly string NullToken = Instance.NullTokenValue;
         private static readonly IOperationProvider[] NoOperationProviders = new IOperationProvider[0];
 
@@ -21,7 +22,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
             ITokenTrie tokens = Instance.GetSymbols(processor);
-            ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, true);
+            ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, DereferenceInLiteralsSetting);
             bool isFaulted = false;
             IEvaluable result = builder.Build(ref bufferLength, ref currentBufferPosition, x => isFaulted = true);
 
@@ -57,6 +58,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
                 return Evaluate(state, ref len, ref pos, out bool faulted);
             }
         }
+
+        protected abstract bool DereferenceInLiterals { get; }
 
         protected abstract IOperatorMap<Operators, TTokens> GenerateMap();
 

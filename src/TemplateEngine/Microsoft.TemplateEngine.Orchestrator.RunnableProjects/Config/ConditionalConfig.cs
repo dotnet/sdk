@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -92,10 +92,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
                 case ConditionalType.VB:
                     setup = ConditionalLineCommentConfig.GenerateConditionalSetup("#", new ConditionalKeywords
                     {
-                        IfKeyword = "If",
-                        ElseIfKeyword = "ElseIf",
-                        ElseKeyword = "Else",
-                        EndIfKeyword = "End If"
+                        IfKeywords = new[] { "If" },
+                        ElseIfKeywords = new[] { "ElseIf" },
+                        ElseKeywords = new[] { "Else" },
+                        EndIfKeywords = new[] { "End If" }
                     }, new ConditionalOperationOptions
                     {
                         EvaluatorType = "VB",
