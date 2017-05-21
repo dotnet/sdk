@@ -22,7 +22,7 @@
       "name": "RunApp",
       "handler": "execute",
       "command": "dotnet",
-      "args": "exec bin\\Debug\\netcoreapp1.1\\%targetPathName%.dll",
+      "args": "exec bin/Debug/netcoreapp1.1/%targetPathName%.dll",
       "noExit": true,
       "exitTimeout": 5000
     },
