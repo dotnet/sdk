@@ -175,6 +175,68 @@ public static class Program
                 .And
                 .HaveStdOutContaining("Hello from a netcoreapp2.0.!");
         }
+        
+         [Fact]
+        public void Publish_standalone_post_netcoreapp2_arm_app()
+        {
+            if (UsingFullFrameworkMSBuild)
+            {
+                //  Disabled on full framework MSBuild until CI machines have VS with bundled .NET Core / .NET Standard versions
+                //  See https://github.com/dotnet/sdk/issues/1077
+                return;
+            }
+
+            var targetFramework = "netcoreapp2.0";
+            var rid = "win10-arm";
+
+            TestProject testProject = new TestProject()
+            {
+                Name = "Hello",
+                IsSdkProject = true,
+                TargetFrameworks = targetFramework,
+                RuntimeIdentifier = rid,
+                IsExe = true,
+            };
+            
+
+            testProject.SourceFiles["Program.cs"] = @"
+using System;
+public static class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine(""Hello from an arm netcoreapp2.0.!"");
+    }
+}
+";
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+
+            testProjectInstance.Restore(Log, testProject.Name);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testProjectInstance.TestRoot, testProject.Name));
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(
+                targetFramework: targetFramework,
+                runtimeIdentifier: rid);
+            var selfContainedExecutable = $"Hello{Constants.ExeSuffix}";
+
+            string selfContainedExecutableFullPath = Path.Combine(publishDirectory.FullName, selfContainedExecutable);
+
+            publishDirectory.Should().HaveFiles(new[] {
+                selfContainedExecutable,
+                "Hello.dll",
+                "Hello.pdb",
+                "Hello.deps.json",
+                "Hello.runtimeconfig.json",
+                $"{FileConstants.DynamicLibPrefix}coreclr{FileConstants.DynamicLibSuffix}",
+                $"{FileConstants.DynamicLibPrefix}hostfxr{FileConstants.DynamicLibSuffix}",
+                $"{FileConstants.DynamicLibPrefix}hostpolicy{FileConstants.DynamicLibSuffix}",
+                $"mscorlib.dll",
+                $"System.Private.CoreLib.dll",
+            });
+        }
 
         [Fact]
         public void Conflicts_are_resolved_when_publishing_a_portable_app()
