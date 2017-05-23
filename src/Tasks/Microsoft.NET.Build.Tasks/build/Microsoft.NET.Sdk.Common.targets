@@ -35,51 +35,110 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="GetNearestTargetFramework" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="NETSdkError" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  
+
   <!--
-  ============================================================
-                              GetTargetFrameworkProperties
+    ============================================================
+                                        ShouldQueryForProperties
 
-    Invoked by common targets to return the set of properties 
-    (in the form  "key1=value1;...keyN=valueN") needed to build 
-    against the target framework that best matches the referring
-    project's target framework.
+    Indicate whether this project cross-targets, so before
+    building it, a referring project must call
+    GetDesiredProperties to get the matching TargetFramework to
+    specify.
 
-    The referring project's $(TargetFrameworkMoniker) is passed 
-    in as $(ReferringTargetFramework).
-
-    This is in the common targets so that it will apply to both
-    cross-targeted and single-targeted projects.  It is run
-    for single-targeted projects so that an error will be
-    generated if the referenced project is not compatible
-    with the referencing project's target framework.
-  ============================================================
-   -->
-  <Target Name="GetTargetFrameworkProperties" Returns="TargetFramework=$(NearestTargetFramework);ProjectHasSingleTargetFramework=$(_HasSingleTargetFramework);ProjectIsRidAgnostic=$(_IsRidAgnostic)">
-
+    If this project only has a single TF and a single RID,
+    return UndefineProperties to allow the referring project
+    to build it directly without a subsequent query.
+  -->
+  <Target Name="ShouldQueryForProperties"
+          Returns="@(_ShouldQueryForPropertiesResult)">
     <PropertyGroup>
       <!-- indicate to caller that project is RID agnostic so that a global property RuntimeIdentifier value can be removed -->
       <_IsRidAgnostic>false</_IsRidAgnostic>
       <_IsRidAgnostic Condition=" '$(RuntimeIdentifier)' == '' and '$(RuntimeIdentifiers)' == '' ">true</_IsRidAgnostic>
 
-      <!-- If a ReferringTargetFramework was not specified, and we only have one TargetFramework, then don't try to check compatibility -->
-      <_SkipNearestTargetFrameworkResolution Condition="'$(TargetFramework)' != '' and '$(ReferringTargetFramework)' == ''">true</_SkipNearestTargetFrameworkResolution>
-      <NearestTargetFramework Condition="'$(_SkipNearestTargetFrameworkResolution)' == 'true'">$(TargetFramework)</NearestTargetFramework>
+      <_DesiredRemovedProperties Condition="'$(_IsRidAgnostic)' == 'true'">$(_DesiredRemovedProperties);RuntimeIdentifier</_DesiredRemovedProperties>
 
       <!-- A project can only have more than one output if the current global properties are such that the current build is a cross-targeting one. -->
       <_HasSingleTargetFramework Condition="'$(IsCrossTargetingBuild)' != 'true'">true</_HasSingleTargetFramework>
       <_HasSingleTargetFramework Condition="'$(_HasSingleTargetFramework)' == ''">false</_HasSingleTargetFramework>
 
+      <_DesiredRemovedProperties Condition="'$(_HasSingleTargetFramework)' == 'true'">$(_DesiredRemovedProperties);TargetFramework</_DesiredRemovedProperties>
+
+      <_ReferringProjectShouldCallGetDesiredProperties>true</_ReferringProjectShouldCallGetDesiredProperties>
+      <_ReferringProjectShouldCallGetDesiredProperties Condition="$(_HasSingleTargetFramework) and $(_IsRidAgnostic)">false</_ReferringProjectShouldCallGetDesiredProperties>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_ShouldQueryForPropertiesResult Include="$(MSBuildProjectFullPath)">
+        <QueryForProperties>$(_ReferringProjectShouldCallGetDesiredProperties)</QueryForProperties>
+        <UndefineProperties Condition="'$(_ReferringProjectShouldCallGetDesiredProperties)' == 'false'">$(_DesiredRemovedProperties)</UndefineProperties>
+      </_ShouldQueryForPropertiesResult>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ============================================================
+                              GetDesiredProperties
+
+    Invoked by common targets to return the set of properties
+    (in the metadatum SetDesiredProperties` in the form
+    "key1=value1;...keyN=valueN") needed to build against the
+    target framework that best matches the referring project's
+    target framework.
+
+    The referring project's $(TargetFrameworkMoniker) is passed
+    in as $(ReferringTargetFramework).
+  ============================================================
+   -->
+  <Target Name="GetDesiredProperties"
+          DependsOnTargets="ShouldQueryForProperties"
+          Returns="@(_ProjectBuildInstructions)">
+
+    <PropertyGroup>
+      <!-- If a ReferringTargetFramework was not specified, and we only have one TargetFramework, then don't try to check compatibility -->
+      <_SkipNearestTargetFrameworkResolution Condition="'$(TargetFramework)' != '' and '$(ReferringTargetFramework)' == ''">true</_SkipNearestTargetFrameworkResolution>
+      <NearestTargetFramework Condition="'$(_SkipNearestTargetFrameworkResolution)' == 'true'">$(TargetFramework)</NearestTargetFramework>
+
       <_PossibleTargetFrameworks Condition="'$(TargetFramework)' != ''">$(TargetFramework)</_PossibleTargetFrameworks>
       <_PossibleTargetFrameworks Condition="'$(TargetFramework)' == ''">$(TargetFrameworks)</_PossibleTargetFrameworks>
     </PropertyGroup>
 
-    <GetNearestTargetFramework ReferringTargetFramework="$(ReferringTargetFramework)" 
+    <GetNearestTargetFramework ReferringTargetFramework="$(ReferringTargetFramework)"
+                               PossibleTargetFrameworks="$(_PossibleTargetFrameworks)"
+                               ProjectFilePath="$(MSBuildProjectFullPath)"
+                               Condition="'$(_SkipNearestTargetFrameworkResolution)' != 'true'">
+      <Output PropertyName="NearestTargetFramework" TaskParameter="NearestTargetFramework" />
+    </GetNearestTargetFramework>
+
+    <ItemGroup>
+      <_ProjectBuildInstructions Include="$(MSBuildProjectFullPath)">
+        <SetDesiredProperties>TargetFramework=$(NearestTargetFramework)</SetDesiredProperties>
+        <UndefineProperties>$(_DesiredRemovedProperties)</UndefineProperties>
+      </_ProjectBuildInstructions>
+    </ItemGroup>
+  </Target>
+
+  <!-- This target is a compat shim, allowing the SDK to continue to function with older common targets that haven't switched to GetDesiredProperties.
+
+       TODO: After the SDK has picked up an MSBuild with https://github.com/Microsoft/msbuild/pull/1866, it should be deleted. -->
+  <Target Name="GetTargetFrameworkProperties" Returns="TargetFramework=$(NearestTargetFramework);ProjectHasSingleTargetFramework=$(_HasSingleTargetFramework);ProjectIsRidAgnostic=$(_IsRidAgnostic)"
+          DependsOnTargets="ShouldQueryForProperties">
+
+    <PropertyGroup>
+      <!-- If a ReferringTargetFramework was not specified, and we only have one TargetFramework, then don't try to check compatibility -->
+      <_SkipNearestTargetFrameworkResolution Condition="'$(TargetFramework)' != '' and '$(ReferringTargetFramework)' == ''">true</_SkipNearestTargetFrameworkResolution>
+      <NearestTargetFramework Condition="'$(_SkipNearestTargetFrameworkResolution)' == 'true'">$(TargetFramework)</NearestTargetFramework>
+
+      <_PossibleTargetFrameworks Condition="'$(TargetFramework)' != ''">$(TargetFramework)</_PossibleTargetFrameworks>
+      <_PossibleTargetFrameworks Condition="'$(TargetFramework)' == ''">$(TargetFrameworks)</_PossibleTargetFrameworks>
+    </PropertyGroup>
+
+    <GetNearestTargetFramework ReferringTargetFramework="$(ReferringTargetFramework)"
                                PossibleTargetFrameworks="$(_PossibleTargetFrameworks)"
                                ProjectFilePath="$(MSBuildProjectFullPath)"
                                Condition="'$(_SkipNearestTargetFrameworkResolution)' != 'true'">
       <Output PropertyName="NearestTargetFramework" TaskParameter="NearestTargetFramework" />
     </GetNearestTargetFramework>
   </Target>
-  
+
 </Project>
