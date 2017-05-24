@@ -5,6 +5,7 @@
     <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutDir>$(OutDir)Tests\</OutDir>
     <PackageTargetFallback>dotnet5.4;portable-net451+win8</PackageTargetFallback>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit.console.netcore" Version="1.0.3-prerelease-00607-01" />
