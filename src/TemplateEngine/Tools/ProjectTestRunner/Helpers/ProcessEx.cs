@@ -36,13 +36,26 @@ namespace ProjectTestRunner.Helpers
         private void OnErrorData(object sender, DataReceivedEventArgs e)
         {
             _stderr.AppendLine(e.Data);
-            Console.Error.WriteLine(e.Data);
+            try
+            {
+                Console.Error.WriteLine(e.Data);
+            }
+            catch
+            {
+            }
         }
 
         private void OnOutputData(object sender, DataReceivedEventArgs e)
         {
             _stdout.AppendLine(e.Data);
-            Console.WriteLine(e.Data);
+
+            try
+            {
+                Console.WriteLine(e.Data);
+            }
+            catch
+            {
+            }
         }
 
         public bool WaitForExit(int milliseconds)
