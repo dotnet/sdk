@@ -226,7 +226,20 @@ public static class Program
             var publishDirectory = publishCommand.GetOutputDirectory(
                 targetFramework: targetFramework,
                 runtimeIdentifier: runtimeIdentifier);
-            var selfContainedExecutable = $"Hello{Constants.ExeSuffix}";
+            
+            // The name of the self contained executable depends on the runtime identifier.
+            // We can't use the "Constants.ExeSuffix" for the suffix here because that changes
+            // depending on the RuntimeInformation - but we only want the suffix to vary based 
+            // on the runtime identifier
+            var selfContainedExecutable = string.Empty;
+            if (runtimeIdentifier.StartsWith("win"))
+            {
+                selfContainedExecutable = "Hello.exe";
+            }
+            else
+            {
+                selfContainedExecutable = "Hello";
+            }
 
             string selfContainedExecutableFullPath = Path.Combine(publishDirectory.FullName, selfContainedExecutable);
 
