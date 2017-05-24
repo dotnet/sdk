@@ -176,6 +176,8 @@ public static class Program
                 .HaveStdOutContaining("Hello from a netcoreapp2.0.!");
         }
         
+        //Note: Pre Netcoreapp2.0 standalone activation uses renamed dotnet.exe
+        //      While Post 2.0 we are shifting to using apphost.exe, so both publish needs to be validated
         [Theory]
         [InlineData("win-arm")]
         [InlineData("win8-arm")]
@@ -204,7 +206,6 @@ public static class Program
                 IsExe = true,
             };
             
-
             testProject.SourceFiles["Program.cs"] = @"
 using System;
 public static class Program
@@ -228,19 +229,11 @@ public static class Program
                 runtimeIdentifier: runtimeIdentifier);
             
             // The name of the self contained executable depends on the runtime identifier.
-            // We can't use the "Constants.ExeSuffix" for the suffix here because that changes
-            // depending on the RuntimeInformation - but we only want the suffix to vary based 
-            // on the runtime identifier
-            var selfContainedExecutable = string.Empty;
-            if (runtimeIdentifier.StartsWith("win"))
-            {
-                selfContainedExecutable = "Hello.exe";
-            }
-            else
-            {
-                selfContainedExecutable = "Hello";
-            }
-
+            // For Windows family ARM publishing, it'll always be Hello.exe.
+            // We shouldn't use "Constants.ExeSuffix" for the suffix here because that changes
+            // depending on the RuntimeInformation
+            var selfContainedExecutable = "Hello.exe";
+            
             string selfContainedExecutableFullPath = Path.Combine(publishDirectory.FullName, selfContainedExecutable);
 
             publishDirectory.Should().HaveFiles(new[] {
@@ -249,11 +242,11 @@ public static class Program
                 "Hello.pdb",
                 "Hello.deps.json",
                 "Hello.runtimeconfig.json",
-                $"{FileConstants.DynamicLibPrefix}coreclr{FileConstants.DynamicLibSuffix}",
-                $"{FileConstants.DynamicLibPrefix}hostfxr{FileConstants.DynamicLibSuffix}",
-                $"{FileConstants.DynamicLibPrefix}hostpolicy{FileConstants.DynamicLibSuffix}",
-                $"mscorlib.dll",
-                $"System.Private.CoreLib.dll",
+                "coreclr.dll",
+                "hostfxr.dll",
+                "hostpolicy.dll",
+                "mscorlib.dll",
+                "System.Private.CoreLib.dll",
             });
         }
 
