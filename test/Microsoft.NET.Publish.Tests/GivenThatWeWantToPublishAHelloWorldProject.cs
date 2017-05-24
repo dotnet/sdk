@@ -176,9 +176,16 @@ public static class Program
                 .HaveStdOutContaining("Hello from a netcoreapp2.0.!");
         }
         
-         [Fact]
-        public void Publish_standalone_post_netcoreapp2_arm_app()
+        [Theory]
+        [InlineData("win-arm")]
+        [InlineData("win8-arm")]
+        [InlineData("win81-arm")]
+        [InlineData("win10-arm")]
+        public void Publish_standalone_post_netcoreapp2_arm_app(string runtimeIdentifier)
         {
+            // Tests for existence of expected files when publishing an ARM project
+            // See https://github.com/dotnet/sdk/issues/1239
+
             if (UsingFullFrameworkMSBuild)
             {
                 //  Disabled on full framework MSBuild until CI machines have VS with bundled .NET Core / .NET Standard versions
@@ -187,14 +194,13 @@ public static class Program
             }
 
             var targetFramework = "netcoreapp2.0";
-            var rid = "win10-arm";
 
             TestProject testProject = new TestProject()
             {
                 Name = "Hello",
                 IsSdkProject = true,
                 TargetFrameworks = targetFramework,
-                RuntimeIdentifier = rid,
+                RuntimeIdentifier = runtimeIdentifier,
                 IsExe = true,
             };
             
@@ -219,7 +225,7 @@ public static class Program
 
             var publishDirectory = publishCommand.GetOutputDirectory(
                 targetFramework: targetFramework,
-                runtimeIdentifier: rid);
+                runtimeIdentifier: runtimeIdentifier);
             var selfContainedExecutable = $"Hello{Constants.ExeSuffix}";
 
             string selfContainedExecutableFullPath = Path.Combine(publishDirectory.FullName, selfContainedExecutable);
