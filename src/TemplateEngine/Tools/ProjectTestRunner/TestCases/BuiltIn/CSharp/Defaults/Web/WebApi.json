@@ -5,7 +5,7 @@
     {
       "handler": "execute",
       "command": "dotnet",
-      "args": "restore",
+      "args": "restore -s https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json -s https://dotnet.myget.org/F/msbuild/api/v3/index.json -s https://api.nuget.org/v3/index.json",
       "noExit": false,
       "exitCode": 0
     },
