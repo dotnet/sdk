@@ -41,12 +41,15 @@
     <Compile Include="CheckForImplicitPackageReferenceOverrides.cs" />
     <Compile Include="DiagnosticMessageSeverity.cs" />
     <Compile Include="DiagnosticsHelper.cs" />
+    <Compile Include="ILog.cs" />
+    <Compile Include="MSBuildLog.cs" />
     <Compile Include="NETSdkError.cs" />
     <Compile Include="LockFileLookup.cs" />
     <Compile Include="FrameworkReferenceResolver.cs" />
     <Compile Include="BuildErrorException.cs" />
     <Compile Include="CollectSDKReferencesDesignTime.cs" />
     <Compile Include="ReferenceInfo.cs" />
+    <Compile Include="ReportAssetsLogMessages.cs" />
     <Compile Include="Resources\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
