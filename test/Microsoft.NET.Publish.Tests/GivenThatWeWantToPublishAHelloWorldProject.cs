@@ -183,6 +183,7 @@ public static class Program
         [InlineData("win8-arm")]
         [InlineData("win81-arm")]
         [InlineData("win10-arm")]
+        [InlineData("win10-arm64")]
         public void Publish_standalone_post_netcoreapp2_arm_app(string runtimeIdentifier)
         {
             // Tests for existence of expected files when publishing an ARM project
@@ -233,8 +234,6 @@ public static class Program
             // We shouldn't use "Constants.ExeSuffix" for the suffix here because that changes
             // depending on the RuntimeInformation
             var selfContainedExecutable = "Hello.exe";
-            
-            string selfContainedExecutableFullPath = Path.Combine(publishDirectory.FullName, selfContainedExecutable);
 
             publishDirectory.Should().HaveFiles(new[] {
                 selfContainedExecutable,
