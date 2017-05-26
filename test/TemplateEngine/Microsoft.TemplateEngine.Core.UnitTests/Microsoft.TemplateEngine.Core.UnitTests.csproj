@@ -2,8 +2,6 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <RuntimeIdentifier />
-    <RuntimeIdentifiers />
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="ConditionalTests.*.cs" DependentUpon="ConditionalTests.cs" />
