@@ -9,6 +9,6 @@
   "tags": {
     "language": "C#"                        // Specify that this template is in C#.
   },
-  "sourceName": "MyProject.StarterWeb",     // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
+  "sourceName": "MyProject.StarterWeb",     // Will replace the string 'MyProject.StarterWeb' with the value provided via -n.
   "preferNameDirectory":true
 }
