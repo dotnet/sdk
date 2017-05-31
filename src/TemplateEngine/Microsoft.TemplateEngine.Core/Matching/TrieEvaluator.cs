@@ -185,7 +185,10 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
                             if (start >= _lastReturnedTerminalEndSequenceNumber)
                             {
-                                if (start < minNonTerminatedPathStart && (best == null || start < minTerminalStart || start == minTerminalStart && terminal.End > best.End))
+                                // Take the terminal for the match that started first & is after the end of the previous match
+                                // If multiple matches start at the same place, take the one that ends last.
+                                // If multiple matches start and end at the same place, take the later one in the EncounteredTerminals list (last in wins)
+                                if (start < minNonTerminatedPathStart && (best == null || start < minTerminalStart || start == minTerminalStart && terminal.End >= best.End))
                                 {
                                     bestPath = i;
                                     best = terminal;

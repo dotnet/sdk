@@ -12,6 +12,7 @@ using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -19,8 +20,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class SimpleConfigModel : IRunnableProjectConfig
     {
+        private static readonly string NameSymbolName = "name";
         private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
-        private static readonly string[] ExcludePatternDefaults = new[] 
+        private static readonly string[] ExcludePatternDefaults = new[]
         {
             "**/[Bb]in/**",
             "**/[Oo]bj/**",
@@ -43,10 +45,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IGlobalRunConfig _operationConfig;
         private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> _specialOperationConfig;
         private Parameter _nameParameter;
-        private string _safeNameName;
-        private string _safeNamespaceName;
-        private string _lowerSafeNameName;
-        private string _lowerSafeNamespaceName;
 
         public IFile SourceFile { get; set; }
 
@@ -213,24 +211,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
 
-                    if (Symbols == null)
-                    {
-                        parameters["name"] = new Parameter
-                        {
-                            IsName = true,
-                            Requirement = TemplateParameterPriority.Implicit,
-                            Name = "name",
-                            DefaultValue = DefaultName ?? SourceName
-                        };
-                    }
-                    else
+                    if (Symbols != null)
                     {
                         foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                         {
                             if (symbol.Value.Type == "parameter")
                             {
                                 ParameterSymbol param = (ParameterSymbol)symbol.Value;
-                                bool isName = param.Binding == "name";
+                                bool isName = param.Binding == NameSymbolName;
                                 parameters[symbol.Key] = new Parameter
                                 {
                                     DefaultValue = param.DefaultValue ?? (!param.IsRequired ? param.Replaces : null),
@@ -246,20 +234,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 };
                             }
                         }
-                    }
-
-                    string nameParameter = parameters.FirstOrDefault(x => x.Value.IsName).Key;
-
-                    if (nameParameter == null)
-                    {
-                        parameters["name"] = new Parameter
-                        {
-                            IsName = true,
-                            Requirement = TemplateParameterPriority.Implicit,
-                            Name = "name",
-                            DefaultValue = DefaultName ?? SourceName,
-                            IsVariable = true
-                        };
                     }
 
                     _parameters = parameters;
@@ -548,32 +522,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 macros = ProduceMacroConfig(computedMacros);
             }
 
-            if (SourceName != null)
-            {
-                if (SourceName.ToLower() != SourceName)
-                {
-                    if (SourceName.IndexOf('.') > -1)
-                    {
-                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNamespaceName, SourceName.ToLowerInvariant().TokenConfig()));
-                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().Replace('.', '_').TokenConfig()));
-                    }
-                    else
-                    {
-                        macroGeneratedReplacements.Add(new ReplacementTokens(_lowerSafeNameName, SourceName.ToLowerInvariant().TokenConfig()));
-                    }
-                }
-
-                if (SourceName.IndexOf('.') > -1)
-                {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNamespaceName, SourceName.TokenConfig()));
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.Replace('.', '_').TokenConfig()));
-                }
-                else
-                {
-                    macroGeneratedReplacements.Add(new ReplacementTokens(_safeNameName, SourceName.TokenConfig()));
-                }
-            }
-
             if (Symbols != null)
             {
                 foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
@@ -603,8 +551,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                         if (sourceVariable != null)
                         {
-                            GenerateReplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
-
                             if (symbol.Value is ParameterSymbol p)
                             {
                                 foreach (string form in p.Forms.GlobalForms)
@@ -618,6 +564,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                         macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, form, Forms));
                                     }
                                 }
+                            }
+                            else
+                            {
+                                GenerateReplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
                             }
                         }
                     }
@@ -645,7 +595,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (IOperationProvider p in operations.ToList())
             {
-                if(!string.IsNullOrEmpty(p.Id))
+                if (!string.IsNullOrEmpty(p.Id))
                 {
                     string prefix = (customGlobModel == null || string.IsNullOrEmpty(customGlobModel.FlagPrefix)) ? defaultModel.FlagPrefix : customGlobModel.FlagPrefix;
                     string on = $"{prefix}+:{p.Id}";
@@ -716,23 +666,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                 {
-                    if (symbol.Value.Binding == "safe_name")
-                    {
-                        _safeNameName = symbol.Key; // save for later, to generate the safe_name regex macro
-                    }
-                    else if (symbol.Value.Binding == "lower_safe_name")
-                    {
-                        _lowerSafeNameName = symbol.Key; // save for later, to generate the safe_name regex macro
-                    }
-                    else if (symbol.Value.Binding == "safe_namespace_name")
-                    {
-                        _safeNamespaceName = symbol.Key; // save for later, to generate the safe_name regex macro
-                    }
-                    else if (symbol.Value.Binding == "lower_safe_namespace_name")
-                    {
-                        _lowerSafeNamespaceName = symbol.Key; // save for later, to generate the safe_name regex macro
-                    }
-
                     if (symbol.Value.Type == "computed")
                     {
                         string value = ((ComputedSymbol)symbol.Value).Value;
@@ -754,42 +687,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         generatedMacroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, variableName, configParams));
                     }
                 }
-            }
-
-            if (_safeNameName == null)
-            {
-                IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>(@"(^\s+|\s+$)", ""),
-                    new KeyValuePair<string, string>(@"(((?<=\.)|^)(?=\d)|\W)", "_")
-                };
-
-                generatedMacroConfigs.Add(new RegexMacroConfig("safe_name", NameParameter.Name, steps));
-                _safeNameName = "safe_name";
-            }
-
-            if (_lowerSafeNameName == null)
-            {
-                generatedMacroConfigs.Add(new CaseChangeMacroConfig("lower_safe_name", _safeNameName, true));
-                _lowerSafeNameName = "lower_safe_name";
-            }
-
-            if (_safeNamespaceName == null)
-            {
-                IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>(@"(^\s+|\s+$)", ""),
-                    new KeyValuePair<string, string>(@"(((?<=\.)|^)(?=\d)|[^\w\.])", "_")
-                };
-
-                generatedMacroConfigs.Add(new RegexMacroConfig("safe_namespace", NameParameter.Name, steps));
-                _safeNamespaceName = "safe_namespace";
-            }
-
-            if (_lowerSafeNamespaceName == null)
-            {
-                generatedMacroConfigs.Add(new CaseChangeMacroConfig("lower_safe_namespace", _safeNamespaceName, true));
-                _lowerSafeNamespaceName = "lower_safe_namespace";
             }
 
             return generatedMacroConfigs;
@@ -1020,6 +917,64 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        private static ISymbolModel SetupDefaultNameSymbol(string sourceName)
+        {
+            StringBuilder nameSymbolConfigBuilder = new StringBuilder(512);
+
+            nameSymbolConfigBuilder.AppendLine(@"
+{
+  ""binding"": """ + NameSymbolName + @""",
+  ""type"": ""parameter"",
+  ""description"": ""The default name symbol"",
+  ""datatype"": ""string"",
+  ""forms"": {
+    ""global"": [ ""identity"", ""safe_name"", ""lower_safe_name"", ""safe_namespace"", ""lower_safe_namespace""]
+  }
+");
+
+            if (!string.IsNullOrEmpty(sourceName))
+            {
+                nameSymbolConfigBuilder.AppendLine(",");
+                nameSymbolConfigBuilder.AppendLine($"\"replaces\": \"{sourceName}\"");
+            }
+
+            nameSymbolConfigBuilder.AppendLine("}");
+
+            JObject config = JObject.Parse(nameSymbolConfigBuilder.ToString());
+            return ParameterSymbol.FromJObject(config, null, null);
+        }
+
+        private static IReadOnlyDictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject source)
+        {
+            Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
+
+            // setup the built-in default forms - these are all used by the default "name" symbol setup.
+            IValueForm identityForm = new IdentityValueForm();
+            formMap[identityForm.Identifier] = identityForm;
+            IValueForm safeNameForm = new DefaultSafeNameValueFormModel();
+            formMap[safeNameForm.Identifier] = safeNameForm;
+            IValueForm lowerSafeNameForm = new DefaultLowerSafeNameValueFormModel();
+            formMap[lowerSafeNameForm.Identifier] = lowerSafeNameForm;
+            IValueForm safeNamespaceForm = new DefaultSafeNamespaceValueFormModel();
+            formMap[safeNamespaceForm.Identifier] = safeNamespaceForm;
+            IValueForm lowerSafeNamespaceForm = new DefaultLowerSafeNamespaceValueFormModel();
+            formMap[lowerSafeNamespaceForm.Identifier] = lowerSafeNamespaceForm;
+
+            // setup the forms defined by the template configuration.
+            // if any have the same name as a default, the default is overridden.
+            IReadOnlyDictionary<string, JToken> templateDefinedforms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
+
+            foreach (KeyValuePair<string, JToken> form in templateDefinedforms)
+            {
+                if (form.Value is JObject o)
+                {
+                    formMap[form.Key] = ValueFormRegistry.GetForm(form.Key, o);
+                }
+            }
+
+            return formMap;
+        }
+
         public static SimpleConfigModel FromJObject(IEngineEnvironmentSettings environmentSettings, JObject source, ISimpleConfigModifiers configModifiers = null, JObject localeSource = null)
         {
             ILocalizationModel localizationModel = LocalizationFromJObject(localeSource);
@@ -1042,18 +997,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 GeneratorVersions = source.ToString(nameof(config.GeneratorVersions))
             };
 
-            IReadOnlyDictionary<string, JToken> forms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
-            Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
-
-            foreach(KeyValuePair<string, JToken> form in forms)
-            {
-                if(form.Value is JObject o)
-                {
-                    formMap[form.Key] = ValueFormRegistry.GetForm(form.Key, o);
-                }
-            }
-
-            config.Forms = formMap;
+            config.Forms = SetupValueFormMapForTemplate(source);
 
             List <ExtendedFileSource> sources = new List<ExtendedFileSource>();
             config.Sources = sources;
@@ -1096,6 +1040,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
+            // create a name symbol. If one is explicitly defined in the template, it'll override this.
+            symbols.Add(NameSymbolName, SetupDefaultNameSymbol(config.SourceName));
 
             // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
             // They're turned into symbols here, which eventually become tags.
@@ -1132,11 +1078,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
                 }
 
-                ISymbolModel model = SymbolModelConverter.GetModelForObject(obj, symbolLocalization, defaultOverride);
+                ISymbolModel modelForSymbol = SymbolModelConverter.GetModelForObject(obj, symbolLocalization, defaultOverride);
 
-                if (model != null)
+                if (modelForSymbol != null)
                 {
-                    symbols[prop.Name] = model;
+                    // TODO: revisit whether this check should be case-insensitive.
+                    // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
+                    if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
+                            && !symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol))
+                    {   // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
+                        symbols[prop.Name] = ParameterSymbol.ExplicitNameSymbolMergeWithDefaults(modelForSymbol, existingSymbol);
+                    }
+                    else
+                    {   // last in wins (in the odd case where a template.json defined a symbol multiple times)
+                        symbols[prop.Name] = modelForSymbol;
+                    }
                 }
             }
 
