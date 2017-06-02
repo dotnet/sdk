@@ -17,6 +17,63 @@
       "exitCode": 0
     },
     {
+      "handler": "directoryInspect",
+      "directory": "Areas",
+      "assertion": "does_not_exist"
+    },
+    {
+      "handler": "directoryInspect",
+      "directory": "Extensions",
+      "assertion": "does_not_exist"
+    },
+    {
+      "handler": "fileInspect",
+      "file": "urlRewrite.config",
+      "expectations": [
+        {
+          "assertion": "does_not_exist"
+        }
+      ],
+    },
+    {
+      "handler": "fileInspect",
+      "file": "Controllers/AccountController.cs",
+      "expectations": [
+        {
+          "assertion": "does_not_exist"
+        }
+      ]
+    },
+    {
+      "handler": "fileInspect",
+      "file": "<name>.csproj",
+      "expectations": [
+        {
+          "assertion": "exists"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": ".db"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.EntityFrameworkCore.Tools"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.VisualStudio.Web.CodeGeneration.Design"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.EntityFrameworkCore.Tools.DotNet"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.Extensions.SecretManager.Tools"
+        },
+      ]
+    },
+    {
       "name": "RunApp",
       "handler": "execute",
       "command": "dotnet",
