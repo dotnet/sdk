@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
+using System.IO;
 using Newtonsoft.Json.Linq;
 using ProjectTestRunner.HandlerResults;
-using System.IO;
-using System.Diagnostics;
 
 namespace ProjectTestRunner.Handlers
 {
