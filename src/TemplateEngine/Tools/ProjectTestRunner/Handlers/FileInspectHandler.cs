@@ -9,9 +9,9 @@ using ProjectTestRunner.HandlerResults;
 namespace ProjectTestRunner.Handlers
 {
     // file: rel path to file
-    //      Note: For filenames that get modified by the template creation name, use the literal "<name>".
+    //      Note: For filenames that get modified by the template creation name, use the literal "%targetPathName%".
     //              It gets replaced with the creation name.
-    //          Example: "filename": "<name>.csproj"
+    //          Example: "filename": "%targetPathName%.csproj"
     // expectations:
     //      assertion: exists | does_not_exist | contains | does_not_contain
     //      text: text to check for when using (file_contains | file_does_not_contain)
