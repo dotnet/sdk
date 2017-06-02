@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -24,6 +24,8 @@ namespace ProjectTestRunner
             { TaskKillHandler.Handler, new TaskKillHandler() },
             { HttpRequestHandler.Handler, new HttpRequestHandler() },
             { FindProcessHandler.Handler, new FindProcessHandler() },
+            { FileInspectHandler.Handler, new FileInspectHandler() },
+            { DirectoryInspectHandler.Handler, new DirectoryInspectHandler() },
         };
 
         private static readonly string Creator;
