@@ -46,7 +46,7 @@
     },
     {
       "handler": "fileInspect",
-      "file": "<name>.csproj",
+      "file": "%targetPathName%.csproj",
       "expectations": [
         {
           "assertion": "exists"

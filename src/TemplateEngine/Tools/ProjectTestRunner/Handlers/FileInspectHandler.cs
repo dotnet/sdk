@@ -51,7 +51,13 @@ namespace ProjectTestRunner.Handlers
                 string outputName = tokens["targetPathName"];
 
                 string name = json["name"]?.ToString();
-                string filename = json["file"].ToString().Replace("<name>", outputName);
+                string filename = json["file"].ToString();
+
+                foreach (KeyValuePair<string, string> entry in tokens)
+                {
+                    filename = filename.Replace($"%{entry.Key}%", entry.Value);
+                }
+
                 string pathToFile = Path.Combine(basePath, filename);
                 bool doesFileExist = File.Exists(pathToFile);
 
