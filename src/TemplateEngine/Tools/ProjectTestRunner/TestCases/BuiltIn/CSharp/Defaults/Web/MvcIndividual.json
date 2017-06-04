@@ -1,6 +1,6 @@
 {
-  "create": "mvc --no-restore",
-  "name": "MVC (C#, default framework, default auth)",
+  "create": "mvc -au Individual --no-restore --KestrelPort 5000",
+  "name": "MVC (C#, default framework, local individual auth)",
   "tasks": [
     {
       "handler": "execute",
@@ -19,7 +19,7 @@
     {
       "handler": "directoryInspect",
       "directory": "Areas",
-      "assertion": "does_not_exist"
+      "assertion": "exists"
     },
     {
       "handler": "directoryInspect",
@@ -31,7 +31,7 @@
       "file": "urlRewrite.config",
       "expectations": [
         {
-          "assertion": "does_not_exist"
+          "assertion": "exists"
         }
       ],
     },
@@ -40,7 +40,7 @@
       "file": "Controllers/AccountController.cs",
       "expectations": [
         {
-          "assertion": "does_not_exist"
+          "assertion": "exists"
         }
       ]
     },
@@ -52,23 +52,23 @@
           "assertion": "exists"
         },
         {
-          "assertion": "does_not_contain",
+          "assertion": "contains",
           "text": ".db"
         },
         {
-          "assertion": "does_not_contain",
+          "assertion": "contains",
           "text": "Microsoft.EntityFrameworkCore.Tools"
         },
         {
-          "assertion": "does_not_contain",
+          "assertion": "contains",
           "text": "Microsoft.VisualStudio.Web.CodeGeneration.Design"
         },
         {
-          "assertion": "does_not_contain",
+          "assertion": "contains",
           "text": "Microsoft.EntityFrameworkCore.Tools.DotNet"
         },
         {
-          "assertion": "does_not_contain",
+          "assertion": "contains",
           "text": "Microsoft.Extensions.SecretManager.Tools"
         },
       ]

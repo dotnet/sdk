@@ -47,6 +47,9 @@ namespace ProjectTestRunner
 
             Proc.Run("dotnet", $"{Creator} --debug:reinit").WaitForExit();
             Proc.Run("dotnet", $"{Creator}").WaitForExit();
+
+            string templateFeedDirectory = FindTemplateFeedDirectory(BasePath);
+            Proc.Run("dotnet", $"{Creator} -i \"{templateFeedDirectory}\"").WaitForExit();            
         }
 
         public Battery(ITestOutputHelper outputHelper)
@@ -176,6 +179,20 @@ namespace ProjectTestRunner
             {
                 watch.Stop();
             }
+        }
+
+        private static string FindTemplateFeedDirectory(string batteryDirectory)
+        {
+            DirectoryInfo currentDirectory = new DirectoryInfo(batteryDirectory);
+            string templateFeed = Path.Combine(currentDirectory.FullName, "template_feed");
+
+            while (!Directory.Exists(templateFeed))
+            {
+                currentDirectory = currentDirectory.Parent;
+                templateFeed = Path.Combine(currentDirectory.FullName, "template_feed");
+            }
+
+            return templateFeed;
         }
 
         private static IHandlerResult Create(string creator, string installPackage, string command, string targetPath)
