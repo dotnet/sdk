@@ -6,7 +6,7 @@
     <MsBuildPackagesVersion>0.1.0-preview-00028-160627</MsBuildPackagesVersion>
     <DependencyModelVersion>1.0.3</DependencyModelVersion>
     <PlatformAbstractionsVersion>1.0.3</PlatformAbstractionsVersion>
-    <NuGetVersion>4.3.0-preview2-4095</NuGetVersion>
+    <NuGetVersion>4.3.0-preview3-4132</NuGetVersion>
   </PropertyGroup>
 
   <!-- Dependencies from test projects -->
