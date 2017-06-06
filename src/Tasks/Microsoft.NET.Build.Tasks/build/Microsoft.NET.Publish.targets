@@ -201,6 +201,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RelativePath>@(_DebugSymbolsIntermediatePath->'%(Filename)%(Extension)')</RelativePath>
       </ResolvedFileToPublish>
 
+      <!-- Copy the documentation file (.xml), if any -->
+      <ResolvedFileToPublish Include="@(FinalDocFile)"
+                             Condition="'$(_DocumentationFileProduced)'=='true' and '$(CopyBuildOutputToPublishDirectory)' == 'true'">
+        <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
+      </ResolvedFileToPublish>
+
       <!-- Copy satellite assemblies. -->
       <ResolvedFileToPublish Include="@(IntermediateSatelliteAssembliesWithTargetPath)">
         <RelativePath>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\%(Filename)%(Extension)</RelativePath>
