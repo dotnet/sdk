@@ -2,5 +2,4 @@ The sample in this folder demonstrates:
 
  - **Multi-project template** - Console with an optional unit test project 
 
-See [`template.json`](./MyProject.Console/.template.config/template.json)
-
+See [`template.json`](./.template.config/template.json)
