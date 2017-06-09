@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public ProcessorState(Stream source, Stream target, int bufferSize, int flushThreshold, IEngineConfig config, IReadOnlyList<IOperationProvider> operationProviders)
         {
-            if (!(source is GZipStream) && !(source is NetworkStream))
+            if (source.CanSeek)
             {
                 try
                 {
