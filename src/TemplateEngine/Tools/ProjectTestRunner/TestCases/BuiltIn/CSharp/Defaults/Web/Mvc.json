@@ -1,11 +1,11 @@
-﻿{
+{
   "create": "mvc --no-restore",
   "name": "MVC (C#, default framework, default auth)",
   "tasks": [
     {
       "handler": "execute",
       "command": "dotnet",
-      "args": "restore",
+      "args": "restore -s https://dotnet.myget.org/F/aspnetcore-release/api/v3/index.json -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json -s https://dotnet.myget.org/F/msbuild/api/v3/index.json -s https://api.nuget.org/v3/index.json",
       "noExit": false,
       "exitCode": 0
     },
@@ -15,6 +15,63 @@
       "args": "build",
       "noExit": false,
       "exitCode": 0
+    },
+    {
+      "handler": "directoryInspect",
+      "directory": "Areas",
+      "assertion": "does_not_exist"
+    },
+    {
+      "handler": "directoryInspect",
+      "directory": "Extensions",
+      "assertion": "does_not_exist"
+    },
+    {
+      "handler": "fileInspect",
+      "file": "urlRewrite.config",
+      "expectations": [
+        {
+          "assertion": "does_not_exist"
+        }
+      ],
+    },
+    {
+      "handler": "fileInspect",
+      "file": "Controllers/AccountController.cs",
+      "expectations": [
+        {
+          "assertion": "does_not_exist"
+        }
+      ]
+    },
+    {
+      "handler": "fileInspect",
+      "file": "%targetPathName%.csproj",
+      "expectations": [
+        {
+          "assertion": "exists"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": ".db"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.EntityFrameworkCore.Tools"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.VisualStudio.Web.CodeGeneration.Design"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.EntityFrameworkCore.Tools.DotNet"
+        },
+        {
+          "assertion": "does_not_contain",
+          "text": "Microsoft.Extensions.SecretManager.Tools"
+        },
+      ]
     },
     {
       "name": "RunApp",

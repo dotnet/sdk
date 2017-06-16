@@ -1,0 +1,107 @@
+{
+  "create": "mvc -au Individual --no-restore --KestrelPort 5000",
+  "name": "MVC (C#, default framework, local individual auth)",
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore -s https://dotnet.myget.org/F/aspnetcore-release/api/v3/index.json -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json -s https://dotnet.myget.org/F/msbuild/api/v3/index.json -s https://api.nuget.org/v3/index.json",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "directoryInspect",
+      "directory": "Areas",
+      "assertion": "exists"
+    },
+    {
+      "handler": "directoryInspect",
+      "directory": "Extensions",
+      "assertion": "does_not_exist"
+    },
+    {
+      "handler": "fileInspect",
+      "file": "urlRewrite.config",
+      "expectations": [
+        {
+          "assertion": "exists"
+        }
+      ],
+    },
+    {
+      "handler": "fileInspect",
+      "file": "Controllers/AccountController.cs",
+      "expectations": [
+        {
+          "assertion": "exists"
+        }
+      ]
+    },
+    {
+      "handler": "fileInspect",
+      "file": "%targetPathName%.csproj",
+      "expectations": [
+        {
+          "assertion": "exists"
+        },
+        {
+          "assertion": "contains",
+          "text": ".db"
+        },
+        {
+          "assertion": "contains",
+          "text": "Microsoft.EntityFrameworkCore.Tools"
+        },
+        {
+          "assertion": "contains",
+          "text": "Microsoft.VisualStudio.Web.CodeGeneration.Design"
+        },
+        {
+          "assertion": "contains",
+          "text": "Microsoft.EntityFrameworkCore.Tools.DotNet"
+        },
+        {
+          "assertion": "contains",
+          "text": "Microsoft.Extensions.SecretManager.Tools"
+        },
+      ]
+    },
+    {
+      "name": "RunApp",
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "exec bin/Debug/netcoreapp2.0/%targetPathName%.dll",
+      "noExit": true,
+      "exitTimeout": 5000
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000/Home/About",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000/Home/Contact",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "taskkill",
+      "name": "RunApp"
+    }
+  ]
+}
