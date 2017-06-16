@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class ProcessorState : IProcessorState
     {
-        private readonly Stream _source;
+        private Stream _source;
         private readonly Stream _target;
         private readonly TrieEvaluator<OperationTerminal> _trie;
         private Encoding _encoding;
@@ -514,6 +514,14 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             //Ran out of places to check and haven't reached the actual match, consume all the way to the end
             currentBufferPosition = bufferLength;
+        }
+
+        public void Inject(Stream staged, int sequenceNumberEffect)
+        {
+            CurrentSequenceNumber += sequenceNumberEffect;
+            _source = new MultiStream(staged, _source);
+            CurrentBufferLength = _source.Read(CurrentBuffer, 0, CurrentBufferLength);
+            CurrentBufferPosition = 0;
         }
     }
 }

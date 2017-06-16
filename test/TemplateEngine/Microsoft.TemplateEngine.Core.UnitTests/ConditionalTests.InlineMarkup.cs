@@ -1,8 +1,7 @@
-﻿using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.MSBuild;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
-using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -21,6 +20,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 null,
                 true
             ));
+        }
+
+        private IProcessor SetupXmlPlusMsBuildProcessorAndReplacement(IVariableCollection vc)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
+            return Processor.Create(cfg, new InlineMarkupConditional(
+                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                true,
+                true,
+                MSBuildStyleEvaluatorDefinition.Evaluate,
+                "$({0})",
+                null,
+                true
+            ), new Replacement("ReplaceMe".TokenConfig(), "I've been replaced", null, true));
         }
 
         [Fact(DisplayName = nameof(VerifyInlineMarkupTrue))]
@@ -270,6 +283,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             expectedValue = @"<root>
 </root>";
 
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        [Fact(DisplayName = nameof(VerifyInlineMarkupRejectGetsProcessed))]
+        public void VerifyInlineMarkupRejectGetsProcessed()
+        {
+            string originalValue = @"<root>
+    <element Condition=""Exists(ReplaceMe)"" />
+</root>";
+
+            string expectedValue = @"<root>
+    <element Condition=""Exists(I've been replaced)"" />
+</root>";
+            VariableCollection vc = new VariableCollection { };
+            IProcessor processor = SetupXmlPlusMsBuildProcessorAndReplacement(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
@@ -251,6 +252,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             public void SeekForwardWhile(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Inject(Stream staged, int sequenceNumberEffect)
             {
                 throw new NotImplementedException();
             }

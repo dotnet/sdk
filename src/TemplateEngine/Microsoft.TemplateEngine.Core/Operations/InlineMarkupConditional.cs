@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -115,9 +115,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 if (faulted)
                 {
                     target.Write(Tokens[0].Value, Tokens[0].Start, Tokens[0].Length);
-                    target.Write(condition, 0, condition.Length);
-                    target.Write(_closeConditionTrie.Tokens[0].Value, _closeConditionTrie.Tokens[0].Start, _closeConditionTrie.Tokens[0].Length);
-                    int written = Tokens[0].Length + condition.Length + _closeConditionTrie.Tokens[0].Length;
+                    MemoryStream fragment = new MemoryStream();
+                    fragment.Write(condition, 0, condition.Length);
+                    fragment.Write(_closeConditionTrie.Tokens[0].Value, _closeConditionTrie.Tokens[0].Start, _closeConditionTrie.Tokens[0].Length);
+                    fragment.Write(processor.CurrentBuffer, currentBufferPosition, bufferLength - currentBufferPosition);
+                    fragment.Position = 0;
+                    processor.Inject(fragment, 0);
+                    currentBufferPosition = processor.CurrentBufferPosition;
+                    int written = Tokens[0].Length;
                     return written;
                 }
 

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 
 namespace Microsoft.TemplateEngine.Core.Contracts
@@ -31,5 +32,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         void SeekBackUntil(ITokenTrie match, bool consume);
 
         void SeekBackWhile(ITokenTrie match);
+
+        void Inject(Stream staged, int sequenceNumberEffect);
     }
 }
