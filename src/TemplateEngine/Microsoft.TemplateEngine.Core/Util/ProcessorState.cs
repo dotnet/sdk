@@ -518,7 +518,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public void Inject(Stream staged)
         {
-            _source = new CombinedStream(staged, _source);
+            _source = new CombinedStream(staged, _source, inner => _source = inner);
             CurrentBufferLength = _source.Read(CurrentBuffer, 0, CurrentBufferLength);
             CurrentBufferPosition = 0;
         }

@@ -7,12 +7,15 @@ namespace Microsoft.TemplateEngine.Core.Util
     {
         private readonly Stream _stream1;
         private readonly Stream _stream2;
+        private readonly Action<Stream> _reassign;
         private bool _isStream1Depleted;
+        private bool _isReassigned;
 
-        public CombinedStream(Stream stream1, Stream stream2)
+        public CombinedStream(Stream stream1, Stream stream2, Action<Stream> reassign)
         {
             _stream1 = stream1;
             _stream2 = stream2;
+            _reassign = reassign;
         }
 
         public override bool CanRead => true;
@@ -45,6 +48,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                 count -= read;
                 offset += read;
                 _isStream1Depleted = true;
+                _stream1.Dispose();
+                _reassign(_stream2);
+                _isReassigned = true;
             }
 
             read += _stream2.Read(buffer, offset, count);
@@ -69,8 +75,11 @@ namespace Microsoft.TemplateEngine.Core.Util
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _stream1.Dispose();
-            _stream2.Dispose();
+            if (!_isReassigned)
+            {
+                _stream1.Dispose();
+                _stream2.Dispose();
+            }
         }
     }
 }
