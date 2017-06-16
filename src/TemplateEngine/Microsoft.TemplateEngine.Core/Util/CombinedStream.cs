@@ -3,13 +3,13 @@ using System.IO;
 
 namespace Microsoft.TemplateEngine.Core.Util
 {
-    internal class MultiStream : Stream
+    internal class CombinedStream : Stream
     {
         private readonly Stream _stream1;
         private readonly Stream _stream2;
         private bool _isStream1Depleted;
 
-        public MultiStream(Stream stream1, Stream stream2)
+        public CombinedStream(Stream stream1, Stream stream2)
         {
             _stream1 = stream1;
             _stream2 = stream2;

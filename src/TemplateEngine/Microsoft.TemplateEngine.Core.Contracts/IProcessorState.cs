@@ -33,6 +33,6 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         void SeekBackWhile(ITokenTrie match);
 
-        void Inject(Stream staged, int sequenceNumberEffect);
+        void Inject(Stream staged);
     }
 }

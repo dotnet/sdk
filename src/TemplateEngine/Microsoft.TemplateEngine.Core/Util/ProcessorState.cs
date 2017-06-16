@@ -516,10 +516,9 @@ namespace Microsoft.TemplateEngine.Core.Util
             currentBufferPosition = bufferLength;
         }
 
-        public void Inject(Stream staged, int sequenceNumberEffect)
+        public void Inject(Stream staged)
         {
-            CurrentSequenceNumber += sequenceNumberEffect;
-            _source = new MultiStream(staged, _source);
+            _source = new CombinedStream(staged, _source);
             CurrentBufferLength = _source.Read(CurrentBuffer, 0, CurrentBufferLength);
             CurrentBufferPosition = 0;
         }

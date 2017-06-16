@@ -120,7 +120,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     fragment.Write(_closeConditionTrie.Tokens[0].Value, _closeConditionTrie.Tokens[0].Start, _closeConditionTrie.Tokens[0].Length);
                     fragment.Write(processor.CurrentBuffer, currentBufferPosition, bufferLength - currentBufferPosition);
                     fragment.Position = 0;
-                    processor.Inject(fragment, 0);
+                    processor.Inject(fragment);
                     currentBufferPosition = processor.CurrentBufferPosition;
                     int written = Tokens[0].Length;
                     return written;

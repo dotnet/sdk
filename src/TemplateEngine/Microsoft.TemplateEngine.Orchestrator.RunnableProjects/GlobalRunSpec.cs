@@ -256,7 +256,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 throw new NotImplementedException();
             }
 
-            public void Inject(Stream staged, int sequenceNumberEffect)
+            public void Inject(Stream staged)
             {
                 throw new NotImplementedException();
             }
