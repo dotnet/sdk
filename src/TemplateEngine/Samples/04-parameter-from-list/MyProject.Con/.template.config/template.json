@@ -1,26 +1,26 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Contoso",
-  "classifications": [ "Web" ], 
-  "name": "Contoso Starter Web",
-  "identity": "MyProject.04.StarterWeb.CSharp",         
-  "groupIdentity":"MyProject.04.StarterWeb",
-  "shortName": "cweb04",                 // You can create the project using this short name instead of the one above.
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 04",
+  "identity": "MyProject.04.Sample.CSharp",         
+  "groupIdentity":"MyProject.04.Sample",
+  "shortName": "sample04",
   "tags": {
-    "language": "C#"                       // Specify that this template is in C#.
+    "language": "C#"
   },
   "preferNameDirectory": true,
-  "sourceName": "MyProject.StarterWeb",       // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
+  "sourceName": "MyProject.Con",
   "symbols":{
     "CopyrightName": {
       "type": "parameter",
-      "defaultValue": "John Smith",
-      "replaces":"Contoso"
+      "defaultValue": "(c) Contoso",
+      "replaces":"(copyright)"
     },
     "Title": {
       "type": "parameter",
-      "defaultValue": "Hello Web",
-      "replaces":"Contoso Web"
+      "defaultValue": "Contoso Sample",
+      "replaces":"My App Title"
     },
     "EnableContactPage":{
       "type": "parameter",
@@ -54,7 +54,7 @@
         {
           "condition": "(!EnableContactPage)",
           "exclude": [
-            "Views/Home/Contact.cshtml"
+            "contact.txt"
           ]
         }
       ]
