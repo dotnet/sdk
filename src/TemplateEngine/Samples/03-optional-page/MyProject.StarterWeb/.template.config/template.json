@@ -1,6 +1,6 @@
 {
-  "$schema": "http://json.schemastore.org/template",
-  "author": "Contoso",
+  "$schema": "file://Users/sayedhashimi/mycode/schemastore/src/schemas/json/template.json",
+  
   "classifications": [ "Web" ], 
   "name": "Contoso Starter Web",
   "identity": "MyProject.03.StarterWeb.CSharp",         
