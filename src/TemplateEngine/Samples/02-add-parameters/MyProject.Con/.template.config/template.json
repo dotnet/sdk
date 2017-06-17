@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Contoso",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 02",
+  "identity": "MyProject.02.Sample.CSharp",         
+  "groupIdentity":"MyProject.02.Sample",
+  "shortName": "sample02",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "MyProject.Con",
+  "preferNameDirectory": true,
+  "symbols":{
+    "copyrightName": {
+      "type": "parameter",
+      "defaultValue": "John Smith",
+      "replaces":"Contoso"
+    },
+    "title": {
+      "type": "parameter",
+      "defaultValue": "Hello World from dotnet new",
+      "replaces":"Hello World"
+    }
+  }
+}
