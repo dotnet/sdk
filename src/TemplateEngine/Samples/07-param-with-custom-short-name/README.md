@@ -6,7 +6,7 @@ To customize parameter names for the command line (`dotnet new`), you will creat
 In that file you can define the long and short name of the parameters, as well as other settings.
 
 See 
- - [`dotnetcli.host.json`](./MyProject.StarterWeb/.template.config/dotnetcli.host.json)
- - [`template.json`](./MyProject.StarterWeb/.template.config/template.json)
+ - [`dotnetcli.host.json`](./MyProject.Con/.template.config/dotnetcli.host.json)
+ - [`template.json`](./MyProject.Con/.template.config/template.json)
 
 Note: This sample is the same as [`02-add-parameters`](https://github.com/dotnet/dotnet-template-samples/tree/master/02-add-parameters) plus a `dotnetcli.host.json` file.
