@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Contoso",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 09",
+  "identity": "MyProject.09.Sample.CSharp",         
+  "groupIdentity":"MyProject.09.Sample",
+  "shortName": "sample09",
+  "tags": {
+    "language": "C#"
+  },
+  "sourceName": "MyProject.Con",
+  "preferNameDirectory":true,
+  "symbols": {
+    "backgroundColor":{
+      "type": "parameter",
+      "defaultValue": "grey",
+      "datatype":"text",
+      "replaces": "black",
+      "onlyIf": [
+        {
+          "after": "background-color: "
+        }
+      ]
+    }
+  }
+}
