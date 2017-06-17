@@ -1,14 +1,14 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "classifications": [ "Web" ], 
-  "name": "Contoso Starter Web",
-  "identity": "MyProject.03.StarterWeb.CSharp",         
-  "groupIdentity":"MyProject.03.StarterWeb",
-  "shortName": "cweb03",                 // You can create the project using this short name instead of the one above.
+  "name": "Contoso Sample 03",
+  "identity": "MyProject.03.Sample.CSharp",         
+  "groupIdentity":"MyProject.03.Sample",
+  "shortName": "sample03",
   "tags": {
-    "language": "C#"                       // Specify that this template is in C#.
+    "language": "C#"
   },
-  "sourceName": "MyProject.StarterWeb",      // Will replace the string 'MyProject.StarterWe' with the value provided via -n.
+  "sourceName": "MyProject.StarterWeb",
   "preferNameDirectory": true,
   "symbols":{
     "CopyrightName": {

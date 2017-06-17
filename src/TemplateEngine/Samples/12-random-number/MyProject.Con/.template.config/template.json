@@ -2,14 +2,14 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Sayed I. Hashimi",
   "classifications": [ "Console" ], 
-  "name": "MyConProject",
-  "identity": "MyProject.12.Con.CSharp",         
-  "groupIdentity":"MyProject.12.Con",
-  "shortName": "con12",
+  "name": "Contoso Sample 12",
+  "identity": "MyProject.12.Sample.CSharp",         
+  "groupIdentity":"MyProject.12.Sample",
+  "shortName": "sample12",
   "tags": {
     "language": "C#"
   },
-  "sourceName": "MyProject.Console",
+  "sourceName": "MyProject.Con",
   "preferNameDirectory": true,
   "symbols":{
     "myRandomNumber":{

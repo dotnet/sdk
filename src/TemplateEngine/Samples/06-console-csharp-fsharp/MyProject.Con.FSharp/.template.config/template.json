@@ -2,10 +2,10 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Sayed I. Hashimi",
   "classifications": [ "Console" ], 
-  "name": "My Custom Console",
-  "identity": "MyProject.06.StarterWeb.FSharp",         
-  "groupIdentity":"MyProject.06.StarterWeb",
-  "shortName": "mycon06",
+  "name": "Contoso Sample 06",
+  "identity": "MyProject.06.Sample.FSharp",         
+  "groupIdentity":"MyProject.06.Sample",
+  "shortName": "sample06",
   "tags": {
     "language": "F#"
   },

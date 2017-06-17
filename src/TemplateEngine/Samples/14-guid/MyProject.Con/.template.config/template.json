@@ -2,14 +2,14 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Sayed I. Hashimi",
   "classifications": [ "Console" ], 
-  "name": "MyConProject",
+  "name": "Contoso Sample 14",
   "identity": "MyProject.14.Con.CSharp",         
   "groupIdentity":"MyProject.14.Con",
-  "shortName": "con14",
+  "shortName": "sample14",
   "tags": {
     "language": "C#"
   },
-  "sourceName": "MyProject.Console",
+  "sourceName": "MyProject.Con",
   "preferNameDirectory": true,
   "guids": [
     "4BC5DF1F-B155-4A69-9719-0AB349B1ACB2"

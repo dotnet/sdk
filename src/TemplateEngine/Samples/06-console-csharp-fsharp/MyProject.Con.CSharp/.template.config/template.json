@@ -1,10 +1,10 @@
 {
   "author": "Sayed I. Hashimi",
   "classifications": [ "Console" ], 
-  "name": "My Custom Console",
-  "identity": "MyProject.06.StarterWeb.CSharp",         
-  "groupIdentity":"MyProject.06.StarterWeb",
-  "shortName": "mycon06",
+  "name": "Contoso Sample 06",
+  "identity": "MyProject.06.Sample.CSharp",         
+  "groupIdentity":"MyProject.06.Sample",
+  "shortName": "sample06",
   "tags": {
     "language": "C#"
   },

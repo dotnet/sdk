@@ -2,14 +2,14 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Sayed I. Hashimi",
   "classifications": [ "Console" ], 
-  "name": "Console",
-  "identity": "MyProject.08.Console.CSharp",         
-  "groupIdentity":"MyProject.Console",
-  "shortName": "con08",
+  "name": "Contoso Sample 08",
+  "identity": "MyProject.08.Sample.CSharp",         
+  "groupIdentity":"MyProject.Sample",
+  "shortName": "sample08",
   "tags": {
     "language": "C#"
   },
-  "sourceName": "MyProject.Console",
+  "sourceName": "MyProject.Con",
   "preferNameDirectory": true,
   "symbols":{
     "skipRestore": {
