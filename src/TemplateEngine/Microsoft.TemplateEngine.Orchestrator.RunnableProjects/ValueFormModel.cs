@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (!FormLookup.TryGetValue(identifier, out IValueForm value))
             {
-                return FormLookup["identity"].FromJObject(name, obj);
+                return FormLookup[IdentityValueForm.FormName].FromJObject(name, obj);
             }
 
             return value.FromJObject(name, obj);

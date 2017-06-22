@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -108,10 +108,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (!jObject.TryGetValue(nameof(symbol.Forms), StringComparison.OrdinalIgnoreCase, out JToken formsToken) || !(formsToken is JObject formsObject))
             {
-                symbol.Forms = SymbolValueFormsModel.Default;   // no value forms explicitly defined, use the default ("identity")
+                // no value forms explicitly defined, use the default ("identity")
+                symbol.Forms = SymbolValueFormsModel.Default;
             }
             else
             {
+                // the config defines forms for the symbol. Use them.
                 symbol.Forms = SymbolValueFormsModel.FromJObject(formsObject);
             }
 

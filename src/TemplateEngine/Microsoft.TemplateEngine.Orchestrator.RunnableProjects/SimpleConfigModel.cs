@@ -928,7 +928,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
   ""description"": ""The default name symbol"",
   ""datatype"": ""string"",
   ""forms"": {
-    ""global"": [ ""identity"", ""safe_name"", ""lower_safe_name"", ""safe_namespace"", ""lower_safe_namespace""]
+    ""global"": [ """ + IdentityValueForm.FormName
+                    + @""", """ + DefaultSafeNameValueFormModel.FormName
+                    + @""", """ + DefaultLowerSafeNameValueFormModel.FormName
+                    + @""", """ + DefaultSafeNamespaceValueFormModel.FormName
+                    + @""", """ + DefaultLowerSafeNamespaceValueFormModel.FormName
+                    + @"""]
   }
 ");
 

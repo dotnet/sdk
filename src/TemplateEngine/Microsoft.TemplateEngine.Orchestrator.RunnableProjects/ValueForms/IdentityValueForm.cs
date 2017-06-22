@@ -5,7 +5,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     public class IdentityValueForm : IValueForm
     {
-        public string Identifier => "identity";
+        public static readonly string FormName = "identity";
+
+        public string Identifier => FormName;
 
         public string Name { get; }
 

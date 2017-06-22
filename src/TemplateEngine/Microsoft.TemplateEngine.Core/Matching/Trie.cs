@@ -48,7 +48,16 @@ namespace Microsoft.TemplateEngine.Core.Matching
                         next.Terminals = new List<T>();
                     }
 
-                    next.Terminals.Add(terminal);
+                    int sameMatcherIndex = next.Terminals.FindIndex(t => t.Start == terminal.Start && t.End == terminal.End);
+
+                    if (sameMatcherIndex > -1)
+                    {   // this matching is identical to another terminal already added to the trie. Overwrite it.
+                        next.Terminals[sameMatcherIndex] = terminal;
+                    }
+                    else
+                    {
+                        next.Terminals.Add(terminal);
+                    }
                 }
 
                 current = next.NextNodes;

@@ -4,7 +4,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     public class DefaultLowerSafeNamespaceValueFormModel : DefaultSafeNamespaceValueFormModel
     {
-        public override string Identifier => "lower_safe_namespace";
+        public new static readonly string FormName = "lower_safe_namespace";
+
+        public override string Identifier => FormName;
 
         public override string Process(IReadOnlyDictionary<string, IValueForm> forms, string value)
         {

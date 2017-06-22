@@ -11,7 +11,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         {
         }
 
-        public virtual string Identifier => "safe_namespace";
+        public static readonly string FormName = "safe_namespace";
+
+        public virtual string Identifier => FormName;
 
         public string Name => Identifier;
 
