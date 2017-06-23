@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Contoso",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 15",
+  "identity": "MyProject.15.Sample.CSharp",         
+  "groupIdentity":"MyProject.15.Sample",
+  "shortName": "sample15",
+  "tags": {
+    "language": "C#"
+  },
+  "preferNameDirectory": true,
+  "sourceName": "MyProject.Con",
+  "symbols":{
+    "CopyrightName": {
+      "type": "parameter",
+      "defaultValue": "(c) Contoso",
+      "replaces":"(copyright)"
+    },
+    "Title": {
+      "type": "parameter",
+      "defaultValue": "Contoso Sample",
+      "replaces":"My App Title"
+    },
+    "BackgroundColor":{
+      "type":"parameter",
+      "datatype": "choice",
+      "defaultValue":"aliceblue",
+      "choices": [
+        {
+          "choice": "aliceblue",
+          "description": "Alice Blue"
+        },
+        {
+          "choice": "dimgray",
+          "description":"dimgray"
+        },
+        {
+          "choice":"skyblue",
+          "description":"skyblue"
+        }
+      ],
+      "replaces":"skyblue"
+    },
+    "DisplayCopywrite":{
+      "type": "parameter",
+      "datatype":"bool",
+      "defaultValue": "true"
+    },
+    "DisplayTitle":{
+      "type": "parameter",
+      "datatype":"bool",
+      "defaultValue": "true"
+    },
+    "BackgroundGreyAndDisplayCopyright":{
+      "type": "computed",
+      "value": "(BackgroundColor == \"aliceblue\" && DisplayCopywrite == \"true\")"
+    }
+  }
+}
