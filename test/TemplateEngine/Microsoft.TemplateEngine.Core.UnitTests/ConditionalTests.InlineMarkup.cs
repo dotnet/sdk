@@ -36,6 +36,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             ), new Replacement("ReplaceMe".TokenConfig(), "I've been replaced", null, true));
         }
 
+        private IProcessor SetupXmlPlusMsBuildProcessorAndReplacementWithLookaround(IVariableCollection vc)
+        {
+            EngineConfig cfg = new EngineConfig(EnvironmentSettings, vc, "$({0})");
+            return Processor.Create(cfg, new InlineMarkupConditional(
+                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                true,
+                true,
+                MSBuildStyleEvaluatorDefinition.Evaluate,
+                "$({0})",
+                null,
+                true
+            ), new Replacement("ReplaceMe".TokenConfigBuilder().OnlyIfAfter("Condition=\"Exists("), "I've been replaced", null, true));
+        }
+
         [Fact(DisplayName = nameof(VerifyInlineMarkupTrue))]
         public void VerifyInlineMarkupTrue()
         {
@@ -298,6 +312,21 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 </root>";
             VariableCollection vc = new VariableCollection { };
             IProcessor processor = SetupXmlPlusMsBuildProcessorAndReplacement(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999);
+        }
+
+        [Fact(DisplayName = nameof(VerifyInlineMarkupRejectGetsProcessedWithLookaround))]
+        public void VerifyInlineMarkupRejectGetsProcessedWithLookaround()
+        {
+            string originalValue = @"<root>
+    <element Condition=""Exists(ReplaceMe)"" />
+</root>";
+
+            string expectedValue = @"<root>
+    <element Condition=""Exists(I've been replaced)"" />
+</root>";
+            VariableCollection vc = new VariableCollection { };
+            IProcessor processor = SetupXmlPlusMsBuildProcessorAndReplacementWithLookaround(vc);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
     }
