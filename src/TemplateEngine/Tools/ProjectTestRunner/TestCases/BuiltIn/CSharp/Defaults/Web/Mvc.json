@@ -1,5 +1,5 @@
 {
-  "create": "mvc --no-restore",
+  "create": "mvc",
   "name": "MVC (C#, default framework, default auth)",
   "tasks": [
     {

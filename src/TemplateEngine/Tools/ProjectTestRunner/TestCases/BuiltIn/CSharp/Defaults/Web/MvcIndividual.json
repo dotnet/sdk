@@ -1,5 +1,5 @@
 {
-  "create": "mvc -au Individual --no-restore --KestrelPort 5000",
+  "create": "mvc -au Individual --KestrelPort 5000",
   "name": "MVC (C#, default framework, local individual auth)",
   "tasks": [
     {

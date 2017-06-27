@@ -1,5 +1,5 @@
 {
-  "create": "web --no-restore",
+  "create": "web",
   "name": "Empty Web (C#, default framework, default auth)",
   "tasks": [
     {

@@ -1,5 +1,5 @@
 ﻿{
-  "create": "console --language F# --no-restore",
+  "create": "console --language F#",
   "name": "Console (F#, default framework)",
   "tasks": [
     {
