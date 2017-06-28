@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(NameSymbolGetsAddedWithDefaultValueForms))]
         public void NameSymbolGetsAddedWithDefaultValueForms()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ConfigForSymbolWithFormsButNotIdentity);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ArrayConfigForSymbolWithFormsButNotIdentity);
             Assert.True(configModel.Symbols.ContainsKey("name"));
 
             ISymbolModel symbolInfo = configModel.Symbols["name"];
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst))]
         public void ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ConfigForSymbolWithFormsButNotIdentity);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ArrayConfigForSymbolWithFormsButNotIdentity);
             Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
 
             ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(0, paramSymbol.Forms.GlobalForms.ToList().IndexOf(IdentityValueForm.FormName));
         }
 
-        private static JObject ConfigForSymbolWithFormsButNotIdentity
+        private static JObject ArrayConfigForSymbolWithFormsButNotIdentity
         {
             get
             {
@@ -78,10 +78,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         // Tests that a name symbol with explicitly defined value forms but no identity form
         // gets the identity form added as the first form.
-        [Fact(DisplayName = nameof(ConfigDefinedNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst))]
-        public void ConfigDefinedNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst()
+        [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst))]
+        public void ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ConfigWithNameSymbolAndValueFormsButNotIdentity);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ArrayConfigWithNameSymbolAndValueFormsButNotIdentity);
             Assert.True(configModel.Symbols.ContainsKey("name"));
 
             ISymbolModel symbolInfo = configModel.Symbols["name"];
@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("baz", configuredValueFormNames[3]);
         }
 
-        private static JObject ConfigWithNameSymbolAndValueFormsButNotIdentity
+        private static JObject ArrayConfigWithNameSymbolAndValueFormsButNotIdentity
         {
             get
             {
@@ -124,19 +124,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        // Test that when a symbol explicitly includes the "identity" value form, the value forms for the symbol remain unmodified.
-        [Fact(DisplayName = nameof(ParameterSymbolWithIdentityValueFormRetainsFormsUnmodified))]
-        public void ParameterSymbolWithIdentityValueFormRetainsFormsUnmodified()
+        [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly))]
+        public void ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ConfigForSymbolWithValueFormsIncludingIdentity);
-            Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ArrayConfigWithNameSymbolAndValueFormsWithIdentity);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
 
-            ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
-
+            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
@@ -144,7 +142,133 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
         }
 
-        private static JObject ConfigForSymbolWithValueFormsIncludingIdentity
+        private static JObject ArrayConfigWithNameSymbolAndValueFormsWithIdentity
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": [ ""foo"", ""bar"", ""baz"", ""identity"" ]
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
+        public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal("baz", configuredValueFormNames[3]);
+        }
+
+        private static JObject ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
+            ""addIdentity"": ""false""
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
+        public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal("baz", configuredValueFormNames[3]);
+        }
+
+        private static JObject ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
+            ""addIdentity"": ""true""
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        private static JObject ConfigWithObjectValueFormDefinitionAddIdentityFalse
         {
             get
             {
@@ -163,7 +287,207 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
       ""type"": ""parameter"",
       ""dataType"": ""string"",
       ""forms"": {
-        ""global"": [ ""foo"", ""bar"", ""baz"", ""identity"" ]
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
+            ""addIdentity"": ""false""
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue))]
+        public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, NameConfigWithObjectValueFormDefinitionAddIdentityTrue);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal("foo", configuredValueFormNames[1]);
+            Assert.Equal("bar", configuredValueFormNames[2]);
+            Assert.Equal("baz", configuredValueFormNames[3]);
+        }
+
+        private static JObject NameConfigWithObjectValueFormDefinitionAddIdentityTrue
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
+            ""addIdentity"": ""true""
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse))]
+        public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, NameConfigWithObjectValueFormDefinitionAddIdentityFalse);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+
+            Assert.Equal(3, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal("baz", configuredValueFormNames[2]);
+        }
+
+        private static JObject NameConfigWithObjectValueFormDefinitionAddIdentityFalse
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
+            ""addIdentity"": ""false""
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
+        public void NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal("foo", configuredValueFormNames[1]);
+            Assert.Equal("bar", configuredValueFormNames[2]);
+            Assert.Equal("baz", configuredValueFormNames[3]);
+        }
+
+        private static JObject NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
+        public void NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal("baz", configuredValueFormNames[2]);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
+        }
+
+        private static JObject NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""baz"", ""identity"" ],
+        }
       }
     }
   }
@@ -212,6 +536,55 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 return JObject.Parse(configString);
             }
         }
+
+        // Test that when a symbol explicitly includes the "identity" value form, the value forms for the symbol remain unmodified.
+        [Fact(DisplayName = nameof(ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified))]
+        public void ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ArrayConfigForSymbolWithValueFormsIncludingIdentity);
+            Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal("baz", configuredValueFormNames[2]);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
+        }
+
+        private static JObject ArrayConfigForSymbolWithValueFormsIncludingIdentity
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""testSymbol"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": [ ""foo"", ""bar"", ""baz"", ""identity"" ]
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
 
         [Fact(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityTrue))]
         public void ObjectValueFormDefinitionRespectsAddIdentityTrue()
@@ -281,7 +654,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("baz", configuredValueFormNames[2]);
         }
 
-        private static JObject ConfigWithObjectValueFormDefinitionAddIdentityFalse
+
+        [Fact(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
+        public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse);
+            Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal("baz", configuredValueFormNames[3]);
+        }
+
+        private static JObject ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse
         {
             get
             {
@@ -301,7 +693,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
       ""dataType"": ""string"",
       ""forms"": {
         ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
+            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
             ""addIdentity"": ""false""
         }
       }
@@ -312,10 +704,108 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue))]
-        public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue()
+        [Fact(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
+        public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, NameConfigWithObjectValueFormDefinitionAddIdentityTrue);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue);
+            Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal("baz", configuredValueFormNames[3]);
+        }
+
+        private static JObject ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""testSymbol"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
+            ""addIdentity"": ""true""
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
+        public void ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
+            Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
+            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+
+            Assert.Equal(4, configuredValueFormNames.Count);
+            Assert.Equal("foo", configuredValueFormNames[0]);
+            Assert.Equal("bar", configuredValueFormNames[1]);
+            Assert.Equal("baz", configuredValueFormNames[2]);
+            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
+        }
+
+        private static JObject ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithValueForms"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithValueForms"",
+  ""shortName"": ""TestAssets.TemplateWithValueForms"",
+  ""symbols"": {
+    ""testSymbol"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""forms"": {
+        ""global"": {
+            ""forms"": [ ""foo"", ""bar"", ""baz"", ""identity"" ],
+        }
+      }
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
+        public void ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
             Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
 
             ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
@@ -331,7 +821,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("baz", configuredValueFormNames[3]);
         }
 
-        private static JObject NameConfigWithObjectValueFormDefinitionAddIdentityTrue
+        private static JObject ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified
         {
             get
             {
@@ -352,7 +842,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
       ""forms"": {
         ""global"": {
             ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-            ""addIdentity"": ""true""
         }
       }
     }
@@ -362,53 +851,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse))]
-        public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse()
-        {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, NameConfigWithObjectValueFormDefinitionAddIdentityFalse);
-            Assert.True(configModel.Symbols.ContainsKey("testSymbol"));
-
-            ISymbolModel symbolInfo = configModel.Symbols["testSymbol"];
-            Assert.True(symbolInfo is ParameterSymbol);
-
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
-
-            Assert.Equal(3, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal("baz", configuredValueFormNames[2]);
-        }
-
-        private static JObject NameConfigWithObjectValueFormDefinitionAddIdentityFalse
-        {
-            get
-            {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-            ""addIdentity"": ""false""
-        }
-      }
-    }
-  }
-}";
-                return JObject.Parse(configString);
-            }
-        }
     }
 }

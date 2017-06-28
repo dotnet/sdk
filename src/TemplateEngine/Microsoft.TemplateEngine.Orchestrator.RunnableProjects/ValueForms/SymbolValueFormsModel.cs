@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             {
                 // config is an object.
                 globalForms = globalConfig.ArrayAsStrings("forms").ToList();
-                addIdentity = globalConfig.ToBool("addIdentity");
+                addIdentity = globalConfig.ToBool("addIdentity", true);
             }
             else
             {
