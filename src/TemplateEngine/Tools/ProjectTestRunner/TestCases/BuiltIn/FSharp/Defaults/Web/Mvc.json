@@ -1,5 +1,5 @@
 ﻿{
-  "create": "mvc --language F# --no-restore",
+  "create": "mvc --language F#",
   "name": "MVC (F#, default framework, default auth)",
   "tasks": [
     {

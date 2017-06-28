@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -461,7 +461,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         new SpecialOperationConfigParams("**/*.jsx", "{/*", "C++", ConditionalType.JsxBlockComment),
                         new SpecialOperationConfigParams("**/*.tsx", "{/*", "C++", ConditionalType.JsxBlockComment),
                         new SpecialOperationConfigParams("**/*.xml", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.xaml", "<!--", "C++", ConditionalType.Xml)
+                        new SpecialOperationConfigParams("**/*.xaml", "<!--", "C++", ConditionalType.Xml),
+                        new SpecialOperationConfigParams("**/*.sln", "#-", "C++", ConditionalType.HashSignLineComment)
                     };
                     List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
 

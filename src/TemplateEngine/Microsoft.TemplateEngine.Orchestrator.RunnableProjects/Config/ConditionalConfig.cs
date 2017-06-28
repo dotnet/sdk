@@ -119,12 +119,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
         // Nice to have: Generalize this type of setup similarly to Line, Block, & Custom
         public static List<IOperationProvider> CStyleNoCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
         {
+            ConditionalKeywords defaultKeywords = new ConditionalKeywords();
+
+            List<ITokenConfig> ifTokens = new List<ITokenConfig>();
+            List<ITokenConfig> elseifTokens = new List<ITokenConfig>();
+            List<ITokenConfig> elseTokens = new List<ITokenConfig>();
+            List<ITokenConfig> endifTokens = new List<ITokenConfig>();
+
+            foreach (string ifKeyword in defaultKeywords.IfKeywords)
+            {
+                ifTokens.Add($"{defaultKeywords.KeywordPrefix}{ifKeyword}".TokenConfig());
+            }
+
+            foreach (string elseifKeyword in defaultKeywords.ElseIfKeywords)
+            {
+                elseifTokens.Add($"{defaultKeywords.KeywordPrefix}{elseifKeyword}".TokenConfig());
+            }
+
+            foreach (string elseKeyword in defaultKeywords.ElseKeywords)
+            {
+                elseTokens.Add($"{defaultKeywords.KeywordPrefix}{elseKeyword}".TokenConfig());
+            }
+
+            foreach (string endifKeyword in defaultKeywords.EndIfKeywords)
+            {
+                endifTokens.Add($"{defaultKeywords.KeywordPrefix}{endifKeyword}".TokenConfig());
+            }
+
             ConditionalTokens tokens = new ConditionalTokens
             {
-                IfTokens = new[] { "#if".TokenConfig() },
-                ElseTokens = new[] { "#else".TokenConfig() },
-                ElseIfTokens = new[] { "#elseif".TokenConfig() },
-                EndIfTokens = new[] { "#endif".TokenConfig() }
+                IfTokens = ifTokens,
+                ElseTokens = elseTokens,
+                ElseIfTokens = elseifTokens,
+                EndIfTokens = endifTokens
             };
 
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
