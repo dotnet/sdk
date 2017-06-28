@@ -32,10 +32,6 @@ namespace Microsoft.NET.Build.Tests
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
             if (UsingFullFrameworkMSBuild)
-            {
-                //  Fullframework NuGet versioning on Jenkins infrastructure issue
-                //        https://github.com/dotnet/sdk/issues/1041
-
                 //  Disabled on full framework MSBuild until CI machines have VS with bundled .NET Core / .NET Standard versions
                 //  See https://github.com/dotnet/sdk/issues/1077
                 return;
@@ -60,9 +56,6 @@ namespace Microsoft.NET.Build.Tests
         {
             if (UsingFullFrameworkMSBuild)
             {
-                //  Fullframework NuGet versioning on Jenkins infrastructure issue
-                //        https://github.com/dotnet/sdk/issues/1041
-
                 //  Disabled on full framework MSBuild until CI machines have VS with bundled .NET Core / .NET Standard versions
                 //  See https://github.com/dotnet/sdk/issues/1077
                 return;

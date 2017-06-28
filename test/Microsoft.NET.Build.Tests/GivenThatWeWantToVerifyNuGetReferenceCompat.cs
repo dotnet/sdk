@@ -27,12 +27,8 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
         [InlineData("net451", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 net45 net451", true, true)]
         [InlineData("net46", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 net45 net451 net46", true, true)]
-        [InlineData("net461", "PartM3", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 net45 net451 net46 net461", true, true)]
-        [InlineData("net462", "PartM2", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 net45 net451 net46 net461", true, true)]
-        //  Fullframework NuGet versioning on Jenkins infrastructure issue
-        //        https://github.com/dotnet/sdk/issues/1041
-        //[InlineData("net461", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461", true, true)]
-        //[InlineData("net462", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461", true, true)]
+        [InlineData("net461", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461", true, true)]
+        [InlineData("net462", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461", true, true)]
 
         [InlineData("netstandard1.0", "Full", "netstandard1.0", true, true)]
         [InlineData("netstandard1.1", "Full", "netstandard1.0 netstandard1.1", true, true)]
@@ -58,9 +54,6 @@ namespace Microsoft.NET.Build.Tests
             if (UsingFullFrameworkMSBuild &&
                 (referencerTarget == "netcoreapp2.0" || referencerTarget == "netstandard2.0"))
             {
-                //  Fullframework NuGet versioning on Jenkins infrastructure issue
-                //        https://github.com/dotnet/sdk/issues/1041
-
                 //  Disabled on full framework MSBuild until CI machines have VS with bundled .NET Core / .NET Standard versions
                 //  See https://github.com/dotnet/sdk/issues/1077
                 return;
