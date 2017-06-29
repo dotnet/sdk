@@ -49,7 +49,7 @@ Copyright (c) .NET Foundation. All rights reserved.
      <FSharpDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.FSharp.DesignTime.targets</FSharpDesignTimeTargetsPath>
   </PropertyGroup>
   <Import Project="$(FSharpDesignTimeTargetsPath)" 
-          Condition=" '$(UseBundledFSharpTargets)' == 'true' and '$(IsCrossTargetingBuild)' == 'true' and '$(FSharpDesignTimeTargetsPath)' != '' and Exists('$(FSharpDesignTimeTargetsPath)') " />
+          Condition=" '$(UseBundledFSharpTargets)' == 'true' and '$(FSharpDesignTimeTargetsPath)' != '' and Exists('$(FSharpDesignTimeTargetsPath)') " />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets"
           Condition=" '$(UseBundledFSharpTargets)' == 'true' and '$(IsCrossTargetingBuild)' == 'true' "/>
 
