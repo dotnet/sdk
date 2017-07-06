@@ -101,29 +101,31 @@ Copyright (c) .NET Foundation. All rights reserved.
     Trigger an error if targeting a higher version of .NET Core or .NET Standard than is supported by the current SDK.
   -->
 
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(NETCoreAppMaximumVersion)' == ''">
-    <NETCoreAppMaximumVersion>$(BundledNETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(NETCoreAppMaximumVersionExclusive)' == ''">
+    <NETCoreAppMaximumVersionExclusive>1.2</NETCoreAppMaximumVersionExclusive>
+    <NETCoreAppMaximumVersionHumanReadable>1.1</NETCoreAppMaximumVersionHumanReadable>
   </PropertyGroup>
     
   <Target Name="_CheckForUnsupportedNETCoreVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(NETCoreAppMaximumVersionExclusive)' != ''">
 
-    <NETSdkError Condition="'$(_TargetFrameworkVersionWithoutV)' > '$(NETCoreAppMaximumVersion)'"
+    <NETSdkError Condition="'$(_TargetFrameworkVersionWithoutV)' >= '$(NETCoreAppMaximumVersionExclusive)'"
                  ResourceName="UnsupportedTargetFrameworkVersion"
-                 FormatArguments=".NET Core;$(_TargetFrameworkVersionWithoutV);$(NETCoreAppMaximumVersion)"
+                 FormatArguments=".NET Core;$(_TargetFrameworkVersionWithoutV);$(NETCoreAppMaximumVersionHumanReadable)"
       />
   </Target>
 
-  <PropertyGroup  Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' And '$(NETStandardMaximumVersion)' == ''">
-    <NETStandardMaximumVersion>$(BundledNETStandardTargetFrameworkVersion)</NETStandardMaximumVersion>
+  <PropertyGroup  Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' And '$(NETStandardMaximumVersionExclusive)' == ''">
+    <NETStandardMaximumVersionExclusive>1.7</NETStandardMaximumVersionExclusive>
+    <NETStandardMaximumVersionHumanReadable>1.6</NETStandardMaximumVersionHumanReadable>
   </PropertyGroup>
 
   <Target Name="_CheckForUnsupportedNETStandardVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'">
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' And '$(NETStandardMaximumVersionExclusive)' != ''">
 
-    <NETSdkError Condition="'$(_TargetFrameworkVersionWithoutV)' > '$(NETStandardMaximumVersion)'"
+    <NETSdkError Condition="'$(_TargetFrameworkVersionWithoutV)' >= '$(NETStandardMaximumVersionExclusive)'"
                  ResourceName="UnsupportedTargetFrameworkVersion"
-                 FormatArguments=".NET Standard;$(_TargetFrameworkVersionWithoutV);$(NETStandardMaximumVersion)"
+                 FormatArguments=".NET Standard;$(_TargetFrameworkVersionWithoutV);$(NETStandardMaximumVersionHumanReadable)"
       />    
   </Target>
 
