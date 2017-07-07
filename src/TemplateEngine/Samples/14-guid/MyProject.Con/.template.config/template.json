@@ -12,7 +12,8 @@
   "sourceName": "MyProject.Con",
   "preferNameDirectory": true,
   "guids": [
-    "4BC5DF1F-B155-4A69-9719-0AB349B1ACB2"
+    "4BC5DF1F-B155-4A69-9719-0AB349B1ACB2",
+    "12aa8f4e-a4aa-4ac1-927c-94cb99485ef1"
   ],
   "symbols":{
     "id01":{
