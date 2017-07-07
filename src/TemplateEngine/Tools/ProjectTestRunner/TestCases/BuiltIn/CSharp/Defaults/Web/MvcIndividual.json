@@ -18,22 +18,8 @@
     },
     {
       "handler": "directoryInspect",
-      "directory": "Areas",
-      "assertion": "exists"
-    },
-    {
-      "handler": "directoryInspect",
       "directory": "Extensions",
       "assertion": "does_not_exist"
-    },
-    {
-      "handler": "fileInspect",
-      "file": "urlRewrite.config",
-      "expectations": [
-        {
-          "assertion": "exists"
-        }
-      ],
     },
     {
       "handler": "fileInspect",

@@ -209,7 +209,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
                 if (best != null)
                 {
                     terminalLocation = new TerminalLocation<T>(best, minTerminalStart);
-                    _lastReturnedTerminalEndSequenceNumber = endedAt;
+                    _lastReturnedTerminalEndSequenceNumber = endedAt + 1;
                     sequenceNumber = endedAt;
 
                     if (bestPath > -1 && bestPath < _activePaths.Count && _activePaths[bestPath].EncounteredTerminals.Contains(best))

@@ -244,6 +244,18 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999, true);
         }
 
+        [Fact(DisplayName = nameof(VerifyInlineMarkupExpandedConditionsUndefinedSymbolEmitsOriginal2))]
+        public void VerifyInlineMarkupExpandedConditionsUndefinedSymbolEmitsOriginal2()
+        {
+            string originalValue = @"<PaketExePath Condition="" '$(PaketExePath)' == '' "">$(PaketToolsPath)paket.exe</PaketExePath>";
+
+            string expectedValue = @"<PaketExePath Condition="" '$(PaketExePath)' == '' "">$(PaketToolsPath)paket.exe</PaketExePath>";
+
+            VariableCollection vc = new VariableCollection();
+            IProcessor processor = SetupXmlPlusMsBuildProcessor(vc);
+            RunAndVerify(originalValue, expectedValue, processor, 9999, true);
+        }
+
         [Fact(DisplayName = nameof(VerifyInlineMarkupExpandedConditionsNumerics))]
         public void VerifyInlineMarkupExpandedConditionsNumerics()
         {

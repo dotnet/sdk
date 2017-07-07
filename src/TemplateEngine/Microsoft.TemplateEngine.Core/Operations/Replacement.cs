@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 }
 
                 target.Write(_replacement, 0, _replacement.Length);
-                return _token.Length;
+                return _replacement.Length;
             }
         }
     }

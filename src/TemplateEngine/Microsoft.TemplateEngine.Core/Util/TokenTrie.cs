@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Matching;
 
@@ -74,10 +74,10 @@ namespace Microsoft.TemplateEngine.Core.Util
             TrieEvaluationDriver<Token> driver = new TrieEvaluationDriver<Token>(evaluator);
             TerminalLocation<Token> location = driver.Evaluate(buffer, bufferLength, true, 0, ref currentBufferPosition);
 
-            if (location != null && currentBufferPosition - location.Terminal.Value.Length == originalPosition)
+            if (location != null && currentBufferPosition - location.Terminal.Length == originalPosition)
             {
                 token = location.Terminal.Index;
-                currentBufferPosition = location.Location + location.Terminal.End - location.Terminal.Start;
+                currentBufferPosition = location.Location + location.Terminal.End - location.Terminal.Start + 1;
                 return true;
             }
 

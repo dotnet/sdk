@@ -16,6 +16,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
             TerminalLocation<T> terminal;
             _sequenceNumber += lastNetBufferEffect;
             int sequenceNumberToBufferPositionRelationship = _sequenceNumber - bufferPosition;
+            int originalSequenceNumber = _sequenceNumber;
 
             if (lastNetBufferEffect != 0 || !_evaluator.TryGetNext(isFinalBuffer && bufferPosition >= bufferLength, ref _sequenceNumber, out terminal))
             {
@@ -36,12 +37,25 @@ namespace Microsoft.TemplateEngine.Core.Matching
                             break;
                         }
                     }
+                    originalSequenceNumber = _sequenceNumber;
                 }
             }
 
             if (terminal != null)
             {
                 terminal.Location -= sequenceNumberToBufferPositionRelationship;
+
+                if(originalSequenceNumber > _sequenceNumber + 1)
+                {
+                    int expectedShift = terminal.Terminal.Length - terminal.Terminal.End - 1;
+
+                    if (expectedShift == 0)
+                    {
+                        int actualShift = originalSequenceNumber - _sequenceNumber - 1;
+                        int compensation = actualShift - expectedShift;
+                        bufferPosition -= compensation;
+                    }
+                }
             }
 
             return terminal;
