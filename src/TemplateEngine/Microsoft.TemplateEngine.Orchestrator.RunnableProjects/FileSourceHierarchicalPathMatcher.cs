@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -69,13 +69,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 if (state.Has(FileDispositionStates.Exclude))
                 {
-                    return  FileDispositionStates.Exclude;
+                    return FileDispositionStates.Exclude;
                 }
                 else if (state.Has(FileDispositionStates.CopyOnly))
                 {
                     if (state.Has(FileDispositionStates.Include))
                     {
-                        return FileDispositionStates.CopyOnly;
+                        return FileDispositionStates.CopyOnly | FileDispositionStates.Include;
                     }
 
                     continuationReason = FileDispositionStates.CopyOnly;
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (continuationReason == FileDispositionStates.CopyOnly)
                     {
-                        return FileDispositionStates.CopyOnly;
+                        return FileDispositionStates.CopyOnly | FileDispositionStates.Include;
                     }
 
                     return FileDispositionStates.Include;
