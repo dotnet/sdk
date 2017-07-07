@@ -194,7 +194,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                     if (_trie.Accept(CurrentBuffer[CurrentBufferPosition], ref posedPosition, out TerminalLocation<OperationTerminal> terminal))
                     {
                         IOperation operation = terminal.Terminal.Operation;
-                        int matchLength = terminal.Terminal.End - terminal.Terminal.Start;
+                        int matchLength = terminal.Terminal.End - terminal.Terminal.Start + 1;
                         int handoffBufferPosition = CurrentBufferPosition + matchLength - (CurrentSequenceNumber - terminal.Location);
 
                         if (terminal.Location > nextSequenceNumberThatCouldBeWritten)
@@ -205,7 +205,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 //Console.WriteLine(text);
                             _target.Write(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite);
                             bytesWrittenSinceLastFlush += toWrite;
-                            nextSequenceNumberThatCouldBeWritten = posedPosition - matchLength;
+                            nextSequenceNumberThatCouldBeWritten = posedPosition - matchLength + 1;
                         }
 
                         if(operation.Id == null || (Config.Flags.TryGetValue(operation.Id, out bool opEnabledFlag) && opEnabledFlag))
@@ -225,7 +225,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                         else
                         {
                             int oldSequenceNumber = CurrentSequenceNumber;
-                            CurrentSequenceNumber = terminal.Location + terminal.Terminal.End;
+                            CurrentSequenceNumber = terminal.Location + terminal.Terminal.End + 1;
                             CurrentBufferPosition += CurrentSequenceNumber - oldSequenceNumber;
                         }
 
@@ -278,7 +278,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                     while (terminal != null)
                     {
                         IOperation operation = terminal.Terminal.Operation;
-                        int matchLength = terminal.Terminal.End - terminal.Terminal.Start;
+                        int matchLength = terminal.Terminal.End - terminal.Terminal.Start + 1;
                         int handoffBufferPosition = CurrentBufferPosition + matchLength - (CurrentSequenceNumber - terminal.Location);
 
                         if (terminal.Location > nextSequenceNumberThatCouldBeWritten)
@@ -308,7 +308,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                         else
                         {
                             int oldSequenceNumber = CurrentSequenceNumber;
-                            CurrentSequenceNumber = terminal.Location + terminal.Terminal.End;
+                            CurrentSequenceNumber = terminal.Location + terminal.Terminal.End + 1;
                             CurrentBufferPosition += CurrentSequenceNumber - oldSequenceNumber;
                         }
 

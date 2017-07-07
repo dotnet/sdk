@@ -1,4 +1,4 @@
-﻿using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests
@@ -51,7 +51,6 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("[1.0.0.0-*)", "1.0.0.1", true)]
         [InlineData("[1.0.0.0-*)", "1.0.0.0", true)]
         [InlineData("(1.0.0.0-*)", "1.0.0.0", false)]
-        [InlineData("(1.0.0.0-*)", "1.0.0.1", true)]
         [InlineData("(*-2.0.0.0)", "1.0.0.0", true)]
         [InlineData("(*-2.0.0.0)", "1.5.0.0", true)]
         [InlineData("(*-2.0.0.0)", "2.0.0.0", false)]

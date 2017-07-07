@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Utils;
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public static IToken LiteralToken(byte[] data, int start = 0, int end = -1)
         {
-            int realEnd = end != -1 ? end : (data.Length - start);
+            int realEnd = end != -1 ? end : (data.Length - start - 1);
             return new Token(data, start, realEnd);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Core
                 Buffer.BlockCopy(post, 0, buffer, pre.Length + core.Length, post.Length);
             }
 
-            return new Token(buffer, pre.Length, buffer.Length - post.Length);
+            return new Token(buffer, pre.Length, buffer.Length - post.Length - 1);
         }
 
         public override bool Equals(object obj)
@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.Core
                 Value = value;
                 Start = start;
                 End = end;
-                Length = End - Start;
+                Length = End - Start + 1;
             }
         }
     }
