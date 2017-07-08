@@ -1,5 +1,5 @@
 ﻿{
-  "create": "console",
+  "create": "console --no-restore",
   "name": "Console (default framework)",
   "tasks": [
     {
