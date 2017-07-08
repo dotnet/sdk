@@ -970,6 +970,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Dictionary<string, string> coreRenames = new Dictionary<string, string>(fileRenames);
             string originalSourceName = sourceTargetName;
 
+            // setup the rename of the base directory to the output "name" param directory
             if (resolvedNameParamValue != null && SourceName != null)
             {
                 string targetName = ((string)resolvedNameParamValue).Trim();
@@ -977,6 +978,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 fileRenameMappings.Add(new KeyValuePair<string, string>(SourceName, targetName));
             }
 
+            // setup renames from parameters
             foreach (IExtendedTemplateParameter p in parameters.ParameterDefinitions.OfType<IExtendedTemplateParameter>())
             {
                 if (!string.IsNullOrEmpty(p.FileRename))
@@ -988,32 +990,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            foreach (KeyValuePair<string, string> entry in coreRenames)
+            foreach (IFileSystemInfo fileSystemEntry in configFile.Parent.Parent.DirectoryInfo(originalSourceName.TrimEnd('/')).EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
             {
-                foreach (KeyValuePair<string, string> rename in fileRenameMappings)
-                {
-                    string outputRelativePath = entry.Value.Replace(rename.Key, rename.Value);
+                string templateRelativePath = fileSystemEntry.PathRelativeTo(configFile.Parent.Parent);
+                string outputRelativePath = templateRelativePath;
 
-                    if (!string.Equals(outputRelativePath, entry.Value, StringComparison.Ordinal))
+                foreach (KeyValuePair<string, string> rename in coreRenames)
+                {
+                    outputRelativePath = outputRelativePath.Replace(rename.Key, rename.Value);
+                    if (!string.Equals(outputRelativePath, templateRelativePath, StringComparison.Ordinal))
                     {
-                        fileRenames[entry.Key] = outputRelativePath;
                         break;
                     }
                 }
-            }
 
-            foreach (IFileSystemInfo entry in configFile.Parent.Parent.DirectoryInfo(originalSourceName.TrimEnd('/')).EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
-            {
-                string templateRelativePath = entry.PathRelativeTo(configFile.Parent.Parent);
                 foreach (KeyValuePair<string, string> rename in fileRenameMappings)
                 {
-                    string outputRelativePath = templateRelativePath.Replace(rename.Key, rename.Value);
-
+                    outputRelativePath = outputRelativePath.Replace(rename.Key, rename.Value);
                     if (!string.Equals(outputRelativePath, templateRelativePath, StringComparison.Ordinal))
                     {
-                        fileRenames[templateRelativePath] = outputRelativePath;
                         break;
                     }
+                }
+
+                if (!string.Equals(outputRelativePath, templateRelativePath, StringComparison.Ordinal))
+                {
+                    fileRenames[templateRelativePath] = outputRelativePath;
                 }
             }
         }
