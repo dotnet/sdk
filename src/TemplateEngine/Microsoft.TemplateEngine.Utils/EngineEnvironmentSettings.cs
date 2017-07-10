@@ -13,9 +13,14 @@ namespace Microsoft.TemplateEngine.Utils
     public class EngineEnvironmentSettings : IEngineEnvironmentSettings
     {
         public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory)
+            : this(host, settingsLoaderFactory, null)
+        {
+        }
+
+        public EngineEnvironmentSettings(ITemplateEngineHost host, Func<IEngineEnvironmentSettings, ISettingsLoader> settingsLoaderFactory, string hiveLocation)
         {
             Host = host;
-            Paths = new DefaultPathInfo(this);
+            Paths = new DefaultPathInfo(this, hiveLocation);
             Environment = new DefaultEnvironment();
             SettingsLoader = settingsLoaderFactory(this);
         }
@@ -34,9 +39,10 @@ namespace Microsoft.TemplateEngine.Utils
             private string _baseDir;
             private readonly IEngineEnvironmentSettings _parent;
 
-            public DefaultPathInfo(IEngineEnvironmentSettings parent)
+            public DefaultPathInfo(IEngineEnvironmentSettings parent, string hiveLocation)
             {
                 _parent = parent;
+                _baseDir = hiveLocation;
             }
 
             public string UserProfileDir

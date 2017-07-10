@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Microsoft.TemplateEngine.Abstractions;
@@ -74,6 +75,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
                         for (int i = 0; parentDir != null && i < parts.Length - 1; ++i)
                         {
+                            parts[i] = Uri.UnescapeDataString(parts[i]);
                             path += parts[i] + "/";
 
                             if (!universe.TryGetValue(path, out IFileSystemInfo parentDirEntry))
@@ -92,8 +94,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
                         if (parentDir != null)
                         {
-                            path += entry.Name;
-                            universe[path] = new ZipFileFile(this, path, entry.Name, entry);
+                            string unescaped = Uri.UnescapeDataString(entry.Name);
+                            path += unescaped;
+                            universe[path] = new ZipFileFile(this, path, unescaped, entry);
                         }
                     }
 

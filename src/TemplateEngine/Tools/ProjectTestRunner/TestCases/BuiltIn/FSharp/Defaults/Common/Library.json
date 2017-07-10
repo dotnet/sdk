@@ -1,5 +1,5 @@
 ﻿{
-  "create": "classlib --language f#",
+  "create": "classlib --language f# --no-restore",
   "name": "Console (default framework)",
   "tasks": [
     {

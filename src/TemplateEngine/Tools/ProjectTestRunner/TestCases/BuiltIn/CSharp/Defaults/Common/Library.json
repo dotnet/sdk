@@ -1,5 +1,5 @@
 ﻿{
-  "create": "classlib",
+  "create": "classlib --no-restore",
   "name": "Console (default framework)",
   "tasks": [
     {

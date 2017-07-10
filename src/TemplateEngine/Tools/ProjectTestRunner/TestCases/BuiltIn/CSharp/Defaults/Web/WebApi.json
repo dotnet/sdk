@@ -1,5 +1,5 @@
 {
-  "create": "api",
+  "create": "api --no-restore",
   "name": "WebAPI (C#, default framework, default auth)",
   "tasks": [
     {
