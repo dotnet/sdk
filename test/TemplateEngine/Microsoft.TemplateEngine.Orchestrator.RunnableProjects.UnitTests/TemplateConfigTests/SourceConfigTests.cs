@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
@@ -23,13 +23,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.False(environment.Host.FileSystem.FileExists(Path.Combine(targetDir, "full.config")));
         }
 
-        [Fact(DisplayName = nameof(CopyOnlyWithoutIncludeDoesntHappen))]
-        public void CopyOnlyWithoutIncludeDoesntHappen()
+        [Fact(DisplayName = nameof(CopyOnlyWithoutIncludeDoesntActuallyCopyFile))]
+        public void CopyOnlyWithoutIncludeDoesntActuallyCopyFile()
         {
             IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            TestTemplateSetup setup = SetupCopyOnlyTemplate(environment, sourceBasePath);
+            TestTemplateSetup setup = SetupCopyOnlyWithoutCorrespondingIncludeTemplate(environment, sourceBasePath);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
 
@@ -44,6 +44,50 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(1, changes.Count);
             Assert.Equal(ChangeKind.Create, changes[0].ChangeKind);
             Assert.True(string.Equals(changes[0].TargetRelativePath, "something.txt"), "didn't copy the correct file");
+        }
+
+        [Fact(DisplayName = nameof(CopyOnlyWithParentIncludeActuallyCopiesFile))]
+        public void CopyOnlyWithParentIncludeActuallyCopiesFile()
+        {
+            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            TestTemplateSetup setup = SetupCopyOnlyWithParentInclude(environment, sourceBasePath);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+
+            Assert.Equal(1, allChanges.Count);
+
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes))
+            {
+                Assert.True(false, "no changes for source './'");
+            }
+
+            Assert.Equal(1, changes.Count);
+            Assert.Equal(ChangeKind.Create, changes[0].ChangeKind);
+            Assert.True(string.Equals(changes[0].TargetRelativePath, "copy.me"), "didn't copy the correct file");
+        }
+
+        [Fact(DisplayName = nameof(CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile))]
+        public void CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile()
+        {
+            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            TestTemplateSetup setup = SetupCopyOnlyWithWildcardAndParentInclude(environment, sourceBasePath);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+
+            Assert.Equal(1, allChanges.Count);
+
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes))
+            {
+                Assert.True(false, "no changes for source './'");
+            }
+
+            Assert.Equal(1, changes.Count);
+            Assert.Equal(ChangeKind.Create, changes[0].ChangeKind);
+            Assert.True(string.Equals(changes[0].TargetRelativePath, "copy.me"), "didn't copy the correct file");
         }
 
         [Fact(DisplayName = nameof(IncludeModifierOverridesPreviousExcludeModifierTemplateTest))]
@@ -130,10 +174,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        private static TestTemplateSetup SetupCopyOnlyTemplate(IEngineEnvironmentSettings environment, string basePath)
+        private static TestTemplateSetup SetupCopyOnlyWithoutCorrespondingIncludeTemplate(IEngineEnvironmentSettings environment, string basePath)
         {
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithoutAnIncludeConfigText);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithoutCorrespondingIncludeConfigText);
             templateSourceFiles.Add("something.txt", null);
             templateSourceFiles.Add("copy.me", null);
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
@@ -141,7 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return setup;
         }
 
-        private static string CopyOnlyWithoutAnIncludeConfigText
+        private static string CopyOnlyWithoutCorrespondingIncludeConfigText
         {
             get
             {
@@ -158,6 +202,70 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     }
   ]
 }";
+                return configString;
+            }
+        }
+
+        private static TestTemplateSetup SetupCopyOnlyWithParentInclude(IEngineEnvironmentSettings environment, string basePath)
+        {
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithIncludeInParentConfigText);
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
+        }
+
+        private static string CopyOnlyWithIncludeInParentConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      ""include"": [""**/*.me""],
+      ""modifiers"": [
+        {
+          ""copyOnly"": [""copy.me""]
+        }
+      ]
+    }
+  ]
+}
+";
+                return configString;
+            }
+        }
+
+        private static TestTemplateSetup SetupCopyOnlyWithWildcardAndParentInclude(IEngineEnvironmentSettings environment, string basePath)
+        {
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithWildcardAndParentIncludeConfigText);
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
+            setup.WriteSource();
+            return setup;
+        }
+
+        private static string CopyOnlyWithWildcardAndParentIncludeConfigText
+        {
+            get
+            {
+                string configString = @"
+{
+  ""sources"": [
+    {
+      ""include"": [""*copy.me""],
+      ""modifiers"": [
+        {
+          ""copyOnly"": [""**/*.me""]
+        }
+      ]
+    }
+  ]
+}
+";
                 return configString;
             }
         }
