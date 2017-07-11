@@ -31,8 +31,18 @@ dotnet DependencyUpdater.dll [path to templates:string] [infer no-timestamp pack
                 else if (File.Exists(arg))
                 {
                     string sem = File.ReadAllText(arg);
-                    string share = sem.Substring(sem.LastIndexOf(':') + 1).Trim();
-                    sources.Add(Path.Combine(share, @"Signed\Packages") + (NoTimestamp ? "-NoTimeStamp" : ""));
+
+                    foreach (string line in sem.Split('\n'))
+                    {
+                        string trimmed = line.Trim();
+                        string share = trimmed.Substring(trimmed.LastIndexOf(':') + 1).Trim();
+                        string source = Path.Combine(share, @"Signed\Packages") + (NoTimestamp ? "-NoTimeStamp" : "");
+
+                        if (Directory.Exists(source))
+                        {
+                            sources.Add(source);
+                        }
+                    }
                 }
                 else
                 {
