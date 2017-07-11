@@ -17,13 +17,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <_NugetFallbackFolder>$(MSBuildThisFileDirectory)..\..\..\..\NuGetFallbackFolder</_NugetFallbackFolder>
-    <_IsNETCoreOrNETStandard1x Condition=" '$(_IsNETCoreOrNETStandard)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' ">true</_IsNETCoreOrNETStandard1x>
   </PropertyGroup>
 
-  <Target Name="_IsNETCoreOrNETStandard1x" 
-        Returns="$(_IsNETCoreOrNETStandard1x)" />
-
-  <Target Name="_SetIsNETCoreOrNETStandard1x">
+  <Target Name="_SetIsNETCoreOrNETStandard1x"
+          Returns="$(_IsNETCoreOrNETStandard1x)">
+    <PropertyGroup>
+      <_IsNETCoreOrNETStandard1x Condition=" '$(_IsNETCoreOrNETStandard)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' ">true</_IsNETCoreOrNETStandard1x>
+    </PropertyGroup>
   </Target>
 
   <Target Name="_SetNuGetSDKOfflineCache"

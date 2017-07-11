@@ -38,7 +38,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFile)"
-             Targets="_IsNETCoreOrNETStandard1x"
+             Targets="_SetIsNETCoreOrNETStandard1x"
              Properties="TargetFramework=%(_SetIsNETCoreOrNETStandard1xTargetFrameworks.Identity)">
       <Output ItemName="_AllIsNETCoreOrNETStandard1x" TaskParameter="TargetOutputs" />
     </MSBuild>
