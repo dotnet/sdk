@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -554,6 +555,75 @@ namespace Microsoft.NET.Build.Tests
                 .Fail()
                 .And.HaveStdOutContaining("TargetFramework=''") // new deliberate error
                 .And.NotHaveStdOutContaining(">="); // old error about comparing empty string to version
+        }
+
+        [Theory]
+        [InlineData("netcoreapp2.0", ".NET Core 1.1")]
+        [InlineData("netstandard2.0", ".NET Standard 1.6")]
+        public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework, string errorMessageExpectVersion)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "TargetFrameworkVersionCap",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, targetFramework);
+
+            var restoreCommand = testAsset.GetRestoreCommand(relativePath: testProject.Name);
+
+            restoreCommand
+                .CaptureStdOut()
+                .Execute()
+                .Should()
+                .Fail()
+                .And.HaveStdOutContaining("The current .NET SDK does not support targeting")
+                .And.HaveStdOutContaining($"Either target {errorMessageExpectVersion} or lower");
+
+            var buildCommand = new BuildCommand(Stage0MSBuild, testAsset.TestRoot, testProject.Name);
+
+            buildCommand
+                .CaptureStdOut()
+                .Execute()
+                .Should()
+                .Fail()
+                .And.HaveStdOutContaining("The current .NET SDK does not support targeting")
+                .And.HaveStdOutContaining($"Either target {errorMessageExpectVersion} or lower");
+        }
+
+        [Theory]
+        [InlineData("netcoreapp1.1")]
+        [InlineData("netcoreapp1.1.1")]
+        [InlineData("netstandard1.6")]
+        [InlineData("netstandard1.6.1")]
+        public void It_is_able_to_build_if_targeting_a_lower_framework_than_is_supported_including_11X_16X(
+            string targetFramework)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "TargetFrameworkVersionCap",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, targetFramework);
+
+            var restoreCommand = testAsset.GetRestoreCommand(relativePath: testProject.Name);
+
+            restoreCommand
+                .CaptureStdOut()
+                .Execute()
+                .Should()
+                .Pass();
+
+            var buildCommand = new BuildCommand(Stage0MSBuild, testAsset.TestRoot, testProject.Name);
+
+            buildCommand
+                .CaptureStdOut()
+                .Execute()
+                .Should()
+                .Pass();
         }
 
         [Fact]

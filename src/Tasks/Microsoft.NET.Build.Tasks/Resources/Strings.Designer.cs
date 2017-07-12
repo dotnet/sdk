@@ -11,8 +11,7 @@
 namespace Microsoft.NET.Build.Tasks {
     using System;
     using System.Reflection;
-
-        
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -40,7 +39,7 @@ namespace Microsoft.NET.Build.Tasks {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.NET.Build.Tasks.Resources.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.NET.Build.Tasks.Resources.Strings",  typeof(Strings).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -197,7 +196,7 @@ namespace Microsoft.NET.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Duplicate {0} items were included. The .NET SDK includes {0} items from your project directory by default. You can either remove these items from your project file, or set the &apos;{1}&apos; property to &apos;{2}&apos; if you want to explicitly include them in your project file. The duplicate items were: {3}.
+        ///   Looks up a localized string similar to Duplicate &apos;{0}&apos; items were included. The .NET SDK includes &apos;{0}&apos; items from your project directory by default. You can either remove these items from your project file, or set the &apos;{1}&apos; property to &apos;{2}&apos; if you want to explicitly include them in your project file. For more information, see {4}. The duplicate items were: {3}.
         /// </summary>
         internal static string DuplicateItemsError {
             get {
@@ -251,7 +250,7 @@ namespace Microsoft.NET.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; has no target framework compatible with &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; targets &apos;{2}&apos;. It cannot be referenced by a project that targets &apos;{1}&apos;..
         /// </summary>
         internal static string NoCompatibleTargetFramework {
             get {
@@ -359,15 +358,6 @@ namespace Microsoft.NET.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RuntimeIdentifier must be set for .NETFramework executables. Consider RuntimeIdentifier=win7-x86 or RuntimeIdentifier=win7-x64..
-        /// </summary>
-        internal static string RuntimeIdentifierMustBeSetForNETFramework {
-            get {
-                return ResourceManager.GetString("RuntimeIdentifierMustBeSetForNETFramework", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to find resolved path for &apos;{0}&apos;..
         /// </summary>
         internal static string UnableToFindResolvedPath {
@@ -400,6 +390,15 @@ namespace Microsoft.NET.Build.Tasks {
         internal static string UnrecognizedPreprocessorToken {
             get {
                 return ResourceManager.GetString("UnrecognizedPreprocessorToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}..
+        /// </summary>
+        internal static string UnsupportedTargetFrameworkVersion {
+            get {
+                return ResourceManager.GetString("UnsupportedTargetFrameworkVersion", resourceCulture);
             }
         }
     }
