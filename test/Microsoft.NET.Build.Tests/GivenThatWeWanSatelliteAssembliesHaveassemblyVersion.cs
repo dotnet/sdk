@@ -1,32 +1,23 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit;
-using static Microsoft.NET.TestFramework.Commands.MSBuildTest;
-using Microsoft.DotNet.Cli.Utils;
-using System.Xml.Linq;
-using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 using System.Diagnostics;
 using FluentAssertions;
+using System.Reflection;
 
 namespace Microsoft.NET.Build.Tests
 {
-    public class GivenThatWeWanSatelliteAssembliesHaveassemblyVersion: SdkTest
+    public class GivenThatWeWanSatelliteAssembliesHaveassemblyVersion : SdkTest
     {
+        private string _mainAssembliyPath;
+        private string _satelliteAssembliyPath;
         public GivenThatWeWanSatelliteAssembliesHaveassemblyVersion(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
-        public void It_should_produce_same_SatelliteAssemblie_versions_as_main()
         {
             if (UsingFullFrameworkMSBuild)
             {
@@ -40,23 +31,33 @@ namespace Microsoft.NET.Build.Tests
               .WithSource();
 
             testAsset = testAsset.Restore(Log);
-
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
-
             buildCommand
                 .Execute()
                 .Should()
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp1.1");
-            var file = Path.Combine(outputDirectory.FullName, "AllResourcesInSatellite.dll");
+            _mainAssembliyPath = Path.Combine(outputDirectory.FullName, "AllResourcesInSatellite.dll");
+            _satelliteAssembliyPath = Path.Combine(outputDirectory.FullName, "en", "AllResourcesInSatellite.resources.dll");
+        }
 
-            var file2 = Path.Combine(outputDirectory.FullName, "en", "AllResourcesInSatellite.resources.dll");
+        [Fact]
+        public void It_should_produce_same_SatelliteAssemblie_FileVersions_as_main()
+        {
+            var mainAssembliyFileVersioninfo = FileVersionInfo.GetVersionInfo(_mainAssembliyPath);
+            var satelliteAssembliyFileVersioninfo = FileVersionInfo.GetVersionInfo(_satelliteAssembliyPath);
 
-            var versioninfo = FileVersionInfo.GetVersionInfo(file);
-            var versioninfo2 = FileVersionInfo.GetVersionInfo(file2);
-            versioninfo2.FileVersion.Should().Be(versioninfo.FileVersion);
+            satelliteAssembliyFileVersioninfo.FileVersion.Should().Be(mainAssembliyFileVersioninfo.FileVersion);
+        }
 
+        [Fact]
+        public void It_should_produce_same_SatelliteAssemblie_AssemblyVersions_as_main()
+        {
+            var mainAssembliyVersion = Assembly.LoadFrom(_mainAssembliyPath).GetName().Version;
+            var satelliteAssembliyVersion = Assembly.LoadFrom(_satelliteAssembliyPath).GetName().Version;
+
+            satelliteAssembliyVersion.ToString().Should().Be(mainAssembliyVersion.ToString());
         }
     }
 }
