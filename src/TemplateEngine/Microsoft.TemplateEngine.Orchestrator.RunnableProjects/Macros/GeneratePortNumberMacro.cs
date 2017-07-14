@@ -48,22 +48,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             int low;
             int high;
 
-            if (!deferredConfig.Parameters.TryGetValue("low", out JToken lowToken))
+            if (!deferredConfig.Parameters.TryGetValue("low", out JToken lowToken) || lowToken.Type != JTokenType.Integer)
             {
                 low = LowPortDefault;
             }
             else
             {
                 low = lowToken.Value<int>();
+                if (low < LowPortDefault)
+                {
+                    low = LowPortDefault;
+                }
             }
 
-            if (!deferredConfig.Parameters.TryGetValue("high", out JToken highToken))
+            if (!deferredConfig.Parameters.TryGetValue("high", out JToken highToken) || highToken.Type != JTokenType.Integer)
             {
                 high = HighPortDefault;
             }
             else
             {
                 high = highToken.Value<int>();
+                if (high > HighPortDefault)
+                {
+                    high = HighPortDefault;
+                }
             }
 
             if (low > high)
