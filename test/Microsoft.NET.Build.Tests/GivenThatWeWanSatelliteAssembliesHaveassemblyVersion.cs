@@ -54,10 +54,10 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_should_produce_same_SatelliteAssemblie_AssemblyVersions_as_main()
         {
-            var mainAssembliyVersion = Assembly.LoadFrom(_mainAssembliyPath).GetName().Version;
-            var satelliteAssembliyVersion = Assembly.LoadFrom(_satelliteAssembliyPath).GetName().Version;
+            var mainAssembliy = AssemblyName.GetAssemblyName(_mainAssembliyPath);
+            var satelliteAssembliy = AssemblyName.GetAssemblyName(_satelliteAssembliyPath);
 
-            satelliteAssembliyVersion.ToString().Should().Be(mainAssembliyVersion.ToString());
+            mainAssembliy.Version.Should().Be(satelliteAssembliy.Version);
         }
     }
 }
