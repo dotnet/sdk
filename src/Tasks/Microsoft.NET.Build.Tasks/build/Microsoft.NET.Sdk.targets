@@ -411,6 +411,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_AssemblyInfoFile>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.cs</_AssemblyInfoFile>
       <_OutputAssembly>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.dll</_OutputAssembly>
+      <TemplateFile>$(IntermediateOutputPath)$(TargetName)$(TargetExt)"</TemplateFile>
     </PropertyGroup>
 
     <ItemGroup>
