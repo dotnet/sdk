@@ -402,39 +402,26 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="GetAssemblyInfo" AssemblyFile="$(MicrosoftNETBuildExtensionsTasksAssembly)" />
 
-  <Target Name="_AppleSauce">
-
-    <PropertyGroup>
-      <TemplateFile>$(IntermediateOutputPath)$(TargetName)$(TargetExt)"</TemplateFile>
-    </PropertyGroup>
-    <GetAssemblyInfo FilePath="$(TemplateFile)" >
-      <Output TaskParameter="FileVersion"
-            PropertyName="FileVersionFromTemplateFile" />
-      <Output TaskParameter="AssemblyVersion"
-            PropertyName="AssemblyVersionFromTemplateFile" />
-    </GetAssemblyInfo>
-  </Target>
-
   <Target Name="CoreGenerateSatelliteAssemblies"
-          DependsOnTargets="ResolveAssemblyReferences;GenerateAssemblyInfo;_AppleSauce"
+          DependsOnTargets="ResolveAssemblyReferences;GenerateAssemblyInfo;"
           Inputs="$(MSBuildAllProjects);@(_SatelliteAssemblyResourceInputs);$(IntermediateOutputPath)$(TargetName)$(TargetExt)"
           Outputs="$(IntermediateOutputPath)%(Culture)\$(TargetName).resources.dll"
           Condition="'@(_SatelliteAssemblyResourceInputs)' != ''  and '$(GenerateSatelliteAssembliesForCore)' == 'true' ">
 
     <MakeDir Directories="@(_SatelliteAssemblyResourceInputs->'$(IntermediateOutputPath)%(Culture)')" />
 
+    <PropertyGroup>
+      <_AssemblyInfoFile>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.cs</_AssemblyInfoFile>
+      <_OutputAssembly>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.dll</_OutputAssembly>
+      <_CoreGenerateSatelliteAssembliesTemplateFile>$(IntermediateOutputPath)$(TargetName)$(TargetExt)</_CoreGenerateSatelliteAssembliesTemplateFile>
+    </PropertyGroup>
 
-    <GetAssemblyInfo FilePath="$(TemplateFile)" >
+    <GetAssemblyInfo FilePath="$([System.IO.Path]::GetFullPath('$(_CoreGenerateSatelliteAssembliesTemplateFile)'))" >
       <Output TaskParameter="FileVersion"
             PropertyName="FileVersionFromTemplateFile" />
       <Output TaskParameter="AssemblyVersion"
             PropertyName="AssemblyVersionFromTemplateFile" />
     </GetAssemblyInfo>
-    
-    <PropertyGroup>
-      <_AssemblyInfoFile>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.cs</_AssemblyInfoFile>
-      <_OutputAssembly>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.dll</_OutputAssembly>
-    </PropertyGroup>
 
     <ItemGroup>
       <SatelliteAssemblyAttribute Include="@(AssemblyAttribute)" />
@@ -477,7 +464,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Csc>
   </Target>
 
- 
+
   <!--
   ============================================================
                            _DefaultMicrosoftNETPlatformLibrary

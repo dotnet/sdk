@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
             var mainAssembliy = AssemblyName.GetAssemblyName(_mainAssembliyPath);
             var satelliteAssembliy = AssemblyName.GetAssemblyName(_satelliteAssembliyPath);
 
-            mainAssembliy.Version.Should().Be(satelliteAssembliy.Version);
+            satelliteAssembliy.Version.Should().Be(mainAssembliy.Version);
         }
     }
 }
