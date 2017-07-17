@@ -426,11 +426,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <SatelliteAssemblyAttribute Include="@(AssemblyAttribute)" />
 
-      <SatelliteAssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(FileVersion)' != '' and '$(GenerateAssemblyFileVersionAttribute)' == 'true'">
+      <SatelliteAssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(FileVersion)' != ''">
         <_Parameter1>$(FileVersionFromTemplateFile)</_Parameter1>
       </SatelliteAssemblyAttribute>
 
-      <SatelliteAssemblyAttribute Include="System.Reflection.AssemblyVersionAttribute" Condition="'$(AssemblyVersion)' != '' and '$(GenerateAssemblyVersionAttribute)' == 'true'">
+      <SatelliteAssemblyAttribute Include="System.Reflection.AssemblyVersionAttribute" Condition="'$(AssemblyVersion)' != ''">
         <_Parameter1>$(AssemblyVersionFromTemplateFile)</_Parameter1>
       </SatelliteAssemblyAttribute>
 

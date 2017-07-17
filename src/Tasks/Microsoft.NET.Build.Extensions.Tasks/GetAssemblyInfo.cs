@@ -10,7 +10,7 @@ using System.Security;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GetAssemblyInfo: TaskBase
+    public class GetAssemblyInfo : TaskBase
     {
         [Required]
         public string FilePath { get; set; }
@@ -30,7 +30,11 @@ namespace Microsoft.NET.Build.Tasks
         private void GetAssemblyInfoFrom(string FilePath)
         {
             FileVersion = FileUtilities.GetFileVersion(FilePath).ToString();
-            AssemblyVersion = FileUtilities.GetFileVersion(FilePath).ToString();
+            var TryGetAssemblyVersion = FileUtilities.TryGetAssemblyVersion(FilePath).ToString();
+            if (TryGetAssemblyVersion != null)
+            {
+                AssemblyVersion = TryGetAssemblyVersion;
+            }
         }
     }
 }
