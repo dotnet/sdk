@@ -402,8 +402,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="GetAssemblyInfoFrom" AssemblyFile="$(MicrosoftNETBuildExtensionsTasksAssembly)" />
 
+  <Target Name="_AppleSauce">
+    <GetAssemblyInfoFrom FilePath="$(TemplateFile)" >
+      <Output TaskParameter="FileVersion"
+            PropertyName="FileVersionFromTemplateFile" />
+      <Output TaskParameter="AssemblyVersion"
+            PropertyName="AssemblyVersionFromTemplateFile" />
+    </GetAssemblyInfoFrom>
+  </Target>
+
   <Target Name="CoreGenerateSatelliteAssemblies"
-          DependsOnTargets="ResolveAssemblyReferences;GenerateAssemblyInfo"
+          DependsOnTargets="ResolveAssemblyReferences;GenerateAssemblyInfo;_AppleSauce"
           Inputs="$(MSBuildAllProjects);@(_SatelliteAssemblyResourceInputs);$(IntermediateOutputPath)$(TargetName)$(TargetExt)"
           Outputs="$(IntermediateOutputPath)%(Culture)\$(TargetName).resources.dll"
           Condition="'@(_SatelliteAssemblyResourceInputs)' != ''  and '$(GenerateSatelliteAssembliesForCore)' == 'true' ">
@@ -416,23 +425,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TemplateFile>$(IntermediateOutputPath)$(TargetName)$(TargetExt)"</TemplateFile>
     </PropertyGroup>
 
-    <GetAssemblyInfoFrom FilePath="$(TemplateFile)" >
-      <Output TaskParameter="FileVersion"
-                  PropertyName="FileVersionFromTemplateFile" />
-      <Output TaskParameter="AssemblyVersion"
-                  PropertyName="AssemblyVersionFromTemplateFile" />
-    </GetAssemblyInfoFrom>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(FileVersion)' != '' and '$(GenerateAssemblyFileVersionAttribute)' == 'true'">
-      <_Parameter1>$(FileVersionFromTemplateFile)</_Parameter1>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyVersionAttribute" Condition="'$(AssemblyVersion)' != '' and '$(GenerateAssemblyVersionAttribute)' == 'true'">
-      <_Parameter1>$(AssemblyVersionFromTemplateFile)</_Parameter1>
-    </AssemblyAttribute>
-
     <ItemGroup>
       <SatelliteAssemblyAttribute Include="@(AssemblyAttribute)" />
+
+      <SatelliteAssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(FileVersion)' != '' and '$(GenerateAssemblyFileVersionAttribute)' == 'true'">
+        <_Parameter1>$(FileVersionFromTemplateFile)</_Parameter1>
+      </SatelliteAssemblyAttribute>
+
+      <SatelliteAssemblyAttribute Include="System.Reflection.AssemblyVersionAttribute" Condition="'$(AssemblyVersion)' != '' and '$(GenerateAssemblyVersionAttribute)' == 'true'">
+        <_Parameter1>$(AssemblyVersionFromTemplateFile)</_Parameter1>
+      </SatelliteAssemblyAttribute>
+
       <SatelliteAssemblyAttribute Include="System.Reflection.AssemblyCultureAttribute" Condition="'%(_SatelliteAssemblyResourceInputs.Culture)' != ''">
         <_Parameter1>%(_SatelliteAssemblyResourceInputs.Culture)</_Parameter1>
       </SatelliteAssemblyAttribute>
@@ -463,6 +466,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Csc>
   </Target>
 
+ 
   <!--
   ============================================================
                            _DefaultMicrosoftNETPlatformLibrary
