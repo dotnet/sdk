@@ -400,15 +400,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     </CreateSatelliteAssembliesDependsOn>
   </PropertyGroup>
 
-  <UsingTask TaskName="GetAssemblyInfoFrom" AssemblyFile="$(MicrosoftNETBuildExtensionsTasksAssembly)" />
+  <UsingTask TaskName="GetAssemblyInfo" AssemblyFile="$(MicrosoftNETBuildExtensionsTasksAssembly)" />
 
   <Target Name="_AppleSauce">
-    <GetAssemblyInfoFrom FilePath="$(TemplateFile)" >
+
+    <PropertyGroup>
+      <TemplateFile>$(IntermediateOutputPath)$(TargetName)$(TargetExt)"</TemplateFile>
+    </PropertyGroup>
+    <GetAssemblyInfo FilePath="$(TemplateFile)" >
       <Output TaskParameter="FileVersion"
             PropertyName="FileVersionFromTemplateFile" />
       <Output TaskParameter="AssemblyVersion"
             PropertyName="AssemblyVersionFromTemplateFile" />
-    </GetAssemblyInfoFrom>
+    </GetAssemblyInfo>
   </Target>
 
   <Target Name="CoreGenerateSatelliteAssemblies"
@@ -419,10 +423,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <MakeDir Directories="@(_SatelliteAssemblyResourceInputs->'$(IntermediateOutputPath)%(Culture)')" />
 
+
+    <GetAssemblyInfo FilePath="$(TemplateFile)" >
+      <Output TaskParameter="FileVersion"
+            PropertyName="FileVersionFromTemplateFile" />
+      <Output TaskParameter="AssemblyVersion"
+            PropertyName="AssemblyVersionFromTemplateFile" />
+    </GetAssemblyInfo>
+    
     <PropertyGroup>
       <_AssemblyInfoFile>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.cs</_AssemblyInfoFile>
       <_OutputAssembly>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.dll</_OutputAssembly>
-      <TemplateFile>$(IntermediateOutputPath)$(TargetName)$(TargetExt)"</TemplateFile>
     </PropertyGroup>
 
     <ItemGroup>

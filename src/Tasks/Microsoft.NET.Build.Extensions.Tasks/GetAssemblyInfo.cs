@@ -10,7 +10,7 @@ using System.Security;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public partial class GetAssemblyInfo: TaskBase
+    public class GetAssemblyInfo: TaskBase
     {
         [Required]
         public string FilePath { get; set; }
