@@ -127,6 +127,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <OverrideToolHost Condition=" '$(DotnetHostPath)' != '' and '$(OverrideToolHost)' == ''">$(DotnetHostPath)</OverrideToolHost>
   </PropertyGroup>
 
+  <!-- Configure how msbuild handles solution files -->
+  <PropertyGroup>
+    <!-- Do not transform solution project dependencies into ProjectReference dependencies
+         https://github.com/Microsoft/msbuild/issues/2274 -->
+    <AddSyntheticProjectReferencesForSolutionDependencies Condition=" '$(AddSyntheticProjectReferencesForSolutionDependencies)' == '' ">false</AddSyntheticProjectReferencesForSolutionDependencies>
+  </PropertyGroup>
+
   <!-- Workaround: https://github.com/dotnet/sdk/issues/1001 -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "/>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "/>
