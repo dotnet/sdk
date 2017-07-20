@@ -9,6 +9,9 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
+<!-- https://github.com/NuGet/Home/issues/5596 and https://github.com/dotnet/project-system/issues/2605 -->
+<!-- Remove the second _IsNETCore1x property below, uncomment the RestoreAdditionalProjectFallbackFoldersExcludes line
+     below and remove the NuGetOfflineCache import from Microsoft.NET.Sdk.targets in crossbuilding -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
@@ -17,13 +20,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <_NugetFallbackFolder>$(MSBuildThisFileDirectory)..\..\..\..\NuGetFallbackFolder</_NugetFallbackFolder>
-    <_IsNETCoreOrNETStandard1x Condition=" '$(_IsNETCoreOrNETStandard)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' ">true</_IsNETCoreOrNETStandard1x>
+    <_IsNETCore1x Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' ">true</_IsNETCore1x>
+    <_IsNETCore1x Condition=" '$(_IsNETCore1x)' != 'true' And $(TargetFrameworks.ToUpper().Contains('NETCOREAPP1')) ">true</_IsNETCore1x>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(DisableImplicitNuGetFallbackFolder)' != 'true' and Exists($(_NugetFallbackFolder)) ">
-    <RestoreAdditionalProjectSources Condition=" '$(_IsNETCoreOrNETStandard1x)' == 'true' ">$(RestoreAdditionalProjectSources);$(_NugetFallbackFolder)</RestoreAdditionalProjectSources>
-    <RestoreAdditionalProjectFallbackFoldersExcludes Condition=" '$(_IsNETCoreOrNETStandard1x)' == 'true' ">$(RestoreAdditionalProjectFallbackFoldersExcludes);$(_NugetFallbackFolder)</RestoreAdditionalProjectFallbackFoldersExcludes>
+    <RestoreAdditionalProjectSources Condition=" '$(_IsNETCore1x)' == 'true' ">$(RestoreAdditionalProjectSources);$(_NugetFallbackFolder)</RestoreAdditionalProjectSources>
+    <!-- RestoreAdditionalProjectFallbackFoldersExcludes Condition=" '$(_IsNETCore1x)' == 'true' ">$(RestoreAdditionalProjectFallbackFoldersExcludes);$(_NugetFallbackFolder)</RestoreAdditionalProjectFallbackFoldersExcludes -->
 
-    <RestoreAdditionalProjectFallbackFolders Condition=" '$(_IsNETCoreOrNETStandard1x)' != 'true' ">$(RestoreAdditionalProjectFallbackFolders);$(_NugetFallbackFolder)</RestoreAdditionalProjectFallbackFolders>
+    <RestoreAdditionalProjectFallbackFolders Condition=" '$(_IsNETCore1x)' != 'true' ">$(RestoreAdditionalProjectFallbackFolders);$(_NugetFallbackFolder)</RestoreAdditionalProjectFallbackFolders>
   </PropertyGroup>
 </Project>

@@ -24,15 +24,15 @@ namespace Microsoft.NET.Restore.Tests
 
         // https://github.com/dotnet/sdk/issues/1327
         [CoreMSBuildOnlyTheory]
-        [InlineData("netstandard1.3", "1.3", true)]
+        [InlineData("netstandard1.3", "1.3", false)]
         [InlineData("netcoreapp1.0", "1.0", true)]
         [InlineData("netcoreapp1.1", "1.1", true)]
         [InlineData("netstandard2.0", "2.0", false)]
         [InlineData("netcoreapp2.0", "2.0app", false)]
         [InlineData("net461", "461app", false)]
-        // https://github.com/NuGet/Home/issues/5596 and https://github.com/dotnet/project-system/issues/2605
-        //[InlineData("netcoreapp2.0;net461", "multiTFM20app", false)]
-        //[InlineData("netcoreapp1.0;netcoreapp2.0", "multiTFM1020app", true)]
+        [InlineData("netcoreapp2.0;net461", "multiTFM20app", false)]
+        [InlineData("netcoreapp1.0;netcoreapp2.0", "multiTFM1020app", true)]
+        [InlineData("netcoreapp1.0;net461", "multiTFM1046app", true)]
         public void I_can_restore_a_project_with_implicit_msbuild_nuget_config(
             string frameworks,
             string projectPrefix,
