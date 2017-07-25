@@ -16,6 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Import Project="..\build\Microsoft.NET.Sdk.Common.targets"/>
+  <Import Project="..\build\Microsoft.NET.NuGetOfflineCache.targets"/>
 
   <!--
   ============================================================
