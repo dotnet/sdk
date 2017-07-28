@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -25,6 +25,7 @@ namespace ComparisonCleanup
             if (!Directory.Exists(baseDir))
             {
                 Console.WriteLine($"directory '{baseDir}' doesn't exist");
+                return;
             }
 
             IList<string> toRemove = new List<string>();
