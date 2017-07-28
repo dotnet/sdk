@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -8,6 +9,48 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class ParameterSymbol : ISymbolModel
     {
+        // Used when the template explicitly defines the symbol "name".
+        // The template definition is used exclusively, except for the case where it doesn't define any value forms.
+        // When that is the case, the default value forms are used.
+        //
+        // When we add file-specific forms, this'll need some work.
+        public static ParameterSymbol ExplicitNameSymbolMergeWithDefaults(ISymbolModel templateDefinedName, ISymbolModel defaultDefinedName)
+        {
+            if (!(templateDefinedName is ParameterSymbol templateSymbol))
+            {
+                throw new InvalidCastException("templateDefinedName is not a ParameterSymbol");
+            }
+
+            if (!(defaultDefinedName is ParameterSymbol defaultSymbol))
+            {
+                throw new InvalidCastException("defaultDefinedName is not a ParameterSymbol");
+            }
+
+            if (templateSymbol.Forms.GlobalForms.Count > 0)
+            {   // template symbol has forms, use them
+                return templateSymbol;
+            }
+
+            ParameterSymbol mergedSymbol = new ParameterSymbol()
+            {
+                Binding = templateSymbol.Binding,
+                DefaultValue = templateSymbol.DefaultValue,
+                Description = templateSymbol.Description,
+                Forms = defaultSymbol.Forms,    // this is the only thing that gets replaced from the default
+                IsRequired = templateSymbol.IsRequired,
+                Type = templateSymbol.Type,
+                Replaces = templateSymbol.Replaces,
+                DataType = templateSymbol.DataType,
+                FileRename = templateSymbol.FileRename,
+                IsTag = templateSymbol.IsTag,
+                TagName = templateSymbol.TagName,
+                Choices = templateSymbol.Choices,
+                ReplacementContexts = templateSymbol.ReplacementContexts,
+            };
+
+            return mergedSymbol;
+        }
+
         public string Binding { get; set; }
 
         public string DefaultValue { get; set; }
@@ -65,10 +108,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (!jObject.TryGetValue(nameof(symbol.Forms), StringComparison.OrdinalIgnoreCase, out JToken formsToken) || !(formsToken is JObject formsObject))
             {
-                symbol.Forms = SymbolValueFormsModel.Empty;
+                // no value forms explicitly defined, use the default ("identity")
+                symbol.Forms = SymbolValueFormsModel.Default;
             }
             else
             {
+                // the config defines forms for the symbol. Use them.
                 symbol.Forms = SymbolValueFormsModel.FromJObject(formsObject);
             }
 
