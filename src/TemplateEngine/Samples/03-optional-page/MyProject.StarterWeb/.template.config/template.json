@@ -6,7 +6,8 @@
   "groupIdentity":"MyProject.03.Sample",
   "shortName": "sample03",
   "tags": {
-    "language": "C#"
+    "language": "C#",
+    "type":"project"
   },
   "sourceName": "MyProject.StarterWeb",
   "preferNameDirectory": true,

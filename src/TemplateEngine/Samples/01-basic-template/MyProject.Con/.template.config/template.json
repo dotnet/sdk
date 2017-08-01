@@ -7,8 +7,9 @@
   "groupIdentity":"MyProject.01.Sample",
   "shortName": "sample01",                    // You can create the project using this short name instead of the one above.
   "tags": {
-    "language": "C#"                        // Specify that this template is in C#.
+    "language": "C#",                         // Specify that this template is in C#.
+    "type":"project"
   },
-  "sourceName": "MyProject.Con",     // Will replace the string 'MyProject.StarterWeb' with the value provided via -n.
+  "sourceName": "MyProject.Con",              // Will replace the string 'MyProject.StarterWeb' with the value provided via -n.
   "preferNameDirectory":true
 }

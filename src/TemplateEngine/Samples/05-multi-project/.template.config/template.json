@@ -7,7 +7,8 @@
   "groupIdentity":"MyProject.05.Sample",
   "shortName": "sample05",
   "tags": {
-    "language": "C#"
+    "language": "C#",
+    "type":"project"
   },
   "sourceName": "MyProject.Console",
   "preferNameDirectory": true,
