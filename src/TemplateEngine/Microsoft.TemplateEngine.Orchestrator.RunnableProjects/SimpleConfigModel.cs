@@ -215,7 +215,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                         {
-                            if (symbol.Value.Type == "parameter")
+                            if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal))
                             {
                                 ParameterSymbol param = (ParameterSymbol)symbol.Value;
                                 bool isName = param.Binding == NameSymbolName;
@@ -530,7 +530,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         string sourceVariable = null;
 
-                        if (symbol.Value.Type == "bind")
+                        if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
                         {
                             if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
                             {
@@ -666,13 +666,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                 {
-                    if (symbol.Value.Type == "computed")
+                    if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
                     {
                         string value = ((ComputedSymbol)symbol.Value).Value;
                         string evaluator = ((ComputedSymbol)symbol.Value).Evaluator;
                         computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, value, evaluator));
                     }
-                    else if (symbol.Value.Type == "generated")
+                    else if (string.Equals(symbol.Value.Type, GeneratedSymbol.TypeName, StringComparison.Ordinal))
                     {
                         GeneratedSymbol symbolInfo = (GeneratedSymbol)symbol.Value;
                         string type = symbolInfo.Generator;
@@ -735,7 +735,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 stable = true;
                 foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                 {
-                    if (symbol.Value.Type == "computed")
+                    if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
                     {
                         ComputedSymbol sym = (ComputedSymbol)symbol.Value;
                         bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(EnvironmentSettings, sym.Value, rootVariableCollection);
@@ -743,7 +743,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
                     }
-                    else if (symbol.Value.Type == "bind")
+                    else if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
                     {
                         if (parameters.TryGetRuntimeValue(EnvironmentSettings, symbol.Value.Binding, out object bindValue) && bindValue != null)
                         {
@@ -924,7 +924,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             nameSymbolConfigBuilder.AppendLine(@"
 {
   ""binding"": """ + NameSymbolName + @""",
-  ""type"": ""parameter"",
+  ""type"": """ + ParameterSymbol.TypeName + @""",
   ""description"": ""The default name symbol"",
   ""datatype"": ""string"",
   ""forms"": {
