@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class ParameterSymbol : BaseValueSymbol
     {
-        public const string TypeName = "parameter";
+        internal const string TypeName = "parameter";
 
         // Used when the template explicitly defines the symbol "name".
         // The template definition is used exclusively, except for the case where it doesn't define any value forms.
@@ -72,8 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
         {
-            ParameterSymbol symbol = new ParameterSymbol();
-            FromJObject(symbol, jObject, localization, defaultOverride);
+            ParameterSymbol symbol = FromJObject<ParameterSymbol>(jObject, localization, defaultOverride);
             Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
 
             if (symbol.DataType == "choice")

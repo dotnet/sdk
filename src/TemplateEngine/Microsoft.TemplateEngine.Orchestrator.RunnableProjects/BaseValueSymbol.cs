@@ -28,17 +28,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
 
-        protected static void FromJObject(BaseValueSymbol symbol, JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
+        protected static T FromJObject<T>(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
+            where T: BaseValueSymbol, new()
         {
-            symbol.Binding = jObject.ToString(nameof(Binding));
-            symbol.DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue));
-            symbol.Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty;
-            symbol.FileRename = jObject.ToString(nameof(FileRename));
-            symbol.IsRequired = jObject.ToBool(nameof(IsRequired));
-            symbol.Type = jObject.ToString(nameof(Type));
-            symbol.Replaces = jObject.ToString(nameof(Replaces));
-            symbol.DataType = jObject.ToString(nameof(DataType));
-            symbol.ReplacementContexts = SymbolModelConverter.ReadReplacementContexts(jObject);
+            T symbol = new T
+            {
+                Binding = jObject.ToString(nameof(Binding)),
+                DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue)),
+                Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty,
+                FileRename = jObject.ToString(nameof(FileRename)),
+                IsRequired = jObject.ToBool(nameof(IsRequired)),
+                Type = jObject.ToString(nameof(Type)),
+                Replaces = jObject.ToString(nameof(Replaces)),
+                DataType = jObject.ToString(nameof(DataType)),
+                ReplacementContexts = SymbolModelConverter.ReadReplacementContexts(jObject)
+            };
 
             if (!jObject.TryGetValue(nameof(symbol.Forms), StringComparison.OrdinalIgnoreCase, out JToken formsToken) || !(formsToken is JObject formsObject))
             {
@@ -50,6 +54,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 // the config defines forms for the symbol. Use them.
                 symbol.Forms = SymbolValueFormsModel.FromJObject(formsObject);
             }
+
+            return symbol;
         }
     }
 }

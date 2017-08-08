@@ -6,7 +6,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class ComputedSymbol : ISymbolModel
     {
-        public const string TypeName = "computed";
+        internal const string TypeName = "computed";
 
         public string Value { get; internal set; }
 

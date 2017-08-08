@@ -6,7 +6,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class GeneratedSymbol : ISymbolModel
     {
-        public const string TypeName = "generated";
+        internal const string TypeName = "generated";
 
         public string Binding { get; set; }
 

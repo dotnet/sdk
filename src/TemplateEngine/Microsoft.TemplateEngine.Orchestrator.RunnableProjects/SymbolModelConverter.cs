@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class SymbolModelConverter
     {
-        public const string BindSymbolTypeName = "bind";
+        internal const string BindSymbolTypeName = "bind";
 
         // Note: Only ParameterSymbol has a Description property, this it's the only one that gets localization
         // TODO: change how localization gets merged in, don't do it here.
