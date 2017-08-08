@@ -5,7 +5,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class DerivedSymbol : BaseValueSymbol
     {
-        public const string TypeName = "derived";
+        internal const string TypeName = "derived";
 
         public string ValueTransform { get; set; }
 
