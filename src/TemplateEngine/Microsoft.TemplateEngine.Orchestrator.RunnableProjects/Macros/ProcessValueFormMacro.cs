@@ -43,11 +43,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 value = form.Process(realConfig.Forms, value);
 
-                Parameter p = new Parameter
+                Parameter p;
+
+                if (parameters.TryGetParameterDefinition(config.VariableName, out ITemplateParameter existingParam))
+                {   // Derived parameters already have a definition, but need value form processing.
+                    // When the param already exists, use its definition.
+                    p = (Parameter)existingParam;
+                }
+                else
                 {
-                    IsVariable = true,
-                    Name = config.VariableName
-                };
+                    p = new Parameter
+                    {
+                        IsVariable = true,
+                        Name = config.VariableName
+                    };
+                }
 
                 vars[config.VariableName] = value;
                 setter(p, value);
