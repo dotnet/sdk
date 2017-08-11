@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,6 +17,34 @@ namespace Microsoft.TemplateEngine.Edge.Template
         {
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
+        }
+
+        private bool TryCreateParameterSet(ITemplate template, string realName, IReadOnlyDictionary<string, string> inputParameters, out IParameterSet templateParams, out TemplateCreationResult failureResult)
+        {
+            // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
+            templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IReadOnlyList<string> defaultParamsWithInvalidValues);
+            ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
+
+            if (AnyParametersWithInvalidDefaultsUnresolved(defaultParamsWithInvalidValues, userParamsWithInvalidValues, inputParameters, out IReadOnlyList<string> defaultsWithUnresolvedInvalidValues)
+                    || userParamsWithInvalidValues.Count > 0)
+            {
+                string message = string.Join(", ", new CombinedList<string>(userParamsWithInvalidValues, defaultsWithUnresolvedInvalidValues));
+                failureResult = new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
+                templateParams = null;
+                return false;
+            }
+
+            bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
+
+            if (missingParams)
+            {
+                failureResult = new TemplateCreationResult(string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
+                templateParams = null;
+                return false;
+            }
+
+            failureResult = null;
+            return true;
         }
 
         public async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName)
@@ -39,24 +67,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     return new TemplateCreationResult("--name", CreationResultStatus.MissingMandatoryParam, template.Name);
                 }
 
-                // there should never be param errors here. If there are, the template is malformed, or the host gave an invalid value.
-                IParameterSet templateParams = SetupDefaultParamValuesFromTemplateAndHost(template, realName, out IReadOnlyList<string> defaultParamsWithInvalidValues);
-                ResolveUserParameters(template, templateParams, inputParameters, out IReadOnlyList<string> userParamsWithInvalidValues);
-
-                if (AnyParametersWithInvalidDefaultsUnresolved(defaultParamsWithInvalidValues, userParamsWithInvalidValues, inputParameters, out IReadOnlyList<string> defaultsWithUnresolvedInvalidValues)
-                        || userParamsWithInvalidValues.Count > 0)
-                {
-                    string message = string.Join(", ", new CombinedList<string>(userParamsWithInvalidValues, defaultsWithUnresolvedInvalidValues));
-                    return new TemplateCreationResult(message, CreationResultStatus.InvalidParamValues, template.Name);
-                }
-
-                bool missingParams = CheckForMissingRequiredParameters(templateParams, out IList<string> missingParamNames);
-
-                if (missingParams)
-                {
-                    return new TemplateCreationResult(string.Join(", ", missingParamNames), CreationResultStatus.MissingMandatoryParam, template.Name);
-                }
-
                 if (template.IsNameAgreementWithFolderPreferred && string.IsNullOrEmpty(outputPath))
                 {
                     outputPath = name;
@@ -71,7 +81,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     Stopwatch sw = Stopwatch.StartNew();
                     IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
 
-                    IReadOnlyList<IFileChange> changes = template.Generator.GetCreationEffects(_environmentSettings, template, templateParams, componentManager, targetDir).FileChanges;
+                    // setup separate sets of parameters to be used for GetCreationEffects() and by CreateAsync().
+                    if (!TryCreateParameterSet(template, realName, inputParameters, out IParameterSet effectParams, out TemplateCreationResult resultIfParameterCreationFailed))
+                    {
+                        return resultIfParameterCreationFailed;
+                    }
+
+                    IReadOnlyList<IFileChange> changes = template.Generator.GetCreationEffects(_environmentSettings, template, effectParams, componentManager, targetDir).FileChanges;
                     IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
 
                     if (!forceCreation && destructiveChanges.Count > 0)
@@ -82,7 +98,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         }
                     }
 
-                    creationResult = await template.Generator.CreateAsync(_environmentSettings, template, templateParams, componentManager, targetDir).ConfigureAwait(false);
+                    if (!TryCreateParameterSet(template, realName, inputParameters, out IParameterSet creationParams, out resultIfParameterCreationFailed))
+                    {
+                        return resultIfParameterCreationFailed;
+                    }
+
+                    creationResult = await template.Generator.CreateAsync(_environmentSettings, template, creationParams, componentManager, targetDir).ConfigureAwait(false);
                     sw.Stop();
                     _environmentSettings.Host.LogTiming("Content generation time", sw.Elapsed, 0);
                     return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, targetDir);

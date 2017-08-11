@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -94,6 +94,29 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.NotNull(match);
             Assert.Equal("Test2", match.Id);
             Assert.Equal(0, token);
+            Assert.Equal(buffer.Length, currentBufferPosition);
+        }
+
+        [Fact(DisplayName = nameof(VerifyLastInWinsForIdenticalMatching))]
+        public void VerifyLastInWinsForIdenticalMatching()
+        {
+            OperationTrie trie = OperationTrie.Create(new IOperation[]
+            {
+                new MockOperation("TestOp1", null, true, TokenConfig.LiteralToken(new byte[] { 5, 5, 5 })),
+                new MockOperation("TestOp2", null, true, TokenConfig.LiteralToken(new byte[] { 2, 3, 4, 5 })),
+                new MockOperation("TestOp3", null, true, TokenConfig.LiteralToken(new byte[] { 7, 7, 7 })),
+                new MockOperation("TestOp4", null, true, TokenConfig.LiteralToken(new byte[] { 9, 9, 9, 9 }),
+                                                        TokenConfig.LiteralToken(new byte[] { 2, 3, 4, 5 })
+                ),
+            });
+
+            byte[] buffer = { 9, 8, 9, 8, 7, 2, 3, 4, 5 };
+            int currentBufferPosition = 0;
+            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
+
+            Assert.NotNull(match);
+            Assert.Equal("TestOp4", match.Id);
+            Assert.Equal(1, token);
             Assert.Equal(buffer.Length, currentBufferPosition);
         }
 
