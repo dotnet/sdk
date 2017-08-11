@@ -826,12 +826,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                 }
 
-                string sourceTargetName = source.Target ?? "./";
-                AugmentRenames(configFile, ref sourceTargetName, resolvedNameParamValue, parameters, fileRenames);
+                string sourceDirectory = source.Source ?? "./";
+                string targetDirectory = source.Target ?? "./";
+                AugmentRenames(configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
-                    source.Source ?? "./",
-                    sourceTargetName,
+                    sourceDirectory,
+                    targetDirectory,
                     topLevelPatterns,
                     fileRenames,
                     modifierList);
@@ -845,9 +846,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
 
-                string sourceTargetName = string.Empty;
+                string targetDirectory = string.Empty;
                 Dictionary<string, string> fileRenames = new Dictionary<string, string>();
-                AugmentRenames(configFile, ref sourceTargetName, resolvedNameParamValue, parameters, fileRenames);
+                AugmentRenames(configFile, "./", ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     "./",
@@ -861,17 +862,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return sources;
         }
 
-        private void AugmentRenames(IFileSystemInfo configFile, ref string sourceTargetName, object resolvedNameParamValue, IParameterSet parameters, Dictionary<string, string> fileRenames)
+        private void AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameters, Dictionary<string, string> fileRenames)
         {
             List<KeyValuePair<string, string>> fileRenameMappings = new List<KeyValuePair<string, string>>();
             Dictionary<string, string> coreRenames = new Dictionary<string, string>(fileRenames);
-            string originalSourceName = sourceTargetName;
 
             // setup the rename of the base directory to the output "name" param directory
             if (resolvedNameParamValue != null && SourceName != null)
             {
                 string targetName = ((string)resolvedNameParamValue).Trim();
-                sourceTargetName = sourceTargetName.Replace(SourceName, targetName);
+                targetDirectory = targetDirectory.Replace(SourceName, targetName);
                 fileRenameMappings.Add(new KeyValuePair<string, string>(SourceName, targetName));
             }
 
@@ -887,9 +887,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            foreach (IFileSystemInfo fileSystemEntry in configFile.Parent.Parent.DirectoryInfo(originalSourceName.TrimEnd('/')).EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+            IDirectory sourceBaseDirectoryInfo = configFile.Parent.Parent.DirectoryInfo(sourceDirectory.TrimEnd('/'));
+
+            foreach (IFileSystemInfo fileSystemEntry in sourceBaseDirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
             {
-                string templateRelativePath = fileSystemEntry.PathRelativeTo(configFile.Parent.Parent);
+                string templateRelativePath = fileSystemEntry.PathRelativeTo(sourceBaseDirectoryInfo);
                 string outputRelativePath = templateRelativePath;
 
                 foreach (KeyValuePair<string, string> rename in coreRenames)
