@@ -19,7 +19,7 @@
     {
       "handler": "directoryInspect",
       "directory": "Extensions",
-      "assertion": "does_not_exist"
+      "assertion": "exists"
     },
     {
       "handler": "fileInspect",

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -109,12 +109,12 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
+                bool checkingDirWithPlaceholderFile = false;
 
                 if (spec.IgnoreFileNames.Contains(fileName))
                 {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
-                    // So this happens before all the include / exclude / copy checks.
-                    CreateTargetDir(environmentSettings, sourceRel, targetDir, spec);
-                    continue;
+                    // The change checking / reporting is different, setting this variable tracks it.
+                    checkingDirWithPlaceholderFile = true;
                 }
 
                 foreach (IPathMatcher include in spec.Include)
@@ -140,7 +140,21 @@ namespace Microsoft.TemplateEngine.Core.Util
 
                             string targetPath = Path.Combine(targetDir, targetRel);
 
-                            if (environmentSettings.Host.FileSystem.FileExists(targetPath))
+                            if (checkingDirWithPlaceholderFile)
+                            {
+                                targetPath = Path.GetDirectoryName(targetPath);
+                                targetRel = Path.GetDirectoryName(targetRel);
+
+                                if (environmentSettings.Host.FileSystem.DirectoryExists(targetPath))
+                                {
+                                    changes.Add(new FileChange(targetRel, ChangeKind.Overwrite));
+                                }
+                                else
+                                {
+                                    changes.Add(new FileChange(targetRel, ChangeKind.Create));
+                                }
+                            }
+                            else if (environmentSettings.Host.FileSystem.FileExists(targetPath))
                             {
                                 changes.Add(new FileChange(targetRel, ChangeKind.Overwrite));
                             }
@@ -169,12 +183,12 @@ namespace Microsoft.TemplateEngine.Core.Util
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);
                 string fileName = Path.GetFileName(sourceRel);
+                bool checkingDirWithPlaceholderFile = false;
 
                 if (spec.IgnoreFileNames.Contains(fileName))
                 {   // The placeholder file should never get copied / created / processed. It just causes the dir to get created if needed.
-                    // So this happens before all the include / exclude / copy checks.
-                    CreateTargetDir(environmentSettings, sourceRel, targetDir, spec);
-                    continue;
+                    // The change checking / reporting is different, setting this variable tracks it.
+                    checkingDirWithPlaceholderFile = true;
                 }
 
                 foreach (IPathMatcher include in spec.Include)
@@ -205,7 +219,11 @@ namespace Microsoft.TemplateEngine.Core.Util
 
                             spec.LocalizationOperations.TryGetValue(sourceRel, out IReadOnlyList<IOperationProvider> locOperations);
 
-                            if (!copy)
+                            if (checkingDirWithPlaceholderFile)
+                            {
+                                CreateTargetDir(environmentSettings, sourceRel, targetDir, spec);
+                            }
+                            else if (!copy)
                             {
                                 ProcessFile(file, sourceRel, targetDir, spec, fallback, fileGlobProcessors, locOperations);
                             }

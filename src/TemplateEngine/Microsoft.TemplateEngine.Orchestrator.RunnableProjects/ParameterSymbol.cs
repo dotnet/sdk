@@ -6,25 +6,49 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class ParameterSymbol : ISymbolModel
+    public class ParameterSymbol : BaseValueSymbol
     {
-        public string Binding { get; set; }
+        internal const string TypeName = "parameter";
 
-        public string DefaultValue { get; set; }
+        // Used when the template explicitly defines the symbol "name".
+        // The template definition is used exclusively, except for the case where it doesn't define any value forms.
+        // When that is the case, the default value forms are used.
+        public static ParameterSymbol ExplicitNameSymbolMergeWithDefaults(ISymbolModel templateDefinedName, ISymbolModel defaultDefinedName)
+        {
+            if (!(templateDefinedName is ParameterSymbol templateSymbol))
+            {
+                throw new InvalidCastException("templateDefinedName is not a ParameterSymbol");
+            }
 
-        public string Description { get; set; }
+            if (!(defaultDefinedName is ParameterSymbol defaultSymbol))
+            {
+                throw new InvalidCastException("defaultDefinedName is not a ParameterSymbol");
+            }
 
-        public SymbolValueFormsModel Forms { get; set; }
+            if (templateSymbol.Forms.GlobalForms.Count > 0)
+            {   // template symbol has forms, use them
+                return templateSymbol;
+            }
 
-        public bool IsRequired { get; set; }
+            ParameterSymbol mergedSymbol = new ParameterSymbol()
+            {
+                Binding = templateSymbol.Binding,
+                DefaultValue = templateSymbol.DefaultValue,
+                Description = templateSymbol.Description,
+                Forms = defaultSymbol.Forms,    // this is the only thing that gets replaced from the default
+                IsRequired = templateSymbol.IsRequired,
+                Type = templateSymbol.Type,
+                Replaces = templateSymbol.Replaces,
+                DataType = templateSymbol.DataType,
+                FileRename = templateSymbol.FileRename,
+                IsTag = templateSymbol.IsTag,
+                TagName = templateSymbol.TagName,
+                Choices = templateSymbol.Choices,
+                ReplacementContexts = templateSymbol.ReplacementContexts,
+            };
 
-        public string Type { get; private set; }
-
-        public string Replaces { get; set; }
-
-        public string DataType { get; set; }
-
-        public string FileRename { get; set; }
+            return mergedSymbol;
+        }
 
         // only relevant for choice datatype
         public bool IsTag { get; set; }
@@ -46,32 +70,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IReadOnlyList<IReplacementContext> ReplacementContexts { get; set; }
-
         public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
         {
-            ParameterSymbol symbol = new ParameterSymbol
-            {
-                Binding = jObject.ToString(nameof(Binding)),
-                DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue)),
-                Description = localization?.Description ?? jObject.ToString(nameof(Description)) ?? string.Empty,
-                FileRename = jObject.ToString(nameof(FileRename)),
-                IsRequired = jObject.ToBool(nameof(IsRequired)),
-                Type = jObject.ToString(nameof(Type)),
-                Replaces = jObject.ToString(nameof(Replaces)),
-                DataType = jObject.ToString(nameof(DataType)),
-                ReplacementContexts = ReadReplacementContexts(jObject),
-            };
-
-            if (!jObject.TryGetValue(nameof(symbol.Forms), StringComparison.OrdinalIgnoreCase, out JToken formsToken) || !(formsToken is JObject formsObject))
-            {
-                symbol.Forms = SymbolValueFormsModel.Empty;
-            }
-            else
-            {
-                symbol.Forms = SymbolValueFormsModel.FromJObject(formsObject);
-            }
-
+            ParameterSymbol symbol = FromJObject<ParameterSymbol>(jObject, localization, defaultOverride);
             Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
 
             if (symbol.DataType == "choice")
@@ -102,40 +103,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ParameterSymbol symbol = new ParameterSymbol
             {
                 DefaultValue = value,
-                Type = "parameter",
+                Type = TypeName,
                 DataType = "choice",
                 IsTag = true,
                 Choices = new Dictionary<string, string>() { { value, string.Empty } },
             };
 
             return symbol;
-        }
-
-        private static IReadOnlyList<IReplacementContext> ReadReplacementContexts(JObject jObject)
-        {
-            JArray onlyIf = jObject.Get<JArray>("onlyIf");
-
-            if (onlyIf != null)
-            {
-                List<IReplacementContext> contexts = new List<IReplacementContext>();
-                foreach (JToken entry in onlyIf.Children())
-                {
-                    if (!(entry is JObject x))
-                    {
-                        continue;
-                    }
-
-                    string before = entry.ToString("before");
-                    string after = entry.ToString("after");
-                    contexts.Add(new ReplacementContext(before, after));
-                }
-
-                return contexts;
-            }
-            else
-            {
-                return Empty<IReplacementContext>.List.Value;
-            }
         }
     }
 }
