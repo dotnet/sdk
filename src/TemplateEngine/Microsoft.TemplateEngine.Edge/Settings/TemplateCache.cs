@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,38 +46,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public IReadOnlyList<TemplateInfo> TemplateInfo { get; set; }
-
-        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
-        {
-            HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
-
-            foreach (ITemplateInfo template in TemplateInfo)
-            {
-                List<MatchInfo> matchInformation = new List<MatchInfo>();
-
-                foreach (Func<ITemplateInfo, MatchInfo?> filter in filters)
-                {
-                    MatchInfo? result = filter(template);
-
-                    if (result.HasValue)
-                    {
-                        matchInformation.Add(result.Value);
-                    }
-                }
-
-                FilteredTemplateInfo info = new FilteredTemplateInfo(template, matchInformation);
-                if (info.IsMatch || (!exactMatchesOnly && info.IsPartialMatch))
-                {
-                    matchingTemplates.Add(info);
-                }
-            }
-
-#if !NET45
-            return matchingTemplates;
-#else
-            return matchingTemplates.ToList();
-#endif
-        }
 
         public void Scan(IReadOnlyList<string> templateRoots)
         {
