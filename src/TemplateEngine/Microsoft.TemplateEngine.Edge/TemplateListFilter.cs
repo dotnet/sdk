@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public static class TemplateListFilter
     {
-        public static IReadOnlyCollection<IFilteredTemplateInfo> FilterTemplates(IReadOnlyList<TemplateInfo> templateList, bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
+        public static IReadOnlyCollection<IFilteredTemplateInfo> FilterTemplates(IReadOnlyList<ITemplateInfo> templateList, bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
 
