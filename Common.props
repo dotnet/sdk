@@ -30,7 +30,7 @@
          for seven years from every epoch reset. -->
     <VersionPrefix Condition="'$(VersionPrefix)' == ''">1.1.1</VersionPrefix>
     <BuildEpoch>20170101</BuildEpoch>
-    <VersionPrereleasePrefix Condition="'$(VersionPrereleasePrefix)' == ''">servicing</VersionPrereleasePrefix>
+    <VersionPrereleasePrefix Condition="'$(VersionPrereleasePrefix)' == ''">svc</VersionPrereleasePrefix>
     <!-- When running on VSO (for official builds) use a real number. -->
     <BuildNumber Condition="'$(BuildNumber)' == ''">$(BUILD_BUILDNUMBER)</BuildNumber>
     <BuildNumber Condition="'$(BuildNumber)' == ''">00000001-01</BuildNumber>
