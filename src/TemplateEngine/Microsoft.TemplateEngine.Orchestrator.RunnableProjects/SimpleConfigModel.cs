@@ -532,6 +532,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                 {
+                    if (symbol.Value is DerivedSymbol derivedSymbol)
+                    {
+                        if (generateMacros)
+                        {
+                            macros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Key, derivedSymbol.ValueTransform, Forms));
+                        }
+                    }
+
                     if (symbol.Value.Replaces != null)
                     {
                         string sourceVariable = null;
@@ -557,7 +565,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                         if (sourceVariable != null)
                         {
-                            if (symbol.Value is ParameterSymbol p)
+                            if (symbol.Value is BaseValueSymbol p)
                             {
                                 foreach (string form in p.Forms.GlobalForms)
                                 {
@@ -575,14 +583,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             {
                                 GenerateReplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
                             }
-                        }
-                    }
-
-                    if (symbol.Value is DerivedSymbol derivedSymbol)
-                    {
-                        if (generateMacros)
-                        {
-                            macros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Key, derivedSymbol.ValueTransform, Forms));
                         }
                     }
                 }

@@ -46,11 +46,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 setter(p, value);
             }
 
-            Parameter pd = new Parameter
+            Parameter pd;
+
+            if (parameters.TryGetParameterDefinition(config.VariableName, out ITemplateParameter existingParam))
             {
-                IsVariable = true,
-                Name = config.VariableName
-            };
+                // If there is an existing parameter with this name, it must be reused so it can be referenced by name
+                // for other processing, for example: if the parameter had value forms defined for creating variants.
+                // When the param already exists, use its definition, but set IsVariable = true for consistency.
+                pd = (Parameter)existingParam;
+                pd.IsVariable = true;
+            }
+            else
+            {
+                pd = new Parameter
+                {
+                    IsVariable = true,
+                    Name = config.VariableName
+                };
+            }
 
             vars[config.VariableName] = g.ToString("D");
             setter(pd, g.ToString("D"));
