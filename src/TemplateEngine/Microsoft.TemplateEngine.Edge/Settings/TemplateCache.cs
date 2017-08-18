@@ -47,6 +47,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public IReadOnlyList<TemplateInfo> TemplateInfo { get; set; }
 
+        // This method is getting obsolted soon. It's getting replaced by TemplateListFilter.FilterTemplates, which does the same thing,
+        // except that the template list to act on is passed in.
+        public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
+        {
+            return TemplateListFilter.FilterTemplates(TemplateInfo, exactMatchesOnly, filters);
+        }
+
         public void Scan(IReadOnlyList<string> templateRoots)
         {
             foreach (string templateDir in templateRoots)
