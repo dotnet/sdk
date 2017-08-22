@@ -18,6 +18,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         //  Applies to SDK Projects
         public string TargetFrameworks { get; set; }
 
+        public string RuntimeFrameworkVersion { get; set; }
+
+        public string RuntimeIdentifier { get; set; }
+
         //  TargetFrameworkVersion applies to non-SDK projects
         public string TargetFrameworkVersion { get; set; }
 
@@ -129,9 +133,14 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     propertyGroup.Add(new XElement(ns + "TargetFramework", this.TargetFrameworks));
                 }
 
-                if (this.IsExe && targetFrameworks.Any(identifier => GetShortTargetFrameworkIdentifier(identifier).Equals("net", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(this.RuntimeFrameworkVersion))
                 {
-                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", "win7-x86"));
+                    propertyGroup.Add(new XElement(ns + "RuntimeFrameworkVersion", this.RuntimeFrameworkVersion));
+                }
+
+                if (!string.IsNullOrEmpty(this.RuntimeIdentifier))
+                {
+                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", this.RuntimeIdentifier));
                 }
 
                 //  Update SDK reference to the version under test

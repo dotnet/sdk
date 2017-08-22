@@ -55,7 +55,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   
   <!--  
-    Determine the NetCoreImplicitPackageVersion and RuntimeFrameworkVersion when targeting .NET Core
+    Determine the RuntimeFrameworkVersion when targeting .NET Core
     
     When targeting .NET Core, the TargetFramework is generally used to specify which version of the runtime to use.
     
@@ -64,30 +64,51 @@ Copyright (c) .NET Foundation. All rights reserved.
     
     The framework version that is written to the runtimeconfig.json file is based on the actual resolved package version
     of Microsoft.NETCore.App.  This is to allow floating the verion number.
-  
-  -->
+    
+    If RuntimeFrameworkVersion is not specified, the following logic applies
 
-  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
-    <!-- If targeting .NET Core, and the RuntimeFrameworkVersion is not specified, use the latest patch version of that runtime that we know about.
-    
-      This ensures that if a self-contained app is published where RuntimeFrameworkVersion is not specified, the latest patch
-      version of the runtime (that the SDK knew about when it shipped) will be used.
-      
-      This also will fix an issue where Microsoft.NETCore.App 1.1.0 included a version of the Microsoft.DiaSymReader.Native package
-      that was authored in such a way that Microsoft.DiaSymReader.Native.amd64.dll and Microsoft.DiaSymReader.Native.x86.dll would
-      be copied to the output folder.  Using Microsoft.NETCore.App 1.1.1 fixes this, as it references an updated version of the
-      DiaSymReader package with the issue fixed.  (See https://github.com/dotnet/corefx/issues/14627)
-      
-      Using the latest patch version that the SDK knows about does mean that an update to the SDK could change the version of
-      the runtime that a project targets.  In general, this should be OK.  If a project wants to opt out of this, it can specify
-      the exact version of the runtime to use with the RuntimeFrameworkVersion property.    
-    -->
-    <!-- If targeting netcoreapp1.1, and RuntimeFrameworkVersion is not specified, use version 1.1.1 -->
-    <RuntimeFrameworkVersion Condition="'$(RuntimeFrameworkVersion)' == '' And '$(_TargetFrameworkVersionWithoutV)' == '1.0'">1.0.5</RuntimeFrameworkVersion>
-    <RuntimeFrameworkVersion Condition="'$(RuntimeFrameworkVersion)' == '' And '$(_TargetFrameworkVersionWithoutV)' == '1.1'">1.1.2</RuntimeFrameworkVersion>
-    
-    <!-- Default to use the version of the framework runtime matching the target framework version-->
-    <RuntimeFrameworkVersion Condition="'$(RuntimeFrameworkVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</RuntimeFrameworkVersion>
+    - Self-contained apps use the latest corresponding patch version (from when the SDK shipped)
+    - Framework-dependent app targeting netcoreapp1.0 and netcoreapp1.1 use v1.0.5 and v1.1.2, respectively
+        - This is done for compatibility with previous releases that bumped the self-contained and framework-dependent versions together.
+  -->
+  <!-- These properties are here as a test hook so that we can test with the versions bumped before the actual framework
+       builds are available. -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(RuntimeFrameworkVersion)' == ''"> 
+    <ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_0
+      Condition="'$(ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_0)' == ''">1.0.6</ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_0>
+    <ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_1
+      Condition="'$(ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_1)' == ''">1.1.3</ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_1>
+  </PropertyGroup>
+
+  <!-- Select implicit runtime framework versions -->
+  <Choose>
+    <!-- If not targeting .NET Core, or if RuntimeFrameworkVersion is already set, do nothing -->
+    <When Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp' Or '$(RuntimeFrameworkVersion)' != ''" />
+
+    <When Condition="'$(_TargetFrameworkVersionWithoutV)' == '1.0'">
+      <PropertyGroup>
+        <ImplicitRuntimeFrameworkVersionForFrameworkDependentApp>1.0.5</ImplicitRuntimeFrameworkVersionForFrameworkDependentApp>
+        <ImplicitRuntimeFrameworkVersionForSelfContainedApp>$(ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_0)</ImplicitRuntimeFrameworkVersionForSelfContainedApp>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(_TargetFrameworkVersionWithoutV)' == '1.1'">
+      <PropertyGroup>
+        <ImplicitRuntimeFrameworkVersionForFrameworkDependentApp>1.1.2</ImplicitRuntimeFrameworkVersionForFrameworkDependentApp>
+        <ImplicitRuntimeFrameworkVersionForSelfContainedApp>$(ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_1)</ImplicitRuntimeFrameworkVersionForSelfContainedApp>
+      </PropertyGroup>
+    </When>
+
+    <!-- If not covered by the previous cases, use the target framework version for the implicit RuntimeFrameworkVersions -->
+    <Otherwise>
+      <PropertyGroup>
+        <ImplicitRuntimeFrameworkVersionForFrameworkDependentApp>$(_TargetFrameworkVersionWithoutV)</ImplicitRuntimeFrameworkVersionForFrameworkDependentApp>
+        <ImplicitRuntimeFrameworkVersionForSelfContainedApp>$(_TargetFrameworkVersionWithoutV)</ImplicitRuntimeFrameworkVersionForSelfContainedApp>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(RuntimeFrameworkVersion)' == ''">
+    <RuntimeFrameworkVersion Condition="'$(RuntimeIdentifier)' != '' ">$(ImplicitRuntimeFrameworkVersionForSelfContainedApp)</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion Condition="'$(RuntimeIdentifier)' == '' ">$(ImplicitRuntimeFrameworkVersionForFrameworkDependentApp)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <UsingTask TaskName="CheckForImplicitPackageReferenceOverrides" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />

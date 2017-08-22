@@ -50,6 +50,10 @@ namespace Microsoft.NET.TestFramework.Commands
 
             command = command.EnvironmentVariable("MSBuildSDKsPath", RepoInfo.SdksPath);
 
+            command = command
+                .EnvironmentVariable(nameof(RepoInfo.ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_0), RepoInfo.ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_0)
+                .EnvironmentVariable(nameof(RepoInfo.ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_1), RepoInfo.ImplicitRuntimeFrameworkVersionForSelfContainedNetCoreApp1_1);
+
             return command;
         }
     }
