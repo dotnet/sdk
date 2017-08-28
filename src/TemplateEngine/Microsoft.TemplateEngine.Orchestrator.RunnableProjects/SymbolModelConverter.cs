@@ -17,6 +17,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 case ParameterSymbol.TypeName:
                     return ParameterSymbol.FromJObject(jObject, localization, defaultOverride);
+                case DerivedSymbol.TypeName:
+                    return DerivedSymbol.FromJObject(jObject, localization, defaultOverride);
                 case ComputedSymbol.TypeName:
                     return ComputedSymbol.FromJObject(jObject);
                 case BindSymbolTypeName:
