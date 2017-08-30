@@ -1,6 +1,6 @@
 {
-  "create": "mvc -au Individual --KestrelPort 5000 --no-restore",
-  "name": "MVC (C#, default framework, local individual auth)",
+  "create": "mvc -f netcoreapp2.0 -au Individual --KestrelPort 5000 --no-restore",
+  "name": "MVC (C#, 2.0 framework, local individual auth)",
   "tasks": [
     {
       "handler": "execute",

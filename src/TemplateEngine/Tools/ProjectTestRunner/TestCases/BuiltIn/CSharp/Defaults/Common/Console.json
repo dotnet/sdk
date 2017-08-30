@@ -1,6 +1,6 @@
-﻿{
-  "create": "console --no-restore",
-  "name": "Console (default framework)",
+{
+  "create": "console -f netcoreapp2.0 --no-restore",
+  "name": "Console (2.0 framework)",
   "tasks": [
     {
       "handler": "execute",

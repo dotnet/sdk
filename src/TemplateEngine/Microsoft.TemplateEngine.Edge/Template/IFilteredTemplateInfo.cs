@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge.Template
@@ -9,16 +9,29 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         IReadOnlyList<MatchInfo> MatchDisposition { get; }
 
+        IReadOnlyList<MatchInfo> DispositionOfDefaults { get; }
+
+        void AddDisposition(MatchInfo newDisposition);
+
+        void AddDefaultDisposition(MatchInfo newDisposition);
+
         bool IsMatch { get; }
 
         bool IsPartialMatch { get; }
 
         bool HasParameterMismatch { get; }
 
-        bool IsParameterMatch { get; }
+        bool IsInvokableMatch { get; }
 
-        bool HasInvalidParameterValue { get; }
+        bool HasAmbiguousParameterValueMatch { get; }
 
-        bool HasAmbiguousParameterMatch { get; }
+        IReadOnlyList<string> InvalidParameterNames { get; }
+
+        bool HasParseError { get; }
+
+        string ParseError { get; }
+
+        // This is analogous to INewCommandInput.InputTemplateParams
+        IReadOnlyDictionary<string, string> ValidTemplateParameters { get; }
     }
 }

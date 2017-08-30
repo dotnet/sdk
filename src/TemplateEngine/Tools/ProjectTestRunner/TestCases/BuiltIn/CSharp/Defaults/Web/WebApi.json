@@ -1,6 +1,6 @@
 {
-  "create": "api --no-restore",
-  "name": "WebAPI (C#, default framework, default auth)",
+  "create": "api -f netcoreapp2.0 --no-restore",
+  "name": "WebAPI (C#, 2.0 framework, default auth)",
   "tasks": [
     {
       "handler": "execute",

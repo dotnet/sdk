@@ -1,6 +1,6 @@
 {
-  "create": "mvc --no-restore",
-  "name": "MVC (C#, default framework, default auth)",
+  "create": "mvc -f netcoreapp2.0 --no-restore",
+  "name": "MVC (C#, 2.0 framework, default auth)",
   "tasks": [
     {
       "handler": "execute",

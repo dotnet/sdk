@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TemplateEngine.Edge.Template
+namespace Microsoft.TemplateEngine.Edge.Template
 {
 
     public enum MatchLocation
@@ -8,9 +8,10 @@
         ShortName,
         Alias,
         Classification,
-        Language,
+        Language,   // this is meant for the input language
         Context,
         OtherParameter,
-        Baseline
+        Baseline,
+        DefaultLanguage
     }    
 }
