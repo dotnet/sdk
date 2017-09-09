@@ -4,7 +4,7 @@ The sample in this folder demonstrates:
 
 In this sample, we show how you can replace a 
 
-From [`site.css`](./MyProject.StarterWeb/wwwroot/css/site.css)
+From [`site.css`](./MyProject.Con/wwwroot/css/site.css)
 
 ```
 body {
@@ -32,5 +32,5 @@ textarea {
 The sample shows how you can update the `black` for background-color without impacting the values for color in the following elements.
 
 
-See [`template.json`](./MyProject.StarterWeb/.template.config/template.json)
+See [`template.json`](./MyProject.Con/.template.config/template.json)
 
