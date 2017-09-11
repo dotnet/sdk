@@ -19,6 +19,10 @@ namespace Microsoft.NET.Build.Tests
     {
         private TestPackageReference _net461PackageReference;
 
+        public GivenThatWeWantToVerifyNuGetReferenceCompat(ITestOutputHelper log) : base(log)
+        {
+        }
+
         [Theory]
         [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
         [InlineData("net451", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 net45 net451", true, true)]
