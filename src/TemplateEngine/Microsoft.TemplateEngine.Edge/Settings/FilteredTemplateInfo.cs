@@ -10,18 +10,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class FilteredTemplateInfo : IFilteredTemplateInfo
     {
-        public FilteredTemplateInfo(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDisposition)
+        public FilteredTemplateInfo(ITemplateInfo info, IReadOnlyList<MatchInfo> matchDispositions)
+            : this(info)
+        {
+            foreach (MatchInfo disposition in matchDispositions)
+            {
+                AddDisposition(disposition);
+            }
+        }
+
+        public FilteredTemplateInfo(ITemplateInfo info)
         {
             Info = info;
-            if (matchDisposition != null)
-            {
-                _matchDisposition = matchDisposition.ToList();
-            }
-            else
-            {
-                _matchDisposition = new List<MatchInfo>();
-            }
-
+            _matchDisposition = new List<MatchInfo>();
             _dispositionOfDefaults = new List<MatchInfo>();
         }
 
@@ -52,20 +53,37 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void AddDisposition(MatchInfo newDisposition)
         {
-            _matchDisposition.Add(newDisposition);
+            if (newDisposition.Location == MatchLocation.DefaultLanguage)
+            {
+                _dispositionOfDefaults.Add(newDisposition);
+            }
+            else
+            {
+                _matchDisposition.Add(newDisposition);
+            }
         }
 
-        public void AddDefaultDisposition(MatchInfo newDisposition)
-        {
-            _dispositionOfDefaults.Add(newDisposition);
-        }
+        public bool HasMatchDisposition(MatchLocation location, MatchKind kind) => MatchDisposition.Any(x => x.Location == location && x.Kind == kind);
 
         // TODO: get rid of, or rename this. "IsMatch" has become a misnomer as the system has evolved.
         public bool IsMatch => MatchDisposition.Count > 0 && !MatchDisposition.Any(x => x.Kind == MatchKind.Mismatch);
 
-        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch)
-            && MatchDisposition.All(x => x.Location != MatchLocation.Context
-                                || (x.Location == MatchLocation.Context && x.Kind == MatchKind.Exact));
+        // There is any criteria that is not Mismatch
+        // allowing context misses again
+        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
+
+        // There is any criteria that is not Mismatch
+        // And if there is context matching, it's exact.
+        // Note: the context match could be the only thing not mismatched. - this should be reviewed.
+        //public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch)
+        //    && MatchDisposition.All(x => x.Location != MatchLocation.Context
+        //                        || (x.Location == MatchLocation.Context && x.Kind == MatchKind.Exact));
+
+
+        // True if name is explicitly mismatched.
+        // Partial matches are ok. No disposition on name is also ok.
+
+        public bool HasNameMismatch => MatchDisposition.Any(x => x.Location == MatchLocation.Name && x.Kind == MatchKind.Mismatch);
 
         // There is a parameter with a match kind other than: exact or ambiguous
         public bool HasParameterMismatch => MatchDisposition.Any(x => x.Location == MatchLocation.OtherParameter
@@ -96,5 +114,80 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public IReadOnlyDictionary<string, string> ValidTemplateParameters
                     => MatchDisposition.Where(x => x.Location == MatchLocation.OtherParameter && x.Kind == MatchKind.Exact)
                         .ToDictionary(x => x.ChoiceIfLocationIsOtherChoice, x => x.ParameterValue);
+
+
+        // Returns true if there is a context mismatch and no other mismatches, false otherwise.
+        // Note: It's ok if the context mismatch is the only disposition.
+        public bool IsMatchExceptContext
+        {
+            get
+            {
+                if (MatchDisposition.Count == 0)
+                {
+                    return false;
+                }
+
+                bool hasContextMismatch = false;
+
+                foreach (MatchInfo disposition in MatchDisposition)
+                {
+                    if (disposition.Location == MatchLocation.Context)
+                    {
+                        if (disposition.Kind == MatchKind.Exact)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            hasContextMismatch = true;
+                        }
+                    }
+                    else if (disposition.Kind == MatchKind.Mismatch)
+                    {
+                        return false;
+                    }
+                }
+
+                return hasContextMismatch;
+            }
+        }
+
+
+        // Returns true if there is a context mismatch and no other mismatches, false otherwise.
+        // Note: there must be at least one disposition that is not mismatch, in addition to the context mismatch.
+        public bool IsPartialMatchExceptContext
+        {
+            get
+            {
+                if (MatchDisposition.Count == 0)
+                {
+                    return false;
+                }
+
+                bool hasContextMismatch = false;
+                bool hasOtherThanMismatch = false;
+
+                foreach (MatchInfo disposition in MatchDisposition)
+                {
+                    if (disposition.Location == MatchLocation.Context)
+                    {
+                        if (disposition.Kind == MatchKind.Exact)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            hasContextMismatch = true;
+                        }
+                    }
+                    else if (disposition.Kind != MatchKind.Mismatch)
+                    {
+                        hasOtherThanMismatch = true;
+                    }
+                }
+
+                return hasOtherThanMismatch && hasContextMismatch;
+            }
+        }
     }
 }

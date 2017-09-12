@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.IDE
         public IReadOnlyCollection<IFilteredTemplateInfo> ListTemplates(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             EnsureInitialized();
-            return TemplateListFilter.FilterTemplates(((SettingsLoader)EnvironmentSettings.SettingsLoader).UserTemplateCache.TemplateInfo, exactMatchesOnly, filters);
+            return TemplateListFilter.FilterTemplates(((SettingsLoader)EnvironmentSettings.SettingsLoader).UserTemplateCache.TemplateInfo, TemplateListFilter.ExactMatchFilter, filters);
         }
 
         public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck, string baselineName)

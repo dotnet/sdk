@@ -6,7 +6,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         Unspecified,
         Name,
         ShortName,
-        Alias,
+        Alias,      // never used, alias expansion occurs prior to matching
         Classification,
         Language,   // this is meant for the input language
         Context,

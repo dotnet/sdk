@@ -13,11 +13,17 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         void AddDisposition(MatchInfo newDisposition);
 
-        void AddDefaultDisposition(MatchInfo newDisposition);
+        bool HasMatchDisposition(MatchLocation location, MatchKind kind);
 
         bool IsMatch { get; }
 
+        bool IsMatchExceptContext { get; }
+
         bool IsPartialMatch { get; }
+
+        bool IsPartialMatchExceptContext { get; }
+
+        bool HasNameMismatch { get; }
 
         bool HasParameterMismatch { get; }
 
