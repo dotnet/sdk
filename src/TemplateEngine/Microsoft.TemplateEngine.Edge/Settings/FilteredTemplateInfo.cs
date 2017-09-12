@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
@@ -65,24 +66,30 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public bool HasMatchDisposition(MatchLocation location, MatchKind kind) => MatchDisposition.Any(x => x.Location == location && x.Kind == kind);
 
-        // TODO: get rid of, or rename this. "IsMatch" has become a misnomer as the system has evolved.
-        public bool IsMatch => MatchDisposition.Count > 0 && !MatchDisposition.Any(x => x.Kind == MatchKind.Mismatch);
+        public bool IsMatch => IsMatchAfterFilteringDispositions(x => false);
+
+        // any dispositions the dispositionPrefilter returns true for are ignored.
+        private bool IsMatchAfterFilteringDispositions(Func<MatchInfo, bool> dispositionPrefilter)
+        {
+            IEnumerable<MatchInfo> dispositionsAfterFiltering = MatchDisposition.Where(x => !dispositionPrefilter(x));
+
+            return dispositionsAfterFiltering.Any() && !dispositionsAfterFiltering.Any(x => x.Kind == MatchKind.Mismatch);
+        }
 
         // There is any criteria that is not Mismatch
         // allowing context misses again
-        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
+        //public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
+        public bool IsPartialMatch => IsPartialMatchAfterFilteringDisopsitions(x => false);
 
-        // There is any criteria that is not Mismatch
-        // And if there is context matching, it's exact.
-        // Note: the context match could be the only thing not mismatched. - this should be reviewed.
-        //public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch)
-        //    && MatchDisposition.All(x => x.Location != MatchLocation.Context
-        //                        || (x.Location == MatchLocation.Context && x.Kind == MatchKind.Exact));
+        private bool IsPartialMatchAfterFilteringDisopsitions(Func<MatchInfo, bool> dispositionPrefilter)
+        {
+            IEnumerable<MatchInfo> dispositionsAfterFiltering = MatchDisposition.Where(x => !dispositionPrefilter(x));
 
+            return dispositionsAfterFiltering.Any(x => x.Kind != MatchKind.Mismatch);
+        }
 
         // True if name is explicitly mismatched.
         // Partial matches are ok. No disposition on name is also ok.
-
         public bool HasNameMismatch => MatchDisposition.Any(x => x.Location == MatchLocation.Name && x.Kind == MatchKind.Mismatch);
 
         // There is a parameter with a match kind other than: exact or ambiguous
@@ -114,7 +121,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public IReadOnlyDictionary<string, string> ValidTemplateParameters
                     => MatchDisposition.Where(x => x.Location == MatchLocation.OtherParameter && x.Kind == MatchKind.Exact)
                         .ToDictionary(x => x.ChoiceIfLocationIsOtherChoice, x => x.ParameterValue);
-
 
         // Returns true if there is a context mismatch and no other mismatches, false otherwise.
         // Note: It's ok if the context mismatch is the only disposition.
@@ -151,7 +157,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return hasContextMismatch;
             }
         }
-
 
         // Returns true if there is a context mismatch and no other mismatches, false otherwise.
         // Note: there must be at least one disposition that is not mismatch, in addition to the context mismatch.

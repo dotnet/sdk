@@ -234,7 +234,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         }
                         else
                         {
-                            throw new TemplateParamException(inputParam.Key, null, paramFromTemplate.DataType);
+                            // the non-bool param had no value, it's an error.
+                            tmpParamsWithInvalidValues.Add(paramFromTemplate.Name);
                         }
                     }
                     else
