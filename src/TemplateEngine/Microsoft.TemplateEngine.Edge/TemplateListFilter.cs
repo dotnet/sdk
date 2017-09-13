@@ -14,6 +14,7 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public static class TemplateListFilter
     {
+        // Deprecating. ITemplateMatchInfo will eventually fully replace IFilteredTemplateInfo
         public static IReadOnlyCollection<IFilteredTemplateInfo> FilterTemplates(IReadOnlyList<ITemplateInfo> templateList, bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
             HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
@@ -38,7 +39,39 @@ namespace Microsoft.TemplateEngine.Edge
                     matchingTemplates.Add(info);
                 }
             }
-            
+
+#if !NET45
+            return matchingTemplates;
+#else
+            return matchingTemplates.ToList();
+#endif
+        }
+
+        public static IReadOnlyCollection<ITemplateMatchInfo> GetTemplateMatchInfo(IReadOnlyList<ITemplateInfo> templateList, bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
+        {
+            HashSet<ITemplateMatchInfo> matchingTemplates = new HashSet<ITemplateMatchInfo>(TemplateMatchInfoEqualityComparer.Default);
+
+            foreach (ITemplateInfo template in templateList)
+            {
+                List<MatchInfo> matchInformation = new List<MatchInfo>();
+
+                foreach (Func<ITemplateInfo, MatchInfo?> filter in filters)
+                {
+                    MatchInfo? result = filter(template);
+
+                    if (result.HasValue)
+                    {
+                        matchInformation.Add(result.Value);
+                    }
+                }
+
+                ITemplateMatchInfo info = new TemplateMatchInfo(template, matchInformation);
+                if (info.IsMatch || (!exactMatchesOnly && info.IsPartialMatch))
+                {
+                    matchingTemplates.Add(info);
+                }
+            }
+
 #if !NET45
             return matchingTemplates;
 #else
