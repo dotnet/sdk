@@ -104,4 +104,4 @@ msbuildWarningLog="$logPath/sdk.wrn"
 msbuildFailureLog="$logPath/sdk.err"
 msbuildBinLog="$logPath/sdk.binlog"
 
-dotnet msbuild $REPOROOT/build/build.proj /m:1 /nologo /p:Configuration=$CONFIGURATION /p:Platform="$PLATFORM" /warnaserror /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog /bl:$msbuildBinLog "${args[@]}"
+dotnet msbuild $REPOROOT/build/build.proj /m:1 /nologo /p:Configuration=$CONFIGURATION /p:Platform="$PLATFORM" /warnaserror /flp1:Summary';Verbosity=diagnostic';Encoding=UTF-8';LogFile=$msbuildSummaryLog /flp2:WarningsOnly';Verbosity=diagnostic';Encoding=UTF-8';LogFile=$msbuildWarningLog /flp3:ErrorsOnly';Verbosity=diagnostic';Encoding=UTF-8';LogFile=$msbuildFailureLog /bl:$msbuildBinLog "${args[@]}"
