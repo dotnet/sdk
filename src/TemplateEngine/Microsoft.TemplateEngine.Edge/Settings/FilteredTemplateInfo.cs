@@ -24,7 +24,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         // There is any criteria that is not Mismatch
         // allowing context misses again
-        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch);
+        public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch)
+            && MatchDisposition.All(x => x.Location != MatchLocation.Context
+                                || (x.Location == MatchLocation.Context && x.Kind == MatchKind.Exact));
 
         // All parameter matches are exact (or there are no parameter matches)
         public bool HasParameterMismatch => MatchDisposition.Any(x => x.Location == MatchLocation.OtherParameter && x.Kind != MatchKind.Exact);
