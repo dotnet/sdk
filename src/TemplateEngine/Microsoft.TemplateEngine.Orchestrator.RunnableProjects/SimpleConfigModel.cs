@@ -969,17 +969,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
 
-            // setup the built-in default forms - these are all used by the default "name" symbol setup.
-            IValueForm identityForm = new IdentityValueForm();
-            formMap[identityForm.Identifier] = identityForm;
-            IValueForm safeNameForm = new DefaultSafeNameValueFormModel();
-            formMap[safeNameForm.Identifier] = safeNameForm;
-            IValueForm lowerSafeNameForm = new DefaultLowerSafeNameValueFormModel();
-            formMap[lowerSafeNameForm.Identifier] = lowerSafeNameForm;
-            IValueForm safeNamespaceForm = new DefaultSafeNamespaceValueFormModel();
-            formMap[safeNamespaceForm.Identifier] = safeNamespaceForm;
-            IValueForm lowerSafeNamespaceForm = new DefaultLowerSafeNamespaceValueFormModel();
-            formMap[lowerSafeNamespaceForm.Identifier] = lowerSafeNamespaceForm;
+            // setup all the built-in default forms.
+            foreach (KeyValuePair<string, IValueForm> builtInForm in ValueFormRegistry.AllForms)
+            {
+                formMap[builtInForm.Key] = builtInForm.Value;
+            }
 
             // setup the forms defined by the template configuration.
             // if any have the same name as a default, the default is overridden.
