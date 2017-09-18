@@ -572,7 +572,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                     if (Forms.TryGetValue(formName, out IValueForm valueForm))
                                     {
                                         string symbolName = symbol.Key + "{-VALUE-FORMS-}" + formName;
-                                        //string processedReplacement = Forms[formName].Process(Forms, p.Replaces);
                                         string processedReplacement = valueForm.Process(Forms, p.Replaces);
                                         GenerateReplacementsForParameter(symbol, processedReplacement, symbolName, macroGeneratedReplacements);
 
