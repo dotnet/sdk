@@ -567,15 +567,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         {
                             if (symbol.Value is BaseValueSymbol p)
                             {
-                                foreach (string form in p.Forms.GlobalForms)
+                                foreach (string formName in p.Forms.GlobalForms)
                                 {
-                                    string symbolName = symbol.Key + "{-VALUE-FORMS-}" + form;
-                                    string processedReplacement = Forms[form].Process(Forms, p.Replaces);
-                                    GenerateReplacementsForParameter(symbol, processedReplacement, symbolName, macroGeneratedReplacements);
-
-                                    if (generateMacros)
+                                    if (Forms.TryGetValue(formName, out IValueForm valueForm))
                                     {
-                                        macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, form, Forms));
+                                        string symbolName = symbol.Key + "{-VALUE-FORMS-}" + formName;
+                                        //string processedReplacement = Forms[formName].Process(Forms, p.Replaces);
+                                        string processedReplacement = valueForm.Process(Forms, p.Replaces);
+                                        GenerateReplacementsForParameter(symbol, processedReplacement, symbolName, macroGeneratedReplacements);
+
+                                        if (generateMacros)
+                                        {
+                                            macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, formName, Forms));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        EnvironmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{formName}'", "Authoring");
                                     }
                                 }
                             }
