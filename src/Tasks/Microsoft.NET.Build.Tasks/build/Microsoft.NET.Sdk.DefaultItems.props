@@ -21,13 +21,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' ">
     <Compile Include="**/*$(DefaultLanguageSourceExtension)" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <EmbeddedResource Include="**/*.resx" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
 
     <EmbeddedResource Update="**\*.resx">
-      <LastGenOutput Condition= "%(LastGenOutput) == ''">$([System.IO.Path]::ChangeExtension(%(Identity), '.Designer.cs'))</LastGenOutput>
+      <LastGenOutput Condition= "%(LastGenOutput) == ''">$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileName(%(Identity))), '.Designer.cs'))</LastGenOutput>
       <Generator Condition= "%(Generator) == ''">ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
 
