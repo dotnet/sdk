@@ -21,11 +21,28 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <PropertyGroup>
+      <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'C#'">cs</_EmbeddedResourceSourceExtension>
+      <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'VB'">vb</_EmbeddedResourceSourceExtension>
+  </PropertyGroup>
 
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' ">
     <Compile Include="**/*$(DefaultLanguageSourceExtension)" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <EmbeddedResource Include="**/*.resx" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
+
+    <EmbeddedResource Update="**\*.resx" Condition="'$(_EmbeddedResourceSourceExtension)' != ''">
+      <LastGenOutput Condition= "%(LastGenOutput) == ''">$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileName(%(Identity))), '.Designer.$(_EmbeddedResourceSourceExtension)'))</LastGenOutput>
+      <Generator Condition= "%(Generator) == ''">ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+
+    <Compile Update="**\*.Designer.$(_EmbeddedResourceSourceExtension)" Condition="'$(_EmbeddedResourceSourceExtension)' != ''">
+      <DesignTime Condition= "%(DesignTime) == ''">True</DesignTime>
+      <AutoGen Condition= "%(AutoGen) == ''">True</AutoGen>
+      <DependentUpon Condition= "%(DependentUpon) == ''">$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))</DependentUpon>
+    </Compile>
+
   </ItemGroup>
+
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' And '$(EnableDefaultNoneItems)' == 'true' ">
     <None Include="**/*" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <None Remove="**/*$(DefaultLanguageSourceExtension)" Condition=" '$(EnableDefaultCompileItems)' == 'true' "/>
