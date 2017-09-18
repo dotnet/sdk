@@ -27,14 +27,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EmbeddedResource Include="**/*.resx" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
 
     <EmbeddedResource Update="**\*.resx">
-      <LastGenOutput Condition= "%(LastGenOutput) == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFileName(%(Identity))), '\.resx$', '.Designer.cs'))</LastGenOutput>
+      <LastGenOutput Condition= "%(LastGenOutput) == ''">$([System.IO.Path]::ChangeExtension(%(Identity), '.Designer.cs'))</LastGenOutput>
       <Generator Condition= "%(Generator) == ''">ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
 
     <Compile Update="**\*.Designer.cs">
       <DesignTime Condition= "%(DesignTime) == ''">True</DesignTime>
       <AutoGen Condition= "%(AutoGen) == ''">True</AutoGen>
-      <DependentUpon Condition= "%(DependentUpon) == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFileName(%(Identity))), '\.Designer\.cs$', '.resx'))</DependentUpon>
+      <DependentUpon Condition= "%(DependentUpon) == ''">$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))</DependentUpon>
     </Compile>
 
   </ItemGroup>
