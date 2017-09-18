@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToBuildAnAppWithResourceFile(ITestOutputHelper log) : base(log) {}
 
-        [Fact(DisplayName = "Metadata of designer.cs and resx file is added implicitly")]
+        [Fact(DisplayName = "Metadata of Designer.cs and resx file is added implicitly")]
         public void Added_implicitly()
         {
             var testAsset = _testAssetsManager
@@ -75,6 +75,39 @@ namespace Microsoft.NET.Build.Tests
             var expectedMetaDataAndValuePair = new Dictionary<MetaDataIdentifier, string>() {
                 { new MetaDataIdentifier("EmbeddedResource", $"ResourceExplicitSetByUser.resx", "LastGenOutput" ), "ResourceExplicitSetByUser.CustomName.cs"},
                 { new MetaDataIdentifier("Compile", $"ResourceExplicitSetByUser.CustomName.cs", "DependentUpon" ), "ResourceExplicitSetByUser.resx"},
+            };
+
+            var getValuesCommand = new GetMetaDataCommand(Log,
+            expectedMetaDataAndValuePair.Keys,
+            testAsset.TestRoot,
+            "netcoreapp2.0");
+
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            foreach(KeyValuePair<MetaDataIdentifier, string> entry in expectedMetaDataAndValuePair)
+            {
+                var metaDataValue = getValuesCommand.GetMetaDataValue(entry.Key);
+                metaDataValue.Should().Be(entry.Value);
+            }
+        }
+
+        [Fact(DisplayName = "Metadata of Designer.vb and resx file is added implicitly")]
+        public void Added_implicitly_vb()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("AppWithResxAndDesignercsVb")
+                .WithSource()
+                .Restore(Log);
+
+            var expectedMetaDataAndValuePair = new Dictionary<MetaDataIdentifier, string>() {
+                { new MetaDataIdentifier("EmbeddedResource", $"ResourcesImplicateIncludeBySdk.resx", "Generator" ), "ResXFileCodeGenerator"},
+                { new MetaDataIdentifier("EmbeddedResource", $"ResourcesImplicateIncludeBySdk.resx", "LastGenOutput" ), "ResourcesImplicateIncludeBySdk.Designer.vb"},
+                { new MetaDataIdentifier("Compile", $"ResourcesImplicateIncludeBySdk.Designer.vb", "DesignTime" ), "True"},
+                { new MetaDataIdentifier("Compile", $"ResourcesImplicateIncludeBySdk.Designer.vb", "AutoGen" ), "True"},
+                { new MetaDataIdentifier("Compile", $"ResourcesImplicateIncludeBySdk.Designer.vb", "DependentUpon" ), "ResourcesImplicateIncludeBySdk.resx"},
             };
 
             var getValuesCommand = new GetMetaDataCommand(Log,
