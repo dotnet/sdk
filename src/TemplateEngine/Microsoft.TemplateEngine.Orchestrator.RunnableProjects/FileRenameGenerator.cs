@@ -31,14 +31,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string originalTargetPath = templateRelativePath;
 
                 using (Stream source = new MemoryStream(Encoding.UTF8.GetBytes(templateRelativePath)))
-                using (Stream target = new MemoryStream(templateRelativePath.Length))
+                using (Stream target = new MemoryStream())
                 {
                     processor.Run(source, target);
 
-                    target.Seek(0, SeekOrigin.Begin);
-                    StreamReader targetReader = new StreamReader(target);
-                    string replacedTargetRelativePath = targetReader.ReadToEnd();
-
+                    byte[] targetData = new byte[target.Length];
+                    target.Position = 0;
+                    target.Read(targetData, 0, targetData.Length);
+                    string replacedTargetRelativePath = Encoding.UTF8.GetString(targetData);
+                    
                     if (!string.Equals(originalTargetPath, replacedTargetRelativePath))
                     {
                         fileRenames[templateRelativePath] = replacedTargetRelativePath;
