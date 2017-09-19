@@ -885,59 +885,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private void AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameters, Dictionary<string, string> fileRenames)
         {
-            List<KeyValuePair<string, string>> fileRenameMappings = new List<KeyValuePair<string, string>>();
-            Dictionary<string, string> coreRenames = new Dictionary<string, string>(fileRenames);
-
-            // setup the rename of the base directory to the output "name" param directory
-            if (resolvedNameParamValue != null && SourceName != null)
-            {
-                string targetName = ((string)resolvedNameParamValue).Trim();
-                targetDirectory = targetDirectory.Replace(SourceName, targetName);
-                fileRenameMappings.Add(new KeyValuePair<string, string>(SourceName, targetName));
-            }
-
-            // setup renames from parameters
-            foreach (IExtendedTemplateParameter p in parameters.ParameterDefinitions.OfType<IExtendedTemplateParameter>())
-            {
-                if (!string.IsNullOrEmpty(p.FileRename))
-                {
-                    if (parameters.TryGetRuntimeValue(EnvironmentSettings, p.Name, out object value) && value is string s)
-                    {
-                        fileRenameMappings.Add(new KeyValuePair<string, string>(p.FileRename, s));
-                    }
-                }
-            }
-
-            IDirectory sourceBaseDirectoryInfo = configFile.Parent.Parent.DirectoryInfo(sourceDirectory.TrimEnd('/'));
-
-            foreach (IFileSystemInfo fileSystemEntry in sourceBaseDirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
-            {
-                string templateRelativePath = fileSystemEntry.PathRelativeTo(sourceBaseDirectoryInfo);
-                string outputRelativePath = templateRelativePath;
-
-                foreach (KeyValuePair<string, string> rename in coreRenames)
-                {
-                    outputRelativePath = outputRelativePath.Replace(rename.Key, rename.Value);
-                    if (!string.Equals(outputRelativePath, templateRelativePath, StringComparison.Ordinal))
-                    {
-                        break;
-                    }
-                }
-
-                foreach (KeyValuePair<string, string> rename in fileRenameMappings)
-                {
-                    outputRelativePath = outputRelativePath.Replace(rename.Key, rename.Value);
-                    if (!string.Equals(outputRelativePath, templateRelativePath, StringComparison.Ordinal))
-                    {
-                        break;
-                    }
-                }
-
-                if (!string.Equals(outputRelativePath, templateRelativePath, StringComparison.Ordinal))
-                {
-                    fileRenames[templateRelativePath] = outputRelativePath;
-                }
-            }
+            FileRenameGenerator.AugmentFileRenames(EnvironmentSettings, SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
         }
 
         private static ISymbolModel SetupDefaultNameSymbol(string sourceName)
