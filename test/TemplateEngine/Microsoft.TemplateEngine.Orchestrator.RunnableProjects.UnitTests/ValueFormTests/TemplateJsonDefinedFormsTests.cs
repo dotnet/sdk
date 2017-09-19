@@ -51,8 +51,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             Assert.Equal("identity", identityFormConfig.FormName);
         }
 
-        [Fact(DisplayName = nameof(UnknownFormNameForDerivedSymbolValueThrows))]
-        public void UnknownFormNameForDerivedSymbolValueThrows()
+        [Fact(DisplayName = nameof(UnknownFormNameForDerivedSymbolValueDoesNotThrow))]
+        public void UnknownFormNameForDerivedSymbolValueDoesNotThrow()
         {
             string templateJson = @"
 {
