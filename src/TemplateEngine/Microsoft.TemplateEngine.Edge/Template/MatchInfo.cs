@@ -1,5 +1,8 @@
+using System.Runtime.InteropServices;
+
 namespace Microsoft.TemplateEngine.Edge.Template
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct MatchInfo
     {
         public MatchLocation Location;

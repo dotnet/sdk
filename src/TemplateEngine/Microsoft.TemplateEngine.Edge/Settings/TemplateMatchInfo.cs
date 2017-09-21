@@ -31,13 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public ITemplateInfo Info { get; }
 
-        public IReadOnlyList<MatchInfo> MatchDisposition
-        {
-            get
-            {
-                return _matchDisposition.ToList();
-            }
-        }
+        public IReadOnlyList<MatchInfo> MatchDisposition => _matchDisposition.ToList();
         private IList<MatchInfo> _matchDisposition;
 
         // Stores match info relative to default settings.
@@ -45,13 +39,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // in appropriate situations.
         // For example, matching or non-matching on the default language should only be used as a final disambiguator.
         // It shouldn't unconditionally disqualify a match.
-        public IReadOnlyList<MatchInfo> DispositionOfDefaults
-        {
-            get
-            {
-                return _dispositionOfDefaults.ToList();
-            }
-        }
+        public IReadOnlyList<MatchInfo> DispositionOfDefaults => _dispositionOfDefaults.ToList();
         private IList<MatchInfo> _dispositionOfDefaults;
 
         public void AddDisposition(MatchInfo newDisposition)
@@ -66,7 +54,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public bool IsMatch => MatchDisposition.Count > 0 && !MatchDisposition.Any(x => x.Kind == MatchKind.Mismatch);
+        public bool IsMatch => MatchDisposition.Count > 0 && MatchDisposition.All(x => x.Kind != MatchKind.Mismatch);
 
         public bool IsPartialMatch => MatchDisposition.Any(x => x.Kind != MatchKind.Mismatch)
                                     && MatchDisposition.All(x => x.Location != MatchLocation.Context

@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public bool Equals(ITemplateMatchInfo x, ITemplateMatchInfo y)
         {
-            return ReferenceEquals(x.Info, y.Info) || (x != null && y != null && x.Info != null && y.Info != null && string.Equals(x.Info.Identity, y.Info.Identity, StringComparison.Ordinal));
+            return ReferenceEquals(x?.Info, y?.Info) || (x != null && y != null && x?.Info != null && y?.Info != null && string.Equals(x?.Info?.Identity, y?.Info?.Identity, StringComparison.Ordinal));
         }
 
         public int GetHashCode(ITemplateMatchInfo obj)
