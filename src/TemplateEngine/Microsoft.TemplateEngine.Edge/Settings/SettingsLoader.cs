@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -340,9 +340,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 UpdateTemplateListFromCache(_userTemplateCache, templates);
         }
 
-        public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale) //, bool isCurrentLocale)
+        public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale)
+        {
+            WriteTemplateCache(templates, locale, true);
+        }
+
+        public void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool hasContentChanges)
         {
             List<TemplateInfo> toCache = templates.Cast<TemplateInfo>().ToList();
+            bool hasMountPointChanges = false;
 
             for(int i = 0; i < toCache.Count; ++i)
             {
@@ -350,6 +356,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     toCache.RemoveAt(i);
                     --i;
+                    hasMountPointChanges = true;
                     continue;
                 }
 
@@ -357,22 +364,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     toCache[i].HostConfigMountPointId = Guid.Empty;
                     toCache[i].HostConfigPlace = null;
+                    hasMountPointChanges = true;
                 }
 
                 if (!_mountPoints.ContainsKey(toCache[i].LocaleConfigMountPointId))
                 {
                     toCache[i].LocaleConfigMountPointId = Guid.Empty;
                     toCache[i].LocaleConfigPlace = null;
+                    hasMountPointChanges = true;
                 }
             }
 
-            TemplateCache cache = new TemplateCache(_environmentSettings, toCache);
-            JObject serialized = JObject.FromObject(cache);
-            _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
+            if (hasContentChanges || hasMountPointChanges)
+            {
+                TemplateCache cache = new TemplateCache(_environmentSettings, toCache);
+                JObject serialized = JObject.FromObject(cache);
+                _paths.WriteAllText(_paths.User.ExplicitLocaleTemplateCacheFile(locale), serialized.ToString());
+            }
 
             bool isCurrentLocale = string.IsNullOrEmpty(locale)
                 && string.IsNullOrEmpty(_environmentSettings.Host.Locale)
                 || (locale == _environmentSettings.Host.Locale);
+
+            // TODO: determine if this reload is necessary if there wasn't a save (probably not needed)
             if (isCurrentLocale)
             {
                 ReloadTemplates();

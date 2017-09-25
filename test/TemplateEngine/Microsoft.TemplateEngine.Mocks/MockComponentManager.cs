@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
@@ -27,6 +27,14 @@ namespace Microsoft.TemplateEngine.Mocks
                     IIdentifiedComponent c = (IIdentifiedComponent)Activator.CreateInstance(type);
                     cache.Register(c.Id, c);
                 }
+            }
+        }
+
+        public void RegisterMany(IEnumerable<Type> typeList)
+        {
+            foreach (Type type in typeList)
+            {
+                Register(type);
             }
         }
 

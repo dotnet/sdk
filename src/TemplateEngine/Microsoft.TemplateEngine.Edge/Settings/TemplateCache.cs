@@ -222,15 +222,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     try
                     {
-                        foreach (Type type in asm.Value.GetTypes())
-                        {
-                            _environmentSettings.SettingsLoader.Components.Register(type);
-                            anythingFound = true;
-                        }
+                        IEnumerable<Type> typeList = asm.Value.GetTypes();
 
-                        if (anythingFound)
+                        if (typeList.Any())
                         {
+                            _environmentSettings.SettingsLoader.Components.RegisterMany(typeList);
                             _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
+                            anythingFound = true;
                         }
                     }
                     catch
@@ -376,11 +374,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             IReadOnlyList<TemplateInfo> existingTemplatesForLocale = GetTemplatesForLocale(locale, existingCacheVersion);
             IDictionary<string, ILocalizationLocator> existingLocatorsForLocale;
+            bool hasContentChanges = false;
 
             if (existingTemplatesForLocale.Count == 0)
             {   // the cache for this locale didn't exist previously. Start with the neutral locale as if it were the existing (no locales)
                 existingTemplatesForLocale = GetTemplatesForLocale(null, existingCacheVersion);
                 existingLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
+                hasContentChanges = true;
             }
             else
             {
@@ -396,6 +396,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 newLocatorsForLocale = new Dictionary<string, ILocalizationLocator>();
             }
+            else
+            {
+                hasContentChanges = true;   // there are new langpacks for this locale
+            }
 
             foreach (ITemplate newTemplate in _templateMemoryCache.Values)
             {
@@ -403,6 +407,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 TemplateInfo localizedTemplate = LocalizeTemplate(newTemplate, locatorForTemplate);
                 mergedTemplateList.Add(localizedTemplate);
                 foundTemplates.Add(newTemplate.Identity);
+
+                hasContentChanges = true;   // new template
             }
 
             foreach (TemplateInfo existingTemplate in existingTemplatesForLocale)
@@ -416,7 +422,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            _environmentSettings.SettingsLoader.WriteTemplateCache(mergedTemplateList, locale);
+            _environmentSettings.SettingsLoader.WriteTemplateCache(mergedTemplateList, locale, hasContentChanges);
         }
 
         // find the best locator (if any). New is preferred over old

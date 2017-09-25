@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
@@ -29,6 +29,8 @@ namespace Microsoft.TemplateEngine.Abstractions
         bool TryGetMountPointInfo(Guid mountPointId, out MountPointInfo info);
 
         void WriteTemplateCache(IList<ITemplateInfo> templates, string locale);
+
+        void WriteTemplateCache(IList<ITemplateInfo> templates, string locale, bool hasContentChanges);
 
         IFile FindBestHostTemplateConfigFile(IFileSystemInfo config);
 

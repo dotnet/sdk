@@ -12,5 +12,7 @@ namespace Microsoft.TemplateEngine.Abstractions
             where T : class, IIdentifiedComponent;
 
         void Register(Type type);
+
+        void RegisterMany(IEnumerable<Type> typeList);
     }
 }
