@@ -222,9 +222,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     try
                     {
-                        IEnumerable<Type> typeList = asm.Value.GetTypes();
+                        IReadOnlyList<Type> typeList = asm.Value.GetTypes();
 
-                        if (typeList.Any())
+                        if (typeList.Count > 0)
                         {
                             _environmentSettings.SettingsLoader.Components.RegisterMany(typeList);
                             _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));

@@ -89,9 +89,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     RegisterType(components.Value());
                 }
             }
-
-            // always save once
-            Save();
         }
 
         public IEnumerable<T> OfType<T>()
