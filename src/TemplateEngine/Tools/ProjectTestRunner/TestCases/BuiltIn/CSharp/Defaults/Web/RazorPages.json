@@ -1,4 +1,5 @@
 {
+  "skip": true,
   "create": "razor -f netcoreapp2.0 --no-restore",
   "name": "Razor Pages (C#, 2.0 framework, default auth)",
   "tasks": [
