@@ -21,9 +21,11 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         public string RuntimeFrameworkVersion { get; set; }
 
         public string RuntimeIdentifier { get; set; }
-
+        
         //  TargetFrameworkVersion applies to non-SDK projects
         public string TargetFrameworkVersion { get; set; }
+
+        public string TargetFrameworkProfile { get; set; }
 
         public List<TestProject> ReferencedProjects { get; } = new List<TestProject>();
 
@@ -161,8 +163,15 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
             else
             {
-                var targetFrameworkVersionElement = propertyGroup.Element(ns + "TargetFrameworkVersion");
-                targetFrameworkVersionElement.SetValue(this.TargetFrameworkVersion);
+                if (!string.IsNullOrEmpty(this.TargetFrameworkProfile))
+                {
+                    propertyGroup.Add(new XElement(ns + "TargetFrameworkProfile", this.TargetFrameworkProfile));
+
+                    var importGroup = projectXml.Root.Elements(ns + "Import").Last();
+                    importGroup.Attribute("Project").Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
+                }
+
+                propertyGroup.Element(ns + "TargetFrameworkVersion").SetValue(this.TargetFrameworkVersion);
             }
 
             foreach (var additionalProperty in AdditionalProperties)
@@ -290,7 +299,11 @@ namespace {this.Name}
             {
                 ret.Append(TargetFrameworks);
             }
-            if (!string.IsNullOrEmpty(TargetFrameworkVersion))
+            if (!string.IsNullOrEmpty(TargetFrameworkProfile))
+            {
+                ret.Append(TargetFrameworkProfile);
+            }
+            else if (!string.IsNullOrEmpty(TargetFrameworkVersion))
             {
                 ret.Append(TargetFrameworkVersion);
             }
