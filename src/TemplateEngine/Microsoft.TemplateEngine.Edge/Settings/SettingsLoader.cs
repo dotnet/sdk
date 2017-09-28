@@ -22,6 +22,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private bool _isLoaded;
         private Dictionary<Guid, MountPointInfo> _mountPoints;
         private bool _templatesLoaded;
+        private InstallUnitDescriptorCache _installUnitDescriptorCache;
+        private bool _installUnitDescriptorsLoaded;
         private readonly Paths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
 
@@ -30,6 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _environmentSettings = environmentSettings;
             _paths = new Paths(environmentSettings);
             _userTemplateCache = new TemplateCache(environmentSettings);
+            _installUnitDescriptorCache = new InstallUnitDescriptorCache(environmentSettings);
         }
 
         public void Save()
@@ -48,6 +51,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             JObject serialized = JObject.FromObject(_userSettings);
             _paths.WriteAllText(_paths.User.SettingsFile, serialized.ToString());
 
+            WriteInstallDescriptorCache();
+
             if (_userTemplateCache != cacheToSave)  // object equals
             {
                 ReloadTemplates();
@@ -61,6 +66,41 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 EnsureLoaded();
                 return _userTemplateCache;
             }
+        }
+
+        // It's important to note that these are loaded on demand, not at initialization of SettingsLoader.
+        // So the backing field shouldn't be directly accessed except during initialization.
+        public InstallUnitDescriptorCache InstallUnitDescriptorCache
+        {
+            get
+            {
+                EnsureLoaded();
+                EnsureInstallDescriptorsLoaded();
+
+                return _installUnitDescriptorCache;
+            }
+        }
+
+        private void EnsureInstallDescriptorsLoaded()
+        {
+            if (_installUnitDescriptorsLoaded)
+            {
+                return;
+            }
+
+            string descriptorFileContents = _paths.ReadAllText(_paths.User.InstallUnitDescriptorsFile, "{}");
+            JObject parsed = JObject.Parse(descriptorFileContents);
+
+            _installUnitDescriptorCache = InstallUnitDescriptorCache.FromJObject(_environmentSettings, parsed);
+            _installUnitDescriptorsLoaded = true;
+        }
+
+        // Write the install unit descriptors.
+        // Get them from the property to ensure they're loaded. Descriptors are loaded on demand, not at startup.
+        private void WriteInstallDescriptorCache()
+        {
+            JObject installDescriptorsSerialized = JObject.FromObject(InstallUnitDescriptorCache);
+            _paths.WriteAllText(_paths.User.InstallUnitDescriptorsFile, installDescriptorsSerialized.ToString());
         }
 
         private void EnsureLoaded()
@@ -480,6 +520,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             mountPoint = null;
             file = null;
             return false;
+        }
+
+        public bool TryGetMountPointFromId(Guid mountPointId, out IMountPoint mountPoint)
+        {
+            return _mountPointManager.TryDemandMountPoint(mountPointId, out mountPoint);
         }
 
         public void RemoveMountPoints(IEnumerable<Guid> mountPoints)

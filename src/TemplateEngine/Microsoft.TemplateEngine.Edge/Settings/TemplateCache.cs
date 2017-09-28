@@ -62,17 +62,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        // reads all the templates and langpacks for the current dir.
-        // stores info about them in members.
-        // can't correctly write locale cache(s) until all of both are read.
         public void Scan(string templateDir)
         {
-            if(templateDir[templateDir.Length - 1] == '/' || templateDir[templateDir.Length - 1] == '\\')
+            Scan(templateDir, out IReadOnlyList<Guid> mountPointIds);
+        }
+
+        public void Scan(string templateDir, out IReadOnlyList<Guid> mountPointIds)
+        {
+            if (templateDir[templateDir.Length - 1] == '/' || templateDir[templateDir.Length - 1] == '\\')
             {
                 templateDir = templateDir.Substring(0, templateDir.Length - 1);
             }
 
             string searchTarget = Path.Combine(_environmentSettings.Host.FileSystem.GetCurrentDirectory(), templateDir.Trim());
+
             List<string> matches = _environmentSettings.Host.FileSystem.EnumerateFileSystemEntries(Path.GetDirectoryName(searchTarget), Path.GetFileName(searchTarget), SearchOption.TopDirectoryOnly).ToList();
 
             if (matches.Count == 1)
@@ -81,18 +84,28 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             else
             {
+                List<Guid> storageLocations = new List<Guid>();
+
                 foreach(string match in matches)
                 {
-                    Scan(match);
+                    Scan(match, out IReadOnlyList<Guid> locationsForThisContent);
+                    storageLocations.AddRange(locationsForThisContent);
                 }
 
+                mountPointIds = storageLocations;
                 return;
             }
 
             if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(templateDir, out IMountPoint existingMountPoint))
             {
                 ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir);
+                mountPointIds = new Guid[]
+                {
+                    existingMountPoint.Info.MountPointId
+                };
                 _environmentSettings.SettingsLoader.ReleaseMountPoint(existingMountPoint);
+
+                return;
             }
             else
             {
@@ -148,10 +161,18 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             }
                         }
 
+                        mountPointIds = new Guid[]
+                        {
+                            mountPoint.Info.MountPointId
+                        };
+
                         _environmentSettings.SettingsLoader.ReleaseMountPoint(mountPoint);
+                        return;
                     }
                 }
             }
+
+            mountPointIds = new Guid[] { };
         }
 
         private bool ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
