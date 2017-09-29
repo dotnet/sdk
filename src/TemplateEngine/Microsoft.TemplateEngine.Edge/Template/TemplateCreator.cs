@@ -140,6 +140,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public void ReleaseMountPoints(ITemplate template)
         {
+            if (template == null)
+            {
+                return;
+            }
+
             if(template.LocaleConfiguration != null)
             {
                 _environmentSettings.SettingsLoader.ReleaseMountPoint(template.LocaleConfiguration.MountPoint);
