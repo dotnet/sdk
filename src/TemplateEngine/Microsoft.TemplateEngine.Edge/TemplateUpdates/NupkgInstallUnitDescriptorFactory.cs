@@ -15,19 +15,11 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 
         public Guid Id => FactoryId;
 
-        public bool TryParse(JObject jobject, out IInstallUnitDescriptor descriptor)
+        public bool TryParse(string rawValue, out IInstallUnitDescriptor descriptor)
         {
-            if (!jobject.TryGetValue("FactoryId", StringComparison.OrdinalIgnoreCase, out JToken factoryIdToken)
-                    || (factoryIdToken == null)
-                    || (factoryIdToken.Type != JTokenType.String)
-                    || !Guid.TryParse(factoryIdToken.ToString(), out Guid factoryId)
-                    || factoryId != FactoryId)
-            {
-                descriptor = null;
-                return false;
-            }
+            JObject jobject = JObject.Parse(rawValue);
 
-            if (!jobject.TryGetValue("MountPointId", StringComparison.OrdinalIgnoreCase, out JToken mountPointIdToken)
+            if (!jobject.TryGetValue(nameof(NupkgInstallUnitDescriptor.MountPointId), StringComparison.OrdinalIgnoreCase, out JToken mountPointIdToken)
                     || (mountPointIdToken == null)
                     || (mountPointIdToken.Type != JTokenType.String)
                     || !Guid.TryParse(mountPointIdToken.ToString(), out Guid mountPointId))
@@ -36,13 +28,13 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 return false;
             }
 
-            if (!jobject.TryGetValue("PackageName", StringComparison.OrdinalIgnoreCase, out JToken packageNameToken) || (packageNameToken == null) || (packageNameToken.Type != JTokenType.String))
+            if (!jobject.TryGetValue(nameof(NupkgInstallUnitDescriptor.PackageName), StringComparison.OrdinalIgnoreCase, out JToken packageNameToken) || (packageNameToken == null) || (packageNameToken.Type != JTokenType.String))
             {
                 descriptor = null;
                 return false;
             }
 
-            if (!jobject.TryGetValue("Version", StringComparison.OrdinalIgnoreCase, out JToken versionToken) || (versionToken == null) || (versionToken.Type != JTokenType.String))
+            if (!jobject.TryGetValue(nameof(NupkgInstallUnitDescriptor.Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken) || (versionToken == null) || (versionToken.Type != JTokenType.String))
             {
                 descriptor = null;
                 return false;

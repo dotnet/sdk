@@ -13,6 +13,8 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateUpdates
 
         Guid MountPointId { get; }
 
+        string Details { get; }
+
         // tentative - may not need anything user facing, but also may be good to have for debugging.
         string UserReadableIdentifier { get; }
     }

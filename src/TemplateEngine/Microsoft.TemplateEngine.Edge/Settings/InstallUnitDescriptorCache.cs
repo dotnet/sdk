@@ -105,10 +105,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (JProperty prop in cacheObj.PropertiesOf(nameof(Descriptors)))
             {
                 JObject descriptorObj = prop.Value as JObject;
-                if (descriptorObj == null)
-                {
-                    continue;
-                }
 
                 if (InstallUnitDescriptorFactory.TryParse(environmentSettings, descriptorObj, out IInstallUnitDescriptor parsedDescriptor))
                 {

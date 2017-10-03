@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
@@ -19,14 +21,30 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
         [JsonProperty]
         public Guid FactoryId => NupkgInstallUnitDescriptorFactory.FactoryId;
 
-        [JsonProperty]
+        [JsonIgnore]
         public Guid MountPointId { get; }
 
-        [JsonProperty]
+        [JsonIgnore]
         public string PackageName { get; }
 
-        [JsonProperty]
+        [JsonIgnore]
         public string Version { get; }
+
+        [JsonProperty]
+        public string Details
+        {
+            get
+            {
+                Dictionary<string, string> detailsInfo = new Dictionary<string, string>()
+                {
+                    { nameof(MountPointId), MountPointId.ToString() },
+                    { nameof(PackageName), PackageName.ToString() },
+                    { nameof(Version), Version }
+                };
+
+                return JObject.FromObject(detailsInfo).ToString();
+            }
+        }
 
         [JsonIgnore]
         public string UserReadableIdentifier => string.Join(".", PackageName, Version);

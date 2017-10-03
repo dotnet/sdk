@@ -1,28 +1,45 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
-using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
-    // These are written with the assumption that a mount point can only deal with one type of template pack.
     public static class InstallUnitDescriptorFactory
     {
-        // For reading an existing descriptor.
-        public static bool TryParse(IEngineEnvironmentSettings environmentSettings, JObject jobject, out IInstallUnitDescriptor descriptor)
+        public static bool TryParse(IEngineEnvironmentSettings environmentSettings, JObject descriptorObj, out IInstallUnitDescriptor parsedDescriptor)
         {
-            foreach (IInstallUnitDescriptorFactory factory in environmentSettings.SettingsLoader.Components.OfType<IInstallUnitDescriptorFactory>().ToList())
+            if (descriptorObj == null)
             {
-                if (factory.TryParse(jobject, out IInstallUnitDescriptor parsedDescriptor))
-                {
-                    descriptor = parsedDescriptor;
-                    return true;
-                }
+                parsedDescriptor = null;
+                return false;
             }
 
-            descriptor = null;
+            if (!descriptorObj.TryGetValue(nameof(IInstallUnitDescriptor.FactoryId), StringComparison.OrdinalIgnoreCase, out JToken factoryIdToken)
+                || (factoryIdToken == null)
+                || (factoryIdToken.Type != JTokenType.String)
+                || !Guid.TryParse(factoryIdToken.ToString(), out Guid factoryId)
+                || !environmentSettings.SettingsLoader.Components.TryGetComponent(factoryId, out IInstallUnitDescriptorFactory factory))
+            {
+                parsedDescriptor = null;
+                return false;
+            }
+
+            if (!descriptorObj.TryGetValue(nameof(IInstallUnitDescriptor.Details), StringComparison.OrdinalIgnoreCase, out JToken descriptorToken))
+            {
+                parsedDescriptor = null;
+                return false;
+            }
+
+            if (factory.TryParse(descriptorToken.ToString(), out parsedDescriptor))
+            {
+                return true;
+            }
+
+            parsedDescriptor = null;
             return false;
         }
 
