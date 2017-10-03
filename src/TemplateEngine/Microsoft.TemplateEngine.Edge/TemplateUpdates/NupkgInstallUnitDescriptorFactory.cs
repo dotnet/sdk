@@ -5,7 +5,6 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
@@ -15,33 +14,30 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 
         public Guid Id => FactoryId;
 
-        public bool TryParse(string rawValue, out IInstallUnitDescriptor descriptor)
+        public bool TryCreateFromDetails(IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor)
         {
-            JObject jobject = JObject.Parse(rawValue);
-
-            if (!jobject.TryGetValue(nameof(NupkgInstallUnitDescriptor.MountPointId), StringComparison.OrdinalIgnoreCase, out JToken mountPointIdToken)
-                    || (mountPointIdToken == null)
-                    || (mountPointIdToken.Type != JTokenType.String)
-                    || !Guid.TryParse(mountPointIdToken.ToString(), out Guid mountPointId))
+            if (!details.TryGetValue(nameof(NupkgInstallUnitDescriptor.MountPointId), out string mountPointValue)
+                || string.IsNullOrEmpty(mountPointValue)
+                || !Guid.TryParse(mountPointValue, out Guid mountPointId))
             {
                 descriptor = null;
                 return false;
             }
 
-            if (!jobject.TryGetValue(nameof(NupkgInstallUnitDescriptor.PackageName), StringComparison.OrdinalIgnoreCase, out JToken packageNameToken) || (packageNameToken == null) || (packageNameToken.Type != JTokenType.String))
+            if (!details.TryGetValue(nameof(NupkgInstallUnitDescriptor.PackageName), out string packageName)
+                || string.IsNullOrEmpty(packageName))
             {
                 descriptor = null;
                 return false;
             }
 
-            if (!jobject.TryGetValue(nameof(NupkgInstallUnitDescriptor.Version), StringComparison.OrdinalIgnoreCase, out JToken versionToken) || (versionToken == null) || (versionToken.Type != JTokenType.String))
+            if (!details.TryGetValue(nameof(NupkgInstallUnitDescriptor.Version), out string version)
+                || string.IsNullOrEmpty(version))
             {
                 descriptor = null;
                 return false;
             }
 
-            string packageName = packageNameToken.ToString();
-            string version = versionToken.ToString();
             descriptor = new NupkgInstallUnitDescriptor(mountPointId, packageName, version);
             return true;
         }

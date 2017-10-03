@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
@@ -31,7 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
         public string Version { get; }
 
         [JsonProperty]
-        public string Details
+        public IReadOnlyDictionary<string, string> Details
         {
             get
             {
@@ -42,7 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                     { nameof(Version), Version }
                 };
 
-                return JObject.FromObject(detailsInfo).ToString();
+                return detailsInfo;
             }
         }
 

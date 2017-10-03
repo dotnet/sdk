@@ -28,14 +28,21 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 return false;
             }
 
-            if (!descriptorObj.TryGetValue(nameof(IInstallUnitDescriptor.Details), StringComparison.OrdinalIgnoreCase, out JToken descriptorToken))
+            Dictionary<string, string> details = new Dictionary<string, string>();
+            foreach (JProperty property in descriptorObj.PropertiesOf(nameof(IInstallUnitDescriptor.Details)))
             {
-                parsedDescriptor = null;
-                return false;
+                if (property.Value.Type != JTokenType.String)
+                {
+                    parsedDescriptor = null;
+                    return false;
+                }
+
+                details[property.Name] = property.Value.ToString();
             }
 
-            if (factory.TryParse(descriptorToken.ToString(), out parsedDescriptor))
+            if (factory.TryCreateFromDetails(details, out IInstallUnitDescriptor descriptor))
             {
+                parsedDescriptor = descriptor;
                 return true;
             }
 
