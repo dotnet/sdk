@@ -9,6 +9,6 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateUpdates
         bool TryCreateFromDetails(IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor);
 
         // for creating from a mount point
-        bool TryCreateFromMountPoint(IMountPoint mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptoListr);
+        bool TryCreateFromMountPoint(IMountPoint mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptorList);
     }
 }
