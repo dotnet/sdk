@@ -215,23 +215,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                         {
-                            if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal))
+                            if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) ||
+                                    string.Equals(symbol.Value.Type, DerivedSymbol.TypeName, StringComparison.Ordinal))
                             {
-                                ParameterSymbol param = (ParameterSymbol)symbol.Value;
-                                bool isName = param.Binding == NameSymbolName;
+                                BaseValueSymbol baseSymbol = (BaseValueSymbol)symbol.Value;
+                                bool isName = baseSymbol.Binding == NameSymbolName;
+
                                 parameters[symbol.Key] = new Parameter
                                 {
-                                    DefaultValue = param.DefaultValue ?? (!param.IsRequired ? param.Replaces : null),
-                                    Description = param.Description,
+                                    DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
+                                    Description = baseSymbol.Description,
                                     IsName = isName,
                                     IsVariable = true,
                                     Name = symbol.Key,
-                                    FileRename = param.FileRename,
-                                    Requirement = param.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
-                                    Type = param.Type,
-                                    DataType = param.DataType,
-                                    Choices = param.Choices
+                                    FileRename = baseSymbol.FileRename,
+                                    Requirement = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
+                                    Type = baseSymbol.Type,
+                                    DataType = baseSymbol.DataType
                                 };
+
+                                if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal))
+                                {
+                                    parameters[symbol.Key].Choices = ((ParameterSymbol)symbol.Value).Choices;
+                                }
                             }
                         }
                     }
@@ -526,6 +532,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols)
                 {
+                    if (symbol.Value is DerivedSymbol derivedSymbol)
+                    {
+                        if (generateMacros)
+                        {
+                            macros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Key, derivedSymbol.ValueTransform, Forms));
+                        }
+                    }
+
                     if (symbol.Value.Replaces != null)
                     {
                         string sourceVariable = null;
@@ -551,7 +565,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                         if (sourceVariable != null)
                         {
-                            if (symbol.Value is ParameterSymbol p)
+                            if (symbol.Value is BaseValueSymbol p)
                             {
                                 foreach (string form in p.Forms.GlobalForms)
                                 {

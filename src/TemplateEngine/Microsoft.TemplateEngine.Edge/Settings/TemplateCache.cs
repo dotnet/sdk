@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,36 +47,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public IReadOnlyList<TemplateInfo> TemplateInfo { get; set; }
 
+        // This method is getting obsolted soon. It's getting replaced by TemplateListFilter.FilterTemplates, which does the same thing,
+        // except that the template list to act on is passed in.
         public IReadOnlyCollection<IFilteredTemplateInfo> List(bool exactMatchesOnly, params Func<ITemplateInfo, MatchInfo?>[] filters)
         {
-            HashSet<IFilteredTemplateInfo> matchingTemplates = new HashSet<IFilteredTemplateInfo>(FilteredTemplateEqualityComparer.Default);
-
-            foreach (ITemplateInfo template in TemplateInfo)
-            {
-                List<MatchInfo> matchInformation = new List<MatchInfo>();
-
-                foreach (Func<ITemplateInfo, MatchInfo?> filter in filters)
-                {
-                    MatchInfo? result = filter(template);
-
-                    if (result.HasValue)
-                    {
-                        matchInformation.Add(result.Value);
-                    }
-                }
-
-                FilteredTemplateInfo info = new FilteredTemplateInfo(template, matchInformation);
-                if (info.IsMatch || (!exactMatchesOnly && info.IsPartialMatch))
-                {
-                    matchingTemplates.Add(info);
-                }
-            }
-
-#if !NET45
-            return matchingTemplates;
-#else
-            return matchingTemplates.ToList();
-#endif
+            return TemplateListFilter.FilterTemplates(TemplateInfo, exactMatchesOnly, filters);
         }
 
         public void Scan(IReadOnlyList<string> templateRoots)
