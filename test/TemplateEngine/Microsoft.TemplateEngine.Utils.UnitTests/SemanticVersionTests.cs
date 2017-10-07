@@ -29,7 +29,8 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("1.0.0-+", false)]
         [InlineData("1.0.0-1.1", true, 1, 0, 0, "1.1")]
         [InlineData("1.0.0-1!1", false)]
-        [InlineData("1.0.0-00", true, 1, 0, 0, "00")] //This is acutally valid, 00 just won't be treated as a numeric segment
+        [InlineData("1.0.0-00", false)]
+        [InlineData("1.0.0-a.00.b", false)]
         [InlineData("1.0.0-0", true, 1, 0, 0, "0")]
         [InlineData("1.0.0+1.1", true, 1, 0, 0, null, "1.1")]
         [InlineData("1.0.0+1!1", false)]
@@ -105,28 +106,28 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             {
                 if (!greater.HasValue)
                 {
-                    Assert.True(v1.CompareTo(v2) == 0, $"Expected {ver1} == {ver2}");
+                    Assert.True(v1.CompareTo(v2) == 0, $"Expected {ver1} CompareTo {ver2} to be equal to 0");
                 }
                 else if (greater.Value)
                 {
-                    Assert.True(v1.CompareTo(v2) >= 0, $"Expected {ver1} >= {ver2}");
+                    Assert.True(v1.CompareTo(v2) >= 0, $"Expected {ver1} CompareTo {ver2} to be greater than or equal to 0");
                 }
                 else
                 {
-                    Assert.True(v1.CompareTo(v2) <= 0, $"Expected {ver1} <= {ver2}");
+                    Assert.True(v1.CompareTo(v2) <= 0, $"Expected {ver1} CompareTo {ver2} to be less than or equal to 0");
                 }
             }
             else if (!greater.HasValue)
             {
-                Assert.True(v1.CompareTo(v2) != 0, $"Expected {ver1} != {ver2}");
+                Assert.True(v1.CompareTo(v2) != 0, $"Expected {ver1} CompareTo {ver2} to not be equal to 0");
             }
             else if (greater.Value)
             {
-                Assert.True(v1.CompareTo(v2) > 0, $"Expected {ver1} > {ver2}");
+                Assert.True(v1.CompareTo(v2) > 0, $"Expected {ver1} CompareTo {ver2} to be greater than 0");
             }
             else
             {
-                Assert.True(v1.CompareTo(v2) < 0, $"Expected {ver1} < {ver2}");
+                Assert.True(v1.CompareTo(v2) < 0, $"Expected {ver1} CompareTo {ver2} to be less than 0");
             }
         }
 
@@ -202,6 +203,32 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             {
                 Assert.True(v1 < v2, $"Expected {ver1} < {ver2}");
             }
+        }
+
+        [Fact(DisplayName = nameof(SemanticVersionObjectEquals))]
+        public void SemanticVersionObjectEquals()
+        {
+            SemanticVersion.TryParse("1.0.0-beta1", out SemanticVersion a);
+            SemanticVersion.TryParse("1.0.0-beta1", out SemanticVersion b);
+            SemanticVersion.TryParse("1.0.0-beta1+build2", out SemanticVersion c);
+            SemanticVersion.TryParse("1.0.0-beta2", out SemanticVersion d);
+
+            Assert.True(a.Equals((object)b));
+            Assert.True(a.Equals((object)c));
+            Assert.False(a.Equals((object)d));
+        }
+
+        [Fact(DisplayName = nameof(SemanticVersionObjectEquals))]
+        public void SemanticVersionObjectCompareTo()
+        {
+            SemanticVersion.TryParse("1.0.0-beta1", out SemanticVersion a);
+            SemanticVersion.TryParse("1.0.0-beta1", out SemanticVersion b);
+            SemanticVersion.TryParse("1.0.0-beta1+build2", out SemanticVersion c);
+            SemanticVersion.TryParse("1.0.0-beta2", out SemanticVersion d);
+
+            Assert.True(a.CompareTo((object)b) == 0);
+            Assert.True(a.CompareTo((object)c) < 0);
+            Assert.True(a.CompareTo((object)d) < 0);
         }
     }
 }

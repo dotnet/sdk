@@ -415,9 +415,9 @@ namespace Microsoft.TemplateEngine.Utils
 
         private static int CompareToPrereleaseInfoSegment(string left, string right)
         {
-            if (IsNumericSegment(left))
+            if (IsNumericSegment(left, out bool ignored))
             {
-                if (IsNumericSegment(right))
+                if (IsNumericSegment(right, out ignored))
                 {
                     int us = int.Parse(left, NumberStyles.None, CultureInfo.InvariantCulture);
                     int them = int.Parse(right, NumberStyles.None, CultureInfo.InvariantCulture);
@@ -433,7 +433,7 @@ namespace Microsoft.TemplateEngine.Utils
                     return -1;
                 }
             }
-            else if (IsNumericSegment(right))
+            else if (IsNumericSegment(right, out ignored))
             {
                 return 1;
             }
@@ -502,10 +502,11 @@ namespace Microsoft.TemplateEngine.Utils
 
         //Determines whether a numeric segment is valid per the rules in
         //  http://semver.org/#spec-item-9 and http://semver.org/#spec-item-2
-        private static bool IsNumericSegment(string segment)
+        private static bool IsNumericSegment(string segment, out bool isInvalidBecauseOfLeadingZero)
         {
             if (segment.Length == 0)
             {
+                isInvalidBecauseOfLeadingZero = false;
                 return false;
             }
 
@@ -515,7 +516,9 @@ namespace Microsoft.TemplateEngine.Utils
                 isNumeric &= segment[i] >= '0' && segment[i] <= '9';
             }
 
-            return isNumeric && (segment.Length == 1 || segment[0] != '0');
+            bool doesNotHaveLeadingZero = segment.Length == 1 || segment[0] != '0';
+            isInvalidBecauseOfLeadingZero = !doesNotHaveLeadingZero;
+            return isNumeric && doesNotHaveLeadingZero;
         }
 
         private static bool IsolateVersionRange(string source, int start, ref int end)
@@ -638,11 +641,33 @@ namespace Microsoft.TemplateEngine.Utils
                 }
 
                 prerelease = source.Substring(tail + 1, end - tail - 1);
+
+                if (!ValidateAllDigitSegments(prerelease))
+                {
+                    prerelease = null;
+                    return false;
+                }
+
                 tail = end;
                 return true;
             }
 
             prerelease = null;
+            return true;
+        }
+
+        private static bool ValidateAllDigitSegments(string prerelease)
+        {
+            string[] parts = prerelease.Split('.');
+
+            for (int i = 0; i < parts.Length; ++i)
+            {
+                if (!IsNumericSegment(parts[i], out bool isInvalidBecauseOfLeadingZero) && isInvalidBecauseOfLeadingZero)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
     }
