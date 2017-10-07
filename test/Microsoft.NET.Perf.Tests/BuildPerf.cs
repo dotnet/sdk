@@ -20,11 +20,8 @@ namespace Microsoft.NET.Perf.Tests
         {
         }
 
-        private const double TimeoutInMilliseconds = 20000;
-        private const int NumberOfIterations = 10;
-
         [Fact]
-        public void BuildNetCoreApp()
+        public void BuildNetCore2App()
         {
             var testProject = new TestProject()
             {
@@ -38,66 +35,36 @@ namespace Microsoft.NET.Perf.Tests
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            var cleanCommand = new MSBuildCommand(Log, "clean", buildCommand.ProjectRootPath);
 
-            var scenarioConfiguration = new ScenarioConfiguration(TimeSpan.FromMilliseconds(TimeoutInMilliseconds));
-            scenarioConfiguration.Iterations = NumberOfIterations;
+            var perfTest = new PerfTest();
+            perfTest.TestName = "Build .NET Core 2 Console App";
+            perfTest.ProcessToMeasure = buildCommand.GetProcessStartInfo();
+            perfTest.TestFolder = testAsset.TestRoot;
 
-            Stopwatch stopwatch = new Stopwatch();
-            TimeSpan[] executionTimes = new TimeSpan[NumberOfIterations];
-            int currentIteration = 0;
+            perfTest.Run();
+        }
 
-            void PreIteration()
+        [Fact]
+        public void BuildNetStandard2App()
+        {
+            var testProject = new TestProject()
             {
-                cleanCommand.Execute()
-                    .Should()
-                    .Pass();
-                stopwatch.Restart();
-            }
+                Name = "NetCoreApp",
+                TargetFrameworks = "netstandard2.0",
+                IsSdkProject = true
+            };
 
-            void PostIteration()
-            {
-                stopwatch.Stop();
-                executionTimes[currentIteration] = stopwatch.Elapsed;
-                currentIteration++;
-            }
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .Restore(Log, testProject.Name);
 
-            ScenarioBenchmark PostRun()
-            {
-                var ret = new ScenarioBenchmark("BuildNetCoreApp");
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
 
-                var duration = new ScenarioTestModel("Build .NET Core 2 app");
-                ret.Tests.Add(duration);
+            var perfTest = new PerfTest();
+            perfTest.TestName = "Build .NET Sndarda 2. Library";
+            perfTest.ProcessToMeasure = buildCommand.GetProcessStartInfo();
+            perfTest.TestFolder = testAsset.TestRoot;
 
-                duration.Performance.Metrics.Add(new MetricModel
-                {
-                    Name = "ExecutionTime",
-                    DisplayName = "Execution Time",
-                    Unit = "ms"
-                });
-
-                for (int i = 0; i < NumberOfIterations; i++)
-                {
-                    var durationIteration = new IterationModel
-                    {
-                        Iteration = new Dictionary<string, double>()
-                    };
-                    durationIteration.Iteration.Add("ExecutionTime", executionTimes[i].TotalMilliseconds);
-                    duration.Performance.IterationModels.Add(durationIteration);
-                }
-
-                return ret;
-            }
-
-            using (var h = new XunitPerformanceHarness(Array.Empty<string>()))
-            {
-                var startInfo = buildCommand.GetProcessStartInfo();
-                h.RunScenario(startInfo,
-                    PreIteration,
-                    PostIteration,
-                    PostRun,
-                    scenarioConfiguration);
-            }
+            perfTest.Run();
         }
     }
 }
