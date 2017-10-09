@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("1.0.0-0", true, 1, 0, 0, "0")]
         [InlineData("1.0.0+1.1", true, 1, 0, 0, null, "1.1")]
         [InlineData("1.0.0+1!1", false)]
-        [InlineData("1.0.0+00", true, 1, 0, 0, null, "00")] //This is acutally valid, 00 just won't be treated as a numeric segment
+        [InlineData("1.0.0+00", true, 1, 0, 0, null, "00")]
         [InlineData("1.0.0+0", true, 1, 0, 0, null, "0")]
         public void SemanticVersionParse(string source, bool expectValid, int major = 0, int minor = 0, int patch = 0, string prerelease = null, string metadata = null)
         {
