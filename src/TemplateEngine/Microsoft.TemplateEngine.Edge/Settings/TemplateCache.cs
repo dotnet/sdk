@@ -257,7 +257,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                 }
 
-                if (!anythingFound)
+                if (!anythingFound && !isInOriginalInstallLocation)
                 {
                     try
                     {
