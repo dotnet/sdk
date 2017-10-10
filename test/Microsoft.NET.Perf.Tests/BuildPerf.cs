@@ -66,7 +66,7 @@ namespace Microsoft.NET.Perf.Tests
             {
                 var ret = new ScenarioBenchmark("BuildNetCoreApp");
 
-                var duration = new ScenarioTestModel("Duration");
+                var duration = new ScenarioTestModel("Build .NET Core 2 app");
                 ret.Tests.Add(duration);
 
                 duration.Performance.Metrics.Add(new MetricModel
