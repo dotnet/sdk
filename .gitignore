@@ -186,3 +186,6 @@ Project.vbproj
 
 # VS for mac
 *.userprefs
+
+# Others
+PerfResults/

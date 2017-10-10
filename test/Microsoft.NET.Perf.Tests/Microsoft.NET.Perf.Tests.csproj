@@ -15,6 +15,7 @@
     <PackageReference Include="xunit.performance.api" Version="1.0.0-beta-build0007" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\xunit-performance\src\xunit.performance.api\xunit.performance.api.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Targets\Signing.Imports.targets" />

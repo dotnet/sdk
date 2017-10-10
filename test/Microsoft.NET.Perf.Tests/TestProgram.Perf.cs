@@ -7,7 +7,7 @@ partial class Program
 {
     static partial void BeforeTestRun()
     {
-        PerfTest.InitializeHarness();
+        PerfTest.InitializeHarness("--perf:outputdir", "PerfResults");
     }
     static partial void AfterTestRun()
     {

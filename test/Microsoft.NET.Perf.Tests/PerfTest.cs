@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Xunit.Performance.Api;
 
@@ -14,10 +15,9 @@ namespace Microsoft.NET.Perf.Tests
         public ProcessStartInfo ProcessToMeasure { get; set; }
         public string TestFolder { get; set; }
 
-        public void Run()
+        public void Run([CallerMemberName] string callerName = null)
         {
-            var scenarioConfiguration = new ScenarioConfiguration(TimeSpan.FromMilliseconds(Timeout.TotalMilliseconds));
-            scenarioConfiguration.Iterations = NumberOfIterations;
+            TestName = TestName ?? callerName;
 
             Stopwatch stopwatch = new Stopwatch();
             TimeSpan[] executionTimes = new TimeSpan[NumberOfIterations];
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Perf.Tests
 
             using (FolderSnapshot snapshot = FolderSnapshot.Create(TestFolder))
             {
-                void PreIteration()
+                void PreIteration(Scenario scenario)
                 {
                     if (currentIteration > 0)
                     {
@@ -34,10 +34,11 @@ namespace Microsoft.NET.Perf.Tests
                     stopwatch.Restart();
                 }
 
-                void PostIteration()
+                void PostIteration(ScenarioExecutionResult scenarioExecutionResult)
                 {
                     stopwatch.Stop();
-                    executionTimes[currentIteration] = stopwatch.Elapsed;
+                    var elapsed = scenarioExecutionResult.ProcessExitInfo.ExitTime - scenarioExecutionResult.ProcessExitInfo.StartTime;
+                    executionTimes[currentIteration] = elapsed;
                     currentIteration++;
                 }
 
@@ -68,11 +69,13 @@ namespace Microsoft.NET.Perf.Tests
                     return ret;
                 }
 
-                _performanceHarness.RunScenario(ProcessToMeasure,
-                    PreIteration,
-                    PostIteration,
-                    PostRun,
-                    scenarioConfiguration);
+                var scenarioConfiguration = new ScenarioConfiguration(TimeSpan.FromMilliseconds(Timeout.TotalMilliseconds), ProcessToMeasure);
+                scenarioConfiguration.Iterations = NumberOfIterations;
+                scenarioConfiguration.PreIterationDelegate = PreIteration;
+                scenarioConfiguration.PostIterationDelegate = PostIteration;
+                scenarioConfiguration.TestName = TestName;
+
+                _performanceHarness.RunScenario(scenarioConfiguration, PostRun);
             }
         }
 

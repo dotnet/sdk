@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+VisualStudioVersion = 15.0.26927.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tasks", "Tasks", "{1FEED16D-E07D-47C1-BB4C-56CD9F42B53B}"
 EndProject
@@ -66,6 +66,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Restore.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Perf.Tests", "test\Microsoft.NET.Perf.Tests\Microsoft.NET.Perf.Tests.csproj", "{C275F586-0E9D-4DF1-B153-E914072D3833}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{998BC2E5-E142-4C01-99D0-A848330A7DDC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xunit.performance.api", "..\xunit-performance\src\xunit.performance.api\xunit.performance.api.csproj", "{36B02955-6914-4A0C-A782-A4BB86B2CF31}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xunit.performance.core", "..\xunit-performance\src\xunit.performance.core\xunit.performance.core.csproj", "{96044926-9144-4539-93C7-81BFC3F801ED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xunit.performance.execution", "..\xunit-performance\src\xunit.performance.execution\xunit.performance.execution.csproj", "{204A5446-C186-494A-9F60-94215B99F0CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xunit.performance.metrics", "..\xunit-performance\src\xunit.performance.metrics\xunit.performance.metrics.csproj", "{A43202F7-C49A-46A3-ADCD-376D24E854CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -116,6 +126,22 @@ Global
 		{C275F586-0E9D-4DF1-B153-E914072D3833}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C275F586-0E9D-4DF1-B153-E914072D3833}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C275F586-0E9D-4DF1-B153-E914072D3833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36B02955-6914-4A0C-A782-A4BB86B2CF31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36B02955-6914-4A0C-A782-A4BB86B2CF31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36B02955-6914-4A0C-A782-A4BB86B2CF31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36B02955-6914-4A0C-A782-A4BB86B2CF31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96044926-9144-4539-93C7-81BFC3F801ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96044926-9144-4539-93C7-81BFC3F801ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96044926-9144-4539-93C7-81BFC3F801ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96044926-9144-4539-93C7-81BFC3F801ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{204A5446-C186-494A-9F60-94215B99F0CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{204A5446-C186-494A-9F60-94215B99F0CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{204A5446-C186-494A-9F60-94215B99F0CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{204A5446-C186-494A-9F60-94215B99F0CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A43202F7-C49A-46A3-ADCD-376D24E854CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A43202F7-C49A-46A3-ADCD-376D24E854CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A43202F7-C49A-46A3-ADCD-376D24E854CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A43202F7-C49A-46A3-ADCD-376D24E854CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -135,6 +161,10 @@ Global
 		{0E11CA1E-D64F-48E9-BE86-B040D9E8EBF8} = {1FEED16D-E07D-47C1-BB4C-56CD9F42B53B}
 		{73F52EAA-A435-4D7B-8E1E-F82E9A25BA98} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{C275F586-0E9D-4DF1-B153-E914072D3833} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{36B02955-6914-4A0C-A782-A4BB86B2CF31} = {998BC2E5-E142-4C01-99D0-A848330A7DDC}
+		{96044926-9144-4539-93C7-81BFC3F801ED} = {998BC2E5-E142-4C01-99D0-A848330A7DDC}
+		{204A5446-C186-494A-9F60-94215B99F0CE} = {998BC2E5-E142-4C01-99D0-A848330A7DDC}
+		{A43202F7-C49A-46A3-ADCD-376D24E854CF} = {998BC2E5-E142-4C01-99D0-A848330A7DDC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F55B5BC-36E0-4D71-9811-3B99DDE38152}
