@@ -49,7 +49,6 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("[1.0.0.0-*)", "1.1.0.0", true)]
         [InlineData("[1.0.0.0-*)", "1.0.1.0", true)]
         [InlineData("[1.0.0.0-*)", "1.0.0.1", true)]
-        [InlineData("[1.0.0.0-*)", "1.0.0.0", true)]
         [InlineData("(1.0.0.0-*)", "1.0.0.0", false)]
         [InlineData("(*-2.0.0.0)", "1.0.0.0", true)]
         [InlineData("(*-2.0.0.0)", "1.5.0.0", true)]

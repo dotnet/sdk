@@ -82,10 +82,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(NupkgInstallUnitDescriptorFactory.FactoryId, nupkgDescriptor.FactoryId);
             Assert.Equal("TestPackage", nupkgDescriptor.Identifier);
             Assert.Equal("TestPackage", nupkgDescriptor.PackageName);
-            Assert.True(string.Equals("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9", nupkgDescriptor.MountPointId.ToString(), StringComparison.OrdinalIgnoreCase));
+            Assert.Equal("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9", nupkgDescriptor.MountPointId.ToString(), ignoreCase: true);
             Assert.Equal("1.2.3", nupkgDescriptor.Version);
 
-            Assert.True(string.Equals("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9", nupkgDescriptor.Details["MountPointId"], StringComparison.OrdinalIgnoreCase));
+            Assert.Equal("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9", nupkgDescriptor.Details["MountPointId"], ignoreCase: true);
             Assert.Equal("TestPackage", nupkgDescriptor.Details["PackageName"]);
             Assert.Equal("1.2.3", nupkgDescriptor.Details["Version"]);
         }

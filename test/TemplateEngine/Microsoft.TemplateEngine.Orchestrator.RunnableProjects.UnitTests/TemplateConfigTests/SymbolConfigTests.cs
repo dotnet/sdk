@@ -42,9 +42,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.True(symbolInfo is ParameterSymbol);
 
             ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.Equal(1, paramSymbol.Forms.GlobalForms.ToList()
+            Assert.Single(paramSymbol.Forms.GlobalForms.ToList()
                                                 .Where(x => string.Equals(x, IdentityValueForm.FormName, StringComparison.OrdinalIgnoreCase))
-                                                .Count());
+);
             Assert.Equal(0, paramSymbol.Forms.GlobalForms.ToList().IndexOf(IdentityValueForm.FormName));
         }
 
@@ -850,6 +850,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 return JObject.Parse(configString);
             }
         }
-
     }
 }
