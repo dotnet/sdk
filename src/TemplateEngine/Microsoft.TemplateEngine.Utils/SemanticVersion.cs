@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             if (other is null)
             {
-                return -1;
+                return 1;
             }
 
             int versionCompare = CompareVersionInformation(other);
@@ -323,9 +323,9 @@ namespace Microsoft.TemplateEngine.Utils
         /// </remarks>
         public static bool operator >(SemanticVersion left, SemanticVersion right)
         {
-            if (right is null)
+            if (left is null)
             {
-                return !(left is null);
+                return false;
             }
 
             return left.CompareTo(right, out bool isDifferentInBuildMetadataOnly) > 0 && !isDifferentInBuildMetadataOnly;
@@ -344,9 +344,9 @@ namespace Microsoft.TemplateEngine.Utils
         /// </remarks>
         public static bool operator >=(SemanticVersion left, SemanticVersion right)
         {
-            if (right is null)
+            if (left is null)
             {
-                return !(left is null);
+                return right is null;
             }
 
             return left.CompareTo(right, out bool isDifferentInBuildMetadataOnly) >= 0 || isDifferentInBuildMetadataOnly;
@@ -359,7 +359,7 @@ namespace Microsoft.TemplateEngine.Utils
             //  sorts stable when using CompareTo(object) or CompareTo(SemanticVersion).
             //  However, the result of this portion of the comparison is ignored by the
             //  >, >=, <, <=, == and != operators
-            //  
+            //
             if (BuildMetadata != null)
             {
                 if (other.BuildMetadata != null)
@@ -480,23 +480,20 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 if (other.PrereleaseInfo != null)
                 {
-                    int prereleaseCompare = CompareToPrereleaseInfo(other.PrereleaseInfo);
+                    //Both exist, return the comparison result
+                    return CompareToPrereleaseInfo(other.PrereleaseInfo);
+                }
 
-                    if (prereleaseCompare != 0)
-                    {
-                        return prereleaseCompare;
-                    }
-                }
-                else
-                {
-                    return -1;
-                }
+                //prerelease < stable
+                return -1;
             }
             else if (other.PrereleaseInfo != null)
             {
+                //stable > prerelease
                 return 1;
             }
 
+            //both are stable
             return 0;
         }
 
@@ -558,6 +555,12 @@ namespace Microsoft.TemplateEngine.Utils
             int patch = patchEnd > minorEnd ? int.Parse(source.Substring(minorEnd + 1, patchEnd - minorEnd - 1), NumberStyles.None, CultureInfo.InvariantCulture) : 0;
             string prerelease = null;
             string metadata = null;
+
+            if (tail < source.Length && !(source[tail] == '-' || source[tail] == '+'))
+            {
+                version = null;
+                return false;
+            }
 
             if (!ValidateAndExtractPrereleaseSection(source, ref tail, out prerelease))
             {
@@ -642,7 +645,7 @@ namespace Microsoft.TemplateEngine.Utils
 
                 prerelease = source.Substring(tail + 1, end - tail - 1);
 
-                if (!ValidateAllDigitSegments(prerelease))
+                if (!ValidateAllDigitOnlySegmentsAreWellFormed(prerelease))
                 {
                     prerelease = null;
                     return false;
@@ -656,7 +659,7 @@ namespace Microsoft.TemplateEngine.Utils
             return true;
         }
 
-        private static bool ValidateAllDigitSegments(string prerelease)
+        private static bool ValidateAllDigitOnlySegmentsAreWellFormed(string prerelease)
         {
             string[] parts = prerelease.Split('.');
 

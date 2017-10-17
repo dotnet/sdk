@@ -36,17 +36,18 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("1.0.0+1!1", false)]
         [InlineData("1.0.0+00", true, 1, 0, 0, null, "00")]
         [InlineData("1.0.0+0", true, 1, 0, 0, null, "0")]
+        [InlineData("1.2.3.4", false)]
         public void SemanticVersionParse(string source, bool expectValid, int major = 0, int minor = 0, int patch = 0, string prerelease = null, string metadata = null)
         {
             SemanticVersion ver;
 
             if (expectValid)
             {
-                Assert.True(SemanticVersion.TryParse(source, out ver));
+                Assert.True(SemanticVersion.TryParse(source, out ver), "Expected value to be a valid version, but it was not");
             }
             else
             {
-                Assert.False(SemanticVersion.TryParse(source, out ver));
+                Assert.False(SemanticVersion.TryParse(source, out ver), "Expected value to not be a valid version, but it was");
                 return;
             }
 
@@ -216,6 +217,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.True(a.Equals((object)b));
             Assert.True(a.Equals((object)c));
             Assert.False(a.Equals((object)d));
+            Assert.False(a.Equals(null));
         }
 
         [Fact(DisplayName = nameof(SemanticVersionObjectEquals))]
@@ -229,6 +231,27 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.True(a.CompareTo((object)b) == 0);
             Assert.True(a.CompareTo((object)c) < 0);
             Assert.True(a.CompareTo((object)d) < 0);
+            Assert.True(a.CompareTo(null) > 0);
+        }
+
+        [Fact(DisplayName = nameof(SemanticVersionObjectEquals))]
+        public void SemanticVersionOperatorsAnNull()
+        {
+            SemanticVersion.TryParse("1.0.0-beta1", out SemanticVersion a);
+
+            Assert.True(a > null, $"{a} > null failed");
+            Assert.True(a >= null, $"{a} >= null failed");
+            Assert.True(a != null, $"{a} != null failed");
+            Assert.False(a < null, $"{a} < null failed");
+            Assert.False(a <= null, $"{a} <= null failed");
+            Assert.False(a == null, $"{a} == null failed");
+
+            Assert.False(null > a, $"null > {a} failed");
+            Assert.False(null >= a, $"null >= {a} failed");
+            Assert.True(null != a, $"null != {a} failed");
+            Assert.True(null < a, $"null < {a} failed");
+            Assert.True(null <= a, $"null <= {a} failed");
+            Assert.False(null == a, $"null == {a} failed");
         }
     }
 }
