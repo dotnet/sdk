@@ -22,8 +22,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        // https://github.com/dotnet/sdk/issues/1327
-        [CoreMSBuildOnlyFact]
+        [Fact]
         public void DowngradeWarningsAreErrorsByDefault()
         {
             const string testProjectName = "ProjectWithDowngradeWarning";
@@ -48,7 +47,7 @@ namespace Microsoft.NET.Restore.Tests
                 .And.HaveStdOutContaining("NU1605");
         }
 
-        [CoreMSBuildOnlyFact]
+        [Fact]
         public void ItIsPossibleToTurnOffDowngradeWarningsAsErrors()
         {
             const string testProjectName = "ProjectWithDowngradeWarning";

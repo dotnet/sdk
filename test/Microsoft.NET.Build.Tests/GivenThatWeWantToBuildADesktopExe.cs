@@ -28,14 +28,9 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_builds_a_simple_desktop_app()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             var targetFramework = "net45";
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld")
@@ -62,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
 
         // If we don't set platformTarget and don't use native dependency, we get working AnyCPU app.
         [InlineData("defaults", null, false, "Native code was not used (MSIL)")]
@@ -94,11 +89,6 @@ namespace Microsoft.NET.Build.Tests
              bool useNativeCode,
              string expectedProgramOutput)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             foreach (bool multiTarget in new[] { false, true })
             {
                 var testAsset = _testAssetsManager
@@ -141,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
 
         // implict rid with option to append rid to output path off -> do not append
         [InlineData("implicitOff", "", false, false)]
@@ -156,11 +146,6 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("explicitOn", "win7-x64", true, true)]
         public void It_appends_rid_to_outdir_correctly(string identifier, string rid, bool useAppendOption, bool shouldAppend)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             foreach (bool multiTarget in new[] { false, true })
             {
                 var testAsset = _testAssetsManager

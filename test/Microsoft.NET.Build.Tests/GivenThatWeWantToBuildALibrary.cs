@@ -76,17 +76,11 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void All_props_and_targets_add_themselves_to_MSBuildAllTargets()
         {
             //  Workaround MSBuild bug causing preprocessing to fail if there is a "--" in a resolved Sdk path: https://github.com/Microsoft/msbuild/pull/1428
             if (RepoInfo.RepoRoot.Contains("--"))
-            {
-                return;
-            }
-
-            //  Disable this test when using full Framework MSBuild, as the paths to the props and targets are different
-            if (UsingFullFrameworkMSBuild)
             {
                 return;
             }
@@ -163,7 +157,7 @@ namespace Microsoft.NET.Build.Tests
             //builtinProjectsFromProperty.Should().BeEquivalentTo(expectedBuiltinProjects);
         }
 
-        
+
 
         internal static List<string> GetValuesFromTestLibrary(
             ITestOutputHelper log,
