@@ -1,7 +1,5 @@
-using Microsoft.TemplateEngine.Abstractions;
-using System;
 using System.Collections.Generic;
-using System.Text;
+using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
