@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
             return false;
         }
 
-        private static bool TryGetPackageInfoFromNuspec(IMountPoint mountPoint, out string packageName, out string version)
+        internal static bool TryGetPackageInfoFromNuspec(IMountPoint mountPoint, out string packageName, out string version)
         {
             IList<IFile> nuspecFiles = mountPoint.Root.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly).ToList();
 

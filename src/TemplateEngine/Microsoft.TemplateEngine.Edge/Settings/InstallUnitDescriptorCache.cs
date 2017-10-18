@@ -12,15 +12,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class InstallUnitDescriptorCache
     {
-        private Dictionary<string, IInstallUnitDescriptor> _cache = new Dictionary<string, IInstallUnitDescriptor>();
-        private IEngineEnvironmentSettings _environmentSettings;
+        private readonly Dictionary<Guid, string> _installedItems;
+        private readonly Dictionary<string, IInstallUnitDescriptor> _cache = new Dictionary<string, IInstallUnitDescriptor>();
+        private readonly IEngineEnvironmentSettings _environmentSettings;
 
         public InstallUnitDescriptorCache(IEngineEnvironmentSettings environmentSettings)
-            : this(environmentSettings, new List<IInstallUnitDescriptor>())
+            : this(environmentSettings, new List<IInstallUnitDescriptor>(), new Dictionary<Guid, string>())
         {
         }
 
-        protected InstallUnitDescriptorCache(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IInstallUnitDescriptor> descriptorList)
+        protected InstallUnitDescriptorCache(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IInstallUnitDescriptor> descriptorList, IReadOnlyDictionary<Guid, string> installedItems)
         {
             _environmentSettings = environmentSettings;
 
@@ -28,7 +29,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 AddOrReplaceDescriptor(descriptor);
             }
+
+            _installedItems = installedItems.ToDictionary(x => x.Key, x => x.Value);
         }
+
+        [JsonProperty]
+        public IReadOnlyDictionary<Guid, string> InstalledItems => _installedItems;
 
         [JsonProperty]
         public IReadOnlyDictionary<string, IInstallUnitDescriptor> Descriptors => _cache;
@@ -43,6 +49,39 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     return false;
                 }
+
+                string uninstallString = mountPoint.Info.Place;
+
+                //Adjust the uninstall string for NuGet packages if needed
+                if (uninstallString.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                {
+                    bool isFile = false;
+                    if (mountPoint.Info.ParentMountPointId == Guid.Empty)
+                    {
+                        isFile = _environmentSettings.Host.FileSystem.FileExists(mountPoint.Info.Place);
+                    }
+                    else if (((SettingsLoader)(_environmentSettings.SettingsLoader)).TryGetMountPointFromId(mountPoint.Info.ParentMountPointId, out IMountPoint parentMountPoint))
+                    {
+                        try
+                        {
+                            isFile = parentMountPoint.FileInfo(mountPoint.Info.Place)?.Exists ?? false;
+                        }
+                        finally
+                        {
+                            _environmentSettings.SettingsLoader.ReleaseMountPoint(parentMountPoint);
+                        }
+                    }
+
+                    if (isFile)
+                    {
+                        if (NupkgInstallUnitDescriptorFactory.TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string _))
+                        {
+                            uninstallString = packageName;
+                        }
+                    }
+                }
+
+                _installedItems[mountPointId] = uninstallString;
 
                 if (!InstallUnitDescriptorFactory.TryCreateFromMountPoint(_environmentSettings, mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptorList))
                 {
@@ -80,6 +119,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void RemoveDescriptorsForLocation(Guid mountPointId)
         {
+            _installedItems.Remove(mountPointId);
             IList<IInstallUnitDescriptor> descriptorsToRemove = new List<IInstallUnitDescriptor>();
 
             foreach (IInstallUnitDescriptor descriptor in _cache.Where(x => x.Value.MountPointId == mountPointId).Select(x => x.Value))
@@ -112,7 +152,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            return new InstallUnitDescriptorCache(environmentSettings, allDescriptors);
+            Dictionary<Guid, string> installedItems = new Dictionary<Guid, string>();
+
+            foreach (KeyValuePair<string, string> item in cacheObj.ToStringDictionary(propertyName: nameof(InstalledItems)))
+            {
+                installedItems[Guid.Parse(item.Key)] = item.Value;
+            }
+
+            return new InstallUnitDescriptorCache(environmentSettings, allDescriptors, installedItems);
         }
     }
 }
