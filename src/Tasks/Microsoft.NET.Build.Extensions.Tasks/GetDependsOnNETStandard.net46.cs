@@ -19,8 +19,15 @@ namespace Microsoft.NET.Build.Tasks
         //  - load / JIT cost of SRM and its closure
         //  - deal with bindingRedirects/unification needed to load SRM's closure.
 
-        internal static bool GetFileDependsOnNETStandard(string filePath)
+        internal static void GetFileDependsOn(string filePath,
+            out bool dependsOnNETStandard,
+            out bool dependsOnNuGetCompression,
+            out bool dependsOnNuGetHttp)
         {
+            dependsOnNETStandard = false;
+            dependsOnNuGetCompression = false;
+            dependsOnNuGetHttp = false;
+
             // Ported from Microsoft.Build.Tasks.AssemblyInformation
             if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
             {
@@ -34,7 +41,22 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (referencedAssembly.Name.Equals(NetStandardAssemblyName, StringComparison.Ordinal))
                     {
-                        return true;
+                        dependsOnNETStandard = true;
+                    }
+                    else if (referencedAssembly.Name.Equals(SystemRuntimeAssemblyName, StringComparison.Ordinal) &&
+                             referencedAssembly.Version >= SystemRuntimeMinVersion)
+                    {
+                        dependsOnNETStandard = true;
+                    }
+                    else if (referencedAssembly.Name.Equals(SystemIOCompressionAssemblyName, StringComparison.Ordinal) &&
+                             referencedAssembly.Version >= SystemIOCompressionMinVersion)
+                    {
+                        dependsOnNuGetCompression = true;
+                    }
+                    else if (referencedAssembly.Name.Equals(SystemNetHttpAssemblyName, StringComparison.Ordinal) &&
+                             referencedAssembly.Version >= SystemNetHttpMinVersion)
+                    {
+                        dependsOnNuGetHttp = true;
                     }
                 }
             }
@@ -105,20 +127,26 @@ namespace Microsoft.NET.Build.Tasks
                                 out flags);
 
                             var assemblyName = assemblyNameBuffer.ToString();
+                            var assemblyVersion = new Version(assemblyMD.usMajorVersion, assemblyMD.usMinorVersion, assemblyMD.usBuildNumber, assemblyMD.usRevisionNumber);
 
                             if (assemblyName.Equals(NetStandardAssemblyName, StringComparison.Ordinal))
                             {
-                                return true;
+                                dependsOnNETStandard = true;
                             }
-
-                            if (assemblyName.Equals(SystemRuntimeAssemblyName, StringComparison.Ordinal))
+                            else if (assemblyName.Equals(SystemRuntimeAssemblyName, StringComparison.Ordinal) &&
+                                assemblyVersion >= SystemRuntimeMinVersion)
                             {
-                                var assemblyVersion = new Version(assemblyMD.usMajorVersion, assemblyMD.usMinorVersion, assemblyMD.usBuildNumber, assemblyMD.usRevisionNumber);
-
-                                if (assemblyVersion >= SystemRuntimeMinVersion)
-                                {
-                                    return true;
-                                }
+                                dependsOnNETStandard = true;
+                            }
+                            else if (assemblyName.Equals(SystemIOCompressionAssemblyName, StringComparison.Ordinal) &&
+                                assemblyVersion >= SystemIOCompressionMinVersion)
+                            {
+                                dependsOnNuGetCompression = true;
+                            }
+                            else if (assemblyName.Equals(SystemNetHttpAssemblyName, StringComparison.Ordinal) &&
+                                assemblyVersion >= SystemNetHttpMinVersion)
+                            {
+                                dependsOnNuGetHttp = true;
                             }
                         }
                     } while (fetched > 0);
@@ -141,7 +169,6 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
             }
-            return false;
         }
 
         #region Interop
