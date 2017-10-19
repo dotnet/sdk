@@ -108,6 +108,9 @@ namespace Microsoft.NET.Build.Tests
                 $"{testProject.Name}.pdb",
                 $"{netStandardProject.Name}.dll",
                 $"{netStandardProject.Name}.pdb",
+
+                "System.Net.Http.dll",
+                "System.IO.Compression.dll",
             });
         }
 
@@ -148,7 +151,6 @@ namespace Microsoft.NET.Build.Tests
                 $"{testProject.Name}.exe",
                 $"{testProject.Name}.pdb",
 
-                //  Remove these two once https://github.com/dotnet/sdk/issues/1647 is fixed
                 "System.Net.Http.dll",
                 "System.IO.Compression.dll",
 

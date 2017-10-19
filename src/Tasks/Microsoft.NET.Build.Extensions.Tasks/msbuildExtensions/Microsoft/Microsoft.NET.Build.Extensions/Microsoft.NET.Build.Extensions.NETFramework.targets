@@ -47,7 +47,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup Condition="'@(_CandidateNETStandardReferences)' != ''">
       <!-- Use an intermediate property to simplify condition.  Run GetDependsOnNETStandard if either: -->
-      <!-- 1. The .NET Standard 2.0 supports need to be injected -->
+      <!-- 1. The .NET Standard 2.0 support need to be injected -->
       <_RunGetDependsOnNETStandard Condition="'$(DependsOnNETStandard)' == '' AND '$(NETStandardInbox)' != 'true'">true</_RunGetDependsOnNETStandard>
       <!-- 2. The target framework is .NET 4.7.1, which needs to special case System.IO.Compression and System.Net.Http -->
       <_RunGetDependsOnNETStandard Condition="'$(_TargetFrameworkVersionWithoutV)' == '4.7.1'">true</_RunGetDependsOnNETStandard>
