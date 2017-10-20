@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 p = (Parameter)existingParam;
                 p.IsVariable = true;
 
-                if (string.IsNullOrEmpty(datatype))
+                if (string.IsNullOrEmpty(p.DataType))
                 {
                     p.DataType = datatype;
                 }
