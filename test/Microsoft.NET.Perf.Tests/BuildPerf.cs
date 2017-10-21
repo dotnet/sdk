@@ -60,7 +60,7 @@ namespace Microsoft.NET.Perf.Tests
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
 
             var perfTest = new PerfTest();
-            perfTest.TestName = "Build .NET Sndarda 2. Library";
+            perfTest.TestName = "Build .NET Standard 2.0 Library";
             perfTest.ProcessToMeasure = buildCommand.GetProcessStartInfo();
             perfTest.TestFolder = testAsset.TestRoot;
 
