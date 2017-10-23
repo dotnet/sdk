@@ -61,6 +61,9 @@
   </ItemGroup>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
+    <PropertyGroup>
+      <Stage0SdksFolder>$(DotNet_Install_Dir)sdk\$(Stage0CLIVersion)\Sdks</Stage0SdksFolder>
+    </PropertyGroup>
     <ItemGroup>
       <LayoutFile Include="@(None)" Condition="'%(None.PackagePath)' != ''">
         <TargetPath>%(None.PackagePath)\%(None.RecursiveDir)%(None.Filename)%(None.Extension)</TargetPath>
@@ -69,6 +72,16 @@
       <LayoutFile Include="@(PackFile)">
         <TargetPath>..\NuGet.Build.Tasks.Pack\%(PackFile.RecursiveDir)%(PackFile.Filename)%(PackFile.Extension)</TargetPath>
       </LayoutFile>
+      
+      <!-- Include the rest of the Sdks from the Stage 0 CLI -->
+      <Stage0SdkFile Include="$(Stage0SdksFolder)\FSharp.NET.Sdk\**" SdkName="FSharp.NET.Sdk" />
+      <Stage0SdkFile Include="$(Stage0SdksFolder)\Microsoft.NET.Sdk.Publish\**" SdkName="Microsoft.NET.Sdk.Publish" />
+      <Stage0SdkFile Include="$(Stage0SdksFolder)\Microsoft.NET.Sdk.Web\**" SdkName="Microsoft.NET.Sdk.Web" />
+      <Stage0SdkFile Include="$(Stage0SdksFolder)\Microsoft.NET.Sdk.Web.ProjectSystem\**" SdkName="Microsoft.NET.Sdk.Web.ProjectSystem"/>
+      <LayoutFile Include="@(Stage0SdkFile)">
+        <TargetPath>..\%(Stage0SdkFile.SdkName)\%(Stage0SdkFile.RecursiveDir)%(Stage0SdkFile.Filename)%(Stage0SdkFile.Extension)</TargetPath>
+      </LayoutFile>
+
     </ItemGroup>
   </Target>
 
