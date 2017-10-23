@@ -14,8 +14,6 @@ namespace Microsoft.NET.TestFramework
         public string ProjectsRoot { get; private set; }
 
 
-        private string BuildVersion { get; set; }
-
         private List<String> TestDestinationDirectories { get; } = new List<string>();
 
         public TestAssetsManager()
@@ -33,14 +31,7 @@ namespace Microsoft.NET.TestFramework
                 throw new DirectoryNotFoundException($"Directory not found: '{testProjectsDirectory}'");
             }
 
-            var buildVersion = Path.Combine(testAssetsDirectory, "buildVersion.txt");
-            if (!File.Exists(buildVersion))
-            {
-                throw new FileNotFoundException($"File not found: {buildVersion}");
-            }
-
             ProjectsRoot = testProjectsDirectory;
-            BuildVersion = File.ReadAllText(buildVersion).Trim();
         }
 
         public TestAsset CopyTestAsset(
@@ -52,7 +43,7 @@ namespace Microsoft.NET.TestFramework
             var testDestinationDirectory =
                 GetTestDestinationDirectoryPath(testProjectName, callingMethod, identifier);
 
-            var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, BuildVersion);
+            var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory);
             return testAsset;
         }
 
@@ -64,7 +55,7 @@ namespace Microsoft.NET.TestFramework
             var testDestinationDirectory =
                 GetTestDestinationDirectoryPath(testProject.Name, callingMethod, identifier);
 
-            var testAsset = new TestAsset(testDestinationDirectory, BuildVersion);
+            var testAsset = new TestAsset(testDestinationDirectory);
 
             Stack<TestProject> projectStack = new Stack<TestProject>();
             projectStack.Push(testProject);
