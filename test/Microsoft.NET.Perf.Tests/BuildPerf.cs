@@ -66,5 +66,24 @@ namespace Microsoft.NET.Perf.Tests
 
             perfTest.Run();
         }
+
+        [Fact]
+        public void BuildMVCApp()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory();
+            var newCommand = new DotnetCommand(Log);
+            newCommand.WorkingDirectory = testDir.Path;
+
+            newCommand.Execute("new", "mvc").Should().Pass();
+
+            var buildCommand = new BuildCommand(Log, testDir.Path);
+
+            var perfTest = new PerfTest();
+            perfTest.TestName = "Build an ASP.NET Core MVC app";
+            perfTest.ProcessToMeasure = buildCommand.GetProcessStartInfo();
+            perfTest.TestFolder = testDir.Path;
+
+            perfTest.Run();
+        }
     }
 }
