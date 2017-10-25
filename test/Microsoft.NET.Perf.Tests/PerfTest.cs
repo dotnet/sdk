@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Xunit.Performance.Api;
+using Xunit;
+
+//  Don't run any perf tests in parallel
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
 
 namespace Microsoft.NET.Perf.Tests
 {
@@ -24,9 +29,18 @@ namespace Microsoft.NET.Perf.Tests
             TimeSpan[] executionTimes = new TimeSpan[NumberOfIterations];
             int currentIteration = 0;
 
+            var durationTestModel = new ScenarioTestModel(TestName);
+            
+            durationTestModel.Performance.Metrics.Add(new MetricModel
+            {
+                Name = "ExecutionTime",
+                DisplayName = "Execution Time",
+                Unit = "ms"
+            });
+
             using (FolderSnapshot snapshot = FolderSnapshot.Create(TestFolder))
             {
-                void PreIteration(Scenario scenario)
+                void PreIteration(ScenarioTest scenarioTest)
                 {
                     if (currentIteration > 0)
                     {
@@ -39,65 +53,67 @@ namespace Microsoft.NET.Perf.Tests
                 {
                     stopwatch.Stop();
                     var elapsed = scenarioExecutionResult.ProcessExitInfo.ExitTime - scenarioExecutionResult.ProcessExitInfo.StartTime;
-                    executionTimes[currentIteration] = elapsed;
-                    currentIteration++;
-                }
 
-                ScenarioBenchmark PostRun()
-                {
-                    var ret = new ScenarioBenchmark(ScenarioName ?? "ScenarioBenchmarkName");
-
-                    var duration = new ScenarioTestModel(TestName);
-                    ret.Tests.Add(duration);
-
-                    duration.Performance.Metrics.Add(new MetricModel
+                    var durationIteration = new IterationModel
                     {
-                        Name = "ExecutionTime",
-                        DisplayName = "Execution Time",
-                        Unit = "ms"
-                    });
-
-                    for (int i = 0; i < NumberOfIterations; i++)
-                    {
-                        var durationIteration = new IterationModel
-                        {
-                            Iteration = new Dictionary<string, double>()
-                        };
-                        durationIteration.Iteration.Add("ExecutionTime", executionTimes[i].TotalMilliseconds);
-                        duration.Performance.IterationModels.Add(durationIteration);
-                    }
-
-                    return ret;
+                        Iteration = new Dictionary<string, double>()
+                    };
+                    durationIteration.Iteration.Add(durationTestModel.Performance.Metrics[0].Name, elapsed.TotalMilliseconds);
+                    durationTestModel.Performance.IterationModels.Add(durationIteration);
                 }
 
-                var scenarioConfiguration = new ScenarioConfiguration(TimeSpan.FromMilliseconds(Timeout.TotalMilliseconds), ProcessToMeasure);
-                scenarioConfiguration.Iterations = NumberOfIterations;
-                scenarioConfiguration.PreIterationDelegate = PreIteration;
-                scenarioConfiguration.PostIterationDelegate = PostIteration;
-                if (ScenarioName == null)
+                void PostRun(ScenarioBenchmark scenario)
                 {
-                    scenarioConfiguration.TestName = TestName;
-                }
-                else
-                {
-                    scenarioConfiguration.TestName = ScenarioName + " - " + TestName;
-                }
-                
 
-                _performanceHarness.RunScenario(scenarioConfiguration, PostRun);
+                }
+
+                var scenarioTestConfiguration = new ScenarioTestConfiguration(TimeSpan.FromMilliseconds(Timeout.TotalMilliseconds), ProcessToMeasure);
+                scenarioTestConfiguration.Iterations = NumberOfIterations;
+                scenarioTestConfiguration.PreIterationDelegate = PreIteration;
+                scenarioTestConfiguration.PostIterationDelegate = PostIteration;
+                scenarioTestConfiguration.SaveResults = false;
+                scenarioTestConfiguration.Scenario = GetScenarioBenchmark(ScenarioName ?? TestName);
+                scenarioTestConfiguration.Scenario.Tests.Add(durationTestModel);
+                scenarioTestConfiguration.TestName = TestName;                
+
+                _performanceHarness.RunScenario(scenarioTestConfiguration, PostRun);
             }
         }
 
         static XunitPerformanceHarness _performanceHarness;
+        static Dictionary<string, ScenarioBenchmark> _scenarios;
 
         public static void InitializeHarness(params string [] args)
         {
             _performanceHarness = new XunitPerformanceHarness(args);
+            _scenarios = new Dictionary<string, ScenarioBenchmark>();
         }
 
         public static void DisposeHarness()
         {
+            foreach (var kvp in _scenarios)
+            {
+                var scenarioFileNameWithoutExtension = Path.Combine(_performanceHarness.OutputDirectory, $"{_performanceHarness.Configuration.RunId}-{kvp.Key}");
+                _performanceHarness.WriteXmlResults(kvp.Value, scenarioFileNameWithoutExtension);
+            }
+
+            var aggregateFileNameWithoutExtension = Path.Combine(_performanceHarness.OutputDirectory, _performanceHarness.Configuration.RunId);
+            _performanceHarness.WriteTableResults(_scenarios.Values, aggregateFileNameWithoutExtension, true);
+
             _performanceHarness.Dispose();
+        }
+
+        static ScenarioBenchmark GetScenarioBenchmark(string name)
+        {
+            ScenarioBenchmark scenario;
+            if (_scenarios.TryGetValue(name, out scenario))
+            {
+                return scenario;
+            }
+
+            scenario = new ScenarioBenchmark(name);
+            _scenarios[name] = scenario;
+            return scenario;
         }
 
  
