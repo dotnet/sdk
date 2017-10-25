@@ -21,6 +21,8 @@ namespace Microsoft.NET.Perf.Tests
         public ProcessStartInfo ProcessToMeasure { get; set; }
         public string TestFolder { get; set; }
 
+        public bool GetPerformanceSummary { get; set; } = true;
+
         public void Run([CallerMemberName] string callerName = null)
         {
             TestName = TestName ?? callerName;
@@ -60,11 +62,19 @@ namespace Microsoft.NET.Perf.Tests
                     };
                     durationIteration.Iteration.Add(durationTestModel.Performance.Metrics[0].Name, elapsed.TotalMilliseconds);
                     durationTestModel.Performance.IterationModels.Add(durationIteration);
+
+                    string performanceSummaryFileDestination = Path.ChangeExtension(scenarioExecutionResult.EventLogFileName, ".txt");
+                    File.Move(Path.Combine(TestFolder, "PerformanceSummary.txt"), performanceSummaryFileDestination);
                 }
 
                 void PostRun(ScenarioBenchmark scenario)
                 {
 
+                }
+
+                if (GetPerformanceSummary)
+                {
+                    ProcessToMeasure.Arguments += " /flp9:PerformanceSummary;v=q;logfile=\"" + Path.Combine(TestFolder, "PerformanceSummary.txt") +  "\"";
                 }
 
                 var scenarioTestConfiguration = new ScenarioTestConfiguration(TimeSpan.FromMilliseconds(Timeout.TotalMilliseconds), ProcessToMeasure);
