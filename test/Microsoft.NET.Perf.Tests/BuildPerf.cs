@@ -37,7 +37,7 @@ namespace Microsoft.NET.Perf.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: operation.ToString());
 
             TestProject(testAsset, ".NET Core 2 Console App", operation);
         }
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Perf.Tests
                 IsSdkProject = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: operation.ToString());
 
             TestProject(testAsset, ".NET Standard 2.0 Library", operation);
         }
@@ -66,7 +66,7 @@ namespace Microsoft.NET.Perf.Tests
         [InlineData(ProjectPerfOperation.NoOpRestore)]
         public void BuildMVCApp(ProjectPerfOperation operation)
         {
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = _testAssetsManager.CreateTestDirectory(identifier: operation.ToString());
             var newCommand = new DotnetCommand(Log);
             newCommand.WorkingDirectory = testDir.Path;
 
@@ -95,7 +95,7 @@ namespace Microsoft.NET.Perf.Tests
         public void BuildProjectFromPerfSuite(string name, ProjectPerfOperation operation)
         {
             string sourceProject = Path.Combine(@"C:\MSBPerf\3", name);
-            var testDir = _testAssetsManager.CreateTestDirectory("Perf_" + name);
+            var testDir = _testAssetsManager.CreateTestDirectory("Perf_" + name, identifier: operation.ToString());
             FolderSnapshot.MirrorFiles(sourceProject, testDir.Path);
 
             var slnFiles = Directory.GetFiles(testDir.Path, "*.sln");
