@@ -28,7 +28,7 @@ namespace Microsoft.NET.Perf.Tests
             MirrorFiles(BackupPath, OriginalPath);
         }
 
-        static void MirrorFiles(string source, string dest)
+        public static void MirrorFiles(string source, string dest)
         {
             if (Directory.Exists(dest))
             {
@@ -49,6 +49,12 @@ namespace Microsoft.NET.Perf.Tests
             }
             foreach (var subdirInfo in sourceInfo.GetDirectories())
             {
+                //  Don't mirror .git folder
+                if (subdirInfo.Name == ".git")
+                {
+                    continue;
+                }
+
                 string destDir = Path.Combine(dest, subdirInfo.Name);
                 CopyDirectory(subdirInfo.FullName, destDir);
             }

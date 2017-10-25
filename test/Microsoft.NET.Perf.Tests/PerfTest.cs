@@ -9,9 +9,10 @@ namespace Microsoft.NET.Perf.Tests
 {
     public class PerfTest
     {
+        public string ScenarioName { get; set; }
         public string TestName { get; set; }
         public int NumberOfIterations { get; set; } = 10;
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(20);
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(120);
         public ProcessStartInfo ProcessToMeasure { get; set; }
         public string TestFolder { get; set; }
 
@@ -44,7 +45,7 @@ namespace Microsoft.NET.Perf.Tests
 
                 ScenarioBenchmark PostRun()
                 {
-                    var ret = new ScenarioBenchmark("ScenarioBenchmarkName");
+                    var ret = new ScenarioBenchmark(ScenarioName ?? "ScenarioBenchmarkName");
 
                     var duration = new ScenarioTestModel(TestName);
                     ret.Tests.Add(duration);
@@ -73,7 +74,15 @@ namespace Microsoft.NET.Perf.Tests
                 scenarioConfiguration.Iterations = NumberOfIterations;
                 scenarioConfiguration.PreIterationDelegate = PreIteration;
                 scenarioConfiguration.PostIterationDelegate = PostIteration;
-                scenarioConfiguration.TestName = TestName;
+                if (ScenarioName == null)
+                {
+                    scenarioConfiguration.TestName = TestName;
+                }
+                else
+                {
+                    scenarioConfiguration.TestName = ScenarioName + " - " + TestName;
+                }
+                
 
                 _performanceHarness.RunScenario(scenarioConfiguration, PostRun);
             }
