@@ -41,7 +41,7 @@ namespace Microsoft.NET.Restore.Tests
             string testProjectName = $"{projectPrefix}Fallback";
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
-            var packagesFolder = Path.Combine(TestContext.Current.TestExecutionDirectory, "packages", testProjectName);
+            var packagesFolder = Path.Combine(TestContext.Current.TestWorkingDirectory, "packages", testProjectName);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             restoreCommand.Execute($"/p:RestorePackagesPath={packagesFolder}").Should().Pass();

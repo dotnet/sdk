@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <OutputPath>$(OutputPath)Tests\</OutputPath>
+    <OutputPath>$(OutputPath)testbin\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <PropertyGroup>

@@ -103,11 +103,8 @@ namespace Microsoft.NET.TestFramework
             string callingMethod,
             string identifier)
         {
-#if NET451
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-#else
-            string baseDirectory = AppContext.BaseDirectory;
-#endif
+            string baseDirectory = TestContext.Current.TestWorkingDirectory;
+
             string ret;
             if (testProjectName == callingMethod)
             {
@@ -137,7 +134,7 @@ namespace Microsoft.NET.TestFramework
             var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
             foreach (var file in files)
             {
-                string relativeFilePath = file.Replace(AppContext.BaseDirectory, "")
+                string relativeFilePath = file.Replace(TestContext.Current.TestWorkingDirectory, "")
                     //  Remove path separator
                     .Substring(1);
 

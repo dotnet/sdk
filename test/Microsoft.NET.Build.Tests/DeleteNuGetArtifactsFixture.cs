@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
         {
             get
             {
-                return Path.Combine(TestContext.Current.TestExecutionDirectory,
+                return Path.Combine(TestContext.Current.TestWorkingDirectory,
                                     TestDirectoriesNamePrefix + NuGetSharedDirectoryNamePostfix);
             }
         }

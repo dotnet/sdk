@@ -12,6 +12,8 @@ namespace Microsoft.NET.TestFramework
         //  Generally the folder the test DLL is in
         public string TestExecutionDirectory { get; set; }
 
+        public string TestWorkingDirectory { get; set; }
+
         public string TestAssetsDirectory { get; set; }
 
         public string NuGetCachePath { get; set; }
@@ -81,7 +83,13 @@ namespace Microsoft.NET.TestFramework
         {
             TestContext testContext = new TestContext();
             testContext.TestExecutionDirectory = AppContext.BaseDirectory;
-            testContext.TestAssetsDirectory = FindFolderInTree("TestAssets", AppContext.BaseDirectory);
+            testContext.TestAssetsDirectory = FindFolderInTree("TestAssets", testContext.TestExecutionDirectory);
+
+            testContext.TestWorkingDirectory = Path.GetFullPath(Path.Combine(testContext.TestExecutionDirectory, "..", "Tests"));
+            if (!Directory.Exists(testContext.TestWorkingDirectory))
+            {
+                Directory.CreateDirectory(testContext.TestWorkingDirectory);
+            }
 
             string repoRoot = null;
             string repoConfiguration = null;
@@ -96,7 +104,7 @@ namespace Microsoft.NET.TestFramework
 
                 if (repoRoot != null)
                 {
-                    // assumes tests are always executed from the "bin/$Configuration/Tests" directory
+                    // assumes tests are always executed from the "bin/$Configuration/testbin" directory
                     repoConfiguration = new DirectoryInfo(AppContext.BaseDirectory).Parent.Name;
                 }
             }
@@ -108,7 +116,7 @@ namespace Microsoft.NET.TestFramework
             }
             else
             {
-                testContext.NuGetFallbackFolder = FindOrCreateFolderInTree("NuGetFallbackFolder", AppContext.BaseDirectory);
+                testContext.NuGetFallbackFolder = FindOrCreateFolderInTree("NuGetFallbackFolder", testContext.TestExecutionDirectory);
 
                 //  Still use the repo root to find the packages folder even if we're not using it for anything else
                 //  This is because otherwise we would find the bin\<Configuration>\Packages folder when running
@@ -120,10 +128,10 @@ namespace Microsoft.NET.TestFramework
                 }
                 else
                 {
-                    testContext.NuGetCachePath = FindOrCreateFolderInTree("packages", AppContext.BaseDirectory);
+                    testContext.NuGetCachePath = FindOrCreateFolderInTree("packages", testContext.TestWorkingDirectory);
                 }
 
-                var nuGetFolder = FindFolderInTree(".nuget", AppContext.BaseDirectory, false);
+                var nuGetFolder = FindFolderInTree(".nuget", testContext.TestExecutionDirectory, false);
                 if (nuGetFolder != null)
                 {
                     testContext.NuGetExePath = Path.Combine(nuGetFolder, $"nuget{Constants.ExeSuffix}");
@@ -135,7 +143,7 @@ namespace Microsoft.NET.TestFramework
             //  Set up global.json to point to the right .NET Core SDK
             //  This is associating global state (a file on disk) with the ToolsetInfo, so if we
             //  ever have multiple ToolsetInfos in the same process we may need to revisit this
-            string globalJsonPath = Path.Combine(testContext.TestExecutionDirectory, "global.json");
+            string globalJsonPath = Path.Combine(testContext.TestWorkingDirectory, "global.json");
             if (testContext.ToolsetUnderTest.CoreSDKVersion == null)
             {
                 if (File.Exists(globalJsonPath))
@@ -161,15 +169,17 @@ namespace Microsoft.NET.TestFramework
         {
             string directory = AppContext.BaseDirectory;
 
-            while (!Directory.Exists(Path.Combine(directory, ".git")) && directory != null)
+            while (!Directory.Exists(Path.Combine(directory, ".git")))
             {
-                directory = Directory.GetParent(directory).FullName;
+                var parent = Directory.GetParent(directory);
+                if (parent == null)
+                {
+                    return null;
+                }
+
+                directory = parent.FullName;
             }
 
-            if (directory == null)
-            {
-                return null;
-            }
             return directory;
         }
         private static string FindOrCreateFolderInTree(string relativePath, string startPath)
