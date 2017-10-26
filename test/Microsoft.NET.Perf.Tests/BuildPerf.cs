@@ -39,14 +39,14 @@ namespace Microsoft.NET.Perf.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: operation.ToString());
 
-            TestProject(testAsset, ".NET Core 2 Console App", operation);
+            TestProject(testAsset.Path, ".NET Core 2 Console App", operation);
         }
 
         [Theory]
         [InlineData(ProjectPerfOperation.Build)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         [InlineData(ProjectPerfOperation.NoOpRestore)]
-        public void BuildNetStandard2App(ProjectPerfOperation operation)
+        public void BuildNetStandard2Library(ProjectPerfOperation operation)
         {
             var testProject = new TestProject()
             {
@@ -57,7 +57,7 @@ namespace Microsoft.NET.Perf.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: operation.ToString());
 
-            TestProject(testAsset, ".NET Standard 2.0 Library", operation);
+            TestProject(testAsset.Path, ".NET Standard 2.0 Library", operation);
         }
 
         [Theory]
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Perf.Tests
 
             newCommand.Execute("new", "mvc").Should().Pass();
 
-            TestProject(testDir, "ASP.NET Core MVC app", operation);
+            TestProject(testDir.Path, "ASP.NET Core MVC app", operation);
         }
 
         [Theory]
@@ -98,9 +98,6 @@ namespace Microsoft.NET.Perf.Tests
             var testDir = _testAssetsManager.CreateTestDirectory("Perf_" + name, identifier: operation.ToString());
             FolderSnapshot.MirrorFiles(sourceProject, testDir.Path);
 
-            var slnFiles = Directory.GetFiles(testDir.Path, "*.sln");
-            var slnFile = slnFiles.First();
-
             //  The generated projects target .NET Core 2.1, retarget them to .NET Core 2.0
             foreach (var projFile in Directory.GetFiles(testDir.Path, "*.csproj", SearchOption.AllDirectories))
             {
@@ -119,16 +116,35 @@ namespace Microsoft.NET.Perf.Tests
                 project.Save(projFile);
             }
 
-            TestProject(testDir, name, operation);
+            TestProject(testDir.Path, name, operation);
         }
 
-        //[Fact]
-        //public void BuildRoslynCompilers()
-        //{
-        //    //  Override global.json
+        [Theory]
+        [InlineData(ProjectPerfOperation.Build)]
+        [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
+        public void BuildRoslynCompilers(ProjectPerfOperation operation)
+        {
+            
+            string sourceProject = @"C:\git\roslyn";
+            var testDir = _testAssetsManager.CreateTestDirectory("Perf_Roslyn", identifier: operation.ToString());
+            Console.WriteLine($"Mirroring {sourceProject} to {testDir.Path}...");
+            FolderSnapshot.MirrorFiles(sourceProject, testDir.Path);
+            Console.WriteLine("Done");
+            
+            //  Override global.json from repo
+            File.Delete(Path.Combine(testDir.Path, "global.json"));
 
-        //    //  PerformanceSummary
-        //}
+            //  Run Roslyn's restore script
+            var restoreCmd = new SdkCommandSpec()
+            {
+                FileName = Path.Combine(testDir.Path, "Restore.cmd"),
+                WorkingDirectory = testDir.Path
+            };
+            TestContext.Current.AddTestEnvironmentVariables(restoreCmd);
+            restoreCmd.ToCommand().Execute().Should().Pass();
+
+            TestProject(Path.Combine(testDir.Path, "Compilers.sln"), "Roslyn", operation);
+        }
 
         //[Fact]
         //public void RunDotnetTest()
@@ -143,9 +159,21 @@ namespace Microsoft.NET.Perf.Tests
             NoOpRestore
         }
 
-        private void TestProject(TestDirectory testDirectory, string testName, ProjectPerfOperation perfOperation)
+        private void TestProject(string testProject, string testName, ProjectPerfOperation perfOperation)
         {
-            var restoreCommand = new RestoreCommand(Log, testDirectory.Path);
+            string projectFilePath = testProject;
+
+            if (!File.Exists(testProject))
+            {
+                var slnFiles = Directory.GetFiles(testProject, "*.sln");
+                var slnFile = slnFiles.FirstOrDefault();
+                if (slnFile != null)
+                {
+                    projectFilePath = slnFile;
+                }
+            }
+
+            var restoreCommand = new RestoreCommand(Log, projectFilePath);
             restoreCommand.Execute().Should().Pass();
 
             TestCommand commandToTest;
@@ -159,7 +187,7 @@ namespace Microsoft.NET.Perf.Tests
             }
             else
             {
-                commandToTest = new BuildCommand(Log, testDirectory.Path);
+                commandToTest = new BuildCommand(Log, projectFilePath);
                 if (perfOperation == ProjectPerfOperation.BuildWithNoChanges)
                 {
                     commandToTest.Execute().Should().Pass();
@@ -172,7 +200,14 @@ namespace Microsoft.NET.Perf.Tests
             }
 
             perfTest.ProcessToMeasure = commandToTest.GetProcessStartInfo();
-            perfTest.TestFolder = testDirectory.Path;
+            if (File.Exists(testProject))
+            {
+                perfTest.TestFolder = Path.GetDirectoryName(testProject);
+            }
+            else
+            {
+                perfTest.TestFolder = testProject;
+            }
 
             perfTest.Run();
         }

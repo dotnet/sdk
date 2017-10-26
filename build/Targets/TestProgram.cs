@@ -22,7 +22,7 @@ partial class Program
 
         if (!showHelp)
         {
-            BeforeTestRun();
+            BeforeTestRun(newArgs);
         }
 
         int returnCode = new Xunit.ConsoleClient.Program().EntryPoint(newArgs.ToArray());
@@ -39,6 +39,6 @@ partial class Program
         return returnCode;
     }
 
-    static partial void BeforeTestRun();
+    static partial void BeforeTestRun(List<string> args);
     static partial void AfterTestRun();
 }

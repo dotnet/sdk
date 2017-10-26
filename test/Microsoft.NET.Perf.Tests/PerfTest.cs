@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Xunit.Performance.Api;
@@ -17,11 +18,12 @@ namespace Microsoft.NET.Perf.Tests
         public string ScenarioName { get; set; }
         public string TestName { get; set; }
         public int NumberOfIterations { get; set; } = 10;
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(120);
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(20);
         public ProcessStartInfo ProcessToMeasure { get; set; }
         public string TestFolder { get; set; }
 
         public bool GetPerformanceSummary { get; set; } = true;
+        public bool GetBinLog { get; set; }
 
         public void Run([CallerMemberName] string callerName = null)
         {
@@ -48,6 +50,9 @@ namespace Microsoft.NET.Perf.Tests
                     {
                         snapshot.Restore();
                     }
+
+                    //  Potential TODO: Kill processes such as MSBuild.exe and VBCSCompiler.exe
+
                     stopwatch.Restart();
                 }
 
@@ -63,8 +68,16 @@ namespace Microsoft.NET.Perf.Tests
                     durationIteration.Iteration.Add(durationTestModel.Performance.Metrics[0].Name, elapsed.TotalMilliseconds);
                     durationTestModel.Performance.IterationModels.Add(durationIteration);
 
-                    string performanceSummaryFileDestination = Path.ChangeExtension(scenarioExecutionResult.EventLogFileName, ".txt");
-                    File.Move(Path.Combine(TestFolder, "PerformanceSummary.txt"), performanceSummaryFileDestination);
+                    if (GetPerformanceSummary)
+                    {
+                        string performanceSummaryFileDestination = Path.ChangeExtension(scenarioExecutionResult.EventLogFileName, ".txt");
+                        File.Move(Path.Combine(TestFolder, "PerformanceSummary.txt"), performanceSummaryFileDestination);
+                    }
+                    if (GetBinLog)
+                    {
+                        string binlogDestination = Path.ChangeExtension(scenarioExecutionResult.EventLogFileName, ".binlog");
+                        File.Move(Path.Combine(TestFolder, "msbuild.binlog"), binlogDestination);
+                    }
 
                     currentIteration++;
                 }
@@ -76,7 +89,11 @@ namespace Microsoft.NET.Perf.Tests
 
                 if (GetPerformanceSummary)
                 {
-                    ProcessToMeasure.Arguments += " /flp9:PerformanceSummary;v=q;logfile=\"" + Path.Combine(TestFolder, "PerformanceSummary.txt") +  "\"";
+                    ProcessToMeasure.Arguments += " /flp9:PerformanceSummary;v=q;logfile=\"" + Path.Combine(TestFolder, "PerformanceSummary.txt") + "\"";
+                }
+                if (GetBinLog)
+                {
+                    ProcessToMeasure.Arguments += " /bl:\"" + Path.Combine(TestFolder, "msbuild.binlog") + "\"";
                 }
 
                 var scenarioTestConfiguration = new ScenarioTestConfiguration(TimeSpan.FromMilliseconds(Timeout.TotalMilliseconds), ProcessToMeasure);
@@ -109,8 +126,11 @@ namespace Microsoft.NET.Perf.Tests
                 _performanceHarness.WriteXmlResults(kvp.Value, scenarioFileNameWithoutExtension);
             }
 
-            var aggregateFileNameWithoutExtension = Path.Combine(_performanceHarness.OutputDirectory, _performanceHarness.Configuration.RunId);
-            _performanceHarness.WriteTableResults(_scenarios.Values, aggregateFileNameWithoutExtension, true);
+            if (_scenarios.Any())
+            {
+                var aggregateFileNameWithoutExtension = Path.Combine(_performanceHarness.OutputDirectory, _performanceHarness.Configuration.RunId);
+                _performanceHarness.WriteTableResults(_scenarios.Values, aggregateFileNameWithoutExtension, true);
+            }
 
             _performanceHarness.Dispose();
         }
