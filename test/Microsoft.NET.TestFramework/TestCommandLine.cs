@@ -15,6 +15,8 @@ namespace Microsoft.NET.TestFramework
 
         public string DotnetHostPath { get; private set; }
 
+        public string CoreSDKVersion { get; private set; }
+
         public string SDKRepoPath { get; private set; }
 
         public string SDKRepoConfiguration { get; private set; }
@@ -43,6 +45,10 @@ namespace Microsoft.NET.TestFramework
                 else if (arg.Equals("-dotnetPath", StringComparison.InvariantCultureIgnoreCase) && argStack.Any())
                 {
                     ret.DotnetHostPath = argStack.Pop();
+                }
+                else if (arg.Equals("-coreSDKVersion", StringComparison.InvariantCultureIgnoreCase) && argStack.Any())
+                {
+                    ret.CoreSDKVersion = argStack.Pop();
                 }
                 else if (arg.Equals("-sdkRepo", StringComparison.InvariantCultureIgnoreCase) && argStack.Any())
                 {
@@ -109,6 +115,7 @@ Options to control toolset to test:
   -useFullMSBuild         : Use full framework (instead of .NET Core) version of MSBuild found in PATH
   -fullMSBuildPath <path> : Use full framework version of MSBuild in specified path
   -dotnetPath <path>      : Use specified path for dotnet host
+  -coreSDKVersion <ver>   : Use specified version of .NET Core SDK
   -sdkRepo <path>         : Use specified SDK repo for Microsoft.NET.SDK tasks / targets
   -sdkConfig <config>     : Use specified configuration for SDK repo
   -noRepoInference        : Don't automatically find SDK repo to use based on path to test binaries
