@@ -65,6 +65,8 @@ namespace Microsoft.NET.Perf.Tests
 
                     string performanceSummaryFileDestination = Path.ChangeExtension(scenarioExecutionResult.EventLogFileName, ".txt");
                     File.Move(Path.Combine(TestFolder, "PerformanceSummary.txt"), performanceSummaryFileDestination);
+
+                    currentIteration++;
                 }
 
                 void PostRun(ScenarioBenchmark scenario)
