@@ -5,7 +5,6 @@
   <PropertyGroup>
     <!-- Capture 'OutputPath' before Publish.csproj modifies it -->
     <OutputPathTransportFeed>$(OutputPath)</OutputPathTransportFeed>
-    <BuildTasksFeedDllVersion>1.0.0-prerelease-01929-02</BuildTasksFeedDllVersion>
     <BuildTasksFeedDll>$(NuGet_Packages)\Microsoft.DotNet.Build.Tasks.Feed\$(BuildTasksFeedDllVersion)\lib\desktop\Microsoft.DotNet.Build.Tasks.Feed.dll</BuildTasksFeedDll>
   </PropertyGroup>
 

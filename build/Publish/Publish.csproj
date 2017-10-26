@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <BuildTasksFeedDllVersion>1.0.0-prerelease-01929-02</BuildTasksFeedDllVersion>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildThisFileDirectory)\PublishNupkgToTransportFeed.targets" />
 
   <PropertyGroup>
