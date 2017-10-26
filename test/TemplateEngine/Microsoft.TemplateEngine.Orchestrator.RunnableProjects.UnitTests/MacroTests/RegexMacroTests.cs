@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>();
             steps.Add(new KeyValuePair<string, string>("2+", "3"));
             steps.Add(new KeyValuePair<string, string>("13", "Z"));
-            RegexMacroConfig macroConfig = new RegexMacroConfig(variableName, sourceVariable, steps);
+            RegexMacroConfig macroConfig = new RegexMacroConfig(variableName, null, sourceVariable, steps);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             ]";
             jsonParameters.Add("steps", JArray.Parse(jsonSteps));
 
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("RegexMacro", variableName, jsonParameters);
+            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("RegexMacro", "string", variableName, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();

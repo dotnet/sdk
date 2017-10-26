@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string variableName = "nowString";
             string format = "";
             bool utc = true;
-            NowMacroConfig macroConfig = new NowMacroConfig(variableName, format, utc);
+            NowMacroConfig macroConfig = new NowMacroConfig(variableName, null, format, utc);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
             jsonParameters.Add("format", format);
             jsonParameters.Add("utc", utc);
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", variableName, jsonParameters);
+            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", null, variableName, jsonParameters);
 
 
             IVariableCollection variables = new VariableCollection();

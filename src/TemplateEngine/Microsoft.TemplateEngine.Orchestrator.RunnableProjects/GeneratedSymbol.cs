@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         internal const string TypeName = "generated";
 
+        public string DataType { get; set; }
+
         public string Binding { get; set; }
 
         public string Replaces { get; set; }
@@ -27,6 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 Binding = jObject.ToString(nameof(Binding)),
                 Generator = jObject.ToString(nameof(Generator)),
+                DataType = jObject.ToString(nameof(DataType)),
                 Parameters = jObject.ToJTokenDictionary(StringComparer.Ordinal, nameof(Parameters)),
                 Type = jObject.ToString(nameof(Type)),
                 Replaces = jObject.ToString(nameof(Replaces)),

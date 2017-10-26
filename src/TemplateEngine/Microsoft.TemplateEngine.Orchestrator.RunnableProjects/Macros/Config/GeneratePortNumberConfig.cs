@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     public class GeneratePortNumberConfig : IMacroConfig
     {
+        public string DataType { get; }
+
         public string VariableName { get; }
 
         public string Type => "port";
@@ -32,8 +34,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
                     6669, // Alternate IRC [Apple addition]
         };
 
-        public GeneratePortNumberConfig(string variableName, int fallback, int low, int high)
+        public GeneratePortNumberConfig(string variableName, string dataType, int fallback, int low, int high)
         {
+            DataType = dataType;
             VariableName = variableName;
             Random rand = new Random();
             int startPort = rand.Next(low, high);

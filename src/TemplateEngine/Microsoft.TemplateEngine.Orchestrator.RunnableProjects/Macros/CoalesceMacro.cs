@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 fallbackVariableName = fallbackVariableNameToken.ToString();
             }
 
-            IMacroConfig realConfig = new CoalesceMacroConfig(deferredConfig.VariableName, sourceVariableName, defaultValue, fallbackVariableName);
+            IMacroConfig realConfig = new CoalesceMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, sourceVariableName, defaultValue, fallbackVariableName);
             return realConfig;
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
 
             object targetValue = null;
-            string datatype = null;
+            string datatype = realConfig.DataType;
 
             if (vars.TryGetValue(realConfig.SourceVariableName, out object currentSourceValue) && !Equals(currentSourceValue ?? string.Empty, realConfig.DefaultValue ?? string.Empty))
             {

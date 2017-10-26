@@ -536,7 +536,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (generateMacros)
                         {
-                            macros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Key, derivedSymbol.ValueTransform, Forms));
+                            macros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Key, derivedSymbol.DataType, derivedSymbol.ValueTransform, Forms));
                         }
                     }
 
@@ -577,7 +577,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                                         if (generateMacros)
                                         {
-                                            macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, formName, Forms));
+                                            macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, p.DataType, formName, Forms));
                                         }
                                     }
                                     else
@@ -678,7 +678,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     int id = guidCount++;
                     string replacementId = "guid" + id;
-                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, null));
+                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, "string", null));
                     _guidToGuidPrefixMap[guid] = replacementId;
                 }
             }
@@ -689,9 +689,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
                     {
-                        string value = ((ComputedSymbol)symbol.Value).Value;
-                        string evaluator = ((ComputedSymbol)symbol.Value).Evaluator;
-                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, value, evaluator));
+                        ComputedSymbol computed = (ComputedSymbol) symbol.Value;
+                        string value = computed.Value;
+                        string evaluator = computed.Evaluator;
+                        string dataType = computed.DataType;
+                        computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, dataType, value, evaluator));
                     }
                     else if (string.Equals(symbol.Value.Type, GeneratedSymbol.TypeName, StringComparison.Ordinal))
                     {
@@ -705,7 +707,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             configParams.Add(parameter.Key, parameter.Value);
                         }
 
-                        generatedMacroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, variableName, configParams));
+                        generatedMacroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, symbolInfo.DataType, variableName, configParams));
                     }
                 }
             }

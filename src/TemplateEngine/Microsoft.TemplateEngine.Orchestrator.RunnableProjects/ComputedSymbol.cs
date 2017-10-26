@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         internal const string TypeName = "computed";
 
+        public string DataType { get; private set; }
+
         public string Value { get; internal set; }
 
         public string Type { get; private set; }
@@ -32,6 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             ComputedSymbol sym = new ComputedSymbol
             {
+                DataType = jObject.ToString(nameof(DataType)),
                 Value = jObject.ToString(nameof(Value)),
                 Type = jObject.ToString(nameof(Type)),
                 Evaluator = jObject.ToString(nameof(Evaluator))
