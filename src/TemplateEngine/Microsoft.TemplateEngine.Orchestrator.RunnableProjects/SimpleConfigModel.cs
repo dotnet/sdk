@@ -577,7 +577,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                                         if (generateMacros)
                                         {
-                                            macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, p.DataType, formName, Forms));
+                                            macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, "string", formName, Forms));
                                         }
                                     }
                                     else
@@ -707,7 +707,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             configParams.Add(parameter.Key, parameter.Value);
                         }
 
-                        generatedMacroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, symbolInfo.DataType, variableName, configParams));
+                        string dataType = symbolInfo.DataType;
+
+                        if (string.Equals(dataType, "choice", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dataType = "string";
+                        }
+
+                        generatedMacroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, dataType, variableName, configParams));
                     }
                 }
             }
