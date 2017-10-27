@@ -168,6 +168,51 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return templateList;
         }
 
+        // TODO: localize the diagnostic strings
+        // checks that all the template sources are under the template root, and they exist.
+        internal bool AreAllTemplatePathsValid(IRunnableProjectConfig templateConfig, RunnableProjectTemplate runnableTemplate)
+        {
+            ITemplateEngineHost host = runnableTemplate.Source.EnvironmentSettings.Host;
+
+            if (runnableTemplate.TemplateSourceRoot == null)
+            {
+                host.LogDiagnosticMessage(string.Empty, "Authoring");
+                host.LogDiagnosticMessage(string.Format("Template: {0} - Template root is outside the specified install source location.", runnableTemplate.Name), "Authoring");
+                return false;
+            }
+
+            // check if any sources get out of the mount point
+            bool allSourcesValid = true;
+            foreach (FileSourceMatchInfo source in templateConfig.Sources)
+            {
+                try
+                {
+                    IDirectory sourceRoot = runnableTemplate.TemplateSourceRoot.DirectoryInfo(source.Source);
+
+                    if (!sourceRoot.Exists)
+                    {   // non-existant directory
+                        allSourcesValid = false;
+                        host.LogDiagnosticMessage(string.Empty, "Authoring");
+                        host.LogDiagnosticMessage(string.Format("Template: '{0}'", runnableTemplate.Name), "Authoring");
+                        host.LogDiagnosticMessage(string.Format("\tTemplateSourceRoot = '{0}'", runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                        host.LogDiagnosticMessage(string.Format("\tSource '{0}' in template does not exist.", source.Source), "Authoring");
+                        host.LogDiagnosticMessage(string.Format("\tSource path relative to install location: '{0}'", sourceRoot.FullPath), "Authoring");
+                    }
+                }
+                catch
+                {   // outside the mount point root
+                    // TODO: after the null ref exception in DirectoryInfo is fixed, change how this check works.
+                    allSourcesValid = false;
+                    host.LogDiagnosticMessage(string.Empty, "Authoring");
+                    host.LogDiagnosticMessage(string.Format("Template: '{0}'", runnableTemplate.Name), "Authoring");
+                    host.LogDiagnosticMessage(string.Format("\tTemplateSourceRoot = '{0}'", runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                    host.LogDiagnosticMessage(string.Format("\tSource location '{0}' is outside the specified install source location.", source.Source), "Authoring");
+                }
+            }
+
+            return allSourcesValid;
+        }
+
         public bool TryGetTemplateFromConfigInfo(IFileSystemInfo templateFileConfig, out ITemplate template, IFileSystemInfo localeFileConfig = null, IFile hostTemplateConfigFile = null, string baselineName = null)
         {
             IFile templateFile = templateFileConfig as IFile;
@@ -203,7 +248,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return false;
                 }
 
-                template = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
+                RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
+                if (!AreAllTemplatePathsValid(templateModel, runnableProjectTemplate))
+                {
+                    template = null;
+                    return false;
+                }
+
+                template = runnableProjectTemplate;
                 return true;
             }
             catch (Exception ex)
@@ -269,7 +321,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return combinedSource;
         }
 
-        private JObject ReadJObjectFromIFile(IFile file)
+        internal JObject ReadJObjectFromIFile(IFile file)
         {
             using (Stream s = file.OpenRead())
             using (TextReader tr = new StreamReader(s, true))

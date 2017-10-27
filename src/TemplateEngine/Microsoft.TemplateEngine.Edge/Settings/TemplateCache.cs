@@ -104,7 +104,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     existingMountPoint.Info.MountPointId
                 };
                 _environmentSettings.SettingsLoader.ReleaseMountPoint(existingMountPoint);
-
                 return;
             }
             else
@@ -178,7 +177,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private bool ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
         {
             bool anythingFound = ScanForComponents(mountPoint, templateDir);
-
             foreach (IGenerator generator in _environmentSettings.SettingsLoader.Components.OfType<IGenerator>())
             {
                 IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out IList<ILocalizationLocator> localizationInfo);

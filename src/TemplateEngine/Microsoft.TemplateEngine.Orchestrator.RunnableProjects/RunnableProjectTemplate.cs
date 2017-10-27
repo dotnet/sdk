@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             get
             {
-                return ConfigFile.Parent.Parent;
+                return ConfigFile?.Parent?.Parent;
             }
         }
 
