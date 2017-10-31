@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             if (runnableTemplate.TemplateSourceRoot == null)
             {
                 host.LogDiagnosticMessage(string.Empty, "Authoring");
-                host.LogDiagnosticMessage(string.Format("Template: {0} - Template root is outside the specified install source location.", runnableTemplate.Name), "Authoring");
+                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, runnableTemplate.Name), "Authoring");
                 return false;
             }
 
@@ -193,10 +193,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {   // non-existant directory
                         allSourcesValid = false;
                         host.LogDiagnosticMessage(string.Empty, "Authoring");
-                        host.LogDiagnosticMessage(string.Format("Template: '{0}'", runnableTemplate.Name), "Authoring");
-                        host.LogDiagnosticMessage(string.Format("\tTemplateSourceRoot = '{0}'", runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                        host.LogDiagnosticMessage(string.Format("\tSource '{0}' in template does not exist.", source.Source), "Authoring");
-                        host.LogDiagnosticMessage(string.Format("\tSource path relative to install location: '{0}'", sourceRoot.FullPath), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath), "Authoring");
                     }
                 }
                 catch
@@ -204,9 +204,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // TODO: after the null ref exception in DirectoryInfo is fixed, change how this check works.
                     allSourcesValid = false;
                     host.LogDiagnosticMessage(string.Empty, "Authoring");
-                    host.LogDiagnosticMessage(string.Format("Template: '{0}'", runnableTemplate.Name), "Authoring");
-                    host.LogDiagnosticMessage(string.Format("\tTemplateSourceRoot = '{0}'", runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                    host.LogDiagnosticMessage(string.Format("\tSource location '{0}' is outside the specified install source location.", source.Source), "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, source.Source), "Authoring");
                 }
             }
 
