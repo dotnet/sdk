@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                             parentDir = parentDirEntry as IDirectory;
                         }
 
-                        if (parentDir != null)
+                        if (parentDir != null && !string.IsNullOrEmpty(entry.Name))
                         {
                             string unescaped = Uri.UnescapeDataString(entry.Name);
                             path += unescaped;
