@@ -40,6 +40,10 @@ partial class Program
             perfArgs.Add("PerfResults");
         }
 
+        perfArgs.Add("--perf:collect");
+        //  BranchMispredictions+CacheMisses+InstructionRetired
+        perfArgs.Add("InstructionRetired");
+
         PerfTest.InitializeHarness(perfArgs.ToArray());
 
         args.Clear();
