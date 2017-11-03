@@ -168,6 +168,51 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return templateList;
         }
 
+        // TODO: localize the diagnostic strings
+        // checks that all the template sources are under the template root, and they exist.
+        internal bool AreAllTemplatePathsValid(IRunnableProjectConfig templateConfig, RunnableProjectTemplate runnableTemplate)
+        {
+            ITemplateEngineHost host = runnableTemplate.Source.EnvironmentSettings.Host;
+
+            if (runnableTemplate.TemplateSourceRoot == null)
+            {
+                host.LogDiagnosticMessage(string.Empty, "Authoring");
+                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, runnableTemplate.Name), "Authoring");
+                return false;
+            }
+
+            // check if any sources get out of the mount point
+            bool allSourcesValid = true;
+            foreach (FileSourceMatchInfo source in templateConfig.Sources)
+            {
+                try
+                {
+                    IDirectory sourceRoot = runnableTemplate.TemplateSourceRoot.DirectoryInfo(source.Source);
+
+                    if (!sourceRoot.Exists)
+                    {   // non-existant directory
+                        allSourcesValid = false;
+                        host.LogDiagnosticMessage(string.Empty, "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath), "Authoring");
+                    }
+                }
+                catch
+                {   // outside the mount point root
+                    // TODO: after the null ref exception in DirectoryInfo is fixed, change how this check works.
+                    allSourcesValid = false;
+                    host.LogDiagnosticMessage(string.Empty, "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, source.Source), "Authoring");
+                }
+            }
+
+            return allSourcesValid;
+        }
+
         public bool TryGetTemplateFromConfigInfo(IFileSystemInfo templateFileConfig, out ITemplate template, IFileSystemInfo localeFileConfig = null, IFile hostTemplateConfigFile = null, string baselineName = null)
         {
             IFile templateFile = templateFileConfig as IFile;
@@ -203,7 +248,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return false;
                 }
 
-                template = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
+                RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(srcObject, this, templateFile, templateModel, null, hostTemplateConfigFile);
+                if (!AreAllTemplatePathsValid(templateModel, runnableProjectTemplate))
+                {
+                    template = null;
+                    return false;
+                }
+
+                template = runnableProjectTemplate;
                 return true;
             }
             catch (Exception ex)
@@ -269,7 +321,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return combinedSource;
         }
 
-        private JObject ReadJObjectFromIFile(IFile file)
+        internal JObject ReadJObjectFromIFile(IFile file)
         {
             using (Stream s = file.OpenRead())
             using (TextReader tr = new StreamReader(s, true))

@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
     public class NupkgInstallUnitDescriptorFactory : IInstallUnitDescriptorFactory
     {
-        internal static readonly Guid FactoryId = new Guid("AC33C6A1-52CA-4215-B72D-2DCE7F6A1D2F");
+        public static readonly Guid FactoryId = new Guid("AC33C6A1-52CA-4215-B72D-2DCE7F6A1D2F");
 
         public Guid Id => FactoryId;
 

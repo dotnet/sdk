@@ -285,49 +285,5 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             return anyMissingParams;
         }
-
-        //
-        // Direct copy of commented out code from the old TemplateCreator.Instantiate()
-        // This won't build, much less work, but it will be revived someday.
-        //
-        //public void UpdateCheck()
-        //{
-        //    //TODO: Implement check for updates over mount points
-        //    bool updatesReady;
-
-        //    if (tmplt.Source.ParentSource != null)
-        //    {
-        //        updatesReady = await tmplt.Source.Source.CheckForUpdatesAsync(tmplt.Source.ParentSource, tmplt.Source.Location);
-        //    }
-        //    else
-        //    {
-        //        updatesReady = await tmplt.Source.Source.CheckForUpdatesAsync(tmplt.Source.Location);
-        //    }
-
-        //    if (updatesReady)
-        //    {
-        //        Console.WriteLine("Updates for this template are available. Install them now? [Y]");
-        //        string answer = Console.ReadLine();
-
-        //        if (string.IsNullOrEmpty(answer) || answer.Trim().StartsWith("y", StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            string packageId = tmplt.Source.ParentSource != null
-        //                ? tmplt.Source.Source.GetInstallPackageId(tmplt.Source.ParentSource, tmplt.Source.Location)
-        //                : tmplt.Source.Source.GetInstallPackageId(tmplt.Source.Location);
-
-        //            Command.CreateDotNet("new3", new[] { "-u", packageId, "--quiet" }).ForwardStdOut().ForwardStdErr().Execute();
-        //            Command.CreateDotNet("new3", new[] { "-i", packageId, "--quiet" }).ForwardStdOut().ForwardStdErr().Execute();
-
-        //            Program.Broker.ComponentRegistry.ForceReinitialize();
-
-        //            if (!TryGetTemplate(templateName, source, quiet, out tmplt))
-        //            {
-        //                return -1;
-        //            }
-
-        //            generator = tmplt.Generator;
-        //        }
-        //    }
-        //}
     }
 }

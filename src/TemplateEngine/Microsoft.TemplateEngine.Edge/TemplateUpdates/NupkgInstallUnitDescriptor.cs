@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
-    internal class NupkgInstallUnitDescriptor : IInstallUnitDescriptor
+    public class NupkgInstallUnitDescriptor : IInstallUnitDescriptor
     {
         public NupkgInstallUnitDescriptor(Guid mountPointId, string packageName, string version)
         {
