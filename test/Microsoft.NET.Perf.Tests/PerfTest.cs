@@ -15,9 +15,11 @@ namespace Microsoft.NET.Perf.Tests
 {
     public class PerfTest
     {
+        public static int DefaultIterations { get; set; } = 10;
+
         public string ScenarioName { get; set; }
         public string TestName { get; set; }
-        public int NumberOfIterations { get; set; } = 10;
+        public int NumberOfIterations { get; set; } = DefaultIterations;
         public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(20);
         public ProcessStartInfo ProcessToMeasure { get; set; }
         public string TestFolder { get; set; }

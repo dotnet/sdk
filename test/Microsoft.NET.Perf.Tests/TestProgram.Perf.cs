@@ -20,13 +20,20 @@ partial class Program
 
             if (arg.StartsWith("--perf:", StringComparison.OrdinalIgnoreCase) && argStack.Any())
             {
-                if (arg.Equals("--perf:outputdir", StringComparison.OrdinalIgnoreCase))
+                if (arg.Equals("--perf:iterations", StringComparison.OrdinalIgnoreCase))
                 {
-                    needsOutputDir = false;
+                    PerfTest.DefaultIterations = int.Parse(argStack.Pop());
                 }
+                else
+                {
+                    if (arg.Equals("--perf:outputdir", StringComparison.OrdinalIgnoreCase))
+                    {
+                        needsOutputDir = false;
+                    }
 
-                perfArgs.Add(arg);
-                perfArgs.Add(argStack.Pop());
+                    perfArgs.Add(arg);
+                    perfArgs.Add(argStack.Pop());
+                }
             }
             else
             {
