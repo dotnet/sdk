@@ -22,6 +22,17 @@ namespace Microsoft.NET.Build.Tasks
         private const string SystemRuntimeAssemblyName = "System.Runtime";
         private static readonly Version SystemRuntimeMinVersion = new Version(4, 1, 0, 0);
 
+        //   Encountered conflict between 'Platform:System.IO.Compression.dll' and 'CopyLocal:C:\git\dotnet-sdk\packages\system.io.compression\4.3.0\runtimes\win\lib\net46\System.IO.Compression.dll'.  Choosing 'CopyLocal:C:\git\dotnet-sdk\packages\system.io.compression\4.3.0\runtimes\win\lib\net46\System.IO.Compression.dll' because AssemblyVersion '4.1.2.0' is greater than '4.0.0.0'.
+        //  .NET Standard facade version: 4.2.0.0
+        //   Encountered conflict between 'Platform:System.Net.Http.dll' and 'CopyLocal:C:\git\dotnet-sdk\packages\system.net.http\4.3.0\runtimes\win\lib\net46\System.Net.Http.dll'.  Choosing 'CopyLocal:C:\git\dotnet-sdk\packages\system.net.http\4.3.0\runtimes\win\lib\net46\System.Net.Http.dll' because AssemblyVersion '4.1.1.0' is greater than '4.0.0.0'.
+        //  .NET Standard facade version: 4.2.0.0
+
+        private const string SystemIOCompressionAssemblyName = "System.IO.Compression";
+        private static readonly Version SystemIOCompressionMinVersion = new Version(4, 1, 0, 0);
+
+        private const string SystemNetHttpAssemblyName = "System.Net.Http";
+        private static readonly Version SystemNetHttpMinVersion = new Version(4, 1, 0, 0);
+
         /// <summary>
         /// Set of reference items to analyze.
         /// </summary>
@@ -34,13 +45,29 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public bool DependsOnNETStandard { get; set; }
 
+        /// <summary>
+        /// True if any of the references depend on a version of System.IO.Compression at least 4.0.1.0 (ie from a NuGet package)
+        /// </summary>
+        [Output]
+        public bool DependsOnNuGetCompression { get; set; }
+
+        /// <summary>
+        /// True if any of the references depend on a version of System.Net.Http at least 4.0.1.0 (ie from a NuGet package)
+        /// </summary>
+        [Output]
+        public bool DependsOnNuGetHttp { get; set; }
+
         protected override void ExecuteCore()
         {
-            DependsOnNETStandard = AnyReferenceDependsOnNETStandard();
+            ProcessReferences();
         }
 
-        private bool AnyReferenceDependsOnNETStandard()
+        private void ProcessReferences()
         {
+            DependsOnNETStandard = false;
+            DependsOnNuGetCompression = false;
+            DependsOnNuGetHttp = false;
+
             foreach (var reference in References)
             {
                 var referenceSourcePath = ItemUtilities.GetSourcePath(reference);
@@ -49,10 +76,15 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     try
                     {
-                        if (GetFileDependsOnNETStandard(referenceSourcePath))
-                        {
-                            return true;
-                        }
+                        bool dependsOnNETStandard;
+                        bool dependsOnNuGetCompression;
+                        bool dependsOnNuGetHttp;
+
+                        GetFileDependsOn(referenceSourcePath, out dependsOnNETStandard, out dependsOnNuGetCompression, out dependsOnNuGetHttp);
+
+                        DependsOnNETStandard |= dependsOnNETStandard;
+                        DependsOnNuGetCompression |= dependsOnNuGetCompression;
+                        DependsOnNuGetHttp |= dependsOnNuGetHttp;
                     }
                     catch (Exception e) when (IsReferenceException(e))
                     {
@@ -62,7 +94,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            return false;
+
         }
 
         // ported from MSBuild's ReferenceTable.SetPrimaryAssemblyReferenceItem
