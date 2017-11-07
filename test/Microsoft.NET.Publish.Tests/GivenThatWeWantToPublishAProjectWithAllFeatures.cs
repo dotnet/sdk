@@ -93,7 +93,7 @@ namespace Microsoft.NET.Publish.Tests
     }
 }");
             baselineConfigJsonObject["runtimeOptions"]["framework"]["version"] = 
-                targetFramework == "netcoreapp1.0" ? "1.0.4" : "1.1.1";
+                targetFramework == "netcoreapp1.0" ? "1.0.5" : "1.1.2";
 
             runtimeConfigJsonObject
                 .Should()

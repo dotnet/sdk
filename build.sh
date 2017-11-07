@@ -68,8 +68,14 @@ export NUGET_PACKAGES="$REPOROOT/packages"
 [ -d "$DOTNET_INSTALL_DIR" ] || mkdir -p $DOTNET_INSTALL_DIR
 
 # Install a stage 0
-DOTNET_INSTALL_SCRIPT_URL="https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh"
+DOTNET_INSTALL_SCRIPT_URL="https://dot.net/v1/dotnet-install.sh"
 curl -sSL "$DOTNET_INSTALL_SCRIPT_URL" | bash /dev/stdin  --version $DOTNET_CLI_VERSION --verbose
+
+# Install 1.0.5 shared framework
+[ -d "$DOTNET_INSTALL_DIR/shared/Microsoft.NETCore.App/1.0.5" ] || curl -sSL "$DOTNET_INSTALL_SCRIPT_URL" | bash /dev/stdin --version "1.0.5" --shared-runtime
+
+# Install 1.1.2 shared framework
+[ -d "$DOTNET_INSTALL_DIR/shared/Microsoft.NETCore.App/1.1.2" ] || curl -sSL "$DOTNET_INSTALL_SCRIPT_URL" | bash /dev/stdin --version "1.1.2" --shared-runtime
 
 # Put stage 0 on the PATH
 export PATH="$DOTNET_INSTALL_DIR:$PATH"
