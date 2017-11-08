@@ -12,10 +12,9 @@
     <PackageReference Include="FluentAssertions">
       <Version>$(FluentAssertionsVersion)</Version>
     </PackageReference>
-    <PackageReference Include="xunit.performance.api" Version="1.0.0-beta-build0007" />
+    <PackageReference Include="xunit.performance.api" Version="1.0.0-beta-build0011" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\xunit-performance\src\xunit.performance.api\xunit.performance.api.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Targets\Signing.Imports.targets" />
