@@ -53,7 +53,10 @@ namespace Microsoft.NET.Perf.Tests
                         snapshot.Restore();
                     }
 
-                    //  Potential TODO: Kill processes such as MSBuild.exe and VBCSCompiler.exe
+                    //  TODO: Optionally kill processes such as MSBuild.exe and VBCSCompiler.exe
+                    //  We should always do this before the first iteration, but it should be configurable whether we
+                    //  do it between iterations.  This is because when testing "warm" / incremental builds, we would
+                    //  expect the persistent processes to already be running and have already built the project
 
                     stopwatch.Restart();
                 }

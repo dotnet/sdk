@@ -5,6 +5,7 @@ using Microsoft.DotNet.Cli.Utils;
 using System.Collections.Generic;
 using Xunit.Abstractions;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
@@ -14,12 +15,16 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public ITestOutputHelper Log { get; }
 
+        public string WorkingDirectory { get; set; }
+
+        public List<string> Arguments { get; set; } = new List<string>();
+
         protected TestCommand(ITestOutputHelper log)
         {
             Log = log;
         }
 
-        protected abstract SdkCommandSpec CreateCommand(string[] args);
+        protected abstract SdkCommandSpec CreateCommand(string[] additionalArgs);
 
         public TestCommand WithEnvironmentVariable(string name, string value)
         {
@@ -27,29 +32,40 @@ namespace Microsoft.NET.TestFramework.Commands
             return this;
         }
 
-        public ProcessStartInfo GetProcessStartInfo(params string[] args)
+        private SdkCommandSpec CreateCommandSpec(string [] additionalArgs)
         {
-            var commandSpec = CreateCommand(args);
-
+            var commandSpec = CreateCommand(additionalArgs);
             foreach (var kvp in _environment)
             {
                 commandSpec.Environment[kvp.Key] = kvp.Value;
             }
 
+            if (WorkingDirectory != null)
+            {
+                commandSpec.WorkingDirectory = WorkingDirectory;
+            }
+
+            if (Arguments.Any())
+            {
+                commandSpec.Arguments = Arguments.Concat(commandSpec.Arguments).ToList();
+            }
+
+            return commandSpec;
+        }
+
+        public ProcessStartInfo GetProcessStartInfo(params string[] additionalArgs)
+        {
+            var commandSpec = CreateCommandSpec(additionalArgs);
+
             return commandSpec.ToProcessStartInfo();
         }
 
-        public CommandResult Execute(params string[] args)
+        public CommandResult Execute(params string[] additionalArgs)
         {
-            var command = CreateCommand(args)
+            var command = CreateCommandSpec(additionalArgs)
                 .ToCommand()
                 .CaptureStdOut()
                 .CaptureStdErr();
-
-            foreach (var variable in _environment)
-            {
-                command.EnvironmentVariable(variable.Key, variable.Value);
-            }
 
             var result = command.Execute();
 

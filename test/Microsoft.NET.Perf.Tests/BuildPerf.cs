@@ -24,9 +24,8 @@ namespace Microsoft.NET.Perf.Tests
 
 
         [Theory]
-        [InlineData(ProjectPerfOperation.Build)]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
-        [InlineData(ProjectPerfOperation.NoOpRestore)]
         public void BuildNetCore2App(ProjectPerfOperation operation)
         {
             var testProject = new TestProject()
@@ -43,9 +42,8 @@ namespace Microsoft.NET.Perf.Tests
         }
 
         [Theory]
-        [InlineData(ProjectPerfOperation.Build)]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
-        [InlineData(ProjectPerfOperation.NoOpRestore)]
         public void BuildNetStandard2Library(ProjectPerfOperation operation)
         {
             var testProject = new TestProject()
@@ -61,37 +59,27 @@ namespace Microsoft.NET.Perf.Tests
         }
 
         [Theory]
-        [InlineData(ProjectPerfOperation.Build)]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
-        [InlineData(ProjectPerfOperation.NoOpRestore)]
         public void BuildMVCApp(ProjectPerfOperation operation)
         {
             var testDir = _testAssetsManager.CreateTestDirectory(identifier: operation.ToString());
             var newCommand = new DotnetCommand(Log);
             newCommand.WorkingDirectory = testDir.Path;
 
-            newCommand.Execute("new", "mvc").Should().Pass();
+            newCommand.Execute("new", "mvc", "--no-restore").Should().Pass();
 
             TestProject(testDir.Path, "ASP.NET Core MVC app", operation);
         }
 
-        [Theory]
+        [Theory(Skip ="The code for these scenarios needs to be acquired during the test run (instead of relying on hard-coded local path)")]
 
-        [InlineData("SmallP2POldCsproj", ProjectPerfOperation.Build)]
+        [InlineData("SmallP2POldCsproj", ProjectPerfOperation.CleanBuild)]
         [InlineData("SmallP2POldCsproj", ProjectPerfOperation.BuildWithNoChanges)]
-        [InlineData("SmallP2POldCsproj", ProjectPerfOperation.NoOpRestore)]
-        [InlineData("SmallP2PNewCsproj", ProjectPerfOperation.Build)]
+        [InlineData("SmallP2PNewCsproj", ProjectPerfOperation.CleanBuild)]
         [InlineData("SmallP2PNewCsproj", ProjectPerfOperation.BuildWithNoChanges)]
-        [InlineData("SmallP2PNewCsproj", ProjectPerfOperation.NoOpRestore)]
-        [InlineData("LargeP2POldCsproj", ProjectPerfOperation.Build)]
+        [InlineData("LargeP2POldCsproj", ProjectPerfOperation.CleanBuild)]
         [InlineData("LargeP2POldCsproj", ProjectPerfOperation.BuildWithNoChanges)]
-        [InlineData("LargeP2POldCsproj", ProjectPerfOperation.NoOpRestore)]
-
-        //  This depends on v150 of the VC++, which doesn't exist
-        //[InlineData("Generated_100_100_v150")]
-
-        //  Missing dependencies
-        //[InlineData("Picasso")]
         public void BuildProjectFromPerfSuite(string name, ProjectPerfOperation operation)
         {
             string sourceProject = Path.Combine(@"C:\MSBPerf\3", name);
@@ -119,8 +107,8 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testDir.Path, name, operation);
         }
 
-        [Theory]
-        [InlineData(ProjectPerfOperation.Build)]
+        [Theory(Skip ="This test needs to clone the Roslyn repo and checkout a given commit instead of relying on a local copy of the repo")]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildRoslynCompilers(ProjectPerfOperation operation)
         {
@@ -146,35 +134,39 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(Path.Combine(testDir.Path, "Compilers.sln"), "Roslyn", operation);
         }
 
-        //[Fact]
-        //public void RunDotnetTest()
-        //{
-
-        //}
-
         public enum ProjectPerfOperation
         {
-            Build,
+            CleanBuild,
             BuildWithNoChanges,
             NoOpRestore
         }
 
-        private void TestProject(string testProject, string testName, ProjectPerfOperation perfOperation)
+        private void TestProject(string projectFolderOrFile, string testName, ProjectPerfOperation perfOperation)
         {
-            string projectFilePath = testProject;
+            string testProjectPath;
+            string testProjectDirectory;
+            bool projectFileSpecified;
 
-            if (!File.Exists(testProject))
+            if (File.Exists(projectFolderOrFile))
             {
-                var slnFiles = Directory.GetFiles(testProject, "*.sln");
-                var slnFile = slnFiles.FirstOrDefault();
-                if (slnFile != null)
-                {
-                    projectFilePath = slnFile;
-                }
+                projectFileSpecified = true;
+                testProjectPath = projectFolderOrFile;
+                testProjectDirectory = Path.GetDirectoryName(projectFolderOrFile);
             }
-
-            var restoreCommand = new RestoreCommand(Log, projectFilePath);
-            restoreCommand.Execute().Should().Pass();
+            else
+            {
+                projectFileSpecified = false;
+                testProjectPath = Directory.GetFiles(projectFolderOrFile, "*.sln", SearchOption.AllDirectories).SingleOrDefault();
+                if (testProjectPath == null)
+                {
+                    testProjectPath = Directory.GetFiles(projectFolderOrFile, "*.csproj", SearchOption.AllDirectories).SingleOrDefault();
+                    if (testProjectPath == null)
+                    {
+                        throw new ArgumentException("Could not find project file to test in folder: " + projectFolderOrFile);
+                    }
+                }
+                testProjectDirectory = Path.GetDirectoryName(testProjectPath);
+            }
 
             TestCommand commandToTest;
             var perfTest = new PerfTest();
@@ -182,32 +174,63 @@ namespace Microsoft.NET.Perf.Tests
 
             if (perfOperation == ProjectPerfOperation.NoOpRestore)
             {
+                TestCommand restoreCommand;
+
+                if (TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
+                {
+                    restoreCommand = new RestoreCommand(Log, testProjectPath);
+                }
+                else
+                {
+                    restoreCommand = new DotnetCommand(Log, "restore");
+                    if (projectFileSpecified)
+                    {
+                        restoreCommand.Arguments.Add(testProjectPath);
+                    }
+                }
+                restoreCommand.WorkingDirectory = testProjectDirectory;
+
+                restoreCommand.Execute().Should().Pass();
+
                 commandToTest = restoreCommand;
                 perfTest.TestName = "Restore (No-op)";
             }
             else
             {
-                commandToTest = new BuildCommand(Log, projectFilePath);
-                if (perfOperation == ProjectPerfOperation.BuildWithNoChanges)
+                if (TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
                 {
+                    commandToTest = new BuildCommand(Log, projectFileSpecified ? testProjectPath : testProjectDirectory);
+                    commandToTest.Arguments.Add("/restore");
+                }
+                else
+                {
+                    commandToTest = new DotnetCommand(Log, "build");
+                    if (projectFileSpecified)
+                    {
+                        commandToTest.Arguments.Add(testProjectPath);
+                    }
+                }
+                commandToTest.WorkingDirectory = testProjectDirectory;
+
+                if (perfOperation == ProjectPerfOperation.CleanBuild)
+                {
+                    perfTest.TestName = "Build";
+                }
+                else if (perfOperation == ProjectPerfOperation.BuildWithNoChanges)
+                {
+                    //  Build once before taking folder snaspshot
                     commandToTest.Execute().Should().Pass();
+
                     perfTest.TestName = "Build (no changes)";
                 }
                 else
                 {
-                    perfTest.TestName = "Build";
+                    throw new ArgumentException("Unexpected perf operation: " + perfOperation);
                 }
             }
 
             perfTest.ProcessToMeasure = commandToTest.GetProcessStartInfo();
-            if (File.Exists(testProject))
-            {
-                perfTest.TestFolder = Path.GetDirectoryName(testProject);
-            }
-            else
-            {
-                perfTest.TestFolder = testProject;
-            }
+            perfTest.TestFolder = testProjectDirectory;
 
             perfTest.Run();
         }
