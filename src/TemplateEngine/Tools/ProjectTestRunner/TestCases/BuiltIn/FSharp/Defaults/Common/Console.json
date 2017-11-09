@@ -1,6 +1,6 @@
-﻿{
-  "create": "console --language F# --no-restore",
-  "name": "Console (F#, default framework)",
+{
+  "create": "console -f netcoreapp2.0 --language F# --no-restore",
+  "name": "Console (F#, 2.0 framework)",
   "tasks": [
     {
       "handler": "execute",

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 
@@ -43,8 +43,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
         }
 
         // This being case-insensitive depends on the dictionaries on the cache tags being declared as case-insensitive
-        public static Func<ITemplateInfo, MatchInfo?> ContextFilter(string context)
+        public static Func<ITemplateInfo, MatchInfo?> ContextFilter(string inputContext)
         {
+            string context = inputContext?.ToLowerInvariant();
+
             return (template) =>
             {
                 if (string.IsNullOrEmpty(context))

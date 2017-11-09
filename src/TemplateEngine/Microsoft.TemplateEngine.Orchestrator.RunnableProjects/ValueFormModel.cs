@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             x = new IdentityValueForm();
             lookup[x.Identifier] = x;
 
-            x = new DefaultSafeNamespaceValueFormModel();
+            x = new DefaultSafeNameValueFormModel();
             lookup[x.Identifier] = x;
             x = new DefaultLowerSafeNameValueFormModel();
             lookup[x.Identifier] = x;
@@ -40,6 +40,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             lookup[x.Identifier] = x;
 
             return lookup;
+        }
+
+        public static IReadOnlyDictionary<string, IValueForm> AllForms
+        {
+            get
+            {
+                return FormLookup;
+            }
         }
 
         public static IValueForm GetForm(string name, JObject obj)

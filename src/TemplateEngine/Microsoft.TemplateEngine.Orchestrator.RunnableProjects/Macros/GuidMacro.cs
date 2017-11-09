@@ -39,7 +39,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 Parameter p = new Parameter
                 {
                     IsVariable = true,
-                    Name = config.VariableName + "-" + guidFormats[i]
+                    Name = config.VariableName + "-" + guidFormats[i],
+                    DataType =  config.DataType
                 };
 
                 vars[p.Name] = value;
@@ -81,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             deferredConfig.Parameters.TryGetValue("format", out JToken formatToken);
             string format = formatToken?.ToString();
 
-            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, format);
+            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, format);
             return realConfig;
         }
     }

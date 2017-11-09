@@ -6,13 +6,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     public class ProcessValueFormMacroConfig : IMacroConfig
     {
-        public ProcessValueFormMacroConfig(string sourceSymbol, string symbolName, string valueForm, IReadOnlyDictionary<string, IValueForm> forms)
+        public ProcessValueFormMacroConfig(string sourceSymbol, string symbolName, string dataType, string valueForm, IReadOnlyDictionary<string, IValueForm> forms)
         {
+            DataType = dataType;
             SourceVariable = sourceSymbol;
             VariableName = symbolName;
             FormName = valueForm;
             Forms = forms;
         }
+
+        public string DataType { get; }
 
         public string VariableName { get; }
 

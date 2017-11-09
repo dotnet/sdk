@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestGuidConfig()
         {
             string paramName = "TestGuid";
-            IMacroConfig macroConfig = new GuidMacroConfig(paramName, string.Empty);
+            IMacroConfig macroConfig = new GuidMacroConfig(paramName, "string", string.Empty);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
             jsonParameters.Add("format", null);
             string variableName = "myGuid1";
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("GuidMacro", variableName, jsonParameters);
+            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("GuidMacro", "string", variableName, jsonParameters);
 
             GuidMacro guidMacro = new GuidMacro();
             IVariableCollection variables = new VariableCollection();

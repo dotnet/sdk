@@ -51,13 +51,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 // When the param already exists, use its definition, but set IsVariable = true for consistency.
                 p = (Parameter)existingParam;
                 p.IsVariable = true;
+
+                if (string.IsNullOrEmpty(p.DataType))
+                {
+                    p.DataType = config.DataType;
+                }
             }
             else
             {
                 p = new Parameter
                 {
                     IsVariable = true,
-                    Name = config.VariableName
+                    Name = config.VariableName,
+                    DataType = config.DataType
                 };
             }
 
@@ -87,7 +93,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 lowerCase = stepListToken.ToBool(defaultValue: true);
             }
 
-            IMacroConfig realConfig = new CaseChangeMacroConfig(deferredConfig.VariableName, sourceVariable, lowerCase);
+            IMacroConfig realConfig = new CaseChangeMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, sourceVariable, lowerCase);
             return realConfig;
         }
     }

@@ -82,11 +82,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 Cache<IMountPointFactory>.Instance.AddPart(new ZipFileMountPointFactory());
             }
 
-            foreach(KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
+            foreach (KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
             {
                 if (!ids.Contains(components.Key))
                 {
-                    Register(components.Value());
+                    RegisterType(components.Value());
                 }
             }
         }
@@ -115,17 +115,44 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+        // Attempt to register the type, and then save the settings.
         public void Register(Type type)
+        {
+            if (RegisterType(type))
+            {
+                Save();
+            }
+        }
+
+        // Attempt to register every type in the typeList
+        // Save once at the end if anything was registered.
+        public void RegisterMany(IEnumerable<Type> typeList)
+        {
+            bool anyRegistered = false;
+
+            foreach (Type type in typeList)
+            {
+                anyRegistered |= RegisterType(type);
+            }
+
+            if (anyRegistered)
+            {
+                Save();
+            }
+        }
+
+        // This method does not save the settings, it just registers into the memory cache.
+        private bool RegisterType(Type type)
         {
             if (!typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(type) || type.GetTypeInfo().GetConstructor(Type.EmptyTypes) == null || !type.GetTypeInfo().IsClass)
             {
-                return;
+                return false;
             }
 
             IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
             if (registerFor.Count == 0)
             {
-                return;
+                return false;
             }
 
             IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
@@ -135,6 +162,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetTypeInfo().GetField("Instance", BindingFlags.Public | BindingFlags.Static);
                 ICache cache = (ICache)instanceField.GetValue(null);
                 cache.AddPart(instance);
+
                 _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
                 _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
 
@@ -153,6 +181,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 ids.Add(instance.Id);
             }
 
+            return true;
+        }
+
+        private void Save()
+        {
             bool successfulWrite = false;
             const int maxAttempts = 10;
             int attemptCount = 0;

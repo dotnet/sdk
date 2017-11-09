@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TemplateEngine.Edge.Template
+namespace Microsoft.TemplateEngine.Edge.Template
 {
 
     public enum MatchLocation
@@ -6,11 +6,12 @@
         Unspecified,
         Name,
         ShortName,
-        Alias,
+        Alias,      // never used, alias expansion occurs prior to matching
         Classification,
-        Language,
+        Language,   // this is meant for the input language
         Context,
         OtherParameter,
-        Baseline
+        Baseline,
+        DefaultLanguage
     }    
 }

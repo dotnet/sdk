@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             Assert.Equal(expectedComparison, VersionStringHelpers.CompareVersions(version1, version2));
         }
 
-        [Theory(DisplayName = nameof(VerifyVersionParseAndCompareTest))]
+        [Theory(DisplayName = nameof(VersionParseCompare))]
         [InlineData("1.0.0.0", "1.0.0.0", true)]
         [InlineData("1.0.0.0", "1.0.0", true)]
         [InlineData("1.0.0.0", "1.0", true)]
@@ -49,7 +49,6 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("[1.0.0.0-*)", "1.1.0.0", true)]
         [InlineData("[1.0.0.0-*)", "1.0.1.0", true)]
         [InlineData("[1.0.0.0-*)", "1.0.0.1", true)]
-        [InlineData("[1.0.0.0-*)", "1.0.0.0", true)]
         [InlineData("(1.0.0.0-*)", "1.0.0.0", false)]
         [InlineData("(*-2.0.0.0)", "1.0.0.0", true)]
         [InlineData("(*-2.0.0.0)", "1.5.0.0", true)]
@@ -63,10 +62,10 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("(1.1.0.0-1.2.0.0)", "1.2.0.0", false)]
         [InlineData("(1.1.0.0-1.2.0.0)", "1.1.1.0", true)]
         [InlineData("(1.1.0.0-1.2.0.0)", "1.1.0.1", true)]
-        public void VerifyVersionParseAndCompareTest(string allowedVersionsString, string proposedVersion, bool expectedValidity)
+        public void VersionParseCompare(string allowed, string proposed, bool expected)
         {
-            Assert.True(VersionStringHelpers.TryParseVersionSpecification(allowedVersionsString, out IVersionSpecification checker));
-            Assert.Equal(expectedValidity, checker.CheckIfVersionIsValid(proposedVersion));
+            Assert.True(VersionStringHelpers.TryParseVersionSpecification(allowed, out IVersionSpecification checker));
+            Assert.Equal(expected, checker.CheckIfVersionIsValid(proposed));
         }
     }
 }

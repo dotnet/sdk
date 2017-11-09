@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -137,6 +140,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public void ReleaseMountPoints(ITemplate template)
         {
+            if (template == null)
+            {
+                return;
+            }
+
             if(template.LocaleConfiguration != null)
             {
                 _environmentSettings.SettingsLoader.ReleaseMountPoint(template.LocaleConfiguration.MountPoint);
@@ -226,7 +234,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         }
                         else
                         {
-                            throw new TemplateParamException(inputParam.Key, null, paramFromTemplate.DataType);
+                            // the non-bool param had no value, it's an error.
+                            tmpParamsWithInvalidValues.Add(paramFromTemplate.Name);
                         }
                     }
                     else
@@ -276,49 +285,5 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             return anyMissingParams;
         }
-
-        //
-        // Direct copy of commented out code from the old TemplateCreator.Instantiate()
-        // This won't build, much less work, but it will be revived someday.
-        //
-        //public void UpdateCheck()
-        //{
-        //    //TODO: Implement check for updates over mount points
-        //    bool updatesReady;
-
-        //    if (tmplt.Source.ParentSource != null)
-        //    {
-        //        updatesReady = await tmplt.Source.Source.CheckForUpdatesAsync(tmplt.Source.ParentSource, tmplt.Source.Location);
-        //    }
-        //    else
-        //    {
-        //        updatesReady = await tmplt.Source.Source.CheckForUpdatesAsync(tmplt.Source.Location);
-        //    }
-
-        //    if (updatesReady)
-        //    {
-        //        Console.WriteLine("Updates for this template are available. Install them now? [Y]");
-        //        string answer = Console.ReadLine();
-
-        //        if (string.IsNullOrEmpty(answer) || answer.Trim().StartsWith("y", StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            string packageId = tmplt.Source.ParentSource != null
-        //                ? tmplt.Source.Source.GetInstallPackageId(tmplt.Source.ParentSource, tmplt.Source.Location)
-        //                : tmplt.Source.Source.GetInstallPackageId(tmplt.Source.Location);
-
-        //            Command.CreateDotNet("new3", new[] { "-u", packageId, "--quiet" }).ForwardStdOut().ForwardStdErr().Execute();
-        //            Command.CreateDotNet("new3", new[] { "-i", packageId, "--quiet" }).ForwardStdOut().ForwardStdErr().Execute();
-
-        //            Program.Broker.ComponentRegistry.ForceReinitialize();
-
-        //            if (!TryGetTemplate(templateName, source, quiet, out tmplt))
-        //            {
-        //                return -1;
-        //            }
-
-        //            generator = tmplt.Generator;
-        //        }
-        //    }
-        //}
     }
 }

@@ -40,6 +40,7 @@ namespace Microsoft.TemplateEngine.Utils
             FileSystem = new PhysicalFileSystem();
             _hostBuiltInComponents = builtIns ?? NoComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
+            _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
         }
 
         public IPhysicalFileSystem FileSystem { get; private set; }
@@ -115,8 +116,19 @@ namespace Microsoft.TemplateEngine.Utils
             return true;
         }
 
+        private Dictionary<string, Action<string, string[]>> _diagnosticLoggers;
+
+        public void RegisterDiagnosticLogger(string category, Action<string, string[]> messageHandler)
+        {
+            _diagnosticLoggers[category] = messageHandler;
+        }
+
         public void LogDiagnosticMessage(string message, string category, params string[] details)
         {
+            if (_diagnosticLoggers.TryGetValue(category, out Action<string, string[]> messageHandler))
+            {
+                messageHandler(message, details);
+            }
         }
 
         public void LogTiming(string label, TimeSpan duration, int depth)

@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = SetupSplitConfigTestTemplate(EngineEnvironmentSettings, sourcePath);
 
             IGenerator generator = new RunnableProjectGenerator();
-            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile("templateSource/.template.config/template.json");
             generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
 
             IDictionary<string, ITemplateParameter> parameters = template.Parameters.ToDictionary(p => p.Name, p => p);
@@ -79,8 +79,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         private static TestTemplateSetup SetupSplitConfigTestTemplate(IEngineEnvironmentSettings environment, string basePath)
         {
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
-            templateSourceFiles.Add(".template.config/symbols.template.json", SymbolsTemplateJsonString);
+            templateSourceFiles.Add("templateSource/.template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
+            templateSourceFiles.Add("templateSource/.template.config/symbols.template.json", SymbolsTemplateJsonString);
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   ],
   ""symbols"": {
     ""type"": {
-                ""type"": ""parameter"",
+      ""type"": ""parameter"",
       ""datatype"": ""choice"",
       ""choices"": [
         {
@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
   ""symbols"": {
     ""RuntimeFrameworkVersion"": {
-                ""type"": ""parameter"",
+      ""type"": ""parameter"",
       ""replaces"": ""2.0.0-beta-xyz""
     },
     ""Framework"": {

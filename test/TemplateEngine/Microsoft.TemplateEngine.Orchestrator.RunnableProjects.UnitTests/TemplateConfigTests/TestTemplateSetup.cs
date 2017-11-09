@@ -70,6 +70,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return SourceMountPoint.FileSystemInfo(filePath);
         }
 
+        public IFile FileInfoForSourceFile(string filePath)
+        {
+            return SourceMountPoint.FileInfo(filePath);
+        }
+
         public void WriteSource()
         {
             foreach (KeyValuePair<string, string> fileInfo in _sourceFiles)

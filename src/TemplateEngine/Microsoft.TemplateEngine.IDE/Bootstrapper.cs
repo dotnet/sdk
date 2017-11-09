@@ -55,10 +55,7 @@ namespace Microsoft.TemplateEngine.IDE
 
         public void Register(Assembly assembly)
         {
-            foreach (Type type in assembly.GetTypes())
-            {
-                EnvironmentSettings.SettingsLoader.Components.Register(type);
-            }
+            EnvironmentSettings.SettingsLoader.Components.RegisterMany(assembly.GetTypes());
         }
 
         public void Install(string path)
