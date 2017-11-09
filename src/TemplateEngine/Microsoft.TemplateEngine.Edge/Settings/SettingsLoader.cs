@@ -131,7 +131,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             JObject parsed;
             using (Timing.Over(_environmentSettings.Host, "Parse settings"))
-                parsed = JObject.Parse(userSettings);
+                try
+                {
+                    parsed = JObject.Parse(userSettings);
+                }
+                catch (Exception ex)
+                {
+                    throw new EngineInitializationException("Error parsing the user settings file", "Settings File", ex);
+                }
             using (Timing.Over(_environmentSettings.Host, "Deserialize user settings"))
                 _userSettings = new SettingsStore(parsed);
 
