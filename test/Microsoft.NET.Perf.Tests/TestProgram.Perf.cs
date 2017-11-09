@@ -1,18 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.NET.Perf.Tests;
+using Microsoft.NET.TestFramework;
 
 partial class Program
 {
     static partial void BeforeTestRun(List<string> args)
+    {
+        HandlePerfArgs(args);
+    }
+
+    public static void HandlePerfArgs(List<string> args)
     {
         List<string> newArgs = new List<string>();
         List<string> perfArgs = new List<string>();
         Stack<string> argStack = new Stack<string>(Enumerable.Reverse(args));
 
         bool needsOutputDir = true;
+        bool specifiedPerfCollect = false;
 
         while (argStack.Any())
         {
@@ -30,6 +38,10 @@ partial class Program
                     {
                         needsOutputDir = false;
                     }
+                    else if (arg.Equals("--perf:collect", StringComparison.OrdinalIgnoreCase))
+                    {
+                        specifiedPerfCollect = true;
+                    }
 
                     perfArgs.Add(arg);
                     perfArgs.Add(argStack.Pop());
@@ -44,12 +56,15 @@ partial class Program
         if (needsOutputDir)
         {
             perfArgs.Add("--perf:outputdir");
-            perfArgs.Add("PerfResults");
+            perfArgs.Add(Path.Combine(TestContext.Current.TestWorkingDirectory, "PerfResults"));
         }
-
-        perfArgs.Add("--perf:collect");
-        //  BranchMispredictions+CacheMisses+InstructionRetired
-        perfArgs.Add("InstructionRetired");
+        if (!specifiedPerfCollect)
+        {
+            //  By default, just collect "stopwatch", in order to avoid (large) .etl files from being created
+            //  Other collect options include: BranchMispredictions+CacheMisses+InstructionRetired
+            perfArgs.Add("--perf:collect");
+            perfArgs.Add("stopwatch");
+        }
 
         PerfTest.InitializeHarness(perfArgs.ToArray());
 

@@ -29,6 +29,18 @@ namespace Microsoft.NET.Perf.Tests
 
         public void Run([CallerMemberName] string callerName = null)
         {
+            //  Handle case where we're running inside VS (or via dotnet test), so the Main method hasn't run to initialize the perf harness
+            //  In the future we may want to do this via an xUnit fixture, which would also let us call the dispose method to write the results
+            //  afterwards
+            if (_performanceHarness == null)
+            {
+                Program.HandlePerfArgs(new List<string>()
+                {
+                    "--iterations",
+                    "1"
+                });
+            }
+
             TestName = TestName ?? callerName;
 
             Stopwatch stopwatch = new Stopwatch();
@@ -43,6 +55,14 @@ namespace Microsoft.NET.Perf.Tests
                 DisplayName = "Execution Time",
                 Unit = "ms"
             });
+
+            string testIdentifier = _performanceHarness.Configuration.RunId + "-" + ScenarioName + " - " + TestName;
+
+            string testResultsFolder = Path.Combine(_performanceHarness.OutputDirectory, testIdentifier + "-traces");
+            if (!Directory.Exists(testResultsFolder))
+            {
+                Directory.CreateDirectory(testResultsFolder);
+            }
 
             using (FolderSnapshot snapshot = FolderSnapshot.Create(TestFolder))
             {
@@ -75,12 +95,12 @@ namespace Microsoft.NET.Perf.Tests
 
                     if (GetPerformanceSummary)
                     {
-                        string performanceSummaryFileDestination = Path.ChangeExtension(scenarioExecutionResult.EventLogFileName, ".txt");
+                        string performanceSummaryFileDestination = Path.Combine(testResultsFolder, $"{testIdentifier}({currentIteration}).txt");
                         File.Move(Path.Combine(TestFolder, "PerformanceSummary.txt"), performanceSummaryFileDestination);
                     }
                     if (GetBinLog)
                     {
-                        string binlogDestination = Path.ChangeExtension(scenarioExecutionResult.EventLogFileName, ".binlog");
+                        string binlogDestination = Path.Combine(testResultsFolder, $"{testIdentifier}({currentIteration}).binlog");
                         File.Move(Path.Combine(TestFolder, "msbuild.binlog"), binlogDestination);
                     }
 
@@ -108,7 +128,7 @@ namespace Microsoft.NET.Perf.Tests
                 scenarioTestConfiguration.SaveResults = false;
                 scenarioTestConfiguration.Scenario = GetScenarioBenchmark(ScenarioName ?? TestName);
                 scenarioTestConfiguration.Scenario.Tests.Add(durationTestModel);
-                scenarioTestConfiguration.TestName = TestName;                
+                scenarioTestConfiguration.TestName = TestName;
 
                 _performanceHarness.RunScenario(scenarioTestConfiguration, PostRun);
             }

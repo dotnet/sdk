@@ -5,7 +5,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Common.props'))\Common.props" />
 
   <PropertyGroup>
-    <TestsDirectory>$(RepositoryRootDirectory)bin\$(Configuration)\Tests\</TestsDirectory>
+    <TestsDirectory>$(RepositoryRootDirectory)bin\$(Configuration)\testbin\</TestsDirectory>
 
     <CommonMSBuildGlobalProperties>
       Configuration=$(Configuration);
@@ -106,6 +106,7 @@
     <Exec Command="$(DotNetTool) run -c $(Configuration) --project &quot;%(TestProject.FullPath)&quot; -xml &quot;%(TestProject.Filename).TestResults.xml&quot; -verbose"
           LogStandardErrorAsError="true"
           WorkingDirectory="$(TestsDirectory)"
+          ContinueOnError="ErrorAndContinue"
           />
   </Target>
 
