@@ -103,7 +103,18 @@
   <Target Name="RebuildNuGetPackages" DependsOnTargets="CleanNuGetPackages;BuildNuGetPackages" />
 
   <Target Name="Test">
-    <Exec Command="$(DotNetTool) run -c $(Configuration) --project &quot;%(TestProject.FullPath)&quot; -xml &quot;%(TestProject.Filename).TestResults.xml&quot; -verbose"
+
+    <ItemGroup>
+      <TestProject Update="@(TestProject)">
+        <CommandLine>$(DotNetTool) run -c $(Configuration) --project &quot;%(TestProject.FullPath)&quot; -xml &quot;%(TestProject.Filename).TestResults.xml&quot; -verbose</CommandLine>
+      </TestProject>
+      <TestProject Update="@(TestProject)">
+        <!-- Only run one iteration for perf tests here just to make sure they pass functionally -->
+        <CommandLine Condition="'%(TestProject.Filename)' == 'Microsoft.NET.Perf.Tests'">%(TestProject.CommandLine) --perf:iterations 1</CommandLine>
+      </TestProject>
+    </ItemGroup>
+    
+    <Exec Command="%(TestProject.CommandLine)"
           LogStandardErrorAsError="true"
           WorkingDirectory="$(TestsDirectory)"
           ContinueOnError="ErrorAndContinue"
