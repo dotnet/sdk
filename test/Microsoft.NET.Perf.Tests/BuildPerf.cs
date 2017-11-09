@@ -22,8 +22,9 @@ namespace Microsoft.NET.Perf.Tests
         {
         }
 
-
-        [Theory]
+        //  These tests are currently disabled for full framework MSBuild because the CI machines don't
+        //  have an MSBuild that supports the /restore command-line argument
+        [CoreMSBuildOnlyTheory]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCore2App(ProjectPerfOperation operation)
@@ -41,7 +42,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, ".NET Core 2 Console App", operation);
         }
 
-        [Theory]
+        [CoreMSBuildOnlyTheory]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetStandard2Library(ProjectPerfOperation operation)
@@ -58,7 +59,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, ".NET Standard 2.0 Library", operation);
         }
 
-        [Theory]
+        [CoreMSBuildOnlyTheory]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildMVCApp(ProjectPerfOperation operation)
@@ -72,7 +73,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testDir.Path, "ASP.NET Core MVC app", operation);
         }
 
-        [Theory(Skip ="The code for these scenarios needs to be acquired during the test run (instead of relying on hard-coded local path)")]
+        [CoreMSBuildOnlyTheory(Skip ="The code for these scenarios needs to be acquired during the test run (instead of relying on hard-coded local path)")]
 
         [InlineData("SmallP2POldCsproj", ProjectPerfOperation.CleanBuild)]
         [InlineData("SmallP2POldCsproj", ProjectPerfOperation.BuildWithNoChanges)]
@@ -107,7 +108,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testDir.Path, name, operation);
         }
 
-        [Theory(Skip ="This test needs to clone the Roslyn repo and checkout a given commit instead of relying on a local copy of the repo")]
+        [CoreMSBuildOnlyTheory(Skip ="This test needs to clone the Roslyn repo and checkout a given commit instead of relying on a local copy of the repo")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildRoslynCompilers(ProjectPerfOperation operation)

@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <TestsDirectory>$(RepositoryRootDirectory)bin\$(Configuration)\testbin\</TestsDirectory>
+    <TestsWorkingDirectory>$(RepositoryRootDirectory)bin\$(Configuration)\Tests\</TestsWorkingDirectory>
 
     <CommonMSBuildGlobalProperties>
       Configuration=$(Configuration);
@@ -103,11 +104,16 @@
   <Target Name="RebuildNuGetPackages" DependsOnTargets="CleanNuGetPackages;BuildNuGetPackages" />
 
   <Target Name="Test">
-
+    <MakeDir Directories="$(TestsWorkingDirectory)" />
+    
     <ItemGroup>
       <TestProject Update="@(TestProject)">
-        <CommandLine>$(DotNetTool) run -c $(Configuration) --project &quot;%(TestProject.FullPath)&quot; -xml &quot;%(TestProject.Filename).TestResults.xml&quot; -verbose</CommandLine>
+        <CommandLine>$(DotNetTool) run -c $(Configuration) --project &quot;%(TestProject.FullPath)&quot;</CommandLine>
       </TestProject>
+      <TestProject Update="@(TestProject)">
+        <CommandLine>%(CommandLine) -xml &quot;$(TestsWorkingDirectory)%(TestProject.Filename).TestResults.xml&quot; -verbose</CommandLine>
+      </TestProject>
+      
       <TestProject Update="@(TestProject)">
         <!-- Only run one iteration for perf tests here just to make sure they pass functionally -->
         <CommandLine Condition="'%(TestProject.Filename)' == 'Microsoft.NET.Perf.Tests'">%(TestProject.CommandLine) --perf:iterations 1</CommandLine>
