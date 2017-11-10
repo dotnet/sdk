@@ -9,6 +9,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         AmbiguousParameterValue,
         InvalidParameterName,
         InvalidParameterValue,
-        Mismatch
+        Mismatch,
+        SingleStartsWith
     }
 }
