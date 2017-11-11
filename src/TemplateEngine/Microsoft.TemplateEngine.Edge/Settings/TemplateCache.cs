@@ -237,7 +237,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     diskPath = path;
                 }
 
-                foreach (KeyValuePair<string, Assembly> asm in AssemblyLoader.LoadAllAssemblies(_paths, out IEnumerable<string> failures))
+                foreach (KeyValuePair<string, Assembly> asm in AssemblyLoader.LoadAllFromPath(_paths, out IEnumerable<string> failures, diskPath))
                 {
                     try
                     {
