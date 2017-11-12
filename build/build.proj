@@ -38,9 +38,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Command Include="$(__SetNuget_Packages)$(__NewLine)$(DotNetTool) restore $(SolutionFile) /v:minimal"
+      <Command Include="$(__SetNuget_Packages)$(__NewLine)$(DotNetTool) restore %(SolutionFile.Identity) /v:minimal"
           WorkingDirectory="$(RepositoryRootDirectory)" />
-      <Command Include="$(__SetNuget_Packages)$(__NewLine)$(DotNetTool) restore $(BuildToolsetProjectFile) /v:minimal"
+      <Command Include="$(__SetNuget_Packages)$(__NewLine)$(DotNetTool) restore %(BuildToolsetProjectFile.Identity) /v:minimal"
           WorkingDirectory="$(RepositoryRootDirectory)" />
     </ItemGroup>
     
