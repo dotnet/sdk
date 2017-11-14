@@ -1,7 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'Common.props'))\Common.props" />
-  <Import Project="$(BaseIntermediateOutputPath)/BuildTools.proj.nuget.g.props" Condition="Exists('$(BaseIntermediateOutputPath)/BuildTools.proj.nuget.g.props')" />
-  <Import Project="$(BaseIntermediateOutputPath)/BuildTools.proj.nuget.g.targets" Condition="Exists('$(BaseIntermediateOutputPath)/BuildTools.proj.nuget.g.targets')" />
   <Import Project="$(MSBuildThisFileDirectory)/PushToBlobFeed.targets" />
 
   <PropertyGroup>
