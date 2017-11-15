@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Newtonsoft.Json;
@@ -8,6 +8,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class SettingsStore
     {
+        // NOTE: when the current version changes, a corresponding change in TemplateInfo.cs is needed, to get the correct template cache version reader to fire.
         internal static readonly string CurrentVersion = "1.0.0.0";
 
         public SettingsStore()

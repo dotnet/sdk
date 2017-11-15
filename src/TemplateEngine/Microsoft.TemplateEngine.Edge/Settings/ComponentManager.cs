@@ -55,6 +55,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (KeyValuePair<string, HashSet<Guid>> bucket in userSettings.ComponentTypeToGuidList)
             {
                 allowedIds.UnionWith(bucket.Value);
+
+                Type interfaceType = Type.GetType(bucket.Key);
+                if (interfaceType != null)
+                {
+                    _componentIdsByType[interfaceType] = bucket.Value;
+                }
             }
 
             foreach (KeyValuePair<string, string> entry in userSettings.ComponentGuidToAssemblyQualifiedName)
@@ -84,7 +90,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
             {
-                if (!ids.Contains(components.Key))
+                if (ids.Add(components.Key))
                 {
                     RegisterType(components.Value());
                 }
@@ -96,7 +102,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             if (!_componentIdsByType.TryGetValue(typeof(T), out HashSet<Guid> ids))
             {
-                if (_settings.ComponentTypeToGuidList.TryGetValue(typeof(T).FullName, out ids))
+                if (_settings.ComponentTypeToGuidList.TryGetValue(typeof(T).AssemblyQualifiedName, out ids))
                 {
                     _componentIdsByType[typeof(T)] = ids;
                 }
@@ -149,36 +155,46 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return false;
             }
 
-            IReadOnlyList<Type> registerFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
-            if (registerFor.Count == 0)
+            IReadOnlyList<Type> interfaceTypesToRegisterFor = type.GetTypeInfo().ImplementedInterfaces.Where(x => x != typeof(IIdentifiedComponent) && typeof(IIdentifiedComponent).GetTypeInfo().IsAssignableFrom(x)).ToList();
+            if (interfaceTypesToRegisterFor.Count == 0)
             {
                 return false;
             }
 
             IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
 
-            foreach (Type t in registerFor)
+            foreach (Type interfaceType in interfaceTypesToRegisterFor)
             {
-                FieldInfo instanceField = typeof(Cache<>).MakeGenericType(t).GetTypeInfo().GetField("Instance", BindingFlags.Public | BindingFlags.Static);
+                FieldInfo instanceField = typeof(Cache<>).MakeGenericType(interfaceType).GetTypeInfo().GetField("Instance", BindingFlags.Public | BindingFlags.Static);
                 ICache cache = (ICache)instanceField.GetValue(null);
                 cache.AddPart(instance);
 
                 _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
                 _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
 
-                if (!_componentIdsByType.TryGetValue(t, out HashSet<Guid> ids))
+                if (!_componentIdsByType.TryGetValue(interfaceType, out HashSet<Guid> idsForInterfaceType))
                 {
-                    _componentIdsByType[t] = ids = new HashSet<Guid>();
+                    _componentIdsByType[interfaceType] = idsForInterfaceType = new HashSet<Guid>();
+                }
+                idsForInterfaceType.Add(instance.Id);
+
+                // for backwards compat & cleanup from when the keys were interfaceType.FullName
+                if (_settings.ComponentTypeToGuidList.TryGetValue(interfaceType.FullName, out HashSet<Guid> idsFromOldStyleKey))
+                {
+                    _settings.ComponentTypeToGuidList.Remove(interfaceType.FullName);
                 }
 
-                ids.Add(instance.Id);
-
-                if (!_settings.ComponentTypeToGuidList.TryGetValue(t.FullName, out ids))
+                if (!_settings.ComponentTypeToGuidList.TryGetValue(interfaceType.AssemblyQualifiedName, out HashSet<Guid> idsForInterfaceTypeForSettings))
                 {
-                    _settings.ComponentTypeToGuidList[t.FullName] = ids = new HashSet<Guid>();
+                    _settings.ComponentTypeToGuidList[interfaceType.AssemblyQualifiedName] = idsForInterfaceTypeForSettings = new HashSet<Guid>();
                 }
+                idsForInterfaceTypeForSettings.Add(instance.Id);
 
-                ids.Add(instance.Id);
+                // for backwards compat & cleanup from when the keys were interfaceType.FullName
+                if (idsFromOldStyleKey != null)
+                {
+                    idsForInterfaceTypeForSettings.UnionWith(idsFromOldStyleKey);
+                }
             }
 
             return true;

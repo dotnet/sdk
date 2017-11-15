@@ -56,18 +56,33 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void Scan(IReadOnlyList<string> templateRoots)
         {
+            Scan(templateRoots, false);
+        }
+
+        public void Scan(IReadOnlyList<string> templateRoots, bool debugAllowDevInstall)
+        {
             foreach (string templateDir in templateRoots)
             {
-                Scan(templateDir);
+                Scan(templateDir, debugAllowDevInstall);
             }
         }
 
         public void Scan(string templateDir)
         {
-            Scan(templateDir, out IReadOnlyList<Guid> mountPointIds);
+            Scan(templateDir, false);
+        }
+
+        public void Scan(string templateDir, bool debugAllowDevInstall)
+        {
+            Scan(templateDir, out IReadOnlyList<Guid> mountPointIds, debugAllowDevInstall);
         }
 
         public void Scan(string templateDir, out IReadOnlyList<Guid> mountPointIds)
+        {
+            Scan(templateDir, out mountPointIds, false);
+        }
+
+        public void Scan(string templateDir, out IReadOnlyList<Guid> mountPointIds, bool debugAllowDevInstall)
         {
             if (templateDir[templateDir.Length - 1] == '/' || templateDir[templateDir.Length - 1] == '\\')
             {
@@ -88,7 +103,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 foreach(string match in matches)
                 {
-                    Scan(match, out IReadOnlyList<Guid> locationsForThisContent);
+                    Scan(match, out IReadOnlyList<Guid> locationsForThisContent, debugAllowDevInstall);
                     storageLocations.AddRange(locationsForThisContent);
                 }
 
@@ -98,7 +113,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(templateDir, out IMountPoint existingMountPoint))
             {
-                ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir);
+                ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir, debugAllowDevInstall);
                 mountPointIds = new Guid[]
                 {
                     existingMountPoint.Info.MountPointId
@@ -144,7 +159,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         // 1) no templates, and no langpacks were found.
                         // 2) only langpacks were found, but they aren't for any existing templates - but we won't know that at this point.
                         _environmentSettings.SettingsLoader.AddMountPoint(mountPoint);
-                        if(!ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir))
+                        if(!ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir, debugAllowDevInstall))
                         {
                             _environmentSettings.SettingsLoader.RemoveMountPoint(mountPoint);
 
@@ -174,9 +189,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             mountPointIds = new Guid[] { };
         }
 
-        private bool ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir)
+        private bool ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir, bool debugAllowDevInstall)
         {
-            bool anythingFound = ScanForComponents(mountPoint, templateDir);
+            bool anythingFound = ScanForComponents(mountPoint, templateDir, debugAllowDevInstall);
             foreach (IGenerator generator in _environmentSettings.SettingsLoader.Components.OfType<IGenerator>())
             {
                 IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out IList<ILocalizationLocator> localizationInfo);
@@ -197,7 +212,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return anythingFound;
         }
 
-        private bool ScanForComponents(IMountPoint mountPoint, string templateDir)
+        private bool ScanForComponents(IMountPoint mountPoint, string templateDir, bool debugAllowDevInstall)
         {
             bool anythingFound = false;
             bool isInOriginalInstallLocation = true;
@@ -235,6 +250,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
 
                     diskPath = path;
+                }
+                else if (!debugAllowDevInstall)
+                {
+                    _environmentSettings.Host.LogDiagnosticMessage("Installing local .dll files is not a standard supported scenario. Either package it in a .zip or .nupkg, or install it using '--dev:install'.", "Install");
+                    // don't allow .dlls to be installed from a file unless the debugging flag is set.
+                    return false;
                 }
 
                 foreach (KeyValuePair<string, Assembly> asm in AssemblyLoader.LoadAllFromPath(_paths, out IEnumerable<string> failures, diskPath))
