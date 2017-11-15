@@ -74,15 +74,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void Scan(string templateDir, bool debugAllowDevInstall)
         {
-            Scan(templateDir, out IReadOnlyList<Guid> mountPointIds, debugAllowDevInstall);
+            Scan(templateDir, out IReadOnlyList<Guid> newMountPointIds, debugAllowDevInstall);
         }
 
-        public void Scan(string templateDir, out IReadOnlyList<Guid> mountPointIds)
+        public void Scan(string templateDir, out IReadOnlyList<Guid> newMountPointIds)
         {
-            Scan(templateDir, out mountPointIds, false);
+            Scan(templateDir, out newMountPointIds, false);
         }
 
-        public void Scan(string templateDir, out IReadOnlyList<Guid> mountPointIds, bool debugAllowDevInstall)
+        public void Scan(string templateDir, out IReadOnlyList<Guid> newMountPointIds, bool debugAllowDevInstall)
         {
             if (templateDir[templateDir.Length - 1] == '/' || templateDir[templateDir.Length - 1] == '\\')
             {
@@ -107,14 +107,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     storageLocations.AddRange(locationsForThisContent);
                 }
 
-                mountPointIds = storageLocations;
+                newMountPointIds = storageLocations;
                 return;
             }
 
             if (_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(templateDir, out IMountPoint existingMountPoint))
             {
                 ScanMountPointForTemplatesAndLangpacks(existingMountPoint, templateDir, debugAllowDevInstall);
-                mountPointIds = new Guid[]
+                newMountPointIds = new Guid[]
                 {
                     existingMountPoint.Info.MountPointId
                 };
@@ -159,7 +159,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         // 1) no templates, and no langpacks were found.
                         // 2) only langpacks were found, but they aren't for any existing templates - but we won't know that at this point.
                         _environmentSettings.SettingsLoader.AddMountPoint(mountPoint);
-                        if(!ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir, debugAllowDevInstall))
+                        if (!ScanMountPointForTemplatesAndLangpacks(mountPoint, templateDir, debugAllowDevInstall))
                         {
                             _environmentSettings.SettingsLoader.RemoveMountPoint(mountPoint);
 
@@ -173,12 +173,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                                 {
                                 }
                             }
-                        }
 
-                        mountPointIds = new Guid[]
+                            newMountPointIds = new Guid[] { };
+                        }
+                        else
                         {
-                            mountPoint.Info.MountPointId
-                        };
+                            // only add the MP to the return list if something was found under it.
+                            newMountPointIds = new Guid[]
+                            {
+                                mountPoint.Info.MountPointId
+                            };
+                        }
 
                         _environmentSettings.SettingsLoader.ReleaseMountPoint(mountPoint);
                         return;
@@ -186,7 +191,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
-            mountPointIds = new Guid[] { };
+            newMountPointIds = new Guid[] { };
         }
 
         private bool ScanMountPointForTemplatesAndLangpacks(IMountPoint mountPoint, string templateDir, bool debugAllowDevInstall)
