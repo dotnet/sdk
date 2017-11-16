@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;netstandard1.5</TargetFrameworks>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp1.1'">
     <OutputType>exe</OutputType>

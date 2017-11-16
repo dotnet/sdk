@@ -14,6 +14,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <EnableDefaultItems>false</EnableDefaultItems>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
 
   <ItemDefinitionGroup>

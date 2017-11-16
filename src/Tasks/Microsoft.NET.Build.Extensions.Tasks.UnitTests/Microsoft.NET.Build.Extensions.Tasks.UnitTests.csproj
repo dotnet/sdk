@@ -8,6 +8,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
     <NonShipping>true</NonShipping>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NuGet.ProjectModel">

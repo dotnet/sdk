@@ -3,6 +3,7 @@
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard1.5</TargetFramework>
     <ProjectGuid>{BB691360-49BC-46EB-8BA9-6A69A54CD4B0}</ProjectGuid>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="CopyToOutputFromProjectReference.txt" CopyToOutputDirectory="Always" />

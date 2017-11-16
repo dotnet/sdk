@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>

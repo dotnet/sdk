@@ -18,6 +18,7 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <DefineConstants>$(DefineConstants);EXTENSIONS</DefineConstants>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
 
   <ItemDefinitionGroup>

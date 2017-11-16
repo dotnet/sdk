@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net45;net40;net40-client;netstandard1.5</TargetFrameworks>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard1.5'">
     <DefineConstants>$(DefineConstants);DESKTOP</DefineConstants>

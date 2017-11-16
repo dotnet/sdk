@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net452</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>

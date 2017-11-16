@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net46;netcoreapp1.1</TargetFrameworks>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../TestLibrary/TestLibrary.csproj" />

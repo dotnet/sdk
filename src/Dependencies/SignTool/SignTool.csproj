@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <ProjectGuid>{98883ACD-BE3A-4533-953D-1BE25981BA02}</ProjectGuid>
     <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <RestoreSources>$(RestoreSources)</RestoreSources>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="RoslynTools.Microsoft.SignTool" Version="0.2.0-beta" />
