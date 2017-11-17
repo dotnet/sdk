@@ -10,7 +10,7 @@
     <MsBuildPackagesVersion>15.4.8</MsBuildPackagesVersion>
     <DependencyModelVersion>2.0.0</DependencyModelVersion>
     <PlatformAbstractionsVersion>2.0.0</PlatformAbstractionsVersion>
-    <NuGetVersion>4.5.0-preview2-4529</NuGetVersion>
+    <NuGetVersion>4.5.0-rtm-4651</NuGetVersion>
     <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
     <SystemReflectionMetadataVersion>1.4.2</SystemReflectionMetadataVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-25908-02</NETStandardLibraryNETFrameworkVersion>
