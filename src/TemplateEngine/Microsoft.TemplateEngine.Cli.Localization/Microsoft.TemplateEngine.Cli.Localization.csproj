@@ -25,7 +25,7 @@
     <Content Remove="$(ArtifactsFolder)\localize\ploc\Microsoft.TemplateEngine.Cli.resources.dll"/>
   </ItemGroup>
 
-  <Target Name="SignResources" BeforeTargets="Pack" Outputs="%(Content.Identity)">
+  <Target Name="SignResources" BeforeTargets="CopyFilesToOutputDirectory" Outputs="%(Content.Identity)">
     <GetFrameworkSdkPath>  
       <Output  
         TaskParameter="Path"  
