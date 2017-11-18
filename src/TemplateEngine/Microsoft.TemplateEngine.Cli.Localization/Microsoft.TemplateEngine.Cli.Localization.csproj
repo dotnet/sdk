@@ -24,4 +24,13 @@
     </Content>
     <Content Remove="$(ArtifactsFolder)\localize\ploc\Microsoft.TemplateEngine.Cli.resources.dll"/>
   </ItemGroup>
+
+  <Target Name="SignResources" BeforeTargets="Pack" Outputs="%(Content.Identity)">
+    <GetFrameworkSdkPath>  
+      <Output  
+        TaskParameter="Path"  
+        PropertyName="SdkPath" />  
+    </GetFrameworkSdkPath>  
+    <Exec Command="&quot;$(SdkPath)bin\NETFX 4.6.1 Tools\sn.exe&quot; -R &quot;%(Content.Identity)&quot; &quot;$(MSBuildThisFileDirectory)..\..\key.snk&quot;" />
+  </Target>
 </Project>
