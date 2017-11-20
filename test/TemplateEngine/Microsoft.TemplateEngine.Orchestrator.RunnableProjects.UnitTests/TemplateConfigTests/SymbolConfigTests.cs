@@ -124,6 +124,85 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
+        [Fact(DisplayName = nameof(ExplicitNameSymbolWithoutBindingGetsDefaultNameBinding))]
+        public void ExplicitNameSymbolWithoutBindingGetsDefaultNameBinding()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ConfigWithNameSymbolWithoutBinding);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.Equal("name", symbolInfo.Binding);
+        }
+
+        private static JObject ConfigWithNameSymbolWithoutBinding
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""TemplateWithNameSymbolWithoutBinding"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.TemplateWithNameSymbolWithoutBinding"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.TemplateWithNameSymbolWithoutBinding"",
+  ""shortName"": ""TestAssets.TemplateWithNameSymbolWithoutBinding"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+        [Fact(DisplayName = nameof(ExplicitNameSymbolWithCustomBindingRetainsCustomBinding))]
+        public void ExplicitNameSymbolWithCustomBindingRetainsCustomBinding()
+        {
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(EngineEnvironmentSettings, ConfigWithNameSymbolWithCustomBinding);
+            Assert.True(configModel.Symbols.ContainsKey("name"));
+
+            ISymbolModel symbolInfo = configModel.Symbols["name"];
+            Assert.True(symbolInfo is ParameterSymbol);
+
+            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.Equal("customBinding", symbolInfo.Binding);
+        }
+
+        private static JObject ConfigWithNameSymbolWithCustomBinding
+        {
+            get
+            {
+                string configString = @"
+{
+  ""author"": ""Test Asset"",
+  ""classifications"": [ ""Test Asset"" ],
+  ""name"": ""ConfigWithNameSymbolWithCustomBinding"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""groupIdentity"": ""TestAssets.ConfigWithNameSymbolWithCustomBinding"",
+  ""precedence"": ""100"",
+  ""identity"": ""TestAssets.ConfigWithNameSymbolWithCustomBinding"",
+  ""shortName"": ""TestAssets.ConfigWithNameSymbolWithCustomBinding"",
+  ""symbols"": {
+    ""name"": {
+      ""type"": ""parameter"",
+      ""dataType"": ""string"",
+      ""binding"": ""customBinding"",
+    }
+  }
+}";
+                return JObject.Parse(configString);
+            }
+        }
+
+
+
         [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly))]
         public void ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly()
         {

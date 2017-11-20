@@ -25,17 +25,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 throw new InvalidCastException("defaultDefinedName is not a ParameterSymbol");
             }
 
-            if (templateSymbol.Forms.GlobalForms.Count > 0)
-            {   // template symbol has forms, use them
-                return templateSymbol;
-            }
-
+            // the merged symbol is mostly the user defined symbol, except the conditional cases below.
             ParameterSymbol mergedSymbol = new ParameterSymbol()
             {
-                Binding = templateSymbol.Binding,
                 DefaultValue = templateSymbol.DefaultValue,
                 Description = templateSymbol.Description,
-                Forms = defaultSymbol.Forms,    // this is the only thing that gets replaced from the default
                 IsRequired = templateSymbol.IsRequired,
                 Type = templateSymbol.Type,
                 Replaces = templateSymbol.Replaces,
@@ -46,6 +40,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Choices = templateSymbol.Choices,
                 ReplacementContexts = templateSymbol.ReplacementContexts,
             };
+
+            // If the template hasn't explicitly defined a binding to the name symbol, use the default.
+            if (string.IsNullOrEmpty(templateSymbol.Binding))
+            {
+                mergedSymbol.Binding = defaultDefinedName.Binding;
+            }
+            else
+            {
+                mergedSymbol.Binding = templateSymbol.Binding;
+            }
+
+            // if the template defined name symbol doesn't have any value forms defined, use the defaults.
+            if (templateSymbol.Forms.GlobalForms.Count == 0)
+            {
+                mergedSymbol.Forms = defaultSymbol.Forms;
+            }
+            else
+            {
+                mergedSymbol.Forms = templateSymbol.Forms;
+            }
 
             return mergedSymbol;
         }
