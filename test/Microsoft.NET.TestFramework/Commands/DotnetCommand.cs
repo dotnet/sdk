@@ -12,19 +12,17 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public class DotnetCommand : TestCommand
     {
-        public string WorkingDirectory { get; set; }
-
-        public DotnetCommand(ITestOutputHelper log) : base(log)
+        public DotnetCommand(ITestOutputHelper log, params string[] args) : base(log)
         {
+            Arguments.AddRange(args);
         }
 
-        protected override SdkCommandSpec CreateCommand(string[] args)
+        protected override SdkCommandSpec CreateCommand(string[] additonalArgs)
         {
             return new SdkCommandSpec()
             {
                 FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
-                Arguments = args.ToList(),
-                WorkingDirectory = WorkingDirectory
+                Arguments = additonalArgs.ToList()
             };
         }
     }

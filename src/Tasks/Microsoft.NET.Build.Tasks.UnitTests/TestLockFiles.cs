@@ -3,6 +3,7 @@
 
 using NuGet.Common;
 using NuGet.ProjectModel;
+using System;
 using System.IO;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -11,7 +12,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     {
         public static LockFile GetLockFile(string lockFilePrefix)
         {
-            string filePath = Path.Combine("LockFiles", $"{lockFilePrefix}.project.lock.json");
+            string filePath = Path.Combine(AppContext.BaseDirectory, "LockFiles", $"{lockFilePrefix}.project.lock.json");
 
             return LockFileUtilities.GetLockFile(filePath, NullLogger.Instance);
         }

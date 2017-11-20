@@ -11,6 +11,8 @@ namespace Microsoft.NET.TestFramework
 {
     public class ToolsetInfo
     {
+        public string CoreSDKVersion { get; set; }
+
         public string CliVersionForBundledVersions { get; set; }
 
         public string DotNetHostPath { get; set; }
@@ -106,6 +108,8 @@ namespace Microsoft.NET.TestFramework
         public static ToolsetInfo Create(string repoRoot, string configuration, TestCommandLine commandLine)
         {
             var ret = new ToolsetInfo();
+
+            ret.CoreSDKVersion = commandLine.CoreSDKVersion;
 
             repoRoot = commandLine.SDKRepoPath ?? repoRoot;
             configuration = commandLine.SDKRepoConfiguration ?? configuration;

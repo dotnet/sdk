@@ -51,7 +51,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
-            var buildProjectFiles = Directory.GetFiles(projectRootPath, "*.csproj");
+            var buildProjectFiles = Directory.GetFiles(projectRootPath, "*.csproj", SearchOption.AllDirectories);
 
             if (buildProjectFiles.Length != 1)
             {

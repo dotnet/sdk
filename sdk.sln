@@ -1,13 +1,12 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26531.4
+VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tasks", "Tasks", "{1FEED16D-E07D-47C1-BB4C-56CD9F42B53B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{580D1AE7-AA8F-4912-8B76-105594E00B3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Build.Tasks", "src\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj", "{DF7D2697-B3B4-45C2-8297-27245F528A99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Build.Tasks", "src\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj", "{DF7D2697-B3B4-45C2-8297-27245F528A99}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9CAEE03D-60F1-4E77-B25B-9CD8757E1F09}"
 	ProjectSection(SolutionItems) = preProject
@@ -35,15 +34,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signing", "Signing", "{385C
 		build\Signing\SignToolConfig.json = build\Signing\SignToolConfig.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Build.Tasks.UnitTests", "src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Microsoft.NET.Build.Tasks.UnitTests.csproj", "{6A698C1D-F604-4295-B6FC-7FC726F9FE5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Build.Tasks.UnitTests", "src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Microsoft.NET.Build.Tasks.UnitTests.csproj", "{6A698C1D-F604-4295-B6FC-7FC726F9FE5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.TestFramework", "test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj", "{A33548A0-F3B0-40C3-8C4D-AD2F00596CD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.TestFramework", "test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj", "{A33548A0-F3B0-40C3-8C4D-AD2F00596CD6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Publish.Tests", "test\Microsoft.NET.Publish.Tests\Microsoft.NET.Publish.Tests.csproj", "{7F31F2C6-6395-400C-ABE3-5A1CEF208096}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Publish.Tests", "test\Microsoft.NET.Publish.Tests\Microsoft.NET.Publish.Tests.csproj", "{7F31F2C6-6395-400C-ABE3-5A1CEF208096}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{3B295650-6CBF-486F-9E25-F96EE03B7CAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignTool", "src\Dependencies\SignTool\SignTool.csproj", "{98883ACD-BE3A-4533-953D-1BE25981BA02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignTool", "src\Dependencies\SignTool\SignTool.csproj", "{98883ACD-BE3A-4533-953D-1BE25981BA02}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{0C1312C0-0A29-4EB2-8294-6D1C54D78F61}"
 	ProjectSection(SolutionItems) = preProject
@@ -55,15 +54,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{0C13
 		build\Targets\TestProgram.cs = build\Targets\TestProgram.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Build.Tests", "test\Microsoft.NET.Build.Tests\Microsoft.NET.Build.Tests.csproj", "{EC640B7E-332E-40A2-BB6E-5B7EC788F315}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Build.Tests", "test\Microsoft.NET.Build.Tests\Microsoft.NET.Build.Tests.csproj", "{EC640B7E-332E-40A2-BB6E-5B7EC788F315}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Pack.Tests", "test\Microsoft.NET.Pack.Tests\Microsoft.NET.Pack.Tests.csproj", "{588516D7-96AD-4447-A1EB-244D737A3C87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Pack.Tests", "test\Microsoft.NET.Pack.Tests\Microsoft.NET.Pack.Tests.csproj", "{588516D7-96AD-4447-A1EB-244D737A3C87}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Build.Extensions.Tasks", "src\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj", "{88723307-6BFA-4CB5-A518-2FFD5F91B891}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Build.Extensions.Tasks.UnitTests", "src\Tasks\Microsoft.NET.Build.Extensions.Tasks.UnitTests\Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj", "{0E11CA1E-D64F-48E9-BE86-B040D9E8EBF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Restore.Tests", "test\Microsoft.NET.Restore.Tests\Microsoft.NET.Restore.Tests.csproj", "{73F52EAA-A435-4D7B-8E1E-F82E9A25BA98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Restore.Tests", "test\Microsoft.NET.Restore.Tests\Microsoft.NET.Restore.Tests.csproj", "{73F52EAA-A435-4D7B-8E1E-F82E9A25BA98}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Perf.Tests", "test\Microsoft.NET.Perf.Tests\Microsoft.NET.Perf.Tests.csproj", "{C275F586-0E9D-4DF1-B153-E914072D3833}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +112,10 @@ Global
 		{73F52EAA-A435-4D7B-8E1E-F82E9A25BA98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73F52EAA-A435-4D7B-8E1E-F82E9A25BA98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73F52EAA-A435-4D7B-8E1E-F82E9A25BA98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C275F586-0E9D-4DF1-B153-E914072D3833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C275F586-0E9D-4DF1-B153-E914072D3833}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C275F586-0E9D-4DF1-B153-E914072D3833}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C275F586-0E9D-4DF1-B153-E914072D3833}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,5 +134,9 @@ Global
 		{88723307-6BFA-4CB5-A518-2FFD5F91B891} = {1FEED16D-E07D-47C1-BB4C-56CD9F42B53B}
 		{0E11CA1E-D64F-48E9-BE86-B040D9E8EBF8} = {1FEED16D-E07D-47C1-BB4C-56CD9F42B53B}
 		{73F52EAA-A435-4D7B-8E1E-F82E9A25BA98} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{C275F586-0E9D-4DF1-B153-E914072D3833} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2F55B5BC-36E0-4D71-9811-3B99DDE38152}
 	EndGlobalSection
 EndGlobal

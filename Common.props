@@ -55,6 +55,9 @@
     <DotNetTool>$(DotNet_Install_Dir)\dotnet</DotNetTool>
 
     <NuGet_Packages Condition=" '$(NuGet_Packages)' == ''">$(RepositoryRootDirectory)packages\</NuGet_Packages>
+
+    <Stage0VersionFilePath>$(RepositoryRootDirectory)DotnetCLIVersion.txt</Stage0VersionFilePath>
+    <Stage0CLIVersion>$([System.IO.File]::ReadAllText($(Stage0VersionFilePath)).Trim())</Stage0CLIVersion>
   </PropertyGroup>
 
   <PropertyGroup>

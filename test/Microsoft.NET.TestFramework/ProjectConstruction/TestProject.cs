@@ -154,10 +154,6 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 {
                     propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", this.RuntimeIdentifier));
                 }
-
-                //  Update SDK reference to the version under test
-                targetTestAsset.SetSdkVersion(projectXml);
-                
             }
             else
             {
