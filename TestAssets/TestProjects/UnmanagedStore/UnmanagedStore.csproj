@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <RestoreSources>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</RestoreSources>
-  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.CoreDisTools" Version="1.0.1-prerelease-00001" />
   </ItemGroup>
