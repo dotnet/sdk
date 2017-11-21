@@ -218,7 +218,7 @@ namespace ProjectTestRunner
             }
         }
 
-        public static IEnumerable<string[]> Discover()
+        public static IEnumerable<object[]> Discover()
         {
             string basePath = Path.Combine(BasePath, "TestCases");
 
