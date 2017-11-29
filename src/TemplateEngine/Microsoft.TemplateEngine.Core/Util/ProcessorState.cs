@@ -112,12 +112,12 @@ namespace Microsoft.TemplateEngine.Core.Util
                     }
                 }
 
-                foreach(string state in turnOnByDefault)
-                {
-                    config.Flags[state] = true;
-                }
-
                 byEncoding[encoding] = trie;
+            }
+
+            foreach (string state in turnOnByDefault)
+            {
+                config.Flags[state] = true;
             }
 
             _trie = new TrieEvaluator<OperationTerminal>(trie);
