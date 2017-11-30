@@ -6,14 +6,14 @@ Param(
   [switch] $deploy,
   [switch] $fullMSBuild,
   [switch] $help,
-  [switch] $log,
+  [switch] $log = $True,
   [switch] $pack,
   [switch] $prepareMachine,
   [switch] $rebuild,
-  [switch] $restore,
+  [switch] $restore = $True,
   [switch] $sign,
   [string] $solution = "",
-  [switch] $test,
+  [switch] $test = $True,
   [string] $verbosity = "minimal",
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
