@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -17,11 +18,16 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string Language { get; set; }
 
+        [Output]
+        public ITaskItem[] Compile { get; set; }
+
         protected override void ExecuteCore()
         {
             // The algorithm used by this class is mostly borrowed from:
             // https://github.com/dotnet/roslyn-tools/blob/master/sdks/RepoToolset/tools/GenerateResxSource.csx,
             // heavily modified for readability.
+
+            List<ITaskItem> outputs = new List<ITaskItem>();
 
             foreach (ITaskItem item in ResxFiles)
             {
@@ -48,7 +54,12 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     throw new BuildErrorException($"Error parsing file '{item.ItemSpec}': {e.Message}", e);
                 }
+
+                ITaskItem output = new TaskItem(codeBehindPath);
+                outputs.Add(output);
             }
+
+            Compile = outputs.ToArray();
         }
 
         private static bool IsLetterCharacter(char ch)
