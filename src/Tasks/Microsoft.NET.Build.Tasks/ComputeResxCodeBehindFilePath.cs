@@ -47,6 +47,13 @@ namespace Microsoft.NET.Build.Tasks
                     // Skip EmbeddedResource items that aren't ResX files.
                     continue;
 
+                string alternateDesignerFilePath = Path.Combine(resxFile.GetMetadata("Directory"), resxFile.GetMetadata("FileName") + ".Designer" + languageExtension);
+                if (File.Exists(alternateDesignerFilePath))
+                    // If the in-source designer file exists, we assume that this ResX file is maintained by Visual Studio
+                    // and do not generate a code-behind for it. (If we did, we would get double-definition errors in the
+                    // generated code-behind.)
+                    continue;
+
                 string generateCodeBehindString = resxFile.GetMetadata("AutoGenerateCodeBehind");
                 bool generateCodeBehind = AutoGenerateByDefault;
 
