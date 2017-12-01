@@ -32,15 +32,19 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GenerateResxCodeBehindFiles"
           DependsOnTargets="_ComputeResxCodeBehindFilePaths"
-          Condition="'@(_ResxFileToGenerateCodeBehind)' != ''"
-          BeforeTargets="Compile">
+          Condition="'@(_ResxFileToGenerateCodeBehind)' != '' and '$(DesignTimeBuild)' == ''"
+          Inputs="@(_ResxFileToGenerateCodeBehind)"
+          Outputs="@(_ResxFileToGenerateCodeBehind -> '%(CodeBehindFile)')">
     <GenerateResxCodeBehindFile ResxFiles="@(_ResxFileToGenerateCodeBehind)"
-                                Language="$(Language)"
-                                Condition="'$(DesignTimeBuild)' == ''">
+                                Language="$(Language)">
       <Output TaskParameter="Compile" ItemName="Compile" />
       <Output TaskParameter="Compile" ItemName="FileWrites" />
     </GenerateResxCodeBehindFile>
-  
+    </Target>
+
+  <Target Name="GenerateResxCodeBehindFiles"
+          DependsOnTargets="_ComputeResxCodeBehindFilePaths;_GenerateResxCodeBehindFiles"
+          BeforeTargets="Compile">
     <!-- If $(DesignTimeBuild) is true, then we will need to specify the files to VS separately from their being generated. -->
     <!-- I did it this way so that code-behind files will only be generated during a user-initiated build. -->
     <ItemGroup Condition="'$(DesignTimeBuild)' != ''">
