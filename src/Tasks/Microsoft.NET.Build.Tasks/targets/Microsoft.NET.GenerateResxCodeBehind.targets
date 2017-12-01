@@ -32,7 +32,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GenerateResxCodeBehindFiles"
           DependsOnTargets="_ComputeResxCodeBehindFilePaths"
-          Condition="'@(_ResxFileToGenerateCodeBehind)' != ''">
+          Condition="'@(_ResxFileToGenerateCodeBehind)' != ''"
+          BeforeTargets="Compile">
     <GenerateResxCodeBehindFile ResxFiles="@(_ResxFileToGenerateCodeBehind)"
                                 Language="$(Language)"
                                 Condition="'$(DesignTimeBuild)' == ''">
