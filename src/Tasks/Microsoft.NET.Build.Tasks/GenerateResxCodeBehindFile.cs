@@ -9,7 +9,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateResxSource : TaskBase
+    public class GenerateResxCodeBehindFile : TaskBase
     {
         [Required]
         public ITaskItem[] ResxFiles { get; set; }
