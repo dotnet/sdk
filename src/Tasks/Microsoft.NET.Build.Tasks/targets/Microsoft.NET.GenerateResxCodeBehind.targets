@@ -1,0 +1,50 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.NET.RuntimeIdentifierInference.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved. 
+***********************************************************************************************
+-->
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <AutoGenerateResxCodeBehindFiles Condition="'$(AutoGenerateResxCodeBehindFiles)' == ''">true</AutoGenerateResxCodeBehindFiles>
+  </PropertyGroup>
+  
+  <UsingTask TaskName="ComputeResxCodeBehindFilePath" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="GenerateResxCodeBehindFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <Target Name="_ComputeResxCodeBehindFilePaths">
+    <ComputeResxCodeBehindFilePath EmbeddedResources="@(EmbeddedResource)"
+                                   IntermediateOutputPath="$(IntermediateOutputPath)"
+                                   Language="$(Language)"
+                                   AutoGenerateByDefault="$(AutoGenerateResxCodeBehindFiles)">
+      <Output TaskParameter="ResxFilesWithCodeBehindPath" ItemName="_ResxFileToGenerateCodeBehind" />
+    </ComputeResxCodeBehindFilePath>
+  </Target>
+
+  <Target Name="_GenerateResxCodeBehindFiles"
+          DependsOnTargets="_ComputeResxCodeBehindFilePaths"
+          Condition="'@(_ResxFileToGenerateCodeBehind)' != ''">
+    <GenerateResxCodeBehindFile ResxFiles="@(_ResxFileToGenerateCodeBehind)"
+                                Language="$(Language)"
+                                Condition="'$(DesignTimeBuild)' == ''">
+      <Output TaskParameter="Compile" ItemName="Compile" />
+      <Output TaskParameter="Compile" ItemName="FileWrites" />
+    </GenerateResxCodeBehindFile>
+  
+    <!-- If $(DesignTimeBuild) is true, then we will need to specify the files to VS separately from their being generated. -->
+    <!-- I did it this way so that code-behind files will only be generated during a user-initiated build. -->
+    <ItemGroup Condition="'$(DesignTimeBuild)' != ''">
+      <_ResxCodeBehind Include="@(_ResxFileToGenerateCodeBehind -> '%(CodeBehindFile)')" />
+      <Compile Include="@(_ResxCodeBehind)" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+  </Target>
+</Project>
