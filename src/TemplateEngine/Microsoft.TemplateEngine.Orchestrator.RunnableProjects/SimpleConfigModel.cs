@@ -1061,10 +1061,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 if (modelForSymbol != null)
                 {
-                    // TODO: revisit whether this check should be case-insensitive.
                     // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
                     if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
-                            && !symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol))
+                            && symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol))
                     {   // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
                         symbols[prop.Name] = ParameterSymbol.ExplicitNameSymbolMergeWithDefaults(modelForSymbol, existingSymbol);
                     }
