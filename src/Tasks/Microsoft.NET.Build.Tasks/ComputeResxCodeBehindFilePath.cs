@@ -17,6 +17,9 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string Language { get; set; }
 
+        [Required]
+        public bool AutoGenerateByDefault { get; set; }
+
         [Output]
         public ITaskItem[] ResxFilesWithCodeBehindPath { get; set; }
 
@@ -45,14 +48,16 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
 
                 string generateCodeBehindString = resxFile.GetMetadata("AutoGenerateCodeBehind");
-                if (string.IsNullOrEmpty(generateCodeBehindString))
-                    generateCodeBehindString = "true";
+                bool generateCodeBehind = AutoGenerateByDefault;
 
-                bool parseOK = bool.TryParse(generateCodeBehindString, out bool generateCodeBehind);
-                if (!parseOK)
+                if (!string.IsNullOrEmpty(generateCodeBehindString))
                 {
-                    Log.LogWarning("Unrecognized AutoGenerateCodeBehind metadata value on {0}, assuming true", resxFile.ItemSpec);
-                    generateCodeBehind = true;
+                    bool parseOK = bool.TryParse(generateCodeBehindString, out generateCodeBehind);
+                    if (!parseOK)
+                    {
+                        Log.LogWarning("Unrecognized AutoGenerateCodeBehind metadata value on {0}, using default value {1}", resxFile.ItemSpec, AutoGenerateByDefault);
+                        generateCodeBehind = true;
+                    }
                 }
 
                 if (!generateCodeBehind)
