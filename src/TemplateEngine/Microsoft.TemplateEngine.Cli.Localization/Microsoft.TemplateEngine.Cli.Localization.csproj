@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <Target Name="SignResources"
-          Condition="'$(PB_SignType)' != 'real' and '$(PB_SignType)' != 'test'"
           BeforeTargets="CopyFilesToOutputDirectory" Outputs="%(Content.Identity)">
     <GetFrameworkSdkPath>  
       <Output TaskParameter="Path" PropertyName="SdkPath" />  
