@@ -17,9 +17,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    public class GivenThatWeWantToPackAHelloWorldProject : SdkTest
+    public class GivenThatWeWantToPackAHelloWorldProject2 : SdkTest
     {
-        public GivenThatWeWantToPackAHelloWorldProject(ITestOutputHelper log) : base(log)
+        public GivenThatWeWantToPackAHelloWorldProject2(ITestOutputHelper log) : base(log)
         {
         }
 
