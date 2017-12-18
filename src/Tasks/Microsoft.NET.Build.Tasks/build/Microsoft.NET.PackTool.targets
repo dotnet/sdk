@@ -12,11 +12,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificBuildOutput);PackTool</TargetsForTfmSpecificContentInPackage>
-  </PropertyGroup>
-
-  <Target Name="PackTool" DependsOnTargets="Publish">
+  <Target Name="PackTool" DependsOnTargets="Publish" Condition=" '$(IsPackedAsTool)' == 'true' ">
     <ItemGroup>
       <TfmSpecificPackageFiles Include="$(PublishDir)/**/*.*"/>
     </ItemGroup>
