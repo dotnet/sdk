@@ -28,7 +28,7 @@ namespace Microsoft.NET.ToolPack.Tests
         public void It_packs_successfully()
         {
             var helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", "PackHelloWorld")
+                .CopyTestAsset("PortableTool", "PackPortableTool")
                 .WithSource()
                 .Restore(Log);
 
@@ -39,12 +39,7 @@ namespace Microsoft.NET.ToolPack.Tests
                 .Should()
                 .Pass();
 
-
             string nugetPackage = packCommand.GetNuGetPackage();
-            this.Log.WriteLine(nugetPackage);
-            //nugetPackage.Should().Be("aasdasd");
-            //  File.Exists(nugetPackage).Should().BeTrue();
-
 
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
