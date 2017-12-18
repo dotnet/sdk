@@ -47,5 +47,17 @@ namespace Microsoft.NET.ToolPack.Tests
                 libItems.Should().BeEmpty();
             }
         }
+
+        [Fact(Skip = "Pending")]
+        public void It_can_find_the_entry_point_dll_and_put_in_setting_file()
+        { }
+
+        [Fact(Skip = "Pending")]
+        public void It_contains_runtimeconfigfor_each_tfm()
+        { }
+
+        [Fact(Skip = "Pending")]
+        public void It_can_use_filename_contain_main_and_put_in_setting_file_as_commandname()
+        { }
     }
 }

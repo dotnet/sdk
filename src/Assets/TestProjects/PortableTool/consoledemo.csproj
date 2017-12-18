@@ -3,5 +3,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>consoledemo</AssemblyName>
+    <DotnetSDKProjectStyle>tool</DotnetSDKProjectStyle>
   </PropertyGroup>
 </Project>
