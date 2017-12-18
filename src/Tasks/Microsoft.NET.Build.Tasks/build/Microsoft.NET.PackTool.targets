@@ -27,8 +27,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
-  <!--settings file--><!--
-  <ItemGroup>
+  <!--settings file-->
+  <!--<ItemGroup>
     <_PackageFiles Include="DotnetToolSettings.xml">
       <PackagePath>tools/DotnetToolSettings.xml</PackagePath>
       <BuildAction>none</BuildAction>
