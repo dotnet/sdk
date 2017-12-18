@@ -10,7 +10,6 @@ using System.Xml.Linq;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using NuGet.Packaging.Core;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,7 +26,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void It_packs_successfully()
         {
-            var helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = _testAssetsManager
                 .CopyTestAsset("PortableTool", "PackPortableTool")
                 .WithSource()
                 .Restore(Log);
@@ -43,8 +42,9 @@ namespace Microsoft.NET.ToolPack.Tests
 
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
-                var libItems = nupkgReader.GetLibItems().ToList();
-                libItems.Should().BeEmpty();
+                nupkgReader
+                    .GetToolItems()
+                    .Should().NotBeEmpty();
             }
         }
 
@@ -54,6 +54,10 @@ namespace Microsoft.NET.ToolPack.Tests
 
         [Fact(Skip = "Pending")]
         public void It_contains_runtimeconfigfor_each_tfm()
+        { }
+
+        [Fact(Skip = "Pending")]
+        public void It_contains_dependencies_dll()
         { }
 
         [Fact(Skip = "Pending")]
