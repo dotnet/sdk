@@ -26,14 +26,14 @@ namespace Microsoft.NET.TestFramework.Commands
             return Path.Combine(GetBaseIntermediateDirectory().FullName, configuration, $"{packageId}.{packageVersion}.nuspec");
         }
 
-        public string GetNuGetPackage(string targetFramework, string packageId = null, string configuration = "Debug", string packageVersion = "1.0.0")
+        public string GetNuGetPackage(string packageId = null, string configuration = "Debug", string packageVersion = "1.0.0")
         {
             if (packageId == null)
             {
                 packageId = Path.GetFileNameWithoutExtension(ProjectFile);
             }
 
-            return Path.Combine(GetOutputDirectory(targetFramework, configuration).FullName, configuration, $"{packageId}.{packageVersion}.nupkg");
+            return Path.Combine(GetOutputDirectory(null, configuration).FullName, $"{packageId}.{packageVersion}.nupkg");
         }
     }
 }

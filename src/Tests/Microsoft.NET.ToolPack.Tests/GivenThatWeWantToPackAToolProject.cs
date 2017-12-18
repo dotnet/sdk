@@ -14,6 +14,7 @@ using NuGet.Packaging.Core;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
+using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
@@ -38,23 +39,18 @@ namespace Microsoft.NET.ToolPack.Tests
                 .Should()
                 .Pass();
 
-            //  Validate the contents of the NuGet package by looking at the generated .nuspec file, as that's simpler
-            //  than unzipping and inspecting the .nupkg
-            string nuspecPath = packCommand.GetIntermediateNuspecPath();
-            var nuspec = XDocument.Load(nuspecPath);
 
-            var ns = nuspec.Root.Name.Namespace;
-            XElement filesSection = nuspec.Root.Element(ns + "files");
+            string nugetPackage = packCommand.GetNuGetPackage();
+            this.Log.WriteLine(nugetPackage);
+            //nugetPackage.Should().Be("aasdasd");
+            //  File.Exists(nugetPackage).Should().BeTrue();
 
-            var fileTargets = filesSection.Elements().Select(files => files.Attribute("target").Value).ToList();
 
-            var expectedFileTargets = new[]
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
-                @"lib\netcoreapp1.1\HelloWorld.runtimeconfig.json",
-                @"lib\netcoreapp1.1\HelloWorld.dll"
-            }.Select(p => p.Replace('\\', Path.DirectorySeparatorChar));
-
-            fileTargets.Should().BeEquivalentTo(expectedFileTargets);
+                var libItems = nupkgReader.GetLibItems().ToList();
+                libItems.Should().BeEmpty();
+            }
         }
     }
 }
