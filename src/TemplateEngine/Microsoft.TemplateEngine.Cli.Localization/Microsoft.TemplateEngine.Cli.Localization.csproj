@@ -22,6 +22,6 @@
       <Pack>true</Pack>
       <PackagePath>lib\netstandard1.5</PackagePath>
     </Content>
-    <Content Remove="$(ArtifactsFolder)\localize\ploc\Microsoft.TemplateEngine.Cli.resources.dll"/>
+    <Content Remove="$(ArtifactsFolder)\localize\ploc\Microsoft.TemplateEngine.Cli.resources.dll" />
   </ItemGroup>
 </Project>
