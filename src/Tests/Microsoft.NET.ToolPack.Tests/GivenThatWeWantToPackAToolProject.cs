@@ -57,6 +57,14 @@ namespace Microsoft.NET.ToolPack.Tests
         { }
 
         [Fact(Skip = "Pending")]
+        public void It_contains_folder_structure_tfm_any()
+        { }
+
+        [Fact(Skip = "Pending")]
+        public void It_contains_packagetype_dotnettool()
+        { }
+
+        [Fact(Skip = "Pending")]
         public void It_contains_dependencies_dll()
         { }
 
