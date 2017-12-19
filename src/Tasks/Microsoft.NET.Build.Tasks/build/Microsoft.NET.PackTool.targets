@@ -19,7 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--All published file in different tools/tfm-->
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(TfmSpecificPackageFiles)">
-        <PackagePath>tools/$(targetframework)/%(TfmSpecificPackageFiles.RecursiveDir)%(TfmSpecificPackageFiles.Filename)%(TfmSpecificPackageFiles.Extension)</PackagePath>
+        <PackagePath>tools/$(targetframework)/any/%(TfmSpecificPackageFiles.RecursiveDir)%(TfmSpecificPackageFiles.Filename)%(TfmSpecificPackageFiles.Extension)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

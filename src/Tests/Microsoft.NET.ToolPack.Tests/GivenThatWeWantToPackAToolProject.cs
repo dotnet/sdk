@@ -19,12 +19,9 @@ namespace Microsoft.NET.ToolPack.Tests
 {
     public class GivenThatWeWantToPackAToolProject : SdkTest
     {
-        public GivenThatWeWantToPackAToolProject(ITestOutputHelper log) : base(log)
-        {
-        }
+        private readonly string _nugetPackage;
 
-        [Fact]
-        public void It_packs_successfully()
+        public GivenThatWeWantToPackAToolProject(ITestOutputHelper log) : base(log)
         {
             TestAsset helloWorldAsset = _testAssetsManager
                 .CopyTestAsset("PortableTool", "PackPortableTool")
@@ -38,9 +35,13 @@ namespace Microsoft.NET.ToolPack.Tests
                 .Should()
                 .Pass();
 
-            string nugetPackage = packCommand.GetNuGetPackage();
+            _nugetPackage = packCommand.GetNuGetPackage();
+        }
 
-            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+        [Fact]
+        public void It_packs_successfully()
+        {
+            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
             {
                 nupkgReader
                     .GetToolItems()
@@ -50,15 +51,26 @@ namespace Microsoft.NET.ToolPack.Tests
 
         [Fact(Skip = "Pending")]
         public void It_can_find_the_entry_point_dll_and_put_in_setting_file()
-        { }
+        {
+        }
 
         [Fact(Skip = "Pending")]
         public void It_contains_runtimeconfigfor_each_tfm()
-        { }
+        {
+        }
 
-        [Fact(Skip = "Pending")]
+        [Fact]
         public void It_contains_folder_structure_tfm_any()
-        { }
+        {
+            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            {
+                nupkgReader
+                    .GetToolItems()
+                    .Should().Contain(
+                        f => f.Items.
+                            Contains($"tools/{f.TargetFramework.GetShortFolderName()}/any/consoledemo.dll"));
+            }
+        }
 
         [Fact(Skip = "Pending")]
         public void It_contains_packagetype_dotnettool()
