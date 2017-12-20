@@ -54,9 +54,24 @@ namespace Microsoft.NET.ToolPack.Tests
         {
         }
 
-        [Fact(Skip = "Pending")]
+        [Fact]
         public void It_contains_runtimeconfigfor_each_tfm()
         {
+            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            {
+                IEnumerable<NuGet.Frameworks.NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
+                supportedFrameworks.Should().NotBeEmpty();
+
+                foreach (NuGet.Frameworks.NuGetFramework framework in supportedFrameworks)
+                {
+                    nupkgReader
+                    .GetToolItems()
+                    .Should().Contain(
+                        f => f.Items.
+                            Contains($"tools/{framework.GetShortFolderName()}/any/consoledemo.runtimeconfig.json"));
+
+                }
+            }
         }
 
         [Fact]
