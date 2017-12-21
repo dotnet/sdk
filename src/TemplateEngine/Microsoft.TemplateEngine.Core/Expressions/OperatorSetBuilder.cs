@@ -13,6 +13,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
         private readonly Dictionary<TToken, Operators> _tokensToOperatorsMap = new Dictionary<TToken, Operators>();
         private ITypeConverter _converter;
 
+        //TODO: The signatures for encoder and decoder will need to be updated to account
+        //  for encoding/decoding errors, the host will need to be inputted here as well
+        //  for the purposes of logging evaluation/parse errors
         public OperatorSetBuilder(Func<string, string> encoder, Func<string, string> decoder)
         {
             _encoder = encoder ?? Passthrough;

@@ -3,6 +3,8 @@ using System.Globalization;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 {
+    //TODO: When the ability to have more descriptive returns is available, update this with
+    //  bounds checking
     public static class XmlStyleConverters
     {
         public static string XmlDecode(string arg)
