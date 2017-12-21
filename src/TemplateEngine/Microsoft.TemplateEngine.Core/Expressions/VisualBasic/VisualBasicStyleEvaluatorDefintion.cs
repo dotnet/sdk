@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
 {
     public class VisualBasicStyleEvaluatorDefintion : SharedEvaluatorDefinition<VisualBasicStyleEvaluatorDefintion, VisualBasicStyleEvaluatorDefintion.Tokens>
     {
-        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(Encode, Decode)
+        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(CppStyleConverters.Encode, CppStyleConverters.Decode)
             .And(Tokens.And)
             .And(Tokens.AndAlso)
             .Or(Tokens.Or)
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
             .Exponentiate(Tokens.Exponentiate)
             .Literal(Tokens.Literal)
             .LiteralBoundsMarkers(Tokens.DoubleQuote)
-            .TypeConverter<VisualBasicStyleEvaluatorDefintion>(ConfigureConverters);
+            .TypeConverter<VisualBasicStyleEvaluatorDefintion>(VisualBasicStyleConverters.ConfigureConverters);
 
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
@@ -76,37 +76,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
             Exponentiate = 26,
             DoubleQuote = 27,
             Literal = 28,
-        }
-
-        private static void ConfigureConverters(ITypeConverter obj)
-        {
-            obj.Register((object o, out long r) =>
-            {
-                if (TryHexConvert(obj, o, out r))
-                {
-                    return true;
-                }
-
-                return obj.TryCoreConvert(o, out r);
-            }).Register((object o, out int r) =>
-            {
-                if (TryHexConvert(obj, o, out r))
-                {
-                    return true;
-                }
-
-                return obj.TryCoreConvert(o, out r);
-            });
-        }
-
-        private static string Decode(string arg)
-        {
-            return arg.Replace("\\\"", "\"").Replace("\\'", "'");
-        }
-
-        private static string Encode(string arg)
-        {
-            return arg.Replace("\"", "\\\"").Replace("'", "\\'");
         }
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
@@ -163,40 +132,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
             }
 
             return tokens;
-        }
-
-        private static bool TryHexConvert(ITypeConverter obj, object source, out long result)
-        {
-            if (!obj.TryConvert(source, out string ls))
-            {
-                result = 0;
-                return false;
-            }
-
-            if (ls.StartsWith("&H", StringComparison.OrdinalIgnoreCase) && long.TryParse(ls.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result))
-            {
-                return true;
-            }
-
-            result = 0;
-            return false;
-        }
-
-        private static bool TryHexConvert(ITypeConverter obj, object source, out int result)
-        {
-            if (!obj.TryConvert(source, out string ls))
-            {
-                result = 0;
-                return false;
-            }
-
-            if (ls.StartsWith("&H", StringComparison.OrdinalIgnoreCase) && int.TryParse(ls.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result))
-            {
-                return true;
-            }
-
-            result = 0;
-            return false;
         }
     }
 }

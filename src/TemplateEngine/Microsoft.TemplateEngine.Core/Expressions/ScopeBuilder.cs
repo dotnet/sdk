@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             Stack<ScopeIsolator> parents = new Stack<ScopeIsolator>();
             ScopeIsolator isolator = new ScopeIsolator
             {
-                Root = new UnaryScope<TOperator>(null, _identity, o => o),
+                Root = new UnaryScope<TOperator>(null, _identity, o => o)
             };
             isolator.Active = isolator.Root;
             TToken? activeLiteralSequenceBoundsMarker = null;
@@ -202,7 +202,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                                 parents.Push(isolator);
                                 isolator = new ScopeIsolator
                                 {
-                                    Root = new UnaryScope<TOperator>(null, _identity, o => o),
+                                    Root = new UnaryScope<TOperator>(null, _identity, o => o)
                                 };
                                 isolator.Active = isolator.Root;
                             }
