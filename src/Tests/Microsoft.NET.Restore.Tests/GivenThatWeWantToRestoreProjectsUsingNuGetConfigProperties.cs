@@ -146,7 +146,7 @@ namespace Microsoft.NET.Restore.Tests
                 {
                     PackageExtractor.InstallFromSourceAsync((stream) =>
                         fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                        new VersionFolderPathContext(
+                        new PackageExtractionContext(
                             identity,
                             nugetCache,
                             NullLogger.Instance,
