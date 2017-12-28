@@ -80,6 +80,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to     Source must be a directory, but &apos;{0}&apos; is a file..
+        /// </summary>
+        internal static string Authoring_SourceMustBeDirectory {
+            get {
+                return ResourceManager.GetString("Authoring_SourceMustBeDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to     Source path relative to install location: &apos;{0}&apos;.
         /// </summary>
         internal static string Authoring_SourcePathRelativeToInstall {

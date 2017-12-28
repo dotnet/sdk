@@ -20,6 +20,8 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token);
 
+        bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, bool mustMatchPosition, out int token);
+
         void Append(ITokenTrie trie);
 
         ITokenTrieEvaluator CreateEvaluator();

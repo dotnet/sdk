@@ -187,16 +187,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 try
                 {
-                    IDirectory sourceRoot = runnableTemplate.TemplateSourceRoot.DirectoryInfo(source.Source);
+                    IFile file = runnableTemplate.TemplateSourceRoot.FileInfo(source.Source);
 
-                    if (!sourceRoot.Exists)
-                    {   // non-existant directory
+                    if (file?.Exists ?? false)
+                    {
                         allSourcesValid = false;
                         host.LogDiagnosticMessage(string.Empty, "Authoring");
                         host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
                         host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source), "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceMustBeDirectory, source.Source), "Authoring");
+                    }
+                    else
+                    {
+                        IDirectory sourceRoot = runnableTemplate.TemplateSourceRoot.DirectoryInfo(source.Source);
+
+                        if (!(sourceRoot?.Exists ?? false))
+                        {
+                            // non-existant directory
+                            allSourcesValid = false;
+                            host.LogDiagnosticMessage(string.Empty, "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source), "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath), "Authoring");
+                        }
                     }
                 }
                 catch

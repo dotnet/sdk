@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Matching;
@@ -43,14 +44,14 @@ namespace Microsoft.TemplateEngine.Core.Util
             Token t = new Token(token.Value, index, token.Start, token.End);
             AddPath(token.Value, t);
 
-            if (token.Length > MaxLength)
+            if (token.Value.Length > MaxLength)
             {
-                MaxLength = token.Length;
+                MaxLength = token.Value.Length;
             }
 
-            if (token.Length < MinLength)
+            if (token.Value.Length < MinLength)
             {
-                MinLength = token.Length;
+                MinLength = token.Value.Length;
             }
         }
 
@@ -69,19 +70,38 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token)
         {
+            return GetOperation(buffer, bufferLength, ref currentBufferPosition, true, out token);
+        }
+
+        public bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, bool mustMatchPosition, out int token)
+        {
             int originalPosition = currentBufferPosition;
             TrieEvaluator<Token> evaluator = new TrieEvaluator<Token>(this);
             TrieEvaluationDriver<Token> driver = new TrieEvaluationDriver<Token>(evaluator);
+
+            if (mustMatchPosition)
+            {
+                bufferLength = Math.Min(bufferLength, currentBufferPosition + MaxLength);
+            }
+
             TerminalLocation<Token> location = driver.Evaluate(buffer, bufferLength, true, 0, ref currentBufferPosition);
 
-            if (location != null && currentBufferPosition - location.Terminal.Length == originalPosition)
+            if (location != null && (!mustMatchPosition || (currentBufferPosition - location.Terminal.Length == originalPosition)))
             {
                 token = location.Terminal.Index;
                 currentBufferPosition = location.Location + location.Terminal.End - location.Terminal.Start + 1;
                 return true;
             }
 
-            currentBufferPosition = originalPosition;
+            if (mustMatchPosition)
+            {
+                currentBufferPosition = originalPosition;
+            }
+            else
+            {
+                currentBufferPosition = bufferLength - MaxLength + 1;
+            }
+
             token = -1;
             return false;
         }

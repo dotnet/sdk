@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -122,6 +122,9 @@
   </data>
   <data name="Authoring_SourceIsOutsideInstallSource" xml:space="preserve">
     <value>    Source location '{0}' is outside the specified install source location.</value>
+  </data>
+  <data name="Authoring_SourceMustBeDirectory" xml:space="preserve">
+    <value>    Source must be a directory, but '{0}' is a file.</value>
   </data>
   <data name="Authoring_SourcePathRelativeToInstall" xml:space="preserve">
     <value>    Source path relative to install location: '{0}'</value>
