@@ -19,12 +19,14 @@ namespace Microsoft.NET.TestFramework.Commands
 
         protected override SdkCommandSpec CreateCommand(string[] args)
         {
-            return new SdkCommandSpec()
+            var ret = new SdkCommandSpec()
             {
                 FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
                 Arguments = args.ToList(),
                 WorkingDirectory = WorkingDirectory
             };
+            TestContext.Current.AddTestEnvironmentVariables(ret);
+            return ret;
         }
     }
 }
