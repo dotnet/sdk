@@ -22,7 +22,8 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [Theory]
+        // https://github.com/dotnet/sdk/issues/1327
+        [CoreMSBuildOnlyTheory]
         [InlineData("netstandard1.3", "1.3", false)]
         [InlineData("netcoreapp1.0", "1.0", true)]
         [InlineData("netcoreapp1.1", "1.1", true)]
