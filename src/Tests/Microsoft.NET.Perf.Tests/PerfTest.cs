@@ -15,7 +15,7 @@ namespace Microsoft.NET.Perf.Tests
 {
     public class PerfTest
     {
-        public static int DefaultIterations { get; set; } = 10;
+        public static int DefaultIterations { get; set; } = 1;
 
         public string ScenarioName { get; set; }
         public string TestName { get; set; }
