@@ -1,5 +1,6 @@
 ﻿using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
+using Microsoft.TemplateEngine.Core.Expressions.VisualBasic;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.TestHelper;
@@ -35,6 +36,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         protected IProcessor SetupCStyleNoCommentsProcessor(VariableCollection vc)
         {
             IOperationProvider[] operations = CStyleNoCommentsConditionalOperations;
+            return SetupTestProcessor(operations, vc);
+        }
+
+        protected IProcessor SetupVBStyleNoCommentsProcessor(VariableCollection vc)
+        {
+            IOperationProvider[] operations = VBStyleNoCommentsConditionalOperations;
             return SetupTestProcessor(operations, vc);
         }
 
@@ -221,6 +228,27 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 IOperationProvider[] operations =
                 {
                     new Conditional(tokenVariants, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true)
+                };
+
+                return operations;
+            }
+        }
+
+        private static IOperationProvider[] VBStyleNoCommentsConditionalOperations
+        {
+            get
+            {
+                ConditionalTokens tokenVariants = new ConditionalTokens
+                {
+                    IfTokens = new[] { "#If" }.TokenConfigs(),
+                    ElseTokens = new[] { "#Else" }.TokenConfigs(),
+                    ElseIfTokens = new[] { "#ElseIf" }.TokenConfigs(),
+                    EndIfTokens = new[] { "#End If" }.TokenConfigs()
+                };
+
+                IOperationProvider[] operations =
+                {
+                    new Conditional(tokenVariants, true, true, VisualBasicStyleEvaluatorDefintion.Evaluate, null, true)
                 };
 
                 return operations;

@@ -39,9 +39,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static T EvaluateSide<T>(object side, Func<object, T> convert)
         {
-            Scope scope = side as Scope;
-
-            if (scope != null)
+            if (side is Scope scope)
             {
                 return convert(scope.Evaluate());
             }
@@ -105,9 +103,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static bool LenientEquals(object x, object y)
         {
-            string sx = x as string, sy = y as string;
-
-            if(sx != null && sy != null)
+            if(x is string sx && y is string sy)
             {
                 return string.Equals(sx, sy, StringComparison.OrdinalIgnoreCase);
             }

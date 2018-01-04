@@ -1,17 +1,14 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Text;
-using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Expressions.Shared;
 using Microsoft.TemplateEngine.Core.Util;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
 {
-    public class MSBuildStyleEvaluatorDefinition
+    public class MSBuildStyleEvaluatorDefinition : SharedEvaluatorDefinition<MSBuildStyleEvaluatorDefinition, MSBuildStyleEvaluatorDefinition.Tokens>
     {
-        private static readonly IOperatorMap<Operators, Tokens> Map = new OperatorSetBuilder<Tokens>(XmlEncode, XmlDecode)
+        protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(XmlStyleConverters.XmlEncode, XmlStyleConverters.XmlDecode)
             .And(Tokens.And)
             .Or(Tokens.Or)
             .Not(Tokens.Not)
@@ -27,13 +24,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
             .OpenGroup(Tokens.OpenBrace)
             .CloseGroup(Tokens.CloseBrace)
             .TerminateWith(Tokens.WindowsEOL, Tokens.UnixEOL, Tokens.LegacyMacEOL)
-            .Literal(Tokens.Literal);
-
-        private static readonly IOperationProvider[] NoOperationProviders = new IOperationProvider[0];
+            .Literal(Tokens.Literal)
+            .TypeConverter<MSBuildStyleEvaluatorDefinition>(CppStyleConverters.ConfigureConverters);
 
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
-        private enum Tokens
+        public enum Tokens
         {
             And = 0,
             Or = 1,
@@ -53,168 +49,16 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
             LegacyMacEOL = 15,
             Quote = 16,
             VariableStart = 17,
-            Literal = 18,
+            Literal = 18
         }
 
-        public static bool EvaluateFromString(IEngineEnvironmentSettings environmentSettings, string text, IVariableCollection variables)
+        protected override bool DereferenceInLiterals => true;
+
+        protected override string NullTokenValue => "null";
+
+        protected override ITokenTrie GetSymbols(IProcessorState processor)
         {
-            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new MemoryStream())
-            {
-                EngineConfig cfg = new EngineConfig(environmentSettings, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int) ms.Length, (int) ms.Length, cfg, NoOperationProviders);
-                int len = (int) ms.Length;
-                int pos = 0;
-                bool faulted;
-                return Evaluate(state, ref len, ref pos, out faulted);
-            }
-        }
-
-        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
-        {
-            ITokenTrie tokens = GetSymbols(processor);
-            ScopeBuilder<Operators, Tokens> builder = processor.ScopeBuilder(tokens, Map, true);
-            bool isFaulted = false;
-            IEvaluable result = builder.Build(ref bufferLength, ref currentBufferPosition, x => isFaulted = true);
-
-            if (isFaulted)
-            {
-                faulted = true;
-                return false;
-            }
-
-            try
-            {
-                object evalResult = result.Evaluate();
-                bool r = (bool)Convert.ChangeType(evalResult, typeof(bool));
-                faulted = false;
-                return r;
-            }
-            catch
-            {
-                faulted = true;
-                return false;
-            }
-        }
-
-        private static int? AttemptComparableComparison(object left, object right)
-        {
-            IComparable ls = left as IComparable;
-            IComparable rs = right as IComparable;
-
-            if (ls == null || rs == null)
-            {
-                return null;
-            }
-
-            return ls.CompareTo(rs);
-        }
-
-        private static int? AttemptLexographicComparison(object left, object right)
-        {
-            string ls = left as string;
-            string rs = right as string;
-
-            if (ls == null || rs == null)
-            {
-                return null;
-            }
-
-            return string.Compare(ls, rs, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static int? AttemptNumericComparison(object left, object right)
-        {
-            bool leftIsDouble = left is double;
-            bool rightIsDouble = right is double;
-            double ld = leftIsDouble ? (double)left : 0;
-            double rd = rightIsDouble ? (double)right : 0;
-
-            if (!leftIsDouble)
-            {
-                string ls = left as string;
-
-                if (ls != null)
-                {
-                    int lh;
-                    if (double.TryParse(ls, out ld))
-                    {
-                    }
-                    else if (ls.StartsWith("0x", StringComparison.OrdinalIgnoreCase) && int.TryParse(ls.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out lh))
-                    {
-                        ld = lh;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            if (!rightIsDouble)
-            {
-                string rs = right as string;
-
-                if (rs != null)
-                {
-                    int rh;
-                    if (double.TryParse(rs, out rd))
-                    {
-                    }
-                    else if (rs.StartsWith("0x", StringComparison.OrdinalIgnoreCase) && int.TryParse(rs.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out rh))
-                    {
-                        rd = rh;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            return ld.CompareTo(rd);
-        }
-
-        private static int? AttemptVersionComparison(object left, object right)
-        {
-            Version lv = left as Version;
-
-            if (lv == null)
-            {
-                string ls = left as string;
-                if (ls == null || !Version.TryParse(ls, out lv))
-                {
-                    return null;
-                }
-            }
-
-            Version rv = right as Version;
-
-            if (rv == null)
-            {
-                string rs = right as string;
-                if (rs == null || !Version.TryParse(rs, out rv))
-                {
-                    return null;
-                }
-            }
-
-            return lv.CompareTo(rv);
-        }
-
-        private static int Compare(object left, object right)
-        {
-            return AttemptNumericComparison(left, right)
-                   ?? AttemptVersionComparison(left, right)
-                   ?? AttemptLexographicComparison(left, right)
-                   ?? AttemptComparableComparison(left, right)
-                   ?? 0;
-        }
-
-        private static ITokenTrie GetSymbols(IProcessorState processor)
-        {
-            ITokenTrie tokens;
-            if (!TokenCache.TryGetValue(processor.Encoding, out tokens))
+            if (!TokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
             {
                 TokenTrie trie = new TokenTrie();
 
@@ -252,148 +96,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
             }
 
             return tokens;
-        }
-
-        private static string XmlDecode(string arg)
-        {
-            List<char> output = new List<char>();
-
-            for (int i = 0; i < arg.Length; ++i)
-            {
-                //Not entity mode
-                if (arg[i] != '&')
-                {
-                    output.Add(arg[i]);
-                    continue;
-                }
-
-                ++i;
-                //Entity mode, decimal or hex
-                if (arg[i] == '#')
-                {
-                    ++i;
-
-                    //Hex entity mode
-                    if (arg[i] == 'x')
-                    {
-                        string hex = arg.Substring(i + 1, 4);
-                        char c = (char)short.Parse(hex.TrimStart('0'), NumberStyles.HexNumber);
-                        output.Add(c);
-                        i += 5; //x, 4 digits, semicolon (consumed by the loop bound)
-                    }
-                    else
-                    {
-                        string dec = arg.Substring(i, 4);
-                        char c = (char)short.Parse(dec.TrimStart('0'), NumberStyles.Integer);
-                        output.Add(c);
-                        i += 4; //4 digits, semicolon (consumed by the loop bound)
-                    }
-                }
-                else
-                {
-                    switch (arg[i])
-                    {
-                        case 'q':
-                            switch (arg[i + 1])
-                            {
-                                case 'u':
-                                    switch (arg[i + 2])
-                                    {
-                                        case 'o':
-                                            switch (arg[i + 3])
-                                            {
-                                                case 't':
-                                                    switch (arg[i + 4])
-                                                    {
-                                                        case ';':
-                                                            output.Add('"');
-                                                            i += 4;
-                                                            break;
-                                                    }
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                    break;
-                            }
-                            break;
-                        case 'a':
-                            switch (arg[i + 1])
-                            {
-                                case 'm':
-                                    switch (arg[i + 2])
-                                    {
-                                        case 'p':
-                                            switch (arg[i + 3])
-                                            {
-                                                case ';':
-                                                    output.Add('&');
-                                                    i += 3;
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                    break;
-                                case 'p':
-                                    switch (arg[i + 2])
-                                    {
-                                        case 'o':
-                                            switch (arg[i + 3])
-                                            {
-                                                case 's':
-                                                    switch (arg[i + 4])
-                                                    {
-                                                        case ';':
-                                                            output.Add('\'');
-                                                            i += 4;
-                                                            break;
-                                                    }
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                    break;
-                            }
-                            break;
-                        case 'l':
-                            switch (arg[i + 1])
-                            {
-                                case 't':
-                                    switch (arg[i + 2])
-                                    {
-                                        case ';':
-                                            output.Add('<');
-                                            i += 2;
-                                            break;
-                                    }
-                                    break;
-                            }
-                            break;
-                        case 'g':
-                            switch (arg[i + 1])
-                            {
-                                case 't':
-                                    switch (arg[i + 2])
-                                    {
-                                        case ';':
-                                            output.Add('>');
-                                            i += 2;
-                                            break;
-                                    }
-                                    break;
-                            }
-                            break;
-                    }
-                }
-            }
-
-            string s = new string(output.ToArray());
-            return s;
-        }
-
-        private static string XmlEncode(string arg)
-        {
-            return arg.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;").Replace("'", "&apos;");
         }
     }
 }

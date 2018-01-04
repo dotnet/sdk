@@ -1,17 +1,22 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Core.Expressions.Shared;
 
-namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
+namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
 {
-    public class Cpp2StyleEvaluatorDefinition : SharedEvaluatorDefinition<Cpp2StyleEvaluatorDefinition, Cpp2StyleEvaluatorDefinition.Tokens>
+    public class VisualBasicStyleEvaluatorDefintion : SharedEvaluatorDefinition<VisualBasicStyleEvaluatorDefintion, VisualBasicStyleEvaluatorDefintion.Tokens>
     {
         protected override IOperatorMap<Operators, Tokens> GenerateMap() => new OperatorSetBuilder<Tokens>(CppStyleConverters.Encode, CppStyleConverters.Decode)
             .And(Tokens.And)
+            .And(Tokens.AndAlso)
             .Or(Tokens.Or)
+            .Or(Tokens.OrElse)
             .Not(Tokens.Not)
+            .Xor(Tokens.Xor)
             .GreaterThan(Tokens.GreaterThan, evaluate: (x, y) => Compare(x, y) > 0)
             .GreaterThanOrEqualTo(Tokens.GreaterThanOrEqualTo, evaluate: (x, y) => Compare(x, y) >= 0)
             .LessThan(Tokens.LessThan, evaluate: (x, y) => Compare(x, y) < 0)
@@ -29,48 +34,48 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
             .Subtract(Tokens.Subtract)
             .Multiply(Tokens.Multiply)
             .Divide(Tokens.Divide)
-            .BitwiseAnd(Tokens.BitwiseAnd)
-            .BitwiseOr(Tokens.BitwiseOr)
+            .Exponentiate(Tokens.Exponentiate)
             .Literal(Tokens.Literal)
-            .LiteralBoundsMarkers(Tokens.SingleQuote, Tokens.DoubleQuote)
-            .TypeConverter<Cpp2StyleEvaluatorDefinition>(CppStyleConverters.ConfigureConverters);
+            .LiteralBoundsMarkers(Tokens.DoubleQuote)
+            .TypeConverter<VisualBasicStyleEvaluatorDefintion>(VisualBasicStyleConverters.ConfigureConverters);
 
         private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
         protected override bool DereferenceInLiterals => false;
 
-        protected override string NullTokenValue => "null";
+        protected override string NullTokenValue => "Nothing";
 
         public enum Tokens
         {
             And = 0,
-            Or = 1,
-            Not = 2,
-            GreaterThan = 3,
-            GreaterThanOrEqualTo = 4,
-            LessThan = 5,
-            LessThanOrEqualTo = 6,
-            EqualTo = 7,
-            NotEqualTo = 8,
-            OpenBrace = 9,
-            CloseBrace = 10,
-            Space = 11,
-            Tab = 12,
-            WindowsEOL = 13,
-            UnixEOL = 14,
-            LegacyMacEOL = 15,
-            Quote = 16,
-            LeftShift = 17,
-            RightShift = 18,
-            Add = 19,
-            Subtract = 20,
-            Multiply = 21,
-            Divide = 22,
-            BitwiseAnd = 23,
-            BitwiseOr = 24,
-            SingleQuote = 25,
-            DoubleQuote = 26,
-            Literal = 27
+            AndAlso = 1,
+            Or = 2,
+            OrElse = 3,
+            Not = 4,
+            GreaterThan = 5,
+            GreaterThanOrEqualTo = 6,
+            LessThan = 7,
+            LessThanOrEqualTo = 8,
+            EqualTo = 9,
+            NotEqualTo = 10,
+            Xor = 11,
+            OpenBrace = 12,
+            CloseBrace = 13,
+            Space = 14,
+            Tab = 15,
+            WindowsEOL = 16,
+            UnixEOL = 17,
+            LegacyMacEOL = 18,
+            Quote = 19,
+            LeftShift = 20,
+            RightShift = 21,
+            Add = 22,
+            Subtract = 23,
+            Multiply = 24,
+            Divide = 25,
+            Exponentiate = 26,
+            DoubleQuote = 27,
+            Literal = 28,
         }
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
@@ -80,15 +85,18 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
                 TokenTrie trie = new TokenTrie();
 
                 //Logic
-                trie.AddToken(processor.Encoding.GetBytes("&&"));
-                trie.AddToken(processor.Encoding.GetBytes("||"));
-                trie.AddToken(processor.Encoding.GetBytes("!"));
+                trie.AddToken(processor.Encoding.GetBytes("And"));
+                trie.AddToken(processor.Encoding.GetBytes("AndAlso"));
+                trie.AddToken(processor.Encoding.GetBytes("Or"));
+                trie.AddToken(processor.Encoding.GetBytes("OrElse"));
+                trie.AddToken(processor.Encoding.GetBytes("Not"));
                 trie.AddToken(processor.Encoding.GetBytes(">"));
                 trie.AddToken(processor.Encoding.GetBytes(">="));
                 trie.AddToken(processor.Encoding.GetBytes("<"));
                 trie.AddToken(processor.Encoding.GetBytes("<="));
-                trie.AddToken(processor.Encoding.GetBytes("=="));
-                trie.AddToken(processor.Encoding.GetBytes("!="));
+                trie.AddToken(processor.Encoding.GetBytes("="));
+                trie.AddToken(processor.Encoding.GetBytes("<>"));
+                trie.AddToken(processor.Encoding.GetBytes("Xor"));
 
                 //Braces
                 trie.AddToken(processor.Encoding.GetBytes("("));
@@ -115,13 +123,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
                 trie.AddToken(processor.Encoding.GetBytes("-"));
                 trie.AddToken(processor.Encoding.GetBytes("*"));
                 trie.AddToken(processor.Encoding.GetBytes("/"));
-
-                //Bitwise operators
-                trie.AddToken(processor.Encoding.GetBytes("&"));
-                trie.AddToken(processor.Encoding.GetBytes("|"));
+                trie.AddToken(processor.Encoding.GetBytes("^"));
 
                 // quotes
-                trie.AddToken(processor.Encoding.GetBytes("'"));
                 trie.AddToken(processor.Encoding.GetBytes("\""));
 
                 TokenCache[processor.Encoding] = tokens = trie;

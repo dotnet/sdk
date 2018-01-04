@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -27,8 +27,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
-                bool faulted;
-                return Evaluate(state, ref len, ref pos, out faulted);
+                return Evaluate(state, ref len, ref pos, out bool faulted);
             }
         }
 
@@ -80,8 +79,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             TokenFamily currentTokenFamily;
             List<byte> currentTokenBytes = new List<byte>();
             List<TokenRef> tokens = new List<TokenRef>();
-            int token;
-            if (!trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+            if (!trie.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out int token))
             {
                 currentTokenFamily = TokenFamily.Literal;
                 currentTokenBytes.Add(processor.CurrentBuffer[currentBufferPosition++]);
@@ -229,13 +227,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                             if (currentTokenFamily != TokenFamily.WindowsEOL && currentTokenFamily != TokenFamily.LegacyMacEOL && currentTokenFamily != TokenFamily.UnixEOL)
                             {
-                                if (currentTokenFamily == TokenFamily.OpenBrace)
+                                switch (currentTokenFamily)
                                 {
-                                    ++braceDepth;
-                                }
-                                else if (currentTokenFamily == TokenFamily.CloseBrace)
-                                {
-                                    --braceDepth;
+                                    case TokenFamily.OpenBrace:
+                                        ++braceDepth;
+                                        break;
+                                    case TokenFamily.CloseBrace:
+                                        --braceDepth;
+                                        break;
                                 }
 
                                 tokens.Add(new TokenRef
@@ -288,9 +287,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
         {
             if (current.Operator == Operator.None)
             {
-                Scope leftScope = current.Left as Scope;
                 if (current.TargetPlacement != Scope.NextPlacement.Right
-                    || leftScope == null
+                    || !(current.Left is Scope leftScope)
                     || !IsLogicalOperator(leftScope.Operator))
                 {
                     return;
@@ -323,7 +321,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             current = tmp;
         }
 
-        private static bool EvaluateCondition(List<TokenRef> tokens, IReadOnlyList<Func<object>> values)
+        private static bool EvaluateCondition(IReadOnlyList<TokenRef> tokens, IReadOnlyList<Func<object>> values)
         {
             //Skip over all leading whitespace
             int i = 0;
@@ -554,14 +552,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                     return null;
                 }
 
-                double literalDouble;
-                if (literal.Contains(".") && double.TryParse(literal, out literalDouble))
+                if (literal.Contains(".") && double.TryParse(literal, out double literalDouble))
                 {
                     return literalDouble;
                 }
 
-                long literalLong;
-                if (long.TryParse(literal, out literalLong))
+                if (long.TryParse(literal, out long literalLong))
                 {
                     return literalLong;
                 }

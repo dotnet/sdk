@@ -23,6 +23,7 @@
         Subtract = 29,
         Multiply = 25,
         Divide = 26,
-        Modulus = 27
+        Modulus = 27,
+        Exponentiate = 24
     }
 }

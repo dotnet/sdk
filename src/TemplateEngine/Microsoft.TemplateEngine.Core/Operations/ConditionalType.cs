@@ -13,6 +13,7 @@
         RemLineComment,
         MSBuild,
         HamlLineComment,
-        JsxBlockComment
+        JsxBlockComment,
+        VB
     }
 }

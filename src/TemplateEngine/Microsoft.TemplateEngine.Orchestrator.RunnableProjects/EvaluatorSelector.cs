@@ -2,6 +2,7 @@
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Expressions.MSBuild;
+using Microsoft.TemplateEngine.Core.Expressions.VisualBasic;
 using Microsoft.TemplateEngine.Core.Operations;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -27,6 +28,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     break;
                 case "MSBUILD":
                     evaluator = MSBuildStyleEvaluatorDefinition.Evaluate;
+                    break;
+                case "VB":
+                    evaluator = VisualBasicStyleEvaluatorDefintion.Evaluate;
                     break;
                 default:
                     throw new Exception($"Unrecognized evaluator {evaluatorName}");

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -13,6 +13,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
         private readonly Dictionary<TToken, Operators> _tokensToOperatorsMap = new Dictionary<TToken, Operators>();
         private ITypeConverter _converter;
 
+        //TODO: The signatures for encoder and decoder will need to be updated to account
+        //  for encoding/decoding errors, the host will need to be inputted here as well
+        //  for the purposes of logging evaluation/parse errors
         public OperatorSetBuilder(Func<string, string> encoder, Func<string, string> decoder)
         {
             _encoder = encoder ?? Passthrough;
@@ -94,6 +97,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions
         public OperatorSetBuilder<TToken> EqualTo(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
         {
             return SetupBinary(Operators.EqualTo, token, evaluate ?? EqualTo, precedesOperator);
+        }
+
+        public OperatorSetBuilder<TToken> Exponentiate(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        {
+            return SetupBinary(Operators.Exponentiate, token, evaluate ?? Exponentiate, precedesOperator);
         }
 
         public OperatorSetBuilder<TToken> GreaterThan(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
@@ -215,8 +223,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             //If we could steal an arg...
             if (!active.IsIndivisible)
             {
-                BinaryScope<Operators> left = active as BinaryScope<Operators>;
-                if (left != null && precedesOperator(left.Operator))
+                if (active is BinaryScope<Operators> left && precedesOperator(left.Operator))
                 {
                     self = new BinaryScope<Operators>(active, op, evaluate)
                     {
@@ -234,18 +241,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
             if (active.Parent != null)
             {
-                UnaryScope<Operators> unary = active.Parent as UnaryScope<Operators>;
-
-                if (unary != null)
+                switch (active.Parent)
                 {
-                    unary.Parent = self;
-                }
-                else
-                {
-                    BinaryScope<Operators> binary = active.Parent as BinaryScope<Operators>;
-
-                    if (binary != null)
-                    {
+                    case UnaryScope<Operators> unary:
+                        unary.Parent = self;
+                        break;
+                    case BinaryScope<Operators> binary:
                         if (binary.Left == active)
                         {
                             binary.Left = self;
@@ -254,7 +255,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                         {
                             binary.Right = self;
                         }
-                    }
+                        break;
                 }
             }
 
@@ -315,34 +316,28 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object Add(object left, object right)
         {
-            long longLeft;
-            if (_converter.TryConvert(left, out longLeft))
+            if (_converter.TryConvert(left, out long longLeft))
             {
-                long longRight;
-                if (_converter.TryConvert(right, out longRight))
+                if (_converter.TryConvert(right, out long longRight))
                 {
                     return longLeft + longRight;
                 }
 
-                double doubleRight;
-                if (_converter.TryConvert(right, out doubleRight))
+                if (_converter.TryConvert(right, out double doubleRight))
                 {
                     return longLeft + doubleRight;
                 }
             }
             else
             {
-                double doubleLeft;
-                if (_converter.TryConvert(left, out doubleLeft))
+                if (_converter.TryConvert(left, out double doubleLeft))
                 {
-                    long longRight;
-                    if (_converter.TryConvert(right, out longRight))
+                    if (_converter.TryConvert(right, out long longRight))
                     {
                         return doubleLeft + longRight;
                     }
 
-                    double doubleRight;
-                    if (_converter.TryConvert(right, out doubleRight))
+                    if (_converter.TryConvert(right, out double doubleRight))
                     {
                         return doubleLeft + doubleRight;
                     }
@@ -354,8 +349,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object And(object left, object right)
         {
-            bool boolLeft, boolRight;
-            if (_converter.TryConvert(left, out boolLeft) && _converter.TryConvert(right, out boolRight))
+            if (_converter.TryConvert(left, out bool boolLeft) && _converter.TryConvert(right, out bool boolRight))
             {
                 return boolLeft && boolRight;
             }
@@ -365,14 +359,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object BitwiseAnd(object left, object right)
         {
-            long longLeft;
-            if (_converter.TryConvert(left, out longLeft))
+            if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out long longRight))
             {
-                long longRight;
-                if (_converter.TryConvert(right, out longRight))
-                {
-                    return longLeft & longRight;
-                }
+                return longLeft & longRight;
             }
 
             throw new Exception($"Unable to bitwise and {left?.GetType()} and {right?.GetType()}");
@@ -380,14 +369,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object BitwiseOr(object left, object right)
         {
-            long longLeft;
-            if (_converter.TryConvert(left, out longLeft))
+            if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out long longRight))
             {
-                long longRight;
-                if (_converter.TryConvert(right, out longRight))
-                {
-                    return longLeft | longRight;
-                }
+                return longLeft | longRight;
             }
 
             throw new Exception($"Unable to bitwise or {left?.GetType()} and {right?.GetType()}");
@@ -395,10 +379,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object Divide(object left, object right)
         {
-            long longLeft, longRight;
-            int doubleLeft, doubleRight;
+            long longRight;
+            int doubleRight;
 
-            if (_converter.TryConvert(left, out longLeft))
+            if (_converter.TryConvert(left, out long longLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -410,7 +394,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return longLeft / doubleRight;
                 }
             }
-            else if (_converter.TryConvert(left, out doubleLeft))
+            else if (_converter.TryConvert(left, out int doubleLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -426,11 +410,42 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Cannot divide {left?.GetType()} and {right?.GetType()}");
         }
 
+        private object Exponentiate(object left, object right)
+        {
+            long longRight;
+            int intRight;
+
+            if (_converter.TryConvert(left, out long longLeft))
+            {
+                if (_converter.TryConvert(right, out longRight))
+                {
+                    return Math.Pow(longLeft, longRight);
+                }
+
+                if (_converter.TryConvert(right, out intRight))
+                {
+                    return Math.Pow(longLeft, intRight);
+                }
+            }
+            else if (_converter.TryConvert(left, out int intLeft))
+            {
+                if (_converter.TryConvert(right, out longRight))
+                {
+                    return Math.Pow(intLeft, longRight);
+                }
+
+                if (_converter.TryConvert(right, out intRight))
+                {
+                    return Math.Pow(intLeft, intRight);
+                }
+            }
+
+            throw new Exception($"Cannot exponentiate {left?.GetType()} and {right?.GetType()}");
+        }
+
         private object LeftShift(object left, object right)
         {
-            long longLeft;
-            int intRight;
-            if (_converter.TryConvert(left, out longLeft) && _converter.TryConvert(right, out intRight))
+            if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out int intRight))
             {
                 return longLeft << intRight;
             }
@@ -440,10 +455,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object Multiply(object left, object right)
         {
-            long longLeft, longRight;
-            int doubleLeft, doubleRight;
+            long longRight;
+            int doubleRight;
 
-            if (_converter.TryConvert(left, out longLeft))
+            if (_converter.TryConvert(left, out long longLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -455,7 +470,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return longLeft * doubleRight;
                 }
             }
-            else if (_converter.TryConvert(left, out doubleLeft))
+            else if (_converter.TryConvert(left, out int doubleLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -473,9 +488,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object Not(object operand)
         {
-            bool l;
-
-            if (_converter.TryConvert(operand, out l))
+            if (_converter.TryConvert(operand, out bool l))
             {
                 return !l;
             }
@@ -485,10 +498,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object NotEqualTo(object left, object right)
         {
-            string l = left as string;
-            string r = right as string;
-
-            if (l != null && r != null)
+            if (left is string l && right is string r)
             {
                 return !string.Equals(l, r, StringComparison.OrdinalIgnoreCase);
             }
@@ -498,9 +508,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object Or(object left, object right)
         {
-            bool l, r;
-
-            if (_converter.TryConvert(left, out l) && _converter.TryConvert(right, out r))
+            if (_converter.TryConvert(left, out bool l) && _converter.TryConvert(right, out bool r))
             {
                 return l || r;
             }
@@ -510,9 +518,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object RightShift(object left, object right)
         {
-            long longLeft;
-            int intRight;
-            if (_converter.TryConvert(left, out longLeft) && _converter.TryConvert(right, out intRight))
+            if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out int intRight))
             {
                 return longLeft >> intRight;
             }
@@ -530,10 +536,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object Subtract(object left, object right)
         {
-            long longLeft, longRight;
-            int doubleLeft, doubleRight;
+            long longRight;
+            int doubleRight;
 
-            if (_converter.TryConvert(left, out longLeft))
+            if (_converter.TryConvert(left, out long longLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -545,7 +551,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return longLeft - doubleRight;
                 }
             }
-            else if (_converter.TryConvert(left, out doubleLeft))
+            else if (_converter.TryConvert(left, out int doubleLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -563,17 +569,15 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private object Xor(object left, object right)
         {
-            bool l, r;
-
-            if (_converter.TryConvert(left, out l) && _converter.TryConvert(right, out r))
+            if (_converter.TryConvert(left, out bool l) && _converter.TryConvert(right, out bool r))
             {
                 return l ^ r;
             }
 
-            long longLeft, longRight;
-            int doubleLeft, doubleRight;
+            long longRight;
+            int doubleRight;
 
-            if (_converter.TryConvert(left, out longLeft))
+            if (_converter.TryConvert(left, out long longLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -585,7 +589,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return longLeft ^ doubleRight;
                 }
             }
-            else if (_converter.TryConvert(left, out doubleLeft))
+            else if (_converter.TryConvert(left, out int doubleLeft))
             {
                 if (_converter.TryConvert(right, out longRight))
                 {
@@ -615,12 +619,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             {
                 TypeConverterDelegate<T> converter = TypeConverterLookup<T>.TryConvert;
 
-                if (converter != null)
-                {
-                    return converter(source, out result);
-                }
-
-                return TryCoreConvert(source, out result);
+                return converter != null
+                    ? converter(source, out result)
+                    : TryCoreConvert(source, out result);
             }
 
             public bool TryCoreConvert<T>(object source, out T result)
