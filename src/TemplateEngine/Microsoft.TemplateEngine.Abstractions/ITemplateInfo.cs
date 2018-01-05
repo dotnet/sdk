@@ -46,5 +46,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         string ThirdPartyNotices { get; }
 
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
+
+        bool HasScriptRunningPostActions { get; set; }
     }
 }

@@ -79,6 +79,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
 
+        public bool HasScriptRunningPostActions { get; set; }
+
         private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
         public IReadOnlyDictionary<string, ICacheTag> Tags
@@ -1089,6 +1091,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions);
+            config.HasScriptRunningPostActions = config.PostActionModel.Any(x => x.ActionId == PostActionInfo.ProcessStartPostActionProcessorId);
             config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
             // Custom operations at the global level
