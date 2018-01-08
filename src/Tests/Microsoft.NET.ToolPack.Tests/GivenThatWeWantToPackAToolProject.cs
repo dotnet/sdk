@@ -21,7 +21,7 @@ namespace Microsoft.NET.ToolPack.Tests
         public GivenThatWeWantToPackAToolProject(ITestOutputHelper log) : base(log)
         {
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", "PackPortableTool")
+                .CopyTestAsset("PortableTool", "PackPortableTool" + Path.GetRandomFileName()) //TODO remvoe that, no checkin 
                 .WithSource()
                 .Restore(Log);
 
@@ -61,7 +61,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact(Skip = "Pending https://github.com/NuGet/Home/issues/6354")]
+        [Fact]
         public void It_adds_platform_package_to_dependency_and_remove_other_package_dependency()
         {
             using (var nupkgReader = new PackageArchiveReader(_nugetPackage))

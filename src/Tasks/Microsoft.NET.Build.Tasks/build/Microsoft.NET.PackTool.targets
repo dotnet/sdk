@@ -13,10 +13,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateToolsSettingsFile"
               AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <!--
+    Mark all dependecy as private assets. But keep them as Publish. So dependency DLLs will be included in NuGet package, while
+    there is no dependency in nuspec. And add Microsoft.NETCore.Platforms, which is used to select correct RID assets.
+    -->
+  <ItemGroup Condition=" '$(PackAsTool)' == 'true' ">
+    <PackageReference Update="@(PackageReference)">
+      <PrivateAssets>All</PrivateAssets>
+      <Publish Condition=" '%(PackageReference.Publish)' != 'false' ">true</Publish>
+    </PackageReference>
+
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="$(NETCorePlatformsImplicitPackageVersion)" />
+  </ItemGroup>
 
   <Target Name="PackTool" DependsOnTargets="GenerateToolsSettingsFileFromBuildProperty;Publish" Condition=" '$(PackAsTool)' == 'true' ">
     <!--All published file in different tools/tfm-->
-
     <ItemGroup>
         <_PublishedTfmSpecificPackageFiles Include="@(ResolvedFileToPublish->'$(PublishDir)%(RelativePath)')"/>
         <_PublishedTfmSpecificPackageFiles Include="$(PublishDepsFilePath)"/>
@@ -27,10 +38,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TfmSpecificPackageFile Include="@(_PublishedTfmSpecificPackageFiles)">
         <PackagePath>tools/$(targetframework)/any/%(_PublishedTfmSpecificPackageFiles.RecursiveDir)%(_PublishedTfmSpecificPackageFiles.Filename)%(_PublishedTfmSpecificPackageFiles.Extension)</PackagePath>
       </TfmSpecificPackageFile>
-    </ItemGroup>
-
-    <ItemGroup>
-       <PackageReference Remove="@(PackageReference)"/>
     </ItemGroup>
   </Target>
 

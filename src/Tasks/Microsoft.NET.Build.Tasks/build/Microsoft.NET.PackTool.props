@@ -22,4 +22,5 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Pack>true</Pack>
     </Content>
   </ItemGroup>
+
 </Project>
