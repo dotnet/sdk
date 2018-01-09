@@ -24,7 +24,7 @@ namespace Microsoft.NET.Perf.Tests
 
         //  These tests are currently disabled for full framework MSBuild because the CI machines don't
         //  have an MSBuild that supports the /restore command-line argument
-        [CoreMSBuildTheory]
+        [CoreMSBuildOnlyTheory]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCore2App(ProjectPerfOperation operation)
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, ".NET Core 2 Console App", operation);
         }
 
-        [CoreMSBuildTheory]
+        [CoreMSBuildOnlyTheory]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetStandard2Library(ProjectPerfOperation operation)
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, ".NET Standard 2.0 Library", operation);
         }
 
-        [CoreMSBuildTheory]
+        [CoreMSBuildOnlyTheory]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildMVCApp(ProjectPerfOperation operation)
