@@ -37,11 +37,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 try
                 {
-                    if (Language.ToUpperInvariant() == "C#")
+                    if (Language.Equals("C#", StringComparison.OrdinalIgnoreCase))
                     {
                         WriteCSharpCodeBehind(item, codeBehindPath);
                     }
-                    else if (Language.ToUpperInvariant() == "VB")
+                    else if (Language.Equals("VB", StringComparison.OrdinalIgnoreCase))
                     {
                         WriteVisualBasicCodeBehind(item, codeBehindPath);
                     }
