@@ -42,11 +42,7 @@ namespace Microsoft.NET.Perf.Tests
             }
 
             TestName = TestName ?? callerName;
-
-            Stopwatch stopwatch = new Stopwatch();
-            TimeSpan[] executionTimes = new TimeSpan[NumberOfIterations];
             int currentIteration = 0;
-
             var durationTestModel = new ScenarioTestModel(TestName);
             
             durationTestModel.Performance.Metrics.Add(new MetricModel
@@ -77,13 +73,10 @@ namespace Microsoft.NET.Perf.Tests
                     //  We should always do this before the first iteration, but it should be configurable whether we
                     //  do it between iterations.  This is because when testing "warm" / incremental builds, we would
                     //  expect the persistent processes to already be running and have already built the project
-
-                    stopwatch.Restart();
                 }
 
                 void PostIteration(ScenarioExecutionResult scenarioExecutionResult)
                 {
-                    stopwatch.Stop();
                     var elapsed = scenarioExecutionResult.ProcessExitInfo.ExitTime - scenarioExecutionResult.ProcessExitInfo.StartTime;
 
                     var durationIteration = new IterationModel
@@ -173,6 +166,5 @@ namespace Microsoft.NET.Perf.Tests
             return scenario;
         }
 
- 
     }
 }

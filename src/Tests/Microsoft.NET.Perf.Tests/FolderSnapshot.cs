@@ -10,17 +10,13 @@ namespace Microsoft.NET.Perf.Tests
         string OriginalPath { get; set; }
         string BackupPath { get; set; }
 
-
         public static FolderSnapshot Create(string path)
         {
-            FolderSnapshot ret = new FolderSnapshot();
-
-            ret.OriginalPath = path;
-            ret.BackupPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-            MirrorFiles(ret.OriginalPath, ret.BackupPath);
-
-            return ret;
+            FolderSnapshot folderSnapshot = new FolderSnapshot();
+            folderSnapshot.OriginalPath = path;
+            folderSnapshot.BackupPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            MirrorFiles(folderSnapshot.OriginalPath, folderSnapshot.BackupPath);
+            return folderSnapshot;
         }
 
         public void Restore()
@@ -54,7 +50,6 @@ namespace Microsoft.NET.Perf.Tests
                 {
                     continue;
                 }
-
                 string destDir = Path.Combine(dest, subdirInfo.Name);
                 CopyDirectory(subdirInfo.FullName, destDir);
             }

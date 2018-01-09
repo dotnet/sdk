@@ -74,7 +74,6 @@ namespace Microsoft.NET.Perf.Tests
         }
 
         [CoreMSBuildOnlyTheory(Skip ="The code for these scenarios needs to be acquired during the test run (instead of relying on hard-coded local path)")]
-
         [InlineData("SmallP2POldCsproj", ProjectPerfOperation.CleanBuild)]
         [InlineData("SmallP2POldCsproj", ProjectPerfOperation.BuildWithNoChanges)]
         [InlineData("SmallP2PNewCsproj", ProjectPerfOperation.CleanBuild)]
