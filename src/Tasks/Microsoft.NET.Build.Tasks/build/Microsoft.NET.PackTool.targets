@@ -17,6 +17,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     Mark all dependecy as private assets. But keep them as Publish. So dependency DLLs will be included in NuGet package, while
     there is no dependency in nuspec. And add Microsoft.NETCore.Platforms, which is used to select correct RID assets.
     -->
+  <PropertyGroup>
+    <NETCorePlatformsImplicitPackageVersion Condition=" '$(NETCorePlatformsImplicitPackageVersion)' == '' ">2.0.1</NETCorePlatformsImplicitPackageVersion>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(PackAsTool)' == 'true' ">
     <PackageReference Update="@(PackageReference)">
       <PrivateAssets>All</PrivateAssets>
