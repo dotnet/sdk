@@ -13,7 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
-    <_ToolsSettingsFilePath>$(BaseIntermediateOutputPath)$(Configuration)/DotnetToolSettings.xml</_ToolsSettingsFilePath>
+    <_ToolsSettingsFilePath>$(BaseIntermediateOutputPath)DotnetToolSettings.xml</_ToolsSettingsFilePath>
   </PropertyGroup>
 
   <ItemGroup>
