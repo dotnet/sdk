@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <PropertyGroup>
     <NETCorePlatformsImplicitPackageVersion Condition=" '$(NETCorePlatformsImplicitPackageVersion)' == '' ">2.0.1</NETCorePlatformsImplicitPackageVersion>
+    <_ToolsSettingsFilePath>$(BaseIntermediateOutputPath)DotnetToolSettings.xml</_ToolsSettingsFilePath>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(PackAsTool)' == 'true' ">
@@ -31,16 +32,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <Target Name="PackTool" DependsOnTargets="GenerateToolsSettingsFileFromBuildProperty;Publish" Condition=" '$(PackAsTool)' == 'true' ">
-    <!--All published file in different tools/tfm-->
     <ItemGroup>
-        <_PublishedTfmSpecificPackageFiles Include="@(ResolvedFileToPublish->'$(PublishDir)%(RelativePath)')"/>
-        <_PublishedTfmSpecificPackageFiles Include="$(PublishDepsFilePath)"/>
-        <_PublishedTfmSpecificPackageFiles Include="$(PublishRuntimeConfigFilePath)"/>
+        <_GeneratedFiles Include="$(PublishDepsFilePath)"/>
+        <_GeneratedFiles Include="$(PublishRuntimeConfigFilePath)"/>
+        <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
     </ItemGroup>
 
     <ItemGroup>
-      <TfmSpecificPackageFile Include="@(_PublishedTfmSpecificPackageFiles)">
-        <PackagePath>tools/$(targetframework)/any/%(_PublishedTfmSpecificPackageFiles.RecursiveDir)%(_PublishedTfmSpecificPackageFiles.Filename)%(_PublishedTfmSpecificPackageFiles.Extension)</PackagePath>
+      <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
+        <PackagePath>tools/$(targetframework)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+
+      <TfmSpecificPackageFile Include="@(ResolvedFileToPublish->'$(PublishDir)%(RelativePath)')">
+        <PackagePath>tools/$(targetframework)/any/%(ResolvedFileToPublish.RelativePath)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

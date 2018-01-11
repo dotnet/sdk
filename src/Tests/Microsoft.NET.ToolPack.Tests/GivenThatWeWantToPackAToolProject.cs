@@ -11,31 +11,53 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 using NuGet.Packaging;
+using System.Xml.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
     public class GivenThatWeWantToPackAToolProject : SdkTest
     {
-        private readonly string _nugetPackage;
+        private string _testRoot;
 
         public GivenThatWeWantToPackAToolProject(ITestOutputHelper log) : base(log)
         {
+        }
+
+        private string SetupNuGetPackage(bool multiTarget, [CallerMemberName] string callingMethod = "")
+        {
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", "PackPortableTool" + Path.GetRandomFileName()) //TODO remvoe that, no checkin 
+                .CopyTestAsset("PortableTool", callingMethod + multiTarget)
                 .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    XNamespace ns = project.Root.Name.Namespace;
+                    XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+
+                    if (multiTarget)
+                    {
+                        propertyGroup.Element(ns + "TargetFramework").Remove();
+                        propertyGroup.Add(new XElement(ns + "TargetFrameworks", "netcoreapp1.1;netcoreapp2.0"));
+                    }
+                })
                 .Restore(Log);
+
+            _testRoot = helloWorldAsset.TestRoot;
 
             var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
 
             packCommand.Execute();
 
-            _nugetPackage = packCommand.GetNuGetPackage();
+            return packCommand.GetNuGetPackage();
         }
 
-        [Fact]
-        public void It_packs_successfully()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_packs_successfully(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 nupkgReader
                     .GetToolItems()
@@ -43,28 +65,40 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
-        public void It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
-                IEnumerable<NuGet.Frameworks.NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
-                supportedFrameworks.Should().NotBeEmpty();
+                var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
+                var tmpfilePath = Path.Combine(_testRoot, "temp", Path.GetRandomFileName());
+                string copiedFile = nupkgReader.ExtractFile($"tools/{anyTfm}/any/DotnetToolSettings.xml", tmpfilePath, null);
+                XElement command = XDocument.Load(copiedFile)
+                                      .Element("DotNetCliTool")
+                                      .Element("Commands")
+                                      .Element("Command");
 
-                var tmpfilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                string copiedFile = nupkgReader.ExtractFile($"tools/DotnetToolSettings.xml", tmpfilePath, null);
-                File.ReadAllText(copiedFile)
-                    .Should()
-                    .Contain("consoledemo.dll", "it should contain entry point dll that is same as the msbuild well known properties $(TargetFileName)")
-                    .And
-                    .Contain("consoledemo", "it should contain command name that is same as the msbuild well known properties $(TargetName)");
+                command.Attribute("Name")
+                        .Value
+                        .Should().Be("consoledemo", "it should contain command name that is same as the msbuild well known properties $(TargetName)");
+
+                command.Attribute("EntryPoint")
+                        .Value
+                        .Should().Be("consoledemo.dll", "it should contain entry point dll that is same as the msbuild well known properties $(TargetFileName)");
+
             }
         }
 
-        [Fact]
-        public void It_adds_platform_package_to_dependency_and_remove_other_package_dependency()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_adds_platform_package_to_dependency_and_remove_other_package_dependency(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 nupkgReader
                     .GetPackageDependencies().First().Packages
@@ -72,40 +106,63 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
-        public void It_contains_runtimeconfig_for_each_tfm()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_contains_runtimeconfig_for_each_tfm(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 IEnumerable<NuGet.Frameworks.NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
                 supportedFrameworks.Should().NotBeEmpty();
 
                 foreach (NuGet.Frameworks.NuGetFramework framework in supportedFrameworks)
                 {
-                    if (framework.GetShortFolderName() == "any")
-                    {
-                        continue;
-                    }
-
                     var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
                     allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/consoledemo.runtimeconfig.json");
                 }
             }
         }
 
-        [Fact]
-        public void It_does_not_contain_lib()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_contains_DotnetToolSettingsXml_for_each_tfm(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+            {
+                IEnumerable<NuGet.Frameworks.NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
+                supportedFrameworks.Should().NotBeEmpty();
+
+                foreach (NuGet.Frameworks.NuGetFramework framework in supportedFrameworks)
+                {
+                    var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
+                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/DotnetToolSettings.xml");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_does_not_contain_lib(bool multiTarget)
+        {
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 nupkgReader.GetLibItems().Should().BeEmpty();
             }
         }
 
-        [Fact]
-        public void It_contains_folder_structure_tfm_any()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_contains_folder_structure_tfm_any(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 nupkgReader
                     .GetToolItems()
@@ -115,31 +172,32 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
-        public void It_contains_packagetype_dotnettool()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_contains_packagetype_dotnettool(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 nupkgReader
                     .GetPackageTypes().Should().ContainSingle(t => t.Name == "DotnetTool");
             }
         }
 
-        [Fact]
-        public void It_contains_dependencies_dll()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_contains_dependencies_dll(bool multiTarget)
         {
-            using (var nupkgReader = new PackageArchiveReader(_nugetPackage))
+            var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 IEnumerable<NuGet.Frameworks.NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
                 supportedFrameworks.Should().NotBeEmpty();
 
                 foreach (NuGet.Frameworks.NuGetFramework framework in supportedFrameworks)
                 {
-                    if (framework.GetShortFolderName() == "any")
-                    {
-                        continue;
-                    }
-
                     var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
                     allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/Newtonsoft.Json.dll");
                 }

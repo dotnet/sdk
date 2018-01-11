@@ -13,14 +13,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
-    <_ToolsSettingsFilePath>$(BaseIntermediateOutputPath)DotnetToolSettings.xml</_ToolsSettingsFilePath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="$(_ToolsSettingsFilePath)" Condition=" '$(PackAsTool)' == 'true' ">
-      <PackagePath>tools</PackagePath>
-      <Pack>true</Pack>
-    </Content>
-  </ItemGroup>
-
 </Project>

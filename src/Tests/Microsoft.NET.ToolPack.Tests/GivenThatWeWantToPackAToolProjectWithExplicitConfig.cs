@@ -30,15 +30,15 @@ namespace Microsoft.NET.ToolPack.Tests
         {
             const string explicitEntryPoint = "explicit_entry_point.dll";
             TestAsset helloWorldAsset = _testAssetsManager
-            .CopyTestAsset("PortableTool", "PackPortableToolToolEntryPoint")
-            .WithSource()
-            .WithProjectChanges(project =>
-            {
-                XNamespace ns = project.Root.Name.Namespace;
-                XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                propertyGroup.Add(new XElement("ToolEntryPoint", explicitEntryPoint));
-            })
-            .Restore(Log);
+                                        .CopyTestAsset("PortableTool", "PackPortableToolToolEntryPoint")
+                                        .WithSource()
+                                        .WithProjectChanges(project =>
+                                        {
+                                            XNamespace ns = project.Root.Name.Namespace;
+                                            XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                                            propertyGroup.Add(new XElement("ToolEntryPoint", explicitEntryPoint));
+                                        })
+                                        .Restore(Log);
             var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
 
             packCommand.Execute();
@@ -46,11 +46,17 @@ namespace Microsoft.NET.ToolPack.Tests
             var nugetPackage = packCommand.GetNuGetPackage();
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
+                var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
                 var tmpfilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                string copiedFile = nupkgReader.ExtractFile($"tools/DotnetToolSettings.xml", tmpfilePath, null);
-                File.ReadAllText(copiedFile)
-                    .Should()
-                    .Contain($"EntryPoint=\"{explicitEntryPoint}\"");
+                string copiedFile = nupkgReader.ExtractFile($"tools/{anyTfm}/any/DotnetToolSettings.xml", tmpfilePath, null);
+
+                XDocument.Load(copiedFile)
+                        .Element("DotNetCliTool")
+                        .Element("Commands")
+                        .Element("Command")
+                        .Attribute("EntryPoint")
+                        .Value
+                        .Should().Be(explicitEntryPoint);
             }
         }
 
@@ -60,15 +66,15 @@ namespace Microsoft.NET.ToolPack.Tests
         {
             const string explicitCommandName = "explicit_command_name";
             TestAsset helloWorldAsset = _testAssetsManager
-            .CopyTestAsset("PortableTool", "PackPortableToolToolCommandName")
-            .WithSource()
-            .WithProjectChanges(project =>
-            {
-                XNamespace ns = project.Root.Name.Namespace;
-                XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                propertyGroup.Add(new XElement("ToolCommandName", explicitCommandName));
-            })
-            .Restore(Log);
+                                        .CopyTestAsset("PortableTool", "PackPortableToolToolCommandName")
+                                        .WithSource()
+                                        .WithProjectChanges(project =>
+                                        {
+                                            XNamespace ns = project.Root.Name.Namespace;
+                                            XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                                            propertyGroup.Add(new XElement("ToolCommandName", explicitCommandName));
+                                        })
+                                        .Restore(Log);
             var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
 
             packCommand.Execute();
@@ -76,11 +82,17 @@ namespace Microsoft.NET.ToolPack.Tests
             var nugetPackage = packCommand.GetNuGetPackage();
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
+                var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
                 var tmpfilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                string copiedFile = nupkgReader.ExtractFile($"tools/DotnetToolSettings.xml", tmpfilePath, null);
-                File.ReadAllText(copiedFile)
-                    .Should()
-                    .Contain($"<Command Name=\"{explicitCommandName}\"");
+                string copiedFile = nupkgReader.ExtractFile($"tools/{anyTfm}/any/DotnetToolSettings.xml", tmpfilePath, null);
+
+                XDocument.Load(copiedFile)
+                        .Element("DotNetCliTool")
+                        .Element("Commands")
+                        .Element("Command")
+                        .Attribute("Name")
+                        .Value
+                        .Should().Be(explicitCommandName);
             }
         }
     }
