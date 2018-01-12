@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace BaselineComparer
+namespace BaselineComparer.TemplateComparison
 {
     public class DirectoryComparer
     {
         private string _baselineDir;
-        private string _checkTargetDir;
+        private string _secondaryDir;
 
-        // TODO: make this platform independent. 
-        public DirectoryComparer(string baselineDir, string checkTargetDir)
+        // TODO (future enhancement): make this platform independent. 
+        public DirectoryComparer(string baselineDir, string secondaryDir)
         {
             if (!baselineDir.EndsWith("\\"))
             {
@@ -20,19 +20,19 @@ namespace BaselineComparer
                 _baselineDir = baselineDir;
             }
 
-            if (!checkTargetDir.EndsWith("\\"))
+            if (!secondaryDir.EndsWith("\\"))
             {
-                _checkTargetDir = checkTargetDir + "\\";
+                _secondaryDir = secondaryDir + "\\";
             }
             else
             {
-                _checkTargetDir = checkTargetDir;
+                _secondaryDir = secondaryDir;
             }
         }
 
         public DirectoryDifference Compare()
         {
-            DirectoryDifference allResults = new DirectoryDifference(_baselineDir, _checkTargetDir);
+            DirectoryDifference allResults = new DirectoryDifference(_baselineDir, _secondaryDir);
 
             HashSet<string> baselineFilenameLookup = new HashSet<string>();
             List<string> baselineOnly = new List<string>();
@@ -41,18 +41,18 @@ namespace BaselineComparer
             {
                 string relativeFilename = baselineFilename.Substring(_baselineDir.Length);
                 baselineFilenameLookup.Add(relativeFilename);
-                string checkFilename = Path.Combine(_checkTargetDir, relativeFilename);
+                string secondaryFilename = Path.Combine(_secondaryDir, relativeFilename);
 
                 FileDifference fileDifference = new FileDifference(relativeFilename);
                 allResults.AddFileResult(fileDifference);
 
-                if (!File.Exists(checkFilename))
+                if (!File.Exists(secondaryFilename))
                 {
-                    fileDifference.MissingCheckFile = true;
+                    fileDifference.MissingSecondaryFile = true;
                 }
                 else
                 {
-                    FileComparer fileComparer = new FileComparer(baselineFilename, checkFilename);
+                    FileComparer fileComparer = new FileComparer(baselineFilename, secondaryFilename);
                     IReadOnlyList<PositionalDifference> differenceList = fileComparer.Compare();
 
                     if (differenceList.Count > 0)
@@ -62,9 +62,9 @@ namespace BaselineComparer
                 }
             }
 
-            foreach (string checkFilename in Directory.EnumerateFiles(_checkTargetDir, "*.*", SearchOption.AllDirectories))
+            foreach (string secondaryFilename in Directory.EnumerateFiles(_secondaryDir, "*.*", SearchOption.AllDirectories))
             {
-                string relativeFilename = checkFilename.Substring(_checkTargetDir.Length);
+                string relativeFilename = secondaryFilename.Substring(_secondaryDir.Length);
                 if (!baselineFilenameLookup.Contains(relativeFilename))
                 {
                     string baselineFilename = Path.Combine(_baselineDir, relativeFilename);

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using BaselineComparer.TemplateComparison;
 
-namespace BaselineComparer
+namespace BaselineComparer.DifferenceComparison
 {
     public class FileComparisonDifference
     {
@@ -22,6 +23,7 @@ namespace BaselineComparer
         private bool _missingCheckComparison;
 
         // Stores the differences that positionally match up between two sets of comparisons.
+        // They could still have a datatype or length mismatch.
         // The key is the baseline difference, the value is the difference for the current comparison.
         public IReadOnlyList<PositionalComparisonDifference> PositionallyMatchedDifferences => _positionallyMatchedDifferences;
 
@@ -29,7 +31,7 @@ namespace BaselineComparer
         public IReadOnlyList<PositionalDifference> BaselineOnlyDifferences => _baselineOnlyDifferences;
 
         // Differences from the check comparison that couldn't be matched to differences from the baseline comparison.
-        public IReadOnlyList<PositionalDifference> CheckOnlyDifferences => _checkOnlyDifferences;
+        public IReadOnlyList<PositionalDifference> SecondaryOnlyDifferences => _checkOnlyDifferences;
 
         public void AddPositionallyMatchedDifference(PositionalDifference baselineDifference, PositionalDifference checkDifference, PositionalComparisonDisposition disposition)
         {
@@ -38,7 +40,7 @@ namespace BaselineComparer
 
         public void AddBaselineOnlyDifference(PositionalDifference baselineDifference)
         {
-            if (MissingBaselineComparison || MissingCheckComparison)
+            if (MissingBaselineComparison || MissingSecondaryComparison)
             {
                 throw new System.Exception("Cant have differences if a comparison is missing.");
             }
@@ -48,7 +50,7 @@ namespace BaselineComparer
 
         public void AddCheckOnlyDifference(PositionalDifference checkDifference)
         {
-            if (MissingBaselineComparison || MissingCheckComparison)
+            if (MissingBaselineComparison || MissingSecondaryComparison)
             {
                 throw new System.Exception("Cant have differences if a comparison is missing.");
             }
@@ -56,12 +58,15 @@ namespace BaselineComparer
             _checkOnlyDifferences.Add(checkDifference);
         }
 
+        // externally set in situations where the number of classified differences don't exactly match the number of original differences.
+        public bool HasDifferenceResolutionError { get; set; }
+
         public bool AnyInvalidDifferences
         {
             get
             {
                 return BaselineOnlyDifferences.Count > 0
-                    || CheckOnlyDifferences.Count > 0
+                    || SecondaryOnlyDifferences.Count > 0
                     || PositionallyMatchedDifferences.Any(d => d.Disposition != PositionalComparisonDisposition.Match);
             }
         }
@@ -85,7 +90,7 @@ namespace BaselineComparer
             }
         }
 
-        public bool MissingCheckComparison
+        public bool MissingSecondaryComparison
         {
             get
             {

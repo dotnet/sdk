@@ -1,4 +1,6 @@
-namespace BaselineComparer
+using BaselineComparer.TemplateComparison;
+
+namespace BaselineComparer.DifferenceComparison
 {
     public enum PositionalComparisonDisposition
     {

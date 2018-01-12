@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace BaselineComparer
+namespace BaselineComparer.TemplateComparison
 {
     public class FileComparer
     {
@@ -12,15 +12,15 @@ namespace BaselineComparer
         private static readonly int PositionalSize = 10;
 
         private string _baselineFilePath;
-        private string _checkTargetFilePath;
+        private string _secondaryFilePath;
 
-        private BufferedReadStream _baseline;
-        private BufferedReadStream _checkTarget;
+        private BufferedReadStream _baselineData;
+        private BufferedReadStream _secondaryData;
 
-        public FileComparer(string baselineFilePath, string checkTargetFilePath)
+        public FileComparer(string baselineFilePath, string secondaryFilePath)
         {
             _baselineFilePath = baselineFilePath;
-            _checkTargetFilePath = checkTargetFilePath;
+            _secondaryFilePath = secondaryFilePath;
         }
 
         public IReadOnlyList<PositionalDifference> Compare()
@@ -30,24 +30,24 @@ namespace BaselineComparer
             bool unhandledDifference = false;
 
             using (FileStream baselineStream = File.Open(_baselineFilePath, FileMode.Open))
-            using (FileStream checkTargetStream = File.Open(_checkTargetFilePath, FileMode.Open))
+            using (FileStream secondaryStream = File.Open(_secondaryFilePath, FileMode.Open))
             {
-                _baseline = new BufferedReadStream(baselineStream);
-                _checkTarget = new BufferedReadStream(checkTargetStream);
+                _baselineData = new BufferedReadStream(baselineStream);
+                _secondaryData = new BufferedReadStream(secondaryStream);
 
                 do
                 {
-                    if (_baseline.TryReadNext(out byte baselineByte) && _checkTarget.TryReadNext(out byte targetByte))
+                    if (_baselineData.TryReadNext(out byte baselineByte) && _secondaryData.TryReadNext(out byte secondaryByte))
                     {
-                        if (baselineByte != targetByte)
+                        if (baselineByte != secondaryByte)
                         {
-                            if (TryFindDifferenceAtPosition(baselineByte, targetByte, out PositionalDifference difference))
+                            if (TryFindDifferenceAtPosition(baselineByte, secondaryByte, out PositionalDifference difference))
                             {
                                 differenceList.Add(difference);
                             }
                             else
                             {
-                                PositionalDifference tooLongDifference = SetupExplicitlyTypedDifference(DifferenceCheckWindowSize, DifferenceCheckWindowSize, baselineByte, targetByte, DifferenceDatatype.TooLong, 0);
+                                PositionalDifference tooLongDifference = SetupExplicitlyTypedDifference(DifferenceCheckWindowSize, DifferenceCheckWindowSize, baselineByte, secondaryByte, DifferenceDatatype.TooLong, 0);
                                 differenceList.Add(tooLongDifference);
                                 unhandledDifference = true;
                             }
@@ -107,16 +107,6 @@ namespace BaselineComparer
                 return false;
             }
 
-            // read both past their difference
-            //int baselineDiffAbsoluteStart = _baseline.LastReadPosition;
-            //int checkDiffAbsoluteStart = _checkTarget.LastReadPosition;
-            //byte[] baselineDiffPart = _baseline.ReadBytes(baselineStartOfBestRealign, out int baselineBytesActuallyRead);
-            //byte[] checkDiffPart = _checkTarget.ReadBytes(checkStartOfBestRealign, out int checkBytesActuallyRead);
-
-            //string baselineString = Convert.ToChar(previousBaselineByte) + Encoding.Default.GetString(baselineDiffPart);
-            //string checkString = Convert.ToChar(previousCheckByte) + Encoding.Default.GetString(checkDiffPart);
-            //difference = new PositionalDifference(baselineDiffAbsoluteStart, baselineString, checkDiffAbsoluteStart, checkString);
-
             difference = SetupDifference(baselineStartOfBestRealign, checkStartOfBestRealign, previousBaselineByte, previousCheckByte);
 
             return true;
@@ -124,10 +114,10 @@ namespace BaselineComparer
 
         private PositionalDifference SetupDifference(int baselineLength, int checkLength, byte baselineDiffFirstByte, byte checkDiffFirstByte)
         {
-            int baselineDiffAbsoluteStart = _baseline.LastReadPosition;
-            int checkDiffAbsoluteStart = _checkTarget.LastReadPosition;
-            byte[] baselineDiffPart = _baseline.ReadBytes(baselineLength, out int baselineBytesActuallyRead);
-            byte[] checkDiffPart = _checkTarget.ReadBytes(checkLength, out int checkBytesActuallyRead);
+            int baselineDiffAbsoluteStart = _baselineData.LastReadPosition;
+            int checkDiffAbsoluteStart = _secondaryData.LastReadPosition;
+            byte[] baselineDiffPart = _baselineData.ReadBytes(baselineLength, out int baselineBytesActuallyRead);
+            byte[] checkDiffPart = _secondaryData.ReadBytes(checkLength, out int checkBytesActuallyRead);
 
             string baselineString = Convert.ToChar(baselineDiffFirstByte) + Encoding.Default.GetString(baselineDiffPart);
             string checkString = Convert.ToChar(checkDiffFirstByte) + Encoding.Default.GetString(checkDiffPart);
@@ -136,21 +126,21 @@ namespace BaselineComparer
 
         private PositionalDifference SetupExplicitlyTypedDifference(int baselineLength, int checkLength, byte baselineDiffFirstByte, byte checkDiffFirstByte, DifferenceDatatype datatype, int leeway)
         {
-            int baselineDiffAbsoluteStart = _baseline.LastReadPosition;
-            int checkDiffAbsoluteStart = _checkTarget.LastReadPosition;
-            byte[] baselineDiffPart = _baseline.ReadBytes(baselineLength, out int baselineBytesActuallyRead);
-            byte[] checkDiffPart = _checkTarget.ReadBytes(checkLength, out int checkBytesActuallyRead);
+            int baselineDiffAbsoluteStart = _baselineData.LastReadPosition;
+            int checkDiffAbsoluteStart = _secondaryData.LastReadPosition;
+            byte[] baselineDiffPart = _baselineData.ReadBytes(baselineLength, out int baselineBytesActuallyRead);
+            byte[] checkDiffPart = _secondaryData.ReadBytes(checkLength, out int checkBytesActuallyRead);
 
             string baselineString = Convert.ToChar(baselineDiffFirstByte) + Encoding.Default.GetString(baselineDiffPart);
             string checkString = Convert.ToChar(checkDiffFirstByte) + Encoding.Default.GetString(checkDiffPart);
             return new PositionalDifference(baselineDiffAbsoluteStart, baselineString, checkDiffAbsoluteStart, checkString, datatype, leeway);
         }
 
-        // Starting at the current position, looks for pairs of locations in the _baseline & _checkTarget that are byte-wise equivalent.
+        // Starting at the current position, looks for pairs of locations in the _baselineData & _secondaryData that are byte-wise equivalent.
         // These are candidiates for where the difference ends.
         private Dictionary<int, List<int>> FindPotentialRealignments()
         {
-            byte[] baselineReplayBuffer = _baseline.ReadBytes(DifferenceCheckWindowSize, out int baselineBytesRead);
+            byte[] baselineReplayBuffer = _baselineData.ReadBytes(DifferenceCheckWindowSize, out int baselineBytesRead);
             Span<byte> baselineSpan = baselineReplayBuffer;
 
             // setup the baseline lookups
@@ -168,8 +158,8 @@ namespace BaselineComparer
                 positions.Add(start);
             }
 
-            byte[] checkReplayBuffer = _checkTarget.ReadBytes(DifferenceCheckWindowSize, out int checkBytesRead);
-            Span<byte> checkSpan = checkReplayBuffer;
+            byte[] secondaryReplayBuffer = _secondaryData.ReadBytes(DifferenceCheckWindowSize, out int checkBytesRead);
+            Span<byte> secondarySpan = secondaryReplayBuffer;
 
             // start looking for "sames" in the check buffer
             Dictionary<int, List<int>> checkStartToBaselineStartMatches = new Dictionary<int, List<int>>();
@@ -177,7 +167,7 @@ namespace BaselineComparer
 
             for (int start = 0; start < finalCheckSliceStart; start++)
             {
-                Span<byte> slice = checkSpan.Slice(start, PositionalSize);
+                Span<byte> slice = secondarySpan.Slice(start, PositionalSize);
                 string sliceString = Encoding.Default.GetString(slice.ToArray());
                 if (baselinePositionals.TryGetValue(sliceString, out IList<int> baselineMatchPositions))
                 {
@@ -191,29 +181,29 @@ namespace BaselineComparer
                 }
             }
 
-            _baseline.SetupReplayBytes(baselineReplayBuffer);
-            _checkTarget.SetupReplayBytes(checkReplayBuffer);
+            _baselineData.SetupReplayBytes(baselineReplayBuffer);
+            _secondaryData.SetupReplayBytes(secondaryReplayBuffer);
 
             return checkStartToBaselineStartMatches;
         }
 
         private bool IsDoneReading(out PositionalDifference endDifference)
         {
-            if (_baseline.DoneReading && _checkTarget.DoneReading)
+            if (_baselineData.DoneReading && _secondaryData.DoneReading)
             {
                 endDifference = null;
                 return true;
             }
-            else if (_baseline.DoneReading)
+            else if (_baselineData.DoneReading)
             {
-                string checkPartialEnd = ReadPartialEndData(_checkTarget);
-                endDifference = new PositionalDifference(_baseline.LastReadPosition, string.Empty, _checkTarget.LastReadPosition, checkPartialEnd);
+                string checkPartialEnd = ReadPartialEndData(_secondaryData);
+                endDifference = new PositionalDifference(_baselineData.LastReadPosition, string.Empty, _secondaryData.LastReadPosition, checkPartialEnd);
                 return true;
             }
-            else if (_checkTarget.DoneReading)
+            else if (_secondaryData.DoneReading)
             {
-                string baselinePartialEnd = ReadPartialEndData(_baseline);
-                endDifference = new PositionalDifference(_baseline.LastReadPosition, baselinePartialEnd, _checkTarget.LastReadPosition, string.Empty);
+                string baselinePartialEnd = ReadPartialEndData(_baselineData);
+                endDifference = new PositionalDifference(_baselineData.LastReadPosition, baselinePartialEnd, _secondaryData.LastReadPosition, string.Empty);
                 return true;
             }
 

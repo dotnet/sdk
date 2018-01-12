@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace BaselineComparer
 {
@@ -97,7 +95,7 @@ namespace BaselineComparer
                     break;
                 }
 
-                actuallyReadCount++;
+                ++actuallyReadCount;
             }
 
             Span<byte> actuallyReadBuffer = tryReadBuffer;
@@ -137,7 +135,7 @@ namespace BaselineComparer
             }
 
             _positionInBuffer = 0;
-            _readBlockNumber++;
+            ++_readBlockNumber;
         }
     }
 }

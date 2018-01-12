@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace BaselineComparer
+namespace BaselineComparer.TemplateComparison
 {
     public class FileDifference
     {
@@ -22,7 +22,7 @@ namespace BaselineComparer
 
         public void AddDifference(PositionalDifference difference)
         {
-            if (MissingBaselineFile || MissingCheckFile)
+            if (MissingBaselineFile || MissingSecondaryFile)
             {
                 throw new Exception("Cant have differences if a file is missing.");
             }
@@ -32,7 +32,7 @@ namespace BaselineComparer
 
         public void AddDifferences(IEnumerable<PositionalDifference> differeceList)
         {
-            if (MissingBaselineFile || MissingCheckFile)
+            if (MissingBaselineFile || MissingSecondaryFile)
             {
                 throw new Exception("Cant have differences if a file is missing.");
             }
@@ -72,7 +72,7 @@ namespace BaselineComparer
         }
 
         [JsonProperty]
-        public bool MissingCheckFile
+        public bool MissingSecondaryFile
         {
             get
             {
@@ -89,9 +89,9 @@ namespace BaselineComparer
             }
         }
 
-        public bool ShouldSerializeMissingCheckFile()
+        public bool ShouldSerializeMissingSecondaryFile()
         {
-            return MissingCheckFile;
+            return MissingSecondaryFile;
         }
 
         public static FileDifference FromJObject(JObject source)

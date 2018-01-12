@@ -3,14 +3,14 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace BaselineComparer
+namespace BaselineComparer.TemplateComparison
 {
     public class DirectoryDifference
     {
-        public DirectoryDifference(string baselineDirectory, string checkDirectory)
+        public DirectoryDifference(string baselineDirectory, string secondaryDirectory)
         {
             BaselineDirectory = baselineDirectory;
-            CheckDirectory = checkDirectory;
+            SecondaryDirectory = secondaryDirectory;
             _fileResults = new List<FileDifference>();
         }
 
@@ -25,7 +25,7 @@ namespace BaselineComparer
         public string BaselineDirectory { get; }
 
         [JsonProperty]
-        public string CheckDirectory { get; }
+        public string SecondaryDirectory { get; }
 
         [JsonProperty]
         public IReadOnlyList<FileDifference> FileResults => _fileResults;
@@ -40,11 +40,11 @@ namespace BaselineComparer
         }
 
         [JsonIgnore]
-        public IReadOnlyList<string> MissingCheckFiles
+        public IReadOnlyList<string> MissingSecondaryFiles
         {
             get
             {
-                return _fileResults.Where(file => file.MissingCheckFile).Select(x => x.File).ToList();
+                return _fileResults.Where(file => file.MissingSecondaryFile).Select(x => x.File).ToList();
             }
         }
 
@@ -61,7 +61,7 @@ namespace BaselineComparer
                     return false;
                 }
 
-                if (MissingCheckFiles.Count > 0)
+                if (MissingSecondaryFiles.Count > 0)
                 {
                     return false;
                 }
@@ -78,9 +78,9 @@ namespace BaselineComparer
         public static DirectoryDifference FromJObject(JObject source)
         {
             string baselineDirectory = source.GetValue(nameof(BaselineDirectory)).ToString();
-            string checkDirectory = source.GetValue(nameof(CheckDirectory)).ToString();
+            string secondaryDirectory = source.GetValue(nameof(SecondaryDirectory)).ToString();
 
-            DirectoryDifference deserialized = new DirectoryDifference(baselineDirectory, checkDirectory);
+            DirectoryDifference deserialized = new DirectoryDifference(baselineDirectory, secondaryDirectory);
 
             foreach (JObject fileInfo in source.GetValue(nameof(FileResults)))
             {

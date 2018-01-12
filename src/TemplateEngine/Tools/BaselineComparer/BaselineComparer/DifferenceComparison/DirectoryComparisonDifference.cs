@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BaselineComparer
+namespace BaselineComparer.DifferenceComparison
 {
     public class DirectoryComparisonDifference
     {
@@ -11,7 +11,7 @@ namespace BaselineComparer
         }
 
         private List<FileComparisonDifference> _fileResults;
-        private bool _invalidCheckData;
+        private bool _invalidSecondaryData;
         private bool _invalidBaselineData;
 
         public IReadOnlyList<FileComparisonDifference> FileResults => _fileResults;
@@ -38,20 +38,20 @@ namespace BaselineComparer
             }
         }
 
-        public bool InvalidCheckData
+        public bool InvalidSecondaryData
         {
             get
             {
-                return _invalidCheckData;
+                return _invalidSecondaryData;
             }
             set
             {
                 if (_fileResults.Count > 0)
                 {
-                    throw new Exception("Cant have comparisons if the check data is invalid.");
+                    throw new Exception("Cant have comparisons if the secondary data is invalid.");
                 }
 
-                _invalidCheckData = value;
+                _invalidSecondaryData = value;
             }
         }
     }

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using BaselineComparer.TemplateComparison;
 
-namespace BaselineComparer
+namespace BaselineComparer.DifferenceComparison
 {
     public class DirectoryDifferenceComparer
     {
@@ -27,7 +28,7 @@ namespace BaselineComparer
 
             if (!CheckDifference.IsValidBaseline)
             {
-                comparisonResult.InvalidCheckData = true;
+                comparisonResult.InvalidSecondaryData = true;
                 return comparisonResult;
             }
 
@@ -38,7 +39,7 @@ namespace BaselineComparer
                 if (!checkFileLookup.TryGetValue(baselineFileDiff.File, out FileDifference checkFileDiff))
                 {
                     FileComparisonDifference fileResult = new FileComparisonDifference(baselineFileDiff.File);
-                    fileResult.MissingCheckComparison = true;
+                    fileResult.MissingSecondaryComparison = true;
                     comparisonResult.AddFileResult(fileResult);
                 }
                 else

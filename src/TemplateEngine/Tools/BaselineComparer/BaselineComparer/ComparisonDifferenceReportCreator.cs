@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Text;
+using BaselineComparer.DifferenceComparison;
+using BaselineComparer.TemplateComparison;
 
 namespace BaselineComparer
 {
@@ -48,16 +50,16 @@ namespace BaselineComparer
                     return;
                 }
 
-                if (_diffResult.InvalidCheckData)
+                if (_diffResult.InvalidSecondaryData)
                 {
-                    reportBuilder.AppendLine("Check data wasn't correctly created.");
+                    reportBuilder.AppendLine("Secondary data wasn't correctly created.");
                     _anyProblems = true;
                     return;
                 }
 
-                _anyProblems |= ReportMissingCheckFiles(reportBuilder);
-                _anyProblems |= ReportExtraCheckFiles(reportBuilder);
-                _anyProblems |= ReportInvalidDifferences(reportBuilder);
+                _anyProblems |= ReportMissingSecondaryFiles(reportBuilder);
+                _anyProblems |= ReportExtraSecondaryFiles(reportBuilder);
+                _anyProblems |= ReportDifferenceIssues(reportBuilder);
 
                 reportBuilder.AppendLine();
 
@@ -74,74 +76,79 @@ namespace BaselineComparer
             }
         }
 
-        private bool ReportMissingCheckFiles(StringBuilder reportBuilder)
+        private bool ReportMissingSecondaryFiles(StringBuilder reportBuilder)
         {
-            bool foundMissingCheckFile = false;
-            foreach (FileComparisonDifference missingCheckFileInfo in _diffResult.FileResults.Where(x => x.MissingCheckComparison))
+            bool anyMissingSecondaryFiles = false;
+            foreach (FileComparisonDifference missingSecondaryFileInfo in _diffResult.FileResults.Where(x => x.MissingSecondaryComparison))
             {
-                if (!foundMissingCheckFile)
+                if (!anyMissingSecondaryFiles)
                 {
                     reportBuilder.AppendLine();
-                    reportBuilder.AppendLine("*** Missing files from the new check data ***");
-                    foundMissingCheckFile = true;
+                    reportBuilder.AppendLine("*** Missing files from the new secondary data ***");
+                    anyMissingSecondaryFiles = true;
                 }
 
-                reportBuilder.AppendLine($"\t{missingCheckFileInfo.Filename}");
+                reportBuilder.AppendLine($"\t{missingSecondaryFileInfo.Filename}");
             }
 
-            return foundMissingCheckFile;
+            return anyMissingSecondaryFiles;
         }
 
-        private bool ReportExtraCheckFiles(StringBuilder reportBuilder)
+        private bool ReportExtraSecondaryFiles(StringBuilder reportBuilder)
         {
-            bool foundExtraCheckFile = false;
-            foreach (FileComparisonDifference extraCheckFileInfo in _diffResult.FileResults.Where(x => x.MissingBaselineComparison))
+            bool anyExtraSecondaryFiles = false;
+            foreach (FileComparisonDifference extraSecondaryFileInfo in _diffResult.FileResults.Where(x => x.MissingBaselineComparison))
             {
-                if (!foundExtraCheckFile)
+                if (!anyExtraSecondaryFiles)
                 {
                     reportBuilder.AppendLine();
-                    reportBuilder.AppendLine("*** Files in the check data but not in the baseline ***");
-                    foundExtraCheckFile = true;
+                    reportBuilder.AppendLine("*** Files in the secondary data but not in the baseline ***");
+                    anyExtraSecondaryFiles = true;
                 }
 
-                reportBuilder.AppendLine($"\t{extraCheckFileInfo.Filename}");
+                reportBuilder.AppendLine($"\t{extraSecondaryFileInfo.Filename}");
             }
 
-            return foundExtraCheckFile;
+            return anyExtraSecondaryFiles;
         }
 
-        private bool ReportInvalidDifferences(StringBuilder reportBuilder)
+        private bool ReportDifferenceIssues(StringBuilder reportBuilder)
         {
             bool foundInvalidDiffFile = false;
-            foreach (FileComparisonDifference fileDiff in _diffResult.FileResults.Where(f => f.AnyInvalidDifferences))
+            foreach (FileComparisonDifference fileDiff in _diffResult.FileResults.Where(f => f.AnyInvalidDifferences || f.HasDifferenceResolutionError))
             {
                 if (!foundInvalidDiffFile)
                 {
                     reportBuilder.AppendLine();
-                    reportBuilder.AppendLine("*** Files with invalid differences ***");
+                    reportBuilder.AppendLine("*** Files with difference comparison issues ***");
                     foundInvalidDiffFile = true;
                 }
 
                 reportBuilder.AppendLine($"File: {fileDiff.Filename}");
 
+                if (fileDiff.HasDifferenceResolutionError)
+                {
+                    reportBuilder.AppendLine("\t*** Difference resolution error. The number of differences in the original comparisons does not match the classified differences.");
+                }
+
                 if (fileDiff.BaselineOnlyDifferences.Count > 0)
                 {
-                    reportBuilder.AppendLine("\tDifferences found only in the baseline check data:");
+                    reportBuilder.AppendLine("\tDifferences found only in the baseline secondary data:");
                     foreach (PositionalDifference positionalDiff in fileDiff.BaselineOnlyDifferences)
                     {
                         reportBuilder.AppendLine($"\t\tBaseline master file (position = {positionalDiff.BaselineStartPosition}) {positionalDiff.BaselineData}");
-                        reportBuilder.AppendLine($"\t\tBaseline check file (position = {positionalDiff.TargetStartPosition}) {positionalDiff.TargetData}");
+                        reportBuilder.AppendLine($"\t\tBaseline secondary file (position = {positionalDiff.SecondaryStartPosition}) {positionalDiff.SecondaryData}");
                         reportBuilder.AppendLine($"\t\tDatatype: {positionalDiff.ClassificationString}");
                     }
                 }
 
-                if (fileDiff.CheckOnlyDifferences.Count > 0)
+                if (fileDiff.SecondaryOnlyDifferences.Count > 0)
                 {
-                    reportBuilder.AppendLine("\tDifferences found only in the current check data:");
-                    foreach (PositionalDifference positionalDiff in fileDiff.CheckOnlyDifferences)
+                    reportBuilder.AppendLine("\tDifferences found only in the current secondary data:");
+                    foreach (PositionalDifference positionalDiff in fileDiff.SecondaryOnlyDifferences)
                     {
                         reportBuilder.AppendLine($"\t\tBaseline master file (position = {positionalDiff.BaselineStartPosition}) {positionalDiff.BaselineData}");
-                        reportBuilder.AppendLine($"\t\tCurrent check file (position = {positionalDiff.TargetStartPosition}) {positionalDiff.TargetData}");
+                        reportBuilder.AppendLine($"\t\tCurrent secondary file (position = {positionalDiff.SecondaryStartPosition}) {positionalDiff.SecondaryData}");
                         reportBuilder.AppendLine($"\t\tDatatype: {positionalDiff.ClassificationString}");
                     }
                 }
@@ -156,12 +163,12 @@ namespace BaselineComparer
                     }
 
                     reportBuilder.AppendLine($"\t\tBaseline master file (position = {difference.BaselineDifference.BaselineStartPosition}) {difference.BaselineDifference.BaselineData}");
-                    reportBuilder.AppendLine($"\t\tBaseline check file (position = {difference.BaselineDifference.TargetStartPosition}) {difference.BaselineDifference.TargetData}");
-                    reportBuilder.AppendLine($"\t\tCurrent check file (position = {difference.CheckDifference.TargetStartPosition}) {difference.CheckDifference.TargetData}");
+                    reportBuilder.AppendLine($"\t\tBaseline secondary file (position = {difference.BaselineDifference.SecondaryStartPosition}) {difference.BaselineDifference.SecondaryData}");
+                    reportBuilder.AppendLine($"\t\tCurrent secondary file (position = {difference.CheckDifference.SecondaryStartPosition}) {difference.CheckDifference.SecondaryData}");
 
                     if (difference.Disposition == PositionalComparisonDisposition.DatatypeMismatch)
                     {
-                        reportBuilder.AppendLine($"\t\t\t* Datatype mismatch. Baseline datatype = {difference.BaselineDifference.ClassificationString} --- Check datatype = {difference.CheckDifference.ClassificationString}");
+                        reportBuilder.AppendLine($"\t\t\t* Datatype mismatch. Baseline datatype = {difference.BaselineDifference.ClassificationString} --- Secondary datatype = {difference.CheckDifference.ClassificationString}");
                     }
                     else if (difference.Disposition == PositionalComparisonDisposition.LengthMismatch)
                     {

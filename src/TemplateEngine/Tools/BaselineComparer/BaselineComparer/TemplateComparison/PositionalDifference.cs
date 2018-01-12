@@ -2,7 +2,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace BaselineComparer
+namespace BaselineComparer.TemplateComparison
 {
     public enum DifferenceDatatype
     {
@@ -15,22 +15,22 @@ namespace BaselineComparer
 
     public class PositionalDifference
     {
-        public PositionalDifference(int baselineStart, string baselineData, int targetStart, string targetData, DifferenceDatatype classification, int leeway)
+        public PositionalDifference(int baselineStart, string baselineData, int secondaryStart, string secondaryData, DifferenceDatatype classification, int leeway)
         {
             BaselineStartPosition = baselineStart;
             BaselineData = baselineData;
-            TargetStartPosition = targetStart;
-            TargetData = targetData;
+            SecondaryStartPosition = secondaryStart;
+            SecondaryData = secondaryData;
             Classification = classification;
             LocationLeeway = leeway;
         }
 
-        public PositionalDifference(int baselineStart, string baselineData, int targetStart, string targetData)
+        public PositionalDifference(int baselineStart, string baselineData, int secondaryStart, string secondaryData)
         {
             BaselineStartPosition = baselineStart;
             BaselineData = baselineData;
-            TargetStartPosition = targetStart;
-            TargetData = targetData;
+            SecondaryStartPosition = secondaryStart;
+            SecondaryData = secondaryData;
             Classification = ClassifyDifference(out int leeway);
             LocationLeeway = leeway;
         }
@@ -42,10 +42,10 @@ namespace BaselineComparer
         public string BaselineData { get; }
 
         [JsonProperty]
-        public int TargetStartPosition { get; }
+        public int SecondaryStartPosition { get; }
 
         [JsonProperty]
-        public string TargetData { get; }
+        public string SecondaryData { get; }
 
         // Based on the classification of the difference, we may need to allow some leeway on the position of the difference for future comparisons.
         // For example if in the baseline comparison, two generated ints are 65432 and 69999, the diff will start after the 6.
@@ -60,9 +60,9 @@ namespace BaselineComparer
         [JsonProperty]
         public string ClassificationString => Classification.ToString();
 
-        // TODO: semantic version diff checking. Can use TemplateEngine.Utils.SemanticVersion.cs for parsing
+        // TODO (future enhancement): semantic version diff checking. Can use TemplateEngine.Utils.SemanticVersion.cs for parsing
         //      just need to be able to "walk around" the actual diff to get the full version string so it parses correctly.
-        // TODO: detect other "standard" data types.
+        // TODO (future enhancement): detect other "standard" data types.
         private DifferenceDatatype ClassifyDifference(out int leeway)
         {
             if (IsIntegerDifference(out leeway))
@@ -86,9 +86,9 @@ namespace BaselineComparer
 
         private bool IsDecimalDifference(out int leeway)
         {
-            if (Double.TryParse(BaselineData, out double _) && Double.TryParse(TargetData, out double _))
+            if (Double.TryParse(BaselineData, out double _) && Double.TryParse(SecondaryData, out double _))
             {
-                leeway = Math.Abs(BaselineData.Length - TargetData.Length) + 2;
+                leeway = Math.Abs(BaselineData.Length - SecondaryData.Length) + 2;
                 return true;
             }
 
@@ -98,9 +98,9 @@ namespace BaselineComparer
 
         private bool IsIntegerDifference(out int leeway)
         {
-            if (Int32.TryParse(BaselineData, out int _) && Int32.TryParse(TargetData, out int _))
+            if (Int32.TryParse(BaselineData, out int _) && Int32.TryParse(SecondaryData, out int _))
             {
-                leeway = Math.Abs(BaselineData.Length - TargetData.Length) + 2;
+                leeway = Math.Abs(BaselineData.Length - SecondaryData.Length) + 2;
                 return true;
             }
 
@@ -110,9 +110,9 @@ namespace BaselineComparer
 
         private bool IsGuidDifference(out int recommendedLeeway)
         {
-            if (IsAlmostGuid(BaselineData, out int baselinePadding) && IsAlmostGuid(TargetData, out int targetPadding))
+            if (IsAlmostGuid(BaselineData, out int baselinePadding) && IsAlmostGuid(SecondaryData, out int secondaryPadding))
             {
-                recommendedLeeway = Math.Max(baselinePadding, targetPadding);
+                recommendedLeeway = 4;  // this would be the total number of characters at the start & end of the compared guids that are identical. More than 4 is very unlikely.
                 return true;
             }
 
@@ -166,7 +166,7 @@ namespace BaselineComparer
         public void ConsoleDebug()
         {
             Console.WriteLine($"Baseline start: {BaselineStartPosition} | {BaselineData}");
-            Console.WriteLine($"Target start: {TargetStartPosition} | {TargetData}");
+            Console.WriteLine($"Target start: {SecondaryStartPosition} | {SecondaryData}");
             Console.WriteLine($"\tDatatype: {Classification.ToString()}");
             Console.WriteLine($"\tLeeway: {LocationLeeway}");
         }
@@ -175,14 +175,14 @@ namespace BaselineComparer
         {
             int baselineStart = source.GetValue(nameof(BaselineStartPosition)).ToObject<int>();
             string baselineData = source.GetValue(nameof(BaselineData)).ToString();
-            int targetStart = source.GetValue(nameof(TargetStartPosition)).ToObject<int>();
-            string targetData = source.GetValue(nameof(TargetData)).ToString();
+            int secondaryStart = source.GetValue(nameof(SecondaryStartPosition)).ToObject<int>();
+            string secondaryData = source.GetValue(nameof(SecondaryData)).ToString();
 
             int leeway = source.GetValue(nameof(LocationLeeway)).ToObject<int>();
             string classificationString = source.GetValue(nameof(ClassificationString)).ToString();
             DifferenceDatatype classification = Enum.Parse<DifferenceDatatype>(classificationString);
 
-            PositionalDifference difference = new PositionalDifference(baselineStart, baselineData, targetStart, targetData, classification, leeway);
+            PositionalDifference difference = new PositionalDifference(baselineStart, baselineData, secondaryStart, secondaryData, classification, leeway);
 
             return difference;
         }
