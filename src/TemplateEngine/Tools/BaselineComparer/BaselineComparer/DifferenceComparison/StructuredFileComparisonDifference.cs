@@ -67,7 +67,6 @@ namespace BaselineComparer.DifferenceComparison
                 HasInvalidDifferences = differences.AnyInvalidDifferences,
                 BaselineOnlyDifferences = differences.BaselineOnlyDifferences,
                 SecondaryOnlyDifferences = differences.SecondaryOnlyDifferences,
-                //PositionallyMatchedDifferences = differences.PositionallyMatchedDifferences.Select(d => StructuredPositionalComparisonDifference.FromPositionalComparisonDifference(d)).ToList()
                 FullyMatchedDifferences = differences.PositionallyMatchedDifferences.Where(d => d.Disposition == PositionalComparisonDisposition.Match)
                                                                                     .Select(m => StructuredPositionalComparisonDifference.FromPositionalComparisonDifference(m)).ToList(),
                 PositionallyMatchedDifferencesWithIssues = differences.PositionallyMatchedDifferences.Where(d => d.Disposition != PositionalComparisonDisposition.Match)

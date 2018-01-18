@@ -7,10 +7,9 @@ namespace BaselineComparer.TemplateComparison
 {
     public class DirectoryDifference
     {
-        public DirectoryDifference(string baselineDirectory, string secondaryDirectory)
+        public DirectoryDifference(string dataCommonSubdir)
         {
-            BaselineDirectory = baselineDirectory;
-            SecondaryDirectory = secondaryDirectory;
+            DataCommonSubdir = dataCommonSubdir;
             _fileResults = new List<FileDifference>();
         }
 
@@ -22,10 +21,7 @@ namespace BaselineComparer.TemplateComparison
         private List<FileDifference> _fileResults;
 
         [JsonProperty]
-        public string BaselineDirectory { get; }
-
-        [JsonProperty]
-        public string SecondaryDirectory { get; }
+        public string DataCommonSubdir { get; set; }
 
         [JsonProperty]
         public IReadOnlyList<FileDifference> FileResults => _fileResults;
@@ -77,10 +73,8 @@ namespace BaselineComparer.TemplateComparison
 
         public static DirectoryDifference FromJObject(JObject source)
         {
-            string baselineDirectory = source.GetValue(nameof(BaselineDirectory)).ToString();
-            string secondaryDirectory = source.GetValue(nameof(SecondaryDirectory)).ToString();
-
-            DirectoryDifference deserialized = new DirectoryDifference(baselineDirectory, secondaryDirectory);
+            string dataCommonSubdir = source.GetValue(nameof(DataCommonSubdir)).ToString();
+            DirectoryDifference deserialized = new DirectoryDifference(dataCommonSubdir);
 
             foreach (JObject fileInfo in source.GetValue(nameof(FileResults)))
             {

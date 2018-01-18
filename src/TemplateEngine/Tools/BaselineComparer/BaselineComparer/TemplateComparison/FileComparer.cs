@@ -11,8 +11,8 @@ namespace BaselineComparer.TemplateComparison
         private static readonly int DifferenceCheckWindowSize = 100;
         private static readonly int PositionalSize = 10;
 
-        private string _baselineFilePath;
-        private string _secondaryFilePath;
+        private readonly string _baselineFilePath;
+        private readonly string _secondaryFilePath;
 
         private BufferedReadStream _baselineData;
         private BufferedReadStream _secondaryData;

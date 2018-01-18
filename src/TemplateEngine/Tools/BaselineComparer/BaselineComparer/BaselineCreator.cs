@@ -1,138 +1,102 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using BaselineComparer.Helpers;
-using BaselineComparer.TemplateComparison;
-using Newtonsoft.Json.Linq;
 
 namespace BaselineComparer
 {
     public class BaselineCreator
     {
-        private static readonly string BaselineMasterDirName = "BaselineMaster";
-        private static readonly string BaselineComparisonDirName = "BaselineCompare";
+        public static readonly string BaseDataDir = "Data";
+        public static readonly string BaseReportDir = "BaselineReports";
+        public static readonly string BaselineMasterDataDirName = "BaselineMaster";
+        private static readonly string BaselineSecondaryDataDirName = "BaselineSecondary";
 
-        // When establishing a baseline, neither template creation directory is particularly "preferred". But one is designated as the baseline.
-        // The same baseline data must be used for future comparisons, because the differences in the comparison results is the real test.
-        public BaselineCreator(string baseDataDir, string newCommand, IReadOnlyList<string> templateCommands)
+        public BaselineCreator(string baselineRoot, string newCommand, IReadOnlyList<InvocationUnit> invocationUnits)
         {
-            BaselineDir = Path.Combine(baseDataDir, BaselineMasterDirName);
-            ComparisonDir = Path.Combine(baseDataDir, BaselineComparisonDirName);
+            BaselineRoot = baselineRoot;
             NewCommand = newCommand;
-            TemplateCommands = templateCommands;
+            string dataDir = Path.Combine(BaselineRoot, BaseDataDir);
+            _masterDataBasePath = Path.Combine(dataDir, BaselineMasterDataDirName);
+            _secondaryDataBasePath = Path.Combine(dataDir, BaselineSecondaryDataDirName);
+
+            _reportDir = Path.Combine(BaselineRoot, BaseReportDir);
+            _invocationUnits = invocationUnits;
         }
 
-        public string BaselineDir { get; }
-        public string ComparisonDir { get; }
+        public string BaselineRoot { get; }
         public string NewCommand { get; }
-        public IReadOnlyList<string> TemplateCommands { get; }
 
-        private DirectoryDifference _comparisonResult;
+        private readonly string _masterDataBasePath;
+        private readonly string _secondaryDataBasePath;
+        private readonly string _reportDir;
 
-        public bool WriteBaseline(string baselineDataFilename)
+        private readonly IReadOnlyList<InvocationUnit> _invocationUnits;
+        // unit name -> command -> relative path
+        private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _unitNameAndCommandToDataPathMap;
+        private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _unitNameAndCommandToReportFileMap;
+
+        public void CreateBaseline()
         {
-            EnsureComparisons();
+            AssignRelativePathsAndReportNamesToCommands();
 
-            if (!ValidateBaseline())
+            if (!TryCreateTemplates())
             {
-                return false;
+                throw new Exception("There were problems creating the templates to compare.");
             }
 
-            Baseline baseline = new Baseline(BaselineDir, ComparisonDir, NewCommand, TemplateCommands, _comparisonResult);
-            JObject serializedBaseline = JObject.FromObject(baseline);
-            File.WriteAllText(baselineDataFilename, serializedBaseline.ToString());
-
-            return true;
+            BaselineReportCreator reportCreator = new BaselineReportCreator(_masterDataBasePath, _secondaryDataBasePath, _invocationUnits, _unitNameAndCommandToDataPathMap, _unitNameAndCommandToReportFileMap);
+            reportCreator.WriteAllBaselineComparisons(_reportDir, NewCommand);
         }
 
-        private bool ValidateBaseline()
+        // todo: move this outside this class for creating comparison data.
+        private bool TryCreateTemplates()
         {
-            if (!ComparisonResult.IsValidBaseline)
-            {
-                Console.WriteLine("Could not create baseline.");
+            bool allCreationsGood = true;
 
-                if (MissingBaselineFiles.Count > 0)
+            foreach (InvocationUnit unit in _invocationUnits)
+            {
+                CustomHiveCoordinator hive = new CustomHiveCoordinator(NewCommand, unit.InstallRequirements);
+                hive.InitializeHive();
+
+                IReadOnlyDictionary<string, string> commandToPathMap = _unitNameAndCommandToDataPathMap[unit.Name];
+                allCreationsGood &= hive.TryCreateTemplateData(_masterDataBasePath, commandToPathMap);
+                allCreationsGood &= hive.TryCreateTemplateData(_secondaryDataBasePath, commandToPathMap);
+
+                hive.DeleteHive();
+            }
+
+            return allCreationsGood;
+        }
+
+        private void AssignRelativePathsAndReportNamesToCommands()
+        {
+            Dictionary<string, IReadOnlyDictionary<string, string>> unitCommandDataPaths = new Dictionary<string, IReadOnlyDictionary<string, string>>();
+            Dictionary<string, IReadOnlyDictionary<string, string>> unitCommandReportFiles = new Dictionary<string, IReadOnlyDictionary<string, string>>();
+
+            foreach (InvocationUnit unit in _invocationUnits)
+            {
+                int commandIndex = 0;
+
+                if (unitCommandDataPaths.ContainsKey(unit.Name))
                 {
-                    Console.WriteLine("The secondary directory contains these files, missing from the baseline directory:");
-                    foreach (string file in MissingBaselineFiles)
-                    {
-                        Console.WriteLine($"\t{file}");
-                    }
+                    throw new Exception($"Multiple invocation units with the same name are not allowed. Duplicated name: '{unit.Name}'");
                 }
 
-                if (MissingSecondaryFiles.Count > 0)
+                Dictionary<string, string> commandToDataPathMap = new Dictionary<string, string>();
+                unitCommandDataPaths[unit.Name] = commandToDataPathMap;
+                Dictionary<string, string> commandToReportFileMap = new Dictionary<string, string>();
+                unitCommandReportFiles[unit.Name] = commandToReportFileMap;
+
+                foreach (string command in unit.InvocationCommands)
                 {
-                    Console.WriteLine("The baseline directory contains these files, missing from the secondary directory:");
-                    foreach (string file in MissingSecondaryFiles)
-                    {
-                        Console.WriteLine($"\t{file}");
-                    }
+                    commandToDataPathMap[command] = Guid.NewGuid().ToString();
+                    commandToReportFileMap[command] = $"{unit.Name}_{commandIndex}.json";
+                    ++commandIndex;
                 }
-
-                return false;
             }
 
-            return true;
-        }
-
-        public DirectoryDifference ComparisonResult
-        {
-            get
-            {
-                EnsureComparisons();
-
-                return _comparisonResult;
-            }
-        }
-
-        public IReadOnlyList<string> MissingBaselineFiles
-        {
-            get
-            {
-                EnsureComparisons();
-
-                return _comparisonResult.MissingBaselineFiles;
-            }
-        }
-
-        public IReadOnlyList<string> MissingSecondaryFiles
-        {
-            get
-            {
-                EnsureComparisons();
-
-                return _comparisonResult.MissingSecondaryFiles;
-            }
-        }
-
-        private void EnsureComparisons()
-        {
-            if (_comparisonResult == null)
-            {
-                if (!CreateTemplatesToCompare())
-                {
-                    throw new Exception("Error creating the templates to compare.");
-                }
-
-                DirectoryComparer comparer = new DirectoryComparer(BaselineDir, ComparisonDir);
-                _comparisonResult = comparer.Compare();
-            }
-        }
-        private bool CreateTemplatesToCompare()
-        {
-            Console.WriteLine("Generating baseline master data.");
-            if (!TemplateCommandRunner.RunTemplateCommands(NewCommand, BaselineDir, TemplateCommands))
-            {
-                return false;
-            }
-
-            Console.WriteLine("Generating comparison data.");
-            if (!TemplateCommandRunner.RunTemplateCommands(NewCommand, ComparisonDir, TemplateCommands))
-            {
-                return false;
-            }
-
-            return true;
+            _unitNameAndCommandToDataPathMap = unitCommandDataPaths;
+            _unitNameAndCommandToReportFileMap = unitCommandReportFiles;
         }
     }
 }

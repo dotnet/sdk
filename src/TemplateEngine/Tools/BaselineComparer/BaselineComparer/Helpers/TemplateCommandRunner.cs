@@ -5,10 +5,12 @@ namespace BaselineComparer.Helpers
 {
     public static class TemplateCommandRunner
     {
-        public static bool RunTemplateCommands(string newCommand, string creationBaseDir, IReadOnlyList<string> templateCommands)
+        public static bool RunTemplateCommand(string newCommand, string creationBaseDir, string templateCommand, string customHiveBasePath, bool isTemporaryHive)
         {
-            TemplateDataCreator dataCreator = new TemplateDataCreator(newCommand, creationBaseDir, templateCommands);
-            bool result = dataCreator.PerformTemplateCommands();
+            List<string> templateCommandList = new List<string>() { templateCommand };
+
+            TemplateDataCreator dataCreator = new TemplateDataCreator(newCommand, creationBaseDir, templateCommandList, customHiveBasePath);
+            bool result = dataCreator.PerformTemplateCommands(isTemporaryHive);
 
             if (result)
             {

@@ -6,6 +6,14 @@ namespace BaselineComparer.Helpers
 {
     public class TemplateDataCreator
     {
+        public TemplateDataCreator(string dotnetCommand, string creationBaseDir, IReadOnlyList<string> templateCommands, string customHiveBaseDir)
+        {
+            _dotnetCommand = dotnetCommand;
+            _creationBaseDir = creationBaseDir;
+            _templateCommands = templateCommands;
+            _customHiveBaseDir = customHiveBaseDir;
+        }
+
         public TemplateDataCreator(string dotnetCommand, string creationBaseDir, IReadOnlyList<string> templateCommands)
         {
             _dotnetCommand = dotnetCommand;
@@ -41,7 +49,7 @@ namespace BaselineComparer.Helpers
             return true;
         }
 
-        public bool PerformTemplateCommands()
+        public bool PerformTemplateCommands(bool isTemporaryHive)
         {
             if (!ValidateProperties())
             {
@@ -55,7 +63,10 @@ namespace BaselineComparer.Helpers
             }
             Environment.CurrentDirectory = _creationBaseDir;
 
-            InitializeHive();
+            if (isTemporaryHive)
+            {
+                InitializeHive();
+            }
 
             foreach (string command in _templateCommands)
             {
@@ -65,7 +76,10 @@ namespace BaselineComparer.Helpers
 
             Environment.CurrentDirectory = originalDirectory;
 
-            RemoveHive();
+            if (isTemporaryHive)
+            {
+                RemoveHive();
+            }
 
             return true;
         }
@@ -73,7 +87,7 @@ namespace BaselineComparer.Helpers
         private void InitializeHive()
         {
             string args = $"--debug:reinit --debug:custom-hive {_customHiveBaseDir}";
-
+            Console.WriteLine($"Reinitializing hive: {args}");
             Run(args);
         }
 
