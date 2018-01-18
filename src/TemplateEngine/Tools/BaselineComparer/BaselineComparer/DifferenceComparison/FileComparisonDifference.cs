@@ -19,8 +19,8 @@ namespace BaselineComparer.DifferenceComparison
         private List<PositionalComparisonDifference> _positionallyMatchedDifferences;
         private List<PositionalDifference> _baselineOnlyDifferences;
         private List<PositionalDifference> _checkOnlyDifferences;
-        private bool _missingBaselineComparison;
-        private bool _missingCheckComparison;
+        private bool _missingBaselineFile;
+        private bool _missingSecondaryFile;
 
         // Stores the differences that positionally match up between two sets of comparisons.
         // They could still have a datatype or length mismatch.
@@ -40,9 +40,9 @@ namespace BaselineComparer.DifferenceComparison
 
         public void AddBaselineOnlyDifference(PositionalDifference baselineDifference)
         {
-            if (MissingBaselineComparison || MissingSecondaryComparison)
+            if (MissingBaselineFile || MissingSecondaryFile)
             {
-                throw new System.Exception("Cant have differences if a comparison is missing.");
+                throw new System.Exception("Cant have differences if a file is missing.");
             }
 
             _baselineOnlyDifferences.Add(baselineDifference);
@@ -50,9 +50,9 @@ namespace BaselineComparer.DifferenceComparison
 
         public void AddCheckOnlyDifference(PositionalDifference checkDifference)
         {
-            if (MissingBaselineComparison || MissingSecondaryComparison)
+            if (MissingBaselineFile || MissingSecondaryFile)
             {
-                throw new System.Exception("Cant have differences if a comparison is missing.");
+                throw new System.Exception("Cant have differences if a file is missing.");
             }
 
             _checkOnlyDifferences.Add(checkDifference);
@@ -67,15 +67,17 @@ namespace BaselineComparer.DifferenceComparison
             {
                 return BaselineOnlyDifferences.Count > 0
                     || SecondaryOnlyDifferences.Count > 0
+                    || MissingBaselineFile
+                    || MissingSecondaryFile
                     || PositionallyMatchedDifferences.Any(d => d.Disposition != PositionalComparisonDisposition.Match);
             }
         }
 
-        public bool MissingBaselineComparison
+        public bool MissingBaselineFile
         {
             get
             {
-                return _missingBaselineComparison;
+                return _missingBaselineFile;
             }
             set
             {
@@ -83,18 +85,18 @@ namespace BaselineComparer.DifferenceComparison
                     || _baselineOnlyDifferences.Count > 0
                     || _checkOnlyDifferences.Count > 0)
                 {
-                    throw new System.Exception("Cant label comparison as missing - there are registered differences.");
+                    throw new System.Exception("Cant label baseline file as missing - there are registered differences.");
                 }
 
-                _missingBaselineComparison = value;
+                _missingBaselineFile = value;
             }
         }
 
-        public bool MissingSecondaryComparison
+        public bool MissingSecondaryFile
         {
             get
             {
-                return _missingCheckComparison;
+                return _missingSecondaryFile;
             }
             set
             {
@@ -102,10 +104,10 @@ namespace BaselineComparer.DifferenceComparison
                     || _baselineOnlyDifferences.Count > 0
                     || _checkOnlyDifferences.Count > 0)
                 {
-                    throw new System.Exception("Cant label comparison as missing - there are registered differences.");
+                    throw new System.Exception("Cant label secondary file as missing - there are registered differences.");
                 }
 
-                _missingCheckComparison = value;
+                _missingSecondaryFile = value;
             }
         }
     }

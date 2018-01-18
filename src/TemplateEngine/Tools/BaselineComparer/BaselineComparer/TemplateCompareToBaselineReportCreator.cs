@@ -44,15 +44,22 @@ namespace BaselineComparer
         private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _unitNameAndCommandToDataPathMap;
         private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _unitNameAndCommandToReportFileMap;
 
-        public void CreateBaselineComparison()
+        public void CreateBaselineComparison(bool debugCompareOnly)
         {
-            CopyExistingBaseline();
+            if (!debugCompareOnly)
+            {
+                CopyExistingBaseline();
+            }
+
             ReadBaselineMasterReport();
             AssignRelativePathsAndReportNamesToCommandsFromMasterReport();
 
-            if (!TryCreateTemplates())
+            if (!debugCompareOnly)
             {
-                throw new Exception("There were problems creating the templates to compare.");
+                if (!TryCreateTemplates())
+                {
+                    throw new Exception("There were problems creating the templates to compare.");
+                }
             }
 
             IReadOnlyList<InvocationUnit> invocationUnits = _masterReport.Invocations.Select(x => InvocationUnit.FromInvocationBaselineUnit(x)).ToList();
@@ -109,6 +116,7 @@ namespace BaselineComparer
 
         private void CopyExistingBaseline()
         {
+            Console.WriteLine("Copying baseline directory to comparison directory.");
             DirectoryCopy.CopyDirectory(_baselineRoot, _comparisonRoot, true);
         }
     }

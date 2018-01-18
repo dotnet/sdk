@@ -26,7 +26,7 @@ namespace BaselineComparer
 
             if (string.Equals(args[0], "--compare-to-baseline"))
             {
-                if (args.Length != 3)
+                if (args.Length != 3 && args.Length != 4)
                 {
                     ShowUsageMessage();
                     return -1;
@@ -35,7 +35,23 @@ namespace BaselineComparer
                 string baselineBaseDir = args[1];
                 string comparisonBaseDir = args[2];
 
-                return CreateFileSeparatedBaselineComparison(baselineBaseDir, comparisonBaseDir);
+                bool debug = false;
+                if (args.Length == 4)
+                {
+                    if (string.Equals(args[3], "--debug", StringComparison.Ordinal))
+                    {
+                        debug = true;
+                        Console.WriteLine("Attach & hit return.");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        ShowUsageMessage();
+                        return -1;
+                    }
+                }
+
+                return CreateFileSeparatedBaselineComparison(baselineBaseDir, comparisonBaseDir, debug);
             }
 
             ShowUsageMessage();
@@ -64,11 +80,11 @@ namespace BaselineComparer
             return 0;
         }
 
-        public static int CreateFileSeparatedBaselineComparison(string baselineBaseDir, string comparisonBaseDir)
+        public static int CreateFileSeparatedBaselineComparison(string baselineBaseDir, string comparisonBaseDir, bool debug)
         {
             // create the templates to compare to the baseline master data, and do the template-to-template comparisons.
             TemplateCompareToBaselineReportCreator comparisonCreator = new TemplateCompareToBaselineReportCreator(baselineBaseDir, comparisonBaseDir);
-            comparisonCreator.CreateBaselineComparison();
+            comparisonCreator.CreateBaselineComparison(debug);
 
             // Compare the baseline comparisons against the newly created comparisons.
             ComparisonComparisonReportCreator comparisonComparisonCreator = new ComparisonComparisonReportCreator(comparisonCreator.BaselineReportDir, comparisonCreator.ComparisonReportDir);

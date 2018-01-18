@@ -58,6 +58,20 @@ namespace BaselineComparer.DifferenceComparison
             return PositionallyMatchedDifferencesWithIssues.Count > 0;
         }
 
+        public bool MissingBaselineFile { get; set; }
+
+        public bool ShouldSerializeMissingBaselineFile()
+        {
+            return MissingBaselineFile;
+        }
+
+        public bool MissingSecondaryFile { get; set; }
+
+        public bool ShouldSerializeMissingSecondaryFile()
+        {
+            return MissingSecondaryFile;
+        }
+
         public static StructuredFileComparisonDifference FromFileComparisonDifference(FileComparisonDifference differences)
         {
             StructuredFileComparisonDifference structuredDifference = new StructuredFileComparisonDifference()
@@ -71,7 +85,8 @@ namespace BaselineComparer.DifferenceComparison
                                                                                     .Select(m => StructuredPositionalComparisonDifference.FromPositionalComparisonDifference(m)).ToList(),
                 PositionallyMatchedDifferencesWithIssues = differences.PositionallyMatchedDifferences.Where(d => d.Disposition != PositionalComparisonDisposition.Match)
                                                                                     .Select(m => StructuredPositionalComparisonDifference.FromPositionalComparisonDifference(m)).ToList(),
-
+                MissingBaselineFile = differences.MissingBaselineFile,
+                MissingSecondaryFile = differences.MissingSecondaryFile
             };
 
             return structuredDifference;

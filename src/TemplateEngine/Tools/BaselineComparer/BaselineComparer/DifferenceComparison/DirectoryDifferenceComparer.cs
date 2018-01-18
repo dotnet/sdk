@@ -39,7 +39,7 @@ namespace BaselineComparer.DifferenceComparison
                 if (!checkFileLookup.TryGetValue(baselineFileDiff.File, out FileDifference checkFileDiff))
                 {
                     FileComparisonDifference fileResult = new FileComparisonDifference(baselineFileDiff.File);
-                    fileResult.MissingSecondaryComparison = true;
+                    fileResult.MissingSecondaryFile = true;
                     comparisonResult.AddFileResult(fileResult);
                 }
                 else
@@ -57,7 +57,7 @@ namespace BaselineComparer.DifferenceComparison
                 if (!baselineFileLookup.Contains(checkFileDifference.File))
                 {
                     FileComparisonDifference fileResult = new FileComparisonDifference(checkFileDifference.File);
-                    fileResult.MissingBaselineComparison = true;
+                    fileResult.MissingBaselineFile = true;
                     comparisonResult.AddFileResult(fileResult);
                 }
             }

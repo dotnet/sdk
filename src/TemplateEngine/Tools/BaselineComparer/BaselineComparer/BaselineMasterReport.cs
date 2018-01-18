@@ -40,7 +40,7 @@ namespace BaselineComparer
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Unable to deserialize the existing baseline data.");
+                Console.WriteLine($"Unable to deserialize the existing baseline data file: {filename}.");
                 Console.WriteLine($"Error: {ex.Message}");
                 throw;
             }
