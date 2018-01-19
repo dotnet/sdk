@@ -63,6 +63,18 @@ Copyright (c) .NET Foundation. All rights reserved.
      <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
      <FSharpTargetsShim Condition = " '$(FSharpTargetsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.targets</FSharpTargetsShim>
   </PropertyGroup>
-  <Import Condition=" '$(UseBundledFSharpTargets)' == 'true' and  '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpTargetsShim)') " Project="$(FSharpTargetsShim)" />
+  <Import Condition=" '$(UseBundledFSharpTargets)' == 'true' and '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpTargetsShim)') " Project="$(FSharpTargetsShim)" />
+
+  <!-- ***************************************************************************************************************
+       Shim to select the correct Microsoft.FSharpCrossTargeting.NetSdk.targets file
+
+       If running under desktop select Microsoft.FSharp.targets file from VS deployment, 
+       if running core msbuild select Microsoft.FSharp.targets from dotnet cli deployment
+       *************************************************************************************************************** -->
+  <PropertyGroup Condition=" '$(IsCrossTargetingBuild)' == 'true' " >
+     <FSharpCrossTargetingTargetsShim Condition = " '$(FSharpCrossTargetingTargetsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharpCrossTargeting.NetSdk.targets') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharpCrossTargeting.NetSdk.targets</FSharpCrossTargetingTargetsShim>
+     <FSharpCrossTargetingTargetsShim Condition = " '$(FSharpCrossTargetingTargetsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharpCrossTargeting.NetSdk.targets') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharpCrossTargeting.NetSdk.targets</FSharpCrossTargetingTargetsShim>
+  </PropertyGroup>
+  <Import Condition=" '$(UseBundledFSharpTargets)' == 'true' and '$(IsCrossTargetingBuild)' == 'true' and Exists('$(FSharpCrossTargetingTargetsShim)') " Project="$(FSharpCrossTargetingTargetsShim)" />
 
 </Project>
