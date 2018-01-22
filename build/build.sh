@@ -4,7 +4,6 @@ build=false
 ci=false
 configuration="Debug"
 dogfood=false
-help=false
 log=false
 pack=false
 prepareMachine=false
