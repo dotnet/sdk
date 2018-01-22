@@ -16,7 +16,7 @@ verbosity="minimal"
 properties=()
 
 while [[ $# -gt 0 ]]; do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo "$1" | awk '{print tolower($0)}')"
   case $lowerI in
     --build)
       build=true
@@ -141,7 +141,7 @@ function InstallDotNetCli {
     curl "https://dot.net/v1/dotnet-install.sh" -sSL -o "$DotNetInstallScript"
   fi
 
-  if [[ "$(echo $verbosity | awk '{print tolower($0)}')" == "diagnostic" ]]
+  if [[ "$(echo "$verbosity" | awk '{print tolower($0)}')" == "diagnostic" ]]
   then
     DotNetInstallVerbosity="--verbose"
   fi
@@ -151,7 +151,7 @@ function InstallDotNetCli {
 
   if [ ! -d "$SdkInstallDir" ]
   then
-    bash "$DotNetInstallScript" --version $DotNetCliVersion $DotNetInstallVerbosity
+    bash "$DotNetInstallScript" --version "$DotNetCliVersion" $DotNetInstallVerbosity
     LASTEXITCODE=$?
 
     if [ $LASTEXITCODE != 0 ]
@@ -210,7 +210,7 @@ function InstallRepoToolset {
 
   if $ci || $log
   then
-    CreateDirectory $LogDir
+    CreateDirectory "$LogDir"
     logCmd="/bl:$LogDir/Build.binlog"
   else
     logCmd=""
@@ -219,7 +219,7 @@ function InstallRepoToolset {
   if [ ! -d "$RepoToolsetBuildProj" ]
   then
     ToolsetProj="$ScriptRoot/Toolset.proj"
-    dotnet msbuild $ToolsetProj /t:restore /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd
+    dotnet msbuild "$ToolsetProj" /t:restore /m /nologo /clp:Summary /warnaserror "/v:$verbosity" $logCmd
     LASTEXITCODE=$?
 
     if [ $LASTEXITCODE != 0 ]
@@ -260,18 +260,18 @@ function Build {
 
   if $ci || $log
   then
-    CreateDirectory $LogDir
+    CreateDirectory "$LogDir"
     logCmd="/bl:$LogDir/Build.binlog"
   else
     logCmd=""
   fi
 
-  if [ -z $solution ]
+  if [ -z "$solution" ]
   then
     solution="$RepoRoot/sdk.sln"
   fi
 
-  dotnet msbuild "$RepoToolsetBuildProj" /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci "${properties[@]}"
+  dotnet msbuild "$RepoToolsetBuildProj" /m /nologo /clp:Summary /warnaserror "/v:$verbosity" $logCmd "/p:Configuration=$configuration" "/p:SolutionPath=$solution" /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci "${properties[@]}"
   LASTEXITCODE=$?
 
   if [ $LASTEXITCODE != 0 ]
@@ -302,7 +302,7 @@ LogDir="$ArtifactsConfigurationDir/log"
 VersionsProps="$ScriptRoot/Versions.props"
 
 # HOME may not be defined in some scenarios, but it is required by NuGet
-if [ -z $HOME ]
+if [ -z "$HOME" ]
 then
   export HOME="$RepoRoot/artifacts/.home/"
   CreateDirectory "$HOME"
@@ -317,7 +317,7 @@ then
   export TMP="$TempDir"
 fi
 
-if [ -z $NUGET_PACKAGES ]
+if [ -z "$NUGET_PACKAGES" ]
 then
   export NUGET_PACKAGES="$HOME/.nuget/packages"
 fi
