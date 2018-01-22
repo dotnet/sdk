@@ -15,7 +15,7 @@ test=false
 verbosity="minimal"
 properties=()
 
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
   lowerI="$(echo $1 | awk '{print tolower($0)}')"
   case $lowerI in
     --build)
