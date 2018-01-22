@@ -13,7 +13,7 @@ sign=false
 solution=""
 test=false
 verbosity="minimal"
-properties=""
+properties=()
 
 while [[ $# > 0 ]]; do
   lowerI="$(echo $1 | awk '{print tolower($0)}')"
@@ -95,7 +95,7 @@ while [[ $# > 0 ]]; do
       shift 2
       ;;
     *)
-      properties="$properties $1"
+      properties+=("$1")
       shift 1
       ;;
   esac
@@ -271,7 +271,7 @@ function Build {
     solution="$RepoRoot/sdk.sln"
   fi
 
-  dotnet msbuild $RepoToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci $properties
+  dotnet msbuild "$RepoToolsetBuildProj" /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci "${properties[@]}"
   LASTEXITCODE=$?
 
   if [ $LASTEXITCODE != 0 ]
