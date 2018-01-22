@@ -231,16 +231,12 @@ function InstallRepoToolset {
 }
 
 function Build {
-  InstallDotNetCli
-
-  if [ $? != 0 ]
+  if ! InstallDotNetCli
   then
     return $?
   fi
 
-  InstallRepoToolset
-
-  if [ $? != 0 ]
+  if ! InstallRepoToolset
   then
     return $?
   fi
