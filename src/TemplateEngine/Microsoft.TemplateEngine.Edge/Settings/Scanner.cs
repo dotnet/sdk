@@ -45,9 +45,21 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {   // should never be null, but just in case.
                     _environmentSettings.SettingsLoader.ReleaseMountPoint(source.MountPoint);
 
-                    if (source.RemoveIfNothingFound && !source.AnythingFound)
+                    if (source.IsNewCandidateMountPoint && !source.AnythingFound)
                     {
                         _environmentSettings.SettingsLoader.RemoveMountPoints(new[] { source.MountPoint.Info.MountPointId });
+
+                        try
+                        {
+                            if (source.IsLocationACopyIntoPackages)
+                            {
+                                _environmentSettings.Host.FileSystem.FileDelete(source.MountPoint.Info.Place);
+                            }
+                        }
+                        catch
+                        {
+                            _environmentSettings.Host.LogDiagnosticMessage($"During scan cleanup, couldn't delete the copied place: {source.MountPoint.Info.Place}", "Install");
+                        }
                     }
                 }
             }
@@ -107,8 +119,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return new MountPointScanSource()
                 {
                     Location = originalLocation,
+                    IsLocationACopyIntoPackages = false,
                     MountPoint = existingMountPoint,
-                    RemoveIfNothingFound = false,
+                    IsNewCandidateMountPoint = false,
                     AnythingFound = false
                 };
             }
@@ -120,6 +133,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     {
                         string mountPointLocation = originalLocation;
                         IMountPoint effectiveMountPoint = originalLocationMountPoint;
+                        bool isLocationACopyIntoPackages = false;
 
                         if (originalLocationMountPoint.Info.MountPointFactoryId != FileSystemMountPointFactory.FactoryId)
                         {
@@ -127,6 +141,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                             if (!string.Equals(targetLocation, originalLocation))
                             {
+                                isLocationACopyIntoPackages = true;
+
                                 _paths.CreateDirectory(_paths.User.Packages);
                                 _paths.Copy(originalLocation, targetLocation);
 
@@ -156,7 +172,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         return new MountPointScanSource()
                         {
                             Location = mountPointLocation,
-                            RemoveIfNothingFound = true,
+                            IsLocationACopyIntoPackages = isLocationACopyIntoPackages,
+                            IsNewCandidateMountPoint = true,
                             AnythingFound = false,
                             MountPoint = effectiveMountPoint,
                         };
@@ -204,7 +221,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private bool ScanForComponents(IMountPoint mountPoint, string scanLocation, bool allowDevInstall)
         {
             bool anythingFound = false;
-            bool isInOriginalInstallLocation;
+            bool isCopiedIntoContentDirectory;
 
             if (!mountPoint.Root.EnumerateFiles("*.dll", SearchOption.AllDirectories).Any())
             {
@@ -214,12 +231,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             string diskPath;
             if (mountPoint.Info.MountPointFactoryId != FileSystemMountPointFactory.FactoryId)
             {
-                if (!TryCopyContentForNonFileSystemBasedMountPoints(mountPoint, scanLocation, out diskPath))
+                if (!TryCopyIntoContentForNonFileSystemBasedMountPoints(mountPoint, scanLocation, out diskPath))
                 {
                     return false;
                 }
 
-                isInOriginalInstallLocation = false;
+                isCopiedIntoContentDirectory = true;
             }
             else
             {
@@ -232,7 +249,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 diskPath = scanLocation;
-                isInOriginalInstallLocation = true;
+                isCopiedIntoContentDirectory = false;
             }
 
             foreach (KeyValuePair<string, Assembly> asm in AssemblyLoader.LoadAllFromPath(_paths, out IEnumerable<string> failures, diskPath))
@@ -250,24 +267,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
                 catch
                 {
+                    // exceptions here are ok, due to dependency errors, etc.
                 }
             }
 
-            if (!anythingFound && !isInOriginalInstallLocation)
+            if (!anythingFound && isCopiedIntoContentDirectory)
             {
                 try
                 {
+                    // The source was copied to content and then scanned for components.
+                    // Nothing was found, and this is a copy that now has no use, so delete it.
+                    // Note: no mount pount was created for this copy, so no need to release it.
                     _environmentSettings.Host.FileSystem.DirectoryDelete(diskPath, true);
                 }
                 catch
                 {
+                    _environmentSettings.Host.LogDiagnosticMessage($"During ScanForComponents() cleanup, couldn't delete source copied into the content dir: {diskPath}", "Install");
                 }
             }
 
-            return isInOriginalInstallLocation && anythingFound;
+            return anythingFound;
         }
 
-        private bool TryCopyContentForNonFileSystemBasedMountPoints(IMountPoint mountPoint, string scanLocation, out string diskPath)
+        private bool TryCopyIntoContentForNonFileSystemBasedMountPoints(IMountPoint mountPoint, string scanLocation, out string diskPath)
         {
             string path = Path.Combine(_paths.User.Content, Path.GetFileName(scanLocation));
 
@@ -277,19 +299,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             catch (IOException)
             {
+                _environmentSettings.Host.LogDiagnosticMessage($"Error copying scanLocation: {scanLocation} into the content dir: {path}", "Install");
                 diskPath = null;
                 return false;
-            }
-
-            try
-            {
-                if (mountPoint.Info.Place.StartsWith(_paths.User.Packages))
-                {
-                    _environmentSettings.Host.FileSystem.FileDelete(mountPoint.Info.Place);
-                }
-            }
-            catch
-            {
             }
 
             diskPath = path;
@@ -300,7 +312,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             ScanResult foundTemplatesAndLangPacks = new ScanResult();
 
-            foreach (MountPointScanSource source in sourceList)
+            // only scan for templates & langpacks if no components were found.
+            foreach (MountPointScanSource source in sourceList.Where(x => !x.AnythingFound))
             {
                 IMountPoint mountPoint = source.MountPoint;
 
@@ -338,8 +351,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private class MountPointScanSource
         {
             public string Location { get; set; }
+            public bool IsLocationACopyIntoPackages { get; set; }
             public IMountPoint MountPoint { get; set; }
-            public bool RemoveIfNothingFound { get; set; }
+            // True if the mount point didn't exist prior to the scan, false otherwise.
+            public bool IsNewCandidateMountPoint { get; set; }
             public bool AnythingFound { get; set; }
         }
     }
