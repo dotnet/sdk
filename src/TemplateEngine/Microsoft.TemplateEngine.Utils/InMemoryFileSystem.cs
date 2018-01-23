@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -499,7 +499,7 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            Regex rx = new Regex(Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", "."));
+            Regex rx = new Regex("^" + Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", ".") + "$");
 
             foreach (KeyValuePair<string, FileSystemFile> entry in currentDir.Files)
             {
