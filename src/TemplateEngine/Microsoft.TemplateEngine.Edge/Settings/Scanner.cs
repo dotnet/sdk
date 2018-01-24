@@ -280,9 +280,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     // Note: no mount pount was created for this copy, so no need to release it.
                     _environmentSettings.Host.FileSystem.DirectoryDelete(diskPath, true);
                 }
-                catch
+                catch (Exception ex)
                 {
                     _environmentSettings.Host.LogDiagnosticMessage($"During ScanForComponents() cleanup, couldn't delete source copied into the content dir: {diskPath}", "Install");
+                    _environmentSettings.Host.LogDiagnosticMessage($"\tError: {ex.Message}", "Install");
                 }
             }
 
