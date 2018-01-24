@@ -260,6 +260,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                     if (typeList.Count > 0)
                     {
+                        // TODO: figure out what to do with probing path registration when components are not found.
+                        // They need to be registered for dependent assemblies, not just when an assembly can be loaded.
+                        // We'll need to figure out how to know when that is.
                         _environmentSettings.SettingsLoader.Components.RegisterMany(typeList);
                         _environmentSettings.SettingsLoader.AddProbingPath(Path.GetDirectoryName(asm.Key));
                         anythingFound = true;
