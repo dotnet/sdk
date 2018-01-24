@@ -34,6 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             ScanSourcesForComponents(sourceList, allowDevInstall);
             ScanResult scanResult = ScanSourcesForTemplatesAndLangPacks(sourceList);
 
+            // cleanup
             foreach (MountPointScanSource source in sourceList)
             {
                 if (source.AnythingFound)
@@ -45,20 +46,23 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {   // should never be null, but just in case.
                     _environmentSettings.SettingsLoader.ReleaseMountPoint(source.MountPoint);
 
-                    if (source.IsNewCandidateMountPoint && !source.AnythingFound)
+                    if (source.IsNewCandidateMountPoint)
                     {
-                        _environmentSettings.SettingsLoader.RemoveMountPoints(new[] { source.MountPoint.Info.MountPointId });
-
-                        try
+                        if (!source.AnythingFound)
                         {
-                            if (source.IsLocationACopyIntoPackages)
+                            _environmentSettings.SettingsLoader.RemoveMountPoints(new[] { source.MountPoint.Info.MountPointId });
+                        }
+
+                        if (!source.FoundTemplates && source.IsLocationACopyIntoPackages)
+                        {
+                            try
                             {
                                 _environmentSettings.Host.FileSystem.FileDelete(source.MountPoint.Info.Place);
                             }
-                        }
-                        catch
-                        {
-                            _environmentSettings.Host.LogDiagnosticMessage($"During scan cleanup, couldn't delete the copied place: {source.MountPoint.Info.Place}", "Install");
+                            catch
+                            {
+                                _environmentSettings.Host.LogDiagnosticMessage($"During scan cleanup, couldn't delete the copied place: {source.MountPoint.Info.Place}", "Install");
+                            }
                         }
                     }
                 }
@@ -122,7 +126,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     IsLocationACopyIntoPackages = false,
                     MountPoint = existingMountPoint,
                     IsNewCandidateMountPoint = false,
-                    AnythingFound = false
+                    FoundTemplates = false,
+                    FoundComponents = false
                 };
             }
             else
@@ -174,8 +179,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             Location = mountPointLocation,
                             IsLocationACopyIntoPackages = isLocationACopyIntoPackages,
                             IsNewCandidateMountPoint = true,
-                            AnythingFound = false,
                             MountPoint = effectiveMountPoint,
+                            FoundTemplates = false,
+                            FoundComponents = false,
                         };
                     }
                 }
@@ -204,11 +210,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     IMountPoint mountPoint = source.MountPoint;
 
                     // note: if we can't get the mount point, don't put this source in the unhandled sources - it'll never succeed.
-                    bool anythingFound = ScanForComponents(mountPoint, source.Location, allowDevInstall);
-                    source.AnythingFound |= anythingFound;
-                    anythingFoundThisRound |= anythingFound;
+                    bool hasComponents = ScanForComponents(mountPoint, source.Location, allowDevInstall);
+                    source.FoundComponents |= hasComponents;
+                    anythingFoundThisRound |= hasComponents;
 
-                    if (!anythingFound)
+                    if (!hasComponents)
                     {
                         unhandledSources.Add(source);
                     }
@@ -280,7 +286,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     // The source was copied to content and then scanned for components.
                     // Nothing was found, and this is a copy that now has no use, so delete it.
-                    // Note: no mount pount was created for this copy, so no need to release it.
+                    // Note: no mount point was created for this copy, so no need to release it.
                     _environmentSettings.Host.FileSystem.DirectoryDelete(diskPath, true);
                 }
                 catch (Exception ex)
@@ -320,9 +326,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (MountPointScanSource source in sourceList.Where(x => !x.AnythingFound))
             {
                 IMountPoint mountPoint = source.MountPoint;
-
-                bool anythingFound = ScanMountPointForTemplatesAndLangpacks(mountPoint, source.Location, foundTemplatesAndLangPacks);
-                source.AnythingFound |= anythingFound;
+                bool hasTemplates = ScanMountPointForTemplatesAndLangpacks(mountPoint, source.Location, foundTemplatesAndLangPacks);
+                source.FoundTemplates |= hasTemplates;
             }
 
             return foundTemplatesAndLangPacks;
@@ -359,7 +364,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             public IMountPoint MountPoint { get; set; }
             // True if the mount point didn't exist prior to the scan, false otherwise.
             public bool IsNewCandidateMountPoint { get; set; }
-            public bool AnythingFound { get; set; }
+            public bool FoundComponents { get; set; }
+            public bool FoundTemplates { get; set; }
+            public bool AnythingFound
+            {
+                get
+                {
+                    return FoundTemplates || FoundComponents;
+                }
+            }
         }
     }
 }
