@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -10,12 +11,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             _localizations = new List<ILocalizationLocator>();
             _templates = new List<ITemplate>();
-            _installedMountPointIds = new List<Guid>();
+            _installedMountPointIds = new HashSet<Guid>();
         }
 
         private List<ILocalizationLocator> _localizations;
         private List<ITemplate> _templates;
-        private List<Guid> _installedMountPointIds;
+        private HashSet<Guid> _installedMountPointIds;
 
         public void AddLocalization(ILocalizationLocator locater)
         {
@@ -36,6 +37,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public IReadOnlyList<ITemplate> Templates => _templates;
 
-        public IReadOnlyList<Guid> InstalledMountPointIds => _installedMountPointIds;
+        public IReadOnlyList<Guid> InstalledMountPointIds => _installedMountPointIds.ToList();
     }
 }
