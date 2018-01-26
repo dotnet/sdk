@@ -170,7 +170,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             string actualScanPath;
             if (!source.ShouldStayInOriginalLocation)
             {
-                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.User.Content, out actualScanPath))
+                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.User.Content, true, out actualScanPath))
                 {
                     return;
                 }
@@ -230,22 +230,30 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        private bool TryCopyForNonFileSystemBasedMountPoints(IMountPoint mountPoint, string sourceLocation, string targetBasePath, out string diskPath)
+        private bool TryCopyForNonFileSystemBasedMountPoints(IMountPoint mountPoint, string sourceLocation, string targetBasePath, bool expandIfArchive, out string diskPath)
         {
-            string path = Path.Combine(targetBasePath, Path.GetFileName(sourceLocation));
+            string targetPath = Path.Combine(targetBasePath, Path.GetFileName(sourceLocation));
 
             try
             {
-                mountPoint.Root.CopyTo(path);
+                if (expandIfArchive)
+                {
+                    mountPoint.Root.CopyTo(targetPath);
+                }
+                else
+                {
+                    _paths.CreateDirectory(targetBasePath); // creates Packages/ or Content/ if needed
+                    _paths.Copy(sourceLocation, targetPath);
+                }
             }
             catch (IOException)
             {
-                _environmentSettings.Host.LogDiagnosticMessage($"Error copying scanLocation: {sourceLocation} into the target dir: {path}", "Install");
+                _environmentSettings.Host.LogDiagnosticMessage($"Error copying scanLocation: {sourceLocation} into the target dir: {targetPath}", "Install");
                 diskPath = null;
                 return false;
             }
 
-            diskPath = path;
+            diskPath = targetPath;
             return true;
         }
 
@@ -262,15 +270,26 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             bool isCopiedIntoPackagesDirectory;
             string actualScanPath;
-            IMountPoint scanMountPoint;
+            IMountPoint scanMountPoint = null;
 
             if (!source.ShouldStayInOriginalLocation)
             {
-                // copy and create a MP for the copied location. It's guaranteed to be file-system based.
-                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.User.Packages, out actualScanPath)
-                    || !_environmentSettings.SettingsLoader.Components.TryGetComponent(FileSystemMountPointFactory.FactoryId, out IMountPointFactory factory)
-                    || !factory.TryMount(_environmentSettings, null, actualScanPath, out scanMountPoint))
+                if (!TryCopyForNonFileSystemBasedMountPoints(source.MountPoint, source.Location, _paths.User.Packages, false, out actualScanPath))
                 {
+                    return;
+                }
+
+                foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
+                {
+                    if (factory.TryMount(_environmentSettings, null, actualScanPath, out scanMountPoint))
+                    {
+                        break;
+                    }
+                }
+
+                if (scanMountPoint == null)
+                {
+                    _environmentSettings.Host.FileSystem.FileDelete(actualScanPath);
                     return;
                 }
 
@@ -316,10 +335,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     try
                     {
-                        // The source was copied to packages and then scanned templates.
+                        // The source was copied to packages and then scanned for templates.
                         // Nothing was found, and this is a copy that now has no use, so delete it.
                         _environmentSettings.SettingsLoader.ReleaseMountPoint(scanMountPoint);
-                        _environmentSettings.Host.FileSystem.DirectoryDelete(actualScanPath, true);
+
+                        // It's always copied as an archive, so it's a file delete, not a directory delete
+                        _environmentSettings.Host.FileSystem.FileDelete(actualScanPath);
                     }
                     catch (Exception ex)
                     {
