@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
             descriptorList = allDescriptors;
 
             if (mountPoint.Info.Place != null
-                && Directory.Exists(mountPoint.Info.Place)  // nupkgs are expanded to files on install, so Directory.Exists() is more appropriate
+                && File.Exists(mountPoint.Info.Place)
                 && TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string version))
             {
                 IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(mountPoint.Info.MountPointId, packageName, version);
