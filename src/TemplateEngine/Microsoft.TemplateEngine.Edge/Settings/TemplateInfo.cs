@@ -21,6 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             Dictionary<string, Func<JObject, TemplateInfo>> versionReaders = new Dictionary<string, Func<JObject, TemplateInfo>>();
             versionReaders.Add("1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject);
+            versionReaders.Add("1.0.0.1", TemplateInfoReaderVersion1_0_0_1.FromJObject);
             _infoVersionReaders = versionReaders;
 
             _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
@@ -166,5 +167,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
+
+        [JsonProperty]
+        public bool HasScriptRunningPostActions { get; set; }
     }
 }

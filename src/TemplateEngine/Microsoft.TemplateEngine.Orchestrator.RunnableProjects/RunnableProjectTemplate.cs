@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -35,6 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ThirdPartyNotices = raw.ToString("thirdPartyNotices");
             _raw = raw;
             BaselineInfo = config.BaselineInfo;
+            HasScriptRunningPostActions = config.HasScriptRunningPostActions;
         }
 
         public IDirectory TemplateSourceRoot
@@ -167,5 +168,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string ThirdPartyNotices { get; }
 
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
+
+        public bool HasScriptRunningPostActions { get; set; }
     }
 }
