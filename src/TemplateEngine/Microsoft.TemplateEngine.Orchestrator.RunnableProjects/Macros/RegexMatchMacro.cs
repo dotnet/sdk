@@ -31,10 +31,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             else
             {
-                value = working?.ToString() ?? "";
+                value = working?.ToString() ?? string.Empty;
             }
 
-            bool result = Regex.IsMatch(value, config.Pattern);
+            bool result = false;
+
+            try
+            {
+                result = Regex.IsMatch(value, config.Pattern);
+            }
+            catch (ArgumentException ex)
+            {
+                environmentSettings.Host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_InvalidRegex, config.Pattern), "Authoring", ex.ToString());
+            }
 
             Parameter p;
 
@@ -85,6 +94,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
 
             string pattern = patternToken.ToString();
+
+            //Warn the user if they explicitly specify something other than "bool" for DataType for this macro
+            if (deferredConfig.DataType != null
+                && !string.Equals(deferredConfig.DataType, "bool", StringComparison.OrdinalIgnoreCase))
+            {
+                environmentSettings.Host.LogDiagnosticMessage(LocalizableStrings.Authoring_NonBoolDataTypeForRegexMatch, "Authoring");
+            }
 
             IMacroConfig realConfig = new RegexMatchMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, sourceVariable, pattern);
             return realConfig;

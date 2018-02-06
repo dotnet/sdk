@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Authoring_InvalidRegex" xml:space="preserve">
+    <value>'{0}' could not be parsed as a regular expression</value>
+  </data>
+  <data name="Authoring_NonBoolDataTypeForRegexMatch" xml:space="preserve">
+    <value>A non-bool DataType was specified for a regexMatch type symbol</value>
+  </data>
   <data name="Authoring_SourceDoesNotExist" xml:space="preserve">
     <value>    Source '{0}' in template does not exist.</value>
   </data>
