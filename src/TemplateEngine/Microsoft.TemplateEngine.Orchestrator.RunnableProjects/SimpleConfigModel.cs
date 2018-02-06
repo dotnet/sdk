@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         };
         private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
 
-        private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
 
         public SimpleConfigModel()
         {
@@ -286,8 +286,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
                         IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
                         FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
-                        IReadOnlyDictionary<string, string> renamePatterns = source.Rename ?? RenameDefaults;
-
+                        IReadOnlyDictionary<string, string> renamePatterns = new Dictionary<string, string>(source.Rename ?? RenameDefaults, StringComparer.Ordinal);
                         FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
                             source.Source ?? "./",
                             source.Target ?? "./",
@@ -308,7 +307,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             "./",
                             "./",
                             topLevelEvaluable,
-                            new Dictionary<string, string>(),
+                            new Dictionary<string, string>(StringComparer.Ordinal),
                             new List<FileSourceEvaluable>());
                         sources.Add(matchInfo);
                     }
@@ -846,7 +845,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IReadOnlyList<string> topCopyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(topIncludePattern, topExcludePattern, topCopyOnlyPattern);
 
-                Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(source.Rename ?? RenameDefaults);
+                Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(source.Rename ?? RenameDefaults, StringComparer.Ordinal);
                 List<FileSourceEvaluable> modifierList = new List<FileSourceEvaluable>();
 
                 if (source.Modifiers != null)
@@ -893,7 +892,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
 
                 string targetDirectory = string.Empty;
-                Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>();
+                Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(StringComparer.Ordinal);
                 IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(configFile, "./", ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(

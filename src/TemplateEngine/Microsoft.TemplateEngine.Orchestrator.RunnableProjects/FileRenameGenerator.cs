@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // Any input fileRenames will be applied before the parameter symbol renames.
         public static IReadOnlyDictionary<string, string> AugmentFileRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, Dictionary<string, string> fileRenames)
         {
-            Dictionary<string, string> allRenames = new Dictionary<string, string>();
+            Dictionary<string, string> allRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
             IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
 
@@ -38,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string renameFromSourcesValue = ApplyRenameProcessorToFilename(sourceRenameProcessor, sourceTemplateRelativePath);
                 string renameFinalTargetValue = ApplyRenameProcessorToFilename(symbolRenameProcessor, renameFromSourcesValue);
 
-                if (!string.Equals(sourceTemplateRelativePath, renameFinalTargetValue))
+                if (!string.Equals(sourceTemplateRelativePath, renameFinalTargetValue, StringComparison.Ordinal))
                 {
                     allRenames[sourceTemplateRelativePath] = renameFinalTargetValue;
                 }
@@ -82,7 +83,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // Also sets up rename concerns for the target directory.
         private static IReadOnlyDictionary<string, string> SetupSubstringRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet)
         {
-            Dictionary<string, string> substringRenames = new Dictionary<string, string>();
+            Dictionary<string, string> substringRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
             SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, substringRenames);
 
