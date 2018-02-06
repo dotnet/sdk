@@ -26,8 +26,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
 
-            IReadOnlyDictionary<string, string> substringRenames = SetupSubstringRenames(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet);
-            IProcessor symbolRenameProcessor = SetupRenameProcessor(environmentSettings, substringRenames);
+            IReadOnlyDictionary<string, string> symbolBasedRenames = SetupSymbolBasedRenames(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet);
+            IProcessor symbolRenameProcessor = SetupRenameProcessor(environmentSettings, symbolBasedRenames);
 
             IDirectory sourceBaseDirectoryInfo = configFile.Parent.Parent.DirectoryInfo(sourceDirectory.TrimEnd('/'));
 
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         // Generates a mapping from source to target substrings in filenames, based on the parameters with FileRename defined.
         // Also sets up rename concerns for the target directory.
-        private static IReadOnlyDictionary<string, string> SetupSubstringRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet)
+        private static IReadOnlyDictionary<string, string> SetupSymbolBasedRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet)
         {
             Dictionary<string, string> substringRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
