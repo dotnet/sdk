@@ -1,9 +1,8 @@
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Mocks;
-using Microsoft.TemplateEngine.TestHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
