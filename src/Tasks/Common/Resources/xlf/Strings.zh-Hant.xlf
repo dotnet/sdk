@@ -318,8 +318,8 @@
         <note />
       </trans-unit>
       <trans-unit id="GetDependsOnNETStandardFailedWithException">
-        <source>Resolved file has a bad image, no metadata, or is otherwise inaccessible. {0} {1}</source>
-        <target state="translated">解析的檔案含有損毀的映像、沒有中繼資料，或是無法存取。{0} {1}</target>
+        <source>Resolved file has a bad image, no metadata, or is otherwise inaccessible. {0}</source>
+        <target state="translated">解析的檔案含有毀損的映像、沒有中繼資料，或是無法存取。{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedSDKVersionForNetStandard20">
@@ -328,8 +328,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget">
-        <source>The RuntimeIdentifier platform '{0}' and the PlatformTarget '{1}' must be compatible.</source>
-        <target state="translated">RuntimeIdentifier 平台 '{0}' 必須與 PlatformTarget '{1}' 相容。</target>
+        <source>The RuntimeIdentifier platform and the PlatformTarget must match.</source>
+        <target state="translated">RuntimeIdentifier 平台必須與 PlatformTarget 相符。</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorParsingFrameworkListInvalidValue">
@@ -340,16 +340,6 @@
       <trans-unit id="FrameworkListPathNotRooted">
         <source>Framework list file path '{0}' is not rooted. Only full paths are supported.</source>
         <target state="translated">架構清單路徑 '{0}' 不是根目錄。僅支援完整路徑。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackAsToolCannotSupportSelfContained">
-        <source>Pack as tool does not support self contained.</source>
-        <target state="translated">當作工具使用的套件不支援自主形式。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnsupportedRuntimeIdentifier">
-        <source>Project is targeting runtime '{0}' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.</source>
-        <target state="translated">專案以執行階段 '{0}' 為目標，但未解析任何專屬於執行階段的套件。目標 Framework 可能不支援此執行階段。</target>
         <note />
       </trans-unit>
     </body>

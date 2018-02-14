@@ -12,7 +12,6 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         public const string FileName = "FileName";
         public const string HintPath = "HintPath";
         public const string NuGetPackageId = "NuGetPackageId";
-        public const string NuGetPackageVersion = "NuGetPackageVersion";
         public const string Path = "Path";
         public const string Private = "Private";
         public const string TargetPath = "TargetPath";

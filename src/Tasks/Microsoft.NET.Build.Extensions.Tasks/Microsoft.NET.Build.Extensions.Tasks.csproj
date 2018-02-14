@@ -10,8 +10,8 @@
     <OutputType>Library</OutputType>
     <PackageId>Microsoft.NET.Build.Extensions</PackageId>
     <RootNamespace>Microsoft.NET.Build.Tasks</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp1.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,7 +40,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" ExcludeAssets="Runtime" />
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" ExcludeAssets="All" NoWarn="NU1701" />
+    <PackageReference Include="System.Diagnostics.FileVersionInfo" Version="$(SystemDiagnosticsFileVersionInfoVersion)" Condition=" '$(TargetFramework)' == 'netcoreapp1.0' " />
+    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" Condition=" '$(TargetFramework)' == 'netcoreapp1.0' " />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,18 +51,29 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
+    <Compile Include="..\Common\**\*.cs" Link="Common\%(RecursiveDir)\%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
+    <Compile Update="..\Common\Resources\Strings.Designer.cs" Link="Resources\%(FileName)%(Extension)">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Common\Resources\Strings.resx" Link="Resources\%(FileName)%(Extension)">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Microsoft.NET.Build.Tasks</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
     <None Include="msbuildExtensions\**\*" PackagePath="msbuildExtensions\" />
     <None Include="msbuildExtensions-ver\**\*" PackagePath="msbuildExtensions-ver\" />
-    <None Include="..\Common\Resources\xlf\**\*" LinkBase="Resources\xlf" />
-    <None Include="..\Common\build\**\*" PackagePath="msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\" LinkBase="%(PackagePath)" />
+    <None Include="..\Common\Resources\xlf\**\*" Link="Resources\xlf\%(FileName)%(Extension)" />
   </ItemGroup>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
@@ -79,8 +91,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CopyAdditionalFilesToLayout" Condition="'$(TargetFramework)' == ''" DependsOnTargets="PrepareAdditionalFilesToLayout" AfterTargets="Build" Inputs="@(LayoutFile)" Outputs="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
-    <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
+  <Target Name="CopyAdditionalFilesToLayout" Condition="'$(TargetFramework)' == ''" DependsOnTargets="PrepareAdditionalFilesToLayout" AfterTargets="Build" Inputs="@(LayoutFile)" Outputs="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
+    <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
@@ -93,7 +105,7 @@
 
   <!-- Remove files from copy local that would not be published as they are provided by the platform package -->
   <!-- https://github.com/dotnet/sdk/issues/933 tracks a first class feature for this -->
-  <Target Name="FilterCopyLocal" DependsOnTargets="GetFrameworkPaths;GetReferenceAssemblyPaths;RunResolvePublishAssemblies" BeforeTargets="ResolveLockFileCopyLocalProjectDeps">
+  <Target Name="FilterCopyLocal" DependsOnTargets="RunResolvePublishAssemblies" BeforeTargets="ResolveLockFileCopyLocalProjectDeps">
     <ItemGroup>
       <_CopyLocalButNotPublished Include="@(AllCopyLocalItems)" Exclude="@(ResolvedAssembliesToPublish)" />
       <AllCopyLocalItems Remove="@(_CopyLocalButNotPublished)" />

@@ -16,12 +16,10 @@ namespace Microsoft.NET.Build.Tasks
     public sealed class ReportAssetsLogMessages : TaskBase
     {
         private LockFile _lockFile;
-        private DiagnosticsHelper _diagnostics;
 
         #region Outputs
 
-        [Output]
-        public ITaskItem[] DiagnosticMessages => _diagnostics.GetDiagnosticMessages();
+        // Only output is 'DiagnosticMessages' which is in the base class TaskBase
 
         #endregion
 
@@ -40,15 +38,14 @@ namespace Microsoft.NET.Build.Tasks
 
         public ReportAssetsLogMessages()
         {
-           _diagnostics = new DiagnosticsHelper(new MSBuildLog(Log));
         }
 
         #region Test Support
 
-        internal ReportAssetsLogMessages(LockFile lockFile, ILog logger)
+        public ReportAssetsLogMessages(LockFile lockFile, ILog logger)
+            : base(logger)
         {
             _lockFile = lockFile;
-            _diagnostics = new DiagnosticsHelper(logger);
         }
 
         #endregion
@@ -85,7 +82,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var targetLib = message.LibraryId == null ? null : target?.GetTargetLibrary(message.LibraryId);
 
-                _diagnostics.Add(
+                Diagnostics.Add(
                     message.Code.ToString(),
                     message.Message,
                     message.FilePath,
