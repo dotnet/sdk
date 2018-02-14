@@ -318,8 +318,8 @@
         <note />
       </trans-unit>
       <trans-unit id="GetDependsOnNETStandardFailedWithException">
-        <source>Resolved file has a bad image, no metadata, or is otherwise inaccessible. {0} {1}</source>
-        <target state="translated">Le fichier résolu a une image incorrecte, ne comporte pas de métadonnées ou n'est pas accessible. {0} {1}</target>
+        <source>Resolved file has a bad image, no metadata, or is otherwise inaccessible. {0}</source>
+        <target state="translated">Le fichier résolu a une image incorrecte, ne comporte pas de métadonnées ou n'est pas accessible. {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedSDKVersionForNetStandard20">
@@ -328,8 +328,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget">
-        <source>The RuntimeIdentifier platform '{0}' and the PlatformTarget '{1}' must be compatible.</source>
-        <target state="translated">La plateforme de RuntimeIdentifier '{0}' et le PlatformTarget '{1}' doivent être compatibles.</target>
+        <source>The RuntimeIdentifier platform and the PlatformTarget must match.</source>
+        <target state="translated">La plateforme RuntimeIdentifier et la PlatformTarget doivent correspondre.</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorParsingFrameworkListInvalidValue">
@@ -340,16 +340,6 @@
       <trans-unit id="FrameworkListPathNotRooted">
         <source>Framework list file path '{0}' is not rooted. Only full paths are supported.</source>
         <target state="translated">Le chemin du fichier de liste de frameworks '{0}' n'est pas associé à une racine. Seuls les chemins complets sont pris en charge.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackAsToolCannotSupportSelfContained">
-        <source>Pack as tool does not support self contained.</source>
-        <target state="translated">L'outil de compression ne prend pas en charge l'autonomie.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnsupportedRuntimeIdentifier">
-        <source>Project is targeting runtime '{0}' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.</source>
-        <target state="translated">Le projet cible le runtime '{0}' mais n'a résolu aucun package spécifique au runtime. Ce runtime risque de ne pas être pris en charge par le framework cible.</target>
         <note />
       </trans-unit>
     </body>

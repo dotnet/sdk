@@ -3,9 +3,12 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Configuration;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -17,8 +20,10 @@ namespace Microsoft.NET.Build.Tasks
     /// </summary>
     public sealed class ResolvePackageDependencies : TaskBase
     {
+        private const string ProjectTypeKey = "project";
+        private const string PackageTypeKey = "package";
         private readonly Dictionary<string, string> _fileTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        private HashSet<string> _projectFileDependencies;
+        private readonly HashSet<string> _projectFileDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private IPackageResolver _packageResolver;
         private LockFile _lockFile;
 
@@ -162,7 +167,14 @@ namespace Microsoft.NET.Build.Tasks
 
         private void ReadProjectFileDependencies()
         {
-            _projectFileDependencies = LockFile.GetProjectFileDependencySet();
+            foreach (var group in LockFile.ProjectFileDependencyGroups)
+            {
+                foreach (var dep in group.Dependencies)
+                {
+                    // Get package name from e.g. Microsoft.VSSDK.BuildTools >= 15.0.25604-Preview4
+                    _projectFileDependencies.Add(dep.Split()[0].Trim());
+                }
+            }
         }
 
         // get library and file definitions
@@ -202,7 +214,7 @@ namespace Microsoft.NET.Build.Tasks
                     string resolvedPath = ResolveFilePath(file, resolvedPackagePath);
                     fileItem.SetMetadata(MetadataKeys.ResolvedPath, resolvedPath ?? string.Empty);
 
-                    if (NuGetUtils.IsApplicableAnalyzer(file, ProjectLanguage))
+                    if (IsAnalyzer(file))
                     {
                         fileItem.SetMetadata(MetadataKeys.Analyzer, "true");
                         fileItem.SetMetadata(MetadataKeys.Type, "AnalyzerAssembly");
@@ -236,6 +248,29 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
+        private bool IsAnalyzer(string file)
+        {
+            bool isAnalyzer = false;
+
+            if (file.StartsWith("analyzers", StringComparison.Ordinal)
+                && Path.GetExtension(file).Equals(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                var projectLanguage = NuGetUtils.GetLockFileLanguageName(ProjectLanguage);
+
+                if (projectLanguage == "cs" || projectLanguage == "vb")
+                {
+                    string excludeLanguage = projectLanguage == "vb" ? "cs" : "vb";
+                    var fileParts = file.Split('/');
+
+                    isAnalyzer =
+                        fileParts.Any(x => x.Equals(projectLanguage, StringComparison.OrdinalIgnoreCase)) ||
+                        !fileParts.Any(x => x.Equals(excludeLanguage, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            return isAnalyzer;
+        }
+
         // get target definitions and package and file dependencies
         private void RaiseLockFileTargets()
         {
@@ -263,7 +298,7 @@ namespace Microsoft.NET.Build.Tasks
 
             var transitiveProjectRefs = new HashSet<string>(
                 target.Libraries
-                    .Where(lib => lib.IsTransitiveProjectReference(LockFile, ref _projectFileDependencies))
+                    .Where(lib => IsTransitiveProjectReference(lib))
                     .Select(pkg => pkg.Name), 
                 StringComparer.OrdinalIgnoreCase);
             
@@ -288,6 +323,13 @@ namespace Microsoft.NET.Build.Tasks
                 GetFileDependencies(package, target.Name);
             }
         }
+
+        // A package is a TransitiveProjectReference if it is a project, is not directly referenced,
+        // and does not contain a placeholder compile time assembly
+        private bool IsTransitiveProjectReference(LockFileTargetLibrary package) =>
+            string.Equals(package.Type, ProjectTypeKey, StringComparison.OrdinalIgnoreCase) &&
+            !_projectFileDependencies.Contains(package.Name) &&
+            package.CompileTimeAssemblies.FirstOrDefault(f => NuGetUtils.IsPlaceholderFile(f.Path)) == null;
 
         private void GetPackageDependencies(
             LockFileTargetLibrary package, 
@@ -385,7 +427,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private string ResolvePackagePath(LockFileLibrary package)
         {
-            if (package.IsProject())
+            if (string.Equals(package.Type, ProjectTypeKey, StringComparison.OrdinalIgnoreCase))
             {
                 var relativeMSBuildProjectPath = package.MSBuildProject;
 
@@ -418,7 +460,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private string GetAbsolutePathFromProjectRelativePath(string path)
         {
-            return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ProjectPath), path));
+            return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(ProjectAssetsFile)), path));
         }
     }
 }

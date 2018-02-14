@@ -318,8 +318,8 @@
         <note />
       </trans-unit>
       <trans-unit id="GetDependsOnNETStandardFailedWithException">
-        <source>Resolved file has a bad image, no metadata, or is otherwise inaccessible. {0} {1}</source>
-        <target state="translated">Найденный файл имеет неправильный образ, не имеет метаданных или недоступен по другим причинам. {0} {1}</target>
+        <source>Resolved file has a bad image, no metadata, or is otherwise inaccessible. {0}</source>
+        <target state="translated">Найденный файл имеет неправильный образ, не имеет метаданных или недоступен по другим причинам. {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedSDKVersionForNetStandard20">
@@ -328,8 +328,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget">
-        <source>The RuntimeIdentifier platform '{0}' and the PlatformTarget '{1}' must be compatible.</source>
-        <target state="translated">Платформа RuntimeIdentifier "{0}" и PlatformTarget "{1}" должны быть совместимы.</target>
+        <source>The RuntimeIdentifier platform and the PlatformTarget must match.</source>
+        <target state="translated">Платформа RuntimeIdentifier и PlatformTarget должны совпадать.</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorParsingFrameworkListInvalidValue">
@@ -340,16 +340,6 @@
       <trans-unit id="FrameworkListPathNotRooted">
         <source>Framework list file path '{0}' is not rooted. Only full paths are supported.</source>
         <target state="translated">Путь к файлу списка платформ "{0}" должен содержать корневой каталог. Поддерживаются только полные пути.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackAsToolCannotSupportSelfContained">
-        <source>Pack as tool does not support self contained.</source>
-        <target state="translated">Упаковка в качестве инструмента не поддерживает автономное использование.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnsupportedRuntimeIdentifier">
-        <source>Project is targeting runtime '{0}' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.</source>
-        <target state="translated">Проект предназначен для среды выполнения "{0}", но не разрешил никакие пакеты среды выполнения. Возможно, целевая платформа не поддерживает эту среду выполнения.</target>
         <note />
       </trans-unit>
     </body>

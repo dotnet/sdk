@@ -9,6 +9,3 @@ obj/
 # Visual Studio
 ###############################################################################
 .vs/
-
-# OS X Device Services Store
-.DS_Store

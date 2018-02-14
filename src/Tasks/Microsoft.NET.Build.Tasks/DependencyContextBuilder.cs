@@ -203,7 +203,7 @@ namespace Microsoft.NET.Build.Tasks
             var sha1 = SHA1.Create();
             var builder = new StringBuilder();
             var packages = runtimeExports
-                .Where(libraryExport => libraryExport.IsPackage());
+                .Where(libraryExport => libraryExport.Type == "package");
             var separator = "|";
             foreach (var libraryExport in packages)
             {
@@ -343,7 +343,7 @@ namespace Microsoft.NET.Build.Tasks
             bool runtime)
         {
             var type = export.Type;
-            bool isPackage = export.IsPackage();
+            bool isPackage = type == "package";
 
             // TEMPORARY: All packages are serviceable in RC2
             // See https://github.com/dotnet/cli/issues/2569
@@ -376,7 +376,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     path = library.Path;
                 }
-                else if (export.IsProject())
+                else if (type == "project")
                 {
                     referenceProjectInfo = GetProjectInfo(library);
                 }
@@ -416,7 +416,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private IReadOnlyList<RuntimeAssetGroup> CreateRuntimeAssemblyGroups(LockFileTargetLibrary targetLibrary, SingleProjectInfo referenceProjectInfo)
         {
-            if (targetLibrary.IsProject())
+            if (targetLibrary.Type == "project")
             {
                 EnsureProjectInfo(referenceProjectInfo, targetLibrary.Name);
                 return new[] { new RuntimeAssetGroup(string.Empty, referenceProjectInfo.OutputName) };
@@ -428,7 +428,7 @@ namespace Microsoft.NET.Build.Tasks
                 assemblyGroups.Add(
                     new RuntimeAssetGroup(
                         string.Empty,
-                        targetLibrary.RuntimeAssemblies.FilterPlaceholderFiles().Select(a => a.Path)));
+                        targetLibrary.RuntimeAssemblies.FilterPlaceHolderFiles().Select(a => a.Path)));
 
                 foreach (var runtimeTargetsGroup in targetLibrary.GetRuntimeTargetsGroups("runtime"))
                 {
@@ -449,7 +449,7 @@ namespace Microsoft.NET.Build.Tasks
             nativeGroups.Add(
                 new RuntimeAssetGroup(
                     string.Empty,
-                    export.NativeLibraries.FilterPlaceholderFiles().Select(a => a.Path)));
+                    export.NativeLibraries.FilterPlaceHolderFiles().Select(a => a.Path)));
 
             foreach (var runtimeTargetsGroup in export.GetRuntimeTargetsGroups("native"))
             {
@@ -464,14 +464,14 @@ namespace Microsoft.NET.Build.Tasks
 
         private IEnumerable<ResourceAssembly> CreateResourceAssemblyGroups(LockFileTargetLibrary targetLibrary, SingleProjectInfo referenceProjectInfo)
         {
-            if (targetLibrary.IsProject())
+            if (targetLibrary.Type == "project")
             {
                 EnsureProjectInfo(referenceProjectInfo, targetLibrary.Name);
                 return CreateResourceAssemblies(referenceProjectInfo.ResourceAssemblies);
             }
             else
             {
-                return targetLibrary.ResourceAssemblies.FilterPlaceholderFiles().Select(CreateResourceAssembly);
+                return targetLibrary.ResourceAssemblies.FilterPlaceHolderFiles().Select(CreateResourceAssembly);
             }
         }
 
@@ -488,7 +488,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private IEnumerable<string> GetCompileTimeAssemblies(LockFileTargetLibrary targetLibrary, SingleProjectInfo referenceProjectInfo)
         {
-            if (targetLibrary.IsProject())
+            if (targetLibrary.Type == "project")
             {
                 EnsureProjectInfo(referenceProjectInfo, targetLibrary.Name);
                 return new[] { referenceProjectInfo.OutputName };
@@ -497,7 +497,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 return targetLibrary
                     .CompileTimeAssemblies
-                    .FilterPlaceholderFiles()
+                    .FilterPlaceHolderFiles()
                     .Select(libraryAsset => libraryAsset.Path);
             }
         }

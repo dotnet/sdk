@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NuGet.Frameworks;
@@ -16,19 +15,12 @@ namespace Microsoft.NET.Build.Tasks
     {
         public static bool IsPlaceholderFile(string path)
         {
-            // PERF: avoid allocations here as we check this for every file in project.assets.json
-            if (!path.EndsWith("_._", StringComparison.Ordinal))
-            {
-                return false;
-            }
+            return string.Equals(Path.GetFileName(path), PackagingCoreConstants.EmptyFolder, StringComparison.Ordinal);
+        }
 
-            if (path.Length == 3)
-            {
-                return true;
-            }
-
-            char separator = path[path.Length - 4];
-            return separator == '\\' || separator == '/';
+        public static IEnumerable<LockFileItem> FilterPlaceHolderFiles(this IEnumerable<LockFileItem> files)
+        {
+            return files.Where(f => !IsPlaceholderFile(f.Path));
         }
 
         public static string GetLockFileLanguageName(string projectLanguage)
@@ -44,39 +36,6 @@ namespace Microsoft.NET.Build.Tasks
         public static NuGetFramework ParseFrameworkName(string frameworkName)
         {
             return frameworkName == null ? null : NuGetFramework.Parse(frameworkName);
-        }
-
-        public static bool IsApplicableAnalyzer(string file, string projectLanguage)
-        {
-            // This logic is preserved from previous implementations.
-            // See https://github.com/NuGet/Home/issues/6279#issuecomment-353696160 for possible issues with it.
-
-            bool IsAnalyzer()
-            {
-                return file.StartsWith("analyzers", StringComparison.Ordinal)
-                    && file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                    && !file.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase);
-            }
-
-            bool CS() => file.IndexOf("/cs/", StringComparison.OrdinalIgnoreCase) >= 0;
-            bool VB() => file.IndexOf("/vb/", StringComparison.OrdinalIgnoreCase) >= 0;
-
-            bool FileMatchesProjectLanguage()
-            {
-                switch (projectLanguage)
-                {
-                    case "C#":
-                        return CS() || !VB();
-
-                    case "VB":
-                        return VB() || !CS();
-
-                    default:
-                        return false;
-                }
-            }
-
-            return IsAnalyzer() && FileMatchesProjectLanguage();
         }
     }
 }

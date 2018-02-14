@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (LockFileTargetLibrary targetLibrary in projectContext.GetRuntimeLibraries(_excludeFromPublishPackageIds))
             {
-                if (!targetLibrary.IsPackage())
+                if (targetLibrary.Type != "package")
                 {
                     continue;
                 }
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tasks
                 results.AddRange(GetResolvedFiles(targetLibrary.RuntimeAssemblies, targetLibraryPackage, libraryPath, pkgRoot, AssetType.Runtime));
                 results.AddRange(GetResolvedFiles(targetLibrary.NativeLibraries, targetLibraryPackage, libraryPath, pkgRoot, AssetType.Native));
 
-                foreach (LockFileRuntimeTarget runtimeTarget in targetLibrary.RuntimeTargets.FilterPlaceholderFiles())
+                foreach (LockFileRuntimeTarget runtimeTarget in targetLibrary.RuntimeTargets.FilterPlaceHolderFiles())
                 {
                     if (string.Equals(runtimeTarget.AssetType, "native", StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(runtimeTarget.AssetType, "runtime", StringComparison.OrdinalIgnoreCase))
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                foreach (LockFileItem resourceAssembly in targetLibrary.ResourceAssemblies.FilterPlaceholderFiles())
+                foreach (LockFileItem resourceAssembly in targetLibrary.ResourceAssemblies.FilterPlaceHolderFiles())
                 {
                     string locale;
                     string sourcePath = Path.Combine(libraryPath, resourceAssembly.Path);
@@ -94,7 +94,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private IEnumerable<ResolvedFile> GetResolvedFiles(IEnumerable<LockFileItem> items, PackageIdentity package, string libraryPath, string pkgRoot, AssetType assetType)
         {
-            foreach (LockFileItem item in items.FilterPlaceholderFiles())
+            foreach (LockFileItem item in items.FilterPlaceHolderFiles())
             {
                 string srcpath = Path.Combine(libraryPath, item.Path);
 

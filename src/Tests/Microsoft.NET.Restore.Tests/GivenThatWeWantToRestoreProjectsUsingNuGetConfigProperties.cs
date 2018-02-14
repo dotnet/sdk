@@ -53,7 +53,8 @@ namespace Microsoft.NET.Restore.Tests
                 "projectinfallbackfolder.1.0.0.nupkg")).Should().Be(fileExists);
         }
 
-        [Theory]
+        // https://github.com/dotnet/sdk/issues/1327
+        [CoreMSBuildOnlyTheory]
         [InlineData("netstandard1.3", "1.3")]
         [InlineData("netcoreapp1.0", "1.0")]
         [InlineData("netcoreapp1.1", "1.1")]
@@ -143,15 +144,14 @@ namespace Microsoft.NET.Restore.Tests
             {
                 using (var fileStream = File.OpenRead(nupkg))
                 {
-                    PackageExtractor.InstallFromSourceAsync(
-                        identity,
-                        stream => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                        pathResolver,
-                        new PackageExtractionContext(
-                            PackageSaveMode.Defaultv3,
-                            XmlDocFileSaveMode.None,
+                    PackageExtractor.InstallFromSourceAsync((stream) =>
+                        fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        new VersionFolderPathContext(
+                            identity,
+                            nugetCache,
                             NullLogger.Instance,
-                            signedPackageVerifier: null),
+                            PackageSaveMode.Defaultv3,
+                            XmlDocFileSaveMode.None),
                         CancellationToken.None).Wait();
                 }
             }
