@@ -13,6 +13,7 @@ restore=false
 sign=false
 solution=""
 test=false
+perf=false
 verbosity="minimal"
 properties=""
 
@@ -46,6 +47,7 @@ while [[ $# > 0 ]]; do
       echo "  --build                  Build solution"
       echo "  --rebuild                Rebuild solution"
       echo "  --test                   Run all unit tests in the solution"
+	  echo "  --perf                   Run all performance tests in the solution"
       echo "  --sign                   Sign build outputs"
       echo "  --pack                   Package build outputs into NuGet packages and Willow components"
       echo ""
@@ -92,6 +94,10 @@ while [[ $# > 0 ]]; do
       ;;
     --test)
       test=true
+      shift 1
+      ;;
+	--Perf)
+      pack=true
       shift 1
       ;;
     --verbosity)
@@ -277,7 +283,7 @@ function Build {
       solution="$RepoRoot/sdk.sln"
     fi
 
-    dotnet msbuild $RepoToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci $properties
+    dotnet msbuild $RepoToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity $logCmd /p:Configuration=$configuration /p:SolutionPath=$solution /p:Restore=$restore /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:PerformanceTest=$perf /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci $properties
     LASTEXITCODE=$?
 
     if [ $LASTEXITCODE != 0 ]
