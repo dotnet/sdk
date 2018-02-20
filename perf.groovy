@@ -13,12 +13,12 @@ def static getBuildJobName(def configuration, def os) {
     return configuration.toLowerCase() + '_' + os.toLowerCase()
 }
 
-// Setup perflab tests runs
+// Setup SDK performance tests runs
 [true, false].each { isPR ->
     ['Windows_NT'].each { os ->
         ['x64', 'x86'].each { arch ->
             def architecture = arch
-            def jobName = "perf_perflab_${os}_${arch}"
+            def jobName = "SDK_Perf_${os}_${arch}"
             def testEnv = ""
             def newJob = job(Utilities.getFullJobName(project, jobName, isPR)) {
 
