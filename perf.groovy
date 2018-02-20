@@ -52,15 +52,15 @@ def static getBuildJobName(def configuration, def os) {
                     batchFile("if \"%GIT_BRANCH:~0,7%\" == \"origin/\" (set \"GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:origin/=%\") else (set \"GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH%\")\n" +
                     "set \"BENCHVIEWNAME=${benchViewName}\"\n" +
                     "set \"BENCHVIEWNAME=%BENCHVIEWNAME:\"=\"\"%\"\n" +
-                    "py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\submission-metadata.py\" --name \"%BENCHVIEWNAME%\" --user-email \"dotnet-bot@microsoft.com\" --output \"${perfWorkingDirectory}\"\n" +
-                    "py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\build.py\" git --branch %GIT_BRANCH_WITHOUT_ORIGIN% --type ${runType} --output \"${perfWorkingDirectory}\"")
-                    batchFile("py \"%WORKSPACE%\\Microsoft.BenchView.JSONFormat\\tools\\machinedata.py\" --output \"${perfWorkingDirectory}\"")
+                    "py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\submission-metadata.py\" --name \"%BENCHVIEWNAME%\" --user-email \"dotnet-bot@microsoft.com\" --output \"${perfWorkingDirectory}\\submission-metadata.json\"\n" +
+                    "py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\build.py\" git --branch %GIT_BRANCH_WITHOUT_ORIGIN% --type ${runType} --output \"${perfWorkingDirectory}\\build.json\"")
+                    batchFile("py \"%WORKSPACE%\\Microsoft.BenchView.JSONFormat\\tools\\machinedata.py\" --output \"${perfWorkingDirectory}\\machinedata.json\"")
 
 			        // Build solution and run the performance tests
 				    batchFile("\"%WORKSPACE%\\build.cmd\" -perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
 
 			       //Create submission json and upload to Benchview
-				   batchFile("for /f \"tokens=*\" %%a in ('dir /b/a-d ${perfWorkingDirectory}\\*.xml') do (py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\measurement.py xunitscenario \"${perfWorkingDirectory}\\%%a\" --better desc --output \"${perfWorkingDirectory}\")")
+				   batchFile("for /f \"tokens=*\" %%a in ('dir /b/a-d ${perfWorkingDirectory}\\*.xml') do (py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\measurement.py xunitscenario \"${perfWorkingDirectory}\\%%a\" --better desc --append --output \"${perfWorkingDirectory}\\measurement.json\")")
                    batchFile("py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\submission.py\" \"${perfWorkingDirectory}\\measurement.json\"" +
                    "--build \"${perfWorkingDirectory}\\build.json\"" +
                    "--machine-data \"${perfWorkingDirectory}\\machinedata.json\"" +
@@ -71,8 +71,8 @@ def static getBuildJobName(def configuration, def os) {
                    "--config Configuration \"${configuration}\"" +
                    "--architecture \"${arch}\"" +
                    "--machinepool \"perfsnake\"" +
-				   "--output \"${perfWorkingDirectory}\"")
-                   batchFile("py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\upload.py \"${perfWorkingDirectory}\submission.json\" --container stability")
+				   "--output \"${perfWorkingDirectory}\submission.json\"")
+                   batchFile("py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\upload.py \"${perfWorkingDirectory}\submission.json\" --container coreclr")
                 }
             }
 
@@ -101,8 +101,8 @@ def static getBuildJobName(def configuration, def os) {
                 builder.setGithubContext("${os} ${arch} SDK Perf Tests")
 
                 builder.triggerOnlyOnComment()
-			    //Phrase is "test Windows_NT x64 perf"
-                builder.setCustomTriggerPhrase("(?i).*test\\W+${os}\\W+${arch}\\W+perf.*")
+			    //Phrase is "test Windows_NT x64 SDK Perf Tests"
+                builder.setCustomTriggerPhrase("(?i).*test\\W+${os}\\W+${arch}\\W+sdk\\W+perf\\W+tests.*")
                 builder.triggerForBranch(branch)
                 builder.emitTrigger(newJob)
             }
