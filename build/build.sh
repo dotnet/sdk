@@ -46,7 +46,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --build                  Build solution"
       echo "  --rebuild                Rebuild solution"
       echo "  --test                   Run all unit tests in the solution"
-	  echo "  --perf                   Run all performance tests in the solution"
+      echo "  --perf                   Run all performance tests in the solution"
       echo "  --sign                   Sign build outputs"
       echo "  --pack                   Package build outputs into NuGet packages and Willow components"
       echo ""
@@ -95,8 +95,8 @@ while [[ $# -gt 0 ]]; do
       test=true
       shift 1
       ;;
-	--Perf)
-      pack=true
+    --Perf)
+      perf=true
       shift 1
       ;;
     --verbosity)

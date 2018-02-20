@@ -35,7 +35,7 @@ function Print-Usage() {
     Write-Host "  -rebuild                Rebuild solution"
     Write-Host "  -deploy                 Deploy built VSIXes"
     Write-Host "  -test                   Run all unit tests in the solution"
-	Write-Host "  -perf                   Run all performance tests in the solution"
+    Write-Host "  -perf                   Run all performance tests in the solution"
     Write-Host "  -sign                   Sign build outputs"
     Write-Host "  -pack                   Package build outputs into NuGet packages and Willow components"
     Write-Host ""
