@@ -57,7 +57,7 @@ def static getBuildJobName(def configuration, def os) {
                     batchFile("py \"%WORKSPACE%\\Microsoft.BenchView.JSONFormat\\tools\\machinedata.py\" --output \"${perfWorkingDirectory}\\machinedata.json\"")
 
 			        // Build solution and run the performance tests
-				    batchFile("\"%WORKSPACE%\\build.cmd\" -perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
+				    batchFile("\"%WORKSPACE%\\build.cmd\" -sign -ci -perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
 
 			       //Create submission json and upload to Benchview
 				   batchFile("for /f \"tokens=*\" %%a in ('dir /b/a-d ${perfWorkingDirectory}\\*.xml') do (py \"${perfWorkingDirectory}\\Microsoft.BenchView.JSONFormat\\tools\\measurement.py xunitscenario \"${perfWorkingDirectory}\\%%a\" --better desc --append --output \"${perfWorkingDirectory}\\measurement.json\")")
