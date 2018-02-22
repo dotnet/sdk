@@ -52,7 +52,7 @@ echo Creating: "%perfWorkingDirectory%\measurement.json"
 pushd "%perfWorkingDirectory%"
 for /f "tokens=*" %%a in ('dir /b/a-d *.xml') do (
     echo Processing: "%%a"
-    "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\measurement.py" xunitscenario "%%a" --better desc --append -o "%perfWorkingDirectory%\measurement.json"
+    py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\measurement.py" xunitscenario "%%a" --better desc --append -o "%perfWorkingDirectory%\measurement.json"
 )
 popd
 
