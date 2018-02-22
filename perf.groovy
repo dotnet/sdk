@@ -51,7 +51,7 @@ def static getBuildJobName(def configuration, def os) {
                    "set architecture=${architecture}\n" +
                    "set runType=${runType}\n" +
                    "set BenchviewCommitName=${BenchviewCommitName}\n" +
-                   "\"%WORKSPACE%\\build\\uploadperftobenchview.cmd\")
+                   "\"%WORKSPACE%\\build\\uploadperftobenchview.cmd\"")
                 }
             }
 
