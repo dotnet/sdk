@@ -17,11 +17,11 @@ def static getBuildJobName(def configuration, def os) {
 // Setup SDK performance tests runs
 [true, false].each { isPR ->
     ['Windows_NT'].each { os ->
+      ['Release'].each { config ->
         ['x64', 'x86'].each { arch ->
-            def architecture = arch
             def jobName = "SDK_Perf_${os}_${arch}"
-            def testEnv = ""
             def newJob = job(Utilities.getFullJobName(project, jobName, isPR)) {
+            def perfWorkingDirectory = '%WORKSPACE%\\artifacts\\${config}\\TestResults\\Performance'
 
                 // Set the label.
                 label('windows_server_2016_clr_perf')
@@ -37,25 +37,23 @@ def static getBuildJobName(def configuration, def os) {
                     }
                 }
 
-                def configuration = 'Release'
                 def runType = isPR ? 'private' : 'rolling'
-                def perfWorkingDirectory = '%WORKSPACE%\\artifacts\\$configuration\\TestResults\\Performance'
 
                 steps {
                    // Build solution and run the performance tests
-                   batchFile("\"%WORKSPACE%\\build.cmd\" -configuration ${configuration} -sign -ci -perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
+                   batchFile("\"%WORKSPACE%\\build.cmd\" -configuration ${config} -sign -ci -perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
 
                    // Upload perf results to BenchView
                    batchFile("set perfWorkingDirectory=${perfWorkingDirectory}\n" +
-                   "set configuration=${configuration}\n" +
-                   "set architecture=${architecture}\n" +
+                   "set configuration=${config}\n" +
+                   "set architecture=${arch}\n" +
                    "set runType=${runType}\n" +
                    "\"%WORKSPACE%\\build\\uploadperftobenchview.cmd\"")
                 }
             }
 
             def archiveSettings = new ArchivalSettings()
-            archiveSettings.addFiles('$perfWorkingDirectory/**')
+            archiveSettings.addFiles('${perfWorkingDirectory}/**')
             archiveSettings.setAlwaysArchive()
             Utilities.addArchival(newJob, archiveSettings)
             Utilities.standardJobSetup(newJob, project, isPR, "*/${branch}")
@@ -89,6 +87,7 @@ def static getBuildJobName(def configuration, def os) {
                 builder.emitTrigger(newJob)
             }
         }
+      }
     }
 }
 
