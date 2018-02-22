@@ -119,7 +119,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             DataType = "choice"
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagValueWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagValueWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as Parameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
@@ -129,10 +138,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Name = paramInfo.Key,
                             Documentation = paramInfo.Value.Description,
                             DataType = paramInfo.Value.DataType,
-                            DefaultValue = paramInfo.Value.DefaultValue
+                            DefaultValue = paramInfo.Value.DefaultValue,
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as Parameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     _parameters = parameters;

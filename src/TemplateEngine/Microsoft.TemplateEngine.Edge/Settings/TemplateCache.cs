@@ -356,7 +356,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
 
                     string tagDescription = localizationForTag.Description ?? templateTag.Value.Description;
-                    ICacheTag localizedTag = new CacheTag(tagDescription, localizedChoicesAndDescriptions, templateTag.Value.DefaultValue);
+
+                    ICacheTag localizedTag;
+                    if (templateTag.Value is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
+                    {
+                        localizedTag = new CacheTag(tagDescription, localizedChoicesAndDescriptions, templateTag.Value.DefaultValue, tagWithNoValueDefault.DefaultIfOptionWithoutValue);
+                    }
+                    else
+                    {
+                        localizedTag = new CacheTag(tagDescription, localizedChoicesAndDescriptions, templateTag.Value.DefaultValue);
+                    }
+
                     localizedCacheTags.Add(templateTag.Key, localizedTag);
                 }
                 else

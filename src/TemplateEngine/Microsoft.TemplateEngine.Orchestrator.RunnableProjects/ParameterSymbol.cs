@@ -70,6 +70,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // only relevant for choice datatype
         public string TagName { get; set; }
 
+        // If this is set, the option can be provided without a value. It will be given this value.
+        public string DefaultIfOptionWithoutValue { get; set; }
+
         private IReadOnlyDictionary<string, string> _choices;
 
         public IReadOnlyDictionary<string, string> Choices
@@ -87,6 +90,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public static ISymbolModel FromJObject(JObject jObject, IParameterSymbolLocalizationModel localization, string defaultOverride)
         {
             ParameterSymbol symbol = FromJObject<ParameterSymbol>(jObject, localization, defaultOverride);
+            symbol.DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
+
             Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>();
 
             if (symbol.DataType == "choice")
@@ -105,6 +110,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                     choicesAndDescriptions.Add(choice, choiceDescription ?? string.Empty);
                 }
+            }
+            else if (symbol.DataType == "bool" && string.IsNullOrEmpty(symbol.DefaultIfOptionWithoutValue))
+            {
+                // bool flags are considred true if they're provided without a value.
+                symbol.DefaultIfOptionWithoutValue = "true";
             }
 
             symbol.Choices = choicesAndDescriptions;

@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         defaultValue = tagParameter.Value.DefaultValue;
                     }
 
-                    ICacheTag cacheTag = new CacheTag(tagParameter.Value.Description, tagParameter.Value.Choices, defaultValue);
+                    ICacheTag cacheTag = new CacheTag(tagParameter.Value.Description, tagParameter.Value.Choices, defaultValue, tagParameter.Value.DefaultIfOptionWithoutValue);
                     tags.Add(tagParameter.Key, cacheTag);
                 }
 
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (symbol.Value is ParameterSymbol param && param.DataType != "choice")
                         {
-                            ICacheParameter cacheParam = new CacheParameter(param.DataType, param.DefaultValue, param.Description);
+                            ICacheParameter cacheParam = new CacheParameter(param.DataType, param.DefaultValue, param.Description, param.DefaultIfOptionWithoutValue);
                             cacheParameters.Add(symbol.Key, cacheParam);
                         }
                     }
@@ -239,6 +239,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal))
                                 {
                                     parameters[symbol.Key].Choices = ((ParameterSymbol)symbol.Value).Choices;
+                                    parameters[symbol.Key].DefaultIfOptionWithoutValue = ((ParameterSymbol)symbol.Value).DefaultIfOptionWithoutValue;
                                 }
                             }
                         }

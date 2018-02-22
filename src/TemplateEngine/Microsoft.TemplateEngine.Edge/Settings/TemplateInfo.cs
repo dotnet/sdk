@@ -17,11 +17,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private static readonly Func<JObject, TemplateInfo> _defaultReader;
         private static readonly IReadOnlyDictionary<string, Func<JObject, TemplateInfo>> _infoVersionReaders;
 
+        // Note: Be sure to keep the versioning consistent with SettingsStore
         static TemplateInfo()
         {
             Dictionary<string, Func<JObject, TemplateInfo>> versionReaders = new Dictionary<string, Func<JObject, TemplateInfo>>();
             versionReaders.Add("1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject);
             versionReaders.Add("1.0.0.1", TemplateInfoReaderVersion1_0_0_1.FromJObject);
+            versionReaders.Add("1.0.0.2", TemplateInfoReaderVersion1_0_0_2.FromJObject);
             _infoVersionReaders = versionReaders;
 
             _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
@@ -59,7 +61,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             DataType = "choice"
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as TemplateParameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
@@ -69,10 +80,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             Name = paramInfo.Key,
                             Documentation = paramInfo.Value.Description,
                             DataType = paramInfo.Value.DataType,
-                            DefaultValue = paramInfo.Value.DefaultValue
+                            DefaultValue = paramInfo.Value.DefaultValue,
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as TemplateParameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     _parameters = parameters;
