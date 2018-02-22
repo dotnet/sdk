@@ -62,6 +62,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; could not be parsed as a regular expression.
+        /// </summary>
+        internal static string Authoring_InvalidRegex {
+            get {
+                return ResourceManager.GetString("Authoring_InvalidRegex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A non-bool DataType was specified for a regexMatch type symbol.
+        /// </summary>
+        internal static string Authoring_NonBoolDataTypeForRegexMatch {
+            get {
+                return ResourceManager.GetString("Authoring_NonBoolDataTypeForRegexMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to     Source &apos;{0}&apos; in template does not exist..
         /// </summary>
         internal static string Authoring_SourceDoesNotExist {
@@ -76,6 +94,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string Authoring_SourceIsOutsideInstallSource {
             get {
                 return ResourceManager.GetString("Authoring_SourceIsOutsideInstallSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to     Source must be a directory, but &apos;{0}&apos; is a file..
+        /// </summary>
+        internal static string Authoring_SourceMustBeDirectory {
+            get {
+                return ResourceManager.GetString("Authoring_SourceMustBeDirectory", resourceCulture);
             }
         }
         

@@ -47,7 +47,9 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
             List<IInstallUnitDescriptor> allDescriptors = new List<IInstallUnitDescriptor>();
             descriptorList = allDescriptors;
 
-            if (mountPoint.Info.Place != null && File.Exists(mountPoint.Info.Place) && TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string version))
+            if (mountPoint.Info.Place != null
+                && mountPoint.EnvironmentSettings.Host.FileSystem.FileExists(mountPoint.Info.Place)
+                && TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string version))
             {
                 IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(mountPoint.Info.MountPointId, packageName, version);
                 allDescriptors.Add(descriptor);

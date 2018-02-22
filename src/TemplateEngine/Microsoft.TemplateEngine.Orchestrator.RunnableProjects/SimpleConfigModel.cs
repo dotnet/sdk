@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         };
         private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
 
-        private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
 
         public SimpleConfigModel()
         {
@@ -78,6 +78,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public string GeneratorVersions { get; set; }
 
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
+
+        public bool HasScriptRunningPostActions { get; set; }
 
         private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
@@ -284,8 +286,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         IReadOnlyList<string> excludePattern = JTokenToCollection(source.Exclude, SourceFile, ExcludePatternDefaults);
                         IReadOnlyList<string> copyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
                         FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
-                        IReadOnlyDictionary<string, string> renamePatterns = source.Rename ?? RenameDefaults;
-
+                        IReadOnlyDictionary<string, string> renamePatterns = new Dictionary<string, string>(source.Rename ?? RenameDefaults, StringComparer.Ordinal);
                         FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
                             source.Source ?? "./",
                             source.Target ?? "./",
@@ -306,7 +307,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             "./",
                             "./",
                             topLevelEvaluable,
-                            new Dictionary<string, string>(),
+                            new Dictionary<string, string>(StringComparer.Ordinal),
                             new List<FileSourceEvaluable>());
                         sources.Add(matchInfo);
                     }
@@ -844,7 +845,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 IReadOnlyList<string> topCopyOnlyPattern = JTokenToCollection(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(topIncludePattern, topExcludePattern, topCopyOnlyPattern);
 
-                Dictionary<string, string> fileRenames = new Dictionary<string, string>(source.Rename ?? RenameDefaults);
+                Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(source.Rename ?? RenameDefaults, StringComparer.Ordinal);
                 List<FileSourceEvaluable> modifierList = new List<FileSourceEvaluable>();
 
                 if (source.Modifiers != null)
@@ -863,7 +864,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             {
                                 foreach (JProperty property in modifier.Rename.Properties())
                                 {
-                                    fileRenames[property.Name] = property.Value.Value<string>();
+                                    fileRenamesFromSource[property.Name] = property.Value.Value<string>();
                                 }
                             }
                         }
@@ -872,13 +873,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string sourceDirectory = source.Source ?? "./";
                 string targetDirectory = source.Target ?? "./";
-                AugmentRenames(configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     sourceDirectory,
                     targetDirectory,
                     topLevelPatterns,
-                    fileRenames,
+                    allRenamesForSource,
                     modifierList);
                 sources.Add(sourceMatcher);
             }
@@ -891,14 +892,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
 
                 string targetDirectory = string.Empty;
-                Dictionary<string, string> fileRenames = new Dictionary<string, string>();
-                AugmentRenames(configFile, "./", ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
+                Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(StringComparer.Ordinal);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(configFile, "./", ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     "./",
                     "./",
                     topLevelPatterns,
-                    fileRenames,
+                    allRenamesForSource,
                     new List<FileSourceEvaluable>());
                 sources.Add(sourceMatcher);
             }
@@ -906,9 +907,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return sources;
         }
 
-        private void AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameters, Dictionary<string, string> fileRenames)
+        private IReadOnlyDictionary<string, string> AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameters, Dictionary<string, string> fileRenames)
         {
-            FileRenameGenerator.AugmentFileRenames(EnvironmentSettings, SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
+            return FileRenameGenerator.AugmentFileRenames(EnvironmentSettings, SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
         }
 
         private static ISymbolModel SetupDefaultNameSymbol(string sourceName)
@@ -1089,6 +1090,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             config.PostActionModel = RunnableProjects.PostActionModel.ListFromJArray(source.Get<JArray>("PostActions"), localizationModel?.PostActions);
+            config.HasScriptRunningPostActions = config.PostActionModel.Any(x => x.ActionId == PostActionInfo.ProcessStartPostActionProcessorId);
             config.PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
             // Custom operations at the global level

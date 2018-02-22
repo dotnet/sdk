@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.TemplateEngine.Core;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Mocks
@@ -14,7 +13,7 @@ namespace Microsoft.TemplateEngine.Mocks
             Operations = new List<IOperationProvider>();
             Special = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
             LocalizationOperations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
-            TargetRelativePaths = new Dictionary<string, string>();
+            Rename = new Dictionary<string, string>();
             IgnoreFileNames = new[] { "-.-", "_._" };
         }
 
@@ -34,11 +33,11 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyList<string> IgnoreFileNames { get; set; }
         
-        public Dictionary<string, string> TargetRelativePaths { get; set; }
+        public IReadOnlyDictionary<string, string> Rename { get; set; }
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
-            return TargetRelativePaths.TryGetValue(sourceRelPath, out targetRelPath);
+            return Rename.TryGetValue(sourceRelPath, out targetRelPath);
         }
     }
 }

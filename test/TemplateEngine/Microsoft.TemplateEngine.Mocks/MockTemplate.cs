@@ -47,5 +47,7 @@ namespace Microsoft.TemplateEngine.Mocks
         public string ThirdPartyNotices { get; set; }
 
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
+
+        public bool HasScriptRunningPostActions { get; set; }
     }
 }

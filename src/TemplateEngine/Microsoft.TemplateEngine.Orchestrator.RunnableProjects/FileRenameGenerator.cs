@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,46 +19,53 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // Renames are based on:
         //  - parameters with a FileRename specified
         //  - the source & target names.
-        public static void AugmentFileRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, Dictionary<string, string> fileRenames)
+        // Any input fileRenames will be applied before the parameter symbol renames.
+        public static IReadOnlyDictionary<string, string> AugmentFileRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, Dictionary<string, string> fileRenames)
         {
-            IReadOnlyDictionary<string, string> substringRenames = SetupSubstringRenames(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet);
-            IProcessor processor = SetupRenameProcessor(environmentSettings, substringRenames, fileRenames);
+            Dictionary<string, string> allRenames = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
+
+            IReadOnlyDictionary<string, string> symbolBasedRenames = SetupSymbolBasedRenames(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet);
+            IProcessor symbolRenameProcessor = SetupRenameProcessor(environmentSettings, symbolBasedRenames);
 
             IDirectory sourceBaseDirectoryInfo = configFile.Parent.Parent.DirectoryInfo(sourceDirectory.TrimEnd('/'));
 
             foreach (IFileSystemInfo fileSystemEntry in sourceBaseDirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
             {
-                string templateRelativePath = fileSystemEntry.PathRelativeTo(sourceBaseDirectoryInfo);
-                string originalTargetPath = templateRelativePath;
+                string sourceTemplateRelativePath = fileSystemEntry.PathRelativeTo(sourceBaseDirectoryInfo);
 
-                using (Stream source = new MemoryStream(Encoding.UTF8.GetBytes(templateRelativePath)))
-                using (Stream target = new MemoryStream())
+                // first apply the sources renames, then apply the symbol renames to that result.
+                string renameFromSourcesValue = ApplyRenameProcessorToFilename(sourceRenameProcessor, sourceTemplateRelativePath);
+                string renameFinalTargetValue = ApplyRenameProcessorToFilename(symbolRenameProcessor, renameFromSourcesValue);
+
+                if (!string.Equals(sourceTemplateRelativePath, renameFinalTargetValue, StringComparison.Ordinal))
                 {
-                    processor.Run(source, target);
-
-                    byte[] targetData = new byte[target.Length];
-                    target.Position = 0;
-                    target.Read(targetData, 0, targetData.Length);
-                    string replacedTargetRelativePath = Encoding.UTF8.GetString(targetData);
-                    
-                    if (!string.Equals(originalTargetPath, replacedTargetRelativePath))
-                    {
-                        fileRenames[templateRelativePath] = replacedTargetRelativePath;
-                    }
+                    allRenames[sourceTemplateRelativePath] = renameFinalTargetValue;
                 }
+            }
+
+            return allRenames;
+        }
+
+        private static string ApplyRenameProcessorToFilename(IProcessor processor, string sourceFilename)
+        {
+            using (Stream source = new MemoryStream(Encoding.UTF8.GetBytes(sourceFilename)))
+            using (Stream target = new MemoryStream())
+            {
+                processor.Run(source, target);
+
+                byte[] targetData = new byte[target.Length];
+                target.Position = 0;
+                target.Read(targetData, 0, targetData.Length);
+                return Encoding.UTF8.GetString(targetData);
             }
         }
 
         // Creates and returns the processor used to create the file rename mapping.
-        private static IProcessor SetupRenameProcessor(IEngineEnvironmentSettings environmentSettings, IReadOnlyDictionary<string, string> substringReplacementMap, IReadOnlyDictionary<string, string> fileRenames)
+        private static IProcessor SetupRenameProcessor(IEngineEnvironmentSettings environmentSettings, IReadOnlyDictionary<string, string> substringReplacementMap)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
-
-            foreach (KeyValuePair<string, string> replacement in fileRenames)
-            {
-                IOperationProvider replacementOperation = new Replacement(replacement.Key.TokenConfig(), replacement.Value, null, true);
-                operations.Add(replacementOperation);
-            }
 
             foreach (KeyValuePair<string, string> replacement in substringReplacementMap)
             {
@@ -73,9 +81,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         // Generates a mapping from source to target substrings in filenames, based on the parameters with FileRename defined.
         // Also sets up rename concerns for the target directory.
-        private static IReadOnlyDictionary<string, string> SetupSubstringRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet)
+        private static IReadOnlyDictionary<string, string> SetupSymbolBasedRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet)
         {
-            Dictionary<string, string> substringRenames = new Dictionary<string, string>();
+            Dictionary<string, string> substringRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
             SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, substringRenames);
 

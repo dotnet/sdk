@@ -499,8 +499,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                         return;
                     }
 
-                    int token;
-                    if (match.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                    if (match.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, false, out int token))
                     {
                         if (!consumeToken)
                         {

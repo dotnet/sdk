@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,11 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Authoring_InvalidRegex" xml:space="preserve">
+    <value>'{0}' could not be parsed as a regular expression</value>
+  </data>
+  <data name="Authoring_NonBoolDataTypeForRegexMatch" xml:space="preserve">
+    <value>A non-bool DataType was specified for a regexMatch type symbol</value>
+  </data>
   <data name="Authoring_SourceDoesNotExist" xml:space="preserve">
     <value>    Source '{0}' in template does not exist.</value>
   </data>
   <data name="Authoring_SourceIsOutsideInstallSource" xml:space="preserve">
     <value>    Source location '{0}' is outside the specified install source location.</value>
+  </data>
+  <data name="Authoring_SourceMustBeDirectory" xml:space="preserve">
+    <value>    Source must be a directory, but '{0}' is a file.</value>
   </data>
   <data name="Authoring_SourcePathRelativeToInstall" xml:space="preserve">
     <value>    Source path relative to install location: '{0}'</value>

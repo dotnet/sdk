@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Include = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Include, matcher) };
             Exclude = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.Exclude, matcher) };
             CopyOnly = new List<IPathMatcher>() { new FileSourceStateMatcher(FileDispositionStates.CopyOnly, matcher) };
-            Rename = source.Renames ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Rename = source.Renames ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
         // Returns a list of operations which contains the custom operations and the default operations.
