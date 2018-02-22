@@ -2,12 +2,23 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 {
-    public static class TemplateInfoReaderVersion1_0_0_1
+    public class TemplateInfoReaderVersion1_0_0_1 : TemplateInfoReaderVersion1_0_0_0
     {
-        public static TemplateInfo FromJObject(JObject entry)
+        public static new TemplateInfo FromJObject(JObject jObject)
         {
-            TemplateInfo info = TemplateInfoReaderVersion1_0_0_0.FromJObject(entry);
-            info.HasScriptRunningPostActions = entry.ToBool(nameof(TemplateInfo.HasScriptRunningPostActions));
+            TemplateInfoReaderVersion1_0_0_1 reader = new TemplateInfoReaderVersion1_0_0_1(jObject);
+            return reader.FromJObject();
+        }
+
+        public TemplateInfoReaderVersion1_0_0_1(JObject jObject)
+            : base(jObject)
+        {
+        }
+
+        public override TemplateInfo FromJObject()
+        {
+            TemplateInfo info = base.FromJObject();
+            info.HasScriptRunningPostActions = _jObject.ToBool(nameof(TemplateInfo.HasScriptRunningPostActions));
 
             return info;
         }
