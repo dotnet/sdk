@@ -21,7 +21,7 @@ def static getBuildJobName(def configuration, def os) {
         ['x64', 'x86'].each { arch ->
             def jobName = "SDK_Perf_${os}_${arch}"
             def newJob = job(Utilities.getFullJobName(project, jobName, isPR)) {
-            def perfWorkingDirectory = '%WORKSPACE%\\artifacts\\${config}\\TestResults\\Performance'
+            def perfWorkingDirectory = "%WORKSPACE%\\artifacts\\${config}\\TestResults\\Performance"
 
                 // Set the label.
                 label('windows_server_2016_clr_perf')
@@ -53,7 +53,7 @@ def static getBuildJobName(def configuration, def os) {
             }
 
             def archiveSettings = new ArchivalSettings()
-            archiveSettings.addFiles('${perfWorkingDirectory}/**')
+            archiveSettings.addFiles("${perfWorkingDirectory}/**")
             archiveSettings.setAlwaysArchive()
             Utilities.addArchival(newJob, archiveSettings)
             Utilities.standardJobSetup(newJob, project, isPR, "*/${branch}")
