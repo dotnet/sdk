@@ -10,13 +10,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         {
             TemplateInfo info = new TemplateInfo();
 
-            TemplateInfoReaderVersion1_0_0_2 reader = new TemplateInfoReaderVersion1_0_0_2(jObject);
-            return reader.Read();
-        }
-
-        public TemplateInfoReaderVersion1_0_0_2(JObject jObject)
-            : base(jObject)
-        {
+            TemplateInfoReaderVersion1_0_0_2 reader = new TemplateInfoReaderVersion1_0_0_2();
+            return reader.Read(jObject);
         }
 
         protected override ICacheTag ReadOneTag(JProperty item)

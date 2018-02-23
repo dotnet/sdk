@@ -10,33 +10,26 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
     {
         public static TemplateInfo FromJObject(JObject jObject)
         {
-            TemplateInfoReaderVersion1_0_0_0 reader = new TemplateInfoReaderVersion1_0_0_0(jObject);
-            return reader.Read();
+            TemplateInfoReaderVersion1_0_0_0 reader = new TemplateInfoReaderVersion1_0_0_0();
+            return reader.Read(jObject);
         }
 
-        public TemplateInfoReaderVersion1_0_0_0(JObject jObject)
-        {
-            _jObject = jObject;
-        }
-
-        protected readonly JObject _jObject;
-
-        public virtual TemplateInfo Read()
+        public virtual TemplateInfo Read(JObject jObject)
         {
             TemplateInfo info = new TemplateInfo();
 
-            ReadPrimaryInformation(info);
-            info.Tags = ReadTags();
-            info.CacheParameters = ReadParameters();
+            ReadPrimaryInformation(jObject, info);
+            info.Tags = ReadTags(jObject);
+            info.CacheParameters = ReadParameters(jObject);
 
             return info;
         }
 
-        protected void ReadPrimaryInformation(TemplateInfo info)
+        protected void ReadPrimaryInformation(JObject jObject, TemplateInfo info)
         {
-            info.ConfigMountPointId = Guid.Parse(_jObject.ToString(nameof(TemplateInfo.ConfigMountPointId)));
-            info.Author = _jObject.ToString(nameof(TemplateInfo.Author));
-            JArray classificationsArray = _jObject.Get<JArray>(nameof(TemplateInfo.Classifications));
+            info.ConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.ConfigMountPointId)));
+            info.Author = jObject.ToString(nameof(TemplateInfo.Author));
+            JArray classificationsArray = jObject.Get<JArray>(nameof(TemplateInfo.Classifications));
 
             List<string> classifications = new List<string>();
             info.Classifications = classifications;
@@ -46,24 +39,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
                 classifications.Add(item.ToString());
             }
 
-            info.DefaultName = _jObject.ToString(nameof(TemplateInfo.DefaultName));
-            info.Description = _jObject.ToString(nameof(TemplateInfo.Description));
-            info.Identity = _jObject.ToString(nameof(TemplateInfo.Identity));
-            info.GeneratorId = Guid.Parse(_jObject.ToString(nameof(TemplateInfo.GeneratorId)));
-            info.GroupIdentity = _jObject.ToString(nameof(TemplateInfo.GroupIdentity));
-            info.Precedence = _jObject.ToInt32(nameof(TemplateInfo.Precedence));
-            info.Name = _jObject.ToString(nameof(TemplateInfo.Name));
-            info.ShortName = _jObject.ToString(nameof(TemplateInfo.ShortName));
+            info.DefaultName = jObject.ToString(nameof(TemplateInfo.DefaultName));
+            info.Description = jObject.ToString(nameof(TemplateInfo.Description));
+            info.Identity = jObject.ToString(nameof(TemplateInfo.Identity));
+            info.GeneratorId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.GeneratorId)));
+            info.GroupIdentity = jObject.ToString(nameof(TemplateInfo.GroupIdentity));
+            info.Precedence = jObject.ToInt32(nameof(TemplateInfo.Precedence));
+            info.Name = jObject.ToString(nameof(TemplateInfo.Name));
+            info.ShortName = jObject.ToString(nameof(TemplateInfo.ShortName));
 
-            info.ConfigPlace = _jObject.ToString(nameof(TemplateInfo.ConfigPlace));
-            info.LocaleConfigMountPointId = Guid.Parse(_jObject.ToString(nameof(TemplateInfo.LocaleConfigMountPointId)));
-            info.LocaleConfigPlace = _jObject.ToString(nameof(TemplateInfo.LocaleConfigPlace));
+            info.ConfigPlace = jObject.ToString(nameof(TemplateInfo.ConfigPlace));
+            info.LocaleConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.LocaleConfigMountPointId)));
+            info.LocaleConfigPlace = jObject.ToString(nameof(TemplateInfo.LocaleConfigPlace));
 
-            info.HostConfigMountPointId = Guid.Parse(_jObject.ToString(nameof(TemplateInfo.HostConfigMountPointId)));
-            info.HostConfigPlace = _jObject.ToString(nameof(TemplateInfo.HostConfigPlace));
-            info.ThirdPartyNotices = _jObject.ToString(nameof(TemplateInfo.ThirdPartyNotices));
+            info.HostConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.HostConfigMountPointId)));
+            info.HostConfigPlace = jObject.ToString(nameof(TemplateInfo.HostConfigPlace));
+            info.ThirdPartyNotices = jObject.ToString(nameof(TemplateInfo.ThirdPartyNotices));
 
-            JObject baselineJObject = _jObject.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
+            JObject baselineJObject = jObject.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
             Dictionary<string, IBaselineInfo> baselineInfo = new Dictionary<string, IBaselineInfo>();
             if (baselineJObject != null)
             {
@@ -80,10 +73,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             info.BaselineInfo = baselineInfo;
         }
 
-        protected virtual IReadOnlyDictionary<string, ICacheTag> ReadTags()
+        protected virtual IReadOnlyDictionary<string, ICacheTag> ReadTags(JObject jObject)
         {
             Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
-            JObject tagsObject = _jObject.Get<JObject>(nameof(TemplateInfo.Tags));
+            JObject tagsObject = jObject.Get<JObject>(nameof(TemplateInfo.Tags));
 
             if (tagsObject != null)
             {
@@ -111,10 +104,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
                 item.Value.ToString(nameof(ICacheTag.DefaultValue)));
         }
 
-        protected virtual IReadOnlyDictionary<string, ICacheParameter> ReadParameters()
+        protected virtual IReadOnlyDictionary<string, ICacheParameter> ReadParameters(JObject jObject)
         {
             Dictionary<string, ICacheParameter> cacheParams = new Dictionary<string, ICacheParameter>();
-            JObject cacheParamsObject = _jObject.Get<JObject>(nameof(TemplateInfo.CacheParameters));
+            JObject cacheParamsObject = jObject.Get<JObject>(nameof(TemplateInfo.CacheParameters));
 
             if (cacheParamsObject != null)
             {

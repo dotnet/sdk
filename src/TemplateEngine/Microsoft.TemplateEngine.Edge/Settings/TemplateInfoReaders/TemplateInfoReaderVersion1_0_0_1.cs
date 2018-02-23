@@ -6,19 +6,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
     {
         public static new TemplateInfo FromJObject(JObject jObject)
         {
-            TemplateInfoReaderVersion1_0_0_1 reader = new TemplateInfoReaderVersion1_0_0_1(jObject);
-            return reader.Read();
+            TemplateInfoReaderVersion1_0_0_1 reader = new TemplateInfoReaderVersion1_0_0_1();
+            return reader.Read(jObject);
         }
 
-        public TemplateInfoReaderVersion1_0_0_1(JObject jObject)
-            : base(jObject)
+        public override TemplateInfo Read(JObject jObject)
         {
-        }
-
-        public override TemplateInfo Read()
-        {
-            TemplateInfo info = base.Read();
-            info.HasScriptRunningPostActions = _jObject.ToBool(nameof(TemplateInfo.HasScriptRunningPostActions));
+            TemplateInfo info = base.Read(jObject);
+            info.HasScriptRunningPostActions = jObject.ToBool(nameof(TemplateInfo.HasScriptRunningPostActions));
 
             return info;
         }
