@@ -41,7 +41,7 @@ def static getBuildJobName(def configuration, def os) {
 
                 steps {
                    // Build solution and run the performance tests
-                   batchFile("\"%WORKSPACE%\\build.cmd\" -configuration ${config} -sign -ci -perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
+                   batchFile("\"%WORKSPACE%\\build.cmd\" -configuration ${config} -ci -perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
 
                    // Upload perf results to BenchView
                    batchFile("set perfWorkingDirectory=${perfWorkingDirectory}\n" +
