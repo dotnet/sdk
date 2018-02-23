@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         public static TemplateInfo FromJObject(JObject jObject)
         {
             TemplateInfoReaderVersion1_0_0_0 reader = new TemplateInfoReaderVersion1_0_0_0(jObject);
-            return reader.FromJObject();
+            return reader.Read();
         }
 
         public TemplateInfoReaderVersion1_0_0_0(JObject jObject)
@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 
         protected readonly JObject _jObject;
 
-        public virtual TemplateInfo FromJObject()
+        public virtual TemplateInfo Read()
         {
             TemplateInfo info = new TemplateInfo();
 

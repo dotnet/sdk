@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         public static new TemplateInfo FromJObject(JObject jObject)
         {
             TemplateInfoReaderVersion1_0_0_1 reader = new TemplateInfoReaderVersion1_0_0_1(jObject);
-            return reader.FromJObject();
+            return reader.Read();
         }
 
         public TemplateInfoReaderVersion1_0_0_1(JObject jObject)
@@ -15,9 +15,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
         {
         }
 
-        public override TemplateInfo FromJObject()
+        public override TemplateInfo Read()
         {
-            TemplateInfo info = base.FromJObject();
+            TemplateInfo info = base.Read();
             info.HasScriptRunningPostActions = _jObject.ToBool(nameof(TemplateInfo.HasScriptRunningPostActions));
 
             return info;
