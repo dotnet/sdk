@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             info.BaselineInfo = baselineInfo;
         }
 
-        protected IReadOnlyDictionary<string, ICacheTag> ReadTags()
+        protected virtual IReadOnlyDictionary<string, ICacheTag> ReadTags()
         {
             Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
             JObject tagsObject = _jObject.Get<JObject>(nameof(TemplateInfo.Tags));
@@ -89,25 +89,29 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             {
                 foreach (JProperty item in tagsObject.Properties())
                 {
-                    Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    JObject cdToken = item.Value.Get<JObject>(nameof(ICacheTag.ChoicesAndDescriptions));
-                    foreach (JProperty cdPair in cdToken.Properties())
-                    {
-                        choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
-                    }
-
-                    ICacheTag cacheTag = new CacheTag(
-                        item.Value.ToString(nameof(ICacheTag.Description)),
-                        choicesAndDescriptions,
-                        item.Value.ToString(nameof(ICacheTag.DefaultValue)));
-                    tags.Add(item.Name.ToString(), cacheTag);
+                    tags[item.Name.ToString()] = ReadOneTag(item);
                 }
             }
 
             return tags;
         }
 
-        protected IReadOnlyDictionary<string, ICacheParameter> ReadParameters()
+        protected virtual ICacheTag ReadOneTag(JProperty item)
+        {
+            Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            JObject cdToken = item.Value.Get<JObject>(nameof(ICacheTag.ChoicesAndDescriptions));
+            foreach (JProperty cdPair in cdToken.Properties())
+            {
+                choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
+            }
+
+            return new CacheTag(
+                item.Value.ToString(nameof(ICacheTag.Description)),
+                choicesAndDescriptions,
+                item.Value.ToString(nameof(ICacheTag.DefaultValue)));
+        }
+
+        protected virtual IReadOnlyDictionary<string, ICacheParameter> ReadParameters()
         {
             Dictionary<string, ICacheParameter> cacheParams = new Dictionary<string, ICacheParameter>();
             JObject cacheParamsObject = _jObject.Get<JObject>(nameof(TemplateInfo.CacheParameters));
@@ -116,18 +120,21 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             {
                 foreach (JProperty item in cacheParamsObject.Properties())
                 {
-                    ICacheParameter param = new CacheParameter
-                    {
-                        DataType = item.Value.ToString(nameof(ICacheParameter.DataType)),
-                        DefaultValue = item.Value.ToString(nameof(ICacheParameter.DefaultValue)),
-                        Description = item.Value.ToString(nameof(ICacheParameter.Description))
-                    };
-
-                    cacheParams[item.Name.ToString()] = param;
+                    cacheParams[item.Name.ToString()] = ReadOneParameter(item);
                 }
             }
 
             return cacheParams;
+        }
+
+        protected virtual ICacheParameter ReadOneParameter(JProperty item)
+        {
+            return new CacheParameter
+            {
+                DataType = item.Value.ToString(nameof(ICacheParameter.DataType)),
+                DefaultValue = item.Value.ToString(nameof(ICacheParameter.DefaultValue)),
+                Description = item.Value.ToString(nameof(ICacheParameter.Description))
+            };
         }
     }
 }
