@@ -47,6 +47,7 @@ def static getBuildJobName(def configuration, def os) {
                    batchFile("set perfWorkingDirectory=${perfWorkingDirectory}\n" +
                    "set configuration=${config}\n" +
                    "set architecture=${arch}\n" +
+                   "set OS=${os}\n" +
                    "set runType=${runType}\n" +
                    "\"%WORKSPACE%\\build\\uploadperftobenchview.cmd\"")
                 }
