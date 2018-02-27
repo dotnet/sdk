@@ -322,6 +322,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 HasScriptRunningPostActions = template.HasScriptRunningPostActions
             };
 
+            if (template is IShortNameList templateWithShortNameList)
+            {
+                localizedTemplate.ShortNameList = templateWithShortNameList.ShortNameList;
+            }
+
             return localizedTemplate;
         }
 

@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class RunnableProjectTemplate : ITemplate
+    public class RunnableProjectTemplate : ITemplate, IShortNameList
     {
         private readonly JObject _raw;
 
@@ -20,7 +20,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             DefaultName = config.DefaultName;
             Name = config.Name;
             Identity = config.Identity ?? config.Name;
-            ShortName = config.ShortName;
+
+            ShortNameList = config.ShortNameList ?? new List<string>();
+
             Author = config.Author;
             Tags = config.Tags ?? new Dictionary<string, ICacheTag>(StringComparer.OrdinalIgnoreCase);
             CacheParameters = config.CacheParameters ?? new Dictionary<string, ICacheParameter>(StringComparer.OrdinalIgnoreCase);
@@ -68,7 +70,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Name { get; }
 
-        public string ShortName { get; }
+        public string ShortName
+        {
+            get
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    return ShortNameList[0];
+                }
+
+                return String.Empty;
+            }
+            set
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    throw new Exception("Can't set the short name when the ShortNameList already has entries.");
+                }
+
+                ShortNameList = new List<string>() { value };
+            }
+        }
+
+        public IReadOnlyList<string> ShortNameList { get; private set; }
 
         public IMountPoint Source { get; }
 

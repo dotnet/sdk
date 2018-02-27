@@ -46,7 +46,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
             info.GroupIdentity = jObject.ToString(nameof(TemplateInfo.GroupIdentity));
             info.Precedence = jObject.ToInt32(nameof(TemplateInfo.Precedence));
             info.Name = jObject.ToString(nameof(TemplateInfo.Name));
-            info.ShortName = jObject.ToString(nameof(TemplateInfo.ShortName));
+
+            ReadShortNameInfo(jObject, info);
 
             info.ConfigPlace = jObject.ToString(nameof(TemplateInfo.ConfigPlace));
             info.LocaleConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.LocaleConfigMountPointId)));
@@ -71,6 +72,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
                 }
             }
             info.BaselineInfo = baselineInfo;
+        }
+
+        protected virtual void ReadShortNameInfo(JObject jObject, TemplateInfo info)
+        {
+            info.ShortName = jObject.ToString(nameof(TemplateInfo.ShortName));
         }
 
         protected virtual IReadOnlyDictionary<string, ICacheTag> ReadTags(JObject jObject)

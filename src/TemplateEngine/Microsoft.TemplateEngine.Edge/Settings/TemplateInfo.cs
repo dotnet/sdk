@@ -8,10 +8,11 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class TemplateInfo : ITemplateInfo
+    public class TemplateInfo : ITemplateInfo, IShortNameList
     {
         public TemplateInfo()
         {
+            ShortNameList = new List<string>();
         }
 
         private static readonly Func<JObject, TemplateInfo> _defaultReader;
@@ -135,7 +136,37 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public string Name { get; set; }
 
         [JsonProperty]
-        public string ShortName { get; set; }
+        public string ShortName
+        {
+            get
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    return ShortNameList[0];
+                }
+
+                return String.Empty;
+            }
+            set
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    throw new Exception("Can't set the short name when the ShortNameList already has entries.");
+                }
+
+                ShortNameList = new List<string>() { value };
+            }
+        }
+
+        // ShortName should get deserialized when it exists, for backwards compat.
+        // But moving forward, ShortNameList should be the definitive source.
+        // It can still be ShortName in the template.json, but in the caches it'll be ShortNameList
+        public bool ShouldSerializeShortName()
+        {
+            return false;
+        }
+
+        public IReadOnlyList<string> ShortNameList { get; set; }
 
         [JsonProperty]
         public IReadOnlyDictionary<string, ICacheTag> Tags
