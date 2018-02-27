@@ -9,6 +9,12 @@ namespace BaselineComparer
     {
         static int Main(string[] args)
         {
+            if (args.Length == 0)
+            {
+                ShowUsageMessage();
+                return -1;
+            }
+
             if (string.Equals(args[0], "--create-baseline"))
             {
                 if (args.Length != 4)
@@ -61,14 +67,16 @@ namespace BaselineComparer
         private static void ShowUsageMessage()
         {
             Console.WriteLine("Invalid args. Valid usage patterns:");
-            Console.WriteLine("--create-baseline <Dotnet command {new|new3}> <creation command file> <output base dir>.");
-            Console.WriteLine("\t\tGenerates 2 sets of templates using the creation commands, then compares them and writes a baseline report.");
+            Console.WriteLine("Generates 2 sets of templates using the creation commands, then compares them and writes a baseline report:");
+            Console.WriteLine("  --create-baseline <Dotnet command {new|new3}> <creation command file> <output base dir>.");
+            Console.WriteLine();
 
-            Console.WriteLine("--compare-to-baseline <baseline base dir> <comparison base dir>.");
-            Console.WriteLine("\t\tReads the baseline report, generates a set of templates using the commands in the baseline, compares to the baseline master data, then compares the comparison to the baseline comparison.");
+            Console.WriteLine("Reads the baseline report, generates a set of templates using the commands in the baseline, compares to the baseline master data, then compares the comparison to the baseline comparison:");
+            Console.WriteLine("  --compare-to-baseline <baseline base dir> <comparison base dir>.");
+            Console.WriteLine();
 
-            Console.WriteLine("--new-template-data <dotnet command {new|new3}> <creation command file> <creation base dir>");
-            Console.WriteLine("\t\t* Not directly part of baseline comparison. Generates a set of templates based on the command file.");
+            Console.WriteLine("* Not directly part of baseline comparison. Generates a set of templates based on the command file:");
+            Console.WriteLine("  --new-template-data <dotnet command {new|new3}> <creation command file> <creation base dir>");
         }
 
         public static int CreateFileSeparatedBaseline(string dotnetCommand, string creationCommandFile, string baselineBaseDir)
