@@ -279,11 +279,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     return;
                 }
 
-                foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
+                // Try get an existing mount point for the scan location
+                if (!_environmentSettings.SettingsLoader.TryGetMountPointFromPlace(actualScanPath, out scanMountPoint))
                 {
-                    if (factory.TryMount(_environmentSettings, null, actualScanPath, out scanMountPoint))
+                    // The mount point didn't exist, try creating a new one
+                    foreach (IMountPointFactory factory in _environmentSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
                     {
-                        break;
+                        if (factory.TryMount(_environmentSettings, null, actualScanPath, out scanMountPoint))
+                        {
+                            break;
+                        }
                     }
                 }
 
