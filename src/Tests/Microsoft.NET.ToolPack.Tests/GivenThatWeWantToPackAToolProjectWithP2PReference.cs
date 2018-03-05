@@ -65,7 +65,7 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [Fact]
-        public void It_remove_other_package_dependency()
+        public void It_does_not_add_p2p_references_as_package_references_to_nuspec()
         {
             var nugetPackage = SetupNuGetPackage();
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
