@@ -26,6 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Project Assets File -->
   <PropertyGroup>
     <ProjectAssetsFile Condition="'$(ProjectAssetsFile)' == ''">$(BaseIntermediateOutputPath)/project.assets.json</ProjectAssetsFile>
+    <ProjectAssetsCacheFile Condition="'$(ProjectAssetsCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).assets.cache</ProjectAssetsCacheFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -189,8 +190,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolvePackageAssets" 
-          Condition=" '$(DesignTimeBuild)' != 'true' Or Exists('$(ProjectAssetsFile)')"
-          DependsOnTargets="ReportAssetsLogMessages">
+          Condition=" '$(DesignTimeBuild)' != 'true' Or Exists('$(ProjectAssetsFile)')">
 
     <PropertyGroup Condition="'$(EnsureRuntimePackageDependencies)' == ''
                           and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
@@ -200,8 +200,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolvePackageAssets 
       ProjectAssetsFile="$(ProjectAssetsFile)"
+      ProjectAssetsCacheFile="$(ProjectAssetsCacheFile)"
       ProjectPath="$(MSBuildProjectFullPath)"
       ProjectLanguage="$(Language)"
+      EmitAssetsLogMessages="$(EmitAssetsLogMessages)"
       TargetFrameworkMoniker="$(NuGetTargetMoniker)"
       RuntimeIdentifier="$(RuntimeIdentifier)"
       MarkPackageReferencesAsExternallyResolved="$(MarkPackageReferencesAsExternallyResolved)"
