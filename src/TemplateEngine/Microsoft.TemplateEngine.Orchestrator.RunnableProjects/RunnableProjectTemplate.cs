@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return ShortNameList[0];
                 }
 
-                return String.Empty;
+                return string.Empty;
             }
             set
             {
