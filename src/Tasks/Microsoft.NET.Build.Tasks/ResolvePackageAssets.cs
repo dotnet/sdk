@@ -315,9 +315,9 @@ namespace Microsoft.NET.Build.Tasks
                         reader = OpenCacheFile(task.ProjectAssetsCacheFile, settingsHash);
                     }
                 }
-                catch (IOException)
-                {
-                }
+                catch (IOException) { }
+                catch (InvalidDataException) { }
+                catch (UnauthorizedAccessException) { }
 
                 if (reader == null)
                 {
