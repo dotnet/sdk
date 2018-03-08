@@ -491,7 +491,7 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteItemGroups()
             {
-                // NOTE: Order (alphabetical by group name) must match writer.
+                // NOTE: Order (alphabetical by group name) must match reader.
                 WriteItemGroup(WriteAnalyzers);
                 WriteItemGroup(WriteCompileTimeAssemblies);
                 WriteItemGroup(WriteContentFilesToPreprocess);
