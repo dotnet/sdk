@@ -190,7 +190,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolvePackageAssets" 
-          Condition=" '$(DesignTimeBuild)' != 'true' Or Exists('$(ProjectAssetsFile)')">
+          Condition=" '$(DesignTimeBuild)' != 'true' Or Exists('$(ProjectAssetsFile)')"
+          DependsOnTargets="PrepareForBuild">
 
     <PropertyGroup Condition="'$(EnsureRuntimePackageDependencies)' == ''
                           and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'

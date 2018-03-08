@@ -444,7 +444,6 @@ namespace Microsoft.NET.Build.Tasks
                 _metadataStrings = new List<string>(InitialStringTableCapacity);
                 _bufferedMetadata = new List<int>();
 
-                Directory.CreateDirectory(Path.GetDirectoryName(task.ProjectAssetsCacheFile));
                 var stream = File.Open(task.ProjectAssetsCacheFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
                 _writer = new BinaryWriter(stream, TextEncoding, leaveOpen: false);
             }
