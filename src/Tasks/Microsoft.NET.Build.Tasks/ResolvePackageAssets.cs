@@ -70,12 +70,14 @@ namespace Microsoft.NET.Build.Tasks
         public bool EmitAssetsLogMessages { get; set; }
 
         /// <summary>
-        /// Indicate to MSBuild ResolveAssemblyReferences that 
+        /// Set ExternallyResolved=true metadata on reference items to indicate to MSBuild ResolveAssemblyReferences
+        /// that these are resolved by an external system (in this case nuget) and therefore several steps can be
+        /// skipped as an optimization.
         /// </summary>
         public bool MarkPackageReferencesAsExternallyResolved { get; set; }
 
         /// <summary>
-        /// Project language ($(ProjectLanguage) in common targets -"VB" or "C#" or "F#" 
+        /// Project language ($(ProjectLanguage) in common targets -"VB" or "C#" or "F#" ).
         /// Impacts applicability of analyzer assets.
         /// </summary>
         public string ProjectLanguage { get; set; }
@@ -112,9 +114,10 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] FrameworkAssemblies { get; private set; }
 
         /// <summary>
-        /// Messages from the
-        /// These are logged directly and therefore not returned to the targets. ITaskItem[] is used purely
-        /// to share cache reading/writing code with the other items.
+        /// Messages from the assets file.
+        /// These are logged directly and therefore not returned to the targets as items. However,
+        /// they are stored as ITaskItem[] so that the same cache reader/writer code can be used for
+        /// message items and asset items.
         /// </summary>
         private ITaskItem[] LogMessages { get; set; }
 
