@@ -27,8 +27,7 @@ namespace Microsoft.NET.Build.Tasks
             int endLine,
             int endColumn,
             string targetFrameworkMoniker,
-            string packageId,
-            bool logToMSBuild = true)
+            string packageId)
         {
             string itemspec =
                 (string.IsNullOrEmpty(targetFrameworkMoniker) ? string.Empty : $"{targetFrameworkMoniker}/") +

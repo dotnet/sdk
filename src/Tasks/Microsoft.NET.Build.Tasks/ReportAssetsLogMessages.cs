@@ -75,7 +75,6 @@ namespace Microsoft.NET.Build.Tasks
 
         private void AddMessage(IAssetsLogMessage message)
         {
-            var logToMsBuild = true;
             var targetGraphs = message.GetTargetGraphs(LockFile);
 
             targetGraphs = targetGraphs.Any() ? targetGraphs : new LockFileTarget[] { null };
@@ -94,10 +93,7 @@ namespace Microsoft.NET.Build.Tasks
                     message.EndLineNumber,
                     message.EndColumnNumber,
                     target?.Name,
-                    targetLib == null ? null : $"{targetLib.Name}/{targetLib.Version.ToNormalizedString()}",
-                    logToMsBuild);
-
-                logToMsBuild = false; // only write first instance of this diagnostic to msbuild
+                    targetLib == null ? null : $"{targetLib.Name}/{targetLib.Version.ToNormalizedString()}");
             }
         }
 
