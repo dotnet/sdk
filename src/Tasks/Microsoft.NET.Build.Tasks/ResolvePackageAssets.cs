@@ -32,7 +32,7 @@ namespace Microsoft.NET.Build.Tasks
         public string ProjectAssetsFile { get; set; }
 
         /// <summary>
-        /// Path to assets.cache file in intermediate directory.
+        /// Path to assets.cache file.
         /// </summary>
         [Required]
         public string ProjectAssetsCacheFile { get; set; }
