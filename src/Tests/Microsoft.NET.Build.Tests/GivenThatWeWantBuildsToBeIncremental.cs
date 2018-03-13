@@ -3,11 +3,11 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -62,20 +62,33 @@ namespace Microsoft.NET.Build.Tests
             var cacheWriteTime1 = File.GetLastWriteTimeUtc(assetsCachePath);
 
             // build with no change to project.assets.json
+            WaitForUtcNowToAdvance();
             buildCommand.Execute().Should().Pass();
             var cacheWriteTime2 = File.GetLastWriteTimeUtc(assetsCachePath);
             cacheWriteTime2.Should().Be(cacheWriteTime1);
 
             // build with modified project
+            WaitForUtcNowToAdvance();
             File.SetLastWriteTimeUtc(assetsJsonPath, DateTime.UtcNow);
             buildCommand.Execute().Should().Pass();
             var cacheWriteTime3 = File.GetLastWriteTimeUtc(assetsCachePath);
             cacheWriteTime3.Should().NotBe(cacheWriteTime2);
 
             // build with modified settings
+            WaitForUtcNowToAdvance();
             buildCommand.Execute("/p:DisableLockFileFrameworks=true").Should().Pass();
             var cacheWriteTime4 = File.GetLastWriteTimeUtc(assetsCachePath);
             cacheWriteTime4.Should().NotBe(cacheWriteTime3);
+        }
+
+        private static void WaitForUtcNowToAdvance()
+        {
+            var start = DateTime.UtcNow;
+
+            while (DateTime.UtcNow <= start)
+            {
+                Thread.Sleep(millisecondsTimeout: 1);
+            }
         }
     }
 }
