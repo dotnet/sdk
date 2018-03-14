@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public class TemplateParameter : ITemplateParameter
+    public class TemplateParameter : ITemplateParameter, IAllowDefaultIfOptionWithoutValue
     {
         public string Documentation { get; set; }
 
@@ -19,6 +19,8 @@ namespace Microsoft.TemplateEngine.Utils
         public string DefaultValue { get; set; }
 
         public string DataType { get; set; }
+
+        public string DefaultIfOptionWithoutValue { get; set; }
 
         private IReadOnlyDictionary<string, string> _choices;
 

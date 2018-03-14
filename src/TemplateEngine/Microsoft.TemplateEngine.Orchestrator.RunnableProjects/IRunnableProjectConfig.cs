@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string Name { get; }
 
-        string ShortName { get; }
+        IReadOnlyList<string> ShortNameList { get; }
 
         string Author { get; }
 

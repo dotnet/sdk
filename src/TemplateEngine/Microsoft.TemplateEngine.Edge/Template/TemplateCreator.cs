@@ -220,21 +220,20 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 if (templateParams.TryGetParameterDefinition(inputParam.Key, out ITemplateParameter paramFromTemplate))
                 {
-                    // The user provided params included the name of a bool flag without a value.
-                    // We assume that means the value "true" is desired for the bool.
-                    // This must happen here, as opposed to GlobalRunSpec.ProduceUserVariablesCollection()
                     if (inputParam.Value == null)
                     {
-                        if (paramFromTemplate.DataType == "bool")
+                        if (paramFromTemplate is IAllowDefaultIfOptionWithoutValue paramFromTemplateWithNoValueDefault
+                            && !string.IsNullOrEmpty(paramFromTemplateWithNoValueDefault.DefaultIfOptionWithoutValue))
                         {
-                            // could probably directly assign bool true here, but best to have everything go through the same process
-                            // ... in case something changes downstream.
-                            // ignore the valueResolutionError
-                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, "true", out bool valueResolutionError);
+                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, paramFromTemplateWithNoValueDefault.DefaultIfOptionWithoutValue, out bool valueResolutionError);
+                            // don't fail on value resolution errors, but report them as authoring problems.
+                            if (valueResolutionError)
+                            {
+                                _environmentSettings.Host.LogDiagnosticMessage($"Template {template.Identity} has an invalid DefaultIfOptionWithoutValue value for parameter {inputParam.Key}", "Authoring");
+                            }
                         }
                         else
                         {
-                            // the non-bool param had no value, it's an error.
                             tmpParamsWithInvalidValues.Add(paramFromTemplate.Name);
                         }
                     }
