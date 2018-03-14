@@ -8,20 +8,23 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class TemplateInfo : ITemplateInfo
+    public class TemplateInfo : ITemplateInfo, IShortNameList
     {
         public TemplateInfo()
         {
+            ShortNameList = new List<string>();
         }
 
         private static readonly Func<JObject, TemplateInfo> _defaultReader;
         private static readonly IReadOnlyDictionary<string, Func<JObject, TemplateInfo>> _infoVersionReaders;
 
+        // Note: Be sure to keep the versioning consistent with SettingsStore
         static TemplateInfo()
         {
             Dictionary<string, Func<JObject, TemplateInfo>> versionReaders = new Dictionary<string, Func<JObject, TemplateInfo>>();
             versionReaders.Add("1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject);
             versionReaders.Add("1.0.0.1", TemplateInfoReaderVersion1_0_0_1.FromJObject);
+            versionReaders.Add("1.0.0.2", TemplateInfoReaderVersion1_0_0_2.FromJObject);
             _infoVersionReaders = versionReaders;
 
             _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
@@ -59,7 +62,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             DataType = "choice"
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as TemplateParameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
@@ -69,10 +81,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             Name = paramInfo.Key,
                             Documentation = paramInfo.Value.Description,
                             DataType = paramInfo.Value.DataType,
-                            DefaultValue = paramInfo.Value.DefaultValue
+                            DefaultValue = paramInfo.Value.DefaultValue,
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as TemplateParameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     _parameters = parameters;
@@ -115,7 +136,37 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public string Name { get; set; }
 
         [JsonProperty]
-        public string ShortName { get; set; }
+        public string ShortName
+        {
+            get
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    return ShortNameList[0];
+                }
+
+                return String.Empty;
+            }
+            set
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    throw new Exception("Can't set the short name when the ShortNameList already has entries.");
+                }
+
+                ShortNameList = new List<string>() { value };
+            }
+        }
+
+        // ShortName should get deserialized when it exists, for backwards compat.
+        // But moving forward, ShortNameList should be the definitive source.
+        // It can still be ShortName in the template.json, but in the caches it'll be ShortNameList
+        public bool ShouldSerializeShortName()
+        {
+            return false;
+        }
+
+        public IReadOnlyList<string> ShortNameList { get; set; }
 
         [JsonProperty]
         public IReadOnlyDictionary<string, ICacheTag> Tags

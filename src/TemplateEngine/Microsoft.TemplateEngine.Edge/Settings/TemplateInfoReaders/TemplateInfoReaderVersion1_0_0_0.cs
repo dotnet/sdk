@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
@@ -6,15 +6,30 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
 {
-    public static class TemplateInfoReaderVersion1_0_0_0
+    public class TemplateInfoReaderVersion1_0_0_0
     {
-        public static TemplateInfo FromJObject(JObject entry)
+        public static TemplateInfo FromJObject(JObject jObject)
+        {
+            TemplateInfoReaderVersion1_0_0_0 reader = new TemplateInfoReaderVersion1_0_0_0();
+            return reader.Read(jObject);
+        }
+
+        public virtual TemplateInfo Read(JObject jObject)
         {
             TemplateInfo info = new TemplateInfo();
 
-            info.ConfigMountPointId = Guid.Parse(entry.ToString(nameof(TemplateInfo.ConfigMountPointId)));
-            info.Author = entry.ToString(nameof(TemplateInfo.Author));
-            JArray classificationsArray = entry.Get<JArray>(nameof(TemplateInfo.Classifications));
+            ReadPrimaryInformation(jObject, info);
+            info.Tags = ReadTags(jObject);
+            info.CacheParameters = ReadParameters(jObject);
+
+            return info;
+        }
+
+        protected void ReadPrimaryInformation(JObject jObject, TemplateInfo info)
+        {
+            info.ConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.ConfigMountPointId)));
+            info.Author = jObject.ToString(nameof(TemplateInfo.Author));
+            JArray classificationsArray = jObject.Get<JArray>(nameof(TemplateInfo.Classifications));
 
             List<string> classifications = new List<string>();
             info.Classifications = classifications;
@@ -24,66 +39,25 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
                 classifications.Add(item.ToString());
             }
 
-            info.DefaultName = entry.ToString(nameof(TemplateInfo.DefaultName));
-            info.Description = entry.ToString(nameof(TemplateInfo.Description));
-            info.Identity = entry.ToString(nameof(TemplateInfo.Identity));
-            info.GeneratorId = Guid.Parse(entry.ToString(nameof(TemplateInfo.GeneratorId)));
-            info.GroupIdentity = entry.ToString(nameof(TemplateInfo.GroupIdentity));
-            info.Precedence = entry.ToInt32(nameof(TemplateInfo.Precedence));
-            info.Name = entry.ToString(nameof(TemplateInfo.Name));
-            info.ShortName = entry.ToString(nameof(TemplateInfo.ShortName));
+            info.DefaultName = jObject.ToString(nameof(TemplateInfo.DefaultName));
+            info.Description = jObject.ToString(nameof(TemplateInfo.Description));
+            info.Identity = jObject.ToString(nameof(TemplateInfo.Identity));
+            info.GeneratorId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.GeneratorId)));
+            info.GroupIdentity = jObject.ToString(nameof(TemplateInfo.GroupIdentity));
+            info.Precedence = jObject.ToInt32(nameof(TemplateInfo.Precedence));
+            info.Name = jObject.ToString(nameof(TemplateInfo.Name));
 
-            // parse the cached tags
-            Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
-            JObject tagsObject = entry.Get<JObject>(nameof(TemplateInfo.Tags));
-            if (tagsObject != null)
-            {
-                foreach (JProperty item in tagsObject.Properties())
-                {
-                    Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    JObject cdToken = item.Value.Get<JObject>(nameof(ICacheTag.ChoicesAndDescriptions));
-                    foreach (JProperty cdPair in cdToken.Properties())
-                    {
-                        choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
-                    }
+            ReadShortNameInfo(jObject, info);
 
-                    ICacheTag cacheTag = new CacheTag(
-                        item.Value.ToString(nameof(ICacheTag.Description)),
-                        choicesAndDescriptions,
-                        item.Value.ToString(nameof(ICacheTag.DefaultValue)));
-                    tags.Add(item.Name.ToString(), cacheTag);
-                }
-            }
-            info.Tags = tags;
+            info.ConfigPlace = jObject.ToString(nameof(TemplateInfo.ConfigPlace));
+            info.LocaleConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.LocaleConfigMountPointId)));
+            info.LocaleConfigPlace = jObject.ToString(nameof(TemplateInfo.LocaleConfigPlace));
 
-            // parse the cached params
-            JObject cacheParamsObject = entry.Get<JObject>(nameof(TemplateInfo.CacheParameters));
-            Dictionary<string, ICacheParameter> cacheParams = new Dictionary<string, ICacheParameter>();
-            if (cacheParamsObject != null)
-            {
-                foreach (JProperty item in cacheParamsObject.Properties())
-                {
-                    ICacheParameter param = new CacheParameter
-                    {
-                        DataType = item.Value.ToString(nameof(ICacheParameter.DataType)),
-                        DefaultValue = item.Value.ToString(nameof(ICacheParameter.DefaultValue)),
-                        Description = item.Value.ToString(nameof(ICacheParameter.Description))
-                    };
+            info.HostConfigMountPointId = Guid.Parse(jObject.ToString(nameof(TemplateInfo.HostConfigMountPointId)));
+            info.HostConfigPlace = jObject.ToString(nameof(TemplateInfo.HostConfigPlace));
+            info.ThirdPartyNotices = jObject.ToString(nameof(TemplateInfo.ThirdPartyNotices));
 
-                    cacheParams[item.Name.ToString()] = param;
-                }
-            }
-            info.CacheParameters = cacheParams;
-
-            info.ConfigPlace = entry.ToString(nameof(TemplateInfo.ConfigPlace));
-            info.LocaleConfigMountPointId = Guid.Parse(entry.ToString(nameof(TemplateInfo.LocaleConfigMountPointId)));
-            info.LocaleConfigPlace = entry.ToString(nameof(TemplateInfo.LocaleConfigPlace));
-
-            info.HostConfigMountPointId = Guid.Parse(entry.ToString(nameof(TemplateInfo.HostConfigMountPointId)));
-            info.HostConfigPlace = entry.ToString(nameof(TemplateInfo.HostConfigPlace));
-            info.ThirdPartyNotices = entry.ToString(nameof(TemplateInfo.ThirdPartyNotices));
-
-            JObject baselineJObject = entry.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
+            JObject baselineJObject = jObject.Get<JObject>(nameof(ITemplateInfo.BaselineInfo));
             Dictionary<string, IBaselineInfo> baselineInfo = new Dictionary<string, IBaselineInfo>();
             if (baselineJObject != null)
             {
@@ -98,9 +72,68 @@ namespace Microsoft.TemplateEngine.Edge.Settings.TemplateInfoReaders
                 }
             }
             info.BaselineInfo = baselineInfo;
-
-            return info;
         }
 
+        protected virtual void ReadShortNameInfo(JObject jObject, TemplateInfo info)
+        {
+            info.ShortName = jObject.ToString(nameof(TemplateInfo.ShortName));
+        }
+
+        protected virtual IReadOnlyDictionary<string, ICacheTag> ReadTags(JObject jObject)
+        {
+            Dictionary<string, ICacheTag> tags = new Dictionary<string, ICacheTag>();
+            JObject tagsObject = jObject.Get<JObject>(nameof(TemplateInfo.Tags));
+
+            if (tagsObject != null)
+            {
+                foreach (JProperty item in tagsObject.Properties())
+                {
+                    tags[item.Name.ToString()] = ReadOneTag(item);
+                }
+            }
+
+            return tags;
+        }
+
+        protected virtual ICacheTag ReadOneTag(JProperty item)
+        {
+            Dictionary<string, string> choicesAndDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            JObject cdToken = item.Value.Get<JObject>(nameof(ICacheTag.ChoicesAndDescriptions));
+            foreach (JProperty cdPair in cdToken.Properties())
+            {
+                choicesAndDescriptions.Add(cdPair.Name.ToString(), cdPair.Value.ToString());
+            }
+
+            return new CacheTag(
+                item.Value.ToString(nameof(ICacheTag.Description)),
+                choicesAndDescriptions,
+                item.Value.ToString(nameof(ICacheTag.DefaultValue)));
+        }
+
+        protected virtual IReadOnlyDictionary<string, ICacheParameter> ReadParameters(JObject jObject)
+        {
+            Dictionary<string, ICacheParameter> cacheParams = new Dictionary<string, ICacheParameter>();
+            JObject cacheParamsObject = jObject.Get<JObject>(nameof(TemplateInfo.CacheParameters));
+
+            if (cacheParamsObject != null)
+            {
+                foreach (JProperty item in cacheParamsObject.Properties())
+                {
+                    cacheParams[item.Name.ToString()] = ReadOneParameter(item);
+                }
+            }
+
+            return cacheParams;
+        }
+
+        protected virtual ICacheParameter ReadOneParameter(JProperty item)
+        {
+            return new CacheParameter
+            {
+                DataType = item.Value.ToString(nameof(ICacheParameter.DataType)),
+                DefaultValue = item.Value.ToString(nameof(ICacheParameter.DefaultValue)),
+                Description = item.Value.ToString(nameof(ICacheParameter.Description))
+            };
+        }
     }
 }

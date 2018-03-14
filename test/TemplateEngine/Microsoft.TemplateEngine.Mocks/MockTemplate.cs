@@ -4,8 +4,13 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockTemplate : ITemplateInfo
+    public class MockTemplate : ITemplateInfo, IShortNameList
     {
+        public MockTemplate()
+        {
+            ShortNameList = new List<string>();
+        }
+
         public string Author { get; set; }
 
         public string Description { get; set; }
@@ -24,7 +29,29 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public string Name { get; set; }
 
-        public string ShortName { get; set; }
+        public string ShortName
+        {
+            get
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    return ShortNameList[0];
+                }
+
+                return String.Empty;
+            }
+            set
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    throw new Exception("Can't set the short name when the ShortNameList already has entries.");
+                }
+
+                ShortNameList = new List<string>() { value };
+            }
+        }
+
+        public IReadOnlyList<string> ShortNameList { get; set; }
 
         public IReadOnlyDictionary<string, ICacheTag> Tags { get; set; }
 
