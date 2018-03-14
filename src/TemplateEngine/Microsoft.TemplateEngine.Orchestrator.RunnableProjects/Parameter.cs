@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class Parameter : ITemplateParameter, IExtendedTemplateParameter
+    public class Parameter : ITemplateParameter, IExtendedTemplateParameter, IAllowDefaultIfOptionWithoutValue
     {
         [JsonProperty]
         public string Description { get; set; }
@@ -29,6 +29,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         [JsonProperty]
         public string DataType { get; set; }
+
+        [JsonProperty]
+        public string DefaultIfOptionWithoutValue { get; set; }
+
+        public bool ShouldSerializeDefaultIfOptionWithoutValue()
+        {
+            return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
+        }
 
         [JsonProperty]
         public string FileRename { get; set; }
@@ -57,6 +65,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         string ITemplateParameter.DefaultValue => DefaultValue;
 
         string ITemplateParameter.DataType => DataType;
+
+        string IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue
+        {
+            get
+            {
+                return DefaultIfOptionWithoutValue;
+            }
+            set
+            {
+                DefaultIfOptionWithoutValue = value;
+            }
+        }
 
         IReadOnlyDictionary<string, string> ITemplateParameter.Choices => Choices;
 

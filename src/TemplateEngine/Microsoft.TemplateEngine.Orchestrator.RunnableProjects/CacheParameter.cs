@@ -1,15 +1,21 @@
-﻿using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class CacheParameter : ICacheParameter
+    public class CacheParameter : ICacheParameter, IAllowDefaultIfOptionWithoutValue
     {
-        public CacheParameter(string dataType, string defaultvalue, string description)
+        public CacheParameter(string dataType, string defaultValue, string description)
+            :this(dataType, defaultValue, description, null)
+        {
+        }
+
+        public CacheParameter(string dataType, string defaultValue, string description, string defaultIfOptionWithoutValue)
         {
             DataType = dataType;
-            DefaultValue = defaultvalue;
+            DefaultValue = defaultValue;
             Description = description;
+            DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
         }
 
         [JsonProperty]
@@ -20,5 +26,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         [JsonProperty]
         public string Description { get; }
+
+        [JsonProperty]
+        public string DefaultIfOptionWithoutValue { get; set; }
+
+        public bool ShouldSerializeDefaultIfOptionWithoutValue()
+        {
+            return !string.IsNullOrEmpty(DefaultIfOptionWithoutValue);
+        }
     }
 }

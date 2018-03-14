@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TemplateEngine.Abstractions
+namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface ICacheParameter
     {

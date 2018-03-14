@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class RunnableProjectTemplate : ITemplate
+    public class RunnableProjectTemplate : ITemplate, IShortNameList
     {
         private readonly JObject _raw;
 
@@ -20,7 +20,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             DefaultName = config.DefaultName;
             Name = config.Name;
             Identity = config.Identity ?? config.Name;
-            ShortName = config.ShortName;
+
+            ShortNameList = config.ShortNameList ?? new List<string>();
+
             Author = config.Author;
             Tags = config.Tags ?? new Dictionary<string, ICacheTag>(StringComparer.OrdinalIgnoreCase);
             CacheParameters = config.CacheParameters ?? new Dictionary<string, ICacheParameter>(StringComparer.OrdinalIgnoreCase);
@@ -68,7 +70,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Name { get; }
 
-        public string ShortName { get; }
+        public string ShortName
+        {
+            get
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    return ShortNameList[0];
+                }
+
+                return string.Empty;
+            }
+            set
+            {
+                if (ShortNameList.Count > 0)
+                {
+                    throw new Exception("Can't set the short name when the ShortNameList already has entries.");
+                }
+
+                ShortNameList = new List<string>() { value };
+            }
+        }
+
+        public IReadOnlyList<string> ShortNameList { get; private set; }
 
         public IMountPoint Source { get; }
 
@@ -119,7 +143,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             DataType = "choice"
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && tagInfo.Value is IAllowDefaultIfOptionWithoutValue tagValueWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = tagValueWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as Parameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     foreach (KeyValuePair<string, ICacheParameter> paramInfo in CacheParameters)
@@ -129,10 +162,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             Name = paramInfo.Key,
                             Documentation = paramInfo.Value.Description,
                             DataType = paramInfo.Value.DataType,
-                            DefaultValue = paramInfo.Value.DefaultValue
+                            DefaultValue = paramInfo.Value.DefaultValue,
                         };
 
-                        parameters.Add(param);
+                        if (param is IAllowDefaultIfOptionWithoutValue paramWithNoValueDefault
+                            && paramInfo.Value is IAllowDefaultIfOptionWithoutValue infoWithNoValueDefault)
+                        {
+                            paramWithNoValueDefault.DefaultIfOptionWithoutValue = infoWithNoValueDefault.DefaultIfOptionWithoutValue;
+                            parameters.Add(paramWithNoValueDefault as Parameter);
+                        }
+                        else
+                        {
+                            parameters.Add(param);
+                        }
                     }
 
                     _parameters = parameters;

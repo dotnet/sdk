@@ -16,16 +16,38 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
 
                 int nameIndex = template.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase);
-                int shortNameIndex = template.ShortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
 
                 if (nameIndex == 0 && string.Equals(template.Name, name, StringComparison.OrdinalIgnoreCase))
                 {
                     return new MatchInfo { Location = MatchLocation.Name, Kind = MatchKind.Exact };
                 }
 
-                if (shortNameIndex == 0 && string.Equals(template.ShortName, name, StringComparison.OrdinalIgnoreCase))
+                bool hasShortNamePartialMatch = false;
+
+                if (template is FilterableTemplateInfo filterableTemplate)
                 {
-                    return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
+                    foreach (string shortName in filterableTemplate.GroupShortNameList)
+                    {
+                        int shortNameIndex = shortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
+
+                        if (shortNameIndex == 0 && string.Equals(shortName, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
+                        }
+
+                        hasShortNamePartialMatch |= shortNameIndex > -1;
+                    }
+                }
+                else
+                {
+                    int shortNameIndex = template.ShortName.IndexOf(name, StringComparison.OrdinalIgnoreCase);
+
+                    if (shortNameIndex == 0 && string.Equals(template.ShortName, name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Exact };
+                    }
+
+                    hasShortNamePartialMatch = shortNameIndex > -1;
                 }
 
                 if (nameIndex > -1)
@@ -33,7 +55,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     return new MatchInfo { Location = MatchLocation.Name, Kind = MatchKind.Partial };
                 }
 
-                if (shortNameIndex > -1)
+                if (hasShortNamePartialMatch)
                 {
                     return new MatchInfo { Location = MatchLocation.ShortName, Kind = MatchKind.Partial };
                 }

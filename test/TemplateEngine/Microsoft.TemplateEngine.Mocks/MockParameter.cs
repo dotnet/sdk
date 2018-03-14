@@ -3,7 +3,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockParameter : ITemplateParameter
+    public class MockParameter : ITemplateParameter, IAllowDefaultIfOptionWithoutValue
     {
         public string Documentation { get; set; }
 
@@ -16,6 +16,8 @@ namespace Microsoft.TemplateEngine.Mocks
         public bool IsName { get; set; }
 
         public string DefaultValue { get; set; }
+
+        public string DefaultIfOptionWithoutValue { get; set; }
 
         public string DataType { get; set; }
 
