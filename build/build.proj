@@ -23,6 +23,7 @@
     <VsManProjectFile Include="$(RepositoryRootDirectory)src\VsixV3\Microsoft.VisualStudio.Templates.CSharp.NetCore.vsmanproj" />
     <VsManProjectFile Include="$(RepositoryRootDirectory)src\VsixV3\Microsoft.VisualStudio.Templates.CSharp.NetStandard.vsmanproj" />
     <VsManProjectFile Include="$(RepositoryRootDirectory)src\VsixV3\Microsoft.VisualStudio.Templates.VisualBasic.NetStandard.vsmanproj" />
+    <VsManProjectFile Include="$(RepositoryRootDirectory)src\VsixV3\PreEmptive.Solutions.Dotfuscator.CE.vsmanproj" />
 
     <ProjectToDotnetRestore Include="$(RepositoryRootDirectory)src\Dependencies\**\*.csproj" />
 
