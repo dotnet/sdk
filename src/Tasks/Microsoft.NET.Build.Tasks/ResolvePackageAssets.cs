@@ -511,7 +511,6 @@ namespace Microsoft.NET.Build.Tasks
                 WriteItemGroup(WriteTransitiveProjectReferences);
 
                 WriteItemGroup(WriteLogMessages);
-
             }
 
             private void WriteMetadataStringTable()
