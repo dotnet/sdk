@@ -317,7 +317,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 try
                 {
-                    if (File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile) >= File.GetLastWriteTimeUtc(task.ProjectAssetsFile))
+                    if (File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile) > File.GetLastWriteTimeUtc(task.ProjectAssetsFile))
                     {
                         reader = OpenCacheFile(task.ProjectAssetsCacheFile, settingsHash);
                     }
