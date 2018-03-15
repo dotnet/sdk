@@ -277,19 +277,23 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private byte[] HashSettings()
+        internal byte[] HashSettings()
         {
             using (var stream = new MemoryStream())
             {
                 using (var writer = new BinaryWriter(stream, TextEncoding, leaveOpen: true))
                 {
-                    writer.Write(ProjectPath);
-                    writer.Write(TargetFrameworkMoniker);
-                    writer.Write(DisableTransitiveProjectReferences);
                     writer.Write(DisableFrameworkAssemblies);
+                    writer.Write(DisableTransitiveProjectReferences);
+                    writer.Write(EmitAssetsLogMessages);
+                    writer.Write(EnsureRuntimePackageDependencies);
                     writer.Write(MarkPackageReferencesAsExternallyResolved);
+                    writer.Write(ProjectAssetsCacheFile);
+                    writer.Write(ProjectAssetsFile);
                     writer.Write(ProjectLanguage ?? "");
+                    writer.Write(ProjectPath);
                     writer.Write(RuntimeIdentifier ?? "");
+                    writer.Write(TargetFrameworkMoniker);
                 }
 
                 stream.Position = 0;
