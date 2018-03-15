@@ -25,13 +25,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var task = new ResolvePackageAssets();
 
-            // Initialize all required properties as a genuine task invocation would. We 
-            // do this because HashSettings to defend against required parameters being null.
+            // Initialize all required properties as a genuine task invocation would. We do this
+            // because HashSettings need not defend against required parameters being null.
             foreach (var property in requiredProperties)
             {
                 property.PropertyType.Should().Be(
                     typeof(string), 
-                    because: $"this test hasn't been  updated to handle non-string required task parameters like {property.Name}");
+                    because: $"this test hasn't been updated to handle non-string required task parameters like {property.Name}");
 
                 property.SetValue(task, "_");
             }

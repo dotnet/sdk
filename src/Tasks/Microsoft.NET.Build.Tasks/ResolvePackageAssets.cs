@@ -114,14 +114,6 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] FrameworkAssemblies { get; private set; }
 
         /// <summary>
-        /// Messages from the assets file.
-        /// These are logged directly and therefore not returned to the targets as items. However,
-        /// they are stored as ITaskItem[] so that the same cache reader/writer code can be used for
-        /// message items and asset items.
-        /// </summary>
-        private ITaskItem[] LogMessages { get; set; }
-
-        /// <summary>
         /// Full paths to native libraries from packages to run against.
         /// </summary>
         [Output]
@@ -150,6 +142,14 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         [Output]
         public ITaskItem[] TransitiveProjectReferences { get; private set; }
+
+        /// <summary>
+        /// Messages from the assets file.
+        /// These are logged directly and therefore not returned to the targets (note private here).
+        /// However,they are still stored as ITaskItem[] so that the same cache reader/writer code
+        /// can be used for message items and asset items.
+        /// </summary>
+        private ITaskItem[] _logMessages;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Package Asset Cache File Format Details
@@ -213,17 +213,18 @@ namespace Microsoft.NET.Build.Tasks
         {
             using (var reader = new CacheReader(this))
             {
-                // NOTE: Order (alphabetical by group name) must match writer.
+                // NOTE: Order (alphabetical by group name followed by log messages) must match writer.
                 Analyzers = reader.ReadItemGroup();
                 CompileTimeAssemblies = reader.ReadItemGroup();
                 ContentFilesToPreprocess = reader.ReadItemGroup();
                 FrameworkAssemblies = reader.ReadItemGroup();
-                LogMessages = reader.ReadItemGroup();
                 NativeLibraries = reader.ReadItemGroup();
                 ResourceAssemblies = reader.ReadItemGroup();
                 RuntimeAssemblies = reader.ReadItemGroup();
                 RuntimeTargets = reader.ReadItemGroup();
                 TransitiveProjectReferences = reader.ReadItemGroup();
+
+                _logMessages = reader.ReadItemGroup();
             }
         }
 
@@ -256,7 +257,7 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            foreach (var item in LogMessages)
+            foreach (var item in _logMessages)
             {
                 string message = item.ItemSpec;
                 string severity = item.GetMetadata(MetadataKeys.Severity);
@@ -498,17 +499,19 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteItemGroups()
             {
-                // NOTE: Order (alphabetical by group name) must match reader.
+                // NOTE: Order (alphabetical by group name followed by log messages) must match reader.
                 WriteItemGroup(WriteAnalyzers);
                 WriteItemGroup(WriteCompileTimeAssemblies);
                 WriteItemGroup(WriteContentFilesToPreprocess);
                 WriteItemGroup(WriteFrameworkAssemblies);
-                WriteItemGroup(WriteLogMessages);
                 WriteItemGroup(WriteNativeLibraries);
                 WriteItemGroup(WriteResourceAssemblies);
                 WriteItemGroup(WriteRuntimeAssemblies);
                 WriteItemGroup(WriteRuntimeTargets);
                 WriteItemGroup(WriteTransitiveProjectReferences);
+
+                WriteItemGroup(WriteLogMessages);
+
             }
 
             private void WriteMetadataStringTable()
