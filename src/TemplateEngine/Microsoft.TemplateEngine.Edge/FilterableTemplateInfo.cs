@@ -28,6 +28,7 @@ namespace Microsoft.TemplateEngine.Edge
                 LocaleConfigMountPointId = source.LocaleConfigMountPointId,
                 LocaleConfigPlace = source.LocaleConfigPlace,
                 HostConfigMountPointId = source.HostConfigMountPointId,
+                HostConfigPlace = source.HostConfigPlace,
                 ThirdPartyNotices = source.ThirdPartyNotices,
                 BaselineInfo = source.BaselineInfo,
                 HasScriptRunningPostActions = source.HasScriptRunningPostActions
