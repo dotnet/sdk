@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Element("DotNetCliTool")
                 .Attribute("Version")
                 .Value
-                .Should().Be("1.0.0");
+                .Should().Be("1");
         }
     }
 }

@@ -10,7 +10,8 @@ namespace Microsoft.NET.Build.Tasks
 {
     public class GenerateToolsSettingsFile : TaskBase
     {
-        private static readonly Version _formatVersion = new Version(1,0,0);
+        // bump whenever the format changes such that it will break old consumers
+        private static readonly int _formatVersion = 1;
 
         [Required]
         public string EntryPointRelativePath { get; set; }
@@ -34,7 +35,7 @@ namespace Microsoft.NET.Build.Tasks
             return new XDocument(
                 new XDeclaration(version: null, encoding: null, standalone: null),
                 new XElement("DotNetCliTool",
-                      new XAttribute("Version", _formatVersion.ToString()),
+                      new XAttribute("Version", _formatVersion),
                       new XElement("Commands",
                           new XElement("Command",
                           new XAttribute("Name", commandName),
