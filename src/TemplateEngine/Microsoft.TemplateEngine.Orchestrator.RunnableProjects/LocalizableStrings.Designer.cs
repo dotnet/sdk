@@ -125,6 +125,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is missing common information.
+        /// </summary>
+        internal static string Authoring_TemplateMissingCommonInformation {
+            get {
+                return ResourceManager.GetString("Authoring_TemplateMissingCommonInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Template: &apos;{0}&apos;.
         /// </summary>
         internal static string Authoring_TemplateNameDisplay {
@@ -134,7 +143,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; was not installed.
+        ///   Looks up a localized string similar to &apos;{0}&apos; was not loaded.
         /// </summary>
         internal static string Authoring_TemplateNotInstalled {
             get {

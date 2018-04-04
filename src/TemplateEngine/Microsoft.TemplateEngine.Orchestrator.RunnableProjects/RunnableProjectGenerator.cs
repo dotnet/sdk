@@ -257,34 +257,70 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, configModifiers, localeSourceObject);
 
                 //Do some basic checks...
-                List<string> errors = new List<string>();
+                List<string> errorMessages = new List<string>();
+                List<string> warningMessages = new List<string>();
                 if (string.IsNullOrEmpty(templateModel.Identity))
                 {
-                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "identity", templateFile.FullPath));
+                    errorMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "identity", templateFile.FullPath));
                 }
 
                 if (string.IsNullOrEmpty(templateModel.Name))
                 {
-                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "name", templateFile.FullPath));
-                }
-
-                if (string.IsNullOrEmpty(templateModel.SourceName))
-                {
-                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "sourceName", templateFile.FullPath));
+                    errorMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "name", templateFile.FullPath));
                 }
 
                 if ((templateModel.ShortNameList?.Count ?? 0) == 0)
                 {
-                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "shortName", templateFile.FullPath));
+                    errorMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "shortName", templateFile.FullPath));
                 }
 
-                if (errors.Count > 0)
+                if (string.IsNullOrEmpty(templateModel.SourceName))
+                {
+                    warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "sourceName", templateFile.FullPath));
+                }
+
+                if (string.IsNullOrEmpty(templateModel.Author))
+                {
+                    warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "author", templateFile.FullPath));
+                }
+
+                if (string.IsNullOrEmpty(templateModel.GroupIdentity))
+                {
+                    warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "groupIdentity", templateFile.FullPath));
+                }
+
+                if (string.IsNullOrEmpty(templateModel.GeneratorVersions))
+                {
+                    warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "generatorVersions", templateFile.FullPath));
+                }
+
+                if (templateModel.Precedence == 0)
+                {
+                    warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "precedence", templateFile.FullPath));
+                }
+
+                if ((templateModel.Classifications?.Count ?? 0) == 0)
+                {
+                    warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "classifications", templateFile.FullPath));
+                }
+
+                if (warningMessages.Count > 0)
+                {
+                    templateFileConfig.MountPoint.EnvironmentSettings.Host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateMissingCommonInformation, templateFile.FullPath), "Authoring");
+
+                    foreach (string message in warningMessages)
+                    {
+                        templateFileConfig.MountPoint.EnvironmentSettings.Host.LogDiagnosticMessage("    " + message, "Authoring");
+                    }
+                }
+
+                if (errorMessages.Count > 0)
                 {
                     templateFileConfig.MountPoint.EnvironmentSettings.Host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNotInstalled, templateFile.FullPath), "Authoring");
 
-                    foreach (string errorMessage in errors)
+                    foreach (string message in errorMessages)
                     {
-                        templateFileConfig.MountPoint.EnvironmentSettings.Host.LogDiagnosticMessage("    " + errorMessage, "Authoring");
+                        templateFileConfig.MountPoint.EnvironmentSettings.Host.LogDiagnosticMessage("    " + message, "Authoring");
                     }
 
                     template = null;
