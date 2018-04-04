@@ -120,6 +120,9 @@
   <data name="Authoring_InvalidRegex" xml:space="preserve">
     <value>'{0}' could not be parsed as a regular expression</value>
   </data>
+  <data name="Authoring_MissingValue" xml:space="preserve">
+    <value>Missing '{0}' in '{1}'</value>
+  </data>
   <data name="Authoring_NonBoolDataTypeForRegexMatch" xml:space="preserve">
     <value>A non-bool DataType was specified for a regexMatch type symbol</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="Authoring_TemplateNameDisplay" xml:space="preserve">
     <value>Template: '{0}'</value>
+  </data>
+  <data name="Authoring_TemplateNotInstalled" xml:space="preserve">
+    <value>'{0}' was not installed</value>
   </data>
   <data name="Authoring_TemplateRootOutsideInstallSource" xml:space="preserve">
     <value>Template: '{0}' - Template root is outside the specified install source location.</value>

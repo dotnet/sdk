@@ -256,6 +256,41 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 };
                 SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, configModifiers, localeSourceObject);
 
+                //Do some basic checks...
+                List<string> errors = new List<string>();
+                if (string.IsNullOrEmpty(templateModel.Identity))
+                {
+                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "identity", templateFile.FullPath));
+                }
+
+                if (string.IsNullOrEmpty(templateModel.Name))
+                {
+                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "name", templateFile.FullPath));
+                }
+
+                if (string.IsNullOrEmpty(templateModel.SourceName))
+                {
+                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "sourceName", templateFile.FullPath));
+                }
+
+                if ((templateModel.ShortNameList?.Count ?? 0) == 0)
+                {
+                    errors.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "shortName", templateFile.FullPath));
+                }
+
+                if (errors.Count > 0)
+                {
+                    templateFileConfig.MountPoint.EnvironmentSettings.Host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNotInstalled, templateFile.FullPath), "Authoring");
+
+                    foreach (string errorMessage in errors)
+                    {
+                        templateFileConfig.MountPoint.EnvironmentSettings.Host.LogDiagnosticMessage("    " + errorMessage, "Authoring");
+                    }
+
+                    template = null;
+                    return false;
+                }
+
                 if (!CheckGeneratorVersionRequiredByTemplate(templateModel.GeneratorVersions))
                 {   // template isn't compatible with this generator version
                     template = null;
