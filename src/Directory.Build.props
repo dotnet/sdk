@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <Import Project="..\Directory.Build.props" />
-  <Import Project="$(RepoToolsetDir)Settings.props" />
 
   <PropertyGroup>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
