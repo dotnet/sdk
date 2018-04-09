@@ -23,6 +23,7 @@
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
     <PackageLayoutOutputPath>$(ArtifactsBinDir)Sdks\$(PackageId)\</PackageLayoutOutputPath>
   </PropertyGroup>
 
