@@ -24,6 +24,7 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <IncludeSymbols>true</IncludeSymbols>
+    <PublishOutputToSymStore>false</PublishOutputToSymStore>
     <PackageLayoutOutputPath>$(ArtifactsBinDir)Sdks\$(PackageId)\</PackageLayoutOutputPath>
   </PropertyGroup>
 
