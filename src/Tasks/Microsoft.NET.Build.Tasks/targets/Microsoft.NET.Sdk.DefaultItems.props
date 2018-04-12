@@ -31,6 +31,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <None Remove="**/*$(DefaultLanguageSourceExtension)" Condition=" '$(EnableDefaultCompileItems)' == 'true' "/>
     <None Remove="**/*.resx" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' "/>
   </ItemGroup>
+  <ItemGroup Condition=" '$(EnableDefaultDependentUponMetadata)' == 'true' And '$(EnableDefaultResxDependentUponMetadata)' == 'true' ">
+    <Compile Update="**/*.Designer.cs">
+      <DependentUpon Condition="Exists('%(RecursiveDir)$([System.IO.Path]::ChangeExtension(%(Filename), `.resx`))')">%(RecursiveDir)$([System.IO.Path]::ChangeExtension(%(Filename), '.resx'))</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="**/*.*.resx">
+      <DependentUpon Condition="Exists('%(RecursiveDir)$([System.IO.Path]::ChangeExtension(%(Filename), `.resx`))') And '%(RecursiveDir)$([System.IO.Path]::ChangeExtension(%(Filename), `.resx`))' != '%(Identity)'">%(RecursiveDir)$([System.IO.Path]::ChangeExtension(%(Filename), '.resx'))</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <!-- Automatically reference NETStandard.Library or Microsoft.NETCore.App package if targeting the corresponding target framework.
       We can refer here in the .props file to properties set in the .targets files because items and their conditions are
