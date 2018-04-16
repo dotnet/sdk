@@ -16,10 +16,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
-   <EnableDefaultItems Condition=" '$(EnableDefaultItems)' == '' ">true</EnableDefaultItems>
-   <EnableDefaultCompileItems Condition=" '$(EnableDefaultCompileItems)' == '' ">true</EnableDefaultCompileItems>
+    <EnableDefaultItems Condition=" '$(EnableDefaultItems)' == '' ">true</EnableDefaultItems>
+    <EnableDefaultCompileItems Condition=" '$(EnableDefaultCompileItems)' == '' ">true</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems Condition=" '$(EnableDefaultEmbeddedResourceItems)' == '' ">true</EnableDefaultEmbeddedResourceItems>
     <EnableDefaultNoneItems Condition=" '$(EnableDefaultNoneItems)' == '' ">true</EnableDefaultNoneItems>
+    <EnableDefaultDependentUponMetadata Condition=" '$(EnableDefaultDependentUponMetadata)' == '' ">true</EnableDefaultDependentUponMetadata>
+    <EnableDefaultResxDependentUponMetadata Condition=" '$(EnableDefaultResxDependentUponMetadata)' == '' ">true</EnableDefaultResxDependentUponMetadata>
   </PropertyGroup>
 
   <PropertyGroup>    
