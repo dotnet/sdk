@@ -345,6 +345,12 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!task.DisablePackageAssetsCache)
                 {
+                    // I/O errors can occur here if there are parallel calls to resolve package assets
+                    // for the same project configured with the same intermediate directory. This can
+                    // (for example) happen when design-time builds and real builds overlap.
+                    //
+                    // If there is an I/O error, then we fall back to the same in-memory approach below
+                    // as when DisablePackageAssetsCache is set to true.
                     try
                     {
                         _reader = CreateReaderFromDisk(task, settingsHash);
