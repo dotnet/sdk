@@ -343,13 +343,19 @@ namespace Microsoft.NET.Build.Tasks
             {
                 byte[] settingsHash = task.HashSettings();
 
-                if (task.DisablePackageAssetsCache)
+                if (!task.DisablePackageAssetsCache)
+                {
+                    try
+                    {
+                        _reader = CreateReaderFromDisk(task, settingsHash);
+                    }
+                    catch (IOException) { }
+                    catch (UnauthorizedAccessException) { }
+                }
+
+                if (_reader == null)
                 {
                     _reader = CreateReaderFromMemory(task, settingsHash);
-                }
-                else
-                {
-                    _reader = CreateReaderFromDisk(task, settingsHash);
                 }
 
                 ReadMetadataStringTable();
@@ -357,7 +363,10 @@ namespace Microsoft.NET.Build.Tasks
 
             private static BinaryReader CreateReaderFromMemory(ResolvePackageAssets task, byte[] settingsHash)
             {
-                Debug.Assert(task.DisablePackageAssetsCache);
+                if (!task.DisablePackageAssetsCache)
+                {
+                    task.Log.LogMessage(MessageImportance.High, Strings.UnableToUsePackageAssetsCache);
+                }
 
                 var stream = new MemoryStream();
                 using (var writer = new CacheWriter(task, stream))
