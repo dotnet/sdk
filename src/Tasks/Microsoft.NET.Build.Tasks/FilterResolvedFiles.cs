@@ -19,7 +19,6 @@ namespace Microsoft.NET.Build.Tasks
         private readonly List<ITaskItem> _assembliesToPublish = new List<ITaskItem>();
         private readonly List<ITaskItem> _packagesResolved = new List<ITaskItem>();
 
-        [Required]
         public string AssetsFilePath { get; set; }
 
         [Required]
@@ -53,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            var lockFileCache = new LockFileCache(BuildEngine4);
+            var lockFileCache = new LockFileCache(this);
             LockFile lockFile = lockFileCache.GetLockFile(AssetsFilePath);
 
             ProjectContext projectContext = lockFile.CreateProjectContext(

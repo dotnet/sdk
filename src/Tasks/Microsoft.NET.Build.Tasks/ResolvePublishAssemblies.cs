@@ -20,7 +20,6 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string ProjectPath { get; set; }
 
-        [Required]
         public string AssetsFilePath { get; set; }
 
         [Required]
@@ -49,7 +48,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            var lockFileCache = new LockFileCache(BuildEngine4);
+            var lockFileCache = new LockFileCache(this);
             LockFile lockFile = lockFileCache.GetLockFile(AssetsFilePath);
             IEnumerable<string> excludeFromPublishPackageIds = PackageReferenceConverter.GetPackageIds(ExcludeFromPublishPackageReferences);
             IPackageResolver packageResolver = NuGetPackageResolver.CreateResolver(lockFile, ProjectPath);
@@ -83,8 +82,17 @@ namespace Microsoft.NET.Build.Tasks
                 TaskItem item = new TaskItem(resolvedAssembly.SourcePath);
                 item.SetMetadata("DestinationSubPath", resolvedAssembly.DestinationSubPath);
                 item.SetMetadata("AssetType", resolvedAssembly.Asset.ToString().ToLower());
-                item.SetMetadata(MetadataKeys.PackageName, resolvedAssembly.Package.Id.ToString().ToLower());
+                item.SetMetadata(MetadataKeys.PackageName, resolvedAssembly.Package.Id.ToString());
                 item.SetMetadata(MetadataKeys.PackageVersion, resolvedAssembly.Package.Version.ToString().ToLower());
+
+                if (resolvedAssembly.Asset == AssetType.Resources)
+                {
+                    //  For resources, the DestinationSubDirectory is set to the locale.  Set the Culture
+                    //  metadata on the generated item to this value so that the satellite assemblies can
+                    //  be filtered by culture.
+                    item.SetMetadata(MetadataKeys.Culture, resolvedAssembly.DestinationSubDirectory);
+                }
+
                 _assembliesToPublish.Add(item);
             }
 

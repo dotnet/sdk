@@ -9,8 +9,11 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
+using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -53,8 +56,7 @@ namespace Microsoft.NET.Restore.Tests
                 "projectinfallbackfolder.1.0.0.nupkg")).Should().Be(fileExists);
         }
 
-        // https://github.com/dotnet/sdk/issues/1327
-        [CoreMSBuildOnlyTheory]
+        [Theory]
         [InlineData("netstandard1.3", "1.3")]
         [InlineData("netcoreapp1.0", "1.0")]
         [InlineData("netcoreapp1.1", "1.1")]

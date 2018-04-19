@@ -21,7 +21,6 @@ namespace Microsoft.NET.Build.Tasks
     /// </summary>
     public class GenerateRuntimeConfigurationFiles : TaskBase
     {
-        [Required]
         public string AssetsFilePath { get; set; }
 
         [Required]
@@ -64,7 +63,7 @@ namespace Microsoft.NET.Build.Tasks
                 Log.LogWarning(Strings.SkippingAdditionalProbingPaths);
             }
 
-            LockFile lockFile = new LockFileCache(BuildEngine4).GetLockFile(AssetsFilePath);
+            LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
             ProjectContext projectContext = lockFile.CreateProjectContext(
                 NuGetUtils.ParseFrameworkName(TargetFrameworkMoniker),
                 RuntimeIdentifier,

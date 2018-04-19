@@ -19,6 +19,7 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.ProjectModel;
 using NuGet.Common;
 using Newtonsoft.Json.Linq;
+using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -197,14 +198,20 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
-        private TestAsset CreateDocumentationFileLibraryAsset(bool? generateDocumentationFile, string documentationFile, [CallerMemberName] string callingMethod = "")
+        private TestAsset CreateDocumentationFileLibraryAsset(bool? generateDocumentationFile, string documentationFile, string language, [CallerMemberName] string callingMethod = "")
         {
             string genDocFileIdentifier = generateDocumentationFile == null ? "null" : generateDocumentationFile.Value.ToString();
             string docFileIdentifier = documentationFile == null ? "null" : Path.GetFileName(documentationFile);
             string identifier = $"-genDoc={genDocFileIdentifier}, docFile={Path.GetFileName(docFileIdentifier)}";
 
+            var testAssetName = "AppWithLibrary";
+            if (language != "cs")
+            {
+                testAssetName += language.ToUpperInvariant();
+            }
+
             var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithLibrary", callingMethod, identifier)
+                .CopyTestAsset(testAssetName, callingMethod, identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -226,10 +233,12 @@ namespace Microsoft.NET.Build.Tests
             return testAsset;
         }
 
-        [Fact]
-        public void It_creates_a_documentation_file()
+        [Theory]
+        [InlineData("cs")]
+        [InlineData("vb")]
+        public void It_creates_a_documentation_file(string language)
         {
-            var testAsset = CreateDocumentationFileLibraryAsset(true, null);
+            var testAsset = CreateDocumentationFileLibraryAsset(true, null, language);
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
@@ -251,17 +260,19 @@ namespace Microsoft.NET.Build.Tests
 
             new DirectoryInfo(libraryProjectDirectory).Should().OnlyHaveFiles(new[]
             {
-                "Helper.cs",
-                "TestLibrary.csproj"
+                $"Helper.{language}",
+                $"TestLibrary.{language}proj"
             }, SearchOption.TopDirectoryOnly);
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void It_allows_us_to_override_the_documentation_file_name(bool setGenerateDocumentationFileProperty)
+        [InlineData("cs", true)]
+        [InlineData("cs", false)]
+        [InlineData("vb", true)]
+        [InlineData("vb", false)]
+        public void It_allows_us_to_override_the_documentation_file_name(string language, bool setGenerateDocumentationFileProperty)
         {
-            var testAsset = CreateDocumentationFileLibraryAsset(setGenerateDocumentationFileProperty ? (bool?)true : null, "TestLibDoc.xml", "OverrideDocFileName");
+            var testAsset = CreateDocumentationFileLibraryAsset(setGenerateDocumentationFileProperty ? (bool?)true : null, "TestLibDoc.xml", language,  "OverrideDocFileName");
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
@@ -283,20 +294,28 @@ namespace Microsoft.NET.Build.Tests
 
             //  Due to the way the DocumentationFile works, if you specify an unrooted filename, then the documentation file will be generated in that
             //  location relative to the project folder, and then copied to the output folder.
-            new DirectoryInfo(libraryProjectDirectory).Should().OnlyHaveFiles(new[]
+            var expectedProjectDirectoryFiles = new List<string>()
             {
-                "Helper.cs",
-                "TestLibrary.csproj",
-                "TestLibDoc.xml"
-            }, SearchOption.TopDirectoryOnly);
+                $"Helper.{language}",
+                $"TestLibrary.{language}proj"
+            };
+
+            // vb uses DocumentationFile relative to the IntermediateOutputPath
+            if (language != "vb") {
+                expectedProjectDirectoryFiles.Add("TestLibDoc.xml");
+            }
+
+            new DirectoryInfo(libraryProjectDirectory).Should().OnlyHaveFiles(expectedProjectDirectoryFiles, SearchOption.TopDirectoryOnly);
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void It_does_not_create_a_documentation_file_if_GenerateDocumentationFile_property_is_false(bool setDocumentationFileProperty)
+        [InlineData("cs", true)]
+        [InlineData("cs", false)]
+        [InlineData("vb", true)]
+        [InlineData("vb", false)]
+        public void It_does_not_create_a_documentation_file_if_GenerateDocumentationFile_property_is_false(string language, bool setDocumentationFileProperty)
         {
-            var testAsset = CreateDocumentationFileLibraryAsset(false, setDocumentationFileProperty ? "TestLibDoc.xml" : null, "DoesntCreateDocFile");
+            var testAsset = CreateDocumentationFileLibraryAsset(false, setDocumentationFileProperty ? "TestLibDoc.xml" : null, language, "DoesntCreateDocFile");
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
@@ -318,75 +337,9 @@ namespace Microsoft.NET.Build.Tests
             //  Make sure documentation file isn't generated in project folder either
             new DirectoryInfo(libraryProjectDirectory).Should().OnlyHaveFiles(new[]
             {
-                "Helper.cs",
-                "TestLibrary.csproj"
+                $"Helper.{language}",
+                $"TestLibrary.{language}proj"
             }, SearchOption.TopDirectoryOnly);
-        }
-
-        [Fact]
-        public void The_design_time_build_succeeds_before_nuget_restore()
-        {
-            //  This test needs the design-time targets, which come with Visual Studio.  So we will use the VSINSTALLDIR
-            //  environment variable to find the install path to Visual Studio and the design-time targets under it.
-            //  This will be set when running from a developer command prompt.  Unfortunately, unless VS is launched
-            //  from a developer command prompt, it won't be set when running tests from VS.  So in that case the
-            //  test will simply be skipped.
-            string vsInstallDir = Environment.GetEnvironmentVariable("VSINSTALLDIR");
-            
-            if (vsInstallDir == null)
-            {
-                return;
-            }
-
-            string csharpDesignTimeTargets = Path.Combine(vsInstallDir, @"MSBuild\Microsoft\VisualStudio\Managed\Microsoft.CSharp.DesignTime.targets");
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithLibrary")
-                .WithSource();
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
-            var projectFile = Path.Combine(libraryProjectDirectory, "TestLibrary.csproj");
-
-            var args = new[]
-            {
-                "/p:DesignTimeBuild=true",
-                "/p:SkipCompilerExecution=true",
-                "/p:ProvideCommandLineArgs=true",
-                $"/p:CSharpDesignTimeTargetsPath={csharpDesignTimeTargets}",
-                "/t:ResolveProjectReferencesDesignTime",
-                "/t:ResolveComReferencesDesignTime",
-                "/t:CompileDesignTime",
-                "/t:ResolvePackageDependenciesDesignTime"
-            };
-
-            var command = new MSBuildCommand(Log, "ResolveAssemblyReferencesDesignTime", projectFile);
-            var result = command.Execute(args);
-
-            //  In CI builds, VSINSTALLDIR is set but the CompileDesignTime target doesn't exist, probably because
-            //  it's an earlier version of Visual Studio
-            if (result.ExitCode != 0)
-            {
-                result
-                    .StdOut
-                    .Should()
-                    .Contain("The target \"CompileDesignTime\" does not exist");
-            }
-        }
-
-        [Fact]
-        public void The_build_fails_if_nuget_restore_has_not_occurred()
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithLibrary")
-                .WithSource();
-
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
-
-            var buildCommand = new BuildCommand(Log, libraryProjectDirectory);
-            buildCommand
-                .Execute()
-                .Should()
-                .Fail();
         }
 
         [Fact]
@@ -438,20 +391,20 @@ namespace Microsoft.NET.Build.Tests
 
             var definedConstants = getValuesCommand.GetValues();
 
-            definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD1_5" });
+            definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD1_5" });
         }
 
         [Theory]
-        [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD1_0" }, false)]
-        [InlineData("netstandard1.3", new[] { "NETSTANDARD1_3" }, false)]
-        [InlineData("netstandard1.6", new[] { "NETSTANDARD1_6" }, false)]
-        [InlineData("net45", new[] { "NET45" }, true)]
-        [InlineData("net461", new[] { "NET461" }, true)]
-        [InlineData("netcoreapp1.0", new[] { "NETCOREAPP1_0" }, false)]
+        [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD", "NETSTANDARD1_0" }, false)]
+        [InlineData("netstandard1.3", new[] { "NETSTANDARD", "NETSTANDARD1_3" }, false)]
+        [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6" }, false)]
+        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45" }, true)]
+        [InlineData("net461", new[] { "NETFRAMEWORK", "NET461" }, true)]
+        [InlineData("netcoreapp1.0", new[] { "NETCOREAPP", "NETCOREAPP1_0" }, false)]
         [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { }, false)]
-        [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NET40" }, false)]
-        [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS1_0" }, false)]
-        [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK3_14" }, false)]
+        [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK", "NET40" }, false)]
+        [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS", "XAMARINIOS1_0" }, false)]
+        [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK", "UNKNOWNFRAMEWORK3_14" }, false)]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines, bool buildOnlyOnWindows)
         {
             bool shouldCompile = true;
@@ -634,7 +587,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("netcoreapp2.1")]
+        [InlineData("netcoreapp2.2")]
         [InlineData("netstandard2.1")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
         {
@@ -724,6 +677,57 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should()
                 .Pass();
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_marks_package_references_as_externally_resolved(bool? markAsExternallyResolved)
+        {
+            var project = new TestProject
+            {
+                Name = "Library",
+                TargetFrameworks = "netstandard2.0",
+                IsSdkProject = true,
+                // references from packages go through a different code path to be marked externally resolved.
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", "10.0.1") }
+            };
+
+            var asset = _testAssetsManager.CreateTestProject(
+                project,
+                "ExternallyResolvedPackages",
+                markAsExternallyResolved.ToString())
+                .WithProjectChanges((path, p) =>
+                {
+                    if (markAsExternallyResolved != null)
+                    {
+                        var ns = p.Root.Name.Namespace;
+                        p.Root.Add(
+                            new XElement(ns + "PropertyGroup",
+                                new XElement(ns + "MarkPackageReferencesAsExternallyResolved",
+                                    markAsExternallyResolved)));
+                    }
+                })
+                .Restore(Log, project.Name);
+
+            var command = new GetValuesCommand(
+                Log,
+                Path.Combine(asset.Path, project.Name),
+                project.TargetFrameworks,
+                "Reference",
+                GetValuesCommand.ValueType.Item);
+
+            command.MetadataNames.Add("ExternallyResolved");
+            command.Execute().Should().Pass();
+
+            var references = command.GetValuesWithMetadata();
+            references.Should().NotBeEmpty();
+
+            foreach (var (value, metadata) in references)
+            {
+                metadata["ExternallyResolved"].Should().BeEquivalentTo((markAsExternallyResolved ?? true) ? "true" : "");
+            }
         }
     }
 }

@@ -23,7 +23,6 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string ProjectPath { get; set; }
 
-        [Required]
         public string AssetsFilePath { get; set; }
 
         [Required]
@@ -53,6 +52,9 @@ namespace Microsoft.NET.Build.Tasks
 
         [Required]
         public ITaskItem[] ReferencePaths { get; set; }
+
+        [Required]
+        public ITaskItem[] ReferenceDependencyPaths { get; set; }
 
         [Required]
         public ITaskItem[] ReferenceSatellitePaths { get; set; }
@@ -104,7 +106,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             LoadFilesToSkip();
 
-            LockFile lockFile = new LockFileCache(BuildEngine4).GetLockFile(AssetsFilePath);
+            LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
             CompilationOptions compilationOptions = CompilationOptionsConverter.ConvertFrom(CompilerOptions);
 
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
@@ -112,7 +114,7 @@ namespace Microsoft.NET.Build.Tasks
                     AssemblyName,
                     AssemblyExtension,
                     AssemblyVersion,
-                    AssemblySatelliteAssemblies);            
+                    AssemblySatelliteAssemblies);
 
             IEnumerable<ReferenceInfo> referenceAssemblyInfos =
                 ReferenceInfo.CreateReferenceInfos(ReferenceAssemblies);
@@ -120,8 +122,12 @@ namespace Microsoft.NET.Build.Tasks
             IEnumerable<ReferenceInfo> directReferences =
                 ReferenceInfo.CreateDirectReferenceInfos(ReferencePaths, ReferenceSatellitePaths);
 
+            IEnumerable<ReferenceInfo> dependencyReferences =
+                ReferenceInfo.CreateDependencyReferenceInfos(ReferenceDependencyPaths, ReferenceSatellitePaths);
+
             Dictionary<string, SingleProjectInfo> referenceProjects = SingleProjectInfo.CreateProjectReferenceInfos(
                 ReferencePaths,
+                ReferenceDependencyPaths,
                 ReferenceSatellitePaths);
 
             IEnumerable<string> excludeFromPublishAssets = PackageReferenceConverter.GetPackageIds(ExcludeFromPublishPackageReferences);
@@ -136,6 +142,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithMainProjectInDepsFile(IncludeMainProject)
                 .WithReferenceAssemblies(referenceAssemblyInfos)
                 .WithDirectReferences(directReferences)
+                .WithDependencyReferences(dependencyReferences)
                 .WithReferenceProjectInfos(referenceProjects)
                 .WithExcludeFromPublishAssets(excludeFromPublishAssets)
                 .WithCompilationOptions(compilationOptions)

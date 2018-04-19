@@ -15,6 +15,9 @@ using System.Xml.Linq;
 using Xunit;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit.Abstractions;
+using NuGet.ProjectModel;
+using NuGet.Common;
+using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -364,6 +367,61 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
+        public void It_does_not_include_source_or_resx_files_in_None()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "DontIncludeSourceFilesInNone",
+                TargetFrameworks = "netcoreapp2.0",
+                IsExe = true,
+                IsSdkProject = true
+            };
+            testProject.AdditionalProperties["EnableDefaultCompileItems"] = "false";
+            testProject.AdditionalProperties["EnableDefaultResourceItems"] = "false";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    XElement itemGroup = new XElement(ns + "ItemGroup");
+                    project.Root.Add(itemGroup);
+                    itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", testProject.Name + ".cs")));
+                })
+                .Restore(Log, testProject.Name);
+
+            var projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
+
+            File.WriteAllText(Path.Combine(projectFolder, "ShouldBeIgnored.cs"), "!InvalidCSharp!");
+            File.WriteAllText(Path.Combine(projectFolder, "Resources.resx"), "<Resource/>");
+
+            var getCompileItemsCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, "Compile", GetValuesCommand.ValueType.Item);
+            getCompileItemsCommand.Execute()
+                .Should()
+                .Pass();
+
+            var compileItems = getCompileItemsCommand.GetValues();
+            RemoveGeneratedCompileItems(compileItems);
+            compileItems.ShouldBeEquivalentTo(new[] { testProject.Name + ".cs" });
+
+            var getNoneItemsCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, "None", GetValuesCommand.ValueType.Item);
+            getNoneItemsCommand.Execute()
+                .Should()
+                .Pass();
+
+            getNoneItemsCommand.GetValues()
+                .Should().BeEmpty();
+
+            var getResourceItemsCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, "Resource", GetValuesCommand.ValueType.Item);
+            getResourceItemsCommand.Execute()
+                .Should()
+                .Pass();
+
+            getResourceItemsCommand.GetValues()
+                .Should().BeEmpty();
+
+        }
+
+        [Fact]
         public void Default_items_have_the_correct_relative_paths()
         {
             Action<XDocument> projectChanges = project =>
@@ -551,6 +609,44 @@ namespace Microsoft.NET.Build.Tests
                 .Pass()
                 .And.HaveStdOutContaining("PackageReference")
                 .And.HaveStdOutContaining("'NETStandard.Library'");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Implicit_NetCoreApp_reference_can_be_overridden(bool disableImplicitFrameworkReferences)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "OverrideNetCoreApp",
+                TargetFrameworks = "netcoreapp2.0",
+                IsSdkProject = true,
+                IsExe = true
+            };
+
+            if (disableImplicitFrameworkReferences)
+            {
+                testProject.AdditionalProperties["DisableImplicitFrameworkReferences"] = "true";
+            }
+
+            string explicitPackageVersion = "2.0.3";
+            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.NETCore.App", explicitPackageVersion));
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: disableImplicitFrameworkReferences.ToString())
+                .Restore(Log, testProject.Name);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            LockFile lockFile = LockFileUtilities.GetLockFile(Path.Combine(buildCommand.ProjectRootPath, "obj", "project.assets.json"), NullLogger.Instance);
+
+            var target = lockFile.GetTarget(NuGetFramework.Parse(testProject.TargetFrameworks), null);
+            var netCoreAppLibrary = target.Libraries.Single(l => l.Name == "Microsoft.NETCore.App");
+            netCoreAppLibrary.Version.ToString().Should().Be(explicitPackageVersion);
         }
         
         void RemoveGeneratedCompileItems(List<string> compileItems)
