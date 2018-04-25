@@ -5,9 +5,11 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  
+
+  <Import Project="..\Directory.Build.props" />
+
   <PropertyGroup>
-    <RepositoryUrl>https://github.com/dotnet/sdk</RepositoryUrl>
-    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
+
 </Project>
