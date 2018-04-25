@@ -22,7 +22,13 @@
   <Import Project="Sdk.props" Sdk="RoslynTools.RepoToolset" />
 
   <PropertyGroup>
+    <!-- MSBuild Task DLLs need to be versioned with every build -->
+    <AssemblyVersion>$(FileVersion)</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <IsPackable>true</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
     <PackageLayoutOutputPath>$(ArtifactsBinDir)Sdks\$(PackageId)\</PackageLayoutOutputPath>
   </PropertyGroup>
 
@@ -59,6 +65,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.NET.Build.Tasks.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.NET.Build.Tests" />
+    <InternalsVisibleTo Include="Microsoft.NET.ToolPack.Tests" />
   </ItemGroup>
 
   <ItemGroup>
@@ -103,7 +110,7 @@
 
   <Target Name="PackLayout" DependsOnTargets="CopyAdditionalFilesToLayout" BeforeTargets="$(GenerateNuspecDependsOn)">
     <ItemGroup>
-      <Content Include="$(PackageLayoutOutputPath)**\*" Exclude="$(PackageLayoutOutputPath)**\*.pdb" PackagePath="\" />
+      <Content Include="$(PackageLayoutOutputPath)**\*" PackagePath="\" />
     </ItemGroup>
   </Target>
 

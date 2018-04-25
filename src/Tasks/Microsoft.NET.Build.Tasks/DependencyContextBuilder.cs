@@ -20,8 +20,11 @@ namespace Microsoft.NET.Build.Tasks
         private readonly VersionFolderPathResolver _versionFolderPathResolver;
         private readonly SingleProjectInfo _mainProjectInfo;
         private readonly ProjectContext _projectContext;
+        private readonly bool _includeRuntimeFileVersions;
+        private readonly NuGetPackageResolver _packageResolver;
         private IEnumerable<ReferenceInfo> _referenceAssemblies;
         private IEnumerable<ReferenceInfo> _directReferences;
+        private IEnumerable<ReferenceInfo> _dependencyReferences;
         private Dictionary<string, SingleProjectInfo> _referenceProjectInfos;
         private IEnumerable<string> _excludeFromPublishPackageIds;
         private CompilationOptions _compilationOptions;
@@ -31,13 +34,21 @@ namespace Microsoft.NET.Build.Tasks
         private HashSet<string> _usedLibraryNames;
         private Dictionary<ReferenceInfo, string> _referenceLibraryNames;
 
-        public DependencyContextBuilder(SingleProjectInfo mainProjectInfo, ProjectContext projectContext)
+        public DependencyContextBuilder(SingleProjectInfo mainProjectInfo, ProjectContext projectContext, bool includeRuntimeFileVersions)
         {
             _mainProjectInfo = mainProjectInfo;
             _projectContext = projectContext;
+            _includeRuntimeFileVersions = includeRuntimeFileVersions;
 
             // This resolver is only used for building file names, so that base path is not required.
             _versionFolderPathResolver = new VersionFolderPathResolver(rootPath: null);
+
+            if (_includeRuntimeFileVersions)
+            {
+                //  This is used to look up the paths to package files on disk, which is only needed in this class if
+                //  it needs to read the file versions
+                _packageResolver = NuGetPackageResolver.CreateResolver(projectContext.LockFile, mainProjectInfo.ProjectPath);
+            }
         }
 
         /// <summary>
@@ -94,6 +105,12 @@ namespace Microsoft.NET.Build.Tasks
         public DependencyContextBuilder WithDirectReferences(IEnumerable<ReferenceInfo> directReferences)
         {
             _directReferences = directReferences;
+            return this;
+        }
+
+        public DependencyContextBuilder WithDependencyReferences(IEnumerable<ReferenceInfo> dependencyReferences)
+        {
+            _dependencyReferences = dependencyReferences;
             return this;
         }
 
@@ -161,7 +178,8 @@ namespace Microsoft.NET.Build.Tasks
             }
             runtimeLibraries = runtimeLibraries
                 .Concat(GetLibraries(runtimeExports, libraryLookup, dependencyLookup, runtime: true).Cast<RuntimeLibrary>())
-                .Concat(GetDirectReferenceRuntimeLibraries());
+                .Concat(GetDirectReferenceRuntimeLibraries())
+                .Concat(GetDependencyReferenceRuntimeLibraries());
 
             IEnumerable<CompilationLibrary> compilationLibraries = Enumerable.Empty<CompilationLibrary>();
             if (includeCompilationLibraries)
@@ -379,6 +397,20 @@ namespace Microsoft.NET.Build.Tasks
                 else if (export.IsProject())
                 {
                     referenceProjectInfo = GetProjectInfo(library);
+
+                    if (runtime)
+                    {
+                        // DependencyReferences do not get passed to the compilation, so we should only
+                        // process them when getting the runtime libraries.
+
+                        foreach (var dependencyReference in referenceProjectInfo.DependencyReferences)
+                        {
+                            libraryDependencies.Add(
+                                new Dependency(
+                                    GetReferenceLibraryName(dependencyReference),
+                                    dependencyReference.Version));
+                        }
+                    }
                 }
             }
 
@@ -414,6 +446,27 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
+        private RuntimeFile CreateRuntimeFile(LockFileTargetLibrary library, LockFileItem item)
+        {
+            //  _packageResolver will be null if _includeRuntimeFileVersions is false, hence the "?."
+            var itemFullPath = _packageResolver?.ResolvePackageAssetPath(library, item.Path);
+            return CreateRuntimeFile(item.Path, itemFullPath);
+        }
+
+        private RuntimeFile CreateRuntimeFile(string path, string fullPath)
+        {
+            if (_includeRuntimeFileVersions)
+            {
+                string fileVersion = FileUtilities.GetFileVersion(fullPath).ToString();
+                string assemblyVersion = FileUtilities.TryGetAssemblyVersion(fullPath)?.ToString();
+                return new RuntimeFile(path, assemblyVersion, fileVersion);
+            }
+            else
+            {
+                return new RuntimeFile(path, null, null);
+            }
+        }
+
         private IReadOnlyList<RuntimeAssetGroup> CreateRuntimeAssemblyGroups(LockFileTargetLibrary targetLibrary, SingleProjectInfo referenceProjectInfo)
         {
             if (targetLibrary.IsProject())
@@ -428,14 +481,14 @@ namespace Microsoft.NET.Build.Tasks
                 assemblyGroups.Add(
                     new RuntimeAssetGroup(
                         string.Empty,
-                        targetLibrary.RuntimeAssemblies.FilterPlaceholderFiles().Select(a => a.Path)));
+                        targetLibrary.RuntimeAssemblies.FilterPlaceholderFiles().Select(a => CreateRuntimeFile(targetLibrary, a))));
 
                 foreach (var runtimeTargetsGroup in targetLibrary.GetRuntimeTargetsGroups("runtime"))
                 {
                     assemblyGroups.Add(
                         new RuntimeAssetGroup(
                             runtimeTargetsGroup.Key,
-                            runtimeTargetsGroup.Select(t => t.Path)));
+                            runtimeTargetsGroup.Select(t => CreateRuntimeFile(targetLibrary, t))));
                 }
 
                 return assemblyGroups;
@@ -449,14 +502,14 @@ namespace Microsoft.NET.Build.Tasks
             nativeGroups.Add(
                 new RuntimeAssetGroup(
                     string.Empty,
-                    export.NativeLibraries.FilterPlaceholderFiles().Select(a => a.Path)));
+                    export.NativeLibraries.FilterPlaceholderFiles().Select(a => CreateRuntimeFile(export, a))));
 
             foreach (var runtimeTargetsGroup in export.GetRuntimeTargetsGroups("native"))
             {
                 nativeGroups.Add(
                     new RuntimeAssetGroup(
                         runtimeTargetsGroup.Key,
-                        runtimeTargetsGroup.Select(t => t.Path)));
+                        runtimeTargetsGroup.Select(t => CreateRuntimeFile(export, t))));
             }
 
             return nativeGroups;
@@ -530,15 +583,15 @@ namespace Microsoft.NET.Build.Tasks
             return Path.GetFileName(fullPath);
         }
 
-        private IEnumerable<RuntimeLibrary> GetDirectReferenceRuntimeLibraries()
+        private IEnumerable<RuntimeLibrary> GetReferenceRuntimeLibraries(IEnumerable<ReferenceInfo> references)
         {
-            return _directReferences
+            return references
                 ?.Select(r => CreateRuntimeLibrary(
                     type: "reference",
                     name: GetReferenceLibraryName(r),
                     version: r.Version,
                     hash: string.Empty,
-                    runtimeAssemblyGroups: new[] { new RuntimeAssetGroup(string.Empty, r.FileName) },
+                    runtimeAssemblyGroups: new[] { new RuntimeAssetGroup(string.Empty, new[] { CreateRuntimeFile(r.FileName, r.FullPath) }) },
                     nativeLibraryGroups: new RuntimeAssetGroup[] { },
                     resourceAssemblies: CreateResourceAssemblies(r.ResourceAssemblies),
                     dependencies: Enumerable.Empty<Dependency>(),
@@ -547,9 +600,9 @@ namespace Microsoft.NET.Build.Tasks
                 Enumerable.Empty<RuntimeLibrary>();
         }
 
-        private IEnumerable<CompilationLibrary> GetDirectReferenceCompilationLibraries()
+        private IEnumerable<CompilationLibrary> GetReferenceCompilationLibraries(IEnumerable<ReferenceInfo> references)
         {
-            return _directReferences
+            return references
                 ?.Select(r => new CompilationLibrary(
                     type: "reference",
                     name: GetReferenceLibraryName(r),
@@ -560,6 +613,21 @@ namespace Microsoft.NET.Build.Tasks
                     serviceable: false))
                 ??
                 Enumerable.Empty<CompilationLibrary>();
+        }
+
+        private IEnumerable<RuntimeLibrary> GetDirectReferenceRuntimeLibraries()
+        {
+            return GetReferenceRuntimeLibraries(_directReferences);
+        }
+
+        private IEnumerable<CompilationLibrary> GetDirectReferenceCompilationLibraries()
+        {
+            return GetReferenceCompilationLibraries(_directReferences);
+        }
+
+        private IEnumerable<RuntimeLibrary> GetDependencyReferenceRuntimeLibraries()
+        {
+            return GetReferenceRuntimeLibraries(_dependencyReferences);
         }
 
         private string GetReferenceLibraryName(ReferenceInfo reference)

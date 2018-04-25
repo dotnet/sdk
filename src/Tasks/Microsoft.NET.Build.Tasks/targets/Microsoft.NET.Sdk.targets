@@ -118,7 +118,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             _ComputeReferenceAssemblies"
           BeforeTargets="CopyFilesToOutputDirectory"
           Condition=" '$(GenerateDependencyFile)' == 'true'"
-          Inputs="$(ProjectAssetsFile)"
+          Inputs="$(ProjectAssetsFile);$(MSBuildAllProjects)"
           Outputs="$(ProjectDepsFilePath)">
 
     <!--
@@ -134,6 +134,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       AssemblyVersion="$(Version)"
                       AssemblySatelliteAssemblies="@(IntermediateSatelliteAssembliesWithTargetPath)"
                       ReferencePaths="@(ReferencePath)"
+                      ReferenceDependencyPaths="@(ReferenceDependencyPaths)"
                       ReferenceSatellitePaths="@(ReferenceSatellitePaths)"
                       ReferenceAssemblies="@(_ReferenceAssemblies)"
                       IncludeMainProject="$(IncludeMainProjectInDepsFile)"
@@ -141,7 +142,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       FilesToSkip="@(_ConflictPackageFiles)"
                       CompilerOptions="@(DependencyFileCompilerOptions)"
-                      IsSelfContained="$(SelfContained)">
+                      IsSelfContained="$(SelfContained)"
+                      IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)">
     </GenerateDepsFile>
 
     <ItemGroup>
@@ -252,6 +254,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MaxThreads"
                                     Condition="'$(ThreadPoolMaxThreads)' != ''"
                                     Value="$(ThreadPoolMaxThreads)" />
+  
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant"
+                                    Condition="'$(InvariantGlobalization)' != ''"
+                                    Value="$(InvariantGlobalization)" />
   </ItemGroup>
 
   <!--

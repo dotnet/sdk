@@ -28,7 +28,6 @@ namespace Microsoft.NET.Build.Tasks
         /// <summary>
         /// Path to assets.json.
         /// </summary>
-        [Required]
         public string ProjectAssetsFile { get; set; }
 
         /// <summary>
@@ -53,6 +52,11 @@ namespace Microsoft.NET.Build.Tasks
         /// RID to use for runtime assets (may be empty)
         /// </summary>
         public string RuntimeIdentifier { get; set; }
+
+        /// <summary>
+        /// Do not write package assets cache to disk nor attempt to read previous cache from disk.
+        /// </summary>
+        public bool DisablePackageAssetsCache { get; set; }
 
         /// <summary>
         /// Do not generate transitive project references.
@@ -89,21 +93,16 @@ namespace Microsoft.NET.Build.Tasks
         public bool EnsureRuntimePackageDependencies { get; set; }
 
         /// <summary>
-        /// Specifies whether to validate that the version of the implicit platform package in the assets
-        /// file matches the version specified by <see cref="ExpectedPlatformPackageVersion"/>
+        /// Specifies whether to validate that the version of the implicit platform packages in the assets
+        /// file matches the version specified by <see cref="ExpectedPlatformPackages"/>
         /// </summary>
         public bool VerifyMatchingImplicitPackageVersion { get; set; }
 
         /// <summary>
-        /// Identifier for implicitly referenced platform package.  If set, then an error will be generated if the
-        /// version of that package from the assets file does not match the <see cref="ExpectedPlatformPackageVersion"/>
+        /// Implicitly referenced platform packages.  If set, then an error will be generated if the
+        /// version of the specified packages from the assets file does not match the expected versions.
         /// </summary>
-        public string ImplicitPlatformPackageIdentifier { get; set; }
-
-        /// <summary>
-        /// Expected version of the <see cref="ImplicitPlatformPackageIdentifier"/>
-        /// </summary>
-        public string ExpectedPlatformPackageVersion { get; set; }
+        public ITaskItem[] ExpectedPlatformPackages { get; set; }
 
         /// <summary>
         /// Full paths to assemblies from packages to pass to compiler as analyzers.
@@ -220,6 +219,11 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
+            if (string.IsNullOrEmpty(ProjectAssetsFile))
+            {
+                throw new BuildErrorException(Strings.AssetsFileNotSet);
+            }
+
             ReadItemGroups();
             SetImplicitMetadataForCompileTimeAssemblies();
             SetImplicitMetadataForFrameworkAssemblies();
@@ -251,6 +255,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in CompileTimeAssemblies)
             {
+                item.SetMetadata(MetadataKeys.NuGetSourceType, "Package");
                 item.SetMetadata(MetadataKeys.Private, "false");
                 item.SetMetadata(MetadataKeys.HintPath, item.ItemSpec);
                 item.SetMetadata(MetadataKeys.ExternallyResolved, externallyResolved);
@@ -262,6 +267,7 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var item in FrameworkAssemblies)
             {
                 item.SetMetadata(MetadataKeys.NuGetIsFrameworkReference, "true");
+                item.SetMetadata(MetadataKeys.NuGetSourceType, "Package");
                 item.SetMetadata(MetadataKeys.Pack, "false");
                 item.SetMetadata(MetadataKeys.Private, "false");
             }
@@ -301,15 +307,22 @@ namespace Microsoft.NET.Build.Tasks
             {
                 using (var writer = new BinaryWriter(stream, TextEncoding, leaveOpen: true))
                 {
+                    writer.Write(DisablePackageAssetsCache);
                     writer.Write(DisableFrameworkAssemblies);
                     writer.Write(DisableTransitiveProjectReferences);
                     writer.Write(EmitAssetsLogMessages);
                     writer.Write(EnsureRuntimePackageDependencies);
-                    writer.Write(ExpectedPlatformPackageVersion ?? "");
                     writer.Write(MarkPackageReferencesAsExternallyResolved);
-                    writer.Write(ImplicitPlatformPackageIdentifier ?? "");
+                    if (ExpectedPlatformPackages != null)
+                    {
+                        foreach (var implicitPackage in ExpectedPlatformPackages)
+                        {
+                            writer.Write(implicitPackage.ItemSpec ?? "");
+                            writer.Write(implicitPackage.GetMetadata(MetadataKeys.ExpectedVersion) ?? "");
+                        }
+                    }
                     writer.Write(ProjectAssetsCacheFile);
-                    writer.Write(ProjectAssetsFile);
+                    writer.Write(ProjectAssetsFile ?? "");
                     writer.Write(ProjectLanguage ?? "");
                     writer.Write(ProjectPath);
                     writer.Write(RuntimeIdentifier ?? "");
@@ -334,8 +347,53 @@ namespace Microsoft.NET.Build.Tasks
             public CacheReader(ResolvePackageAssets task)
             {
                 byte[] settingsHash = task.HashSettings();
-                BinaryReader reader = null;
 
+                if (!task.DisablePackageAssetsCache)
+                {
+                    // I/O errors can occur here if there are parallel calls to resolve package assets
+                    // for the same project configured with the same intermediate directory. This can
+                    // (for example) happen when design-time builds and real builds overlap.
+                    //
+                    // If there is an I/O error, then we fall back to the same in-memory approach below
+                    // as when DisablePackageAssetsCache is set to true.
+                    try
+                    {
+                        _reader = CreateReaderFromDisk(task, settingsHash);
+                    }
+                    catch (IOException) { }
+                    catch (UnauthorizedAccessException) { }
+                }
+
+                if (_reader == null)
+                {
+                    _reader = CreateReaderFromMemory(task, settingsHash);
+                }
+
+                ReadMetadataStringTable();
+            }
+
+            private static BinaryReader CreateReaderFromMemory(ResolvePackageAssets task, byte[] settingsHash)
+            {
+                if (!task.DisablePackageAssetsCache)
+                {
+                    task.Log.LogMessage(MessageImportance.High, Strings.UnableToUsePackageAssetsCache);
+                }
+
+                var stream = new MemoryStream();
+                using (var writer = new CacheWriter(task, stream))
+                {
+                    writer.Write();
+                }
+
+                stream.Position = 0;
+                return OpenCacheStream(stream, settingsHash);
+            }
+
+            private static BinaryReader CreateReaderFromDisk(ResolvePackageAssets task, byte[] settingsHash)
+            {
+                Debug.Assert(!task.DisablePackageAssetsCache);
+
+                BinaryReader reader = null;
                 try
                 {
                     if (File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile) > File.GetLastWriteTimeUtc(task.ProjectAssetsFile))
@@ -357,13 +415,11 @@ namespace Microsoft.NET.Build.Tasks
                     reader = OpenCacheFile(task.ProjectAssetsCacheFile, settingsHash);
                 }
 
-                _reader = reader;
-                ReadMetadataStringTable();
+                return reader;
             }
 
-            private static BinaryReader OpenCacheFile(string path, byte[] settingsHash)
+            private static BinaryReader OpenCacheStream(Stream stream, byte[] settingsHash)
             {
-                var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var reader = new BinaryReader(stream, TextEncoding, leaveOpen: false);
 
                 try
@@ -377,6 +433,12 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 return reader;
+            }
+
+            private static BinaryReader OpenCacheFile(string path, byte[] settingsHash)
+            {
+                var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                return OpenCacheStream(stream, settingsHash);
             }
 
             private static void ValidateHeader(BinaryReader reader, byte[] settingsHash)
@@ -459,7 +521,7 @@ namespace Microsoft.NET.Build.Tasks
             private Placeholder _metadataStringTablePosition;
             private int _itemCount;
 
-            public CacheWriter(ResolvePackageAssets task)
+            public CacheWriter(ResolvePackageAssets task, Stream stream = null)
             {
                 var targetFramework = NuGetUtils.ParseFrameworkName(task.TargetFrameworkMoniker);
 
@@ -472,8 +534,16 @@ namespace Microsoft.NET.Build.Tasks
                 _metadataStrings = new List<string>(InitialStringTableCapacity);
                 _bufferedMetadata = new List<int>();
 
-                var stream = File.Open(task.ProjectAssetsCacheFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-                _writer = new BinaryWriter(stream, TextEncoding, leaveOpen: false);
+                if (stream == null)
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(task.ProjectAssetsCacheFile));
+                    stream = File.Open(task.ProjectAssetsCacheFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+                    _writer = new BinaryWriter(stream, TextEncoding, leaveOpen: false);
+                }
+                else
+                {
+                    _writer = new BinaryWriter(stream, TextEncoding, leaveOpen: true);
+                }
             }
 
             public void Dispose()
@@ -601,7 +671,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         if (targetLibraries.TryGetValue(library.Name, out var targetLibrary))
                         {
-                            WriteItem(ResolvePackageAssetPath(targetLibrary, file), targetLibrary);
+                            WriteItem(_packageResolver.ResolvePackageAssetPath(targetLibrary, file), targetLibrary);
                         }
                     }
                 }
@@ -726,31 +796,41 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 if (_task.VerifyMatchingImplicitPackageVersion &&
-                    !string.IsNullOrEmpty(_task.ImplicitPlatformPackageIdentifier) &&
-                    !string.IsNullOrEmpty(_task.ExpectedPlatformPackageVersion) &&
-                    //  If RuntimeFrameworkVersion was specified as a version range or a floating version,
-                    //  then we can't compare the versions directly, so just skip the check
-                    _task.ExpectedPlatformPackageVersion.IndexOfAny(_specialNuGetVersionChars) < 0)
+                    _task.ExpectedPlatformPackages != null)
                 {
-                    var platformLibrary = _runtimeTarget.GetLibrary(_task.ImplicitPlatformPackageIdentifier);
-                    if (platformLibrary != null)
+                    foreach (var implicitPackge in _task.ExpectedPlatformPackages)
                     {
-                        string restoredPlatformLibraryVersion = platformLibrary.Version.ToNormalizedString();
+                        var packageName = implicitPackge.ItemSpec;
+                        var expectedVersion = implicitPackge.GetMetadata(MetadataKeys.ExpectedVersion);
 
-                        //  Normalize expected version.  For example, converts "2.0" to "2.0.0"
-                        string expectedPlatformPackageVersion = _task.ExpectedPlatformPackageVersion;
-                        if (!hasTwoPeriods(expectedPlatformPackageVersion))
+                        if (string.IsNullOrEmpty(packageName) ||
+                            string.IsNullOrEmpty(expectedVersion) ||
+                            //  If RuntimeFrameworkVersion was specified as a version range or a floating version,
+                            //  then we can't compare the versions directly, so just skip the check
+                            expectedVersion.IndexOfAny(_specialNuGetVersionChars) >= 0)
                         {
-                            expectedPlatformPackageVersion += ".0";
-                        }                        
+                            continue;
+                        }
 
-                        if (restoredPlatformLibraryVersion != expectedPlatformPackageVersion)
+                        var restoredPackage = _runtimeTarget.GetLibrary(packageName);
+                        if (restoredPackage != null)
                         {
-                            WriteItem(string.Format(Strings.MismatchedPlatformPackageVersion,
-                                                    _task.ImplicitPlatformPackageIdentifier,
-                                                    restoredPlatformLibraryVersion,
-                                                    expectedPlatformPackageVersion));
-                            WriteMetadata(MetadataKeys.Severity, nameof(LogLevel.Error));
+                            var restoredVersion = restoredPackage.Version.ToNormalizedString();
+
+                            //  Normalize expected version.  For example, converts "2.0" to "2.0.0"
+                            if (!hasTwoPeriods(expectedVersion))
+                            {
+                                expectedVersion += ".0";
+                            }                        
+
+                            if (restoredVersion != expectedVersion)
+                            {
+                                WriteItem(string.Format(Strings.MismatchedPlatformPackageVersion,
+                                                        packageName,
+                                                        restoredVersion,
+                                                        expectedVersion));
+                                WriteMetadata(MetadataKeys.Severity, nameof(LogLevel.Error));
+                            }
                         }
                     }
                 }
@@ -845,7 +925,7 @@ namespace Microsoft.NET.Build.Tasks
                             continue;
                         }
 
-                        string itemSpec = ResolvePackageAssetPath(library, asset.Path);
+                        string itemSpec = _packageResolver.ResolvePackageAssetPath(library, asset.Path);
                         WriteItem(itemSpec, library);
                         writeMetadata?.Invoke(asset);
                     }
@@ -888,12 +968,6 @@ namespace Microsoft.NET.Build.Tasks
                 return index;
             }
 
-            private string ResolvePackageAssetPath(LockFileTargetLibrary package, string relativePath)
-            {
-                string packagePath = _packageResolver.GetPackageDirectory(package.Name, package.Version);
-                return Path.Combine(packagePath, NormalizeRelativePath(relativePath));
-            }
-
             private static Dictionary<string, string> GetProjectReferencePaths(LockFile lockFile)
             {
                 Dictionary<string, string> paths = new Dictionary<string, string>();
@@ -902,15 +976,12 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (library.IsProject())
                     {
-                        paths[library.Name] = NormalizeRelativePath(library.MSBuildProject);
+                        paths[library.Name] = NuGetPackageResolver.NormalizeRelativePath(library.MSBuildProject);
                     }
                 }
 
                 return paths;
             }
-
-            private static string NormalizeRelativePath(string relativePath)
-                => relativePath.Replace('/', Path.DirectorySeparatorChar);
         }
     }
 }

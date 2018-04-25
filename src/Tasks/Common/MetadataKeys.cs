@@ -63,8 +63,11 @@ namespace Microsoft.NET.Build.Tasks
         // References
         public const string ExternallyResolved = "ExternallyResolved";
         public const string HintPath = "HintPath";
+        public const string MSBuildSourceProjectFile = "MSBuildSourceProjectFile";
         public const string Private = "Private";
         public const string Pack = "Pack";
+        public const string ReferenceSourceTarget = "ReferenceSourceTarget";
+        public const string TargetPath = "TargetPath";
 
         // Content files
         public const string PPOutputPath = "PPOutputPath";
@@ -76,5 +79,8 @@ namespace Microsoft.NET.Build.Tasks
         // Resource assemblies
         public const string Culture = "Culture";
         public const string DestinationSubDirectory = "DestinationSubDirectory";
+
+        // Expected platform packages
+        public const string ExpectedVersion = "ExpectedVersion";
     }
 }
