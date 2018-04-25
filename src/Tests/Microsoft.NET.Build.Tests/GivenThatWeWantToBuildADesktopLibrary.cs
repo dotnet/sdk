@@ -459,5 +459,39 @@ public static class {project.Name}
             frameworkReferenceCount.Should().BeGreaterThan(0);
             extensionReferenceCount.Should().BeGreaterThan(0);
         }
+
+        [FullMSBuildOnlyFact]
+        public void It_tolerates_newline_in_hint_path()
+        {
+            TestProject project = new TestProject()
+            {
+                Name = "NETFrameworkLibrary",
+                TargetFrameworks = "net462",
+                IsSdkProject = true
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPathsWithNewLines")
+                .WithProjectChanges((path, p) =>
+                {
+                    if (Path.GetFileNameWithoutExtension(path) == project.Name)
+                    {
+                        var ns = p.Root.Name.Namespace;
+
+                        var itemGroup = new XElement(ns + "ItemGroup");
+                        p.Root.Add(itemGroup);
+
+                        itemGroup.Add(
+                            new XElement(ns + "Reference",
+                                new XAttribute("Include", "System.Net.Http"),
+                                new XElement("HintPath", $"{Environment.NewLine}net461\\lib\\System.Net.Http.dll{Environment.NewLine}")));
+                    }
+                })
+                .Restore(Log, project.Name);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, project.Name));
+            var msbuildBuildCommand = new MSBuildCommand(Log, "Build", buildCommand.FullPathProjectFile);
+            msbuildBuildCommand.Execute().Should().Pass()
+                .And.NotHaveStdOutContaining("Illegal characters in path");
+        }
     }
 }
