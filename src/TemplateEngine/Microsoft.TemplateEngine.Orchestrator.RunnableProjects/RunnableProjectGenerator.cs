@@ -238,6 +238,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             IFile localeFile = localeFileConfig as IFile;
+            ITemplateEngineHost host = templateFileConfig.MountPoint.EnvironmentSettings.Host;
 
             try
             {
@@ -255,6 +256,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     BaselineName = baselineName
                 };
                 SimpleConfigModel templateModel = SimpleConfigModel.FromJObject(templateFile.MountPoint.EnvironmentSettings, srcObject, configModifiers, localeSourceObject);
+
+                if (!PerformTemplateValidation(templateModel, templateFile, host))
+                {
+                    template = null;
+                    return false;
+                }
 
                 if (!CheckGeneratorVersionRequiredByTemplate(templateModel.GeneratorVersions))
                 {   // template isn't compatible with this generator version
@@ -274,12 +281,86 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             catch (Exception ex)
             {
-                ITemplateEngineHost host = templateFileConfig.MountPoint.EnvironmentSettings.Host;
                 host.LogMessage($"Error reading template from file: {templateFile.FullPath} | Error = {ex.Message}");
             }
 
             template = null;
             return false;
+        }
+
+        private bool PerformTemplateValidation(SimpleConfigModel templateModel, IFile templateFile, ITemplateEngineHost host)
+        {
+            //Do some basic checks...
+            List<string> errorMessages = new List<string>();
+            List<string> warningMessages = new List<string>();
+            if (string.IsNullOrEmpty(templateModel.Identity))
+            {
+                errorMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "identity", templateFile.FullPath));
+            }
+
+            if (string.IsNullOrEmpty(templateModel.Name))
+            {
+                errorMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "name", templateFile.FullPath));
+            }
+
+            if ((templateModel.ShortNameList?.Count ?? 0) == 0)
+            {
+                errorMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "shortName", templateFile.FullPath));
+            }
+
+            if (string.IsNullOrEmpty(templateModel.SourceName))
+            {
+                warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "sourceName", templateFile.FullPath));
+            }
+
+            if (string.IsNullOrEmpty(templateModel.Author))
+            {
+                warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "author", templateFile.FullPath));
+            }
+
+            if (string.IsNullOrEmpty(templateModel.GroupIdentity))
+            {
+                warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "groupIdentity", templateFile.FullPath));
+            }
+
+            if (string.IsNullOrEmpty(templateModel.GeneratorVersions))
+            {
+                warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "generatorVersions", templateFile.FullPath));
+            }
+
+            if (templateModel.Precedence == 0)
+            {
+                warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "precedence", templateFile.FullPath));
+            }
+
+            if ((templateModel.Classifications?.Count ?? 0) == 0)
+            {
+                warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "classifications", templateFile.FullPath));
+            }
+
+            if (warningMessages.Count > 0)
+            {
+                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateMissingCommonInformation, templateFile.FullPath), "Authoring");
+
+                foreach (string message in warningMessages)
+                {
+                    host.LogDiagnosticMessage("    " + message, "Authoring");
+                }
+            }
+
+            if (errorMessages.Count > 0)
+            {
+                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNotInstalled, templateFile.FullPath), "Authoring");
+
+                foreach (string message in errorMessages)
+                {
+                    host.LogDiagnosticMessage("    " + message, "Authoring");
+                }
+
+                return false;
+            }
+
+            return true;
         }
 
         private bool CheckGeneratorVersionRequiredByTemplate(string generatorVersionsAllowed)

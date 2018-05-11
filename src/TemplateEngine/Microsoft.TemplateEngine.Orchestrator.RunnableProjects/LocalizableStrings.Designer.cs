@@ -71,6 +71,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Missing &apos;{0}&apos; in &apos;{1}&apos;.
+        /// </summary>
+        internal static string Authoring_MissingValue {
+            get {
+                return ResourceManager.GetString("Authoring_MissingValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A non-bool DataType was specified for a regexMatch type symbol.
         /// </summary>
         internal static string Authoring_NonBoolDataTypeForRegexMatch {
@@ -116,11 +125,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is missing common information.
+        /// </summary>
+        internal static string Authoring_TemplateMissingCommonInformation {
+            get {
+                return ResourceManager.GetString("Authoring_TemplateMissingCommonInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Template: &apos;{0}&apos;.
         /// </summary>
         internal static string Authoring_TemplateNameDisplay {
             get {
                 return ResourceManager.GetString("Authoring_TemplateNameDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; was not loaded.
+        /// </summary>
+        internal static string Authoring_TemplateNotInstalled {
+            get {
+                return ResourceManager.GetString("Authoring_TemplateNotInstalled", resourceCulture);
             }
         }
         
