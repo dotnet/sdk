@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tasks
             var destinationDirectory = Path.GetFullPath(AppHostDestinationDirectoryPath);
             ModifiedAppHostPath = Path.Combine(destinationDirectory, $"{appbaseName}{hostExtension}");
 
-            EmbedAppNameInHostUtil.EmbedAppHost(
+            AppHost.Create(
                 AppHostSourcePath,
                 ModifiedAppHostPath,
                 AppBinaryName);

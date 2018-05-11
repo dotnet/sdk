@@ -9,10 +9,10 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Embeds the App Name into the AppHost.exe
     /// </summary>
-    public static class EmbedAppNameInHostUtil
+    public static class AppHost
     {
-        private static string _placeHolder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"; //hash value embedded in default apphost executable
-        private static byte[] _bytesToSearch = Encoding.UTF8.GetBytes(_placeHolder);
+        private const string _placeHolder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"; //hash value embedded in default apphost executable
+        private readonly static byte[] _bytesToSearch = Encoding.UTF8.GetBytes(_placeHolder);
 
         /// <summary>
         /// Create an AppHost with embedded configuration of app binary location
@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <param name="appHostSourceFilePath">The path of AppHost template, which has the place holder</param>
         /// <param name="appHostDestinationFilePath">The destination path for desired location to place, including the file name</param>
         /// <param name="appBinaryFilePath">Full path to app binary or relative path to appHostDestinationFilePath</param>
-        public static void EmbedAppHost(
+        public static void Create(
             string appHostSourceFilePath,
             string appHostDestinationFilePath,
             string appBinaryFilePath)
