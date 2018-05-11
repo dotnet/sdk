@@ -13,6 +13,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateToolsSettingsFile"
               AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateShims"
+          AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <!--
     Mark all dependecy as private assets. But keep them as Publish. So dependency DLLs will be included in NuGet package, while
     there is no dependency in nuspec. And add Microsoft.NETCore.Platforms, which is used to select correct RID assets.
@@ -34,21 +36,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </ItemGroup>
 
-  <Target Name="PackTool" DependsOnTargets="GenerateToolsSettingsFileFromBuildProperty;Publish" Condition=" '$(PackAsTool)' == 'true' ">
+  <Target Name="PackTool" DependsOnTargets="GenerateToolsSettingsFileFromBuildProperty;Publish;ResolveApphostAsset" Condition=" '$(PackAsTool)' == 'true' ">
 
     <NETSdkError Condition=" '$(SelfContained)' == 'true' "
                  ResourceName="PackAsToolCannotSupportSelfContained" />
-    
+
     <NETSdkError Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' "
                  ResourceName="DotnetToolOnlySupportNetcoreapp" />
-    
+
     <NETSdkError Condition=" '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1' "
                  ResourceName="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21" />
 
     <ItemGroup>
-        <_GeneratedFiles Include="$(PublishDepsFilePath)"/>
-        <_GeneratedFiles Include="$(PublishRuntimeConfigFilePath)"/>
-        <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
+      <_GeneratedFiles Include="$(PublishDepsFilePath)"/>
+      <_GeneratedFiles Include="$(PublishRuntimeConfigFilePath)"/>
+      <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -59,8 +61,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TfmSpecificPackageFile Include="@(ResolvedFileToPublish->'$([MSBuild]::NormalizeDirectory($(PublishDir)))%(RelativePath)')">
         <PackagePath>tools/$(targetframework)/any/%(ResolvedFileToPublish.RelativePath)</PackagePath>
       </TfmSpecificPackageFile>
+
+      <TfmSpecificPackageFile Include="@(_EmbeddedApphostPaths)">
+        <PackagePath>tools/$(targetframework)/any/shims/%(_EmbeddedApphostPaths.ShimRuntimeIdentifier)</PackagePath>
+      </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
+
 
   <PropertyGroup>
     <ToolCommandName Condition=" '$(ToolCommandName)' == '' ">$(TargetName)</ToolCommandName>
@@ -72,6 +79,30 @@ Copyright (c) .NET Foundation. All rights reserved.
        EntryPointRelativePath="$(ToolEntryPoint)"
        CommandName="$(ToolCommandName)"
        ToolsSettingsFilePath="$(_ToolsSettingsFilePath)" />
+  </Target>
+
+  <Target Name="ResolveApphostAsset" DependsOnTargets="ResolveReferences;Publish">
+    <ItemGroup>
+      <_PackageToolShimRuntimeIdentifiers Include="$(PackageToolShimRuntimeIdentifiers)">
+
+      </_PackageToolShimRuntimeIdentifiers>
+    </ItemGroup>
+
+    <GenerateShims
+      DotNetAppHostExecutableNameWithoutExtension="$(_DotNetAppHostExecutableNameWithoutExtension)"
+      PackagedShimOutputDirectory="$(IntermediateOutputPath)/$(Configuration)/shims/$(targetframework)"
+      PackageId="$(PackageId)"
+      PackageToolShimRuntimeIdentifiers="@(_PackageToolShimRuntimeIdentifiers)"
+      PackageVersion="$(Version)"
+      ProjectAssetsFile="$(ProjectAssetsFile)"
+      ProjectPath="$(MSBuildProjectFullPath)"
+      TargetFrameworkMoniker="$(NuGetTargetMoniker)"
+      ToolCommandName="$(ToolCommandName)"
+      ToolEntryPoint="$(ToolEntryPoint)"
+      >
+
+      <Output TaskParameter="EmbeddedApphostPaths" ItemName="_EmbeddedApphostPaths" />
+    </GenerateShims>
   </Target>
 
 </Project>
