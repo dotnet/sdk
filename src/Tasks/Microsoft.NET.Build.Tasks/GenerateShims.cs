@@ -156,8 +156,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            throw new BuildErrorException(
-                $"Cannot find apphost for {runtimeTarget.RuntimeIdentifier}"); // TODO no check in loc wul
+            throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
         }
 
         private string ResolvePackageAssetPath(LockFileTargetLibrary package, string relativePath)
