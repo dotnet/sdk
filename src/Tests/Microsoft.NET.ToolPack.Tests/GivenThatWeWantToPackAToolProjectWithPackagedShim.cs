@@ -38,7 +38,7 @@ namespace Microsoft.NET.ToolPack.Tests
                 {
                     XNamespace ns = project.Root.Name.Namespace;
                     XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                    propertyGroup.Add(new XElement(ns + "PackageToolShimRuntimeIdentifiers", "win-x64;ubuntu-x64"));
+                    propertyGroup.Add(new XElement(ns + "PackageToolShimRuntimeIdentifiers", "win-x64;osx.10.12-x64"));
                     propertyGroup.Add(new XElement(ns + "ToolCommandName", _customToolCommandName));
 
                     if (multiTarget)
@@ -108,7 +108,7 @@ namespace Microsoft.NET.ToolPack.Tests
                     var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
                     allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/win-x64/{_customToolCommandName}.exe",
                         "Name should be the same as the command name even customized");
-                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/ubuntu-x64/{_customToolCommandName}",
+                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/osx.10.12-x64/{_customToolCommandName}",
                         "RID should be the exact match of the RID in the property, even Apphost only has version of win, osx and linux");
                 }
             }
