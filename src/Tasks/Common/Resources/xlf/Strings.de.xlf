@@ -405,8 +405,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
-        <source>Cannot find Apphost for {0}. {0} could be an invalid RuntimeIdentifier</source>
-        <target state="new">Cannot find Apphost for {0}. {0} could be an invalid RuntimeIdentifier</target>
+        <source>Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
+        <target state="new">Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</target>
         <note />
       </trans-unit>
     </body>

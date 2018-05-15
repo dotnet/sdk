@@ -55,19 +55,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
-        <PackagePath>tools/$(targetframework)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
+        <PackagePath>tools/$(TargetFramework)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
       </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="@(ResolvedFileToPublish->'$([MSBuild]::NormalizeDirectory($(PublishDir)))%(RelativePath)')">
-        <PackagePath>tools/$(targetframework)/any/%(ResolvedFileToPublish.RelativePath)</PackagePath>
+        <PackagePath>tools/$(TargetFramework)/any/%(ResolvedFileToPublish.RelativePath)</PackagePath>
       </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="@(_EmbeddedApphostPaths)">
-        <PackagePath>tools/$(targetframework)/any/shims/%(_EmbeddedApphostPaths.ShimRuntimeIdentifier)</PackagePath>
+        <PackagePath>tools/$(TargetFramework)/any/shims/%(_EmbeddedApphostPaths.ShimRuntimeIdentifier)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
-
 
   <PropertyGroup>
     <ToolCommandName Condition=" '$(ToolCommandName)' == '' ">$(TargetName)</ToolCommandName>
@@ -83,19 +82,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveApphostAsset" DependsOnTargets="ResolveReferences;Publish">
     <ItemGroup>
-      <_PackageToolShimRuntimeIdentifiers Include="$(PackageToolShimRuntimeIdentifiers)">
-
-      </_PackageToolShimRuntimeIdentifiers>
+      <_PackAsToolShimRuntimeIdentifiers Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
     <GenerateShims
       DotNetAppHostExecutableNameWithoutExtension="$(_DotNetAppHostExecutableNameWithoutExtension)"
-      PackagedShimOutputDirectory="$(IntermediateOutputPath)/$(Configuration)/shims/$(targetframework)"
+      PackagedShimOutputDirectory="$(IntermediateOutputPath)/$(Configuration)/shims/$(TargetFramework)"
       PackageId="$(PackageId)"
-      PackageToolShimRuntimeIdentifiers="@(_PackageToolShimRuntimeIdentifiers)"
       PackageVersion="$(Version)"
       ProjectAssetsFile="$(ProjectAssetsFile)"
       ProjectPath="$(MSBuildProjectFullPath)"
+      ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       TargetFrameworkMoniker="$(NuGetTargetMoniker)"
       ToolCommandName="$(ToolCommandName)"
       ToolEntryPoint="$(ToolEntryPoint)"

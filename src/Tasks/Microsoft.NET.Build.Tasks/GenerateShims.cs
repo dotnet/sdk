@@ -18,6 +18,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <summary>
         /// Path to assets.json.
         /// </summary>
+        [Required]
         public string ProjectAssetsFile { get; set; }
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks
         public string ToolEntryPoint { get; set; }
 
         /// <summary>
-        /// The output Directroy path of generated shims.
+        /// The output directory path of generated shims.
         /// </summary>
         [Required]
         public string PackagedShimOutputDirectory { get; set; }
@@ -72,10 +73,10 @@ namespace Microsoft.NET.Build.Tasks
         /// The RuntimeIdentifiers that shims will be generated for.
         /// </summary>
         [Required]
-        public ITaskItem[] PackageToolShimRuntimeIdentifiers { get; set; }
+        public ITaskItem[] ShimRuntimeIdentifiers { get; set; }
 
         /// <summary>
-        /// Path of generated shims. metadata "ShimRuntimeIdentifier" is used to map back to PackageToolShimRuntimeIdentifiers.
+        /// Path of generated shims. metadata "ShimRuntimeIdentifier" is used to map back to input ShimRuntimeIdentifiers.
         /// </summary>
         [Output]
         public ITaskItem[] EmbeddedApphostPaths { get; private set; }
@@ -87,27 +88,39 @@ namespace Microsoft.NET.Build.Tasks
             _packageResolver = NuGetPackageResolver.CreateResolver(lockFile, ProjectPath);
 
             var embeddedApphostPaths = new List<ITaskItem>();
-            foreach (var runtimeIdentifier in PackageToolShimRuntimeIdentifiers.Select(r => r.ItemSpec))
+            foreach (var runtimeIdentifier in ShimRuntimeIdentifiers.Select(r => r.ItemSpec))
             {
                 var resolvedApphostAssetPath = GetApphostAsset(targetFramework, lockFile, runtimeIdentifier);
 
-                var packagedShimOutputDirectoryAndRid = Path.Combine(PackagedShimOutputDirectory, runtimeIdentifier);
-                var appHostDestinationFilePath =
-                    Path.Combine(packagedShimOutputDirectoryAndRid,
-                        $"{ToolCommandName}{Path.GetExtension(resolvedApphostAssetPath)}");
-                var appBinaryFilePath =
-                    $".store/{PackageId.ToLowerInvariant()}/{PackageVersion}/{PackageId.ToLowerInvariant()}/{PackageVersion}/tools/{targetFramework.GetShortFolderName()}/any/{ToolEntryPoint}";
+                var packagedShimOutputDirectoryAndRid = Path.Combine(
+                        PackagedShimOutputDirectory,
+                        runtimeIdentifier);
+
+                var appHostDestinationFilePath = Path.Combine(
+                        packagedShimOutputDirectoryAndRid,
+                        ToolCommandName + Path.GetExtension(resolvedApphostAssetPath));
 
                 Directory.CreateDirectory(packagedShimOutputDirectoryAndRid);
-                if (File.Exists(appHostDestinationFilePath))
-                {
-                    File.Delete(appHostDestinationFilePath);
-                }
+
+                // This is the embedded string. We should normalize it on forward slash, so the file won't be different according to
+                // build machine.
+                var appBinaryFilePath = string.Join("/",
+                    new[] {
+                        ".store",
+                        PackageId.ToLowerInvariant(),
+                        PackageVersion,
+                        PackageId.ToLowerInvariant(),
+                        PackageVersion,
+                        "tools",
+                        targetFramework.GetShortFolderName(),
+                        "any",
+                        ToolEntryPoint});
 
                 AppHost.Create(
                     resolvedApphostAssetPath,
                     appHostDestinationFilePath,
-                    appBinaryFilePath
+                    appBinaryFilePath,
+                    overwriteExisting: true
                 );
 
                 var item = new TaskItem(appHostDestinationFilePath);
@@ -148,7 +161,8 @@ namespace Microsoft.NET.Build.Tasks
                         continue;
                     }
 
-                    var resolvedPackageAssetPath = ResolvePackageAssetPath(library, asset.Path);
+                    var resolvedPackageAssetPath = _packageResolver.ResolvePackageAssetPath(library, asset.Path);
+
                     if (Path.GetFileName(resolvedPackageAssetPath) == apphostName)
                     {
                         return resolvedPackageAssetPath;
@@ -157,17 +171,6 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
-        }
-
-        private string ResolvePackageAssetPath(LockFileTargetLibrary package, string relativePath)
-        {
-            var packagePath = _packageResolver.GetPackageDirectory(package.Name, package.Version);
-            return Path.Combine(packagePath, NormalizeRelativePath(relativePath));
-        }
-
-        private static string NormalizeRelativePath(string relativePath)
-        {
-            return relativePath.Replace('/', Path.DirectorySeparatorChar);
         }
     }
 }

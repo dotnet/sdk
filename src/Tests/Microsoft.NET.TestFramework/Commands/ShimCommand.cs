@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework.Commands
@@ -32,17 +31,6 @@ namespace Microsoft.NET.TestFramework.Commands
                 Arguments = args.ToList(),
                 WorkingDirectory = WorkingDirectory,
             };
-
-
-            string dotnetRoot = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
-            if (Environment.Is64BitProcess)
-            {
-                sdkCommandSpec.Environment.Add("DOTNET_ROOT", dotnetRoot);
-            }
-            else
-            {
-                sdkCommandSpec.Environment.Add("DOTNET_ROOT(x86)", dotnetRoot);
-            }
 
             return sdkCommandSpec;
         }
