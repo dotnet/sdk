@@ -31,7 +31,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 Arguments = args.ToList(),
                 WorkingDirectory = WorkingDirectory,
             };
-
+            TestContext.Current.AddTestEnvironmentVariables(sdkCommandSpec);
             return sdkCommandSpec;
         }
     }
