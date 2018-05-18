@@ -49,7 +49,7 @@ def static getBuildJobName(def configuration, def os) {
             }
 
             if (osBase == 'Windows_NT') {
-                Utilities:setMachineAffinity(newJob, 'windows.10.amd64.clientrs3.devex.open')
+                Utilities:setMachineAffinity(newJob, osBase, 'windows.10.amd64.clientrs3.devex.open')
             }
             else {
                 Utilities.setMachineAffinity(newJob, osBase, machineAffinity)
