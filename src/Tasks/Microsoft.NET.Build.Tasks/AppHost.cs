@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Text;
 
 namespace Microsoft.NET.Build.Tasks
@@ -43,10 +44,6 @@ namespace Microsoft.NET.Build.Tasks
                 throw new BuildErrorException(Strings.FileNameIsTooLong, appBinaryFilePath);
             }
 
-            var array = File.ReadAllBytes(appHostSourceFilePath);
-
-            SearchAndReplace(array, _bytesToSearch, bytesToWrite, appHostSourceFilePath);
-
             if (!Directory.Exists(destinationDirectory))
             {
                 Directory.CreateDirectory(destinationDirectory);
@@ -56,9 +53,12 @@ namespace Microsoft.NET.Build.Tasks
             File.Copy(appHostSourceFilePath, appHostDestinationFilePath, overwriteExisting);
 
             // Re-write ModifiedAppHostPath with the proper contents.
-            using (FileStream fs = new FileStream(appHostDestinationFilePath, FileMode.Truncate, FileAccess.ReadWrite, FileShare.Read))
+            using (var memoryMappedFile = MemoryMappedFile.CreateFromFile(appHostDestinationFilePath, FileMode.Open))
             {
-                fs.Write(array, 0, array.Length);
+                using (MemoryMappedViewAccessor accessor = memoryMappedFile.CreateViewAccessor())
+                {
+                    SearchAndReplace(accessor, _bytesToSearch, bytesToWrite, appHostSourceFilePath);
+                }
             }
         }
 
@@ -99,15 +99,15 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         // See: https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
-        private static int KMPSearch(byte[] pattern, byte[] bytes)
+        private static int KMPSearch(byte[] pattern, MemoryMappedViewAccessor accessor)
         {
             int m = 0;
             int i = 0;
             int[] table = ComputeKMPFailureFunction(pattern);
 
-            while (m + i < bytes.Length)
+            while (m + i < accessor.Capacity)
             {
-                if (pattern[i] == bytes[m + i])
+                if (pattern[i] == accessor.ReadByte(m + i))
                 {
                     if (i == pattern.Length - 1)
                     {
@@ -132,21 +132,30 @@ namespace Microsoft.NET.Build.Tasks
             return -1;
         }
 
-        private static void SearchAndReplace(byte[] array, byte[] searchPattern, byte[] patternToReplace, string appHostSourcePath)
+        private static void SearchAndReplace(
+            MemoryMappedViewAccessor accessor,
+            byte[] searchPattern,
+            byte[] patternToReplace,
+            string appHostSourcePath)
         {
-            int offset = KMPSearch(searchPattern, array);
-            if (offset < 0)
+            int position = KMPSearch(searchPattern, accessor);
+            if (position < 0)
             {
                 throw new BuildErrorException(Strings.AppHostHasBeenModified, appHostSourcePath, _placeHolder);
             }
 
-            patternToReplace.CopyTo(array, offset);
+            accessor.WriteArray(
+                position: position,
+                array: patternToReplace,
+                offset: 0,
+                count: patternToReplace.Length);
 
             if (patternToReplace.Length < searchPattern.Length)
             {
                 for (int i = patternToReplace.Length; i < searchPattern.Length; i++)
                 {
-                    array[i + offset] = 0x0;
+                    byte empty = 0x0;
+                    accessor.Write(i + position, empty);
                 }
             }
         }
