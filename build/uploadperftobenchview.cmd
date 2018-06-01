@@ -16,20 +16,20 @@ if "%architecture%" == "" (
 if "%OS%" == "" (
     echo EnvVar OS should be set; exiting...
     exit /b 1)
-if "%runType%" == "" (
-    echo EnvVar runType should be set; exiting...
-    exit /b 1)
-if "%GIT_BRANCH%" == "" (
-    echo EnvVar GIT_BRANCH should be set; exiting...
-    exit /b 1)
-if "%GIT_COMMIT%" == "" (
-    echo EnvVar GIT_COMMIT should be set; exiting...
-    exit /b 1)
 if /I "%runType%" == "private" (
     if "%BenchviewCommitName%" == "" (
         echo EnvVar BenchviewCommitName should be set; exiting...
-        exit /b 1))
-
+        exit /b 1)
+else if /I "%runType%" == "rolling" (
+    if "%GIT_COMMIT%" == "" (
+        echo EnvVar GIT_COMMIT should be set; exiting...
+        exit /b 1)
+else (
+        echo EnvVar runType should be set; exiting...
+        exit /b 1)
+if "%GIT_BRANCH%" == "" (
+    echo EnvVar GIT_BRANCH should be set; exiting...
+    exit /b 1)
 
 powershell -NoProfile wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile "%perfWorkingDirectory%\nuget.exe"
 
@@ -68,9 +68,9 @@ py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\submission.py" "
                     --metadata "%perfWorkingDirectory%\submission-metadata.json" ^
                     --group "SDK Perf Tests" ^
                     --type "%runType%" ^
-                    --config-name %configuration% ^
-                    --config Configuration %configuration% ^
-                    --architecture %architecture% ^
+                    --config-name "%configuration%" ^
+                    --config Configuration "%configuration%" ^
+                    --architecture "%architecture%" ^
                     --machinepool "perfsnake" ^
                     -o "%perfWorkingDirectory%\submission.json"
 
