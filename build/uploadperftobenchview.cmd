@@ -16,17 +16,15 @@ if "%architecture%" == "" (
 if "%OS%" == "" (
     echo EnvVar OS should be set; exiting...
     exit /b 1)
-if /I "%runType%" == "private" (
-    if "%BenchviewCommitName%" == "" (
-        echo EnvVar BenchviewCommitName should be set; exiting...
-        exit /b 1)
-else if /I "%runType%" == "rolling" (
-    if "%GIT_COMMIT%" == "" (
-        echo EnvVar GIT_COMMIT should be set; exiting...
-        exit /b 1)
-else (
-        echo EnvVar runType should be set; exiting...
-        exit /b 1)
+if /I not "%runType%" == "private" if /I not "%runType%" == "rolling" (
+    echo EnvVar runType should be set; exiting...
+    exit /b 1)
+if /I "%runType%" == "private" if "%BenchviewCommitName%" == "" (
+    echo EnvVar BenchviewCommitName should be set; exiting...
+    exit /b 1)
+if /I "%runType%" == "rolling" if "%GIT_COMMIT%" == "" (
+    echo EnvVar GIT_COMMIT should be set; exiting...
+    exit /b 1)
 if "%GIT_BRANCH%" == "" (
     echo EnvVar GIT_BRANCH should be set; exiting...
     exit /b 1)
