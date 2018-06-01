@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Microsoft.NET.Build.Tasks
@@ -99,18 +100,22 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         // See: https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
-        private static int KMPSearch(byte[] pattern, MemoryMappedViewAccessor accessor)
+        private static unsafe int KMPSearch(byte[] pattern, MemoryMappedViewAccessor accessor)
         {
             int m = 0;
             int i = 0;
             int[] table = ComputeKMPFailureFunction(pattern);
 
+            byte* ptreMemoryMappedView = (byte*)0;
+            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptreMemoryMappedView);
+
             while (m + i < accessor.Capacity)
             {
-                if (pattern[i] == accessor.ReadByte(m + i))
+                if (pattern[i] == *(ptreMemoryMappedView + m + i))
                 {
                     if (i == pattern.Length - 1)
                     {
+                        accessor.SafeMemoryMappedViewHandle.ReleasePointer();
                         return m;
                     }
                     i++;
@@ -129,6 +134,8 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
             }
+
+            accessor.SafeMemoryMappedViewHandle.ReleasePointer();
             return -1;
         }
 
@@ -150,14 +157,24 @@ namespace Microsoft.NET.Build.Tasks
                 offset: 0,
                 count: patternToReplace.Length);
 
+            Pad0(accessor, searchPattern, patternToReplace, position);
+        }
+
+        private static unsafe void Pad0(MemoryMappedViewAccessor accessor, byte[] searchPattern, byte[] patternToReplace, int position)
+        {
+            byte* ptreMemoryMappedView = (byte*)0;
+            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptreMemoryMappedView);
+
             if (patternToReplace.Length < searchPattern.Length)
             {
                 for (int i = patternToReplace.Length; i < searchPattern.Length; i++)
                 {
                     byte empty = 0x0;
-                    accessor.Write(i + position, empty);
+                    *(ptreMemoryMappedView + i + position) = empty;
                 }
             }
+
+            accessor.SafeMemoryMappedViewHandle.ReleasePointer();
         }
     }
 }
