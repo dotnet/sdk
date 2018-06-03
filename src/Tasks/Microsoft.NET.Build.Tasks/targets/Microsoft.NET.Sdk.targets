@@ -412,7 +412,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RunCommand Condition="'$(RunCommand)' == ''">$(ExecutingRuntime)</RunCommand>
 
         <_NetCoreRunArguments>&quot;$(TargetPath)&quot;</_NetCoreRunArguments>
-        <_NetCoreRunArguments Condition="'$(ExecutingRuntime)' == 'dotnet'">exec $(_NetCoreRunArguments)</_NetCoreRunArguments>
 
         <RunArguments Condition="'$(RunArguments)' == '' and '$(StartArguments)' != ''">$(_NetCoreRunArguments) $(StartArguments)</RunArguments>
         <RunArguments Condition="'$(RunArguments)' == ''">$(_NetCoreRunArguments)</RunArguments>
