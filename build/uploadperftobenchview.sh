@@ -50,7 +50,10 @@ then
     exit 1
 fi
 
-rm -r $perfWorkingDirectory/Microsoft.BenchView.JSONFormat
+rm -r -f $perfWorkingDirectory/Microsoft.BenchView.JSONFormat > /dev/null 2>&1
+
+# Install nuget
+sudo apt install nuget
 nuget install Microsoft.BenchView.JSONFormat -Source http://benchviewtestfeed.azurewebsites.net/nuget -OutputDirectory $perfWorkingDirectory -Prerelease -ExcludeVersion || { echo Failed to install Microsoft.BenchView.JSONFormat NuPkg && exit 1 ; }
 
 # Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
