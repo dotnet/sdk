@@ -7,6 +7,7 @@
     <OutputType>Library</OutputType>
     <PackageId>Microsoft.NET.Sdk</PackageId>
     <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
