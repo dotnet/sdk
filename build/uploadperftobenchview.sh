@@ -53,7 +53,9 @@ fi
 rm -r -f $perfWorkingDirectory/Microsoft.BenchView.JSONFormat > /dev/null 2>&1
 
 if [ ! -d $perfWorkingDirectory/Microsoft.BenchView.JSONFormat ]; then
-    curl "http://benchviewtestfeed.azurewebsites.net/nuget/FindPackagesById()?id='Microsoft.BenchView.JSONFormat'" | grep "content type" | sed "$ s/.*src=\"\([^\"]*\)\".*/\1/;tx;d;:x" | xargs curl -o $perfWorkingDirectory/benchview.zip
+    # curl "http://benchviewtestfeed.azurewebsites.net/nuget/FindPackagesById()?id='Microsoft.BenchView.JSONFormat'" | grep "content type" | sed "$ s/.*src=\"\([^\"]*\)\".*/\1/;tx;d;:x" | xargs curl -o $perfWorkingDirectory/benchview.zip http://benchviewtestfeed.azurewebsites.net/api/v2/package/microsoft.benchview.jsonformat/0.1.0-pre001
+
+    curl -o $perfWorkingDirectory/benchview.zip http://benchviewtestfeed.azurewebsites.net/api/v2/package/microsoft.benchview.jsonformat/0.1.0-pre001
     unzip -q -o $perfWorkingDirectory/benchview.zip -d $perfWorkingDirectory/Microsoft.BenchView.JSONFormat
 fi
 # nuget install Microsoft.BenchView.JSONFormat -Source http://benchviewtestfeed.azurewebsites.net/nuget -OutputDirectory $perfWorkingDirectory -Prerelease -ExcludeVersion || { echo Failed to install Microsoft.BenchView.JSONFormat NuPkg && exit 1 ; }
