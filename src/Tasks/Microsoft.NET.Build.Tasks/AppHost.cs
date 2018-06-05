@@ -108,6 +108,7 @@ namespace Microsoft.NET.Build.Tasks
 
             byte* bytes = null;
             accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref bytes);
+            bytes = bytes + accessor.PointerOffset;
 
             try
             {
@@ -168,17 +169,17 @@ namespace Microsoft.NET.Build.Tasks
             Pad0(accessor, searchPattern, patternToReplace, position);
         }
 
-        private static unsafe void Pad0(MemoryMappedViewAccessor accessor, byte[] searchPattern, byte[] patternToReplace, int position)
+        private static unsafe void Pad0(MemoryMappedViewAccessor accessor, byte[] searchPattern, byte[] patternToReplace, int offset)
         {
-            byte* ptrMemoryMappedView = null;
-            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptrMemoryMappedView);
+            byte* bytes = null;
+            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref bytes);
+            bytes = bytes + accessor.PointerOffset;
 
             if (patternToReplace.Length < searchPattern.Length)
             {
                 for (int i = patternToReplace.Length; i < searchPattern.Length; i++)
                 {
-                    byte empty = 0x0;
-                    *(ptrMemoryMappedView + i + position) = empty;
+                    bytes[i + offset] = 0x0;
                 }
             }
 
