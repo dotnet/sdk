@@ -31,7 +31,7 @@ then
         echo EnvVar BenchviewCommitName should be set; exiting...
         exit 1
     fi
-else 
+else
     if ! env | grep -q ^runType=rolling
     then
         if ! env | grep -q ^GIT_COMMIT=
@@ -39,7 +39,7 @@ else
             echo EnvVar GIT_COMMIT should be set; exiting...
             exit 1
         fi
-    else (
+    else
             echo EnvVar runType should be set; exiting...
             exit 1
     fi
