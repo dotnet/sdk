@@ -79,6 +79,8 @@ then
 fi
 echo BenchViewName: $benchViewName
 
+cd $perfWorkingDirectory
+
 echo Creating: $perfWorkingDirectory/submission-metadata.json
 python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/submission-metadata.py" --name "$benchViewName" --user-email "dotnet-bot@microsoft.com" \
                     -o "$perfWorkingDirectory/submission-metadata.json" || { echo Failed to create: $perfWorkingDirectory/submission-metadata.json && exit 1 ; }
