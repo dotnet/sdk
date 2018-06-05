@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
             File.Copy(appHostSourceFilePath, appHostDestinationFilePath, overwriteExisting);
 
             // Re-write ModifiedAppHostPath with the proper contents.
-            using (var memoryMappedFile = MemoryMappedFile.CreateFromFile(appHostDestinationFilePath, FileMode.Open))
+            using (var memoryMappedFile = MemoryMappedFile.CreateFromFile(appHostDestinationFilePath))
             {
                 using (MemoryMappedViewAccessor accessor = memoryMappedFile.CreateViewAccessor())
                 {
@@ -106,37 +106,45 @@ namespace Microsoft.NET.Build.Tasks
             int i = 0;
             int[] table = ComputeKMPFailureFunction(pattern);
 
-            byte* ptreMemoryMappedView = (byte*)0;
-            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptreMemoryMappedView);
+            byte* bytes = null;
+            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref bytes);
 
-            while (m + i < accessor.Capacity)
+            try
             {
-                if (pattern[i] == *(ptreMemoryMappedView + m + i))
+                while (m + i < accessor.Capacity)
                 {
-                    if (i == pattern.Length - 1)
+                    if (pattern[i] == bytes[m + i])
                     {
-                        accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-                        return m;
-                    }
-                    i++;
-                }
-                else
-                {
-                    if (table[i] > -1)
-                    {
-                        m = m + i - table[i];
-                        i = table[i];
+                        if (i == pattern.Length - 1)
+                        {
+                            return m;
+                        }
+                        i++;
                     }
                     else
                     {
-                        m++;
-                        i = 0;
+                        if (table[i] > -1)
+                        {
+                            m = m + i - table[i];
+                            i = table[i];
+                        }
+                        else
+                        {
+                            m++;
+                            i = 0;
+                        }
                     }
                 }
-            }
 
-            accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-            return -1;
+                return -1;
+            }
+            finally
+            {
+                if (accessor.SafeMemoryMappedViewHandle != null)
+                {
+                    accessor.SafeMemoryMappedViewHandle.ReleasePointer();
+                }
+            }
         }
 
         private static void SearchAndReplace(
@@ -162,15 +170,15 @@ namespace Microsoft.NET.Build.Tasks
 
         private static unsafe void Pad0(MemoryMappedViewAccessor accessor, byte[] searchPattern, byte[] patternToReplace, int position)
         {
-            byte* ptreMemoryMappedView = (byte*)0;
-            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptreMemoryMappedView);
+            byte* ptrMemoryMappedView = null;
+            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptrMemoryMappedView);
 
             if (patternToReplace.Length < searchPattern.Length)
             {
                 for (int i = patternToReplace.Length; i < searchPattern.Length; i++)
                 {
                     byte empty = 0x0;
-                    *(ptreMemoryMappedView + i + position) = empty;
+                    *(ptrMemoryMappedView + i + position) = empty;
                 }
             }
 
