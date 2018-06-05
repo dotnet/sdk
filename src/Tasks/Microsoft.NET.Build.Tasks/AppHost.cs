@@ -100,44 +100,65 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         // See: https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
-        private static unsafe int KMPSearch(byte[] pattern, MemoryMappedViewAccessor accessor)
+        private static unsafe int KMPSearch(byte[] pattern, byte* bytes, long bytesLength)
         {
             int m = 0;
             int i = 0;
             int[] table = ComputeKMPFailureFunction(pattern);
 
+            while (m + i < bytesLength)
+            {
+                if (pattern[i] == bytes[m + i])
+                {
+                    if (i == pattern.Length - 1)
+                    {
+                        return m;
+                    }
+                    i++;
+                }
+                else
+                {
+                    if (table[i] > -1)
+                    {
+                        m = m + i - table[i];
+                        i = table[i];
+                    }
+                    else
+                    {
+                        m++;
+                        i = 0;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        private static unsafe void SearchAndReplace(
+            MemoryMappedViewAccessor accessor,
+            byte[] searchPattern,
+            byte[] patternToReplace,
+            string appHostSourcePath)
+        {
             byte* bytes = null;
             accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref bytes);
             bytes = bytes + accessor.PointerOffset;
 
             try
             {
-                while (m + i < accessor.Capacity)
+                int position = KMPSearch(searchPattern, bytes, accessor.Capacity);
+                if (position < 0)
                 {
-                    if (pattern[i] == bytes[m + i])
-                    {
-                        if (i == pattern.Length - 1)
-                        {
-                            return m;
-                        }
-                        i++;
-                    }
-                    else
-                    {
-                        if (table[i] > -1)
-                        {
-                            m = m + i - table[i];
-                            i = table[i];
-                        }
-                        else
-                        {
-                            m++;
-                            i = 0;
-                        }
-                    }
+                    throw new BuildErrorException(Strings.AppHostHasBeenModified, appHostSourcePath, _placeHolder);
                 }
 
-                return -1;
+                accessor.WriteArray(
+                    position: position,
+                    array: patternToReplace,
+                    offset: 0,
+                    count: patternToReplace.Length);
+
+                Pad0(searchPattern, patternToReplace, bytes, position);
             }
             finally
             {
@@ -148,33 +169,8 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static void SearchAndReplace(
-            MemoryMappedViewAccessor accessor,
-            byte[] searchPattern,
-            byte[] patternToReplace,
-            string appHostSourcePath)
+        private static unsafe void Pad0(byte[] searchPattern, byte[] patternToReplace, byte* bytes, int offset)
         {
-            int position = KMPSearch(searchPattern, accessor);
-            if (position < 0)
-            {
-                throw new BuildErrorException(Strings.AppHostHasBeenModified, appHostSourcePath, _placeHolder);
-            }
-
-            accessor.WriteArray(
-                position: position,
-                array: patternToReplace,
-                offset: 0,
-                count: patternToReplace.Length);
-
-            Pad0(accessor, searchPattern, patternToReplace, position);
-        }
-
-        private static unsafe void Pad0(MemoryMappedViewAccessor accessor, byte[] searchPattern, byte[] patternToReplace, int offset)
-        {
-            byte* bytes = null;
-            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref bytes);
-            bytes = bytes + accessor.PointerOffset;
-
             if (patternToReplace.Length < searchPattern.Length)
             {
                 for (int i = patternToReplace.Length; i < searchPattern.Length; i++)
@@ -182,8 +178,6 @@ namespace Microsoft.NET.Build.Tasks
                     bytes[i + offset] = 0x0;
                 }
             }
-
-            accessor.SafeMemoryMappedViewHandle.ReleasePointer();
         }
     }
 }
