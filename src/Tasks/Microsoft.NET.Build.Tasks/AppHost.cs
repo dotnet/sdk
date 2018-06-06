@@ -140,12 +140,13 @@ namespace Microsoft.NET.Build.Tasks
             byte[] patternToReplace,
             string appHostSourcePath)
         {
-            byte* bytes = null;
-            accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref bytes);
-            bytes = bytes + accessor.PointerOffset;
+            byte* pointer = null;
 
             try
             {
+                accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref pointer);
+                byte* bytes = pointer + accessor.PointerOffset;
+
                 int position = KMPSearch(searchPattern, bytes, accessor.Capacity);
                 if (position < 0)
                 {
@@ -162,7 +163,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             finally
             {
-                if (accessor.SafeMemoryMappedViewHandle != null)
+                if (pointer != null)
                 {
                     accessor.SafeMemoryMappedViewHandle.ReleasePointer();
                 }
