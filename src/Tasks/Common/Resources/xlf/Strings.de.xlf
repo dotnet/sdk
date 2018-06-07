@@ -7,6 +7,11 @@
         <target state="needs-review-translation">Geben Sie mindestens ein mögliches Zielframework an.</target>
         <note>{StrBegin="NETSDK1001: "}</note>
       </trans-unit>
+      <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
+        <source>NETSDK1066: You’re using a .NET Standard 1.5 or higher library but targeting a .NET Framework without built-in support. Visit https://go.microsoft.com/fwlink/?linkid=874511 for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
+        <target state="new">NETSDK1066: You’re using a .NET Standard 1.5 or higher library but targeting a .NET Framework without built-in support. Visit https://go.microsoft.com/fwlink/?linkid=874511 for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</target>
+        <note>{StrBegin="NETSDK1066: "}</note>
+      </trans-unit>
       <trans-unit id="NoCompatibleTargetFramework">
         <source>NETSDK1002: Project '{0}' targets '{2}'. It cannot be referenced by a project that targets '{1}'.</source>
         <target state="needs-review-translation">Das Projekt "{0}" hat das Ziel "{2}". Ein Verweis von einem Projekt mit dem Ziel "{1}" ist nicht möglich.</target>

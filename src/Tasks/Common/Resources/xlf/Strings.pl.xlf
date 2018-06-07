@@ -7,6 +7,11 @@
         <target state="needs-review-translation">Należy określić co najmniej jedną możliwą platformę docelową.</target>
         <note>{StrBegin="NETSDK1001: "}</note>
       </trans-unit>
+      <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
+        <source>NETSDK1066: You’re using a .NET Standard 1.5 or higher library but targeting a .NET Framework without built-in support. Visit https://go.microsoft.com/fwlink/?linkid=874511 for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
+        <target state="new">NETSDK1066: You’re using a .NET Standard 1.5 or higher library but targeting a .NET Framework without built-in support. Visit https://go.microsoft.com/fwlink/?linkid=874511 for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</target>
+        <note>{StrBegin="NETSDK1066: "}</note>
+      </trans-unit>
       <trans-unit id="NoCompatibleTargetFramework">
         <source>NETSDK1002: Project '{0}' targets '{2}'. It cannot be referenced by a project that targets '{1}'.</source>
         <target state="needs-review-translation">Projekt „{0}” ma platformę docelową „{2}”. Nie może on być przywoływany przez projekt z platformą docelową „{1}”.</target>
