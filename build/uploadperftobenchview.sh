@@ -79,8 +79,7 @@ then
 fi
 echo BenchViewName: $benchViewName
 
-echo Moving to: $perfWorkingDirectory
-cd $perfWorkingDirectory
+
 pwd
 ls
 
