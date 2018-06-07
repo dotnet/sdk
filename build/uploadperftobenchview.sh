@@ -79,16 +79,11 @@ then
 fi
 echo BenchViewName: $benchViewName
 
-
-pwd
-ls
-
 echo Creating: $perfWorkingDirectory/submission-metadata.json
 python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/submission-metadata.py" --name "$benchViewName" --user-email "dotnet-bot@microsoft.com" \
                     -o "$perfWorkingDirectory/submission-metadata.json" || { echo Failed to create: $perfWorkingDirectory/submission-metadata.json && exit 1 ; }
 
 echo Creating: $perfWorkingDirectory/build.json
-echo Command: python3.5 $perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/build.py git --branch $GIT_BRANCH_WITHOUT_ORIGIN --type $runType -o $perfWorkingDirectory/build.json
 python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/build.py" git --branch $GIT_BRANCH_WITHOUT_ORIGIN --type "$runType" \
                    -o "$perfWorkingDirectory/build.json" || { echo Failed to create: $perfWorkingDirectory/build.json && exit 1 ; }
 
@@ -97,6 +92,7 @@ python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/machinedat
                    -o "$perfWorkingDirectory/machinedata.json" || { echo Failed to create: $perfWorkingDirectory/machinedata.json && exit 1 ; }
 
 echo Creating: $perfWorkingDirectory/measurement.json
+find $perfWorkingDirectory -maxdepth 1 -type f -name "*.json"
 for i in $(find $perfWorkingDirectory -maxdepth 1 -type f -name "*.json"); do
     echo Processing: $i
     python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/measurement.py" xunitscenario "$i" \--better desc --append \
