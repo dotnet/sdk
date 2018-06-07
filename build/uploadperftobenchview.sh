@@ -79,7 +79,10 @@ then
 fi
 echo BenchViewName: $benchViewName
 
+echo Moving to: $perfWorkingDirectory
 cd $perfWorkingDirectory
+pwd
+ls
 
 echo Creating: $perfWorkingDirectory/submission-metadata.json
 python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/submission-metadata.py" --name "$benchViewName" --user-email "dotnet-bot@microsoft.com" \
