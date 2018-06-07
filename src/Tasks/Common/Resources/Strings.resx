@@ -381,4 +381,8 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</value>
     <comment>{StrBegin="NETSDK1065: "}</comment>
   </data>
+  <data name="NETFrameworkToNonBuiltInNETStandard" xml:space="preserve">
+    <value>NETSDK1066: You’re using a .NET Standard 1.5 or higher library but targeting a .NET Framework without built-in support. Visit https://go.microsoft.com/fwlink/?linkid=874511 for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</value>
+    <comment>{StrBegin="NETSDK1066: "}</comment>
+  </data>
 </root>
