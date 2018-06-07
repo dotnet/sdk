@@ -92,7 +92,7 @@ python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/machinedat
                    -o "$perfWorkingDirectory/machinedata.json" || { echo Failed to create: $perfWorkingDirectory/machinedata.json && exit 1 ; }
 
 echo Creating: $perfWorkingDirectory/measurement.json
-for i in $(find $perfWorkingDirectory -maxdepth 1 -type f -name "*.xml"); do
+for i in "$(find $perfWorkingDirectory -maxdepth 1 -type f -name "*.xml")"; do
     echo Processing: $i
     python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/measurement.py" xunitscenario "$i" \--better desc --append \
                        -o "$perfWorkingDirectory/measurement.json" || { echo Failed to process: $i && exit 1 ; }
