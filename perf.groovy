@@ -54,7 +54,6 @@ def static getBuildJobName(def configuration, def os) {
             }
 
             def archiveSettings = new ArchivalSettings()
-            archiveSettings.addFiles("artifacts/${config}/TestResults/Performance/*.xml")
             archiveSettings.addFiles("artifacts/${config}/TestResults/Performance/*.json")
             archiveSettings.setAlwaysArchive()
             Utilities.addArchival(newJob, archiveSettings)
@@ -133,7 +132,6 @@ def static getBuildJobName(def configuration, def os) {
             }
 
             def archiveSettings = new ArchivalSettings()
-            archiveSettings.addFiles("artifacts/${config}/TestResults/Performance/*.xml")
             archiveSettings.addFiles("artifacts/${config}/TestResults/Performance/*.json")
             archiveSettings.setAlwaysArchive()
             Utilities.addArchival(newJob, archiveSettings)
