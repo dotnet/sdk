@@ -99,6 +99,7 @@ def static getBuildJobName(def configuration, def os) {
         ['x64'].each { arch ->
             def jobName = "SDK_Perf_${os}_${arch}"
             def newJob = job(Utilities.getFullJobName(project, jobName, isPR)) {
+            def perfWorkingDirectory = "\${WORKSPACE}/artifacts/${config}/TestResults/Performance"
 
                 // Set the label.
                 label('ubuntu_1604_clr_perf')
@@ -118,10 +119,10 @@ def static getBuildJobName(def configuration, def os) {
 
                 steps {
                    // Build solution and run the performance tests
-                   shell("./build.sh --configuration ${config} --ci --perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${WORKSPACE}/artifacts/${config}/TestResults/Performance\" /p:PerfCollectionType=stopwatch")
+                   shell("./build.sh --configuration ${config} --ci --perf /p:PerfIterations=10 /p:PerfOutputDirectory=\"${perfWorkingDirectory}\" /p:PerfCollectionType=stopwatch")
 
                    // Upload perf results to BenchView
-                   shell("export perfWorkingDirectory=${WORKSPACE}/artifacts/${config}/TestResults/Performance\n" +
+                   shell("export perfWorkingDirectory=${perfWorkingDirectory}\n" +
                    "export configuration=${config}\n" +
                    "export architecture=${arch}\n" +
                    "export OS=${os}\n" +
