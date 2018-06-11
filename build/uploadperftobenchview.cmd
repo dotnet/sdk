@@ -28,6 +28,10 @@ if /I "%runType%" == "rolling" if "%GIT_COMMIT%" == "" (
 if "%GIT_BRANCH%" == "" (
     echo EnvVar GIT_BRANCH should be set; exiting...
     exit /b 1)
+if not exist %perfWorkingDirectory%\nul ( 
+    echo $perfWorkingDirectory does not exist; exiting...
+    exit 1)
+
 
 powershell -NoProfile wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile "%perfWorkingDirectory%\nuget.exe"
 
