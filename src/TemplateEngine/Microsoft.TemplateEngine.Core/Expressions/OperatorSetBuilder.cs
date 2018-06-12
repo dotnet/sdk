@@ -626,7 +626,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
             public bool TryCoreConvert<T>(object source, out T result)
             {
-                result = default;
+                result = default(T);
 
                 switch(result)
                 {
@@ -661,7 +661,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                 }
                 catch
                 {
-                    result = default;
+                    result = default(T);
                     return false;
                 }
             }
@@ -679,7 +679,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             result = (T)(object)value;
                             return true;
                         }
-                        result = default;
+                        result = default(T);
                         return false;
                     default:
                         try
@@ -689,7 +689,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                         }
                         catch
                         {
-                            result = default;
+                            result = default(T);
                             return false;
                         }
                 }
@@ -708,7 +708,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             result = (T)(object)f;
                             return true;
                         }
-                        result = default;
+                        result = default(T);
                         return false;
                     default:
                         try
@@ -718,7 +718,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                         }
                         catch
                         {
-                            result = default;
+                            result = default(T);
                             return false;
                         }
                 }
@@ -737,7 +737,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             result = (T)(object)f;
                             return true;
                         }
-                        result = default;
+                        result = default(T);
                         return false;
                     default:
                         try
@@ -747,7 +747,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                         }
                         catch
                         {
-                            result = default;
+                            result = default(T);
                             return false;
                         }
                 }
@@ -766,7 +766,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             result = (T)(object)f;
                             return true;
                         }
-                        result = default;
+                        result = default(T);
                         return false;
                     default:
                         try
@@ -776,7 +776,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                         }
                         catch
                         {
-                            result = default;
+                            result = default(T);
                             return false;
                         }
                 }
@@ -795,7 +795,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             result = (T)(object)f;
                             return true;
                         }
-                        result = default;
+                        result = default(T);
                         return false;
                     default:
                         try
@@ -805,7 +805,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                         }
                         catch
                         {
-                            result = default;
+                            result = default(T);
                             return false;
                         }
                 }
