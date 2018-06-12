@@ -665,11 +665,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     return null;
                 }
-
-                return literal;
             }
 
-            return literal.Substring(1, literal.Length - 2);
+            return literal;
         }
 
         public ICreationEffects GetCreationEffects(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
