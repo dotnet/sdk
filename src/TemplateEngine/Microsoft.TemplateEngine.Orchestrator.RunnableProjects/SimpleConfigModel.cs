@@ -824,26 +824,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
 
+            _sources = EvaluateSources(parameters, rootVariableCollection, configFile, resolvedNameParamValue);
+
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
             foreach (ICreationPathModel pathModel in PrimaryOutputs)
             {
                 pathModel.EvaluateCondition(EnvironmentSettings, rootVariableCollection);
 
-                if (pathModel.ConditionResult && resolvedNameParamValue != null)
+                if (pathModel.ConditionResult)
                 {
-                    if (SourceName != null)
+                    foreach (FileSourceMatchInfo sourceInfo in _sources)
                     {
-                        // this path will be included in the outputs, replace the name (same thing we do to other file paths)
-                        pathModel.PathResolved = pathModel.PathOriginal.Replace(SourceName, (string)resolvedNameParamValue);
-                    }
-                    else
-                    {
-                        pathModel.PathResolved = pathModel.PathOriginal;
+                        if (sourceInfo.Renames.TryGetValue(pathModel.PathOriginal, out string targetPath))
+                        {
+                            pathModel.PathResolved = targetPath;
+                        }
+                        else
+                        {
+                            pathModel.PathResolved = pathModel.PathOriginal;
+                        }
                     }
                 }
             }
-
-            _sources = EvaluateSources(parameters, rootVariableCollection, configFile, resolvedNameParamValue);
         }
 
         private List<FileSourceMatchInfo> EvaluateSources(IParameterSet parameters, IVariableCollection rootVariableCollection, IFileSystemInfo configFile, object resolvedNameParamValue)
