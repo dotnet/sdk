@@ -626,20 +626,25 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
             public bool TryCoreConvert<T>(object source, out T result)
             {
-                result = default(T);
-
-                switch(result)
+                if (typeof(T) == typeof(bool))
                 {
-                    case bool _:
-                        return TryCoreConvertToBool(source, out result);
-                    case int _:
-                        return TryCoreConvertToInt(source, out result);
-                    case long _:
-                        return TryCoreConvertToLong(source, out result);
-                    case float _:
-                        return TryCoreConvertToFloat(source, out result);
-                    case double _:
-                        return TryCoreConvertToDouble(source, out result);
+                    return TryCoreConvertToBool(source, out result);
+                }
+                else if (typeof(T) == typeof(int))
+                {
+                    return TryCoreConvertToInt(source, out result);
+                }
+                else if (typeof(T) == typeof(long))
+                {
+                    return TryCoreConvertToLong(source, out result);
+                }
+                else if (typeof(T) == typeof(float))
+                {
+                    return TryCoreConvertToFloat(source, out result);
+                }
+                else if (typeof(T) == typeof(double))
+                {
+                    return TryCoreConvertToDouble(source, out result);
                 }
 
                 if (typeof(T).GetTypeInfo().IsEnum && source is string s)
