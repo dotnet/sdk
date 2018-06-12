@@ -71,6 +71,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One or more postActions have a malformed or missing manualInstructions value in &apos;{0}&apos;.
+        /// </summary>
+        internal static string Authoring_MalformedPostActionManualInstructions {
+            get {
+                return ResourceManager.GetString("Authoring_MalformedPostActionManualInstructions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing &apos;{0}&apos; in &apos;{1}&apos;.
         /// </summary>
         internal static string Authoring_MissingValue {

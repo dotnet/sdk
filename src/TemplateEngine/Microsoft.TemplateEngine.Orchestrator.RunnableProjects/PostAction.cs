@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
@@ -54,19 +54,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string chosenInstruction = string.Empty;
 
-                foreach (KeyValuePair<string, string> modelInstruction in model.ManualInstructionInfo)
+                if (model.ManualInstructionInfo != null)
                 {
-                    if (string.IsNullOrEmpty(modelInstruction.Value))
-                    {   // no condition
-                        if (string.IsNullOrEmpty(chosenInstruction))
-                        {   // No condition, and no instruction previously chosen. Take this one.
-                            // We don't want a default instruction to override a conditional one.
+                    foreach (KeyValuePair<string, string> modelInstruction in model.ManualInstructionInfo)
+                    {
+                        if (string.IsNullOrEmpty(modelInstruction.Value))
+                        {   // no condition
+                            if (string.IsNullOrEmpty(chosenInstruction))
+                            {   // No condition, and no instruction previously chosen. Take this one.
+                                // We don't want a default instruction to override a conditional one.
+                                chosenInstruction = modelInstruction.Key;
+                            }
+                        }
+                        else if (Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Value, rootVariableCollection))
+                        {   // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
                             chosenInstruction = modelInstruction.Key;
                         }
-                    }
-                    else if (Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, modelInstruction.Value, rootVariableCollection))
-                    {   // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
-                        chosenInstruction = modelInstruction.Key;
                     }
                 }
 
