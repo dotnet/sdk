@@ -626,11 +626,27 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
             public bool TryCoreConvert<T>(object source, out T result)
             {
-                if (typeof(T).GetTypeInfo().IsEnum && source is string)
+                result = default;
+
+                switch(result)
+                {
+                    case bool _:
+                        return TryCoreConvertToBool(source, out result);
+                    case int _:
+                        return TryCoreConvertToInt(source, out result);
+                    case long _:
+                        return TryCoreConvertToLong(source, out result);
+                    case float _:
+                        return TryCoreConvertToFloat(source, out result);
+                    case double _:
+                        return TryCoreConvertToDouble(source, out result);
+                }
+
+                if (typeof(T).GetTypeInfo().IsEnum && source is string s)
                 {
                     try
                     {
-                        result = (T) Enum.Parse(typeof(T), (string) source, true);
+                        result = (T) Enum.Parse(typeof(T), s, true);
                         return true;
                     }
                     catch
@@ -645,8 +661,153 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                 }
                 catch
                 {
-                    result = default(T);
+                    result = default;
                     return false;
+                }
+            }
+
+            private static bool TryCoreConvertToBool<T>(object source, out T result)
+            {
+                switch (source)
+                {
+                    case bool x:
+                        result = (T)source;
+                        return true;
+                    case string x:
+                        if (bool.TryParse(x, out bool value))
+                        {
+                            result = (T)(object)value;
+                            return true;
+                        }
+                        result = default;
+                        return false;
+                    default:
+                        try
+                        {
+                            result = (T)Convert.ChangeType(source, typeof(T));
+                            return true;
+                        }
+                        catch
+                        {
+                            result = default;
+                            return false;
+                        }
+                }
+            }
+
+            private static bool TryCoreConvertToDouble<T>(object source, out T result)
+            {
+                switch (source)
+                {
+                    case double x:
+                        result = (T)source;
+                        return true;
+                    case string x:
+                        if (double.TryParse(x, out double f))
+                        {
+                            result = (T)(object)f;
+                            return true;
+                        }
+                        result = default;
+                        return false;
+                    default:
+                        try
+                        {
+                            result = (T)Convert.ChangeType(source, typeof(T));
+                            return true;
+                        }
+                        catch
+                        {
+                            result = default;
+                            return false;
+                        }
+                }
+            }
+
+            private static bool TryCoreConvertToFloat<T>(object source, out T result)
+            {
+                switch (source)
+                {
+                    case float x:
+                        result = (T)source;
+                        return true;
+                    case string x:
+                        if (float.TryParse(x, out float f))
+                        {
+                            result = (T)(object)f;
+                            return true;
+                        }
+                        result = default;
+                        return false;
+                    default:
+                        try
+                        {
+                            result = (T)Convert.ChangeType(source, typeof(T));
+                            return true;
+                        }
+                        catch
+                        {
+                            result = default;
+                            return false;
+                        }
+                }
+            }
+
+            private static bool TryCoreConvertToInt<T>(object source, out T result)
+            {
+                switch (source)
+                {
+                    case int x:
+                        result = (T)source;
+                        return true;
+                    case string x:
+                        if (int.TryParse(x, out int f))
+                        {
+                            result = (T)(object)f;
+                            return true;
+                        }
+                        result = default;
+                        return false;
+                    default:
+                        try
+                        {
+                            result = (T)Convert.ChangeType(source, typeof(T));
+                            return true;
+                        }
+                        catch
+                        {
+                            result = default;
+                            return false;
+                        }
+                }
+            }
+
+            private static bool TryCoreConvertToLong<T>(object source, out T result)
+            {
+                switch (source)
+                {
+                    case long x:
+                        result = (T)source;
+                        return true;
+                    case string x:
+                        if (long.TryParse(x, out long f))
+                        {
+                            result = (T)(object)f;
+                            return true;
+                        }
+                        result = default;
+                        return false;
+                    default:
+                        try
+                        {
+                            result = (T)Convert.ChangeType(source, typeof(T));
+                            return true;
+                        }
+                        catch
+                        {
+                            result = default;
+                            return false;
+                        }
                 }
             }
 
