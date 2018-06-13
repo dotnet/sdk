@@ -63,7 +63,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         public AndConstraint<CommandResultAssertions> HaveStdOutContaining(Func<string, bool> predicate, string description = "")
         {
             Execute.Assertion.ForCondition(predicate(_commandResult.StdOut))
-                .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result: {predicate.Method.Name} {description} {Environment.NewLine}"));
+                .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result: {description} {Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 

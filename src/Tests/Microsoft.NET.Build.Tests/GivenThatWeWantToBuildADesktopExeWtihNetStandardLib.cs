@@ -260,7 +260,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1069)
+                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1069, "has and only has warning expected")
                 .And
                 .HaveStdOutContainingIgnoreCase(successMessage);
 
@@ -443,11 +443,10 @@ namespace Microsoft.NET.Build.Tests
         public void It_generate_warning_depends_on_framework_and_library_netstandard_version(string framework, string libraryNetstandard, bool shouldHaveWarning, bool isSdk, string description)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
+                .CopyTestAsset(GetTemplateName(isSdk), identifier: framework + libraryNetstandard + isSdk.ToString() + description)
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
                 {
-                    var parsedFramework = NuGet.Frameworks.NuGetFramework.Parse(framework);
                     if (IsAppProject(projectPath))
                     {
                         var ns = project.Root.Name.Namespace;
@@ -456,11 +455,12 @@ namespace Microsoft.NET.Build.Tests
                         {
                             project.Root.Element(ns + "PropertyGroup")
                                         .Element(ns + "TargetFramework")
-                                        .Value = parsedFramework.GetShortFolderName();
-
+                                        .Value = framework;
                         }
                         else
                         {
+                            var parsedFramework = NuGet.Frameworks.NuGetFramework.Parse(framework);
+
                             project.Root.Element(ns + "PropertyGroup")
                                         .Element(ns + "TargetFrameworkVersion")
                                         .Value = "v" + GetDisplayVersion(parsedFramework.Version);
@@ -487,7 +487,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1069, description);
+                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1069, "has and only has warning expected" + description);
             }
             else
             {
