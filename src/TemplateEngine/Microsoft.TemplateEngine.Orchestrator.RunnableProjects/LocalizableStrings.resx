@@ -120,6 +120,9 @@
   <data name="Authoring_InvalidRegex" xml:space="preserve">
     <value>'{0}' could not be parsed as a regular expression</value>
   </data>
+  <data name="Authoring_MalformedPostActionManualInstructions" xml:space="preserve">
+    <value>One or more postActions have a malformed or missing manualInstructions value in '{0}'</value>
+  </data>
   <data name="Authoring_MissingValue" xml:space="preserve">
     <value>Missing '{0}' in '{1}'</value>
   </data>

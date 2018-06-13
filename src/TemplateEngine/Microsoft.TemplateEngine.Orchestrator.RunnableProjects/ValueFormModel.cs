@@ -18,6 +18,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             lookup[x.Identifier] = x;
             x = new XmlEncodeValueFormModel();
             lookup[x.Identifier] = x;
+            x = new JsonEncodeValueFormModel();
+            lookup[x.Identifier] = x;
             x = new IdentityValueForm();
             lookup[x.Identifier] = x;
 
