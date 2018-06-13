@@ -50,7 +50,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return true;
         }
 
-        public async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName)
+        public Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName)
+        {
+            return InstantiateAsync(templateInfo, name, fallbackName, outputPath, inputParameters, skipUpdateCheck, forceCreation, baselineName, false);
+        }
+
+        public async Task<TemplateCreationResult> InstantiateAsync(ITemplateInfo templateInfo, string name, string fallbackName, string outputPath, IReadOnlyDictionary<string, string> inputParameters, bool skipUpdateCheck, bool forceCreation, string baselineName, bool dryRun)
         {
             // SettingsLoader.LoadTemplate is where the loc info should be read!!!
             // templateInfo knows enough to get at the loc, if any
@@ -90,7 +95,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         return resultIfParameterCreationFailed;
                     }
 
-                    IReadOnlyList<IFileChange> changes = template.Generator.GetCreationEffects(_environmentSettings, template, effectParams, componentManager, targetDir).FileChanges;
+                    ICreationEffects creationEffects = template.Generator.GetCreationEffects(_environmentSettings, template, effectParams, componentManager, targetDir);
+                    IReadOnlyList<IFileChange> changes = creationEffects.FileChanges;
                     IReadOnlyList<IFileChange> destructiveChanges = changes.Where(x => x.ChangeKind != ChangeKind.Create).ToList();
 
                     if (!forceCreation && destructiveChanges.Count > 0)
@@ -106,10 +112,14 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         return resultIfParameterCreationFailed;
                     }
 
-                    creationResult = await template.Generator.CreateAsync(_environmentSettings, template, creationParams, componentManager, targetDir).ConfigureAwait(false);
+                    if (!dryRun)
+                    {
+                        creationResult = await template.Generator.CreateAsync(_environmentSettings, template, creationParams, componentManager, targetDir).ConfigureAwait(false);
+                    }
+
                     sw.Stop();
                     _environmentSettings.Host.LogTiming("Content generation time", sw.Elapsed, 0);
-                    return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, targetDir);
+                    return new TemplateCreationResult(string.Empty, CreationResultStatus.Success, template.Name, creationResult, targetDir, creationEffects);
                 }
                 catch (ContentGenerationException cx)
                 {
