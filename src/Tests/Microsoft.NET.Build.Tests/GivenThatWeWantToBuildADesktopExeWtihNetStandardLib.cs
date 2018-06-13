@@ -260,7 +260,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1066)
+                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1069)
                 .And
                 .HaveStdOutContainingIgnoreCase(successMessage);
 
@@ -440,7 +440,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net472", "netstandard2.0", false, true, ".NETFramework >= 4.7.2 -> .NETStandard any --> no warning")]
         [InlineData("net472", "netstandard2.0", false, false, ".NETFramework >= 4.7.2 -> .NETStandard any --> no warning")]
 
-        public void It_generate_warning_depends_on_framework_and_library_netstandard_version(string framework, string libraryNetstandard, bool shouldHaveWarning, bool isSdk, string explain)
+        public void It_generate_warning_depends_on_framework_and_library_netstandard_version(string framework, string libraryNetstandard, bool shouldHaveWarning, bool isSdk, string description)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
@@ -490,7 +490,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1066, explain);
+                .HaveStdOutContaining(HasAndOnlyHasWarningNETSDK1069, description);
             }
             else
             {
@@ -503,10 +503,10 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        private bool HasAndOnlyHasWarningNETSDK1066(string stdout)
+        private bool HasAndOnlyHasWarningNETSDK1069(string stdout)
         {
             var allWarningCount = Regex.Matches(stdout, "warning").Count;
-            var targetCount = Regex.Matches(stdout, "warning NETSDK1066").Count;
+            var targetCount = Regex.Matches(stdout, "warning NETSDK1069").Count;
 
             return (targetCount > 0) && (targetCount == allWarningCount);
         }
