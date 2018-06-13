@@ -448,13 +448,10 @@ namespace Microsoft.NET.Build.Tests
                 .WithProjectChanges((projectPath, project) =>
                 {
                     var parsedFramework = NuGet.Frameworks.NuGetFramework.Parse(framework);
-
                     if (IsAppProject(projectPath))
                     {
                         var ns = project.Root.Name.Namespace;
-
                         AddReferenceToLibrary(project, ReferenceScenario.ProjectReference);
-
                         if (isSdk)
                         {
                             project.Root.Element(ns + "PropertyGroup")
@@ -511,7 +508,8 @@ namespace Microsoft.NET.Build.Tests
             return (targetCount > 0) && (targetCount == allWarningCount);
         }
 
-        // Copy convert from NuGet.From 4.6.1.0 to 4.6.1
+        // Copy from NuGet.
+        // Conver from 4.6.1.0 to 4.6.1
         private static string GetDisplayVersion(Version version)
         {
             var sb = new StringBuilder(string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
