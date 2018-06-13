@@ -500,6 +500,61 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+
+        public void It_can_suppress_NETSDK1069_warning(bool isSdk)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
+                .WithSource()
+                .WithProjectChanges((projectPath, project) =>
+                {
+                    if (IsAppProject(projectPath))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        AddReferenceToLibrary(project, ReferenceScenario.ProjectReference);
+                        if (isSdk)
+                        {
+                            project.Root.Element(ns + "PropertyGroup")
+                                        .Element(ns + "TargetFramework")
+                                        .Value = "net461";
+                        }
+                        else
+                        {
+                            project.Root.Element(ns + "PropertyGroup")
+                                        .Element(ns + "TargetFrameworkVersion")
+                                        .Value = "v4.6.1";
+                        }
+
+                        var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                        propertyGroup.Add(new XElement(ns + "MSBuildWarningsAsMessages"));
+                        var targetFrameworkProperty = propertyGroup.Element(ns + "MSBuildWarningsAsMessages");
+                        targetFrameworkProperty.Value = "NETSDK1069";
+                    }
+
+                    if (IsLibraryProject(projectPath))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                        var targetFrameworkProperty = propertyGroup.Element(ns + "TargetFramework");
+                        targetFrameworkProperty.Value = "netstandard1.5";
+                    }
+                });
+
+            testAsset.Restore(Log, relativePath: AppName);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, AppName));
+
+            buildCommand
+            .Execute()
+            .Should()
+            .Pass()
+            .And
+            .NotHaveStdOutContaining("warning");
+        }
+
         private bool HasAndOnlyHasWarningNETSDK1069(string stdout)
         {
             var allWarningCount = Regex.Matches(stdout, "warning").Count;
