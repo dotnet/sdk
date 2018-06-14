@@ -7,7 +7,6 @@
     <IncludeSource>False</IncludeSource>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <EnableDefaultItems>False</EnableDefaultItems>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\..\artifacts\scratch</BaseIntermediateOutputPath>
     <DisabledWarnings>CS2008</DisabledWarnings>
   </PropertyGroup>
   <ItemGroup>
