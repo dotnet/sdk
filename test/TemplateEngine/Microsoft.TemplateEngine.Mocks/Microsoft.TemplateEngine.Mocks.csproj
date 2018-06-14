@@ -3,11 +3,17 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
+    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.8.0" />
   </ItemGroup>
 </Project>
