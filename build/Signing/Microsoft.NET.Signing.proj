@@ -22,7 +22,7 @@
 
     <!-- If RealSigning -->
     <Message Text="Performing Real Signing" Condition="'$(SignType)'=='real'"/>
-    <Exec Command="$(SignTool) -nugetPackagesPath &quot;$(NuGet_Packages)&quot; -config &quot;@(SigningConfig)&quot; &quot;$(OutDir.TrimEnd('\'))&quot;"
+    <Exec Command="$(SignTool) -nugetPackagesPath &quot;$(NuGet_Packages)&quot; -msbuildPath &quot;$(VSInstallDir)MSBuild\15.0\bin\MSBuild.exe&quot; -config &quot;@(SigningConfig)&quot; &quot;$(OutDir.TrimEnd('\'))&quot;"
           Condition="'$(SignType)'=='real'"/>
   </Target>
 </Project>
