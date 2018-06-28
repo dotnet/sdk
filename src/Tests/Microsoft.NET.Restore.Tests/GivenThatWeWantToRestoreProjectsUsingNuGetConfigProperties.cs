@@ -163,6 +163,9 @@ namespace Microsoft.NET.Restore.Tests
                 ExtractNupkg(
                     TestContext.Current.NuGetFallbackFolder,
                     Path.Combine(TestContext.Current.NuGetFallbackFolder, $"{projectInNuGetFallbackFolder.Name}.1.0.0.nupkg"));
+
+                // make sure there is no package in cache
+                DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, projectInNuGetFallbackFolder.Name.ToLowerInvariant()));
             }
 
             return projectInNuGetFallbackFolderPackageReference;
@@ -196,6 +199,14 @@ namespace Microsoft.NET.Restore.Tests
                             signedPackageVerifierSettings: null),
                         token: CancellationToken.None).Wait();
                 }
+            }
+        }
+
+        private static void DeleteFolder(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
             }
         }
     }
