@@ -59,6 +59,19 @@ namespace Microsoft.NET.Restore.Tests
         [Theory]
         [InlineData("netstandard1.3", "1.3")]
         [InlineData("netcoreapp1.0", "1.0")]
+        // base line of the following tests
+        public void I_can_restore_implicit_msbuild_nuget_config(string frameworks, string projectPrefix)
+        {
+            string testProjectName = $"{projectPrefix}DisabledFallback";
+            TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
+
+            var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
+            restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}").Should().Pass();
+        }
+
+        [Theory]
+        [InlineData("netstandard1.3", "1.3")]
+        [InlineData("netcoreapp1.0", "1.0")]
         [InlineData("netcoreapp1.1", "1.1")]
         [InlineData("netstandard2.0", "2.0")]
         [InlineData("netcoreapp2.0", "2.0app")]
@@ -68,7 +81,31 @@ namespace Microsoft.NET.Restore.Tests
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            restoreCommand.Execute($"/p:DisableImplicitNuGetFallbackFolder=true").Should().Fail();
+            restoreCommand.Execute($"/p:DisableImplicitNuGetFallbackFolder=true /p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}").Should().Fail();
+        }
+
+        [Theory]
+        [InlineData("netstandard1.3", "1.3", true)]
+        [InlineData("netcoreapp1.0", "1.0", false)]
+        [InlineData("netcoreapp1.1", "1.1", false)]
+        [InlineData("netstandard2.0", "2.0", true)]
+        [InlineData("netcoreapp2.0", "2.0app", true)]
+        public void I_can_disable_1_x_implicit_msbuild_nuget_config(string frameworks, string projectPrefix, bool shouldExecutePass)
+        {
+            string testProjectName = $"{projectPrefix}Disabled1xFallback";
+            TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
+
+            var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
+            var executeResult = restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder} /p:DisableImplicit1xNuGetFallbackFolder=true");
+
+            if (shouldExecutePass)
+            {
+                executeResult.Should().Pass();
+            }
+            else
+            {
+                executeResult.Should().Fail();
+            }
         }
 
         private TestAsset CreateTestAsset(string testProjectName, string frameworks)
