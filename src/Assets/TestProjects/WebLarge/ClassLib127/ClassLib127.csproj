@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClassLib081\ClassLib081.csproj" />
+    <ProjectReference Include="..\ClassLib100\ClassLib100.csproj" />
+    <ProjectReference Include="..\ClassLib001\ClassLib001.csproj" />
+    <ProjectReference Include="..\ClassLib102\ClassLib102.csproj" />
+    <ProjectReference Include="..\ClassLib103\ClassLib103.csproj" />
+    <ProjectReference Include="..\ClassLib083\ClassLib083.csproj" />
+    <ProjectReference Include="..\ClassLib104\ClassLib104.csproj" />
+    <ProjectReference Include="..\ClassLib084\ClassLib084.csproj" />
+    <ProjectReference Include="..\ClassLib105\ClassLib105.csproj" />
+    <ProjectReference Include="..\ClassLib106\ClassLib106.csproj" />
+    <ProjectReference Include="..\ClassLib107\ClassLib107.csproj" />
+    <ProjectReference Include="..\ClassLib108\ClassLib108.csproj" />
+    <ProjectReference Include="..\ClassLib109\ClassLib109.csproj" />
+    <ProjectReference Include="..\ClassLib062\ClassLib062.csproj" />
+    <ProjectReference Include="..\ClassLib087\ClassLib087.csproj" />
+    <ProjectReference Include="..\ClassLib088\ClassLib088.csproj" />
+    <ProjectReference Include="..\ClassLib066\ClassLib066.csproj" />
+    <ProjectReference Include="..\ClassLib110\ClassLib110.csproj" />
+    <ProjectReference Include="..\ClassLib040\ClassLib040.csproj" />
+    <ProjectReference Include="..\ClassLib111\ClassLib111.csproj" />
+    <ProjectReference Include="..\ClassLib089\ClassLib089.csproj" />
+    <ProjectReference Include="..\ClassLib112\ClassLib112.csproj" />
+    <ProjectReference Include="..\ClassLib123\ClassLib123.csproj" />
+    <ProjectReference Include="..\ClassLib113\ClassLib113.csproj" />
+    <ProjectReference Include="..\ClassLib114\ClassLib114.csproj" />
+    <ProjectReference Include="..\ClassLib115\ClassLib115.csproj" />
+    <ProjectReference Include="..\ClassLib116\ClassLib116.csproj" />
+    <ProjectReference Include="..\ClassLib124\ClassLib124.csproj" />
+    <ProjectReference Include="..\ClassLib091\ClassLib091.csproj" />
+    <ProjectReference Include="..\ClassLib071\ClassLib071.csproj" />
+    <ProjectReference Include="..\ClassLib073\ClassLib073.csproj" />
+    <ProjectReference Include="..\ClassLib126\ClassLib126.csproj" />
+    <ProjectReference Include="..\ClassLib119\ClassLib119.csproj" />
+    <ProjectReference Include="..\ClassLib094\ClassLib094.csproj" />
+    <ProjectReference Include="..\ClassLib044\ClassLib044.csproj" />
+    <ProjectReference Include="..\ClassLib074\ClassLib074.csproj" />
+    <ProjectReference Include="..\ClassLib058\ClassLib058.csproj" />
+    <ProjectReference Include="..\ClassLib075\ClassLib075.csproj" />
+    <ProjectReference Include="..\ClassLib076\ClassLib076.csproj" />
+    <ProjectReference Include="..\ClassLib120\ClassLib120.csproj" />
+    <ProjectReference Include="..\ClassLib077\ClassLib077.csproj" />
+    <ProjectReference Include="..\ClassLib095\ClassLib095.csproj" />
+    <ProjectReference Include="..\ClassLib096\ClassLib096.csproj" />
+    <ProjectReference Include="..\ClassLib097\ClassLib097.csproj" />
+    <ProjectReference Include="..\ClassLib121\ClassLib121.csproj" />
+    <ProjectReference Include="..\ClassLib048\ClassLib048.csproj" />
+    <ProjectReference Include="..\ClassLib078\ClassLib078.csproj" />
+    <ProjectReference Include="..\ClassLib079\ClassLib079.csproj" />
+    <ProjectReference Include="..\ClassLib080\ClassLib080.csproj" />
+    <ProjectReference Include="..\ClassLib098\ClassLib098.csproj" />
+    <ProjectReference Include="..\ClassLib099\ClassLib099.csproj" />
+  </ItemGroup>
+</Project>
