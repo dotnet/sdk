@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+    <ProjectReference Include="..\ClassLib127\ClassLib127.csproj" />
+    <ProjectReference Include="..\ClassLib055\ClassLib055.csproj" />
+    <ProjectReference Include="..\ClassLib041\ClassLib041.csproj" />
+  </ItemGroup>
+</Project>

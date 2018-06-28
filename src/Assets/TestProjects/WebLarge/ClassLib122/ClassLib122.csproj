@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClassLib021\ClassLib021.csproj" />
+    <ProjectReference Include="..\ClassLib002\ClassLib002.csproj" />
+    <ProjectReference Include="..\ClassLib060\ClassLib060.csproj" />
+    <ProjectReference Include="..\ClassLib105\ClassLib105.csproj" />
+    <ProjectReference Include="..\ClassLib003\ClassLib003.csproj" />
+    <ProjectReference Include="..\ClassLib004\ClassLib004.csproj" />
+    <ProjectReference Include="..\ClassLib064\ClassLib064.csproj" />
+    <ProjectReference Include="..\ClassLib036\ClassLib036.csproj" />
+    <ProjectReference Include="..\ClassLib052\ClassLib052.csproj" />
+    <ProjectReference Include="..\ClassLib027\ClassLib027.csproj" />
+    <ProjectReference Include="..\ClassLib029\ClassLib029.csproj" />
+    <ProjectReference Include="..\ClassLib016\ClassLib016.csproj" />
+    <ProjectReference Include="..\ClassLib047\ClassLib047.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
+  </ItemGroup>
+</Project>

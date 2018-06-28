@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -57,6 +60,20 @@ namespace Microsoft.NET.Perf.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: operation.ToString());
 
             TestProject(testAsset.Path, ".NET Standard 2.0 Library", operation);
+        }
+
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
+        [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
+        public void BuildWebLarge(ProjectPerfOperation operation)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("WebLarge")
+                .WithSource();
+
+            var testDir = Path.Combine(testAsset.TestRoot, "mvc");
+
+            TestProject(testDir, "Build Web Large", operation);
         }
 
         [CoreMSBuildOnlyTheory]

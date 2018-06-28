@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClassLib033\ClassLib033.csproj" />
+    <ProjectReference Include="..\ClassLib050\ClassLib050.csproj" />
+    <ProjectReference Include="..\ClassLib034\ClassLib034.csproj" />
+    <ProjectReference Include="..\ClassLib051\ClassLib051.csproj" />
+    <ProjectReference Include="..\ClassLib063\ClassLib063.csproj" />
+    <ProjectReference Include="..\ClassLib065\ClassLib065.csproj" />
+    <ProjectReference Include="..\ClassLib037\ClassLib037.csproj" />
+    <ProjectReference Include="..\ClassLib053\ClassLib053.csproj" />
+    <ProjectReference Include="..\ClassLib027\ClassLib027.csproj" />
+    <ProjectReference Include="..\ClassLib029\ClassLib029.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+  </ItemGroup>
+</Project>
