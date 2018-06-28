@@ -71,7 +71,7 @@ namespace Microsoft.NET.Perf.Tests
                 .CopyTestAsset("WebLarge")
                 .WithSource();
 
-            var testDir = Path.Combine(testAsset.TestRoot, "MVC");
+            var testDir = Path.Combine(testAsset.TestRoot, "mvc");
 
             TestProject(testDir, "Build Web Large", operation);
         }
