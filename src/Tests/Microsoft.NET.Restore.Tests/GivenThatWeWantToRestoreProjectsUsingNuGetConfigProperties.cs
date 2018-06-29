@@ -81,7 +81,7 @@ namespace Microsoft.NET.Restore.Tests
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder} /p:DisableImplicitNuGetFallbackFolder=true").Should().Fail();
+            restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicitNuGetFallbackFolder=true").Should().Fail();
         }
 
         [Theory]
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Restore.Tests
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            var executeResult = restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder} /p:DisableImplicit1xNuGetFallbackFolder=true");
+            var executeResult = restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicit1xNuGetFallbackFolder=true");
 
             if (shouldExecutePass)
             {
