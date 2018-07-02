@@ -39,18 +39,20 @@ if exist "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat" rmdir /s /q "%p
 "%perfWorkingDirectory%\nuget.exe" install Microsoft.BenchView.JSONFormat -Source http://benchviewtestfeed.azurewebsites.net/nuget -OutputDirectory "%perfWorkingDirectory%" -Prerelease -ExcludeVersion
 
 REM Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
-if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN="%GIT_BRANCH:origin/=%") else (set GIT_BRANCH_WITHOUT_ORIGIN="%GIT_BRANCH%")
+if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:origin/=%) else (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH%)
+set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH_WITHOUT_ORIGIN:"=%
+set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH_WITHOUT_ORIGIN:'=%
 
 set benchViewName=SDK perf %OS% %architecture% %configuration% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
-if /I "%runType%" == "private" (set benchViewName="%benchViewName% %BenchviewCommitName%")
-if /I "%runType%" == "rolling" (set benchViewName="%benchViewName% %GIT_COMMIT%")
+if /I "%runType%" == "private" (set benchViewName=%benchViewName% %BenchviewCommitName%)
+if /I "%runType%" == "rolling" (set benchViewName=%benchViewName% %GIT_COMMIT%)
 echo BenchViewName: "%benchViewName%"
 
 echo Creating: "%perfWorkingDirectory%\submission-metadata.json"
 py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\submission-metadata.py" --name "%benchViewName%" --user-email "dotnet-bot@microsoft.com" -o "%perfWorkingDirectory%\submission-metadata.json"
 
 echo Creating: "%perfWorkingDirectory%\build.json"
-py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\build.py" git --branch %GIT_BRANCH_WITHOUT_ORIGIN% --type "%runType%" -o "%perfWorkingDirectory%\build.json"
+py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\build.py" git --branch "%GIT_BRANCH_WITHOUT_ORIGIN%" --type "%runType%" -o "%perfWorkingDirectory%\build.json"
 
 echo Creating: "%perfWorkingDirectory%\machinedata.json"
 py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\machinedata.py" -o "%perfWorkingDirectory%\machinedata.json"
