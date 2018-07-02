@@ -58,9 +58,9 @@ fi
 # Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
 if [[ "$GIT_BRANCH" == "origin/"* ]]
 then
-    GIT_BRANCH_WITHOUT_ORIGIN=${GIT_BRANCH:7}
+    GIT_BRANCH_WITHOUT_ORIGIN="${GIT_BRANCH:7}"
 else
-    GIT_BRANCH_WITHOUT_ORIGIN=$GIT_BRANCH
+    GIT_BRANCH_WITHOUT_ORIGIN="$GIT_BRANCH"
 fi
 
 benchViewName="SDK perf $OS $architecture $configuration $runType $GIT_BRANCH_WITHOUT_ORIGIN"
