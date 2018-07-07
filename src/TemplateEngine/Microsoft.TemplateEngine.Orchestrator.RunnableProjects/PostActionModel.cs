@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
@@ -56,20 +56,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     && manualInstructions != null
                     && actionLocalizations.Instructions.Count == manualInstructions.Count;
 
-                for (int i = 0; i < manualInstructions.Count; i++)
+                if (manualInstructions != null)
                 {
-                    string text;
-                    if (useLocalizedInstructions)
+                    for (int i = 0; i < manualInstructions.Count; i++)
                     {
-                        text = actionLocalizations.Instructions[i];
-                    }
-                    else
-                    {
-                        text = manualInstructions[i].ToString("text");
-                    }
+                        string text;
+                        if (useLocalizedInstructions)
+                        {
+                            text = actionLocalizations.Instructions[i];
+                        }
+                        else
+                        {
+                            text = manualInstructions[i].ToString("text");
+                        }
 
-                    KeyValuePair<string, string> instruction = new KeyValuePair<string, string>(text, manualInstructions[i].ToString("condition"));
-                    instructionOptions.Add(instruction);
+                        KeyValuePair<string, string> instruction = new KeyValuePair<string, string>(text, manualInstructions[i].ToString("condition"));
+                        instructionOptions.Add(instruction);
+                    }
                 }
 
                 PostActionModel model = new PostActionModel()

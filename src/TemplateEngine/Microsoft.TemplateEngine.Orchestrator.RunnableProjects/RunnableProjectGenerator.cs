@@ -338,6 +338,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 warningMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "classifications", templateFile.FullPath));
             }
 
+            if (templateModel.PostActionModel != null && templateModel.PostActionModel.Any(x => x.ManualInstructionInfo == null || x.ManualInstructionInfo.Count == 0))
+            {
+                warningMessages.Add(string.Format(LocalizableStrings.Authoring_MalformedPostActionManualInstructions, templateFile.FullPath));
+            }
+
             if (warningMessages.Count > 0)
             {
                 host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateMissingCommonInformation, templateFile.FullPath), "Authoring");
@@ -655,16 +660,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     return literalLong;
                 }
-
-                if (string.Equals("null", literal, StringComparison.OrdinalIgnoreCase))
-                {
-                    return null;
-                }
-
-                return literal;
             }
 
-            return literal.Substring(1, literal.Length - 2);
+            return literal;
         }
 
         public ICreationEffects GetCreationEffects(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)

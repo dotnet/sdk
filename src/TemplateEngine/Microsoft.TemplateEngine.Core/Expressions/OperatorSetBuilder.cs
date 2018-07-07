@@ -626,28 +626,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
             public bool TryCoreConvert<T>(object source, out T result)
             {
-                if (typeof(T).GetTypeInfo().IsEnum && source is string)
-                {
-                    try
-                    {
-                        result = (T) Enum.Parse(typeof(T), (string) source, true);
-                        return true;
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                try
-                {
-                    result = (T)Convert.ChangeType(source, typeof(T));
-                    return true;
-                }
-                catch
-                {
-                    result = default(T);
-                    return false;
-                }
+                return Converter.TryConvert(source, out result);
             }
 
             private static class TypeConverterLookup<T>

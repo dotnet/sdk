@@ -1,20 +1,21 @@
-﻿using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
     public class TemplateCreationResult
     {
         public TemplateCreationResult(string message, CreationResultStatus status, string templateFullName)
-            :this(message, status, templateFullName, null, null)
+            :this(message, status, templateFullName, null, null, null)
         { }
 
-        public TemplateCreationResult(string message, CreationResultStatus status, string templateFullName, ICreationResult creationOutputs, string outputBaseDir)
+        public TemplateCreationResult(string message, CreationResultStatus status, string templateFullName, ICreationResult creationOutputs, string outputBaseDir, ICreationEffects creationEffects)
         {
             Message = message;
             Status = status;
             TemplateFullName = templateFullName;
             ResultInfo = creationOutputs;
             OutputBaseDirectory = outputBaseDir;
+            CreationEffects = creationEffects;
         }
 
         public string Message { get; }
@@ -26,5 +27,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         public ICreationResult ResultInfo { get; }
 
         public string OutputBaseDirectory { get; }
+
+        public ICreationEffects CreationEffects { get; }
     }
 }

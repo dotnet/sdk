@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         public virtual string Process(IReadOnlyDictionary<string, IValueForm> forms, string value)
         {
             string workingValue = Regex.Replace(value, @"(^\s+|\s+$)", "");
-            workingValue = Regex.Replace(workingValue, @"(((?<=\.)|^)(?=\d)|[^\w\.])", "_");
+            workingValue = Regex.Replace(workingValue, @"(((?<=\.)|^)((?=\d)|\.)|[^\w\.])|(\.$)", "_");
 
             return workingValue;
         }
