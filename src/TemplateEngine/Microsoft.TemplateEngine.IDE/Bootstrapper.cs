@@ -84,8 +84,14 @@ namespace Microsoft.TemplateEngine.IDE
 
         public async Task<ICreationResult> CreateAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, bool skipUpdateCheck, string baselineName)
         {
-            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck, forceCreation: false, baselineName: baselineName).ConfigureAwait(false);
+            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, skipUpdateCheck, false, baselineName).ConfigureAwait(false);
             return instantiateResult.ResultInfo;
+        }
+
+        public async Task<ICreationEffects> GetCreationEffectsAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string> parameters, string baselineName)
+        {
+            TemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, true, false, baselineName, true).ConfigureAwait(false);
+            return instantiateResult.CreationEffects;
         }
 
         public IEnumerable<string>  Uninstall(string path)
