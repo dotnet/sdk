@@ -509,12 +509,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   .NET Core apps can have shared frameworks that are pre-installed on the target machine, thus the app is "portable"
   to any machine that already has the shared framework installed. In order to enable this, a "platform" library
   has to be declared. The platform library and its dependencies will be excluded from the runtime assemblies.
+  By default, this should match the RuntimeFrameworkName, which users can set to target different runtimes,
+  such as ASP.NET Core.
   ============================================================
   -->
   <Target Name="_DefaultMicrosoftNETPlatformLibrary">
 
     <PropertyGroup Condition="'$(MicrosoftNETPlatformLibrary)' == ''">
-      <MicrosoftNETPlatformLibrary Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">Microsoft.NETCore.App</MicrosoftNETPlatformLibrary>
+      <MicrosoftNETPlatformLibrary>$(RuntimeFrameworkName)</MicrosoftNETPlatformLibrary>
     </PropertyGroup>
 
   </Target>
