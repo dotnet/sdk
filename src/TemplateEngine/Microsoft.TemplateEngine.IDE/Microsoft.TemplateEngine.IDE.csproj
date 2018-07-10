@@ -1,20 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
-
   <PropertyGroup>
     <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
     <Description>Helper package for adding Template Engine to IDEs</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.8.0" />
+    <PackageReference Include="SourceLink.Create.CommandLine" />
+    <DotNetCliToolReference Include="dotnet-sourcelink" />
   </ItemGroup>
-
 </Project>

@@ -1,22 +1,18 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <Description>Common operations for instantiating templates using forward-only input stream operations</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
-  </ItemGroup>
-  
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.8.0" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Condition="'$(TargetFramework)' == 'netstandard1.3'" />
+    <PackageReference Include="SourceLink.Create.CommandLine" />
+    <DotNetCliToolReference Include="dotnet-sourcelink" />
   </ItemGroup>
 </Project>

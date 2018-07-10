@@ -1,5 +1,4 @@
 ﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <Description>An extension for Template Engine that allows projects that still run to be used as templates</Description>
@@ -10,23 +9,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.8.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard1.3'">
-    <PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
+    <PackageReference Include="SourceLink.Create.CommandLine" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <DotNetCliToolReference Include="dotnet-sourcelink" />
   </ItemGroup>
 
   <ItemGroup>

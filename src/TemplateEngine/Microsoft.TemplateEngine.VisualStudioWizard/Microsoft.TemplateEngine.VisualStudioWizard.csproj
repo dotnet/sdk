@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
-
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
   </PropertyGroup>
@@ -9,18 +7,18 @@
     <PackageReference Include="EnvDTE" Version="8.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" />
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.8.0" />
+    <PackageReference Include="SourceLink.Create.CommandLine" />
+    <DotNetCliToolReference Include="dotnet-sourcelink" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.IDE\Microsoft.TemplateEngine.IDE.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
-    <ProjectReference Include="..\Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core\Microsoft.TemplateEngine.Core.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.IDE\Microsoft.TemplateEngine.IDE.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
   </ItemGroup>
   
   <ItemGroup>
@@ -28,5 +26,4 @@
       <HintPath>$(DevenvDir)\PublicAssemblies\Microsoft.VisualStudio.TemplateWizardInterface.dll</HintPath>
     </Reference>
   </ItemGroup>
-
 </Project>

@@ -1,12 +1,11 @@
 ﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <Description>Contracts for extending Template Engine</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.8.0" />
+    <PackageReference Include="SourceLink.Create.CommandLine" />
+    <DotNetCliToolReference Include="dotnet-sourcelink" />
   </ItemGroup>
 </Project>
