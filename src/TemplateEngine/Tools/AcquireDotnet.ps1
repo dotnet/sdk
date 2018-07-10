@@ -1,7 +1,9 @@
 $RepoRoot = "$PSScriptRoot\.."
 $ArtifactsDir = "$RepoRoot\artifacts"
 
-mkdir "$RepoRoot\artifacts" | Out-Null
+if(!(Test-Path -Path $ArtifactsDir)) {
+    mkdir $ArtifactsDir | Out-Null
+}
 
 # Use a repo-local install directory (but not the artifacts directory because that gets cleaned a lot
 if (!$env:DOTNET_INSTALL_DIR)
