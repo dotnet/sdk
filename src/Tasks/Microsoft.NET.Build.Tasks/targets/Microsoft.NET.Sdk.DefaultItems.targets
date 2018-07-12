@@ -127,7 +127,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <When Condition="'$(RuntimeFrameworkName)' == 'Microsoft.AspNetCore.All'">
 
       <PropertyGroup>
-        <DefaultPatchVersionForAspNetCoreAll2_1 Condition="'$(DefaultPatchVersionForAspNetCoreAll2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreAll2_1>
+        <DefaultPatchVersionForAspNetCoreAll2_1 Condition="'$(DefaultPatchVersionForAspNetCoreAll2_1)' == ''">2.1.3</DefaultPatchVersionForAspNetCoreAll2_1>
       </PropertyGroup>
 
       <!-- Default patch version of .All Framework -->
@@ -161,7 +161,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <When Condition="'$(RuntimeFrameworkName)' == 'Microsoft.AspNetCore.App'">
       <PropertyGroup>
-        <DefaultPatchVersionForAspNetCoreApp2_1 Condition="'$(DefaultPatchVersionForAspNetCoreApp2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreApp2_1>
+        <DefaultPatchVersionForAspNetCoreApp2_1 Condition="'$(DefaultPatchVersionForAspNetCoreApp2_1)' == ''">2.1.3</DefaultPatchVersionForAspNetCoreApp2_1>
       </PropertyGroup>
 
       <!-- Default patch version of .App Framework -->
