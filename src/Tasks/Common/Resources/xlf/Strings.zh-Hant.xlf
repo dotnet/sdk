@@ -232,6 +232,11 @@
         <target state="needs-review-translation">從 '{0}' 行 {1} 剖析 PlatformManifest 時發生錯誤。{2} '{3}' 無效。</target>
         <note>{StrBegin="NETSDK1044: "}</note>
       </trans-unit>
+      <trans-unit id="UnrecognizedRuntimeFrameworkName">
+        <source>NETSDK1070: This project uses an unsupported value for RuntimeFrameworkName. Currently, only valid values are: Microsoft.NETCore.App, Microsoft.AspNetCore.App, or Microsoft.AspNetCore.All.</source>
+        <target state="new">NETSDK1070: This project uses an unsupported value for RuntimeFrameworkName. Currently, only valid values are: Microsoft.NETCore.App, Microsoft.AspNetCore.App, or Microsoft.AspNetCore.All.</target>
+        <note>{StrBegin="NETSDK1070: "}</note>
+      </trans-unit>
       <trans-unit id="UnsupportedFramework">
         <source>NETSDK1019: {0} is an unsupported framework.</source>
         <target state="new">NETSDK1019: {0} is an unsupported framework.</target>
