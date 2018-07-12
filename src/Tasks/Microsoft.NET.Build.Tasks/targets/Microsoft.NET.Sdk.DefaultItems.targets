@@ -124,6 +124,75 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Choose>
 
+    <When Condition="'$(RuntimeFrameworkName)' == 'Microsoft.AspNetCore.All'">
+
+      <PropertyGroup>
+        <DefaultPatchVersionForAspNetCoreAll2_1 Condition="'$(DefaultPatchVersionForAspNetCoreAll2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreAll2_1>
+      </PropertyGroup>
+
+      <!-- Default patch version of .All Framework -->
+      <PropertyGroup Condition="'$(DefaultAspNetCoreAllPatchVersion)' == ''">
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreAll2_1)</DefaultAspNetCoreAllPatchVersion>
+
+        <!-- If targeting the same pre-release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(DefaultAspNetCoreAllPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAllTargetFrameworkVersion)'">$(BundledAspNetCoreAllPackageVersion)</DefaultAspNetCoreAllPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the default patch version -->
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(DefaultAspNetCoreAllPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</DefaultAspNetCoreAllPatchVersion>
+      </PropertyGroup>
+
+      <!-- Latest patch version of .All Framework -->
+      <PropertyGroup Condition="'$(LatestAspNetCoreAllPatchVersion)' == ''">
+        <!-- If LatestPatchVersionForAspNetCoreAll2_1 is explicitly set, use this for netcoreapp2.1 projects. -->
+        <LatestAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreAll2_1)</LatestAspNetCoreAllPatchVersion>
+
+        <!-- If targeting the same release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <LatestAspNetCoreAllPatchVersion Condition="'$(LatestAspNetCoreAllPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAllTargetFrameworkVersion)'">$(BundledAspNetCoreAllPackageVersion)</LatestAspNetCoreAllPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the latest patch version -->
+        <LatestAspNetCoreAllPatchVersion Condition="'$(LatestAspNetCoreAllPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</LatestAspNetCoreAllPatchVersion>
+      </PropertyGroup>
+
+      <PropertyGroup>
+        <LatestRuntimeFrameworkPatchVersion>$(LatestAspNetCoreAllPatchVersion)</LatestRuntimeFrameworkPatchVersion>
+        <DefaultRuntimeFrameworkPatchVersion>$(DefaultAspNetCoreAllPatchVersion)</DefaultRuntimeFrameworkPatchVersion>
+      </PropertyGroup>
+    </When>
+
+    <When Condition="'$(RuntimeFrameworkName)' == 'Microsoft.AspNetCore.App'">
+      <PropertyGroup>
+        <DefaultPatchVersionForAspNetCoreApp2_1 Condition="'$(DefaultPatchVersionForAspNetCoreApp2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreApp2_1>
+      </PropertyGroup>
+
+      <!-- Default patch version of .App Framework -->
+      <PropertyGroup Condition="'$(DefaultAspNetCoreAppPatchVersion)' == ''">
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreApp2_1)</DefaultAspNetCoreAppPatchVersion>
+
+        <!-- If targeting the same pre-release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(DefaultAspNetCoreAppPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAppTargetFrameworkVersion)'">$(BundledAspNetCoreAppPackageVersion)</DefaultAspNetCoreAppPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the default patch version -->
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(DefaultAspNetCoreAppPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</DefaultAspNetCoreAppPatchVersion>
+      </PropertyGroup>
+
+      <!-- Latest patch version of .App Framework -->
+      <PropertyGroup Condition="'$(LatestAspNetCoreAppPatchVersion)' == ''">
+        <!-- If LatestPatchVersionForAspNetCoreApp2_1 is explicitly set, use this for netcoreapp2.1 projects. -->
+        <LatestAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreApp2_1)</LatestAspNetCoreAppPatchVersion>
+
+        <!-- If targeting the same release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <LatestAspNetCoreAppPatchVersion Condition="'$(LatestAspNetCoreAppPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAppTargetFrameworkVersion)'">$(BundledAspNetCoreAppPackageVersion)</LatestAspNetCoreAppPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the latest patch version -->
+        <LatestAspNetCoreAppPatchVersion Condition="'$(LatestAspNetCoreAppPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</LatestAspNetCoreAppPatchVersion>
+      </PropertyGroup>
+
+      <PropertyGroup>
+        <LatestRuntimeFrameworkPatchVersion>$(LatestAspNetCoreAppPatchVersion)</LatestRuntimeFrameworkPatchVersion>
+        <DefaultRuntimeFrameworkPatchVersion>$(DefaultAspNetCoreAppPatchVersion)</DefaultRuntimeFrameworkPatchVersion>
+      </PropertyGroup>
+    </When>
+
     <When Condition="'$(RuntimeFrameworkName)' == 'Microsoft.NETCore.App'">
       <PropertyGroup>
         <!-- These properties will allow the latest patch versions to be set in the CLI (via BundledVersions.props) or overridden by tests -->
@@ -161,6 +230,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         <DefaultRuntimeFrameworkPatchVersion>$(DefaultNetCorePatchVersion)</DefaultRuntimeFrameworkPatchVersion>
       </PropertyGroup>
     </When>
+
+    <Otherwise>
+      <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+        <_UnrecognizedRuntimeFrameworkName>true</_UnrecognizedRuntimeFrameworkName>
+      </PropertyGroup>
+    </Otherwise>
 
   </Choose>
 
@@ -230,6 +305,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <UsingTask TaskName="CheckForImplicitPackageReferenceOverrides" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <!-- Check that RuntimeFrameworkName is something this SDK supports -->
+  <Target Name="CheckForUnrecognizedRuntimeFrameworkName"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences"
+          Condition=" '$(_UnrecognizedRuntimeFrameworkName)' == 'true' ">
+    <NETSdkError ResourceName="UnrecognizedRuntimeFrameworkName" />
+  </Target>
 
   <!-- Remove package references with metadata IsImplicitlyDefined = true, if there are other PackageReference items with the same identity -->
   <Target Name="CheckForImplicitPackageReferenceOverrides" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences">
