@@ -159,7 +159,7 @@ namespace Microsoft.NET.Pack.Tests
         }
 
         [Fact]
-        public void Packing_a_netcoreapp_2_0_DotnetCliTool_app_does_not_include_the_implicit_dependency()
+        public void Packing_a_netcoreapp_2_0_DotnetCliTool_app_includes_the_implicit_dependency()
         {
             TestProject testProject = new TestProject()
             {
