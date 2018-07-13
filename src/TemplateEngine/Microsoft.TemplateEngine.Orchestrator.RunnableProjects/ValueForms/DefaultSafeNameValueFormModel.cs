@@ -7,15 +7,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     public class DefaultSafeNameValueFormModel : IValueForm
     {
+        private readonly string _name;
+
         public DefaultSafeNameValueFormModel()
+            : this(null)
         {
+        }
+
+        public DefaultSafeNameValueFormModel(string name)
+        {
+            _name = name;
         }
 
         public static readonly string FormName = "safe_name";
 
         public virtual string Identifier => FormName;
 
-        public virtual string Name => Identifier;
+        public virtual string Name => _name ?? Identifier;
 
         public IValueForm FromJObject(string name, JObject configuration)
         {
