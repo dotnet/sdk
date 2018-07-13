@@ -114,14 +114,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeFrameworkName>Microsoft.NETCore.App</RuntimeFrameworkName>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!--
-      Hardcoded list of known implicit packges that are added to project from default SDK targets implicitly.
-      Should be re-visited when multiple TFM support is added to Dependencies logic.
-    -->
-    <DefaultImplicitPackages>$(RuntimeFrameworkName);NETStandard.Library</DefaultImplicitPackages>
-  </PropertyGroup>
-
   <Choose>
 
     <When Condition="'$(RuntimeFrameworkName)' == 'Microsoft.AspNetCore.All'">
