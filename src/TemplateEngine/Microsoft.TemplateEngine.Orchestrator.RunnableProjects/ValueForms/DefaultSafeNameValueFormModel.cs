@@ -25,9 +25,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         public virtual string Name => _name ?? Identifier;
 
-        public IValueForm FromJObject(string name, JObject configuration)
+        public virtual IValueForm FromJObject(string name, JObject configuration)
         {
-            throw new NotImplementedException();
+            return new DefaultSafeNameValueFormModel(name);
         }
 
         public virtual string Process(IReadOnlyDictionary<string, IValueForm> forms, string value)

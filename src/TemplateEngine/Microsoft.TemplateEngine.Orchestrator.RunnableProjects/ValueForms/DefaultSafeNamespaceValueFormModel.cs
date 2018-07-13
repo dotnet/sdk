@@ -25,9 +25,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         public string Name => Identifier;
 
-        public IValueForm FromJObject(string name, JObject configuration)
+        public virtual IValueForm FromJObject(string name, JObject configuration)
         {
-            return new DefaultLowerSafeNamespaceValueFormModel(name);
+            return new DefaultSafeNamespaceValueFormModel(name);
         }
 
         public virtual string Process(IReadOnlyDictionary<string, IValueForm> forms, string value)
