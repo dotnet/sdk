@@ -328,7 +328,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <VerifyMatchingImplicitPackageVersion>false</VerifyMatchingImplicitPackageVersion>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(_TargetFrameworkVersionWithoutV)' != '' AND '$(_TargetFrameworkVersionWithoutV)' >= '2.1' ">
       <_AspNetMetaPackageReference Include="@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))" />
       <_AspNetMetaPackageReference Include="@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.All'))" />
     </ItemGroup>
