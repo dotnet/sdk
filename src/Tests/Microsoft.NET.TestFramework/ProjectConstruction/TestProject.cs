@@ -20,6 +20,8 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         public string RuntimeFrameworkVersion { get; set; }
 
+        public string RuntimeFrameworkName { get; set; }
+
         public string RuntimeIdentifier { get; set; }
 
         //  TargetFrameworkVersion applies to non-SDK projects
@@ -166,6 +168,11 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 else
                 {
                     propertyGroup.Add(new XElement(ns + "TargetFramework", this.TargetFrameworks));
+                }
+
+                if (!string.IsNullOrEmpty(this.RuntimeFrameworkName))
+                {
+                    propertyGroup.Add(new XElement(ns + "RuntimeFrameworkName", this.RuntimeFrameworkName));
                 }
 
                 if (!string.IsNullOrEmpty(this.RuntimeFrameworkVersion))

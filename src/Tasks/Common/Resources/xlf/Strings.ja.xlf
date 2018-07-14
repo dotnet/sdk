@@ -2,6 +2,31 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
     <body>
+      <trans-unit id="AspNetCoreRequiresRuntimeFrameworkName">
+        <source>NETSDK1071: A PackageReference for '{0}' was included in your project. This will cause issues when upgrading to 2.1.3 and higher.
+To upgrade, remove this PackageReference and add the RuntimeFrameworkName property to {1}.
+
+&lt;PropertyGroup&gt;
+    &lt;RuntimeFrameworkName&gt;{0}&lt;/RuntimeFrameworkName&gt;
+&lt;/PropertyGroup&gt;
+
+For more information, see {2}.
+    </source>
+        <target state="new">NETSDK1071: A PackageReference for '{0}' was included in your project. This will cause issues when upgrading to 2.1.3 and higher.
+To upgrade, remove this PackageReference and add the RuntimeFrameworkName property to {1}.
+
+&lt;PropertyGroup&gt;
+    &lt;RuntimeFrameworkName&gt;{0}&lt;/RuntimeFrameworkName&gt;
+&lt;/PropertyGroup&gt;
+
+For more information, see {2}.
+    </target>
+        <note>{StrBegin="NETSDK1071: "}
+{0} - Package Id (AspNetCore.App or .All)
+{1} - Project name
+{2} - More info link
+    </note>
+      </trans-unit>
       <trans-unit id="AtLeastOneTargetFrameworkMustBeSpecified">
         <source>NETSDK1001: At least one possible target framework must be specified.</source>
         <target state="needs-review-translation">可能性のあるターゲット フレームワークを少なくとも 1 つ指定する必要があります。</target>

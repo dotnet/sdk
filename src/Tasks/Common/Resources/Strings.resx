@@ -401,4 +401,20 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1070: This project uses an unsupported value for RuntimeFrameworkName. Currently, only valid values are: Microsoft.NETCore.App, Microsoft.AspNetCore.App, or Microsoft.AspNetCore.All.</value>
     <comment>{StrBegin="NETSDK1070: "}</comment>
   </data>
+  <data name="AspNetCoreRequiresRuntimeFrameworkName" xml:space="preserve">
+    <value><![CDATA[NETSDK1071: A PackageReference for '{0}' was included in your project. This will cause issues when upgrading to 2.1.3 and higher.
+To upgrade, remove this PackageReference and add the RuntimeFrameworkName property to {1}.
+
+<PropertyGroup>
+    <RuntimeFrameworkName>{0}</RuntimeFrameworkName>
+</PropertyGroup>
+
+For more information, see {2}.
+    ]]></value>
+    <comment>{StrBegin="NETSDK1071: "}
+{0} - Package Id (AspNetCore.App or .All)
+{1} - Project name
+{2} - More info link
+    </comment>
+  </data>
 </root>
