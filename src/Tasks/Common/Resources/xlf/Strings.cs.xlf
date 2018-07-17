@@ -62,6 +62,15 @@
         <target state="needs-review-translation">Chybí metadata {0} o {1} položky {2}.</target>
         <note>{StrBegin="NETSDK1008: "}</note>
       </trans-unit>
+      <trans-unit id="RecommendRuntimeFrameworkNameForAspNetCorePackages">
+        <source>NETSDK1071: A PackageReference for '{0}' was included in your project. This package can be implicitly defined by the SDK. To resolve this warning, remove this PackageReference and set the RuntimeFrameworkName property to {1}. For more information, see {2}.</source>
+        <target state="new">NETSDK1071: A PackageReference for '{0}' was included in your project. This package can be implicitly defined by the SDK. To resolve this warning, remove this PackageReference and set the RuntimeFrameworkName property to {1}. For more information, see {2}.</target>
+        <note>{StrBegin="NETSDK1071: "}
+{0} - Package Id (Microsoft.AspNetCore.App or .All)
+{1} - Project name
+{2} - More info link
+    </note>
+      </trans-unit>
       <trans-unit id="UnrecognizedPreprocessorToken">
         <source>NETSDK1009: Unrecognized preprocessor token '{0}' in '{1}'.</source>
         <target state="needs-review-translation">Nerozpoznaný token preprocesoru {0} v {1}.</target>
@@ -111,6 +120,11 @@
         <source>NETSDK1018: Invalid NuGet version string: '{0}'.</source>
         <target state="needs-review-translation">Neplatný řetězec verze NuGet: {0}</target>
         <note>{StrBegin="NETSDK1018: "}</note>
+      </trans-unit>
+      <trans-unit id="UnrecognizedRuntimeFrameworkName">
+        <source>NETSDK1070: This project uses an unsupported value for RuntimeFrameworkName. Currently, only valid values are: Microsoft.NETCore.App, Microsoft.AspNetCore.App, or Microsoft.AspNetCore.All.</source>
+        <target state="new">NETSDK1070: This project uses an unsupported value for RuntimeFrameworkName. Currently, only valid values are: Microsoft.NETCore.App, Microsoft.AspNetCore.App, or Microsoft.AspNetCore.All.</target>
+        <note>{StrBegin="NETSDK1070: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedFramework">
         <source>NETSDK1019: {0} is an unsupported framework.</source>
