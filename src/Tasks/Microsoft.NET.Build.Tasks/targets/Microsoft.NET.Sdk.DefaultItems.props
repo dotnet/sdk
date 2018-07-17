@@ -46,6 +46,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <PackageReference Include="$(RuntimeFrameworkName)" Condition=" '$(RuntimeFrameworkName)' != 'Microsoft.NETCore.App' ">
+      <Version>$(RuntimeFrameworkVersion)</Version>
+      <IsImplicitlyDefined>true</IsImplicitlyDefined>
+      <Publish>true</Publish>
+      <!--
+        By default, do not include the runtime framework package in the generated .nuspec when packing the project.
+        The exception is for DotNetCliTool projects, which need the runtime package listed as a dependency.
+      -->
+      <PrivateAssets Condition=" '$(PackageType)' != 'DotNetCliTool' ">All</PrivateAssets>
+    </PackageReference>
+
     <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)" IsImplicitlyDefined="true" />
 
     <!-- For libraries targeting .NET Core 2.0 or higher, don't include a dependency on Microsoft.NETCore.App in the package produced by pack.
