@@ -84,7 +84,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="GenerateShimsAssets"
-          AfterTargets="ResolveReferences"
           BeforeTargets="IncrementalClean"
           DependsOnTargets="ResolvePackageAssets"
           Condition="'$(PackAsTool)' == 'true'" >
