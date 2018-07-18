@@ -81,6 +81,7 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] EmbeddedApphostPaths { get; private set; }
 
+
         protected override void ExecuteCore()
         {
             NuGetFramework targetFramework = NuGetUtils.ParseFrameworkName(TargetFrameworkMoniker);

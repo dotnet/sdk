@@ -159,6 +159,68 @@ namespace Microsoft.NET.ToolPack.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public void It_uses_outputs_to_bin_by_default(bool multiTarget)
+        {
+            TestAsset helloWorldAsset = SetUpHelloWorld(multiTarget);
+
+            _testRoot = helloWorldAsset.TestRoot;
+
+            var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
+            var outputDirectory = packCommand.GetOutputDirectory("netcoreapp2.1");
+            packCommand.Execute();
+
+            string windowShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/win-x64/{_customToolCommandName}.exe");
+            File.Exists(windowShimPath).Should().BeTrue($"Shim {windowShimPath} should exist");
+            string osxShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/osx.10.12-x64/{_customToolCommandName}");
+            File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
+        }
+
+        private TestAsset SetUpHelloWorld(bool multiTarget)
+        {
+            return _testAssetsManager
+                .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget)
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    XNamespace ns = project.Root.Name.Namespace;
+                    XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "PackAsToolShimRuntimeIdentifiers", "win-x64;osx.10.12-x64"));
+                    propertyGroup.Add(new XElement(ns + "ToolCommandName", _customToolCommandName));
+
+                    if (multiTarget)
+                    {
+                        propertyGroup.Element(ns + "TargetFramework").Remove();
+                        propertyGroup.Add(new XElement(ns + "TargetFrameworks", "netcoreapp2.1"));
+                    }
+                })
+                .Restore(Log);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Clean_should_remove_bin_output(bool multiTarget)
+        {
+            TestAsset helloWorldAsset = SetUpHelloWorld(multiTarget);
+
+            _testRoot = helloWorldAsset.TestRoot;
+
+            var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
+            packCommand.Execute();
+
+            var cleanCommand = new CleanCommand(Log, helloWorldAsset.TestRoot);
+            cleanCommand.Execute();
+
+            var outputDirectory = packCommand.GetOutputDirectory("netcoreapp2.1");
+            string windowShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/win-x64/{_customToolCommandName}.exe");
+            File.Exists(windowShimPath).Should().BeFalse($"Shim {windowShimPath} should not exists");
+            string osxShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/osx.10.12-x64/{_customToolCommandName}");
+            File.Exists(osxShimPath).Should().BeFalse($"Shim {osxShimPath} should not exists");
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void It_contains_shim_with_no_build(bool multiTarget)
         {
             var testAsset = CreateTestAsset(multiTarget, "shim_with_no_build" + multiTarget);

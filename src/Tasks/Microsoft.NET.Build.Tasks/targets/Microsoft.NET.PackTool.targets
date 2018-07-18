@@ -84,7 +84,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="GenerateShimsAssets"
-          AfterTargets="Build"
+          AfterTargets="ResolveReferences"
+          BeforeTargets="IncrementalClean"
           DependsOnTargets="ResolvePackageAssets"
           Condition="'$(PackAsTool)' == 'true'" >
 
@@ -110,6 +111,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       >
 
       <Output TaskParameter="EmbeddedApphostPaths" ItemName="_EmbeddedApphostPaths" />
+      <Output TaskParameter="EmbeddedApphostPaths" ItemName="FileWrites" />
     </GenerateShims>
   </Target>
 
