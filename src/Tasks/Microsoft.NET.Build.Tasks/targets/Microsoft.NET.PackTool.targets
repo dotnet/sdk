@@ -84,8 +84,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="GenerateShimsAssets"
-          BeforeTargets="IncrementalClean"
-          DependsOnTargets="ResolvePackageAssets"
+          BeforeTargets="CopyFilesToOutputDirectory"
+          DependsOnTargets="ResolveReferences"
           Condition="'$(PackAsTool)' == 'true'" >
 
     <ItemGroup>
@@ -110,8 +110,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       >
 
       <Output TaskParameter="EmbeddedApphostPaths" ItemName="_EmbeddedApphostPaths" />
-      <Output TaskParameter="EmbeddedApphostPaths" ItemName="FileWrites" />
     </GenerateShims>
+
+    <ItemGroup>
+      <!-- Do this in an ItemGroup instead of as an output parameter so that it still gets added to the item set
+           during incremental builds when the task is skipped -->
+      <FileWrites Include="@(_EmbeddedApphostPaths)"/>
+    </ItemGroup>
   </Target>
 
 </Project>
