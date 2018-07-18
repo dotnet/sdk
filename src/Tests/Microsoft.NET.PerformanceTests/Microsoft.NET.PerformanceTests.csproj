@@ -15,7 +15,7 @@
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
-    <PropertyGroup>
+  <PropertyGroup>
     <PackageId>testSdkPerf</PackageId>
   </PropertyGroup>
   
@@ -39,5 +39,17 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="PopulatePerformanceTestsFromGitHub" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <PerformanceTestsRepoURL>https://github.com/dotnet/BuildPerformanceTestAssets</PerformanceTestsRepoURL>
+      <PerformanceTestsCommit>daf705c</PerformanceTestsCommit>
+      <PerformanceTestsLocalDirectory>$(RepoRoot).perftestsource</PerformanceTestsLocalDirectory>
+    </PropertyGroup>
+
+    <Exec Condition="!Exists($(PerformanceTestsLocalDirectory))"
+          WorkingDirectory="$(RepoRoot)" Command="git clone --quiet $(PerformanceTestsRepoURL) $(PerformanceTestsLocalDirectory)" />
+    <Exec WorkingDirectory="$(PerformanceTestsLocalDirectory)" Command="git checkout --quiet $(PerformanceTestsCommit)" />
+  </Target>
 
 </Project>
