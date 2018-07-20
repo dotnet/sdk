@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tasks
                         ToolCommandName + ExecutableExtension.GetExecutableExtensionAccordingToRuntimeIdentifier(runtimeIdentifier));
 
                 var item = new TaskItem(appHostDestinationFilePath);
-                item.SetMetadata("ShimRuntimeIdentifier", runtimeIdentifier);
+                item.SetMetadata(MetadataKeys.ShimRuntimeIdentifier, runtimeIdentifier);
                 embeddedApphostPaths.Add(item);
             }
 

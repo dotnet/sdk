@@ -126,7 +126,7 @@ namespace Microsoft.NET.ToolPack.Tests
         {
             string shimoutputPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "shimoutput");
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget)
+                .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -175,10 +175,10 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        private TestAsset SetUpHelloWorld(bool multiTarget)
+        private TestAsset SetUpHelloWorld(bool multiTarget, [CallerMemberName] string callingMethod = "")
         {
             return _testAssetsManager
-                .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget)
+                .CopyTestAsset("PortableTool", callingMethod + multiTarget)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -216,6 +216,30 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(windowShimPath).Should().BeFalse($"Shim {windowShimPath} should not exists");
             string osxShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/osx.10.12-x64/{_customToolCommandName}");
             File.Exists(osxShimPath).Should().BeFalse($"Shim {osxShimPath} should not exists");
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Generate_shims_runs_incrementaly(bool multiTarget)
+        {
+            TestAsset helloWorldAsset = SetUpHelloWorld(multiTarget);
+
+            _testRoot = helloWorldAsset.TestRoot;
+
+            var buildCommand = new BuildCommand(Log, helloWorldAsset.TestRoot);
+            buildCommand.Execute().Should().Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp2.1");
+            string windowShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/win-x64/{_customToolCommandName}.exe");
+
+            DateTime windowShimPathFirstModifiedTime = File.GetLastWriteTimeUtc(windowShimPath);
+
+            buildCommand.Execute().Should().Pass();
+
+            DateTime windowShimPathSecondModifiedTime = File.GetLastWriteTimeUtc(windowShimPath);
+
+            windowShimPathSecondModifiedTime.Should().Be(windowShimPathFirstModifiedTime);
         }
 
         [Theory]
@@ -261,11 +285,47 @@ namespace Microsoft.NET.ToolPack.Tests
             }
 
             var nugetPackage = SetupNuGetPackage(multiTarget);
+            AssertValidShim(_testRoot, nugetPackage);
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_produces_valid_shims_when_the_first_build_is_wrong(bool multiTarget)
+        {
+            // The first build use wrong package id and should embed wrong string to shims. However, the pack should produce correct shim
+            // since it includes build target. And the incremental build should consider the shim to be invalid and recreate that.
+
+            if (!Environment.Is64BitOperatingSystem)
+            {
+                // only sample test on win-x64 since shims are RID specific
+                return;
+            }
+
+            TestAsset helloWorldAsset = CreateTestAsset(multiTarget, "It_produces_valid_shims2" + multiTarget.ToString());
+
+            var testRoot = helloWorldAsset.TestRoot;
+
+            var buildCommand = new BuildCommand(Log, helloWorldAsset.TestRoot);
+            buildCommand.Execute("/p:PackageId=wrongpackagefirstbuild");
+
+            var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
+
+            packCommand.Execute();
+            var nugetPackage = packCommand.GetNuGetPackage();
+
+            _packageId = Path.GetFileNameWithoutExtension(packCommand.ProjectFile);
+
+            AssertValidShim(testRoot, nugetPackage);
+        }
+
+        private void AssertValidShim(string testRoot, string nugetPackage)
+        {
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 IEnumerable<NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
                 supportedFrameworks.Should().NotBeEmpty();
-                var simulateToolPathRoot = Path.Combine(_testRoot, "temp", Path.GetRandomFileName());
+                var simulateToolPathRoot = Path.Combine(testRoot, "temp", Path.GetRandomFileName());
 
                 foreach (NuGetFramework framework in supportedFrameworks)
                 {
