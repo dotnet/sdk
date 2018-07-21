@@ -23,7 +23,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       In particular, Directory.Build.props and nuget package props need to be able
       to use this flag and they are imported by Microsoft.Common.props.
     -->
-    <UsingMicrosoftNETSdk>true</UsingMicrosoftNETSdk>
+    <UsingMicrosoftNETSdk Condition="'$(UsingMicrosoftNETSdk)' == ''">true</UsingMicrosoftNETSdk>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectFullPath)' == '$(ProjectToOverrideProjectExtensionsPath)'">

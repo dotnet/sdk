@@ -143,7 +143,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ShowPreviewMessage />
   </Target>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
     <!-- Projects can opt out of having the RID appended to the output path by setting this to false. -->
     <AppendRuntimeIdentifierToOutputPath Condition="'$(AppendRuntimeIdentifierToOutputPath)' == ''">true</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>

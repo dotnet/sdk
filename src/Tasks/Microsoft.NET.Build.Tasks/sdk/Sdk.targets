@@ -16,6 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!-- Using the same property as Microsoft.CSharp.targets and presumably Microsoft.VisualBasic.targets here -->
+  <!-- TODO: Disable CrossTargeting when UsingMicrosoftNETSdk is not true? -->
   <PropertyGroup Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">
     <IsCrossTargetingBuild>true</IsCrossTargetingBuild>
   </PropertyGroup>
