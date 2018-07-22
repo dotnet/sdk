@@ -839,7 +839,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         {
                             pathModel.PathResolved = targetPath;
                         }
-                        else
+                        //Don't overwrite an already resolved output value
+                        else if (string.IsNullOrEmpty(pathModel.PathResolved))
                         {
                             pathModel.PathResolved = pathModel.PathOriginal;
                         }
