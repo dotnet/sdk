@@ -31,12 +31,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TestTemplateSetup setup = SetupCopyOnlyWithoutCorrespondingIncludeTemplate(environment, sourceBasePath);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             // one source, should cause one set of changes
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
@@ -54,11 +54,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TestTemplateSetup setup = SetupCopyOnlyWithParentInclude(environment, sourceBasePath);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
@@ -76,11 +76,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TestTemplateSetup setup = SetupCopyOnlyWithWildcardAndParentInclude(environment, sourceBasePath);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
@@ -98,11 +98,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(environment, sourceBasePath, IncludeModifierOverridesPreviousExcludeModifierConfigText);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
@@ -120,22 +120,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(environment, sourceBasePath, ExcludeModifierOverridesPreviousIncludeModifierConfigText);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
 
             Assert.Equal(2, changes.Count);
 
-            IFileChange includeXyzChangeInfo = changes.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "include.xyz"));
+            IFileChange2 includeXyzChangeInfo = changes.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "include.xyz"));
             Assert.NotNull(includeXyzChangeInfo);
             Assert.Equal(ChangeKind.Create, includeXyzChangeInfo.ChangeKind);
 
-            IFileChange otherXyzChangeInfo = changes.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "other.xyz"));
+            IFileChange2 otherXyzChangeInfo = changes.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "other.xyz"));
             Assert.NotNull(otherXyzChangeInfo);
             Assert.Equal(ChangeKind.Create, otherXyzChangeInfo.ChangeKind);
         }

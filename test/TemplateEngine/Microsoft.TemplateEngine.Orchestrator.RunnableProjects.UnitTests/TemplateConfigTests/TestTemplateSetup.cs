@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             runSpec.RootVariableCollection = variables;
             IDirectory sourceDir = SourceMountPoint.DirectoryInfo("/");
 
-            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
+            IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
             foreach (FileSourceMatchInfo source in runnableConfig.Sources)
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        public IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> GetFileChanges(string targetBaseDir, IParameterSet parameters = null, IVariableCollection variables = null)
+        public IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> GetFileChanges(string targetBaseDir, IParameterSet parameters = null, IVariableCollection variables = null)
         {
             if (parameters == null)
             {
@@ -136,16 +136,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
             IDirectory sourceDir = SourceMountPoint.DirectoryInfo("/");
 
-            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator();
+            IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            Dictionary<string, IReadOnlyList<IFileChange>> changesByTarget = new Dictionary<string, IReadOnlyList<IFileChange>>();
+            Dictionary<string, IReadOnlyList<IFileChange2>> changesByTarget = new Dictionary<string, IReadOnlyList<IFileChange2>>();
 
             foreach (FileSourceMatchInfo source in runnableConfig.Sources)
             {
                 TemplateConfigTestHelpers.SetupFileSourceMatchersOnGlobalRunSpec(runSpec, source);
                 string targetDirForSource = Path.Combine(targetBaseDir, source.Target);
-                IReadOnlyList<IFileChange> changes = orchestrator.GetFileChanges(runSpec, sourceDir, targetDirForSource);
+                IReadOnlyList<IFileChange2> changes = orchestrator.GetFileChanges(runSpec, sourceDir, targetDirForSource);
                 changesByTarget[source.Target] = changes;
             }
 

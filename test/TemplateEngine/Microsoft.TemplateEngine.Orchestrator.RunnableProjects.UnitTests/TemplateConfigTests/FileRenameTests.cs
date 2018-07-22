@@ -17,10 +17,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TestTemplateSetup setup = SetupSourceRenameIsCaseSensitveTestTemplate(environment, sourceBasePath);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);  // one source had changes
-            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes), "No changes for source './'");
+            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes), "No changes for source './'");
 
             Assert.Equal(2, changes.Count);
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "YesNewName.txt", StringComparison.Ordinal)));
@@ -61,10 +61,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TestTemplateSetup setup = SetupSourceModifierRenameIsCaseSensitiveTestTemplate(environment, sourceBasePath);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IReadOnlyDictionary<string, IReadOnlyList<IFileChange>> allChanges = setup.GetFileChanges(targetDir);
+            IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
             Assert.Equal(1, allChanges.Count);  // one source had changes
-            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange> changes), "No changes for source './'");
+            Assert.True(allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes), "No changes for source './'");
 
             Assert.Equal(2, changes.Count);
             Assert.Equal(1, changes.Count(x => string.Equals(x.TargetRelativePath, "YesNewName.txt", StringComparison.Ordinal)));
