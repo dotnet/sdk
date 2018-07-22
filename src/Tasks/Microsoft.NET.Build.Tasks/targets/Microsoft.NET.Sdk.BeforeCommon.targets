@@ -27,10 +27,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DefaultOutputPaths.targets" Condition="'$(UsingMicrosoftNETSdk)' == 'true'"/>
   
   <!-- 
-    Expand TargetFramework to TargetFrameworkIdentifier and TargetFrameworkVersion,
-    and adjust intermediate and output paths to include it.
+    Expand TargetFramework to TargetFrameworkIdentifier and TargetFrameworkVersion
   -->
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" Condition="'$(TargetFramework)' != ''"/>
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkValidation.targets" />
 
   <!-- For .NET Framework, reference core assemblies -->
   <PropertyGroup>

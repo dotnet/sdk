@@ -30,6 +30,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildProjectExtensionsPath>$(ProjectExtensionsPathForSpecifiedProject)</MSBuildProjectExtensionsPath>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+  <PropertyGroup Condition="'$(ImportCommonPropsAndTargetsFromMicrosoftNETSdk)' == 'false'">
+    <CustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BeforeCommon.targets</CustomBeforeMicrosoftCommonTargets>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" 
+          Condition="'$(ImportCommonPropsAndTargetsFromMicrosoftNETSdk)' != 'false'" />
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.props"  />  
 </Project>

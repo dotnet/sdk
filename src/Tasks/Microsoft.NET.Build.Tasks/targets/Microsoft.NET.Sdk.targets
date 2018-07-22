@@ -122,6 +122,11 @@ Copyright (c) .NET Foundation. All rights reserved.
           Inputs="$(ProjectAssetsFile);$(MSBuildAllProjects)"
           Outputs="$(ProjectDepsFilePath)">
 
+    <!-- Set a dummy Version if it hasn't been set by DefaultAssemblyInfo.targets -->
+    <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
+      <Version>1.0.0</Version>
+    </PropertyGroup>
+    
     <!--
     Explicitly not passing any ExcludeFromPublishPackageReferences information during 'Build', since these dependencies
     should be included during 'Build'.  They are only excluded on 'Publish'.
