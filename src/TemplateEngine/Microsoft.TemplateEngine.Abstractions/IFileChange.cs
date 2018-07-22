@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TemplateEngine.Abstractions
+namespace Microsoft.TemplateEngine.Abstractions
 {
     public interface IFileChange
     {
@@ -7,5 +7,10 @@
         ChangeKind ChangeKind { get; }
 
         byte[] Contents { get; }
+    }
+
+    public interface IFileChange2 : IFileChange
+    {
+        string SourceRelativePath { get; }
     }
 }

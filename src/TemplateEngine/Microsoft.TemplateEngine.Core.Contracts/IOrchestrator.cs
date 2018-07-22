@@ -14,4 +14,15 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IReadOnlyList<IFileChange> GetFileChanges(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir);
     }
+
+    public interface IOrchestrator2
+    {
+        void Run(string runSpecPath, IDirectory sourceDir, string targetDir);
+
+        void Run(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir);
+
+        IReadOnlyList<IFileChange2> GetFileChanges(string runSpecPath, IDirectory sourceDir, string targetDir);
+
+        IReadOnlyList<IFileChange2> GetFileChanges(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir);
+    }
 }
