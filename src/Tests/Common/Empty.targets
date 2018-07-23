@@ -3,5 +3,5 @@
 <Project>
   <!-- This file is used to ensure that other Directory.Build.targets higher on the path aren't imported, as well as
        importing the Sdk targets if they are not already imported -->
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition="'$(UsingMicrosoftNETSdk)' != 'true'"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition="'$(_ImportNetSdk)' == 'true'"/>
 </Project>
