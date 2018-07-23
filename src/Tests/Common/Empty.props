@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
-  <!-- This is an empty props file used to ensure that other Directory.Build.props higher on the path aren't imported -->
+  <!-- This file is used to ensure that other Directory.Build.props higher on the path aren't imported, as well as
+       importing the Sdk targets if they are not already imported -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == ''">
+    <UsingMicrosoftNETSdk>false</UsingMicrosoftNETSdk>
+    <ImportCommonPropsAndTargetsFromMicrosoftNETSdk>false</ImportCommonPropsAndTargetsFromMicrosoftNETSdk>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition="'$(UsingMicrosoftNETSdk)' != 'true'"/>
 </Project>
