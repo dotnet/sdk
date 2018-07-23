@@ -29,7 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- 
     Expand TargetFramework to TargetFrameworkIdentifier and TargetFrameworkVersion
   -->
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" Condition="'$(TargetFramework)' != ''"/>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" Condition="'$(TargetFramework)' != '' Or '$(UsingMicrosoftNETSdk)' == 'true'"/>
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkValidation.targets" />
 
