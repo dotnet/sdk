@@ -23,13 +23,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       In particular, Directory.Build.props and nuget package props need to be able
       to use this flag and they are imported by Microsoft.Common.props.
     -->
-    <UsingMicrosoftNETSdk>true</UsingMicrosoftNETSdk>
+    <UsingMicrosoftNETSdk Condition="'$(UsingMicrosoftNETSdk)' == ''">true</UsingMicrosoftNETSdk>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectFullPath)' == '$(ProjectToOverrideProjectExtensionsPath)'">
     <MSBuildProjectExtensionsPath>$(ProjectExtensionsPathForSpecifiedProject)</MSBuildProjectExtensionsPath>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+  <PropertyGroup Condition="'$(ImportCommonPropsAndTargetsFromMicrosoftNETSdk)' == 'false'">
+    <CustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BeforeCommon.targets</CustomBeforeMicrosoftCommonTargets>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" 
+          Condition="'$(ImportCommonPropsAndTargetsFromMicrosoftNETSdk)' != 'false'" />
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.props"  />  
 </Project>

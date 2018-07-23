@@ -16,6 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!-- Using the same property as Microsoft.CSharp.targets and presumably Microsoft.VisualBasic.targets here -->
+  <!-- TODO: Disable CrossTargeting when UsingMicrosoftNETSdk is not true? -->
   <PropertyGroup Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">
     <IsCrossTargetingBuild>true</IsCrossTargetingBuild>
   </PropertyGroup>
@@ -23,7 +24,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BeforeCommonCrossTargeting.targets"
           Condition="'$(IsCrossTargetingBuild)' == 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BeforeCommon.targets"
-          Condition="'$(IsCrossTargetingBuild)' != 'true'"/>
+          Condition="'$(IsCrossTargetingBuild)' != 'true' and '$(ImportCommonPropsAndTargetsFromMicrosoftNETSdk)' != 'false'"/>
 
   <PropertyGroup Condition="'$(LanguageTargets)' == ''">
     <LanguageTargets Condition="'$(MSBuildProjectExtension)' == '.csproj'">$(MSBuildToolsPath)\Microsoft.CSharp.targets</LanguageTargets>
@@ -38,7 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- REMARK: Dont remove/rename, the LanguageTargets property is used by F# to hook inside the project's sdk 
                using Sdk attribute (from .NET Core Sdk 1.0.0-preview4) -->
-  <Import Project="$(LanguageTargets)"/>
+  <Import Project="$(LanguageTargets)" Condition="'$(ImportCommonPropsAndTargetsFromMicrosoftNETSdk)' != 'false'"/>
   
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.CrossTargeting.targets"
           Condition="'$(IsCrossTargetingBuild)' == 'true'"/>

@@ -95,6 +95,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     that came from packages. PackageReference should already be promoted to a closure of Reference
     items and we are responsible for adding package relates files to CopyLocal items, not RAR. This
     is only configurable as a compat opt-out in case skipping the slow RAR code breaks something.
+    
+    TODO: Consider behavior when UsingMicrosoftNETSdk is not true
   -->
   <PropertyGroup Condition="'$(MarkPackageReferencesAsExternallyResolved)' == ''">
     <MarkPackageReferencesAsExternallyResolved>true</MarkPackageReferencesAsExternallyResolved>
