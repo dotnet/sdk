@@ -9,7 +9,7 @@
   <!-- Repo Version Information -->
   <PropertyGroup>
     <VersionPrefix>3.0.100</VersionPrefix>
-    <PreReleaseVersionLabel>preview1</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>alpha-exp</PreReleaseVersionLabel>
   </PropertyGroup>
 
   <!-- Production Dependencies -->
