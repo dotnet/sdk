@@ -332,6 +332,7 @@ namespace Microsoft.NET.Build.Tasks
                     writer.Write(DisablePackageAssetsCache);
                     writer.Write(DisableFrameworkAssemblies);
                     writer.Write(DisableTransitiveProjectReferences);
+                    writer.Write(DotNetAppHostExecutableNameWithoutExtension);
                     writer.Write(EmitAssetsLogMessages);
                     writer.Write(EnsureRuntimePackageDependencies);
                     writer.Write(MarkPackageReferencesAsExternallyResolved);
@@ -348,6 +349,13 @@ namespace Microsoft.NET.Build.Tasks
                     writer.Write(ProjectLanguage ?? "");
                     writer.Write(ProjectPath);
                     writer.Write(RuntimeIdentifier ?? "");
+                    if (ShimRuntimeIdentifiers != null)
+                    {
+                        foreach (var r in ShimRuntimeIdentifiers)
+                        {
+                            writer.Write(r.ItemSpec ?? "");
+                        }
+                    }
                     writer.Write(TargetFrameworkMoniker);
                     writer.Write(VerifyMatchingImplicitPackageVersion);
                 }
