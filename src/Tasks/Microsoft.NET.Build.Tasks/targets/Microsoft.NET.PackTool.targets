@@ -89,19 +89,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_ShimInputCacheFile Condition="'$(_ShimInputCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).shiminput.cache</_ShimInputCacheFile>
     <_ShimInputCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_ShimInputCacheFile)))</_ShimInputCacheFile>
+    <_ShimCreatedSentinelFile Condition="'$(_ShimCreatedSentinelFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).shimcreated.sentinel</_ShimCreatedSentinelFile>
+    <_ShimCreatedSentinelFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_ShimCreatedSentinelFile)))</_ShimCreatedSentinelFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <_GenerateShimsAssetsInput Include="@(_ApphostsForShimRuntimeIdentifiers)"/>
-  </ItemGroup>
 
   <Target Name="GenerateShimsAssets"
           BeforeTargets="CopyFilesToOutputDirectory"
           DependsOnTargets="ResolvePackageAssets;_PackToolValidation;_GenerateShimInputCache;_ComputeExpectedEmbeddedApphostPaths"
           Condition="'$(PackAsTool)' == 'true'"
           Inputs="@(_GenerateShimsAssetsInput)"
-          Outputs="@(_EmbeddedApphostPaths)"
-          >
+          Outputs="$(_ShimCreatedSentinelFile)">
 
     <PropertyGroup>
       <PackagedShimOutputRootDirectory Condition=" '$(PackagedShimOutputRootDirectory)' == '' ">$(OutDir)</PackagedShimOutputRootDirectory>
@@ -115,44 +112,50 @@ Copyright (c) .NET Foundation. All rights reserved.
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       TargetFrameworkMoniker="$(NuGetTargetMoniker)"
       ToolCommandName="$(ToolCommandName)"
-      ToolEntryPoint="$(ToolEntryPoint)"
-      >
+      ToolEntryPoint="$(ToolEntryPoint)">
 
       <Output TaskParameter="EmbeddedApphostPaths" ItemName="_EmbeddedApphostPaths" />
     </GenerateShims>
+
+    <!-- Workaround for https://github.com/dotnet/corefx/issues/31379
+         LastWriteTime in shims are not accurate. And _ShimInputCacheFile will have later timestamp than generated shims.
+         Use a created file to "record" LastWriteTime. And only use it in "Outputs" field for timestamp comparison.
+    -->
+    <WriteLinesToFile Lines="This file's LastWriteTime is used in incremental build" File="$(_ShimCreatedSentinelFile)" Overwrite="True" />
 
     <ItemGroup>
       <!-- Do this in an ItemGroup instead of as an output parameter so that it still gets added to the item set
            during incremental builds when the task is skipped -->
       <FileWrites Include="@(_EmbeddedApphostPaths)" Condition="Exists('@(_EmbeddedApphostPaths)')"/>
+      <FileWrites Include="$(_ShimCreatedSentinelFile)" Condition="Exists('$(_ShimCreatedSentinelFile)')"/>
     </ItemGroup>
   </Target>
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
-    <ItemGroup>
-      <_PackAsToolShimRuntimeIdentifiers Include="$(PackAsToolShimRuntimeIdentifiers)"/>
-    </ItemGroup>
-
     <GetEmbeddedApphostPaths
       PackagedShimOutputDirectory="$(OutDir)/shims/$(TargetFramework)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
-      ToolCommandName="$(ToolCommandName)"
-      >
+      ToolCommandName="$(ToolCommandName)">
 
       <Output TaskParameter="EmbeddedApphostPaths" ItemName="_EmbeddedApphostPaths" />
     </GetEmbeddedApphostPaths>
   </Target>
 
-  <!--To achieve incremental build with property change. When any property changes, WriteOnlyWhenDifferent will be triggered to write cache file.
+  <!-- To achieve incremental build with property change. When any property changes, WriteOnlyWhenDifferent will be triggered to write cache file.
   And the cache file's timestamp will be later, and it then triggers the incremental build.-->
   <Target Name="_GenerateShimInputCache" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <_GenerateShimsAssetsInput Include="$(_ShimInputCacheFile)" />
+      <_GenerateShimsAssetsInput Include="@(_ApphostsForShimRuntimeIdentifiers)"/>
+      <_GenerateShimsAssetsInput Include="$(_ShimCreatedSentinelFile)"/>
+      <_GenerateShimsAssetsInput Include="$(ProjectAssetsFile)"/>
+
       <_GenerateShimsAssetsInputCacheToHash Include="$(PackageId)"/>
       <_GenerateShimsAssetsInputCacheToHash Include="$(Version)"/>
       <_GenerateShimsAssetsInputCacheToHash Include="$(NuGetTargetMoniker)"/>
       <_GenerateShimsAssetsInputCacheToHash Include="$(ToolCommandName)"/>
       <_GenerateShimsAssetsInputCacheToHash Include="$(ToolEntryPoint)"/>
+      <_GenerateShimsAssetsInputCacheToHash Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GenerateShimsAssetsInputCacheToHash)">
