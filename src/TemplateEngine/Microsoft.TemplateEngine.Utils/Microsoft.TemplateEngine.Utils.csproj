@@ -1,6 +1,7 @@
 ﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard1.3;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard1.3</TargetFrameworks>
     <Description>Components used by all Template Engine extensions and consumers</Description>
   </PropertyGroup>
 

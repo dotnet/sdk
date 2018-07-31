@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard1.5;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard1.5</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
