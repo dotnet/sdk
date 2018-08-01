@@ -906,12 +906,7 @@ namespace Microsoft.NET.Build.Tasks
                     NuGetFramework targetFramework = NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker);
                     LockFileTarget runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(targetFramework, runtimeIdentifier);
 
-                    var apphostName = _task.DotNetAppHostExecutableNameWithoutExtension;
-
-                    if (runtimeIdentifier.StartsWith("win"))
-                    {
-                        apphostName += ".exe";
-                    }
+                    var apphostName = _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier);
 
                     Tuple<string, LockFileTargetLibrary> resolvedPackageAssetPathAndLibrary = FindApphostInRuntimeTarget(apphostName, runtimeTarget);
 

@@ -81,7 +81,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 var appHostDestinationFilePath = Path.Combine(
                         packagedShimOutputDirectoryAndRid,
-                        ToolCommandName + ExecutableExtension.GetExecutableExtensionAccordingToRuntimeIdentifier(runtimeIdentifier));
+                        ToolCommandName + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier));
 
                 Directory.CreateDirectory(packagedShimOutputDirectoryAndRid);
 

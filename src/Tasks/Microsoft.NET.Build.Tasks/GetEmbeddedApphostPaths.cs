@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 var appHostDestinationFilePath = Path.Combine(
                         packagedShimOutputDirectoryAndRid,
-                        ToolCommandName + ExecutableExtension.GetExecutableExtensionAccordingToRuntimeIdentifier(runtimeIdentifier));
+                        ToolCommandName + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier));
 
                 var item = new TaskItem(appHostDestinationFilePath);
                 item.SetMetadata(MetadataKeys.ShimRuntimeIdentifier, runtimeIdentifier);

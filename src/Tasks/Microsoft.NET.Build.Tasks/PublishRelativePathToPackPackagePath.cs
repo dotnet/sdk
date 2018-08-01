@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks
     /// 1. Publish PublishRelativePath is a relative <strong>file</strong> path. This need to convert to relative path.
     /// 2. Due to DotnetTools package format, "tools/{TargetFramework}/any/" is needed in addition to the relative path.
     /// </summary>
-    public sealed class PublishRelativePathToPackPackagePath : TaskBase
+    public sealed class RelativePathFormatInPublishToFormatInPackPackage : TaskBase
     {
         [Required]
         public ITaskItem[] ResolvedFileToPublish { get; set; }
@@ -28,8 +28,8 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] ResolvedFileToPublishWithPackagePath { get; private set; }
 
-        private const char DirectorySeparatorChar = '\\';
-        private const char AltDirectorySeparatorChar = '/';
+        private const char ForwardSeparatorChar = '\\';
+        private const char BackwardSeparatorChar = '/';
 
         protected override void ExecuteCore()
         {
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
         internal static string GetDirectoryPathInRelativePath(string publishRelativePath)
         {
             publishRelativePath = NormalizeDirectorySeparatorsToUnixStyle(publishRelativePath);
-            var index = publishRelativePath.LastIndexOf(AltDirectorySeparatorChar);
+            var index = publishRelativePath.LastIndexOf(BackwardSeparatorChar);
             return index == -1 ? string.Empty : publishRelativePath.Substring(0, index);
         }
 
@@ -75,7 +75,7 @@ namespace Microsoft.NET.Build.Tasks
             if (IsDirectorySeparator(path[start]))
             {
                 start++;
-                builder.Append(AltDirectorySeparatorChar);
+                builder.Append(BackwardSeparatorChar);
             }
 
             for (int i = start; i < path.Length; i++)
@@ -92,7 +92,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
 
                     // Ensure it is the primary separator
-                    current = AltDirectorySeparatorChar;
+                    current = BackwardSeparatorChar;
                 }
 
                 builder.Append(current);
@@ -103,7 +103,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static bool IsDirectorySeparator(char c)
         {
-            return c == DirectorySeparatorChar || c == AltDirectorySeparatorChar;
+            return c == ForwardSeparatorChar || c == BackwardSeparatorChar;
         }
 
     }

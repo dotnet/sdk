@@ -57,6 +57,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            // Memory-mapped write does not updating last write time
             File.SetLastWriteTimeUtc(appHostDestinationFilePath, DateTime.UtcNow);
         }
 
