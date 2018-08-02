@@ -120,6 +120,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Workaround for https://github.com/dotnet/corefx/issues/31379
          LastWriteTime in shims are not accurate. And _ShimInputCacheFile will have later timestamp than generated shims.
          Use a created file to "record" LastWriteTime. And only use it in "Outputs" field for timestamp comparison.
+
+         Touch Task uses the same API File.SetLastWriteTime underneath. So it also cannot be used.
     -->
     <WriteLinesToFile Lines="This file's LastWriteTime is used in incremental build" File="$(_ShimCreatedSentinelFile)" Overwrite="True" />
 
