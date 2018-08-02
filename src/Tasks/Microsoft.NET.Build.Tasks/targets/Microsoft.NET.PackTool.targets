@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateShims"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Build.Tasks.RelativePathFormatInPublishToFormatInPackPackage"
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolveToolPackagePaths"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
       AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
@@ -36,13 +36,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
     </ItemGroup>
 
-    <RelativePathFormatInPublishToFormatInPackPackage
+    <ResolveToolPackagePaths
       ResolvedFileToPublish="@(ResolvedFileToPublish)"
       PublishDir="$(PublishDir)"
       TargetFramework="$(TargetFramework)">
 
       <Output TaskParameter="ResolvedFileToPublishWithPackagePath" ItemName="_ResolvedFileToPublishWithPackagePath" />
-    </RelativePathFormatInPublishToFormatInPackPackage>
+    </ResolveToolPackagePaths>
 
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(_GeneratedFiles)">

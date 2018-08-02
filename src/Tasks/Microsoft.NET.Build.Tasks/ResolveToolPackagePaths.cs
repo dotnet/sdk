@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks
     /// 1. Publish PublishRelativePath is a relative <strong>file</strong> path. This need to convert to relative path.
     /// 2. Due to DotnetTools package format, "tools/{TargetFramework}/any/" is needed in addition to the relative path.
     /// </summary>
-    public sealed class RelativePathFormatInPublishToFormatInPackPackage : TaskBase
+    public sealed class ResolveToolPackagePaths : TaskBase
     {
         [Required]
         public ITaskItem[] ResolvedFileToPublish { get; set; }

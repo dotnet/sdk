@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    public class GivenARelativePathFormatInPublishToFormatInPackPackage
+    public class GivenAResolveToolPackagePaths
     {
         [Theory]
         [InlineData("tools/myfile.exe", "tools")]
@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [InlineData("tools\\sub\\myfile.exe", "tools/sub")]
         public void ItConvertsFromPublishRelativePathToPackPackagePath(string publishRelativePath, string packPackagePath)
         {
-            RelativePathFormatInPublishToFormatInPackPackage.GetDirectoryPathInRelativePath(publishRelativePath).Should().Be(packPackagePath);
+            ResolveToolPackagePaths.GetDirectoryPathInRelativePath(publishRelativePath).Should().Be(packPackagePath);
         }
     }
 }
