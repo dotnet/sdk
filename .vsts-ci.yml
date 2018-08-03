@@ -1,29 +1,49 @@
 # Sample VSTS CI file
-
-queue: 'Helix'
 variables:
-  buildConfiguration: 'Release'
+  Build.Repository.Clean: true
+  targetFramework: netcoreapp2.0
 
-steps:
+trigger:
+- master
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'restore'
-      projects: '**/*.csproj'
-    displayName: dotnet restore
+# To be added in the future when VSTS supports this feature
+# pr:
+# - master
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'build'
-      projects: '**/*.csproj'
-      arguments: '--configuration $(buildConfiguration)'
-    displayName: dotnet build
+# Three phases for each of the three OSes we want to run on
+phases:
+  - phase: Windows_NT
+    queue:
+      name: Helix
+      parallel: 99
+      matrix:
+        debug_configuration:
+          _BuildConfig: Debug
+        release_configuration:
+          _BuildConfig: Release
+    steps:
+    - template: eng/build.yml
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'publish'
-      arguments: '--configuration $(buildConfiguration) --output $(build.artifactStagingDirectory)'
-    displayName: dotnet publish
+  - phase: OSX
+    queue:
+      name: Hosted macOS Preview
+      parallel: 99
+      matrix:
+        debug_configuration:
+          _BuildConfig: Debug
+        release_configuration:
+          _BuildConfig: Release
+    steps:
+    - template: eng/build.yml
 
-  - task: PublishBuildArtifacts@1
-    displayName: Publish artifacts
+  - phase: Linux
+    queue:
+      name: DotNetCore-Linux
+      parallel: 99
+      matrix:
+        debug_configuration:
+          _BuildConfig: Debug
+        release_configuration:
+          _BuildConfig: Release
+    steps:
+    - template: eng/build.yml
