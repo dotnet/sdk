@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData("netcoreapp2.0")]
         [InlineData("netstandard2.0")]
         public void The_same_references_are_used_with_or_without_DisableDefaultPackageConflictOverrides(string targetFramework)

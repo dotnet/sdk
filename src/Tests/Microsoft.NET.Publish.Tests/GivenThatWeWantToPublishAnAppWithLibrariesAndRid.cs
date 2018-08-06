@@ -19,7 +19,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_publishes_a_self_contained_runnable_output()
         {
             PublishAppWithLibraryAndRid(true,
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining($"3.13.0 '{runtimeIdentifier}' 3.13.0 '{runtimeIdentifier}' Hello World");
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_publishes_a_framework_dependent_RID_specific_runnable_output()
         {
             PublishAppWithLibraryAndRid(false,

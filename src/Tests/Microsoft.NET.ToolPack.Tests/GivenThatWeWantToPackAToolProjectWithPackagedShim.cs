@@ -64,7 +64,7 @@ namespace Microsoft.NET.ToolPack.Tests
                 .Restore(Log);
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_packs_successfully(bool multiTarget)
@@ -78,7 +78,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_dependencies_dll(bool multiTarget)
@@ -97,7 +97,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_shim(bool multiTarget)
@@ -119,7 +119,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_uses_customized_PackagedShimOutputRootDirectory(bool multiTarget)
@@ -156,7 +156,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_uses_outputs_to_bin_by_default(bool multiTarget)
@@ -196,7 +196,7 @@ namespace Microsoft.NET.ToolPack.Tests
                 .Restore(Log);
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void Clean_should_remove_bin_output(bool multiTarget)
@@ -218,7 +218,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeFalse($"Shim {osxShimPath} should not exists");
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void Generate_shims_runs_incrementaly(bool multiTarget)
@@ -242,7 +242,7 @@ namespace Microsoft.NET.ToolPack.Tests
             windowShimPathSecondModifiedTime.Should().Be(windowShimPathFirstModifiedTime);
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_shim_with_no_build(bool multiTarget)
