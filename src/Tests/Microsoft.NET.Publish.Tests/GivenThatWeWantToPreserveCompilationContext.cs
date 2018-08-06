@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData("net46", "netstandard1.3")]
         [InlineData("netcoreapp1.1", "netstandard1.3")]
         [InlineData("netcoreapp2.0", "netstandard2.0")]
@@ -150,7 +150,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_excludes_runtime_store_packages_from_the_refs_folder()
         {
             var targetFramework = "netcoreapp2.0";

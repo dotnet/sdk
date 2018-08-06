@@ -26,7 +26,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData(null)]
         [InlineData("true")]
         [InlineData("false")]
@@ -93,7 +93,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_errors_when_using_app_host_without_rid()
         {
             var testAsset = _testAssetsManager
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotUseAppHostWithoutRuntimeIdentifier);
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_errors_when_using_app_host_with_older_target_framework()
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();

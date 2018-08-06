@@ -10,10 +10,7 @@ namespace Microsoft.NET.TestFramework
     {
         public WindowsOnlyFactAttribute()
         {
-            if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Windows)
-            {
                 this.Skip = "This test requires Windows to run";
-            }
         }
     }
 }

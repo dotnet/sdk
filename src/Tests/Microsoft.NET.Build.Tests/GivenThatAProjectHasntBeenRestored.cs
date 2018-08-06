@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData("TestLibrary")]
         [InlineData("TestApp")]
         public void The_build_fails_if_nuget_restore_has_not_occurred(string relativeProjectPath)
@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("1 Error(s)");
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         [InlineData("TestLibrary")]
         [InlineData("TestApp")]
         public void The_design_time_build_succeeds_before_nuget_restore(string relativeProjectPath)

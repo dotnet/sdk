@@ -73,7 +73,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_does_not_treat_nuget_refs_as_copylocal_false()
         {
             var testProject = new TestProject()

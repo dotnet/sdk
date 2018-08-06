@@ -405,7 +405,7 @@ namespace DefaultReferences
                 .NotHaveStdOutMatching("Encountered conflict", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_does_not_report_conflicts_when_with_http_4_1_package()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -590,7 +590,7 @@ class Program
             root.Elements("startup").Single().Elements().Should().Contain(e => e.Name.LocalName == "supportedRuntime");
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void It_generates_appconfig_incrementally()
         {
             var testAsset = _testAssetsManager

@@ -24,7 +24,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         }
 
-        [Theory]
+         [Theory(Skip ="debug")]
         // lower than netcoreapp2.0
         [InlineData("TargetFramework", "netcoreapp2.0", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
         [InlineData("TargetFramework", "netcoreapp1.1", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]

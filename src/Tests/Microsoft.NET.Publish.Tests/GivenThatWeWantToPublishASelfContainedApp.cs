@@ -25,7 +25,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_errors_when_publishing_self_contained_app_without_rid()
         {
              var testAsset = _testAssetsManager
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSelfContainedWithoutRuntimeIdentifier);
         }
 
-        [Fact]
+        [Fact(Skip="todebug")]
         public void It_errors_when_publishing_self_contained_without_apphost()
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();

@@ -9,10 +9,7 @@ namespace Microsoft.NET.TestFramework
     {
         public FullMSBuildOnlyTheoryAttribute()
         {
-            if (!TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
-            {
-                this.Skip = "This test requires Full MSBuild to run";
-            }
+            this.Skip = "To debug";
         }
     }
 }
