@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GenerateSupportedRuntime"
           Condition="'$(GenerateSupportedRuntime)' != 'false' and '$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(HasRuntimeOutput)' == 'true'"
           DependsOnTargets="_WriteAppConfigWithSupportedRuntime"
-          BeforeTargets="ResolveReferences">
+          BeforeTargets="BeforeResolveReferences">
 
     <SetGeneratedAppConfigMetadata
      AppConfigFile="@(AppConfigWithTargetPath)"
