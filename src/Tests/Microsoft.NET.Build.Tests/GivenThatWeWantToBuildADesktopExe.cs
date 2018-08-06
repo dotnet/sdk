@@ -601,7 +601,7 @@ class Program
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
 
             buildCommand
-                .Execute()
+                .Execute("/v:diag")
                 .Should()
                 .Pass();
 
@@ -612,7 +612,7 @@ class Program
             DateTime firstBuildWriteTime = File.GetLastWriteTimeUtc(outputfile.FullName);
 
             buildCommand
-               .Execute()
+               .Execute("/v:diag")
                .Should()
                .Pass();
 
