@@ -114,9 +114,7 @@
 
   </Target>
 
-  <Target Name="PublishVersionFile"
-          BeforeTargets="Publish">
-
+  <Target Name="PublishVersionFile">
     <WriteLinesToFile File="$(PublishDir)/.version"
                       Lines="$(CommitHash);$(SdkVersion);$(Rid)"
                       Overwrite="true" />
