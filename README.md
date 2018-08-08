@@ -22,27 +22,45 @@ trigger:
 # - master
 ```
 
-## Run builds on multiple operating systems with phases
-VSTS uses **phases** to parallelize your builds. Each phase definition corresponds to a specific queue. Thus, if you would like to have builds run on Windows, OSX, and Linux, you will need to define three phases (each corresponding to a separate queue) as seen in the following example.
+## Base your builds on Arcade for ease of use
+Arcade is designed to make many of the more complex tasks (such as sending telemetry) simple to do out of the box. While these features are not available yet, they are actively being developed, and it is therefore recommended that all builds base themselves on Arcade's `base.yml` template. This can be done using VSTS's repository resource model:
 
 ```yaml
+resources:
+  repositories:
+  # shared library repository
+  - repository: arcade
+    type: github
+    endpoint: DotNet-Bot GitHub Connection
+    name: dotnet/arcade
+    ref: refs/heads/master
+
 phases:
-  # Define a Windows phase
-  - phase: Windows
-    queue:
-      name: Helix # the Helix queue is currently the recommended queue for Windows builds
-    ...
-
-  - phase: OSX
-    queue:
-      name: Hosted macOS Preview # as of Aug 2 2018 this is correct; in the future we will switch to a DotNetCore-Mac pool
-    ...
-
-  - phase: Linux
-    queue:
-      name: DotNetCore-Linux
-    ...
+- template: /eng/common/templates/phases/base.yml@arcade
+  parameters:
+  ...
 ```
+
+In the future, repositories can enroll in Maestro to manage their Arcade template usage instead.
+
+## Use the Arcade SDK for an easier build process
+To quickstart your builds, you can use the Arcade SDK's build scripts. Clone the `eng/*` folder from this repository and copy [`Directory.Build.props`](Directory.Build.props), [`Directory.Build.targets`](Directory.Build.targets), [`global.json`](global.json), and [`NuGet.Config`](NuGet.Config) into your root directory. To use the build scripts, simply use a `script` task to run `eng\common\cibuild.cmd` on Windows or `eng/common/cibuild.sh` on a Unix-based OS.
+
+```yaml
+# for Windows
+steps:
+- script: eng\common\cibuild.cmd
+    -configuration $(_BuildConfig)
+    -prepareMachine
+
+# for Unix-based
+steps:
+- script: eng/common/cibuild.sh
+    --configuration $(_BuildConfig)
+    --prepareMachine
+```
+
+Note: for the Unix-based scripts to work, make sure you clone rather than copy/paste while on Windows&mdash;copying and pasting will remove the `x` chmod parameter from the Unix scripts, which will build breaks when attempting to run them.
 
 ## Use matrices to quickly create phases for different build configurations
 VSTS supports using a **matrix** in a phase definition to quickly create several different phases on the same queue with slightly different build configurations. This is the recommended way to quickly add debug and release configuration builds.
@@ -69,30 +87,8 @@ The variable defined in this matrix (in this case, `_BuildConfig`) can later be 
     arguments: '--configuration $(_BuildConfig)'
 ```
 
-## Avoid code-duplication through templates
-Most builds run nearly identical steps on all configurations. In YAML, **templates** can be used to prevent code duplication and make the build process easier to maintain.
-
-In this sample, our build process is placed in a [build.yml](eng/build.yml) template file. This template is then referenced in the main CI file:
-
-```yaml
-- phase: Windows
-  ...
-  steps:
-  - template: eng/build.yml
-
-- phase: OSX
-  ...
-  steps:
-  - template: eng/build.yml
-
-- phase: Linux
-  ...
-  steps:
-  - template: eng/build.yml
-```
-
 ## Run both CI and PR builds out of the same file
-The current recommendation is that all repositories have a single `.vsts-ci.yml` file which defines all of their builds (CI, PR, and internal). To do this, use YAML `{{ if }}` directives and the VSTS built-in `Build.Reason` variable.
+While this sample repository has no need to do so, there are many scenarios in which you may want to differentiate between different build triggers. The current recommendation is that all repositories have a single `.vsts-ci.yml` file which defines all of their builds (CI, PR, and internal). To do this, use YAML `{{ if }}` directives and the VSTS built-in `Build.Reason` variable.
 
 ```yaml
 - ${{ if notIn(variables['Build.Reason'], 'PullRequest') }}:

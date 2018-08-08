@@ -1,4 +1,13 @@
 # Sample VSTS CI file
+resources:
+  repositories:
+  # shared library repository
+  - repository: arcade
+    type: github
+    endpoint: DotNet-Bot GitHub Connection
+    name: dotnet/arcade
+    ref: refs/heads/master
+
 variables:
   Build.Repository.Clean: true
   targetFramework: netcoreapp2.0
@@ -12,7 +21,11 @@ trigger:
 
 # Three phases for each of the three OSes we want to run on
 phases:
-  - phase: Windows_NT
+- template: /eng/common/templates/phases/base.yml@arcade
+  parameters:
+    agentOs: Windows_NT
+    name: Windows_NT
+    enableTelemetry: false
     queue:
       name: Helix
       parallel: 99
@@ -22,9 +35,18 @@ phases:
         release_configuration:
           _BuildConfig: Release
     steps:
-    - template: eng/build.yml
+    - script: eng\common\cibuild.cmd
+        -configuration $(_BuildConfig)
+        -prepareMachine
+      name: Build
+      displayName: Build
+      condition: succeeded()
 
-  - phase: OSX
+- template: /eng/common/templates/phases/base.yml@arcade
+  parameters:
+    agentOs: OSX
+    name: OSX
+    enableTelemetry: false
     queue:
       name: Hosted macOS Preview
       parallel: 99
@@ -34,9 +56,18 @@ phases:
         release_configuration:
           _BuildConfig: Release
     steps:
-    - template: eng/build.yml
+    - script: eng/common/cibuild.sh
+        --configuration $(_BuildConfig)
+        --prepareMachine
+      name: Build
+      displayName: Build
+      condition: succeeded()
 
-  - phase: Linux
+- template: /eng/common/templates/phases/base.yml@arcade
+  parameters:
+    agentOs: Linux
+    name: Linux
+    enableTelemetry: false
     queue:
       name: DotNetCore-Linux
       parallel: 99
@@ -46,4 +77,9 @@ phases:
         release_configuration:
           _BuildConfig: Release
     steps:
-    - template: eng/build.yml
+    - script: eng/common/cibuild.sh
+        --configuration $(_BuildConfig)
+        --prepareMachine
+      name: Build
+      displayName: Build
+      condition: succeeded()
