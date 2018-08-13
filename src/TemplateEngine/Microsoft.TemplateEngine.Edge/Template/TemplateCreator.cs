@@ -85,7 +85,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                 try
                 {
-                    _paths.CreateDirectory(targetDir);
+                    if (!dryRun)
+                    {
+                        _paths.CreateDirectory(targetDir);
+                    }
+
                     Stopwatch sw = Stopwatch.StartNew();
                     IComponentManager componentManager = _environmentSettings.SettingsLoader.Components;
 
