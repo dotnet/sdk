@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Embeds the App Name into the AppHost.exe  
     /// </summary>
-    public class EmbedAppNameInHost : TaskBase
+    public class PrepareAppHost : TaskBase
     {
         [Required]
         public string AppHostSourcePath { get; set; }
@@ -20,6 +20,8 @@ namespace Microsoft.NET.Build.Tasks
 
         [Required]
         public string AppBinaryName { get; set; }
+
+        public bool WindowsGraphicalUserInterface { get; set; }
 
         [Output]
         public string ModifiedAppHostPath { get; set; }
@@ -34,9 +36,13 @@ namespace Microsoft.NET.Build.Tasks
             if (!File.Exists(ModifiedAppHostPath))
             {
                 AppHost.Create(
-                    AppHostSourcePath,
-                    ModifiedAppHostPath,
-                    AppBinaryName);
+                AppHostSourcePath,
+                ModifiedAppHostPath,
+                AppBinaryName,
+                customizationSettings: new AppHost.HostCustomizationSettings()
+                {
+                    WindowsGraphicalUserInterface = WindowsGraphicalUserInterface
+                });
             }
         }
     }

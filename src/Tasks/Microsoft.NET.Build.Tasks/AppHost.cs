@@ -18,17 +18,31 @@ namespace Microsoft.NET.Build.Tasks
         private readonly static byte[] _bytesToSearch = Encoding.UTF8.GetBytes(_placeHolder);
 
         /// <summary>
+        /// Settings to customize the apphost.
+        /// </summary>
+        public class HostCustomizationSettings
+        {
+            /// <summary>
+            /// If this is set to true and the apphost is a Windows PE executable, it will have its subsystem set to GUI.
+            /// By default apphost's subsystem on Windows is set to CUI (Console).
+            /// </summary>
+            public bool WindowsGraphicalUserInterface { get; set; }
+        }
+
+        /// <summary>
         /// Create an AppHost with embedded configuration of app binary location
         /// </summary>
         /// <param name="appHostSourceFilePath">The path of Apphost template, which has the place holder</param>
         /// <param name="appHostDestinationFilePath">The destination path for desired location to place, including the file name</param>
         /// <param name="appBinaryFilePath">Full path to app binary or relative path to the result apphost file</param>
         /// <param name="overwriteExisting">If override the file existed in <paramref name="appHostDestinationFilePath"/></param>
+        /// <param name="customizationSettings">Optional settings to customize the creates apphost</param>
         public static void Create(
             string appHostSourceFilePath,
             string appHostDestinationFilePath,
             string appBinaryFilePath,
-            bool overwriteExisting = false)
+            bool overwriteExisting = false,
+            HostCustomizationSettings customizationSettings = null)
         {
             var hostExtension = Path.GetExtension(appHostSourceFilePath);
             var appbaseName = Path.GetFileNameWithoutExtension(appBinaryFilePath);
@@ -54,6 +68,14 @@ namespace Microsoft.NET.Build.Tasks
                 using (MemoryMappedViewAccessor accessor = memoryMappedFile.CreateViewAccessor())
                 {
                     SearchAndReplace(accessor, _bytesToSearch, bytesToWrite, appHostSourceFilePath);
+
+                    if (customizationSettings != null)
+                    {
+                        if (customizationSettings.WindowsGraphicalUserInterface)
+                        {
+                            SetWindowsGraphicalUserInterfaceBit(accessor, appHostSourceFilePath);
+                        }
+                    }
                 }
             }
 
@@ -175,6 +197,52 @@ namespace Microsoft.NET.Build.Tasks
                 for (int i = patternToReplace.Length; i < searchPattern.Length; i++)
                 {
                     bytes[i + offset] = 0x0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// If the apphost file is a windows PE file (checked by looking at the first few bytes)
+        /// this method will set its subsystem to GUI.
+        /// </summary>
+        /// <param name="accessor">The memory accessor which has the apphost file opened.</param>
+        /// <param name="appHostSourcePath">The path to the source apphost.</param>
+        private static unsafe void SetWindowsGraphicalUserInterfaceBit(
+            MemoryMappedViewAccessor accessor,
+            string appHostSourcePath)
+        {
+            byte* pointer = null;
+
+            try
+            {
+                accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref pointer);
+                byte* bytes = pointer + accessor.PointerOffset;
+
+                // https://en.wikipedia.org/wiki/Portable_Executable
+                // Validate that we're looking at Windows PE file
+                if (((UInt16*)bytes)[0] != 0x5A4D)
+                {
+                    throw new BuildErrorException(Strings.AppHostNotWindows, appHostSourcePath);
+                }
+
+                UInt32 peHeaderOffset = ((UInt32*)(bytes + 0x3C))[0];
+                UInt16* subsystem = ((UInt16*)(bytes + peHeaderOffset + 0x5C));
+
+                // https://docs.microsoft.com/en-us/windows/desktop/Debug/pe-format#windows-subsystem
+                // The subsystem of the prebuilt apphost should be set to CUI - 3
+                if (subsystem[0] != 3)
+                {
+                    throw new BuildErrorException(Strings.AppHostNotWindowsCLI, appHostSourcePath);
+                }
+
+                // Set the subsystem to GUI - 2
+                subsystem[0] = 2;
+            }
+            finally
+            {
+                if (pointer != null)
+                {
+                    accessor.SafeMemoryMappedViewHandle.ReleasePointer();
                 }
             }
         }
