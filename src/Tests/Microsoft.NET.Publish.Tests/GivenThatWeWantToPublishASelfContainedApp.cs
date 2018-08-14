@@ -120,8 +120,10 @@ namespace Microsoft.NET.Publish.Tests
             string outputDirectory = publishCommand.GetOutputDirectory(
                 targetFramework: TargetFramework, 
                 runtimeIdentifier: runtimeIdentifier).FullName;
+            byte[] fileContent = File.ReadAllBytes(Path.Combine(outputDirectory, TestProjectName + ".exe"));
+            UInt32 peHeaderOffset = BitConverter.ToUInt32(fileContent, 0x3C);
             BitConverter
-                .ToUInt16(File.ReadAllBytes(Path.Combine(outputDirectory, TestProjectName + ".exe")), _subsystemOffset)
+                .ToUInt16(fileContent, (int)(peHeaderOffset + 0x5C))
                 .Should()
                 .Be(2);
         }

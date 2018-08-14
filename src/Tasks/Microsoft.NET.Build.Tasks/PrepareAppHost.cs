@@ -36,13 +36,13 @@ namespace Microsoft.NET.Build.Tasks
             if (!File.Exists(ModifiedAppHostPath))
             {
                 AppHost.Create(
-                AppHostSourcePath,
-                ModifiedAppHostPath,
-                AppBinaryName,
-                customizationSettings: new AppHost.HostCustomizationSettings()
-                {
-                    WindowsGraphicalUserInterface = WindowsGraphicalUserInterface
-                });
+                    AppHostSourcePath,
+                    ModifiedAppHostPath,
+                    AppBinaryName,
+                    customizationSettings: new AppHost.HostCustomizationSettings()
+                    {
+                        WindowsGraphicalUserInterface = WindowsGraphicalUserInterface
+                    });
             }
         }
     }
