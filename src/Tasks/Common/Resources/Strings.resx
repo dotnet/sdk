@@ -406,7 +406,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1071: "}</comment>
   </data>
   <data name="AppHostNotWindowsCLI" xml:space="preserve">
-    <value>NETSDK1072: Unable to use '{0}' as application host executable because it's not a Windows executable for teh CUI subsystem.</value>
+    <value>NETSDK1072: Unable to use '{0}' as application host executable because it's not a Windows executable for the CUI (Console) subsystem.</value>
     <comment>{StrBegin="NETSDK1072: "}</comment>
   </data>
 </root>
