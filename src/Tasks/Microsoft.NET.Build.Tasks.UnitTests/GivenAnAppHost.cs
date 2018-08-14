@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     destinationFilePath,
                     appBinaryFilePath,
                     overwriteExisting: false,
-                    customizationSettings: null);
+                    options: null);
 
                 byte[] binaryPathBlob = Encoding.UTF8.GetBytes(appBinaryFilePath);
                 byte[] result = File.ReadAllBytes(destinationFilePath);
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         destinationFilePath,
                         appBinaryFilePath,
                         overwriteExisting: false,
-                        customizationSettings: null))
+                        options: null))
                     .Message
                     .Should()
                     .Contain(sourceAppHostMock)
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         destinationFilePath,
                         appBinaryFilePath,
                         overwriteExisting: false,
-                        customizationSettings: null))
+                        options: null))
                     .Message
                     .Should()
                     .Contain(appBinaryFilePath);
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     destinationFilePath,
                     appBinaryFilePath,
                     overwriteExisting: false,
-                    customizationSettings: new AppHost.HostCustomizationSettings
+                    options: new AppHostOptions
                     {
                         WindowsGraphicalUserInterface = true
                     });
@@ -140,7 +140,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         destinationFilePath,
                         appBinaryFilePath,
                         overwriteExisting: false,
-                        customizationSettings: new AppHost.HostCustomizationSettings
+                        options: new AppHostOptions
                         {
                             WindowsGraphicalUserInterface = true
                         }))
@@ -169,7 +169,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         destinationFilePath,
                         appBinaryFilePath,
                         overwriteExisting: false,
-                        customizationSettings: new AppHost.HostCustomizationSettings
+                        options: new AppHostOptions
                         {
                             WindowsGraphicalUserInterface = true
                         }))

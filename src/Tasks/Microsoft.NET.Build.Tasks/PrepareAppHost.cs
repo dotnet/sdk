@@ -3,7 +3,6 @@
 
 using Microsoft.Build.Framework;
 using System.IO;
-using System.Text;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -39,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks
                     AppHostSourcePath,
                     ModifiedAppHostPath,
                     AppBinaryName,
-                    customizationSettings: new AppHost.HostCustomizationSettings()
+                    options: new AppHostOptions()
                     {
                         WindowsGraphicalUserInterface = WindowsGraphicalUserInterface
                     });
