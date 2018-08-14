@@ -38,6 +38,8 @@
     <ItemGroup>
       <SharedFramework Remove="*" />
       <SharedFramework Include="$(SharedFrameworkPublishDirectory)/**/*" />
+      <SharedFramework Include="$(AspNetCoreSharedFxPublishDirectory)/**/*" />
+      <SharedFramework Include="$(WinFormsAndWpfSharedFxPublishDirectory)/**/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(SharedFramework)"
