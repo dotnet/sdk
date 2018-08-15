@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tasks
             get; private set;
         }
         [Output]
-        public ITaskItem[] PublishedPackges
+        public ITaskItem[] PublishedPackages
         {
             get; private set;
         }
@@ -92,7 +92,7 @@ namespace Microsoft.NET.Build.Tasks
                 item.SetMetadata("Version", resolvedPkg.Version.ToString());
                 _packagesResolved.Add(item);
             }
-            PublishedPackges = _packagesResolved.ToArray();
+            PublishedPackages = _packagesResolved.ToArray();
         }
     }
 }
