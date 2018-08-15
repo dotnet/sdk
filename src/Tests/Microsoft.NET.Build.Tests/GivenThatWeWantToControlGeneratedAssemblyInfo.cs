@@ -324,7 +324,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_respects_custom_assembly_atrribute_items_on_incremental_build()
+        public void It_respects_custom_assembly_attribute_items_on_incremental_build()
         {
             var targetFramework = "netstandard1.5";
             var testAsset = _testAssetsManager
