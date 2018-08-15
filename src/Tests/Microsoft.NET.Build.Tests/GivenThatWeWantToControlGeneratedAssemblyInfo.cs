@@ -305,7 +305,7 @@ namespace Microsoft.NET.Build.Tests
                 .Restore(Log, "", $"/p:OutputType=Library", $"/p:TargetFramework={targetFramework}");
             BuildProject(versionPrefix: "1.2.3");
 
-            // When the same project is built again using a different VersionPrefix proeprty
+            // When the same project is built again using a different VersionPrefix property
             var incrementalBuildCommand = BuildProject(versionPrefix: "1.2.4");
 
             // Then the version of the built assembly shall match the provided VersionPrefix
