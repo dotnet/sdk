@@ -63,9 +63,9 @@ namespace Microsoft.NET.Build.Tasks
 
             var packageClosure =  new HashSet<PackageIdentity>();
 
-            foreach ( var pakageItem in PackagesToPrune)
+            foreach ( var packageItem in PackagesToPrune)
             {
-                var pkgName = pakageItem.ItemSpec;
+                var pkgName = packageItem.ItemSpec;
                 if (!string.IsNullOrEmpty(pkgName))
                 {
                     packageClosure.UnionWith(projectContext.GetTransitiveList(pkgName));
