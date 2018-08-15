@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         /// by which packages before doing any other conflict resolution.
         /// </summary>
         /// <remarks>
-        /// This is an optimizaiton so AssemblyVersions, FileVersions, etc. don't need to be read
+        /// This is an optimization so AssemblyVersions, FileVersions, etc. don't need to be read
         /// in the default cases where platform packages (Microsoft.NETCore.App) should override specific packages
         /// (System.Console v4.3.0).
         /// </remarks>
