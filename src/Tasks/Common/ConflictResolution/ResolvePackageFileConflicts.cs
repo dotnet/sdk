@@ -165,7 +165,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         }
 
-        //  Concatanate two things, either of which may be null.  Interpret null as empty,
+        //  Concatenate two things, either of which may be null.  Interpret null as empty,
         //  and return null if the result would be empty.
         private ITaskItem[] SafeConcat(ITaskItem[] first, IEnumerable<ITaskItem> second)
         {
