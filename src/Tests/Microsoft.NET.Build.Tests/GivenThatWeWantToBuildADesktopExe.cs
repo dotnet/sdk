@@ -125,7 +125,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [WindowsOnlyTheory]
-        // implict rid with option to append rid to output path off -> do not append
+        // implicit rid with option to append rid to output path off -> do not append
         [InlineData("implicitOff", "", false, false)]
         // implicit rid with option to append rid to output path on -> do not append (never append implicit rid irrespective of option)
         [InlineData("implicitOn", "", true, false)]
