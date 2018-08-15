@@ -13,8 +13,11 @@ namespace Microsoft.NET.Build.Tasks
     /// </summary>
     public static class AppHost
     {
-        private const string _placeHolder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"; //hash value embedded in default apphost executable
-        private readonly static byte[] _bytesToSearch = Encoding.UTF8.GetBytes(_placeHolder);
+        /// <summary>
+        /// hash value embedded in default apphost executable in a place where the path to the app binary should be stored.
+        /// </summary>
+        private const string AppBinaryPathPlaceholder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2";
+        private readonly static byte[] AppBinaryPathPlaceholderSearchValue = Encoding.UTF8.GetBytes(AppBinaryPathPlaceholder);
 
         /// <summary>
         /// Create an AppHost with embedded configuration of app binary location
@@ -54,7 +57,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 using (MemoryMappedViewAccessor accessor = memoryMappedFile.CreateViewAccessor())
                 {
-                    SearchAndReplace(accessor, _bytesToSearch, bytesToWrite, appHostSourceFilePath);
+                    SearchAndReplace(accessor, AppBinaryPathPlaceholderSearchValue, bytesToWrite, appHostSourceFilePath);
 
                     if (options != null)
                     {
@@ -157,7 +160,7 @@ namespace Microsoft.NET.Build.Tasks
                 int position = KMPSearch(searchPattern, bytes, accessor.Capacity);
                 if (position < 0)
                 {
-                    throw new BuildErrorException(Strings.AppHostHasBeenModified, appHostSourcePath, _placeHolder);
+                    throw new BuildErrorException(Strings.AppHostHasBeenModified, appHostSourcePath, AppBinaryPathPlaceholder);
                 }
 
                 accessor.WriteArray(
@@ -191,27 +194,27 @@ namespace Microsoft.NET.Build.Tasks
         /// <summary>
         /// The first two bytes of a PE file are a constant signature.
         /// </summary>
-        private const UInt16 _peFileSignature = 0x5A4D;
+        private const UInt16 PEFileSignature = 0x5A4D;
 
         /// <summary>
         /// The offset of the PE header pointer in the DOS header.
         /// </summary>
-        private const uint _peHeaderPointerOffset = 0x3C;
+        private const int PEHeaderPointerOffset = 0x3C;
 
         /// <summary>
         /// The offset of the Subsystem field in the PE header.
         /// </summary>
-        private const int _subsystemOffset = 0x5C;
+        private const int SubsystemOffset = 0x5C;
 
         /// <summary>
         /// The value of the sybsystem field which indicates Windows GUI (Graphical UI)
         /// </summary>
-        private const UInt16 _windowsGUISubsystem = 0x2;
+        private const UInt16 WindowsGUISubsystem = 0x2;
 
         /// <summary>
         /// The value of the subsystem field which indicates Windows CUI (Console)
         /// </summary>
-        private const UInt16 _windowsCUISubsystem = 0x3;
+        private const UInt16 WindowsCUISubsystem = 0x3;
 
         /// <summary>
         /// If the apphost file is a windows PE file (checked by looking at the first few bytes)
@@ -232,29 +235,29 @@ namespace Microsoft.NET.Build.Tasks
 
                 // https://en.wikipedia.org/wiki/Portable_Executable
                 // Validate that we're looking at Windows PE file
-                if (((UInt16*)bytes)[0] != _peFileSignature || accessor.Capacity < _peHeaderPointerOffset + sizeof(UInt32))
+                if (((UInt16*)bytes)[0] != PEFileSignature || accessor.Capacity < PEHeaderPointerOffset + sizeof(UInt32))
                 {
                     throw new BuildErrorException(Strings.AppHostNotWindows, appHostSourcePath);
                 }
 
-                UInt32 peHeaderOffset = ((UInt32*)(bytes + _peHeaderPointerOffset))[0];
+                UInt32 peHeaderOffset = ((UInt32*)(bytes + PEHeaderPointerOffset))[0];
 
-                if (accessor.Capacity < peHeaderOffset + _subsystemOffset + sizeof(UInt16))
+                if (accessor.Capacity < peHeaderOffset + SubsystemOffset + sizeof(UInt16))
                 {
                     throw new BuildErrorException(Strings.AppHostNotWindows, appHostSourcePath);
                 }
 
-                UInt16* subsystem = ((UInt16*)(bytes + peHeaderOffset + _subsystemOffset));
+                UInt16* subsystem = ((UInt16*)(bytes + peHeaderOffset + SubsystemOffset));
 
                 // https://docs.microsoft.com/en-us/windows/desktop/Debug/pe-format#windows-subsystem
                 // The subsystem of the prebuilt apphost should be set to CUI
-                if (subsystem[0] != _windowsCUISubsystem)
+                if (subsystem[0] != WindowsCUISubsystem)
                 {
                     throw new BuildErrorException(Strings.AppHostNotWindowsCLI, appHostSourcePath);
                 }
 
                 // Set the subsystem to GUI
-                subsystem[0] = _windowsGUISubsystem;
+                subsystem[0] = WindowsGUISubsystem;
             }
             finally
             {

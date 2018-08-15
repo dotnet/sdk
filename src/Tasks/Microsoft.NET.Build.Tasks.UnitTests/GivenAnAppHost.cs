@@ -32,13 +32,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 byte[] binaryPathBlob = Encoding.UTF8.GetBytes(appBinaryFilePath);
                 byte[] result = File.ReadAllBytes(destinationFilePath);
                 result
-                    .Skip(_windowsFileHeader.Length)
+                    .Skip(WindowsFileHeader.Length)
                     .Take(binaryPathBlob.Length)
                     .Should()
                     .BeEquivalentTo(binaryPathBlob);
 
                 BitConverter
-                    .ToUInt16(result, _subsystemOffset)
+                    .ToUInt16(result, SubsystemOffset)
                     .Should()
                     .Be(3);
             }
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 string sourceAppHostMock = PrepareAppHostMockFile(testDirectory, content =>
                 {
                     // Corrupt the has value
-                    content[_windowsFileHeader.Length + 1]++;
+                    content[WindowsFileHeader.Length + 1]++;
                 });
                 string destinationFilePath = Path.Combine(testDirectory.Path, "DestinationAppHost.exe.mock");
                 string appBinaryFilePath = "Test/App/Binary/Path.dll";
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     });
 
                 BitConverter
-                    .ToUInt16(File.ReadAllBytes(destinationFilePath), _subsystemOffset)
+                    .ToUInt16(File.ReadAllBytes(destinationFilePath), SubsystemOffset)
                     .Should()
                     .Be(2);
             }
@@ -158,7 +158,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 string sourceAppHostMock = PrepareAppHostMockFile(testDirectory, content =>
                 {
                     // Corrupt the value of the subsytem (the default should be 3)
-                    content[_subsystemOffset] = 42;
+                    content[SubsystemOffset] = 42;
                 });
                 string destinationFilePath = Path.Combine(testDirectory.Path, "DestinationAppHost.exe.mock");
                 string appBinaryFilePath = "Test/App/Binary/Path.dll";
@@ -185,10 +185,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // The only customization which we do on non-Windows files is the embeding
             // of the binary path, which works the same regardless of the file format.
 
-            int size = _windowsFileHeader.Length + _bytesToSearch.Length;
+            int size = WindowsFileHeader.Length + _bytesToSearch.Length;
             byte[] content = new byte[size];
-            Array.Copy(_windowsFileHeader, 0, content, 0, _windowsFileHeader.Length);
-            Array.Copy(_bytesToSearch, 0, content, _windowsFileHeader.Length, _bytesToSearch.Length);
+            Array.Copy(WindowsFileHeader, 0, content, 0, WindowsFileHeader.Length);
+            Array.Copy(_bytesToSearch, 0, content, WindowsFileHeader.Length, _bytesToSearch.Length);
 
             customize?.Invoke(content);
 
@@ -197,11 +197,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             return filePath;
         }
 
-        private const int _subsystemOffset = 0xF0 + 0x5C;
+        private const int SubsystemOffset = 0xF0 + 0x5C;
 
         // This is a dump of first 350 bytes of a windows apphost.exe
         // This includes the PE header and part of the Optional header
-        private static byte[] _windowsFileHeader = new byte[] {
+        private static byte[] WindowsFileHeader = new byte[] {
             77, 90, 144, 0, 3, 0, 0, 0, 4, 0, 0, 0, 255, 255, 0, 0, 184,
             0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

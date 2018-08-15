@@ -91,7 +91,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass().And.NotHaveStdOutContaining("HelloWorld.exe' already exists");
         }
 
-        private const int _subsystemOffset = 0xF0 + 0x5C;
+        private const int PEHeaderPointerOffset = 0x3C;
+        private const int SubsystemOffset = 0x5C;
 
         [WindowsOnlyFact]
         public void It_can_make_a_Windows_GUI_exe()
@@ -121,9 +122,9 @@ namespace Microsoft.NET.Publish.Tests
                 targetFramework: TargetFramework, 
                 runtimeIdentifier: runtimeIdentifier).FullName;
             byte[] fileContent = File.ReadAllBytes(Path.Combine(outputDirectory, TestProjectName + ".exe"));
-            UInt32 peHeaderOffset = BitConverter.ToUInt32(fileContent, 0x3C);
+            UInt32 peHeaderOffset = BitConverter.ToUInt32(fileContent, PEHeaderPointerOffset);
             BitConverter
-                .ToUInt16(fileContent, (int)(peHeaderOffset + 0x5C))
+                .ToUInt16(fileContent, (int)(peHeaderOffset + SubsystemOffset))
                 .Should()
                 .Be(2);
         }
