@@ -7,9 +7,10 @@ using System.IO;
 namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
-    /// Embeds the App Name into the AppHost.exe  
+    /// Creates the AppHost.exe to be used by the published app.
+    /// This embeds the app dll path into the AppHost.exe and performs additional customizations as requested.
     /// </summary>
-    public class PrepareAppHost : TaskBase
+    public class CreateAppHost : TaskBase
     {
         [Required]
         public string AppHostSourcePath { get; set; }
