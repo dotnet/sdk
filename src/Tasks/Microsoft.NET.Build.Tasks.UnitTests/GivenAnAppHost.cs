@@ -10,8 +10,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAnAppHost
     {
-        private const string _placeHolder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"; //hash value embedded in default apphost executable
-        private readonly static byte[] _bytesToSearch = Encoding.UTF8.GetBytes(_placeHolder);
+        /// <summary>
+        /// hash value embedded in default apphost executable in a place where the path to the app binary should be stored.
+        /// </summary>
+        private const string AppBinaryPathPlaceholder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2";
+        private readonly static byte[] AppBinaryPathPlaceholderSearchValue = Encoding.UTF8.GetBytes(AppBinaryPathPlaceholder);
 
         [Fact]
         public void ItEmbedsAppBinaryPath()
@@ -68,7 +71,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     .Should()
                     .Contain(sourceAppHostMock)
                     .And
-                    .Contain(_placeHolder);
+                    .Contain(AppBinaryPathPlaceholder);
             }
         }
 
@@ -185,10 +188,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             // The only customization which we do on non-Windows files is the embeding
             // of the binary path, which works the same regardless of the file format.
 
-            int size = WindowsFileHeader.Length + _bytesToSearch.Length;
+            int size = WindowsFileHeader.Length + AppBinaryPathPlaceholderSearchValue.Length;
             byte[] content = new byte[size];
             Array.Copy(WindowsFileHeader, 0, content, 0, WindowsFileHeader.Length);
-            Array.Copy(_bytesToSearch, 0, content, WindowsFileHeader.Length, _bytesToSearch.Length);
+            Array.Copy(AppBinaryPathPlaceholderSearchValue, 0, content, WindowsFileHeader.Length, AppBinaryPathPlaceholderSearchValue.Length);
 
             customize?.Invoke(content);
 
@@ -201,7 +204,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         // This is a dump of first 350 bytes of a windows apphost.exe
         // This includes the PE header and part of the Optional header
-        private static byte[] WindowsFileHeader = new byte[] {
+        private static readonly byte[] WindowsFileHeader = new byte[] {
             77, 90, 144, 0, 3, 0, 0, 0, 4, 0, 0, 0, 255, 255, 0, 0, 184,
             0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
