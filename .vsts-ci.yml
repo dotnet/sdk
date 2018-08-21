@@ -83,3 +83,6 @@ phases:
       name: Build
       displayName: Build
       condition: succeeded()
+    variables:
+      # Run build in docker container
+      _PREVIEW_VSTS_DOCKER_IMAGE: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
