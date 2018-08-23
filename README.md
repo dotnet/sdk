@@ -148,3 +148,9 @@ phases:
         # conditions - https://docs.microsoft.com/en-us/vsts/pipelines/process/conditions?view=vsts
         condition: always()
 ```
+
+## Using the SignToolTask
+
+Arcade provides an optimized way to sign files using MicroBuild, it is wrapped in a custom MSBuild task called [SignToolTask](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.SignTool/src/SignToolTask.cs).
+
+The Arcade SDK will automatically [find package](https://github.com/dotnet/arcade/blob/ae38bbbc25d03e1deb49b15ce88e2dd4c683e116/src/Microsoft.DotNet.Arcade.Sdk/tools/Sign.proj) files and forward them to be signed using SignToolTask. Therefore, if the only files that you care to sign are covered by the linked line above you don't have to do anything else. If not, you have options. You can specify explicit files to be signed / excluded from signing or changing the certificate / strong name to be used. For a detailed guide see the [SignTool package documentation](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.SignTool/README.md).
