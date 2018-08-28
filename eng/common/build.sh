@@ -30,14 +30,6 @@ prepare_machine=false
 verbosity='minimal'
 properties=''
 
-repo_root="$scriptroot/../.."
-eng_root="$scriptroot/.."
-artifacts_dir="$repo_root/artifacts"
-
-global_json_file="$repo_root/global.json"
-build_driver=""
-toolset_build_proj=""
-
 while (($# > 0)); do
   lowerI="$(echo $1 | awk '{print tolower($0)}')"
   case $lowerI in
@@ -126,20 +118,22 @@ while (($# > 0)); do
   esac
 done
 
-artifacts_configuration_dir="$artifacts_dir/$configuration"
+repo_root="$scriptroot/../.."
+eng_root="$scriptroot/.."
+artifacts_dir="$repo_root/artifacts"
 toolset_dir="$artifacts_dir/toolset"
-log_dir="$artifacts_configuration_dir/log"
+log_dir="$artifacts_dir/log/$configuration"
 build_log="$log_dir/Build.binlog"
 toolset_restore_log="$log_dir/ToolsetRestore.binlog"
-temp_dir="$artifacts_configuration_dir/tmp"
+temp_dir="$artifacts_dir/tmp/$configuration"
 
-# ReadJson [filename] [json key]
-# Result: Sets 'readjsonvalue' to the value of the provided json key
-# Note: this method may return unexpected results if there are duplicate
-# keys in the json
-function ReadJson {
-  local file=$1
-  local key=$2
+global_json_file="$repo_root/global.json"
+build_driver=""
+toolset_build_proj=""
+
+# ReadVersionFromJson [json key]
+function ReadGlobalVersion {
+  local key=$1
 
   local unamestr="$(uname)"
   local sedextended='-r'
@@ -147,11 +141,14 @@ function ReadJson {
     sedextended='-E'
   fi;
 
-  readjsonvalue="$(grep -m 1 "\"$key\"" $file | sed $sedextended 's/^ *//;s/.*: *"//;s/",?//')"
-  if [[ ! "$readjsonvalue" ]]; then
-    echo "Error: Cannot find \"$key\" in $file" >&2;
+  local version="$(grep -m 1 "\"$key\"" $global_json_file | sed $sedextended 's/^ *//;s/.*: *"//;s/",?//')"
+  if [[ ! "$version" ]]; then
+    echo "Error: Cannot find \"$key\" in $global_json_file" >&2;
     ExitWithExitCode 1
   fi;
+
+  # return value
+  echo "$version"
 }
 
 function InitializeDotNetCli {
@@ -166,8 +163,8 @@ function InitializeDotNetCli {
     export DOTNET_INSTALL_DIR="$DotNetCoreSdkDir"
   fi
 
-  ReadJson "$global_json_file" "version"
-  local dotnet_sdk_version="$readjsonvalue"
+  
+  local dotnet_sdk_version=`ReadGlobalVersion "dotnet"`
   local dotnet_root=""
 
   # Use dotnet installation specified in DOTNET_INSTALL_DIR if it contains the required SDK version, 
@@ -221,8 +218,7 @@ function GetDotNetInstallScript {
 }
 
 function InitializeToolset {
-  ReadJson $global_json_file "Microsoft.DotNet.Arcade.Sdk"
-  local toolset_version=$readjsonvalue
+  local toolset_version=`ReadGlobalVersion "Microsoft.DotNet.Arcade.Sdk"`
   local toolset_location_file="$toolset_dir/$toolset_version.txt"
 
   if [[ -a "$toolset_location_file" ]]; then
@@ -283,6 +279,7 @@ function Build {
     /p:PerformanceTest=$performance_test \
     /p:Sign=$sign \
     /p:Publish=$publish \
+    /p:ContinuousIntegrationBuild=$ci \
     /p:CIBuild=$ci \
     $properties
   local lastexitcode=$?

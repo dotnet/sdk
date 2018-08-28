@@ -27,25 +27,14 @@ trigger:
 
 ## Base your builds on Arcade for ease of use
 
-Arcade is designed to make many of the more complex tasks (such as sending telemetry) simple to do out of the box. While these features are not available yet, they are actively being developed, and it is therefore recommended that all builds base themselves on Arcade's `base.yml` template. This can be done using VSTS's repository resource model:
+Arcade is designed to make many of the more complex tasks (such as sending telemetry) simple to do out of the box. While these features are not available yet, they are actively being developed, and it is therefore recommended that all builds base themselves on Arcade's `base.yml` template. Today, this can be done by copying the `eng/common` folder from Arcade into a local `eng/common` folder.  In the near future, Engineering services will provide the capability to auto-update this folder via Maestro so that you don't need to manually take updates to common Arcade scripts.
 
 ```yaml
-resources:
-  repositories:
-  # shared library repository
-  - repository: arcade
-    type: github
-    endpoint: DotNet-Bot GitHub Connection
-    name: dotnet/arcade
-    ref: refs/heads/master
-
 phases:
-- template: /eng/common/templates/phases/base.yml@arcade
+- template: /eng/common/templates/phases/base.yml
   parameters:
   ...
 ```
-
-In the future, repositories can enroll in Maestro to manage their Arcade template usage instead.
 
 ## Use the Arcade SDK for an easier build process
 

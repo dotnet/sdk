@@ -1,13 +1,3 @@
-# Sample VSTS CI file
-resources:
-  repositories:
-  # shared library repository
-  - repository: arcade
-    type: github
-    endpoint: DotNet-Bot GitHub Connection
-    name: dotnet/arcade
-    ref: refs/heads/master
-
 variables:
   Build.Repository.Clean: true
   targetFramework: netcoreapp2.0
@@ -21,7 +11,7 @@ trigger:
 
 # Three phases for each of the three OSes we want to run on
 phases:
-- template: /eng/common/templates/phases/base.yml@arcade
+- template: /eng/common/templates/phases/base.yml
   parameters:
     agentOs: Windows_NT
     name: Windows_NT
@@ -42,7 +32,7 @@ phases:
       displayName: Build
       condition: succeeded()
 
-- template: /eng/common/templates/phases/base.yml@arcade
+- template: /eng/common/templates/phases/base.yml
   parameters:
     agentOs: OSX
     name: OSX
@@ -63,7 +53,7 @@ phases:
       displayName: Build
       condition: succeeded()
 
-- template: /eng/common/templates/phases/base.yml@arcade
+- template: /eng/common/templates/phases/base.yml
   parameters:
     agentOs: Linux
     name: Linux
