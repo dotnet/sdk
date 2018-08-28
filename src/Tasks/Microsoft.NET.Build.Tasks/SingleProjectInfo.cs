@@ -14,7 +14,12 @@ namespace Microsoft.NET.Build.Tasks
         public string ProjectPath { get; }
         public string Name { get; }
         public string Version { get; }
-        public string OutputName { get; }
+
+        private List<string> _outputNames;
+        public IEnumerable<string> OutputNames
+        {
+            get { return _outputNames; }
+        }
 
         private List<ReferenceInfo> _dependencyReferences;
         public IEnumerable<ReferenceInfo> DependencyReferences
@@ -28,30 +33,32 @@ namespace Microsoft.NET.Build.Tasks
             get { return _resourceAssemblies; }
         }
 
-        private SingleProjectInfo(string projectPath, string name, string version, string outputName, List<ReferenceInfo> dependencyReferences, List<ResourceAssemblyInfo> resourceAssemblies)
+        private SingleProjectInfo(string projectPath, string name, string version, List<string> outputNames, List<ReferenceInfo> dependencyReferences, List<ResourceAssemblyInfo> resourceAssemblies)
         {
             ProjectPath = projectPath;
             Name = name;
             Version = version;
-            OutputName = outputName;
+            _outputNames = outputNames;
             _dependencyReferences = dependencyReferences ?? new List<ReferenceInfo>();
             _resourceAssemblies = resourceAssemblies ?? new List<ResourceAssemblyInfo>();
         }
 
         public static SingleProjectInfo Create(string projectPath, string name, string fileExtension, string version, ITaskItem[] satelliteAssemblies)
         {
-            List<ResourceAssemblyInfo> resourceAssemblies = new List<ResourceAssemblyInfo>();
+            string outputName = name + fileExtension;
+            return Create(projectPath, name, version, new List<string> { outputName }, satelliteAssemblies);
+        }
 
+        public static SingleProjectInfo Create(string projectPath, string name, string version, List<string> outputNames, ITaskItem[] satelliteAssemblies)
+        {
+            List<ResourceAssemblyInfo> resourceAssemblies = new List<ResourceAssemblyInfo>();
             foreach (ITaskItem satelliteAssembly in satelliteAssemblies)
             {
                 string culture = satelliteAssembly.GetMetadata(MetadataKeys.Culture);
                 string relativePath = satelliteAssembly.GetMetadata(MetadataKeys.TargetPath);
-
                 resourceAssemblies.Add(new ResourceAssemblyInfo(culture, relativePath));
             }
-
-            string outputName = name + fileExtension;
-            return new SingleProjectInfo(projectPath, name, version, outputName, dependencyReferences: null, resourceAssemblies: resourceAssemblies);
+            return new SingleProjectInfo(projectPath, name, version, outputNames, dependencyReferences: null, resourceAssemblies: resourceAssemblies);
         }
 
         public static Dictionary<string, SingleProjectInfo> CreateProjectReferenceInfos(
@@ -78,9 +85,16 @@ namespace Microsoft.NET.Build.Tasks
                 string version = null; // it isn't possible to know the version from the MSBuild info.
                                        // The version will be retrieved from the project assets file.
 
-                projectReferences.Add(
-                    sourceProjectFile,
-                    new SingleProjectInfo(sourceProjectFile, name, version, outputName, dependencyReferences: null, resourceAssemblies: null));
+                if (projectReferences.TryGetValue(sourceProjectFile, out SingleProjectInfo projectInfo))
+                {
+                    projectInfo._outputNames.Add(outputName);
+                }
+                else
+                {
+                    projectReferences.Add(
+                       sourceProjectFile,
+                       new SingleProjectInfo(sourceProjectFile, name, version, new List<string> { outputName }, dependencyReferences: null, resourceAssemblies: null));
+                }
             }
 
             //  Include direct references of referenced projects, but only if they are CopyLocal

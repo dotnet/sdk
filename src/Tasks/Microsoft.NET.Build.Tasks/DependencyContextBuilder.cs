@@ -311,7 +311,7 @@ namespace Microsoft.NET.Build.Tasks
             Dictionary<string, Dependency> dependencyLookup,
             bool includeCompilationLibraries)
         {
-            RuntimeAssetGroup[] runtimeAssemblyGroups = new[] { new RuntimeAssetGroup(string.Empty, projectInfo.OutputName) };
+            RuntimeAssetGroup[] runtimeAssemblyGroups = new[] { new RuntimeAssetGroup(string.Empty, projectInfo.OutputNames) };
 
             List<Dependency> dependencies = GetProjectDependencies(projectContext, dependencyLookup, includeCompilationLibraries);
 
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Build.Tasks
                 name: projectInfo.Name,
                 version: projectInfo.Version,
                 hash: string.Empty,
-                assemblies: new[] { projectInfo.OutputName },
+                assemblies: projectInfo.OutputNames,
                 dependencies: dependencies.ToArray(),
                 serviceable: false);
         }
@@ -472,7 +472,7 @@ namespace Microsoft.NET.Build.Tasks
             if (targetLibrary.IsProject())
             {
                 EnsureProjectInfo(referenceProjectInfo, targetLibrary.Name);
-                return new[] { new RuntimeAssetGroup(string.Empty, referenceProjectInfo.OutputName) };
+                return new[] { new RuntimeAssetGroup(string.Empty, referenceProjectInfo.OutputNames) };
             }
             else
             {
@@ -544,7 +544,7 @@ namespace Microsoft.NET.Build.Tasks
             if (targetLibrary.IsProject())
             {
                 EnsureProjectInfo(referenceProjectInfo, targetLibrary.Name);
-                return new[] { referenceProjectInfo.OutputName };
+                return referenceProjectInfo.OutputNames;
             }
             else
             {
