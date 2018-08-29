@@ -74,9 +74,7 @@ public class Program
 
             var restoreCommand = testAsset.GetRestoreCommand(Log, testProject.Name);
             restoreCommand.Execute()
-                .Should().Pass()
-                .And
-                .NotHaveStdOutContaining("warning");
+                .Should().Pass();
 
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));

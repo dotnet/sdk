@@ -363,7 +363,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Check for unrecognized FrameworkReference items. -->
   <Target Name="ReportUnresolvedFrameworkReferences"
           DependsOnTargets="ResolveFrameworkReferences"
-          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences"
           Condition=" @(_UnresolvedFrameworkReference->Count()) != 0 ">
     <NETSdkError ResourceName="UnknownFrameworkReference" FormatArguments="%(_UnresolvedFrameworkReference.Identity)" />
   </Target>

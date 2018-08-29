@@ -49,7 +49,7 @@ public class Program
         [Theory]
         //  TargetFramework, FrameworkReference, ExpectedPackageVersion
         [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.App", "2.1.1")]
-        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.ALl", "2.1.1")]
+        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.All", "2.1.1")]
 
         // TODO enable when 2.2 is released
         // [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.App", "2.2.0")]
@@ -160,7 +160,7 @@ public class Program
         {
             var testProject = new TestProject()
             {
-                Name = "UnknownFrameworkRefence",
+                Name = "UnknownFrameworkReference",
                 TargetFrameworks = "netcoreapp2.1",
                 IsSdkProject = true,
                 FrameworkReferences =
@@ -169,10 +169,10 @@ public class Program
                 }
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            var restoreCommand = testAsset.GetRestoreCommand(Log, testProject.Name);
-
-            restoreCommand.Execute()
+            _testAssetsManager
+                .CreateTestProject(testProject)
+                .GetRestoreCommand(Log, testProject.Name)
+                .Execute()
                 .Should()
                 .Fail()
                 .And

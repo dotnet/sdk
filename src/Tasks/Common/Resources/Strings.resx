@@ -403,7 +403,7 @@ The following are names of parameters or literal values and should not be transl
   </data>
   <data name="RecommendFrameworkReferenceForAspNetCorePackages" xml:space="preserve">
     <value>NETSDK1071: A PackageReference for '{0}' was included in your project. Referencing this item as NuGet package is no longer supported. To resolve this warning, change the PackageReference to a FrameworkReference. For more information, see {1}.</value>
-    <comment>{StrBegin="NETSDK1072: "}
+    <comment>{StrBegin="NETSDK1071: "}
 {0} - Package Id (Microsoft.AspNetCore.App or .All)
 {1} - More info link
     </comment>

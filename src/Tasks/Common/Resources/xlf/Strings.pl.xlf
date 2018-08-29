@@ -299,7 +299,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="RecommendFrameworkReferenceForAspNetCorePackages">
         <source>NETSDK1071: A PackageReference for '{0}' was included in your project. Referencing this item as NuGet package is no longer supported. To resolve this warning, change the PackageReference to a FrameworkReference. For more information, see {1}.</source>
         <target state="new">NETSDK1071: A PackageReference for '{0}' was included in your project. Referencing this item as NuGet package is no longer supported. To resolve this warning, change the PackageReference to a FrameworkReference. For more information, see {1}.</target>
-        <note>{StrBegin="NETSDK1072: "}
+        <note>{StrBegin="NETSDK1071: "}
 {0} - Package Id (Microsoft.AspNetCore.App or .All)
 {1} - More info link
     </note>
