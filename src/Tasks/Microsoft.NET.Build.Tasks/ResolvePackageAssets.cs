@@ -818,7 +818,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (_task.EnsureRuntimePackageDependencies && !string.IsNullOrEmpty(_task.RuntimeIdentifier))
                 {
-                    if (_compileTimeTarget.Libraries.Count >= _runtimeTarget.Libraries.Count)
+                    if (_compileTimeTarget.Libraries.Count > _runtimeTarget.Libraries.Count)
                     {
                         WriteItem(string.Format(Strings.UnsupportedRuntimeIdentifier, _task.RuntimeIdentifier));
                         WriteMetadata(MetadataKeys.Severity, nameof(LogLevel.Error));
