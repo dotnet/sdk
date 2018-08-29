@@ -221,7 +221,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <NETSdkError Condition="'2.0' > '$(_TargetFrameworkVersionWithoutV)'"
-                 ResourceName="UnuspportedFramework"
+                 ResourceName="UnsupportedFramework"
                  FormatArguments="$(TargetFrameworkMoniker)"/>
 
     <NETSdkError Condition="'$(RuntimeIdentifier)' =='' and '$(_PureManagedAssets)' == ''"
