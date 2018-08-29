@@ -49,18 +49,16 @@ public class Program
 
         [Theory]
         //  TargetFramework, FrameworkReference, ExpectedPackageVersion
-        [InlineData("Microsoft.AspNetCore.App", "2.1.1")]
-        [InlineData("Microsoft.AspNetCore.All", "2.1.1")]
+        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.App", "2.1.1")]
+        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.All", "2.1.1")]
         public void It_sets_an_implicit_package_ref_version(
+            string targetFramework,
             string packageId,
             string expectedPackageVersion)
         {
-            const string targetFramework = "netcoreapp2.1";
-            string testIdentifier = $"ImplicitPackageRefVersion_{packageId}";
-
             var testProject = new TestProject
             {
-                Name = "FrameworkTargetTest",
+                Name = $"ImplicitPackageRefVersion.{targetFramework}.{packageId}",
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true,
                 IsExe = true,
@@ -72,9 +70,9 @@ public class Program
 
             testProject.SourceFiles["Program.cs"] = AspNetProgramSource;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testIdentifier);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testIdentifier);
+            var restoreCommand = testAsset.GetRestoreCommand(Log, testProject.Name);
             restoreCommand.Execute()
                 .Should().Pass()
                 .And
@@ -88,8 +86,8 @@ public class Program
                 .Should()
                 .Pass();
 
-            string projectAssetsJsonPath = Path.Combine(buildCommand.ProjectRootPath, "obj", "project.assets.json");
-            LockFile lockFile = LockFileUtilities.GetLockFile(projectAssetsJsonPath, NullLogger.Instance);
+            var projectAssetsJsonPath = Path.Combine(buildCommand.ProjectRootPath, "obj", "project.assets.json");
+            var lockFile = LockFileUtilities.GetLockFile(projectAssetsJsonPath, NullLogger.Instance);
 
             var target = lockFile.GetTarget(NuGetFramework.Parse(targetFramework), null);
             var packageLibrary = target.Libraries.Single(l => l.Name == packageId);

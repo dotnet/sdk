@@ -50,18 +50,18 @@ public class Program
         //  TargetFramework, FrameworkReference, ExpectedPackageVersion
         [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.App", "2.1.1")]
         [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.ALl", "2.1.1")]
-        [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.App", "2.2.0")]
-        [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.All", "2.2.0")]
+
+        // TODO enable when 2.2 is released
+        // [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.App", "2.2.0")]
+        // [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.All", "2.2.0")]
         public void It_targets_a_known_runtime_framework_name(
             string targetFramework,
             string frameworkReferenceName,
             string expectedPackageVersion)
         {
-            string testIdentifier = "SharedRuntimeTargeting_" + string.Join("_", targetFramework, frameworkReferenceName);
-
             var testProject = new TestProject
             {
-                Name = "FrameworkTargetTest",
+                Name = $"FrameworkRef.{targetFramework}.{frameworkReferenceName}",
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true,
                 IsExe = true,
@@ -73,9 +73,9 @@ public class Program
 
             testProject.SourceFiles["Program.cs"] = AspNetProgramSource;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testIdentifier);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testIdentifier);
+            var restoreCommand = testAsset.GetRestoreCommand(Log, testProject.Name);
             restoreCommand.Execute()
                 .Should().Pass()
                 .And
@@ -90,18 +90,18 @@ public class Program
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
 
-            string runtimeConfigFile = Path.Combine(outputDirectory.FullName, testProject.Name + ".runtimeconfig.json");
-            string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
-            JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
+            var runtimeConfigFile = Path.Combine(outputDirectory.FullName, testProject.Name + ".runtimeconfig.json");
+            var runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
+            var runtimeConfig = JObject.Parse(runtimeConfigContents);
 
-            string actualRuntimeFrameworkName = ((JValue)runtimeConfig["runtimeOptions"]["framework"]["name"]).Value<string>();
+            var actualRuntimeFrameworkName = ((JValue)runtimeConfig["runtimeOptions"]["framework"]["name"]).Value<string>();
             actualRuntimeFrameworkName.Should().Be(frameworkReferenceName);
 
-            string actualRuntimeFrameworkVersion = ((JValue)runtimeConfig["runtimeOptions"]["framework"]["version"]).Value<string>();
+            var actualRuntimeFrameworkVersion = ((JValue)runtimeConfig["runtimeOptions"]["framework"]["version"]).Value<string>();
             actualRuntimeFrameworkVersion.Should().Be(expectedPackageVersion);
 
-            string projectAssetsJsonPath = Path.Combine(buildCommand.ProjectRootPath, "obj", "project.assets.json");
-            LockFile lockFile = LockFileUtilities.GetLockFile(projectAssetsJsonPath, NullLogger.Instance);
+            var projectAssetsJsonPath = Path.Combine(buildCommand.ProjectRootPath, "obj", "project.assets.json");
+            var lockFile = LockFileUtilities.GetLockFile(projectAssetsJsonPath, NullLogger.Instance);
 
             var target = lockFile.GetTarget(NuGetFramework.Parse(targetFramework), null);
             var packageLibrary = target.Libraries.Single(l => l.Name == frameworkReferenceName);
@@ -115,10 +115,9 @@ public class Program
         [InlineData("Microsoft.AspNetCore.All")]
         public void It_warns_when_explicit_aspnet_package_ref_exists(string packageId)
         {
-            const string testProjectName = "AspNetCoreWithExplicitRef";
-            var project = new TestProject
+            var testProject = new TestProject
             {
-                Name = testProjectName,
+                Name =  "AspNetCoreWithExplicitRef",
                 TargetFrameworks = "netcoreapp2.1",
                 IsSdkProject = true,
                 PackageReferences =
@@ -128,39 +127,38 @@ public class Program
             };
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(project)
-                .Restore(Log, project.Name);
+                .CreateTestProject(testProject)
+                .Restore(Log, testProject.Name);
 
-            string projectAssetsJsonPath = Path.Combine(
+            var projectAssetsJsonPath = Path.Combine(
                 testAsset.Path,
-                project.Name,
+                testProject.Name,
                 "obj",
                 "project.assets.json");
 
             var restoreCommand =
-                testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
+                testAsset.GetRestoreCommand(Log, testProject.Name);
+
             restoreCommand.Execute()
                 .Should().Pass()
                 .And
                 .HaveStdOutContaining("warning NETSDK1071:")
                 .And
-                .HaveStdOutContaining(testProjectName + ".csproj");
+                .HaveStdOutContaining(testProject.Name + ".csproj");
 
-            LockFile lockFile = LockFileUtilities.GetLockFile(
+            var lockFile = LockFileUtilities.GetLockFile(
                 projectAssetsJsonPath,
                 NullLogger.Instance);
 
-            var target =
-                lockFile.GetTarget(NuGetFramework.Parse(".NETCoreApp,Version=v2.1"), null);
-            var metapackageLibrary =
-                target.Libraries.Single(l => l.Name == packageId);
+            var target = lockFile.GetTarget(NuGetFramework.Parse(".NETCoreApp,Version=v2.1"), null);
+            var metapackageLibrary = target.Libraries.Single(l => l.Name == packageId);
             metapackageLibrary.Version.ToString().Should().Be("2.1.0");
         }
 
         [Fact]
         public void It_fails_when_unknown_framework_reference_is_used()
         {
-            TestProject project = new TestProject()
+            var testProject = new TestProject()
             {
                 Name = "UnknownFrameworkRefence",
                 TargetFrameworks = "netcoreapp2.1",
@@ -171,8 +169,8 @@ public class Program
                 }
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(project);
-            var restoreCommand = testAsset.GetRestoreCommand(Log, project.Name);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var restoreCommand = testAsset.GetRestoreCommand(Log, testProject.Name);
 
             restoreCommand.Execute()
                 .Should()
@@ -184,7 +182,7 @@ public class Program
         [Fact]
         public void It_generates_deps_file_for_aspnet_app()
         {
-            TestProject project = new TestProject()
+            var testProject = new TestProject()
             {
                 Name = "AspNetCore21App",
                 TargetFrameworks = "netcoreapp2.1",
@@ -196,12 +194,12 @@ public class Program
                 }
             };
 
-            project.SourceFiles["Program.cs"] = AspNetProgramSource;
+            testProject.SourceFiles["Program.cs"] = AspNetProgramSource;
 
-            var testAsset = _testAssetsManager.CreateTestProject(project)
-                .Restore(Log, project.Name);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .Restore(Log, testProject.Name);
 
-            string projectFolder = Path.Combine(testAsset.Path, project.Name);
+            var projectFolder = Path.Combine(testAsset.Path, testProject.Name);
 
             var buildCommand = new BuildCommand(Log, projectFolder);
 
@@ -210,13 +208,13 @@ public class Program
                 .Should()
                 .Pass();
 
-            string outputFolder = buildCommand.GetOutputDirectory(project.TargetFrameworks).FullName;
+            var outputFolder = buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName;
 
-            using (var depsJsonFileStream = File.OpenRead(Path.Combine(outputFolder, $"{project.Name}.deps.json")))
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(outputFolder, $"{testProject.Name}.deps.json")))
             {
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
                 dependencyContext.Should()
-                    .OnlyHaveRuntimeAssemblies("", project.Name)
+                    .OnlyHaveRuntimeAssemblies("", testProject.Name)
                     .And
                     .HaveNoDuplicateRuntimeAssemblies("")
                     .And

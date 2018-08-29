@@ -286,22 +286,23 @@ Copyright (c) .NET Foundation. All rights reserved.
         <LatestAspNetCoreAppPatchVersion Condition="'$(LatestAspNetCoreAppPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</LatestAspNetCoreAppPatchVersion>
       </PropertyGroup>
 
-      <!-- Determine the default values of TargetLatestAspNetCoreRuntimePatch -->
-      <PropertyGroup Condition="'$(TargetLatestAspNetCoreRuntimePatch)' == ''">
-        <TargetLatestAspNetCoreRuntimePatch>false</TargetLatestAspNetCoreRuntimePatch>
-        <TargetLatestAspNetCoreRuntimePatch Condition="'$(SelfContained)' == 'true'">true</TargetLatestAspNetCoreRuntimePatch>
-        <TargetLatestAspNetCoreRuntimePatch Condition="'$(TargetLatestRuntimePatch)' != ''">$(TargetLatestRuntimePatch)</TargetLatestAspNetCoreRuntimePatch>
+      <PropertyGroup>
+        <!--
+          Determine determines the default value used for ASP.NET Core, which can be controlled separately from Microsoft.NETCore.App, but should not be in most cases.
+          This property was added in 2.1 to support source-build SDKs where the ASP.NET Core shared framework is not available.
+         -->
+        <TargetLatestAspNetCoreRuntimePatch Condition="'$(TargetLatestAspNetCoreRuntimePatch)' == ''">$(TargetLatestRuntimePatch)</TargetLatestAspNetCoreRuntimePatch>
       </PropertyGroup>
 
       <!-- Set the framework version of .All Framework -->
       <PropertyGroup Condition="'$(AspNetCoreAllRuntimeFrameworkVersion)' == ''">
-        <AspNetCoreAllRuntimeFrameworkVersion>$(DefaultAspNetCoreAllPatchVersion)</AspNetCoreAllRuntimeFrameworkVersion>
+        <AspNetCoreAllRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' != 'true'">$(DefaultAspNetCoreAllPatchVersion)</AspNetCoreAllRuntimeFrameworkVersion>
         <AspNetCoreAllRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' == 'true'">$(LatestAspNetCoreAllPatchVersion)</AspNetCoreAllRuntimeFrameworkVersion>
       </PropertyGroup>
 
       <!-- Set the framework version of .App Framework -->
       <PropertyGroup Condition="'$(AspNetCoreAppRuntimeFrameworkVersion)' == ''">
-        <AspNetCoreAppRuntimeFrameworkVersion >$(DefaultAspNetCoreAppPatchVersion)</AspNetCoreAppRuntimeFrameworkVersion>
+        <AspNetCoreAppRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' != 'true'">$(DefaultAspNetCoreAppPatchVersion)</AspNetCoreAppRuntimeFrameworkVersion>
         <AspNetCoreAppRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' == 'true'">$(LatestAspNetCoreAppPatchVersion)</AspNetCoreAppRuntimeFrameworkVersion>
       </PropertyGroup>
     </When>
