@@ -47,24 +47,28 @@ public class Program
         }
 
         [Theory]
-        //  TargetFramework, FrameworkReference, ExpectedPackageVersion
-        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.App", "2.1.1")]
-        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.All", "2.1.1")]
+        //  TargetFramework, FrameworkReference, RuntimeFrameworkVersion, ExpectedPackageVersion
+        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.App", null, "2.1.1")]
+        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.All", null, "2.1.1")]
+        [InlineData("netcoreapp2.1", "Microsoft.AspNetCore.App", "2.1.3", "2.1.3")]
 
         // TODO enable when 2.2 is released
-        // [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.App", "2.2.0")]
-        // [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.All", "2.2.0")]
+        // [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.App", null, "2.2.0")]
+        // [InlineData("netcoreapp2.2", "Microsoft.AspNetCore.All", null, "2.2.0")]
         public void It_targets_a_known_runtime_framework_name(
             string targetFramework,
             string frameworkReferenceName,
+            string runtimeFrameworkVersion,
             string expectedPackageVersion)
         {
             var testProject = new TestProject
             {
-                Name = $"FrameworkRef.{targetFramework}.{frameworkReferenceName}",
+                // Keep the test project name short to avoid MAX_PATH issues with MSBuild
+                Name = $"FrameworkRef.{targetFramework.Substring(targetFramework.Length - 3)}.{frameworkReferenceName.Substring(frameworkReferenceName.Length - 3)}",
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true,
                 IsExe = true,
+                RuntimeFrameworkVersion = runtimeFrameworkVersion,
                 FrameworkReferences =
                 {
                     new TestFrameworkReference(frameworkReferenceName)

@@ -58,7 +58,8 @@ public class Program
         {
             var testProject = new TestProject
             {
-                Name = $"ImplicitPackageRefVersion.{targetFramework}.{packageId}",
+                // Keep the test project name short to avoid MAX_PATH issues with MSBuild
+                Name = $"ImplicitPkgRefVersion.{targetFramework.Substring(targetFramework.Length - 3)}.{packageId.Substring(packageId.Length - 3)}",
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true,
                 IsExe = true,
