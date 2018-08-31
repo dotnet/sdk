@@ -14,7 +14,7 @@ Param(
   [switch] $sign,
   [switch] $pack,
   [switch] $publish,
-  [switch] $pushBuildAssets,
+  [switch] $publishBuildAssets,
   [switch] $ci,
   [switch] $prepareMachine,
   [switch] $help,
@@ -44,7 +44,7 @@ function Print-Usage() {
     Write-Host "  -performanceTest        Run all performance tests in the solution"
     Write-Host "  -sign                   Sign build outputs"
     Write-Host "  -publish                Publish artifacts (e.g. symbols)"
-    Write-Host "  -pushBuildAssets        Push assets to BAR"
+    Write-Host "  -publishBuildAssets        Push assets to BAR"
     Write-Host ""
 
     Write-Host "Advanced settings:"
@@ -251,7 +251,7 @@ function Build([string] $buildDriver, [string]$buildArgs) {
     /p:PerformanceTest=$performanceTest `
     /p:Sign=$sign `
     /p:Publish=$publish `
-    /p:PushBuildAssets=$pushBuildAssets `
+    /p:PublishBuildAssets=$publishBuildAssets `
     /p:ContinuousIntegrationBuild=$ci `
     /p:CIBuild=$ci `
     $properties
