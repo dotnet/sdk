@@ -19,7 +19,7 @@ namespace EndToEnd
                     "1.1",
                     "2.0",
                     "2.1",
-                    "2.2"
+                    "3.0"
                 }.Select(version => new object[] { version });
             }
         }

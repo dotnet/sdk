@@ -105,7 +105,7 @@ namespace EndToEnd
                 ?.Version;
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/cli/issues/9968")]
         public void WeCoverLatestNetCoreAppRollForward()
         {
             //  Run "dotnet new console", get TargetFramework property, and make sure it's covered in SupportedNetCoreAppVersions
@@ -130,7 +130,6 @@ namespace EndToEnd
                 SupportedNetCoreAppVersions.Versions.Select(v => $"netcoreapp{v[0]}")
                     .Should().Contain(targetFramework, $"the {nameof(SupportedNetCoreAppVersions)}.{nameof(SupportedNetCoreAppVersions.Versions)} property should include the default version " +
                     "of .NET Core created by \"dotnet new\"");
-                
             }
         }
 
