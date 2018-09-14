@@ -6,7 +6,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
           created a backup copy.  Incorrect changes to this file will make it
           impossible to load or build your projects from the command-line or the IDE.
 
-Copyright (c) .NET Foundation. All rights reserved. 
+Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -22,10 +22,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultNoneItems Condition=" '$(EnableDefaultNoneItems)' == '' ">true</EnableDefaultNoneItems>
   </PropertyGroup>
 
-  <PropertyGroup>    
+  <PropertyGroup>
     <!-- Set DefaultItemExcludes property for items that should be excluded from the default Compile, etc items.
          This is in the .targets because it needs to come after the final BaseOutputPath has been evaluated. -->
-    
+
     <!-- bin folder, by default -->
     <DefaultItemExcludes>$(DefaultItemExcludes);$(BaseOutputPath)/**</DefaultItemExcludes>
     <!-- obj folder, by default -->
@@ -36,12 +36,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.*proj</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.sln</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.vssscc</DefaultItemExcludes>
-    
+
     <!-- WARNING: This pattern is there to ignore folders such as .git and .vs, but it will also match items included with a
          relative path outside the project folder (for example "..\Shared\Shared.cs").  So be sure only to apply it to items
          that are in the project folder. -->
     <DefaultExcludesInProjectFolder>$(DefaultItemExcludesInProjectFolder);**/.*/**</DefaultExcludesInProjectFolder>
-   
+
   </PropertyGroup>
 
   <!-- Set the default versions of the NETStandard.Library or Microsoft.NETCore.App packages to reference.
@@ -57,33 +57,33 @@ Copyright (c) .NET Foundation. All rights reserved.
          updating to the 2.0 or higher SDK.  When targeting .NET Standard 2.0 or higher, the NETStandard.Library reference won't show up as a dependency of the package
          produced, so we will roll forward to the latest version. -->
     <NETStandardImplicitPackageVersion Condition="'$(NETStandardImplicitPackageVersion)' =='' And '$(_TargetFrameworkVersionWithoutV)' &lt; '2.0'">1.6.1</NETStandardImplicitPackageVersion>
-    
+
     <!-- Default to use the latest stable release. -->
     <NETStandardImplicitPackageVersion Condition="'$(NETStandardImplicitPackageVersion)' ==''">2.0.3</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <!--
     Determine the version (including patch) of .NET Core to target.
-    
+
     When targeting .NET Core, the TargetFramework is used to specify the major and minor version of the runtime to use.  By default,
     the patch version is inferred.  The general logic is that self-contained apps will target the latest patch that the SDK
     knows about, while framework-dependent apps will target the ".0" patch (and roll forward to the latest patch installed at
     runtime).
-    
+
     When targeting .NET Core 1.0 and 1.1, framework-dependent apps use 1.0.5 and 1.1.2, respectively.  This is done for compatibility
     with previous releases that bumped the self-contained and framework-dependent versions together.
-    
+
     The TargetLatestRuntimePatch property can be set to true or false to explicitly opt in or out of the logic to roll forward
     to the latest patch, regardless of whether the app is self-contained or framework-dependent.
-    
+
     The RuntimeFrameworkVersion is where the actual version of the .NET Core runtime to target is stored.  It is the version that is
     used in the implicit PackageReference to Microsoft.NETCore.App.  The RuntimeFrameworkVersion can also be set explicitly, which
     will disable all the other logic that automatically selects the version of .NET Core to target.
-    
+
     The framework version that is written to the runtimeconfig.json file is based on the actual resolved package version
     of Microsoft.NETCore.App.  This is to allow floating the verion number (ie the RuntimeFrameworkVersion could be set to
     "2.0-*".
-  
+
   -->
 
   <!--
@@ -92,10 +92,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       - TargetLatestNetCoreRuntimePatch
       - RollForwardRuntime
       - RollForwardNetCoreRuntime
-      
+
      Possible property names for roll-forward/not roll-forward versions
       - LatestNetCorePatchVersion / DefaultNetCorePatchVersion
-      
+
       TODO: Get feedback on these names and then delete this comment
   -->
 
@@ -129,10 +129,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- If not covered by the previous cases use the target framework version for the latest patch version -->
     <LatestNetCorePatchVersion Condition="'$(LatestNetCorePatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</LatestNetCorePatchVersion>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(TargetLatestRuntimePatch)' == ''">
     <TargetLatestRuntimePatch Condition="'$(SelfContained)' == 'true' ">true</TargetLatestRuntimePatch>
     <TargetLatestRuntimePatch Condition="'$(SelfContained)' != 'true' ">false</TargetLatestRuntimePatch>
+  </PropertyGroup>
+
+  <!-- RuntimeFrameworkVersion can be used to set both Microsoft.NETCore.App and AspnetCore.App/All. It is expected that these package versions will always align. -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(RuntimeFrameworkVersion)' != ''">
+    <AspNetCoreAllRuntimeFrameworkVersion Condition=" '$(AspNetCoreAllRuntimeFrameworkVersion)' == '' ">$(RuntimeFrameworkVersion)</AspNetCoreAllRuntimeFrameworkVersion>
+    <AspNetCoreAppRuntimeFrameworkVersion Condition=" '$(AspNetCoreAppRuntimeFrameworkVersion)' == '' ">$(RuntimeFrameworkVersion)</AspNetCoreAppRuntimeFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(RuntimeFrameworkVersion)' == ''">
@@ -144,7 +150,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- This property is different than MicrosoftNETPlatformLibrary.  MicrosoftNETPlatformLibrary is
          used to trim the dependencies published with a framework-dependent app, and is overridden
          by ASP.NET packages.
-         
+
          ExpectedPlatformPackages is the list of packages that are actually implicitly
          referenced by the SDK, and is passed into the ResolvePackageAssets task
          to verify that the restored versions of the packages matches the expected versions
@@ -155,7 +161,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(DisableImplicitFrameworkReferences)' != 'true'">
     <VerifyMatchingImplicitPackageVersion Condition="'$(VerifyMatchingImplicitPackageVersion)' == ''">true</VerifyMatchingImplicitPackageVersion>
   </PropertyGroup>
-  
+
   <!--
     Automatically add Link metadata to items of specific types if they are outside of the project folder and don't already have the Link metadata set.
     This will cause them to be shown in the Solution Explorer.  If an item has LinkBase metadata, the automatic Link will start with that value, and
@@ -164,12 +170,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup Condition="'$(SetLinkMetadataAutomatically)' != 'false'">
     <Compile Update="@(Compile)">
       <!-- First, add a trailing slash to the LinkBase metadata if necessary.  This allows us to use the same value
-           for the Link metadata whether or not LinkBase metadata is set: %(LinkBase)%(RecursiveDir)%(Filename)%(Extension) 
-           
+           for the Link metadata whether or not LinkBase metadata is set: %(LinkBase)%(RecursiveDir)%(Filename)%(Extension)
+
            Note that RecursiveDir already includes the trailing slash.
       -->
       <LinkBase Condition="'%(LinkBase)' != ''">$([MSBuild]::EnsureTrailingSlash(%(LinkBase)))</LinkBase>
-    
+
       <!-- Set the Link metadata if it's not already set, if the item wasn't defined in a shared project,  and the item is outside of the project directory.
            Check whether the item was defined in a shared project by checking whether the extension of the defining project was .projitems.
            Check whether an item is inside the project directory by seeing if the FullPath starts with EnsureTrailingSlash(MSBuildProjectDirectory)
@@ -178,7 +184,7 @@ Copyright (c) .NET Foundation. All rights reserved.
            not possible to call a string method on a metadata item directly.  The intrinsic ValueOrDefault() will be more
            performant than calling String.Copy(), which has been used for this in other contexts, but actually makes a copy
            of the string data.
-      -->    
+      -->
       <Link Condition="'%(Link)' == '' And '%(DefiningProjectExtension)' != '.projitems' And !$([MSBuild]::ValueOrDefault('%(FullPath)', '').StartsWith($([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))))">%(LinkBase)%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
 
@@ -186,7 +192,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <LinkBase Condition="'%(LinkBase)' != ''">$([MSBuild]::EnsureTrailingSlash(%(LinkBase)))</LinkBase>
       <Link Condition="'%(Link)' == '' And '%(DefiningProjectExtension)' != '.projitems' And !$([MSBuild]::ValueOrDefault('%(FullPath)', '').StartsWith($([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))))">%(LinkBase)%(RecursiveDir)%(Filename)%(Extension)</Link>
     </AdditionalFiles>
-    
+
     <None Update="@(None)">
       <LinkBase Condition="'%(LinkBase)' != ''">$([MSBuild]::EnsureTrailingSlash(%(LinkBase)))</LinkBase>
       <Link Condition="'%(Link)' == '' And '%(DefiningProjectExtension)' != '.projitems' And !$([MSBuild]::ValueOrDefault('%(FullPath)', '').StartsWith($([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))))">%(LinkBase)%(RecursiveDir)%(Filename)%(Extension)</Link>
@@ -203,12 +209,183 @@ Copyright (c) .NET Foundation. All rights reserved.
     </EmbeddedResource>
   </ItemGroup>
 
+  <!--
+    Determine the version (including patch) of ASP.NET Core to target.
+    When targeting ASP.NET Core, the TargetFramework is used to specify the major and minor version of the runtime to use.
+    By default, the patch version is inferred. The general logic is that self-contained apps will target the latest patch
+    that the SDK knows about, while framework-dependent apps will target the ".0" patch (and roll forward to the latest
+    patch installed at runtime).
+
+    The TargetLatestAspNetCoreRuntimePatch property can be set to true or false to explicitly opt in or out of the logic
+    to roll forward to the latest patch, regardless of whether the app is self-contained or framework-dependent. The
+    default value of this property is TargetLatestRuntimePatch set by the dotnet SDK.
+
+    The RuntimeFrameworkVersion property can be used to set an explicit minimum version of Microsoft.NETCore.App
+    and Microsoft.AspNetCore.App/All.
+
+    The AspNetCoreAppRuntimeFrameworkVersion and AspNetCoreAllRuntimeFrameworkVersion are where the actual versions of the
+    ASPNET Core runtimes to target is stored. They are the versions that are used in the implicit PackageReference to
+    Microsoft.AspNetCore.App and Microsoft.AspNetCore.All. The AspNetCoreAppRuntimeFrameworkVersion and
+    AspNetCoreAllRuntimeFrameworkVersion can also be set explicitly, which will disable all the other logic that
+    automatically selects the version of .NET Core to target.
+
+    The framework version that is written to the runtimeconfig.json file is based on the actual resolved package version
+    of Microsoft.AspNetCore.App or Microsoft.AspNetCore.All. This is to allow floating the version number (i.e. the user
+    could set the version to "2.0-*".
+  -->
+  <Choose>
+    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" >
+
+      <PropertyGroup>
+        <!--
+          The default version for ASP.NET Core 2.1 is pinned to 2.1.1. The original plan was for it to be "2.1" like Microsoft.NETCore.App is,
+          but this was increased to 2.1.1 due to https://github.com/aspnet/Universe/issues/1180.
+        -->
+        <DefaultPatchVersionForAspNetCoreAll2_1 Condition="'$(DefaultPatchVersionForAspNetCoreAll2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreAll2_1>
+        <DefaultPatchVersionForAspNetCoreApp2_1 Condition="'$(DefaultPatchVersionForAspNetCoreApp2_1)' == ''">2.1.1</DefaultPatchVersionForAspNetCoreApp2_1>
+      </PropertyGroup>
+
+      <!-- Default patch version of .All Framework -->
+      <PropertyGroup Condition="'$(DefaultAspNetCoreAllPatchVersion)' == ''">
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreAll2_1)</DefaultAspNetCoreAllPatchVersion>
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.2'">$(DefaultPatchVersionForAspNetCoreAll2_2)</DefaultAspNetCoreAllPatchVersion>
+
+        <!-- If targeting the same pre-release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(DefaultAspNetCoreAllPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAllTargetFrameworkVersion)'">$(BundledAspNetCoreAllPackageVersion)</DefaultAspNetCoreAllPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the default patch version -->
+        <DefaultAspNetCoreAllPatchVersion Condition="'$(DefaultAspNetCoreAllPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</DefaultAspNetCoreAllPatchVersion>
+      </PropertyGroup>
+
+      <!-- Default patch version of .App Framework -->
+      <PropertyGroup Condition="'$(DefaultAspNetCoreAppPatchVersion)' == ''">
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(DefaultPatchVersionForAspNetCoreApp2_1)</DefaultAspNetCoreAppPatchVersion>
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.2'">$(DefaultPatchVersionForAspNetCoreApp2_2)</DefaultAspNetCoreAppPatchVersion>
+
+        <!-- If targeting the same pre-release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(DefaultAspNetCoreAppPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAppTargetFrameworkVersion)'">$(BundledAspNetCoreAppPackageVersion)</DefaultAspNetCoreAppPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the default patch version -->
+        <DefaultAspNetCoreAppPatchVersion Condition="'$(DefaultAspNetCoreAppPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</DefaultAspNetCoreAppPatchVersion>
+      </PropertyGroup>
+
+      <!-- Latest patch version of .All Framework -->
+      <PropertyGroup Condition="'$(LatestAspNetCoreAllPatchVersion)' == ''">
+        <!-- If LatestPatchVersionForAspNetCoreAll2_x is explicitly set, use this for netcoreapp2.x projects. -->
+        <LatestAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreAll2_1)</LatestAspNetCoreAllPatchVersion>
+        <LatestAspNetCoreAllPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.2'">$(LatestPatchVersionForAspNetCoreAll2_2)</LatestAspNetCoreAllPatchVersion>
+
+        <!-- If targeting the same release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <LatestAspNetCoreAllPatchVersion Condition="'$(LatestAspNetCoreAllPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAllTargetFrameworkVersion)'">$(BundledAspNetCoreAllPackageVersion)</LatestAspNetCoreAllPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the latest patch version -->
+        <LatestAspNetCoreAllPatchVersion Condition="'$(LatestAspNetCoreAllPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</LatestAspNetCoreAllPatchVersion>
+      </PropertyGroup>
+
+      <!-- Latest patch version of .App Framework -->
+      <PropertyGroup Condition="'$(LatestAspNetCoreAppPatchVersion)' == ''">
+        <!-- If LatestPatchVersionForAspNetCoreApp2_x is explicitly set, use this for netcoreapp2.x projects. -->
+        <LatestAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.1'">$(LatestPatchVersionForAspNetCoreApp2_1)</LatestAspNetCoreAppPatchVersion>
+        <LatestAspNetCoreAppPatchVersion Condition="'$(_TargetFrameworkVersionWithoutV)' == '2.2'">$(LatestPatchVersionForAspNetCoreApp2_2)</LatestAspNetCoreAppPatchVersion>
+
+        <!-- If targeting the same release that is bundled with the .NET Core SDK, use the bundled package version
+            provided by Microsoft.NETCoreSdk.BundledVersions.props -->
+        <LatestAspNetCoreAppPatchVersion Condition="'$(LatestAspNetCoreAppPatchVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' == '$(BundledAspNetCoreAppTargetFrameworkVersion)'">$(BundledAspNetCoreAppPackageVersion)</LatestAspNetCoreAppPatchVersion>
+        <!-- If not covered by the previous cases use the target framework version for the latest patch version -->
+        <LatestAspNetCoreAppPatchVersion Condition="'$(LatestAspNetCoreAppPatchVersion)' == ''">$(_TargetFrameworkVersionWithoutV)</LatestAspNetCoreAppPatchVersion>
+      </PropertyGroup>
+
+      <PropertyGroup>
+        <!--
+          Determine determines the default value used for ASP.NET Core, which can be controlled separately from Microsoft.NETCore.App, but should not be in most cases.
+          This property was added in 2.1 to support source-build SDKs where the ASP.NET Core shared framework is not available.
+         -->
+        <TargetLatestAspNetCoreRuntimePatch Condition="'$(TargetLatestAspNetCoreRuntimePatch)' == ''">$(TargetLatestRuntimePatch)</TargetLatestAspNetCoreRuntimePatch>
+      </PropertyGroup>
+
+      <!-- Set the framework version of .All Framework -->
+      <PropertyGroup Condition="'$(AspNetCoreAllRuntimeFrameworkVersion)' == ''">
+        <AspNetCoreAllRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' != 'true'">$(DefaultAspNetCoreAllPatchVersion)</AspNetCoreAllRuntimeFrameworkVersion>
+        <AspNetCoreAllRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' == 'true'">$(LatestAspNetCoreAllPatchVersion)</AspNetCoreAllRuntimeFrameworkVersion>
+      </PropertyGroup>
+
+      <!-- Set the framework version of .App Framework -->
+      <PropertyGroup Condition="'$(AspNetCoreAppRuntimeFrameworkVersion)' == ''">
+        <AspNetCoreAppRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' != 'true'">$(DefaultAspNetCoreAppPatchVersion)</AspNetCoreAppRuntimeFrameworkVersion>
+        <AspNetCoreAppRuntimeFrameworkVersion Condition="'$(TargetLatestAspNetCoreRuntimePatch)' == 'true'">$(LatestAspNetCoreAppPatchVersion)</AspNetCoreAppRuntimeFrameworkVersion>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <Target Name="ResolveImplicitPackageReferenceVersions" BeforeTargets="CollectPackageReferences">
+    <ItemGroup>
+      <!--
+        Backwards compat with 2.1 templates: update version-less ASP.NET metapackage references.
+      -->
+      <PackageReference Condition=" '%(PackageReference.Identity)' == 'Microsoft.AspNetCore.All' AND '%(PackageReference.Version)' == '' ">
+        <Version>$(AspNetCoreAllRuntimeFrameworkVersion)</Version>
+        <IsImplicitlyDefined>true</IsImplicitlyDefined>
+        <PrivateAssets>All</PrivateAssets>
+        <Publish>true</Publish>
+      </PackageReference>
+
+      <PackageReference Condition=" '%(PackageReference.Identity)' == 'Microsoft.AspNetCore.App' AND '%(PackageReference.Version)' == '' ">
+        <Version>$(AspNetCoreAppRuntimeFrameworkVersion)</Version>
+        <IsImplicitlyDefined>true</IsImplicitlyDefined>
+        <PrivateAssets>All</PrivateAssets>
+        <Publish>true</Publish>
+      </PackageReference>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ResolveFrameworkReferences"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences"
+          DependsOnTargets="ResolveImplicitPackageReferenceVersions">
+
+    <!-- FrameworkReference items are only supported in .NET Core 2.1 and 2.2 for ASP.NET Core packages only. -->
+    <ItemGroup Condition="'$(_TargetFrameworkVersionWithoutV)' != '' AND '$(_TargetFrameworkVersionWithoutV)' >= '2.1' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0' ">
+      <!-- Transform FrameworkReference to PackageReference for known items -->
+      <PackageReference Include="%(FrameworkReference.Identity)" Condition=" '%(FrameworkReference.Identity)' == 'Microsoft.AspNetCore.App' OR '%(FrameworkReference.Identity)' == 'Microsoft.AspNetCore.All' ">
+        <Version Condition=" '%(FrameworkReference.Identity)' == 'Microsoft.AspNetCore.App' ">$(AspNetCoreAllRuntimeFrameworkVersion)</Version>
+        <Version Condition=" '%(FrameworkReference.Identity)' == 'Microsoft.AspNetCore.All' ">$(AspNetCoreAppRuntimeFrameworkVersion)</Version>
+        <IsImplicitlyDefined>true</IsImplicitlyDefined>
+        <PrivateAssets>All</PrivateAssets>
+        <Publish>true</Publish>
+        <!-- For internal use: used to keep track of package references that are added implicitly from FrameworkReference. -->
+        <_IsFrameworkReference>true</_IsFrameworkReference>
+      </PackageReference>
+
+      <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+      <FrameworkReference Remove="Microsoft.AspNetCore.All" />
+      <_UnresolvedFrameworkReference Include="@(FrameworkReference)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Update list of implicit platform packages which require version verification -->
+      <ExpectedPlatformPackages
+        Include="%(PackageReference.Identity)"
+        ExpectedVersion="%(PackageReference.Version)"
+        Condition="'%(PackageReference.Identity)' == 'Microsoft.AspNetCore.App' OR '%(PackageReference.Identity)' == 'Microsoft.AspNetCore.All' "/>
+    </ItemGroup>
+  </Target>
+
+  <!-- Check for unrecognized FrameworkReference items. -->
+  <Target Name="ReportUnresolvedFrameworkReferences"
+          DependsOnTargets="ResolveFrameworkReferences"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences"
+          Condition=" @(_UnresolvedFrameworkReference->Count()) != 0 ">
+    <NETSdkError ResourceName="UnknownFrameworkReference" FormatArguments="%(_UnresolvedFrameworkReference.Identity)" />
+  </Target>
+
   <UsingTask TaskName="CheckForImplicitPackageReferenceOverrides" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!-- Remove package references with metadata IsImplicitlyDefined = true, if there are other PackageReference items with the same identity -->
-  <Target Name="CheckForImplicitPackageReferenceOverrides" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences">
+  <Target Name="CheckForImplicitPackageReferenceOverrides"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences"
+          DependsOnTargets="ResolveImplicitPackageReferenceVersions">
     <PropertyGroup>
       <ImplicitPackageReferenceInformationLink>https://aka.ms/sdkimplicitrefs</ImplicitPackageReferenceInformationLink>
+      <FrameworkReferencesInformationLink>https://aka.ms/dotnet/framework-references</FrameworkReferencesInformationLink>
     </PropertyGroup>
 
     <CheckForImplicitPackageReferenceOverrides
@@ -222,12 +399,20 @@ Copyright (c) .NET Foundation. All rights reserved.
            that had duplicates, instead of leaving the ones without IsImplicitlyDefined set to true. -->
       <PackageReference Remove="@(_PackageReferenceToRemove)" Condition="'%(PackageReference.IsImplicitlyDefined)' == 'true' "/>
     </ItemGroup>
-    
+
     <!-- If any implicit package references were overridden, then don't check that RuntimeFrameworkVersion matches the package version -->
     <PropertyGroup Condition="'@(_PackageReferenceToRemove)' != ''">
       <VerifyMatchingImplicitPackageVersion>false</VerifyMatchingImplicitPackageVersion>
     </PropertyGroup>
 
+    <ItemGroup Condition="'$(_TargetFrameworkVersionWithoutV)' != '' AND '$(_TargetFrameworkVersionWithoutV)' >= '2.1' ">
+      <_AspNetMetaPackageReference Include="@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))" />
+      <_AspNetMetaPackageReference Include="@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.All'))" />
+    </ItemGroup>
+
+    <NETSdkWarning Condition=" '$(DisableAspNetCoreMetaPackageWarning)' != 'true' AND '%(_AspNetMetaPackageReference.Identity)' != '' AND '%(_AspNetMetaPackageReference._IsFrameworkReference)' != 'true' "
+          ResourceName="RecommendFrameworkReferenceForAspNetCorePackages"
+          FormatArguments="%(_AspNetMetaPackageReference.Identity);$(FrameworkReferencesInformationLink)" />
   </Target>
 
   <UsingTask TaskName="CheckForDuplicateItems" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
@@ -266,7 +451,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContinueOnError="$(CheckForDuplicateItemsContinueOnError)">
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedEmbeddedResourceItems" />
     </CheckForDuplicateItems>
-    
+
     <!-- Default content items are enabled by the Web SDK, not the .NET SDK, but we check it here for simplicity -->
     <CheckForDuplicateItems
       Items="@(Content)"
@@ -293,6 +478,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Content Remove="@(Content)" />
       <Content Include="@(DeduplicatedContentItems)" />
     </ItemGroup>
-    
+
   </Target>
 </Project>

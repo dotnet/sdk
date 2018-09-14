@@ -401,4 +401,15 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1070: The application configuration file must have root configuration element.</value>
     <comment>{StrBegin="NETSDK1070: "}</comment>
   </data>
+  <data name="RecommendFrameworkReferenceForAspNetCorePackages" xml:space="preserve">
+    <value>NETSDK1071: A PackageReference for '{0}' was included in your project. Referencing this item as NuGet package is no longer supported. To resolve this warning, change the PackageReference to a FrameworkReference. For more information, see {1}.</value>
+    <comment>{StrBegin="NETSDK1071: "}
+{0} - Package Id (Microsoft.AspNetCore.App or .All)
+{1} - More info link
+    </comment>
+  </data>
+  <data name="UnknownFrameworkReference" xml:space="preserve">
+    <value>NETSDK1072: The FrameworkReference '{0}' was not recognized.</value>
+    <comment>{StrBegin="NETSDK1072: "}</comment>
+  </data>
 </root>

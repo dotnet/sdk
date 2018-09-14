@@ -35,6 +35,8 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         public List<TestPackageReference> PackageReferences { get; } = new List<TestPackageReference>();
 
+        public List<TestFrameworkReference> FrameworkReferences { get; } = new List<TestFrameworkReference>();
+
         public List<TestPackageReference> DotNetCliToolReferences { get; } = new List<TestPackageReference>();
 
         public Dictionary<string, string> SourceFiles { get; } = new Dictionary<string, string>();
@@ -148,6 +150,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 packageReferenceItemGroup.Add(new XElement(ns + "PackageReference",
                     new XAttribute("Include", $"{packageReference.ID}"),
                     new XAttribute("Version", $"{packageReference.Version}")));
+            }
+
+            foreach (TestFrameworkReference frameworkReference in FrameworkReferences)
+            {
+                packageReferenceItemGroup.Add(new XElement(ns + "FrameworkReference",
+                    new XAttribute("Include", frameworkReference.Name)));
             }
 
             foreach (TestPackageReference dotnetCliToolReference in DotNetCliToolReferences)
