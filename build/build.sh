@@ -43,6 +43,31 @@ toolset_restore_log="$log_dir/ToolsetRestore.binlog"
 temp_dir="$artifacts_configuration_dir/tmp"
 
 global_json_file="$repo_root/global.json"
+
+# ReadJson [filename] [json key]
+# Result: Sets 'readjsonvalue' to the value of the provided json key
+# Note: this method may return unexpected results if there are duplicate
+# keys in the json
+function ReadJson {
+  local file=$1
+  local key=$2
+
+  local unamestr="$(uname)"
+  local sedextended='-r'
+  if [[ "$unamestr" == 'Darwin' ]]; then
+    sedextended='-E'
+  fi;
+
+  readjsonvalue="$(grep -m 1 "\"$key\"" $file | sed $sedextended 's/^ *//;s/.*: *"//;s/",?//')"
+  if [[ ! "$readjsonvalue" ]]; then
+    echo "Error: Cannot find \"$key\" in $file" >&2;
+    ExitWithExitCode 1
+  fi;
+}
+
+ReadJson "$global_json_file" "version"
+dotnet_sdk_version="$readjsonvalue"
+
 build_driver=""
 toolset_build_proj=""
 
@@ -135,27 +160,6 @@ while (($# > 0)); do
   esac
 done
 
-# ReadJson [filename] [json key]
-# Result: Sets 'readjsonvalue' to the value of the provided json key
-# Note: this method may return unexpected results if there are duplicate
-# keys in the json
-function ReadJson {
-  local file=$1
-  local key=$2
-
-  local unamestr="$(uname)"
-  local sedextended='-r'
-  if [[ "$unamestr" == 'Darwin' ]]; then
-    sedextended='-E'
-  fi;
-
-  readjsonvalue="$(grep -m 1 "\"$key\"" $file | sed $sedextended 's/^ *//;s/.*: *"//;s/",?//')"
-  if [[ ! "$readjsonvalue" ]]; then
-    echo "Error: Cannot find \"$key\" in $file" >&2;
-    ExitWithExitCode 1
-  fi;
-}
-
 function InitializeDotNetCli {
   # Disable first run since we want to control all package sources
   export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
@@ -171,8 +175,6 @@ function InitializeDotNetCli {
   # Save MSBuild crash files info to log directory so that they are captured as build artifacts
   export MSBUILDDEBUGPATH="$log_dir"
 
-  ReadJson "$global_json_file" "version"
-  local dotnet_sdk_version="$readjsonvalue"
   local dotnet_root=""
 
   # Use dotnet installation specified in DOTNET_INSTALL_DIR if it contains the required SDK version, 
@@ -259,11 +261,11 @@ function InitializeToolset {
 
 function InitializeCustomToolset {
   if [[ "$dogfood" == true ]]; then
-    export SDK_REPO_ROOT="$RepoRoot"
-    export SDK_CLI_VERSION="$DotNetCliVersion"
-    export MSBuildSDKsPath="$ArtifactsConfigurationDir/bin/Sdks"
+    export SDK_REPO_ROOT="$repo_root"
+    export SDK_CLI_VERSION="$dotnet_sdk_version"
+    export MSBuildSDKsPath="$artifacts_configuration_dir/bin/Sdks"
     export DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR="$MSBuildSDKsPath"
-    export NETCoreSdkBundledVersionsProps="$DotNetRoot/sdk/$DotNetCliVersion/Microsoft.NETCoreSdk.BundledVersions.props"
+    export NETCoreSdkBundledVersionsProps="$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version/Microsoft.NETCoreSdk.BundledVersions.props"
     export CustomAfterMicrosoftCommonTargets="$MSBuildSDKsPath/Microsoft.NET.Build.Extensions/msbuildExtensions-ver/Microsoft.Common.Targets/ImportAfter/Microsoft.NET.Build.Extensions.targets"
     export MicrosoftNETBuildExtensionsTargets="$CustomAfterMicrosoftCommonTargets"
   fi
