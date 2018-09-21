@@ -242,12 +242,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             ReloadTemplates();
         }
 
-        private void ReloadTemplates()
-        {
-            _templatesLoaded = false;
-            EnsureTemplatesLoaded();
-        }
-
         private IEnumerable<MountPointInfo> FindMountPointsToScan(bool forceRebuild)
         {
             bool forceScanAll = false;
@@ -302,6 +296,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
+        private void ReloadTemplates()
+        {
+            _templatesLoaded = false;
+            EnsureTemplatesLoaded();
+        }
+        
         public bool IsVersionCurrent
         {
             get
