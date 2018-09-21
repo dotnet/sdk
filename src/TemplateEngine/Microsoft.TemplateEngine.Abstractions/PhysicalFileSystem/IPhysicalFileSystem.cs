@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
@@ -36,5 +37,7 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         FileAttributes GetFileAttributes(string file);
 
         void SetFileAttributes(string file, FileAttributes attributes);
+
+        DateTime GetLastWriteTimeUtc(string file);
     }
 }

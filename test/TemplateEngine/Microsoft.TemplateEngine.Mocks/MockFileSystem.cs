@@ -22,10 +22,13 @@ namespace Microsoft.TemplateEngine.Mocks
             {
                 Data = file.Data;
                 Attributes = file.Attributes;
+                LastWriteTimeUtc = file.LastWriteTimeUtc;
             }
 
             public byte[] Data;
             public FileAttributes Attributes;
+
+            public DateTime LastWriteTimeUtc;
         }
 
         private HashSet<string> _directories = new HashSet<string>(StringComparer.Ordinal);
@@ -198,6 +201,16 @@ namespace Microsoft.TemplateEngine.Mocks
             }
 
             _files[file].Attributes = attributes;
+        }
+        
+        public DateTime GetLastWriteTimeUtc(string file)
+        {
+            if (!FileExists(file))
+            {
+                throw new Exception($"File {file} doesn't exist");
+            }
+
+            return _files[file].LastWriteTimeUtc;
         }
     }
 }
