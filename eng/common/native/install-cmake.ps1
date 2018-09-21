@@ -62,7 +62,7 @@ try {
   $ToolInstallDirectory = Join-Path $InstallPath "$ToolName\$Version\"
   $ToolFilePath = Join-Path $ToolInstallDirectory "$ToolNameMoniker\bin\$ToolName.exe"
   $ShimPath = Join-Path $InstallPath "$ToolName.cmd"
-  $Uri = "$BaseUri/$ToolNameMoniker.zip"
+  $Uri = "$BaseUri/windows/$Toolname/$ToolNameMoniker.zip"
 
   if ($Clean) {
     Write-Host "Cleaning $ToolInstallDirectory"
