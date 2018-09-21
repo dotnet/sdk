@@ -48,5 +48,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 
         bool HasScriptRunningPostActions { get; set; }
+
+        DateTime? ConfigTimestampUtc { get; set; }
     }
 }

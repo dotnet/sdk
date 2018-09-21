@@ -76,5 +76,7 @@ namespace Microsoft.TemplateEngine.Mocks
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
 
         public bool HasScriptRunningPostActions { get; set; }
+
+        public DateTime? ConfigTimestampUtc { get; set; }
     }
 }

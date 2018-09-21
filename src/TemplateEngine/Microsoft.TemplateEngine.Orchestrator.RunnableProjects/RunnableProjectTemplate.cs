@@ -38,6 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _raw = raw;
             BaselineInfo = config.BaselineInfo;
             HasScriptRunningPostActions = config.HasScriptRunningPostActions;
+            ConfigTimestampUtc = config.ConfigTimestampUtc;
         }
 
         public IDirectory TemplateSourceRoot
@@ -212,5 +213,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; set; }
 
         public bool HasScriptRunningPostActions { get; set; }
+
+        public DateTime? ConfigTimestampUtc { get; set; }
     }
 }

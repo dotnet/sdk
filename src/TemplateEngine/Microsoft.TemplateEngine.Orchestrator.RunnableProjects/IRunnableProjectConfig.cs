@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -54,5 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 
         bool HasScriptRunningPostActions { get; set; }
+
+        DateTime? ConfigTimestampUtc { get; set; }
     }
 }

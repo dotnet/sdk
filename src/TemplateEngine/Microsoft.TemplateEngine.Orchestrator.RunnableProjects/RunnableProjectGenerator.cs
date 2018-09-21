@@ -276,6 +276,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return false;
                 }
 
+                // Record the timestamp of the template file so we
+                // know to reload it if it changes
+                runnableProjectTemplate.ConfigTimestampUtc = host.FileSystem.GetLastWriteTimeUtc(templateFile.FullPath);
+
                 template = runnableProjectTemplate;
                 return true;
             }

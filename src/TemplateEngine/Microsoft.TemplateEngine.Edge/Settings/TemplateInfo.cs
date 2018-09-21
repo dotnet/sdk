@@ -221,5 +221,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public bool HasScriptRunningPostActions { get; set; }
+
+        [JsonProperty]
+        public DateTime? ConfigTimestampUtc { get; set; }
     }
 }

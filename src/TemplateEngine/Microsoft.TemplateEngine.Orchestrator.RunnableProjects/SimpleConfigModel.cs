@@ -81,6 +81,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool HasScriptRunningPostActions { get; set; }
 
+        public DateTime? ConfigTimestampUtc { get; set; }
+
         private IReadOnlyDictionary<string, string> _tagsDeprecated;
 
         public IReadOnlyDictionary<string, ICacheTag> Tags

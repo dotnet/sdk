@@ -31,7 +31,8 @@ namespace Microsoft.TemplateEngine.Edge
                 HostConfigPlace = source.HostConfigPlace,
                 ThirdPartyNotices = source.ThirdPartyNotices,
                 BaselineInfo = source.BaselineInfo,
-                HasScriptRunningPostActions = source.HasScriptRunningPostActions
+                HasScriptRunningPostActions = source.HasScriptRunningPostActions,
+                ConfigTimestampUtc = source.ConfigTimestampUtc
             };
 
             if (source is IShortNameList sourceWithShortNameList)
@@ -89,5 +90,7 @@ namespace Microsoft.TemplateEngine.Edge
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; private set; }
 
         public bool HasScriptRunningPostActions { get; set; }
+
+        public DateTime? ConfigTimestampUtc { get; set; }
     }
 }
