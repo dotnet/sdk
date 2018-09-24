@@ -14,42 +14,50 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   
-  <PropertyGroup>
-    <AutoGenerateResxCodeBehindFiles Condition="'$(AutoGenerateResxCodeBehindFiles)' == ''">true</AutoGenerateResxCodeBehindFiles>
-  </PropertyGroup>
-  
-  <UsingTask TaskName="ComputeResxCodeBehindFilePath" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="GenerateResxCodeBehindFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateResxCodeBehindFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <Target Name="_ComputeResxCodeBehindFilePaths">
-    <ComputeResxCodeBehindFilePath EmbeddedResources="@(EmbeddedResource)"
-                                   IntermediateOutputPath="$(IntermediateOutputPath)"
-                                   Language="$(Language)"
-                                   AutoGenerateByDefault="$(AutoGenerateResxCodeBehindFiles)">
-      <Output TaskParameter="ResxFilesWithCodeBehindPath" ItemName="_ResxFileToGenerateCodeBehind" />
-    </ComputeResxCodeBehindFilePath>
+  <ItemGroup>
+    <EmbeddedResource Update="@(EmbeddedResource)">
+      <Generator Condition="'%(EmbeddedResource.GenerateSource)' == 'true'">MSBuild:_GenerateResxSource</Generator>
+      <Namespace Condition="'%(EmbeddedResource.Namespace)' == ''">$(RootNamespace)</Namespace>
+      <DocCommentMode Condition="'%(EmbeddedResource.DocCommentMode)' == ''">Content</DocCommentMode>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="_GenerateResxSource" BeforeTargets="CoreCompile"
+          DependsOnTargets="PrepareResourceNames;_GetEmbeddedResourcesWithSourceGeneration;_BatchGenerateResxSource">
+    <ItemGroup>
+      <GeneratedResxSource Include="@(EmbeddedResourceSG -> '%(SourceOutputPath)')" />
+      <FileWrites Include="@(GeneratedResxSource)" />
+      <Compile Include="@(GeneratedResxSource)" />
+    </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateResxCodeBehindFiles"
-          DependsOnTargets="_ComputeResxCodeBehindFilePaths"
-          Condition="'@(_ResxFileToGenerateCodeBehind)' != '' and '$(DesignTimeBuild)' == ''"
-          Inputs="@(_ResxFileToGenerateCodeBehind)"
-          Outputs="@(_ResxFileToGenerateCodeBehind -> '%(CodeBehindFile)')">
-    <GenerateResxCodeBehindFile ResxFiles="@(_ResxFileToGenerateCodeBehind)"
-                                Language="$(Language)">
-      <Output TaskParameter="Compile" ItemName="Compile" />
-      <Output TaskParameter="Compile" ItemName="FileWrites" />
-    </GenerateResxCodeBehindFile>
-    </Target>
+  <Target Name="_CustomizeResourceNames" BeforeTargets="PrepareResourceNames">
+    <ItemGroup>
+      <EmbeddedResource Update="@(EmbeddedResource)">
+        <ManifestResourceName Condition="'%(EmbeddedResource.Namespace)' != ''">%(EmbeddedResource.Namespace).%(EmbeddedResource.FileName)</ManifestResourceName>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
 
-  <Target Name="GenerateResxCodeBehindFiles"
-          DependsOnTargets="_ComputeResxCodeBehindFilePaths;_GenerateResxCodeBehindFiles"
-          BeforeTargets="Compile">
-    <!-- If $(DesignTimeBuild) is true, then we will need to specify the files to VS separately from their being generated. -->
-    <!-- I did it this way so that code-behind files will only be generated during a user-initiated build. -->
-    <ItemGroup Condition="'$(DesignTimeBuild)' != ''">
-      <_ResxCodeBehind Include="@(_ResxFileToGenerateCodeBehind -> '%(CodeBehindFile)')" />
-      <Compile Include="@(_ResxCodeBehind)" Condition="Exists('%(Identity)')" />
+  <Target Name="_BatchGenerateResxSource" Inputs="@(EmbeddedResourceSG)" Outputs="%(EmbeddedResourceSG.SourceOutputPath)">
+    <GenerateResxSource Language="$(Language)" ResourceFile="%(EmbeddedResourceSG.FullPath)" ResourceName="%(EmbeddedResourceSG.ManifestResourceName)"
+                        OutputPath="%(EmbeddedResourceSG.SourceOutputPath)" DocCommentMode="%(EmbeddedResourceSG.DocCommentMode)" />
+  </Target>
+
+  <Target Name="_GetEmbeddedResourcesWithSourceGeneration">
+    <PropertyGroup>
+      <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'C#'">cs</_EmbeddedResourceSourceExtension>
+      <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'VB'">vb</_EmbeddedResourceSourceExtension>
+    </PropertyGroup>
+
+    <Error Text="GenerateResxSource doesn't support language: '$(Language)'" Condition="'$(_EmbeddedResourceSourceExtension)' == ''"/>
+    <ItemGroup>
+      <EmbeddedResourceSG Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.GenerateSource)' == 'true' and '%(EmbeddedResource.XlfLanguage)' == ''" />
+      <EmbeddedResourceSG Update="@(EmbeddedResourceSG)">
+        <SourceOutputPath>$(IntermediateOutputPath)%(EmbeddedResourceSG.ManifestResourceName).$(_EmbeddedResourceSourceExtension)</SourceOutputPath>
+      </EmbeddedResourceSG>
     </ItemGroup>
   </Target>
 </Project>

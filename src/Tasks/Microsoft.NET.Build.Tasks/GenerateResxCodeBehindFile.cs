@@ -1,70 +1,241 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
     public class GenerateResxCodeBehindFile : TaskBase
     {
-        [Required]
-        public ITaskItem[] ResxFiles { get; set; }
+        private enum Lang
+        {
+            CSharp,
+            VisualBasic
+        }
+
+        private enum ParsedDocCommentMode
+        {
+            None,
+            Content,
+            ResxComment
+        }
+
+        private const int maxDocCommentLength = 256;
 
         [Required]
         public string Language { get; set; }
 
-        [Output]
-        public ITaskItem[] Compile { get; set; }
+        [Required]
+        public string ResourceFile { get; set; }
+
+        [Required]
+        public string ResourceName { get; set; }
+
+        [Required]
+        public string DocCommentMode { get; set; }
+
+        [Required]
+        public string OutputPath { get; set; }
 
         protected override void ExecuteCore()
         {
-            // The algorithm used by this class is mostly borrowed from:
-            // https://github.com/dotnet/roslyn-tools/blob/master/sdks/RepoToolset/tools/GenerateResxSource.csx,
-            // heavily modified for readability.
+            // The algorithm used by this class is borrowed from:
+            // https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Arcade.Sdk/src/GenerateResxSource.cs
 
-            List<ITaskItem> outputs = new List<ITaskItem>();
-
-            foreach (ITaskItem item in ResxFiles)
+            if (!Enum.TryParse<ParsedDocCommentMode>(DocCommentMode, out var commentMode))
             {
-                string codeBehindPath = item.GetMetadata("CodeBehindFile");
-                if (string.IsNullOrEmpty(codeBehindPath))
-                    throw new BuildErrorException("Item '{0}' does not have CodeBehindFile metadata", item.ItemSpec);
+                throw new BuildErrorException($"Invalid DocCommentMode '{DocCommentMode}'");
+            }
 
-                try
+            string namespaceName;
+            string className;
+
+            if (string.IsNullOrEmpty(ResourceName))
+            {
+                throw new BuildErrorException("ResourceName not specified");
+            }
+
+            string[] nameParts = ResourceName.Split('.');
+            if (nameParts.Length == 1)
+            {
+                namespaceName = null;
+                className = nameParts[0];
+            }
+            else
+            {
+                namespaceName = string.Join(".", nameParts, 0, nameParts.Length - 1);
+                className = nameParts.Last();
+            }
+
+            string docCommentStart;
+            Lang language;
+            switch (Language.ToUpperInvariant())
+            {
+                case "C#":
+                    language = Lang.CSharp;
+                    docCommentStart = "///";
+                    break;
+
+                case "VB":
+                    language = Lang.VisualBasic;
+                    docCommentStart = "'''";
+                    break;
+
+                default:
+                    throw new BuildErrorException($"GenerateResxSource doesn't support language: '{Language}'");
+            }
+
+            string classIndent = (namespaceName == null ? "" : "    ");
+            string memberIndent = classIndent + "    ";
+
+            var strings = new StringBuilder();
+            foreach (var node in XDocument.Load(ResourceFile).Descendants("data"))
+            {
+                string name = node.Attribute("name")?.Value;
+                if (name == null)
                 {
-                    if (Language.Equals("C#", StringComparison.OrdinalIgnoreCase))
+                    throw new BuildErrorException("Missing resource name");
+                }
+
+                if (commentMode != ParsedDocCommentMode.None)
+                {
+                    string comment;
+                    if (commentMode == ParsedDocCommentMode.Content)
                     {
-                        WriteCSharpCodeBehind(item, codeBehindPath);
-                    }
-                    else if (Language.Equals("VB", StringComparison.OrdinalIgnoreCase))
-                    {
-                        WriteVisualBasicCodeBehind(item, codeBehindPath);
+                        comment = node.Elements("value").FirstOrDefault()?.Value.Trim();
+                        if (comment == null)
+                        {
+                            throw new BuildErrorException($"Missing resource value: '{name}'");
+                        }
                     }
                     else
                     {
-                        throw new BuildErrorException($"Unrecognized language '{Language}'");
+                        comment = node.Elements("comment").FirstOrDefault()?.Value.Trim();
+                        if (comment == null)
+                            comment = "";
+                    }
+
+                    if (name == "")
+                    {
+                        throw new BuildErrorException($"Empty resource name");
+                    }
+
+                    if (comment.Length > 0)
+                    {
+                        if (comment.Length > maxDocCommentLength)
+                        {
+                            comment = comment.Substring(0, maxDocCommentLength) + " ...";
+                        }
+
+                        string escapedTrimmedValue = new XElement("summary", comment).ToString();
+
+                        foreach (var line in escapedTrimmedValue.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
+                        {
+                            strings.Append($"{memberIndent}{docCommentStart} ");
+                            strings.AppendLine(line);
+                        }
                     }
                 }
-                catch (InvalidDataException e)
-                {
-                    throw new BuildErrorException($"Error parsing file '{item.ItemSpec}': {e.Message}", e);
-                }
 
-                ITaskItem output = new TaskItem(codeBehindPath);
-                outputs.Add(output);
+                string identifier = IsLetterChar(CharUnicodeInfo.GetUnicodeCategory(name[0])) ? name : "_" + name;
+
+                switch (language)
+                {
+                    case Lang.CSharp:
+                        strings.AppendLine($"{memberIndent}internal static string {identifier} => ResourceManager.GetString(\"{name}\", Culture);");
+                        break;
+
+                    case Lang.VisualBasic:
+                        strings.AppendLine($"{memberIndent}Friend Shared ReadOnly Property {identifier} As String");
+                        strings.AppendLine($"{memberIndent}    Get");
+                        strings.AppendLine($"{memberIndent}        Return ResourceManager.GetString(\"{name}\", Culture)");
+                        strings.AppendLine($"{memberIndent}    End Get");
+                        strings.AppendLine($"{memberIndent}End Property");
+                        break;
+
+                    default:
+                        throw new InvalidOperationException();
+                }
             }
 
-            Compile = outputs.ToArray();
+            string namespaceStart, namespaceEnd;
+            if (namespaceName == null)
+            {
+                namespaceStart = namespaceEnd = null;
+            }
+            else
+            {
+                switch (language)
+                {
+                    case Lang.CSharp:
+                        namespaceStart = $@"namespace {namespaceName}{Environment.NewLine}{{";
+                        namespaceEnd = "}";
+                        break;
+
+                    case Lang.VisualBasic:
+                        namespaceStart = $"Namespace {namespaceName}";
+                        namespaceEnd = "End Namespace";
+                        break;
+
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
+            string result;
+            switch (language)
+            {
+                case Lang.CSharp:
+                    result = $@"// <auto-generated>
+using System.Reflection;
+
+{namespaceStart}
+{classIndent}internal static class {className}
+{classIndent}{{
+{memberIndent}internal static global::System.Globalization.CultureInfo Culture {{ get; set; }}
+{memberIndent}internal static global::System.Resources.ResourceManager ResourceManager {{ get; }} = new global::System.Resources.ResourceManager(""{ResourceName}"", typeof({className}).GetTypeInfo().Assembly);
+
+{strings}
+{classIndent}}}
+{namespaceEnd}
+";
+                    break;
+
+                case Lang.VisualBasic:
+                    result = $@"' <auto-generated>
+Imports System.Reflection
+
+{namespaceStart}
+{classIndent}Friend Class {className}
+{memberIndent}Private Sub New
+{memberIndent}End Sub
+{memberIndent}
+{memberIndent}Friend Shared Property Culture As Global.System.Globalization.CultureInfo
+{memberIndent}Friend Shared ReadOnly Property ResourceManager As New Global.System.Resources.ResourceManager(""{ResourceName}"", GetType({className}).GetTypeInfo().Assembly)
+
+{strings}
+{classIndent}End Class
+{namespaceEnd}
+";
+                    break;
+
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            File.WriteAllText(OutputPath, result);
         }
 
-        private static bool IsLetterCharacter(char ch)
+        private bool IsLetterChar(UnicodeCategory cat)
         {
-            switch (char.GetUnicodeCategory(ch))
+            // letter-character:
+            //   A Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl 
+            //   A Unicode-escape-sequence representing a character of classes Lu, Ll, Lt, Lm, Lo, or Nl
+
+            switch (cat)
             {
                 case UnicodeCategory.UppercaseLetter:
                 case UnicodeCategory.LowercaseLetter:
@@ -73,161 +244,9 @@ namespace Microsoft.NET.Build.Tasks
                 case UnicodeCategory.OtherLetter:
                 case UnicodeCategory.LetterNumber:
                     return true;
-
-                default:
-                    return false;
-            }
-        }
-
-        private void WriteCSharpCodeBehind(ITaskItem resxFile, string codeBehindFile)
-        {
-            StringBuilder builder = new StringBuilder();
-
-            builder.AppendLine("// <auto-generated />");
-            builder.AppendLine("using System.Reflection");
-            builder.AppendLine();
-
-            string resourceName = resxFile.GetMetadata("ManifestResourceName");
-            string[] nameParts = resourceName.Split('.');
-            string namespaceName, className, classIndent;
-            if (nameParts.Length > 1)
-            {
-                namespaceName = string.Join(".", nameParts, 0, nameParts.Length - 1);
-                className = nameParts.Last();
-                classIndent = "    ";
-            }
-            else
-            {
-                namespaceName = null;
-                className = nameParts[0];
-                classIndent = "";
             }
 
-            string memberIndent = classIndent + "    ";
-
-            if (namespaceName != null)
-                builder.AppendLine($"namespace {namespaceName} {{");
-
-            builder.AppendLine($"{classIndent}internal static class {className}");
-            builder.AppendLine("{");
-
-            builder.AppendLine($"{memberIndent}internal static global::System.Globalization.CultureInfo Culture {{ get; set; }}");
-            builder.AppendLine($"{memberIndent}internal static global::System.Resources.ResourceManager ResourceManager {{ get; }} = new global::System.Resources.ResourceManager(\"{resourceName}\", typeof({className}).GetTypeInfo().Assembly);");
-            builder.AppendLine();
-
-            foreach (var node in XDocument.Load(resxFile.ItemSpec).Descendants("data"))
-            {
-                string name = node.Attribute("name")?.Value ?? throw new InvalidDataException("Missing resource name");
-                string value = node.Elements("value").FirstOrDefault()?.Value.Trim() ?? throw new InvalidDataException($"Missing resource value: '{name}'");
-                string comment = node.Elements("comment").FirstOrDefault()?.Value.Trim();
-
-                if (name == "")
-                    throw new InvalidDataException("Empty resource name");
-
-                // If the comment was provided by the developer, use that.
-                // Otherwise, generate a default comment like the old ResX generator does.
-                if (comment == null)
-                {
-                    const int maxDocCommentLength = 256;
-                    if (value.Length > maxDocCommentLength)
-                        comment = "Looks up a localized string similar to " + value.Substring(0, maxDocCommentLength) + " [truncated].";
-                    else
-                        comment = $"Looks up a localized string similar to {value}.";
-                }
-
-                string escapedTrimmedValue = new XAttribute("summary", comment).ToString();
-                foreach (var line in escapedTrimmedValue.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
-                    builder.AppendLine($"{memberIndent}/// {line}");
-
-                string identifier = IsLetterCharacter(name[0]) ? name : "_" + name;
-                builder.AppendLine($"{memberIndent}internal static string {identifier} => ResourceManager.GetString(\"{name}\", Culture);");
-            }
-
-            builder.Append($"{classIndent}}}");
-
-            if (namespaceName != null)
-                builder.AppendLine("}");
-
-            File.WriteAllText(codeBehindFile, builder.ToString());
-        }
-
-        private void WriteVisualBasicCodeBehind(ITaskItem resxFile, string codeBehindFile)
-        {
-            StringBuilder builder = new StringBuilder();
-
-            builder.AppendLine("' <auto-generated />");
-            builder.AppendLine("Imports System.Reflection");
-            builder.AppendLine();
-
-            string resourceName = resxFile.GetMetadata("ManifestResourceName");
-            string[] nameParts = resourceName.Split('.');
-            string namespaceName, className, classIndent;
-            if (nameParts.Length > 1)
-            {
-                namespaceName = string.Join(".", nameParts, 0, nameParts.Length - 1);
-                className = nameParts.Last();
-                classIndent = "    ";
-            }
-            else
-            {
-                namespaceName = null;
-                className = nameParts[0];
-                classIndent = "";
-            }
-
-            string memberIndent = classIndent + "    ";
-
-            if (namespaceName != null)
-                builder.AppendLine($"Namespace {namespaceName}");
-
-            builder.AppendLine($"{classIndent}Friend Class {className}");
-            builder.AppendLine($"{memberIndent}Private Sub New()");
-            builder.AppendLine($"{memberIndent}End Sub");
-            builder.AppendLine();
-
-            builder.AppendLine($"{memberIndent}Friend Shared Property Culture As Global.System.Globalization.CultureInfo");
-            builder.AppendLine($"{memberIndent}Friend Shared ReadOnly Property ResourceManager As New Global.System.Resources.ResourceManager ResourceManager(\"{resourceName}\", GetType({className}).GetTypeInfo().Assembly);");
-            builder.AppendLine();
-
-            foreach (var node in XDocument.Load(resxFile.ItemSpec).Descendants("data"))
-            {
-                string name = node.Attribute("name")?.Value ?? throw new InvalidDataException("Missing resource name");
-                string value = node.Elements("value").FirstOrDefault()?.Value.Trim() ?? throw new InvalidDataException($"Missing resource value: '{name}'");
-                string comment = node.Elements("comment").FirstOrDefault()?.Value.Trim();
-
-                if (name == "")
-                    throw new InvalidDataException("Empty resource name");
-
-                // If the comment was provided by the developer, use that.
-                // Otherwise, generate a default comment like the old ResX generator does.
-                if (comment == null)
-                {
-                    const int maxDocCommentLength = 256;
-                    if (value.Length > maxDocCommentLength)
-                        comment = "Looks up a localized string similar to " + value.Substring(0, maxDocCommentLength) + " [truncated].";
-                    else
-                        comment = $"Looks up a localized string similar to {value}.";
-                }
-
-                string escapedTrimmedValue = new XAttribute("summary", comment).ToString();
-                foreach (var line in escapedTrimmedValue.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
-                    builder.AppendLine($"{memberIndent}''' {line}");
-
-                string identifier = IsLetterCharacter(name[0]) ? name : "_" + name;
-                builder.AppendLine($"{memberIndent}Friend Shared ReadOnly Property {identifier} As String");
-                builder.AppendLine($"{memberIndent}    Get");
-                builder.AppendLine($"{memberIndent}        Return ResourceManager.GetString(\"{name}\", Culture)");
-                builder.AppendLine($"{memberIndent}    End Get");
-                builder.AppendLine($"{memberIndent}End Property");
-                builder.AppendLine();
-            }
-
-            builder.Append($"{classIndent}End Class");
-
-            if (namespaceName != null)
-                builder.AppendLine("End Namespace");
-
-            File.WriteAllText(codeBehindFile, builder.ToString());
+            return false;
         }
     }
 }
