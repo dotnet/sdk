@@ -61,7 +61,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     bool parseOK = bool.TryParse(generateCodeBehindString, out generateCodeBehind);
                     if (!parseOK)
-                        Log.LogWarning("Unrecognized AutoGenerateCodeBehind metadata value on {0}, using default value {1}", resxFile.ItemSpec, AutoGenerateByDefault);
+                        Log.LogWarning("Unrecognized AutoGenerateCodeBehind metadata value on {0}, using default value {1}", resxFile.ItemSpec, AutoGenerateByDefault.ToString());
                 }
 
                 if (!generateCodeBehind)
