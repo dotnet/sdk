@@ -41,6 +41,8 @@ if exist "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat" rmdir /s /q "%p
 REM Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
 if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:origin/=%) else (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH%)
 
+for /f "tokens=1-8 delims=:./ " %%a in ('echo %date% %time%') do (set timestamp=%%d-%%b-%%cT%%e:%%f:%%gZ)
+
 set benchViewName=SDK perf %OS% %architecture% %configuration% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
 if /I "%runType%" == "private" (set benchViewName=%benchViewName% %BenchviewCommitName%)
 if /I "%runType%" == "rolling" (set benchViewName=%benchViewName% %GIT_COMMIT%)
@@ -50,7 +52,7 @@ echo Creating: "%perfWorkingDirectory%\submission-metadata.json"
 py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\submission-metadata.py" --name "%benchViewName%" --user-email "dotnet-bot@microsoft.com" -o "%perfWorkingDirectory%\submission-metadata.json"
 
 echo Creating: "%perfWorkingDirectory%\build.json"
-py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\build.py" git --branch %GIT_BRANCH_WITHOUT_ORIGIN% --type "%runType%" -o "%perfWorkingDirectory%\build.json"
+py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\build.py" git --branch %GIT_BRANCH_WITHOUT_ORIGIN% --type "%runType%" --source-timestamp "%timestamp%" -o "%perfWorkingDirectory%\build.json"
 
 echo Creating: "%perfWorkingDirectory%\machinedata.json"
 py "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\machinedata.py" -o "%perfWorkingDirectory%\machinedata.json"
