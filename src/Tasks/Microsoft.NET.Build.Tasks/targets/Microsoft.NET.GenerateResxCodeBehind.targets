@@ -42,8 +42,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_BatchGenerateResxSource" Inputs="@(EmbeddedResourceSG)" Outputs="%(EmbeddedResourceSG.SourceOutputPath)">
-    <GenerateResxSource Language="$(Language)" ResourceFile="%(EmbeddedResourceSG.FullPath)" ResourceName="%(EmbeddedResourceSG.ManifestResourceName)"
-                        OutputPath="%(EmbeddedResourceSG.SourceOutputPath)" DocCommentMode="%(EmbeddedResourceSG.DocCommentMode)" />
+    <GenerateResxCodeBehindFile Language="$(Language)"
+                                ResourceFile="%(EmbeddedResourceSG.FullPath)"
+                                ResourceName="%(EmbeddedResourceSG.ManifestResourceName)"
+                                OutputPath="%(EmbeddedResourceSG.SourceOutputPath)"
+                                DocCommentMode="%(EmbeddedResourceSG.DocCommentMode)" />
   </Target>
 
   <Target Name="_GetEmbeddedResourcesWithSourceGeneration">
