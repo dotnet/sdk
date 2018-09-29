@@ -18,7 +18,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup>
     <EmbeddedResource Update="@(EmbeddedResource)">
-      <Generator Condition="'%(EmbeddedResource.GenerateSource)' == 'true'">MSBuild:_GenerateResxCodeBehindFile</Generator>
+      <Generator Condition="'%(EmbeddedResource.GenerateCodeBehind)' == 'true'">MSBuild:_GenerateResxCodeBehindFile</Generator>
       <DocCommentMode Condition="'%(EmbeddedResource.DocCommentMode)' == ''">Content</DocCommentMode>
     </EmbeddedResource>
   </ItemGroup>
@@ -56,7 +56,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Error Text="GenerateResxCodeBehindFile doesn't support language: '$(Language)'" Condition="'$(_EmbeddedResourceSourceExtension)' == ''"/>
     <ItemGroup>
-      <EmbeddedResourceSG Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.GenerateSource)' == 'true' and '%(EmbeddedResource.XlfLanguage)' == ''" />
+      <EmbeddedResourceSG Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.GenerateCodeBehind)' == 'true' and '%(EmbeddedResource.XlfLanguage)' == ''" />
       <EmbeddedResourceSG Update="@(EmbeddedResourceSG)">
         <SourceOutputPath>$(IntermediateOutputPath)%(EmbeddedResourceSG.ManifestResourceName).$(_EmbeddedResourceSourceExtension)</SourceOutputPath>
       </EmbeddedResourceSG>
