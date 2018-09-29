@@ -224,7 +224,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             EnsureLoaded();
 
-            IEnumerable<MountPointInfo> mountPointsToScan = FindMountPointsToScan(forceRebuild);
+            MountPointInfo[] mountPointsToScan = FindMountPointsToScan(forceRebuild).ToArray();
 
             if (!mountPointsToScan.Any())
             {
@@ -245,15 +245,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private IEnumerable<MountPointInfo> FindMountPointsToScan(bool forceRebuild)
         {
-            bool forceScanAll = false;
-            
             // If the user settings version is out of date, or
             // we've been asked to rebuild everything then
             // we need to scan everything
-            if (!IsVersionCurrent || forceRebuild)
-            {
-                forceScanAll = true;
-            }
+            bool forceScanAll = !IsVersionCurrent || forceRebuild;
 
             // load up the culture neutral cache
             // and get the mount points for templates from the culture neutral cache
@@ -262,7 +257,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             // loop through the localized caches and get all the locale mount points
             foreach (string locale in _userTemplateCache.AllLocalesWithCacheFiles)
             {
-                IReadOnlyList<TemplateInfo> templatesForLocale = _userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version);
                 allTemplates.UnionWith(_userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version));
             }
 
@@ -276,6 +270,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 if (forceScanAll)
                 {
                     yield return mountPoint;
+                    continue;
                 }
 
                 // For MountPoints using FileSystemMountPointFactories
