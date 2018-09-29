@@ -18,18 +18,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup>
     <EmbeddedResource Update="@(EmbeddedResource)">
-      <Generator Condition="'%(EmbeddedResource.GenerateSource)' == 'true'">MSBuild:_GenerateResxSource</Generator>
+      <Generator Condition="'%(EmbeddedResource.GenerateSource)' == 'true'">MSBuild:_GenerateResxCodeBehindFile</Generator>
       <Namespace Condition="'%(EmbeddedResource.Namespace)' == ''">$(RootNamespace)</Namespace>
       <DocCommentMode Condition="'%(EmbeddedResource.DocCommentMode)' == ''">Content</DocCommentMode>
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="_GenerateResxSource" BeforeTargets="CoreCompile"
-          DependsOnTargets="PrepareResourceNames;_GetEmbeddedResourcesWithSourceGeneration;_BatchGenerateResxSource">
+  <Target Name="_GenerateResxCodeBehindFile" BeforeTargets="CoreCompile"
+          DependsOnTargets="PrepareResourceNames;_GetEmbeddedResourcesWithSourceGeneration;_BatchGenerateResxCodeBehindFile">
     <ItemGroup>
-      <GeneratedResxSource Include="@(EmbeddedResourceSG -> '%(SourceOutputPath)')" />
-      <FileWrites Include="@(GeneratedResxSource)" />
-      <Compile Include="@(GeneratedResxSource)" />
+      <GeneratedResxCodeBehindFile Include="@(EmbeddedResourceSG -> '%(SourceOutputPath)')" />
+      <FileWrites Include="@(GeneratedResxCodeBehindFile)" />
+      <Compile Include="@(GeneratedResxCodeBehindFile)" />
     </ItemGroup>
   </Target>
 
@@ -41,7 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_BatchGenerateResxSource" Inputs="@(EmbeddedResourceSG)" Outputs="%(EmbeddedResourceSG.SourceOutputPath)">
+  <Target Name="_BatchGenerateResxCodeBehindFile" Inputs="@(EmbeddedResourceSG)" Outputs="%(EmbeddedResourceSG.SourceOutputPath)">
     <GenerateResxCodeBehindFile Language="$(Language)"
                                 ResourceFile="%(EmbeddedResourceSG.FullPath)"
                                 ResourceName="%(EmbeddedResourceSG.ManifestResourceName)"
@@ -55,7 +55,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'VB'">vb</_EmbeddedResourceSourceExtension>
     </PropertyGroup>
 
-    <Error Text="GenerateResxSource doesn't support language: '$(Language)'" Condition="'$(_EmbeddedResourceSourceExtension)' == ''"/>
+    <Error Text="GenerateResxCodeBehindFile doesn't support language: '$(Language)'" Condition="'$(_EmbeddedResourceSourceExtension)' == ''"/>
     <ItemGroup>
       <EmbeddedResourceSG Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.GenerateSource)' == 'true' and '%(EmbeddedResource.XlfLanguage)' == ''" />
       <EmbeddedResourceSG Update="@(EmbeddedResourceSG)">
