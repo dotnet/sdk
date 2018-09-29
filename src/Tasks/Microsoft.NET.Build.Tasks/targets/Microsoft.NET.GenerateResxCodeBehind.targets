@@ -46,12 +46,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_EmbeddedResourceSourceExtension Condition="'$(Language)' == 'VB'">vb</_EmbeddedResourceSourceExtension>
     </PropertyGroup>
 
-    <Error Text="GenerateResxCodeBehindFile doesn't support language: '$(Language)'" Condition="'$(_EmbeddedResourceSourceExtension)' == ''"/>
     <ItemGroup>
       <EmbeddedResourceSG Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.GenerateCodeBehind)' == 'true' and '%(EmbeddedResource.XlfLanguage)' == ''" />
       <EmbeddedResourceSG Update="@(EmbeddedResourceSG)">
         <SourceOutputPath>$(IntermediateOutputPath)%(EmbeddedResourceSG.ManifestResourceName).$(_EmbeddedResourceSourceExtension)</SourceOutputPath>
       </EmbeddedResourceSG>
     </ItemGroup>
+
+    <Error Text="GenerateResxCodeBehindFile doesn't support language: '$(Language)'" Condition="'$(_EmbeddedResourceSourceExtension)' == '' and '@(EmbeddedResourceSG)' != ''"/>
   </Target>
 </Project>
