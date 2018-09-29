@@ -55,7 +55,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; }
 
         bool HasScriptRunningPostActions { get; set; }
-
-        DateTime? ConfigTimestampUtc { get; set; }
     }
 }

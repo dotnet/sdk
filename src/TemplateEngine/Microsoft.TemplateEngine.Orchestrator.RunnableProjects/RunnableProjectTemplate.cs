@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public class RunnableProjectTemplate : ITemplate, IShortNameList
+    public class RunnableProjectTemplate : ITemplate, IShortNameList, ITemplateWithTimestamp
     {
         private readonly JObject _raw;
 
@@ -38,7 +38,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _raw = raw;
             BaselineInfo = config.BaselineInfo;
             HasScriptRunningPostActions = config.HasScriptRunningPostActions;
-            ConfigTimestampUtc = config.ConfigTimestampUtc;
+            if (config is ITemplateWithTimestamp withTimestamp)
+            {
+                ConfigTimestampUtc = withTimestamp.ConfigTimestampUtc;
+            }
         }
 
         public IDirectory TemplateSourceRoot

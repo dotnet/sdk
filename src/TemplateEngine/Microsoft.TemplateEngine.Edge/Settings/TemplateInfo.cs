@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class TemplateInfo : ITemplateInfo, IShortNameList
+    public class TemplateInfo : ITemplateInfo, IShortNameList, ITemplateWithTimestamp
     {
         public TemplateInfo()
         {
