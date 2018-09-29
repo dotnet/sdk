@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public class InMemoryFileSystem : IPhysicalFileSystem
+    public class InMemoryFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
     {
         private class FileSystemDirectory
         {
@@ -818,7 +818,9 @@ namespace Microsoft.TemplateEngine.Utils
         {
             if (!IsPathInCone(file, out string processedPath))
             {
-                return _basis.GetLastWriteTimeUtc(file);
+                if (_basis is IFileLastWriteTimeSource lastWriteTimeSource)
+                    return lastWriteTimeSource.GetLastWriteTimeUtc(file);
+                throw new NotImplementedException("Basis file system must implement IFileLastWriteTimeSource");
             }
 
             file = processedPath;

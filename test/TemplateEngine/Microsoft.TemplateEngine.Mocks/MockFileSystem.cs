@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
 
 
-    public class MockFileSystem : IPhysicalFileSystem
+    public class MockFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
     {
         private class FileSystemFile
         {

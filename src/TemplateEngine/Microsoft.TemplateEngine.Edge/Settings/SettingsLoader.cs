@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -286,9 +287,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 string pathToTemplateFile = Path.Combine(mountPoint.Place, template.ConfigPlace.TrimStart('/'));
-                var timestampOnDisk = _environmentSettings.Host.FileSystem.GetLastWriteTimeUtc(pathToTemplateFile);
+
+                DateTime? timestampOnDisk = null;
+                if (_environmentSettings.Host.FileSystem is IFileLastWriteTimeSource timeSource)
+                {
+                    timestampOnDisk = timeSource.GetLastWriteTimeUtc(pathToTemplateFile);
+                }
+
                 if (!template.ConfigTimestampUtc.HasValue
-                    || template.ConfigTimestampUtc.Value < timestampOnDisk)
+                    || (timestampOnDisk.HasValue && template.ConfigTimestampUtc.Value < timestampOnDisk))
                 {
                     // Template on disk is more recent
                     yield return mountPoint;
