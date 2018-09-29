@@ -46,17 +46,10 @@ namespace Microsoft.NET.Build.Tasks
             // https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Arcade.Sdk/src/GenerateResxSource.cs
 
             if (!Enum.TryParse<ParsedDocCommentMode>(DocCommentMode, out var commentMode))
-            {
-                throw new BuildErrorException($"Invalid DocCommentMode '{DocCommentMode}'");
-            }
+                throw new BuildErrorException(string.Format(Strings.InvalidDocCommentMode, DocCommentMode));
 
             string namespaceName;
             string className;
-
-            if (string.IsNullOrEmpty(ResourceName))
-            {
-                throw new BuildErrorException("ResourceName not specified");
-            }
 
             string[] nameParts = ResourceName.Split('.');
             if (nameParts.Length == 1)
@@ -85,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks
                     break;
 
                 default:
-                    throw new BuildErrorException($"GenerateResxSource doesn't support language: '{Language}'");
+                    throw new InvalidOperationException($"GenerateResxSource doesn't support language: '{Language}'");
             }
 
             string classIndent = (namespaceName == null ? "" : "    ");
@@ -97,7 +90,7 @@ namespace Microsoft.NET.Build.Tasks
                 string name = node.Attribute("name")?.Value;
                 if (name == null)
                 {
-                    throw new BuildErrorException("Missing resource name");
+                    throw new InvalidOperationException("Missing resource name");
                 }
 
                 if (commentMode != ParsedDocCommentMode.None)
@@ -108,7 +101,7 @@ namespace Microsoft.NET.Build.Tasks
                         comment = node.Elements("value").FirstOrDefault()?.Value.Trim();
                         if (comment == null)
                         {
-                            throw new BuildErrorException($"Missing resource value: '{name}'");
+                            throw new InvalidOperationException($"Missing resource value: '{name}'");
                         }
                     }
                     else
@@ -120,7 +113,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     if (name == "")
                     {
-                        throw new BuildErrorException($"Empty resource name");
+                        throw new InvalidOperationException($"Empty resource name");
                     }
 
                     if (comment.Length > 0)

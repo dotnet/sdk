@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: 框架依赖型应用程序主机需要一个至少 “netcoreapp2.1” 的目标框架。</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: 此项目使用了一个面向 .NET Standard 1.5 或更高版本的库，且此项目面向一个没有对该版本的 .NET Standard 的内置支持的 .NET Framework 版本。请访问 https://aka.ms/net-standard-known-issues 了解一些已知问题。考虑重定向到 .NET Framework 4.7.2。</target>

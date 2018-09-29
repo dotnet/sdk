@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: Für den frameworkabhängigen Anwendungshost ist mindestens das Zielframework "netcoreapp2.1" erforderlich.</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: Dieses Projekt verwendet eine Bibliothek, die auf .NET Standard 1.5 oder höher ausgerichtet ist, und das Projekt ist auf eine Version von .NET Framework ausgerichtet, die keine integrierte Unterstützung für diese .NET Standard-Version bietet. Besuchen Sie https://aka.ms/net-standard-known-issues for a set of known issues. Ziehen Sie eine neue Ausrichtung auf .NET Framework 4.7.2 in Betracht.</target>

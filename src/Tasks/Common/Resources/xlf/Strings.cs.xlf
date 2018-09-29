@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: Hostitel aplikace závislé na architektuře vyžaduje cílovou architekturu nejméně netcoreapp2.1.</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: Tento projekt používá knihovnu, která cílí na .NET Standard 1.5 nebo vyšší, a projekt cílí na verzi .NET Frameworku, která nemá integrovanou podporu pro tuto verzi .NET Standardu. Podívejte na stránku https://aka.ms/net-standard-known-issues, kde najdete sadu známých problémů. Zvažte změnu cíle na .NET Framework 4.7.2.</target>

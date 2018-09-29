@@ -227,6 +227,11 @@
         <target state="new">NETSDK1025: WRThe target manifest {0} provided is of not the correct format</target>
         <note>{StrBegin="NETSDK1025: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidFrameworkName">
         <source>NETSDK1003: Invalid framework name: '{0}'.</source>
         <target state="new">NETSDK1003: Invalid framework name: '{0}'.</target>

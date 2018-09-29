@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: 프레임워크 종속 응용 프로그램 호스트는 'netcoreapp2.1' 이상의 대상 프레임워크가 필요합니다.</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: 이 프로젝트는 .NET Standard 1.5 이상을 대상으로 하는 라이브러리를 사용하며, 이 프로젝트는 해당 버전의 .NET Standard를 기본으로 제공하지 않는 .NET Framework 버전을 대상으로 합니다. 알려진 문제에 대해서는 https://aka.ms/net-standard-known-issues를 참조하세요. .NET Framework 4.7.2로 대상을 다시 지정해 보세요.</target>

@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: フレームワークに依存するアプリケーション ホストには、最低でも 'netcoreapp2.1' のターゲット フレームワークが必要です。</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: このプロジェクトは .NET Standard 1.5 以上をターゲットとするライブラリを使用します。また、このプロジェクトは、そのバージョンの .NET Standard に対するサポートが組み込まれていない .NET Framework のバージョンをターゲットとしています。一連の既知の問題について、https://aka.ms/net-standard-known-issues をご覧ください。.NET Framework 4.7.2 への再ターゲットを検討してください。</target>

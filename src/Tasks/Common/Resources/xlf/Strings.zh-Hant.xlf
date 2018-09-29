@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: 與架構相依的應用程式主機，至少需要 'netcoreapp2.1' 的目標架構。</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: 此專案使用以 .NET Standard 1.5 或更新版本為目標的程式庫，而專案的目標 .NET Framework 版本則為尚未具備該 .NET Standard 版本內建支援的 .NET Framework。請瀏覽 https://aka.ms/net-standard-known-issues，以了解已知問題的集合。請考慮轉為以 .NET Framework 4.7.2 為目標。</target>

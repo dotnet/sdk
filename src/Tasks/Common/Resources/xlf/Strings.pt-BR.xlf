@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: o host do aplicativo dependente de estrutura exige uma estrutura de destino de, pelo menos, 'netcoreapp2.1'.</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: este projeto utiliza uma biblioteca que tem como destino o .NET Standard 1.5 ou superior, e o projeto tem como destino uma versão do .NET Framework que não tem suporte interno para essa versão do .NET Standard. Visite o site https://aka.ms/net-standard-known-issues para ter acesso a uma variedade de problemas conhecidos. Considere alterar o destino para o .NET Framework 4.7.2.</target>

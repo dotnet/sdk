@@ -37,6 +37,11 @@
         <target state="translated">NETSDK1068: для работы узла зависящих от платформы приложений требуется целевая платформа netcoreapp2.1 или более поздней версии.</target>
         <note>{StrBegin="NETSDK1068: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidDocCommentMode">
+        <source>NETSDK1074: Invalid DocCommentMode metadata '{0}'</source>
+        <target state="new">NETSDK1074: Invalid DocCommentMode metadata '{0}'</target>
+        <note>{StrBegin="NETSDK1074: "}</note>
+      </trans-unit>
       <trans-unit id="NETFrameworkToNonBuiltInNETStandard">
         <source>NETSDK1069: This project uses a library that targets .NET Standard 1.5 or higher, and the project targets a version of .NET Framework that doesn't have built-in support for that version of .NET Standard. Visit https://aka.ms/net-standard-known-issues for a set of known issues. Consider retargeting to .NET Framework 4.7.2.</source>
         <target state="translated">NETSDK1069: этот проект использует библиотеку, предназначенную для .NET Standard 1.5 или более поздней версии. Кроме того, проект работает в версии .NET Framework, не имеющей встроенной поддержки этой версии .NET Standard. Список и описание известных проблем см. по адресу https://aka.ms/net-standard-known-issues. Рекомендуется изменить целевую платформу на .NET Framework 4.7.2.</target>
