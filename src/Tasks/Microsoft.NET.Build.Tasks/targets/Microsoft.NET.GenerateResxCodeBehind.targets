@@ -32,14 +32,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_CustomizeResourceNames" BeforeTargets="PrepareResourceNames">
-    <ItemGroup>
-      <EmbeddedResource Update="@(EmbeddedResource)">
-        <ManifestResourceName Condition="'%(EmbeddedResource.Namespace)' != ''">%(EmbeddedResource.Namespace).%(EmbeddedResource.FileName)</ManifestResourceName>
-      </EmbeddedResource>
-    </ItemGroup>
-  </Target>
-
   <Target Name="_BatchGenerateResxCodeBehindFile" Inputs="@(EmbeddedResourceSG)" Outputs="%(EmbeddedResourceSG.SourceOutputPath)">
     <GenerateResxCodeBehindFile Language="$(Language)"
                                 ResourceFile="%(EmbeddedResourceSG.FullPath)"
