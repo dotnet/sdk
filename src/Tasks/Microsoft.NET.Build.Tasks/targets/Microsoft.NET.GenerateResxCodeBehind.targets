@@ -47,7 +47,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <ItemGroup>
-      <EmbeddedResourceSG Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.GenerateCodeBehind)' == 'true' and '%(EmbeddedResource.XlfLanguage)' == ''" />
+      <EmbeddedResourceSG Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.GenerateCodeBehind)' == 'true'" />
       <EmbeddedResourceSG Update="@(EmbeddedResourceSG)">
         <SourceOutputPath>$(IntermediateOutputPath)%(EmbeddedResourceSG.ManifestResourceName).$(_EmbeddedResourceSourceExtension)</SourceOutputPath>
       </EmbeddedResourceSG>
