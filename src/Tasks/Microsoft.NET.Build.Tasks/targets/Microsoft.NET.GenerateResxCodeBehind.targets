@@ -19,7 +19,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup>
     <EmbeddedResource Update="@(EmbeddedResource)">
       <Generator Condition="'%(EmbeddedResource.GenerateSource)' == 'true'">MSBuild:_GenerateResxCodeBehindFile</Generator>
-      <Namespace Condition="'%(EmbeddedResource.Namespace)' == ''">$(RootNamespace)</Namespace>
       <DocCommentMode Condition="'%(EmbeddedResource.DocCommentMode)' == ''">Content</DocCommentMode>
     </EmbeddedResource>
   </ItemGroup>
