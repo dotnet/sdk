@@ -267,7 +267,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach(var template in allTemplates)
             {
-                if (!_mountPoints.TryGetValue(template.ConfigMountPointId, out var mountPoint))
+                if (!_mountPoints.TryGetValue(template.ConfigMountPointId, out MountPointInfo mountPoint))
                 {
                     // TODO: This should never happen - throw an error?
                     continue;
