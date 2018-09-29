@@ -308,7 +308,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _templatesLoaded = false;
             EnsureTemplatesLoaded();
         }
-        
+
         public bool IsVersionCurrent
         {
             get
