@@ -27,17 +27,6 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                     .Execute(newArgs)
                     .Should().Pass();
 
-                string projectPath = Directory.GetFiles(projectDirectory, "*.csproj").Single();
-
-                //  Override TargetFramework since there aren't .NET Core 3 templates yet
-                //  https://github.com/dotnet/core-sdk/issues/24 tracks removing this workaround
-                XDocument project = XDocument.Load(projectPath);
-                var ns = project.Root.Name.Namespace;
-                project.Root.Element(ns + "PropertyGroup")
-                    .Element(ns + "TargetFramework")
-                    .Value = "netcoreapp3.0";
-                project.Save(projectPath);
-
                 new RestoreCommand()
                     .WithWorkingDirectory(projectDirectory)
                     .Execute("/p:SkipInvalidConfigurations=true")
