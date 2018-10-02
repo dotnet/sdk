@@ -63,7 +63,7 @@ else
     GIT_BRANCH_WITHOUT_ORIGIN=$GIT_BRANCH
 fi
 
-timeStamp=`date +%Y-%m-%dT%H:%M:%SZ`
+timeStamp=`date +%Y-%m-%dT%H:%M:%S%:z`
 
 benchViewName="SDK perf $OS $architecture $configuration $runType $GIT_BRANCH_WITHOUT_ORIGIN"
 if [[ "$runType" == "private" ]]

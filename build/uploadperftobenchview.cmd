@@ -41,7 +41,8 @@ if exist "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat" rmdir /s /q "%p
 REM Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
 if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:origin/=%) else (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH%)
 
-for /f "tokens=1-8 delims=:./ " %%a in ('echo %date% %time%') do (set timestamp=%%d-%%b-%%cT%%e:%%f:%%gZ)
+for /f "tokens=1-4 delims=C) " %%w in ('systeminfo ^| find "Time Zone:"') do (set UTCOffset=%%z)
+for /f "tokens=1-8 delims=:./ " %%a in ('echo %date% %time%') do (set timestamp=%%d-%%b-%%cT%%e:%%f:%%g%UTCOffset%)
 
 set benchViewName=SDK perf %OS% %architecture% %configuration% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
 if /I "%runType%" == "private" (set benchViewName=%benchViewName% %BenchviewCommitName%)
