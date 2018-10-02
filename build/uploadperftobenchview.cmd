@@ -33,7 +33,7 @@ if not exist %perfWorkingDirectory%\nul (
     exit 1)
 
 
-powershell -NoProfile wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile "%perfWorkingDirectory%\nuget.exe"
+powershell -NoProfile -NoLogo wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile "%perfWorkingDirectory%\nuget.exe"
 
 if exist "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat" rmdir /s /q "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat"
 "%perfWorkingDirectory%\nuget.exe" install Microsoft.BenchView.JSONFormat -Source http://benchviewtestfeed.azurewebsites.net/nuget -OutputDirectory "%perfWorkingDirectory%" -Prerelease -ExcludeVersion
@@ -41,7 +41,7 @@ if exist "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat" rmdir /s /q "%p
 REM Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
 if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:origin/=%) else (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH%)
 
-for /f %%x in ('powershell /nologo -Command "Get-Date -Date (Get-Date).ToUniversalTime() -UFormat '%Y-%m-%dT%H:%M:%SZ'"') do (set timeStamp=%%x)
+for /f %%x in ('powershell -NoProfile -NoLogo -Command "Get-Date -Date (Get-Date).ToUniversalTime() -UFormat '%Y-%m-%dT%H:%M:%SZ'"') do (set timeStamp=%%x)
 
 set benchViewName=SDK perf %OS% %architecture% %configuration% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
 if /I "%runType%" == "private" (set benchViewName=%benchViewName% %BenchviewCommitName%)
