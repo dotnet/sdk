@@ -58,7 +58,6 @@ def static getBuildJobName(def configuration, def os) {
             archiveSettings.setAlwaysArchive()
             Utilities.addArchival(newJob, archiveSettings)
             Utilities.standardJobSetup(newJob, project, isPR, "*/${branch}")
-            Utilities.addPeriodicTrigger(newJob, "@daily", true)
 
             newJob.with {
                 logRotator {
@@ -87,6 +86,7 @@ def static getBuildJobName(def configuration, def os) {
             else {
                 TriggerBuilder builder = TriggerBuilder.triggerOnCommit()
                 builder.emitTrigger(newJob)
+                Utilities.addPeriodicTrigger(newJob, "@daily", true)
             }
         }
       }
@@ -133,7 +133,6 @@ def static getBuildJobName(def configuration, def os) {
             }
 
             Utilities.standardJobSetup(newJob, project, isPR, "*/${branch}")
-            Utilities.addPeriodicTrigger(newJob, "@daily", true)
 
             newJob.with {
                 logRotator {
@@ -162,6 +161,7 @@ def static getBuildJobName(def configuration, def os) {
             else {
                 TriggerBuilder builder = TriggerBuilder.triggerOnCommit()
                 builder.emitTrigger(newJob)
+                Utilities.addPeriodicTrigger(newJob, "@daily", true)
             }
         }
       }
