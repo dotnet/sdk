@@ -217,7 +217,7 @@ function InstallDarcCli {
   }
 
   Write-Host "Installing Darc CLI version $toolsetVersion..."
-  Invoke-Expression "$buildDriver tool install $DarcCliPackageName --version $toolsetVersion -v $verbosity -g"
+  Invoke-Expression "$buildDriver tool install $DarcCliPackageName --version $toolsetVersion -v m -g"
 }
 
 try {
