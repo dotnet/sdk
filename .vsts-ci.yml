@@ -1,8 +1,13 @@
 variables:
   Build.Repository.Clean: true
-  targetFramework: netcoreapp2.0
   _HelixType: build/product
   _HelixSource: pr/dotnet/arcade-minimalci-sample/$(Build.SourceBranch)
+  _enableTelemetry: true
+
+resources:
+  containers:
+  - container: LinuxContainer
+    image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
 
 trigger:
 - master
@@ -17,9 +22,9 @@ phases:
   parameters:
     agentOs: Windows_NT
     name: Windows_NT
-    enableTelemetry: true
+    enableTelemetry: $(_enableTelemetry)
     queue:
-      name: Helix
+      name: dotnet-external-temp
       parallel: 99
       matrix:
         debug_configuration:
@@ -40,7 +45,7 @@ phases:
   parameters:
     agentOs: OSX
     name: OSX
-    enableTelemetry: true
+    enableTelemetry: $(_enableTelemetry)
     queue:
       name: Hosted macOS Preview
       parallel: 99
@@ -63,10 +68,11 @@ phases:
   parameters:
     agentOs: Linux
     name: Linux
-    enableTelemetry: true
+    enableTelemetry: $(_enableTelemetry)
     queue:
-      name: DotNetCore-Linux
+      name: Hosted Ubuntu 1604
       parallel: 99
+      container: LinuxContainer
       matrix:
         debug_configuration:
           _BuildConfig: Debug
@@ -81,5 +87,3 @@ phases:
       condition: succeeded()
     variables:
       _HelixBuildConfig: $(_BuildConfig)
-      # Run build in docker container
-      _PREVIEW_VSTS_DOCKER_IMAGE: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
