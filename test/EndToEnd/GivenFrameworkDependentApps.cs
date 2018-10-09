@@ -22,14 +22,14 @@ namespace EndToEnd
             ItDoesNotRollForwardToTheLatestVersion(GivenSelfContainedAppsRollForward.NETCorePackageName, minorVersion);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/cli/issues/10123")]
         [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreApp(string minorVersion)
         {
             ItDoesNotRollForwardToTheLatestVersion(GivenSelfContainedAppsRollForward.AspNetCoreAppPackageName, minorVersion);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/cli/issues/10123")]
         [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreAll(string minorVersion)
         {
