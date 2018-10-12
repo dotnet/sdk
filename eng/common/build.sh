@@ -111,10 +111,6 @@ while (($# > 0)); do
       integration_test=true
       shift 1
       ;;
-    --performancetest)
-      performance_test=true
-      shift 1
-      ;;
     --publish)
       publish=true
       shift 1
