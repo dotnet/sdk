@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScenarioBenchmark Name="ASP.NET Core MVC app" Namespace="">
+  <Tests>
+    <Test Name="Build" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="13189.3" />
+          <iteration index="1" ExecutionTime="4929.2792" />
+        </iterations>
+      </Performance>
+    </Test>
+    <Test Name="Build (no changes)" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="2324.4683" />
+          <iteration index="1" ExecutionTime="2239.8488" />
+        </iterations>
+      </Performance>
+    </Test>
+  </Tests>
+</ScenarioBenchmark>

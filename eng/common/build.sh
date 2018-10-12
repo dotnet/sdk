@@ -104,7 +104,7 @@ while (($# > 0)); do
       shift 1
       ;;
     --perf)
-      perf=true
+      performance_test=true
       shift 1
       ;;
     --integrationtest)

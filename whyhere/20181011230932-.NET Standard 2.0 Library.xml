@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScenarioBenchmark Name=".NET Standard 2.0 Library" Namespace="">
+  <Tests>
+    <Test Name="Build" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="1822.527" />
+          <iteration index="1" ExecutionTime="1830.7509" />
+        </iterations>
+      </Performance>
+    </Test>
+    <Test Name="Build (no changes)" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="1442.8744" />
+          <iteration index="1" ExecutionTime="1523.4307" />
+        </iterations>
+      </Performance>
+    </Test>
+  </Tests>
+</ScenarioBenchmark>

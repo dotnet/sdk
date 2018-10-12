@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScenarioBenchmark Name=".NET Core 2 Console App" Namespace="">
+  <Tests>
+    <Test Name="Build" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="1909.3521" />
+          <iteration index="1" ExecutionTime="1843.4435" />
+        </iterations>
+      </Performance>
+    </Test>
+    <Test Name="Build (no changes)" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="1433.9205" />
+          <iteration index="1" ExecutionTime="1412.2615" />
+        </iterations>
+      </Performance>
+    </Test>
+  </Tests>
+</ScenarioBenchmark>

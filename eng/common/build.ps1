@@ -152,11 +152,11 @@ function LocateVisualStudio {
     Invoke-WebRequest "https://github.com/Microsoft/vswhere/releases/download/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
   }
 
-  $vsInstallDir = & $vsWhereExe -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild -requires Microsoft.VisualStudio.Component.VSSDK -requires Microsoft.Net.Component.4.6.TargetingPack -requires Microsoft.VisualStudio.Component.Roslyn.Compiler -requires Microsoft.VisualStudio.Component.VSSDK
+  $vsInstallDir = & $vsWhereExe -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild -requires Microsoft.VisualStudio.Component.VSSDK -requires Microsoft.Net.Component.4.6.TargetingPack -requires Microsoft.VisualStudio.Component.Roslyn.Compiler
 
-  if ($lastExitCode -ne 0) {
-    Write-Host "Failed to locate Visual Studio (exit code '$lastExitCode')." -ForegroundColor Red
-    exit $lastExitCode
+  if ([string]::IsNullOrEmpty($vsInstallDir)) {
+    Write-Host "Failed to locate an appropriate Visual Studio." -ForegroundColor Red
+    exit 1
   }
 
   return $vsInstallDir
