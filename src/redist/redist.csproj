@@ -123,7 +123,7 @@
   </Target>
 
   <Target Name="CrossgenPublishDir"
-          Condition=" '$(DISABLE_CROSSGEN)' == '' And !$(Architecture.StartsWith('arm')) "
+          Condition="'$(DISABLE_CROSSGEN)' == ''"
           AfterTargets="PublishSdks">
     <ItemGroup>
       <RoslynFiles Include="$(PublishDir)Roslyn\bincore\**\*" />
