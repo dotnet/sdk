@@ -54,8 +54,6 @@ set NUGET_PACKAGES=$env:NUGET_PACKAGES
 
 function InstallDotNetSharedFramework([string]$version) {
   $dotnetRoot = $env:DOTNET_INSTALL_DIR
-  Write-Host ">>> $env:DOTNET_INSTALL_DIR"
-
   $fxDir = Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$version"
 
   if (!(Test-Path $fxDir)) {
