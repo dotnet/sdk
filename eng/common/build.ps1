@@ -12,7 +12,7 @@ Param(
   [switch] $fullMSBuild,
   [switch] $test,
   [switch] $integrationTest,
-  [switch] $performanceTest,
+  [switch] $perf,
   [switch] $sign,
   [switch] $pack,
   [switch] $publish,
@@ -43,10 +43,10 @@ function Print-Usage() {
     Write-Host "  -test                   Run all unit tests in the solution"
     Write-Host "  -pack                   Package build outputs into NuGet packages and Willow components"
     Write-Host "  -integrationTest        Run all integration tests in the solution"
-    Write-Host "  -performanceTest        Run all performance tests in the solution"
+    Write-Host "  -perf                   Run all performance tests in the solution"
     Write-Host "  -sign                   Sign build outputs"
     Write-Host "  -publish                Publish artifacts (e.g. symbols)"
-    Write-Host "  -publishBuildAssets        Push assets to BAR"
+    Write-Host "  -publishBuildAssets     Push assets to BAR"
     Write-Host ""
 
     Write-Host "Advanced settings:"
@@ -152,11 +152,11 @@ function LocateVisualStudio {
     Invoke-WebRequest "https://github.com/Microsoft/vswhere/releases/download/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
   }
 
-  $vsInstallDir = & $vsWhereExe -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild -requires Microsoft.VisualStudio.Component.VSSDK -requires Microsoft.Net.Component.4.6.TargetingPack -requires Microsoft.VisualStudio.Component.Roslyn.Compiler -requires Microsoft.VisualStudio.Component.VSSDK
+  $vsInstallDir = & $vsWhereExe -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild -requires Microsoft.VisualStudio.Component.VSSDK -requires Microsoft.Net.Component.4.6.TargetingPack -requires Microsoft.VisualStudio.Component.Roslyn.Compiler
 
-  if ($lastExitCode -ne 0) {
-    Write-Host "Failed to locate Visual Studio (exit code '$lastExitCode')." -ForegroundColor Red
-    exit $lastExitCode
+  if ([string]::IsNullOrEmpty($vsInstallDir)) {
+    Write-Host "Failed to locate an appropriate Visual Studio." -ForegroundColor Red
+    exit 1
   }
 
   return $vsInstallDir
@@ -257,7 +257,7 @@ function Build([string] $buildDriver, [string]$buildArgs) {
     /p:Test=$test `
     /p:Pack=$pack `
     /p:IntegrationTest=$integrationTest `
-    /p:PerformanceTest=$performanceTest `
+    /p:PerformanceTest=$perf `
     /p:Sign=$sign `
     /p:Publish=$publish `
     /p:PublishBuildAssets=$publishBuildAssets `
