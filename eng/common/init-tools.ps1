@@ -8,7 +8,7 @@ $restore = if (Test-Path variable:restore) { $restore } else { $true }
 $verbosity = if (Test-Path variable:verbosity) { $verbosity } else { "minimal" }
 $warnaserror = if (Test-Path variable:warnaserror) { $warnaserror } else { $true }
 $msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
-$useInstalledCli = if (Test-Path variable:useInstalledCli) { $useInstalledCli } else { $true }
+$useInstalledDotNetCli = if (Test-Path variable:useInstalledCli) { $useInstalledCli } else { $true }
 
 set-strictmode -version 2.0
 $ErrorActionPreference = "Stop"
@@ -33,7 +33,7 @@ function InitializeDotNetCli([bool]$install) {
   }
 
   # Find the first path on %PATH% that contains the dotnet.exe
-  if ($useInstalledCli -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
+  if ($useInstalledDotNetCli -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
     $env:DOTNET_INSTALL_DIR = ${env:PATH}.Split(';') | where { ($_ -ne "") -and (Test-Path (Join-Path $_ "dotnet.exe")) }
   }
 
