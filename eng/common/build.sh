@@ -135,7 +135,7 @@ while (($# > 0)); do
   esac
 done
 
-. $scriptroot/init-tools.sh
+. "$scriptroot/tools.sh"
 
 if [[ -z $projects ]]; then
   projects="$repo_root/*.sln"
@@ -145,10 +145,10 @@ InitializeTools
 
 build_log="$log_dir/Build.binlog"
 
-MSBuild $toolset_build_proj \
-  /bl:$build_log \
+MSBuild "$toolset_build_proj" \
+  /bl:"$build_log" \
   /p:Configuration=$configuration \
-  /p:Projects=$projects \
+  /p:Projects="$projects" \
   /p:RepoRoot="$repo_root" \
   /p:Restore=$restore \
   /p:Build=$build \

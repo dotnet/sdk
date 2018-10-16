@@ -139,7 +139,7 @@ function LocateVisualStudio {
 
 function ConfigureTools { 
   # Include custom tools configuration
-  $script = Join-Path $EngRoot "Configure.ps1"
+  $script = Join-Path $EngRoot "configure-toolset.ps1"
 
   if (Test-Path $script) {
     . $script
@@ -232,7 +232,7 @@ function InitializeCustomToolset {
     return
   }
 
-  $script = Join-Path $EngRoot "RestoreToolset.ps1"
+  $script = Join-Path $EngRoot "restore-toolset.ps1"
 
   if (Test-Path $script) {
     . $script
@@ -254,19 +254,8 @@ function Stop-Processes() {
 }
 
 function MsBuild() {
-  $msbuildArgs = "$buildArgs /m /nologo /clp:Summary /v:$verbosity"
-  $extraArgs = "$args"
-
-  if ($warnaserror) {
-    $msbuildArgs += " /warnaserror"
-  }
-
-  $msbuildArgs += " /nr:$nodereuse"
-
-  Write-Debug "`"$buildDriver`" $msbuildArgs $extraArgs"
-  Invoke-Expression "& `"$buildDriver`" $msbuildArgs $extraArgs"
-
-  return $lastExitCode
+  $warnaserrorSwitch = if ($warnaserror) { "/warnaserror" } else { "" }
+  & $buildDriver $buildArgs $warnaserrorSwitch /m /nologo /clp:Summary /v:$verbosity /nr:$nodereuse $args
 }
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")

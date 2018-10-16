@@ -24,7 +24,7 @@ Param(
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
-. $PSScriptRoot\init-tools.ps1
+. $PSScriptRoot\tools.ps1
 
 function Print-Usage() {
     Write-Host "Common settings:"

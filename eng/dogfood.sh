@@ -8,7 +8,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 scriptroot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-. $scriptroot/common/init-tools.sh
+. "$scriptroot/common/tools.sh"
 
 InitializeTools
 

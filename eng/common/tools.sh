@@ -44,7 +44,7 @@ function ResolvePath {
 function ReadGlobalVersion {
   local key=$1
 
-  local line=`grep -m 1 "$key" $global_json_file`
+  local line=`grep -m 1 "$key" "$global_json_file"`
   local pattern="\"$key\" *: *\"(.*)\""
 
   if [[ ! $line =~ $pattern ]]; then
@@ -93,7 +93,7 @@ function InitializeDotNetCli {
 
     if [[ ! -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
       if [[ "$install" == true ]]; then
-        InstallDotNetSdk $dotnet_root $dotnet_sdk_version
+        InstallDotNetSdk "$dotnet_root" "$dotnet_sdk_version"
       else
         echo "Unable to find dotnet with SDK version '$dotnet_sdk_version'" >&2
         ExitWithExitCode 1
@@ -109,10 +109,10 @@ function InstallDotNetSdk {
   local root=$1
   local version=$2
 
-  GetDotNetInstallScript $root
+  GetDotNetInstallScript "$root"
   local install_script=$_GetDotNetInstallScript
 
-  bash "$install_script" --version $version --install-dir $root
+  bash "$install_script" --version $version --install-dir "$root"
   local lastexitcode=$?
 
   if [[ $lastexitcode != 0 ]]; then
@@ -150,9 +150,9 @@ function InitializeToolset {
   local toolset_location_file="$toolset_dir/$toolset_version.txt"
 
   if [[ -a "$toolset_location_file" ]]; then
-    local path=`cat $toolset_location_file`
+    local path=`cat "$toolset_location_file"`
     if [[ -a "$path" ]]; then
-      toolset_build_proj=$path
+      toolset_build_proj="$path"
       return
     fi
   fi
@@ -165,9 +165,9 @@ function InitializeToolset {
   local toolset_restore_log="$log_dir/ToolsetRestore.binlog"
   local proj="$toolset_dir/restore.proj"
 
-  echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > $proj
+  echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
 
-  MSBuild "$proj /t:__WriteToolsetLocation /clp:None /bl:$toolset_restore_log /p:__ToolsetLocationOutputFile=$toolset_location_file"
+  MSBuild "$proj" /t:__WriteToolsetLocation /clp:None /bl:"$toolset_restore_log" /p:__ToolsetLocationOutputFile="$toolset_location_file"
   local lastexitcode=$?
 
   if [[ $lastexitcode != 0 ]]; then
@@ -175,7 +175,7 @@ function InitializeToolset {
     ExitWithExitCode $lastexitcode
   fi
 
-  toolset_build_proj=`cat $toolset_location_file`
+  toolset_build_proj=`cat "$toolset_location_file"`
 
   if [[ ! -a "$toolset_build_proj" ]]; then
     echo "Invalid toolset path: $toolset_build_proj" >&2
@@ -184,7 +184,7 @@ function InitializeToolset {
 }
 
 function InitializeCustomToolset {
-  local script="$eng_root/RestoreToolset.sh"
+  local script="$eng_root/restore-toolset.sh"
 
   if [[ -a "$script" ]]; then
     . "$script"
@@ -192,7 +192,7 @@ function InitializeCustomToolset {
 }
 
 function ConfigureTools {
-  local script="$eng_root/Configure.sh"
+  local script="$eng_root/configure-toolset.sh"
 
   if [[ -a "$script" ]]; then
     . "$script"
@@ -224,16 +224,12 @@ function StopProcesses {
 }
 
 function MSBuild {
-  local msbuildArgs="msbuild /m /nologo /clp:Summary /v:$verbosity"
-  local extraArgs="$@"
-
+  local warnaserror_switch=""
   if [[ $warnaserror == true ]]; then
-    msbuildArgs="$msbuildArgs /warnaserror"
+    warnaserror_switch="/warnaserror"
   fi
 
-  msbuildArgs="$msbuildArgs /nr:$nodereuse"
-
-  "$build_driver" $msbuildArgs $extraArgs
+  "$build_driver" msbuild /m /nologo /clp:Summary /v:$verbosity /nr:$nodereuse $warnaserror_switch "$@"
 
   return $?
 }
