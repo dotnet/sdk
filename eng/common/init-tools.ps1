@@ -49,7 +49,7 @@ function InitializeDotNetCli([bool]$install) {
 
     if (-not (Test-Path(Join-Path $env:DOTNET_INSTALL_DIR "sdk\$dotnetSdkVersion"))) {
       if ($install) {
-        InstallDotNetSdk $dotnetRoot $GlobalJson.tools.dotnet
+        InstallDotNetSdk $dotnetRoot $dotnetSdkVersion
       } else {
         Write-Host "Unable to find dotnet with SDK version '$dotnetSdkVersion'" -ForegroundColor Red
         ExitWithExitCode 1
@@ -72,7 +72,6 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
 
 function InstallDotNetSdk([string] $dotnetRoot, [string] $version) {
   $installScript = GetDotNetInstallScript $dotnetRoot
-
   & $installScript -Version $version -InstallDir $dotnetRoot
   if ($lastExitCode -ne 0) {
     Write-Host "Failed to install dotnet cli (exit code '$lastExitCode')." -ForegroundColor Red
