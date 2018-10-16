@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+# Stop script if unbound variable found (use ${var:-} if intentional)
 set -u
 
 ci=${ci:-false}
@@ -45,10 +45,10 @@ function ReadGlobalVersion {
   local key=$1
 
   local line=`grep -m 1 "$key" $global_json_file`
-  local pattern="\"$key\"\s*:\s*\"(.*)\""
+  local pattern="\"$key\" *: *\"(.*)\""
 
   if [[ ! $line =~ $pattern ]]; then
-    echo "Error: Cannot find \"$key\" in $global_json_file" >&2;
+    echo "Error: Cannot find \"$key\" in $global_json_file" >&2
     ExitWithExitCode 1
   fi
 
@@ -74,8 +74,8 @@ function InitializeDotNetCli {
   if [[ "$useInstalledDotNetCli" == true && -z "${DOTNET_INSTALL_DIR:-}" ]]; then
     local dotnet_path=`command -v dotnet`
     if [[ -n "$dotnet_path" ]]; then
-      ResolvePath $dotnet_path
-      export DOTNET_INSTALL_DIR=`dirname $_ResolvePath`
+      ResolvePath "$dotnet_path"
+      export DOTNET_INSTALL_DIR=`dirname "$_ResolvePath"`
     fi
   fi
 
@@ -95,7 +95,7 @@ function InitializeDotNetCli {
       if [[ "$install" == true ]]; then
         InstallDotNetSdk $dotnet_root $dotnet_sdk_version
       else
-        echo "Unable to find dotnet with SDK version '$dotnet_sdk_version'" >&2;
+        echo "Unable to find dotnet with SDK version '$dotnet_sdk_version'" >&2
         ExitWithExitCode 1
       fi
     fi
@@ -116,7 +116,7 @@ function InstallDotNetSdk {
   local lastexitcode=$?
 
   if [[ $lastexitcode != 0 ]]; then
-    echo "Failed to install dotnet SDK (exit code '$lastexitcode')." >&2;
+    echo "Failed to install dotnet SDK (exit code '$lastexitcode')." >&2
     ExitWithExitCode $lastexitcode
   fi
 }
@@ -158,7 +158,7 @@ function InitializeToolset {
   fi
 
   if [[ "$restore" != true ]]; then
-    echo "Toolset version $toolsetVersion has not been restored." >&2;
+    echo "Toolset version $toolsetVersion has not been restored." >&2
     ExitWithExitCode 2
   fi
 
@@ -171,14 +171,14 @@ function InitializeToolset {
   local lastexitcode=$?
 
   if [[ $lastexitcode != 0 ]]; then
-    echo "Failed to restore toolset (exit code '$lastexitcode'). See log: $toolset_restore_log" >&2;
+    echo "Failed to restore toolset (exit code '$lastexitcode'). See log: $toolset_restore_log" >&2
     ExitWithExitCode $lastexitcode
   fi
 
   toolset_build_proj=`cat $toolset_location_file`
 
   if [[ ! -a "$toolset_build_proj" ]]; then
-    echo "Invalid toolset path: $toolset_build_proj" >&2;
+    echo "Invalid toolset path: $toolset_build_proj" >&2
     ExitWithExitCode 3
   fi
 }
