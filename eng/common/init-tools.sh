@@ -10,6 +10,7 @@ prepare_machine=${prepare_machine:-false}
 restore=${restore:-true}
 verbosity=${verbosity:-'minimal'}
 warnaserror=${warnaserror:-true}
+useInstalledDotNetCli=${useInstalledDotNetCli:-true}
 
 repo_root="$scriptroot/../.."
 eng_root="$scriptroot/.."
@@ -70,7 +71,7 @@ function InitializeDotNetCli {
   fi
 
   # Find the first path on $PATH that contains the dotnet.exe
-  if [[ -z "${DOTNET_INSTALL_DIR:-}" ]]; then
+  if [[ "$useInstalledDotNetCli" == true && -z "${DOTNET_INSTALL_DIR:-}" ]]; then
     local dotnet_path=`command -v dotnet`
     if [[ -n "$dotnet_path" ]]; then
       ResolvePath $dotnet_path
@@ -84,7 +85,7 @@ function InitializeDotNetCli {
 
   # Use dotnet installation specified in DOTNET_INSTALL_DIR if it contains the required SDK version,
   # otherwise install the dotnet CLI and SDK to repo local .dotnet directory to avoid potential permission issues.
-  if [[ -n "${DOTNET_INSTALL_DIR:-}" ]] && [[ -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
+  if [[ -n "${DOTNET_INSTALL_DIR:-}" && -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
     dotnet_root="$DOTNET_INSTALL_DIR"
   else
     dotnet_root="$repo_root/.dotnet"

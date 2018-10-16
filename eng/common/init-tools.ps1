@@ -96,7 +96,7 @@ function InitializeVisualStudioBuild {
     $vsVersion = $vsInfo.installationVersion.Split('.')[0] + "0"
 
     Set-Item "env:VS$($vsVersion)COMNTOOLS" (Join-Path $vsInstallDir "Common7\Tools\")    
-    Set-Item "env:VSSDK$($vsMajorVersion)Install" $vsSdkInstallDir
+    Set-Item "env:VSSDK$($vsVersion)Install" $vsSdkInstallDir
     $env:VSSDKInstall = $vsSdkInstallDir
   }
 
@@ -121,12 +121,12 @@ function LocateVisualStudio {
     Invoke-WebRequest "https://github.com/Microsoft/vswhere/releases/download/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
   }
 
-  $vsInfo = & $vsWhereExe
-    -latest
-    -prerelease
-    -format json
-    -requires Microsoft.Component.MSBuild
-    -requires Microsoft.VisualStudio.Component.VSSDK
+  $vsInfo = & $vsWhereExe `
+    -latest `
+    -prerelease `
+    -format json `
+    -requires Microsoft.Component.MSBuild `
+    -requires Microsoft.VisualStudio.Component.VSSDK `
     -requires Microsoft.VisualStudio.Component.Roslyn.Compiler | ConvertFrom-Json
 
   if ($lastExitCode -ne 0) {
