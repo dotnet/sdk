@@ -20,7 +20,6 @@ trigger:
 phases:
 - template: /eng/common/templates/phases/base.yml
   parameters:
-    agentOs: Windows_NT
     name: Windows_NT
     enableTelemetry: $(_enableTelemetry)
     queue:
@@ -43,7 +42,6 @@ phases:
 
 - template: /eng/common/templates/phases/base.yml
   parameters:
-    agentOs: OSX
     name: OSX
     enableTelemetry: $(_enableTelemetry)
     queue:
@@ -66,7 +64,6 @@ phases:
 
 - template: /eng/common/templates/phases/base.yml
   parameters:
-    agentOs: Linux
     name: Linux
     enableTelemetry: $(_enableTelemetry)
     queue:
