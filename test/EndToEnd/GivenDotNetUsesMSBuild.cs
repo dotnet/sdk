@@ -37,11 +37,16 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                     .Execute()
                     .Should().Pass();
 
-                new RunCommand()
-                    .WithWorkingDirectory(projectDirectory)
-                    .ExecuteWithCapturedOutput()
+                var runCommand = new RunCommand()
+                    .WithWorkingDirectory(projectDirectory);
+
+                //  Set DOTNET_ROOT as workaround for https://github.com/dotnet/cli/issues/10196
+                runCommand = runCommand.WithEnvironmentVariable(Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
+                    Path.GetDirectoryName(DotnetUnderTest.FullName));
+
+                runCommand.ExecuteWithCapturedOutput()
                     .Should().Pass()
-                         .And.HaveStdOutContaining("Hello World!");
+                    .And.HaveStdOutContaining("Hello World!");
 
                 var binDirectory = new DirectoryInfo(projectDirectory).Sub("bin");
                 binDirectory.Should().HaveFilesMatching("*.dll", SearchOption.AllDirectories);
