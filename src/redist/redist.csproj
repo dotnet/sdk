@@ -5,5 +5,7 @@
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
   </PropertyGroup>
 
+  <Import Project="targets\BuildCoreSdkTasks.targets" />
+
 
 </Project>

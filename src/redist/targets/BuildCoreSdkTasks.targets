@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <CoreSdkTaskDll>$(ArtifactsDir)tasks\bin\core-sdk-tasks\$(Configuration)\$(CoreSdkTargetFramework)\core-sdk-tasks.dll</CoreSdkTaskDll>
+    <CoreSdkTaskProject>$(RepoRoot)src\core-sdk-tasks\core-sdk-tasks.csproj</CoreSdkTaskProject>
+  </PropertyGroup>
+  <Target Name="BuildCoreSdkTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+    <!-- Use a different ArtifactsDir for this invocation so that the tasks project can be part of the solution
+         (for easy editing), but we don't hit problems with the tasks DLL being locked when we try to build the solution. -->
+
+    <MSBuild Projects="$(CoreSdkTaskProject)"
+             Properties="ArtifactsDir=$(ArtifactsDir)tasks\;Phase=Restore"
+             Targets="Restore"/>
+
+    <MSBuild Projects="$(CoreSdkTaskProject)"
+             Properties="ArtifactsDir=$(ArtifactsDir)tasks\"/>
+  </Target>
+</Project>
