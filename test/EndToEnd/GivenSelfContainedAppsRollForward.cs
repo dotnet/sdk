@@ -43,7 +43,7 @@ namespace EndToEnd
             ItRollsForwardToTheLatestVersion(AspNetCoreAllPackageName, minorVersion);
         }
 
-        public void ItRollsForwardToTheLatestVersion(string packageName, string minorVersion)
+        internal void ItRollsForwardToTheLatestVersion(string packageName, string minorVersion)
         {
             var _testInstance = TestAssets.Get("TestAppSimple")
                 .CreateInstance(identifier: packageName + "_" + minorVersion)

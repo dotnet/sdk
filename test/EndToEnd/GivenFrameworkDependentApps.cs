@@ -36,7 +36,7 @@ namespace EndToEnd
             ItDoesNotRollForwardToTheLatestVersion(GivenSelfContainedAppsRollForward.AspNetCoreAllPackageName, minorVersion);
         }
 
-        public void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
+        internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
         {
             var _testInstance = TestAssets.Get("TestAppSimple")
                 .CreateInstance(identifier: packageName + "_" + minorVersion)
