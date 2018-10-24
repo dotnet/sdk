@@ -1,7 +1,8 @@
 <Project>
-  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions">
+  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo">
     <PropertyGroup>
       <CoreSetupBlobRootUrl>https://dotnetcli.azureedge.net/dotnet/</CoreSetupBlobRootUrl>
+      <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
       
       <CoreSetupRid>$(HostRid)</CoreSetupRid>
       <CoreSetupRid Condition=" ('$(HostOSName)' == 'win' or '$(HostOSName)' == 'osx') and '$(DotNetBuildFromSource)' != 'true' ">$(HostMonikerRid)</CoreSetupRid>
@@ -101,6 +102,13 @@
         <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
+    
+      <BundledLayoutComponent Include="ToolsetArchive">
+        <BaseUrl>$(CoreSetupBlobRootUrl)Toolset/$(ToolsetVersion)</BaseUrl>
+        <DownloadFileName>dotnet-toolset-internal-$(ToolsetVersion).zip</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+        <RelativeLayoutPath>sdk/$(SdkVersion)</RelativeLayoutPath>
+      </BundledLayoutComponent>
     </ItemGroup>
     
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
@@ -126,11 +134,31 @@
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
     </ItemGroup>
+    
+    <PropertyGroup>
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT' ">true</IncludeWpfAndWinForms>
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' ">false</IncludeWpfAndWinForms>
+    </PropertyGroup>
+    
+    <ItemGroup Condition=" '$(IncludeWpfAndWinForms)' != 'false' ">
+      <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftDesktopUIPackageVersion)</BaseUrl>
+        <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+        <RelativeLayoutPath>shared</RelativeLayoutPath>
+      </BundledLayoutComponent>
+
+      <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
+                           Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftDesktopUIPackageVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+    </ItemGroup>
 
   </Target>
 
-  <Target Name="DownloadBundledComponents" DependsOnTargets="SetupBundledComponents"
-          AfterTargets="Build">
+  <Target Name="DownloadBundledComponents" DependsOnTargets="SetupBundledComponents">
     <ItemGroup>
       <BundledLayoutComponent>
         <DownloadDestination>$(IntermediateOutputPath)downloads\%(DownloadFileName)</DownloadDestination>
@@ -147,9 +175,19 @@
                   Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)"
                   DestinationPath="%(ComponentToDownload.DownloadDestination)" />
     
+  </Target>
+
+  <Target Name="CleanPublishDir">
+    <!-- Remove everything from the publish directory so we don't have left over items from previous builds -->
+    <RemoveDir Directories="$(PublishDir)" />
+    <MakeDir Directories="$(PublishDir)" />
+  </Target>
+  
+  <Target Name="LayoutBundledComponents" DependsOnTargets="DownloadBundledComponents;CleanPublishDir"
+          AfterTargets="Build">
+
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
-                               DestinationDirectory="$(PublishDir)" />
-
-
+                               DestinationDirectory="$(PublishDir)/%(BundledLayoutComponent.RelativeLayoutPath)" />
+  
   </Target>
 </Project>
