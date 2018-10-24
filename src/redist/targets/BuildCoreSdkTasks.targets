@@ -14,4 +14,7 @@
     <MSBuild Projects="$(CoreSdkTaskProject)"
              Properties="ArtifactsDir=$(ArtifactsDir)tasks\"/>
   </Target>
+
+  <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="DownloadFile" AssemblyFile="$(CoreSdkTaskDll)" />
 </Project>

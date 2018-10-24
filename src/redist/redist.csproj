@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
    <PropertyGroup>
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <Import Project="targets\BuildCoreSdkTasks.targets" />
+  <Import Project="targets\BundledComponents.targets" />
+  <Import Project="targets\FileExtensions.targets" />
+  <Import Project="targets\GetRuntimeInformation.targets" />
 
 
 </Project>
