@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Build
             }
             else
             {
-                Log.LogMessage($"Downloading '{Uri}' to '{DestinationPath}'");
+                Log.LogMessage(MessageImportance.High, $"Downloading '{Uri}' to '{DestinationPath}'");
 
                 using (var httpClient = new HttpClient())
                 {

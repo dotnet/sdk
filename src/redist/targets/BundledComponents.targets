@@ -73,6 +73,58 @@
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
+
+      <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
+                                 Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedRuntimeDepsInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+      
+      <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedSharedFrameworkInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+      
+      <BundledInstallerComponent Include="DownloadedSharedHostInstallerFile"
+                               Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(SharedHostVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedSharedHostInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+      
+      <BundledInstallerComponent Include="DownloadedHostFxrInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(HostFxrVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+    </ItemGroup>
+    
+    <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
+      <BundledLayoutComponent Include="AspNetCoreSharedFxArchiveFile"
+                              Condition="( '$(AspNetCoreSharedFxArchiveRid)' == 'linux-arm' OR !$(Architecture.StartsWith('arm')) )">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+        <RelativeLayoutPath></RelativeLayoutPath>
+      </BundledLayoutComponent>
+
+      <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFile)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="AspNetCoreSharedFxBaseRuntimeVersionFile"
+                                 Condition="!$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <DownloadFileName>$(AspNetCoreSharedFxBaseRuntimeVersionFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
     </ItemGroup>
 
   </Target>
@@ -83,17 +135,21 @@
       <BundledLayoutComponent>
         <DownloadDestination>$(IntermediateOutputPath)downloads\%(DownloadFileName)</DownloadDestination>
       </BundledLayoutComponent>
-      <BundledLayoutComponent>
+      <BundledInstallerComponent>
+        <DownloadDestination>$(IntermediateOutputPath)downloads\%(DownloadFileName)</DownloadDestination>
+      </BundledInstallerComponent>
+      <ComponentToDownload Include="@(BundledLayoutComponent);@(BundledInstallerComponent)">
         <ShouldDownload Condition="!Exists('%(DownloadDestination)')">true</ShouldDownload>
-      </BundledLayoutComponent>
+      </ComponentToDownload>
     </ItemGroup>
   
-    <DownloadFile Condition=" '@(BundledLayoutComponent)' != '' And '%(BundledLayoutComponent.ShouldDownload)' == 'true'"
-                  Uri="%(BundledLayoutComponent.BaseUrl)/%(BundledLayoutComponent.DownloadFileName)"
-                  DestinationPath="%(BundledLayoutComponent.DownloadDestination)" />
+    <DownloadFile Condition=" '@(ComponentToDownload)' != '' And '%(ComponentToDownload.ShouldDownload)' == 'true'"
+                  Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)"
+                  DestinationPath="%(ComponentToDownload.DownloadDestination)" />
     
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
                                DestinationDirectory="$(PublishDir)" />
+
 
   </Target>
 </Project>
