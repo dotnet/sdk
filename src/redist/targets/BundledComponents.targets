@@ -91,6 +91,9 @@
     <DownloadFile Condition=" '@(BundledLayoutComponent)' != '' And '%(BundledLayoutComponent.ShouldDownload)' == 'true'"
                   Uri="%(BundledLayoutComponent.BaseUrl)/%(BundledLayoutComponent.DownloadFileName)"
                   DestinationPath="%(BundledLayoutComponent.DownloadDestination)" />
+    
+    <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
+                               DestinationDirectory="$(PublishDir)" />
 
   </Target>
 </Project>

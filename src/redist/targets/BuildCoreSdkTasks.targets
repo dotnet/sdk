@@ -17,4 +17,5 @@
 
   <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="DownloadFile" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
 </Project>
