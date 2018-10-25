@@ -2,9 +2,9 @@
 <Dependencies>
   <ProductDependencies></ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.18524.4">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.18524.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>b8661a75aa0c2309c2f264df21e0c4edbb5d851a</Sha>
+      <Sha>bc0acaacd5d6c18e4b28cb3cf1754626be4a8c71</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
