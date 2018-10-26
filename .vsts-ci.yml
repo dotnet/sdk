@@ -20,7 +20,7 @@ phases:
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         name: Helix
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        name: dotnet-external-temp
+        name: DotNetCore-Windows
       parallel: 2
       timeoutInMinutes: 120
       matrix:
@@ -43,7 +43,7 @@ phases:
     parameters:
       agentOs: Windows_NT_FullFramework
       queue:
-        name: dotnet-external-temp
+        name: DotNetCore-Windows
         parallel: 2
         timeoutInMinutes: 120
         matrix:
