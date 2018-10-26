@@ -2,6 +2,7 @@ trigger:
 - master
 
 variables:
+  Build.Repository.Clean: true
   teamName: Roslyn-Project-System
   ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
     PB_PublishBlobFeedKey:
@@ -19,7 +20,7 @@ phases:
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         name: Helix
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        name: DotNetCore-Windows
+        name: dotnet-external-temp
       parallel: 2
       timeoutInMinutes: 120
       matrix:
@@ -42,7 +43,7 @@ phases:
     parameters:
       agentOs: Windows_NT_FullFramework
       queue:
-        name: DotNetCore-Windows
+        name: dotnet-external-temp
         parallel: 2
         timeoutInMinutes: 120
         matrix:
