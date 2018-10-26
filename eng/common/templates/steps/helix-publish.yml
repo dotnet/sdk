@@ -8,6 +8,7 @@ parameters:
   HelixPostCommands: ''
   WorkItemDirectory: ''
   WorkItemCommand: ''
+  CorrelationPayloadDirectory: ''
   IncludeDotNetCli: false
   DotNetCliPackageType: ''
   DotNetCliVersion: ''
