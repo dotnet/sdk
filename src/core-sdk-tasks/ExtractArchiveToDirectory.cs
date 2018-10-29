@@ -73,7 +73,13 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 if (ValidateParameters())
                 {
+#if NETFRAMEWORK
+                    //  .NET Framework doesn't have overload to overwrite files
+                    ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory);
+#else
                     ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory, overwriteFiles: true);
+#endif
+
                 }
                 else
                 {
