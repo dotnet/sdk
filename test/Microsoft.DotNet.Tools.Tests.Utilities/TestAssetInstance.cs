@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.TestFramework
 {
@@ -28,8 +29,6 @@ namespace Microsoft.DotNet.TestFramework
         private bool _restored = false;
 
         private bool _built = false;
-
-        public static string CurrentRuntimeFrameworkVersion = new Muxer().SharedFxVersion;
 
         public TestAssetInstance(TestAssetInfo testAssetInfo, DirectoryInfo root)
         {
@@ -171,23 +170,6 @@ namespace Microsoft.DotNet.TestFramework
             return this;
         }
 
-        public TestAssetInstance UseCurrentRuntimeFrameworkVersion()
-        {
-            return WithProjectChanges(project =>
-            {
-                var ns = project.Root.Name.Namespace;
-
-                var propertyGroup = project.Root.Elements(ns + "PropertyGroup").LastOrDefault();
-                if (propertyGroup == null)
-                {
-                    propertyGroup = new XElement(ns + "PropertyGroup");
-                    project.Root.Add(propertyGroup);
-                }
-
-                propertyGroup.Add(new XElement(ns + "RuntimeFrameworkVersion", CurrentRuntimeFrameworkVersion));
-            });
-        }
-
         private static string RebasePath(string path, string oldBaseDirectory, string newBaseDirectory)
         {
             path = Path.IsPathRooted(path) ? PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(oldBaseDirectory), path) : path;
@@ -285,18 +267,7 @@ namespace Microsoft.DotNet.TestFramework
                                 .CaptureStdErr()
                                 .Execute();
 
-            int exitCode = commandResult.ExitCode;
-
-            if (exitCode != 0)
-            {
-                Console.WriteLine(commandResult.StdOut);
-
-                Console.WriteLine(commandResult.StdErr);
-
-                string message = string.Format($"TestAsset Restore '{TestAssetInfo.AssetName}'@'{projectFile.FullName}' Failed with {exitCode}");
-
-                throw new Exception(message);
-            }
+            commandResult.Should().Pass();
         }
 
         private void RestoreAllProjects()

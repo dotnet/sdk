@@ -4,19 +4,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <Content Include="..\..\artifacts\*\stage2\sdk\*\.version">
-      <Link>.version</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content> -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj" />
+    <!-- Copy empty Directory.Build files to stop tests from getting repo build logic -->
+    <Content Include="$(RepoRoot)TestAssets\Directory.Build.props" LinkBase="Tests" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(RepoRoot)TestAssets\Directory.Build.targets" LinkBase="Tests" CopyToOutputDirectory="PreserveNewest" />
+    
   </ItemGroup>
 
   <ItemGroup>
     <!-- <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="xunit" Version="2.2.0" /> -->
     <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj" />
   </ItemGroup>
 </Project>

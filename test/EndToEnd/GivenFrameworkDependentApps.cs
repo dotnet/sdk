@@ -40,8 +40,6 @@ namespace EndToEnd
         {
             var _testInstance = TestAssets.Get("TestAppSimple")
                 .CreateInstance(identifier: packageName + "_" + minorVersion)
-                // scope the feed to only dotnet-core feed to avoid flaky when different feed has a newer / lower version
-                .WithNuGetConfig(new RepoDirectoriesProvider().TestPackages)
                 .WithSourceFiles();
 
             string projectDirectory = _testInstance.Root.FullName;
