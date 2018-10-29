@@ -1,0 +1,17 @@
+<Project>
+  <Target Name="GenerateArchives"
+          DependsOnTargets="LayoutBundledComponents"
+          AfterTargets="Build">
+
+    <ZipFileCreateFromDirectory
+        SourceDirectory="$(RedistLayoutPath)"
+        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).zip"
+        OverwriteDestination="true" />
+
+    <TarGzFileCreateFromDirectory
+        SourceDirectory="$(RedistLayoutPath)"
+        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
+        OverwriteDestination="true" />
+    
+  </Target>
+</Project>

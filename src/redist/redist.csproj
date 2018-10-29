@@ -10,6 +10,7 @@
   <Import Project="targets\BundledComponents.targets" />
   <Import Project="targets\FileExtensions.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
+  <Import Project="targets\GenerateArchives.targets" />
 
 
 </Project>
