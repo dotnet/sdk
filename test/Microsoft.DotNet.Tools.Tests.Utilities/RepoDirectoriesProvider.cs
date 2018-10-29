@@ -55,8 +55,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 else
                 {
                     string configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent.Name;
-                    //  TODO: Don't put in framework-specific folder (so we don't need to sync TFM here)
-                    DotnetUnderTest = Path.Combine(RepoRoot, "artifacts", "bin", "redist", configuration, "netcoreapp3.0", "publish", "dotnet" + dotnetExtension);
+                    DotnetUnderTest = Path.Combine(RepoRoot, "artifacts", "bin", "redist", configuration, "dotnet", "dotnet" + dotnetExtension);
                 }
             }
         }

@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
+  </PropertyGroup>
+  
   <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo">
     <PropertyGroup>
       <CoreSetupBlobRootUrl>https://dotnetcli.azureedge.net/dotnet/</CoreSetupBlobRootUrl>
@@ -177,17 +181,17 @@
     
   </Target>
 
-  <Target Name="CleanPublishDir">
+  <Target Name="CleanLayoutPath">
     <!-- Remove everything from the publish directory so we don't have left over items from previous builds -->
-    <RemoveDir Directories="$(PublishDir)" />
-    <MakeDir Directories="$(PublishDir)" />
+    <RemoveDir Directories="$(RedistLayoutPath)" />
+    <MakeDir Directories="$(RedistLayoutPath)" />
   </Target>
   
-  <Target Name="LayoutBundledComponents" DependsOnTargets="DownloadBundledComponents;CleanPublishDir"
+  <Target Name="LayoutBundledComponents" DependsOnTargets="DownloadBundledComponents;CleanLayoutPath"
           AfterTargets="Build">
 
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
-                               DestinationDirectory="$(PublishDir)/%(BundledLayoutComponent.RelativeLayoutPath)" />
+                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)" />
   
   </Target>
 </Project>
