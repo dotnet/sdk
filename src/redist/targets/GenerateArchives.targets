@@ -1,6 +1,6 @@
 <Project>
   <Target Name="GenerateArchives"
-          DependsOnTargets="LayoutBundledComponents"
+          DependsOnTargets="GenerateLayout"
           AfterTargets="Build">
 
     <ZipFileCreateFromDirectory

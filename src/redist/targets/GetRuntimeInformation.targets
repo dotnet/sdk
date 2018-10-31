@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="GetCurrentRuntimeInformation">
+  <Target Name="GetCurrentRuntimeInformation" DependsOnTargets="SetSdkVersionInfo">
     <GetCurrentRuntimeInformation>
       <Output TaskParameter="Rid" PropertyName="HostRid" />
       <Output TaskParameter="OSName" PropertyName="HostOSName" />

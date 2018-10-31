@@ -1,9 +1,10 @@
 <Project>
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
+    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
   </PropertyGroup>
   
-  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo">
+  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo;SetBuildDefaults">
     <PropertyGroup>
       <CoreSetupBlobRootUrl>https://dotnetcli.azureedge.net/dotnet/</CoreSetupBlobRootUrl>
       <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
@@ -112,6 +113,7 @@
         <DownloadFileName>dotnet-toolset-internal-$(ToolsetVersion).zip</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath>sdk/$(SdkVersion)</RelativeLayoutPath>
+        <IncludeInInternalLayout>true</IncludeInInternalLayout>
       </BundledLayoutComponent>
     </ItemGroup>
     
@@ -124,8 +126,9 @@
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
 
+      <!-- Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))" -->
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFile)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
@@ -187,11 +190,16 @@
     <MakeDir Directories="$(RedistLayoutPath)" />
   </Target>
   
-  <Target Name="LayoutBundledComponents" DependsOnTargets="DownloadBundledComponents;CleanLayoutPath"
+  <Target Name="GenerateLayout" DependsOnTargets="DownloadBundledComponents;CleanLayoutPath"
           AfterTargets="Build">
 
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
                                DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)" />
+
+    <!-- Create "SDK Internal" layout to create the MSI to bundle -->
+    <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
+                               DestinationDirectory="$(SdkInternalLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
+                               Condition="'%(BundledLayoutComponent.IncludeInInternalLayout)' == 'true'"/>
   
   </Target>
 </Project>

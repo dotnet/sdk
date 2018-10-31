@@ -6,11 +6,15 @@
   </PropertyGroup>
 
   <Import Project="targets\BuildCoreSdkTasks.targets" />
-  <Import Project="targets\Versions.targets" />
-  <Import Project="targets\BundledComponents.targets" />
-  <Import Project="targets\FileExtensions.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
+  <Import Project="targets\Versions.targets" />
+  <Import Project="targets\SetBuildDefaults.targets" />
+  <Import Project="targets\Branding.targets" />
+  <Import Project="targets\GenerateLayout.targets" />
+  <Import Project="targets\FileExtensions.targets" />
+  
   <Import Project="targets\GenerateArchives.targets" />
+  <Import Project="targets\GenerateMSIs.targets" />
 
 
 </Project>

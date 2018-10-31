@@ -23,5 +23,8 @@
   <UsingTask TaskName="DownloadFile" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="ZipFileExtractToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="GenerateMsiVersion" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="GenerateGuidFromName" AssemblyFile="$(CoreSdkTaskDll)" />
 </Project>
