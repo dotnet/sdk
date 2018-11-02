@@ -15,6 +15,7 @@
   
   <Import Project="targets\GenerateArchives.targets" />
   <Import Project="targets\GenerateMSIs.targets" />
-
+  <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" />
+  <Import Project="targets\GenerateDebs.targets" />
 
 </Project>

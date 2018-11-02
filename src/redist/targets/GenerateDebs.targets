@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <UsingTask TaskName="DotNetDebTool" AssemblyFile="$(CLIBuildDll)" />
-
+  <!-- dotnet deb-tool -->
+  <ItemGroup>
+    <DotNetCliToolReference Include="dotnet-deb-tool" Version="$(DotnetDebToolVersion)" />
+  </ItemGroup>
+  
   <Target Name="SetupDebProps"
-        DependsOnTargets="Init;
-                            CalculateLinuxNativeInstallerDependencyVersions">
-    <!-- dotnet deb-tool -->
+        DependsOnTargets="SetSdkVersionInfo;
+                          GetCurrentRuntimeInformation;
+                          SetupFileExtensions;
+                          CalculateLinuxNativeInstallerDependencyVersions;
+                          SetSdkBrandingInfo">
     <PropertyGroup>
-      <DotnetDebToolDir>$(MSBuildThisFileDirectory)/dotnet-deb-tool-consumer</DotnetDebToolDir>
-      <PackageTool>$(NuGetPackagesDir)/dotnet-deb-tool/$(DotnetDebToolVersion)/lib/netcoreapp2.0/tool/package_tool</PackageTool>
+      <DotnetDebToolDir>$(MSBuildProjectDirectory)</DotnetDebToolDir>
+      <!--<DotnetDebToolDir>$(MSBuildThisFileDirectory)/dotnet-deb-tool-consumer</DotnetDebToolDir>-->
+      <!--<PackageTool>$(NuGetPackagesDir)/dotnet-deb-tool/$(DotnetDebToolVersion)/lib/netcoreapp2.0/tool/package_tool</PackageTool>-->
     </PropertyGroup>
 
     <!-- constants -->
@@ -48,9 +54,11 @@
 
     <!-- Inputs -->
     <PropertyGroup>
-      <ManpagesDirectory>$(RepoRoot)/Documentation/manpages</ManpagesDirectory>
-      <EndToEndTestProject>$(RepoRoot)/test/EndToEnd/EndToEnd.csproj</EndToEndTestProject>
-      <CLISdkRoot>$(OutputDirectory)/sdk</CLISdkRoot>
+      <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
+      <ManpagesDirectory>$(RepoRoot)Documentation/manpages</ManpagesDirectory>
+      
+      <EndToEndTestProject>$(RepoRoot)test/EndToEnd/EndToEnd.Tests.csproj</EndToEndTestProject>
+      <CLISdkRoot>$(RedistLayoutPath)sdk/</CLISdkRoot>
     </PropertyGroup>
 
     <ItemGroup>
@@ -60,32 +68,32 @@
 
     <!-- Output Directories -->
     <PropertyGroup>
-      <InstallerOutputDirectory>$(PackagesDirectory)</InstallerOutputDirectory>
-      <SdkInstallerFile>$(InstallerOutputDirectory)/$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkInstallerFile>
-      <SdkDebianIntermediateDirectory>$(IntermediateDirectory)/debian/sdk</SdkDebianIntermediateDirectory>
-      <DotNetDebToolOutputDirectory>$(SdkDebianIntermediateDirectory)/deb-tool-output</DotNetDebToolOutputDirectory>
-      <DebianTestResultsXmlFile>$(SdkDebianIntermediateDirectory)/debian-testResults.xml</DebianTestResultsXmlFile>
+      <InstallerOutputDirectory>$(ArtifactsShippingPackagesDir)</InstallerOutputDirectory>
+      <SdkInstallerFile>$(InstallerOutputDirectory)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkInstallerFile>
+      <SdkDebianIntermediateDirectory>$(IntermediateOutputPath)debian/sdk/</SdkDebianIntermediateDirectory>
+      <DotNetDebToolOutputDirectory>$(SdkDebianIntermediateDirectory)deb-tool-output</DotNetDebToolOutputDirectory>
+      <DebianTestResultsXmlFile>$(SdkDebianIntermediateDirectory)debian-testResults.xml</DebianTestResultsXmlFile>
     </PropertyGroup>
 
     <!-- Layout Directories -->
     <PropertyGroup>
-      <LayoutDirectory>$(SdkDebianIntermediateDirectory)/debianLayoutDirectory</LayoutDirectory>
-      <LayoutPackageRootDir>$(LayoutDirectory)/$(LayoutPackageRootDirName)</LayoutPackageRootDir>
-      <LayoutAbsolutePlacementDir>$(LayoutDirectory)/$(LayoutAbsolutePlacementDirName)</LayoutAbsolutePlacementDir>
-      <LayoutSamplesDir>$(LayoutDirectory)/$(LayoutSamplesDirName)</LayoutSamplesDir>
-      <LayoutDocsDir>$(LayoutDirectory)/$(LayoutDocsDirName)</LayoutDocsDir>
-      <LayoutDebianFilesDir>$(LayoutDirectory)/$(LayoutDebianFilesDirName)</LayoutDebianFilesDir>
+      <LayoutDirectory>$(SdkDebianIntermediateDirectory)debianLayoutDirectory/</LayoutDirectory>
+      <LayoutPackageRootDir>$(LayoutDirectory)$(LayoutPackageRootDirName)</LayoutPackageRootDir>
+      <LayoutAbsolutePlacementDir>$(LayoutDirectory)$(LayoutAbsolutePlacementDirName)</LayoutAbsolutePlacementDir>
+      <LayoutSamplesDir>$(LayoutDirectory)$(LayoutSamplesDirName)</LayoutSamplesDir>
+      <LayoutDocsDir>$(LayoutDirectory)$(LayoutDocsDirName)</LayoutDocsDir>
+      <LayoutDebianFilesDir>$(LayoutDirectory)$(LayoutDebianFilesDirName)</LayoutDebianFilesDir>
     </PropertyGroup>
 
     <!-- debian_config.json -->
     <PropertyGroup>
-      <DebianConfigTemplateFile>$(RepoRoot)/packaging/deb/dotnet-debian_config.json</DebianConfigTemplateFile>
-      <DebianConfigJsonFile>$(LayoutDirectory)/debian_config.json</DebianConfigJsonFile>
+      <DebianConfigTemplateFile>$(MSBuildThisFileDirectory)packaging/deb/dotnet-debian_config.json</DebianConfigTemplateFile>
+      <DebianConfigJsonFile>$(LayoutDirectory)debian_config.json</DebianConfigJsonFile>
     </PropertyGroup>
 
     <PropertyGroup>
-      <DebianPostinstTemplateFile>$(RepoRoot)/packaging/deb/postinst</DebianPostinstTemplateFile>
-      <DebianPostinstFile>$(LayoutDirectory)/debian/postinst</DebianPostinstFile>
+      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)packaging/deb/postinst</DebianPostinstTemplateFile>
+      <DebianPostinstFile>$(LayoutDirectory)debian/postinst</DebianPostinstFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -125,16 +133,22 @@
     </ItemGroup>
 
     <ItemGroup>
-      <TestSdkDebTaskEnvironmentVariables Include="PATH=$(DebianInstalledDirectory)$(PathListSeparator)$(PATH)" />
+      <!--<TestSdkDebTaskEnvironmentVariables Include="PATH=$(DebianInstalledDirectory)$(PathListSeparator)$(PATH)" />
       <TestSdkDebTaskEnvironmentVariables Include="TEST_ARTIFACTS=$(TestArtifactsDir)" />
       <TestSdkDebTaskEnvironmentVariables Include="TEST_PACKAGES=$(TestPackagesDir)" />
-      <TestSdkDebTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />
+      <TestSdkDebTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />-->
 
       <!-- Consumed By Publish -->
       <GeneratedInstallers Include="$(SdkInstallerFile)" />
     </ItemGroup>
   </Target>
 
+  <!-- Outer GenerateDebs target so that GetCurrentRuntimeInformation will set IsDebianBasedDistro before target
+       condition is evaluated -->
+  <Target Name="GenerateDebsOuter"
+          DependsOnTargets="GetCurrentRuntimeInformation;
+                            GenerateDebs"/>
+  
   <!-- Re-enable "TestSdkDeb" when the following issue is resolved: https://github.com/dotnet/cli/issues/9672 -->
   <Target Name="GenerateDebs"
           DependsOnTargets="SetupDebProps;
@@ -143,7 +157,19 @@
           Condition=" '$(IsDebianBaseDistro)' == 'True' "
           Outputs="@(GeneratedInstallers)"/>
 
-  <Target Name="GetAspNetSharedFxInstallArgs" DependsOnTargets="EvaluateRuntimeCoherence">
+  <Target Name="ReadAspNetCoreSharedRuntimeVersionFile"
+      DependsOnTargets="DownloadBundledComponents">
+    <ItemGroup>
+      <File Include="$(DownloadsFolder)$(AspNetCoreSharedFxBaseRuntimeVersionFileName)" />
+    </ItemGroup>
+    <ReadLinesFromFile File="@(File)">
+      <Output
+          TaskParameter="Lines"
+          PropertyName="AspNetCoreSharedFxBaseRuntimeVersion"/>
+    </ReadLinesFromFile>
+  </Target>
+  
+  <Target Name="GetAspNetSharedFxInstallArgs" DependsOnTargets="SetupDebProps;ReadAspNetCoreSharedRuntimeVersionFile">
     <PropertyGroup>
       <AspNetVersionPrereleaseSeparator>$(AspNetCoreSharedFxBaseRuntimeVersion.IndexOf('-'))</AspNetVersionPrereleaseSeparator>
       <AspNetSimpleVersion>$(AspNetCoreSharedFxBaseRuntimeVersion)</AspNetSimpleVersion>
@@ -166,11 +192,11 @@
       Outputs="$(SdkInstallerFile)" >
       <!-- Install Shared Framework Packages -->
 
-      <Exec Command="sudo dpkg -i $(DownloadedRuntimeDepsInstallerFile)" />
-      <Exec Command="sudo dpkg -i $(DownloadedSharedHostInstallerFile)" />
-      <Exec Command="sudo dpkg -i $(DownloadedHostFxrInstallerFile)" />
-      <Exec Command="sudo dpkg -i $(DownloadedSharedFrameworkInstallerFile)" />
-      <Exec Command="sudo dpkg $(InstallAspNetCoreSharedFxArgs) -i $(DownloadedAspNetCoreSharedFxInstallerFile)" />
+      <Exec Command="sudo dpkg -i $(DownloadsFolder)$(DownloadedRuntimeDepsInstallerFileName)" />
+      <Exec Command="sudo dpkg -i $(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)" />
+      <Exec Command="sudo dpkg -i $(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)" />
+      <Exec Command="sudo dpkg -i $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)" />
+      <Exec Command="sudo dpkg $(InstallAspNetCoreSharedFxArgs) -i $(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)" />
 
       <!-- Create layout: Binaries -->
       <Copy
@@ -204,12 +230,12 @@
         DestinationFiles="$(DebianConfigJsonFile)"
         ReplacementItems="@(DebianConfigTokenValues)" />
 
-      <Chmod
+      <!--<Chmod
         Glob="$(PackageTool)"
-        Mode="u+x" />
+        Mode="u+x" />-->
 
       <!-- Build SDK Deb package -->
-      <DotNetDebTool ToolPath="$(PreviousStageDirectory)"
+      <DotNetDebTool ToolPath="$(RepoRoot).dotnet"
                      InputDirectory="$(LayoutDirectory)"
                      OutputDirectory="$(DotNetDebToolOutputDirectory)"
                      PackageName="$(SdkDebianPackageName)"
@@ -289,7 +315,7 @@
       <Exec Command="!(dpkg-query -W %(TestSdkDebPackageToRemove.Identity)) || sudo dpkg -r %(TestSdkDebPackageToRemove.Identity)" />
   </Target>
 
-  <Target Name="PrepareDotnetDebDirectories">
+  <Target Name="PrepareDotnetDebDirectories" DependsOnTargets="SetupDebProps">
 
     <!-- Clean the workspace -->
     <ItemGroup>
@@ -319,8 +345,8 @@
 
   <Target Name="PrepareDotnetDebTool">
 
-    <DotNetRestore ToolPath="$(PreviousStageDirectory)"
-                   WorkingDirectory="$(DotnetDebToolDir)" />
+    <!--<DotNetRestore ToolPath="$(PreviousStageDirectory)"
+                   WorkingDirectory="$(DotnetDebToolDir)" />-->
   </Target>
 
   <Target Name="TestDebuild">

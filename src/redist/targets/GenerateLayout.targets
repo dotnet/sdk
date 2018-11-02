@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
     <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
+    <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
   
   <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo;SetBuildDefaults">
@@ -168,10 +169,10 @@
   <Target Name="DownloadBundledComponents" DependsOnTargets="SetupBundledComponents">
     <ItemGroup>
       <BundledLayoutComponent>
-        <DownloadDestination>$(IntermediateOutputPath)downloads\%(DownloadFileName)</DownloadDestination>
+        <DownloadDestination>$(DownloadsFolder)%(DownloadFileName)</DownloadDestination>
       </BundledLayoutComponent>
       <BundledInstallerComponent>
-        <DownloadDestination>$(IntermediateOutputPath)downloads\%(DownloadFileName)</DownloadDestination>
+        <DownloadDestination>$(DownloadsFolder)%(DownloadFileName)</DownloadDestination>
       </BundledInstallerComponent>
       <ComponentToDownload Include="@(BundledLayoutComponent);@(BundledInstallerComponent)">
         <ShouldDownload Condition="!Exists('%(DownloadDestination)')">true</ShouldDownload>
