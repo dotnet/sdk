@@ -233,7 +233,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             TemplateCache workingCache = new TemplateCache(_environmentSettings);
-            foreach(MountPointInfo mountPoint in mountPointsToScan)
+            foreach (MountPointInfo mountPoint in mountPointsToScan)
             {
                 workingCache.Scan(mountPoint.Place);
             }
@@ -260,7 +260,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 allTemplates.UnionWith(_userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version));
             }
 
-            foreach(var template in allTemplates)
+            foreach (TemplateInfo template in allTemplates)
             {
                 if (!_mountPoints.TryGetValue(template.ConfigMountPointId, out MountPointInfo mountPoint))
                 {
