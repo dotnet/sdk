@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             DateTime oldTimestamp = new DateTime(2018,1,1);
             DateTime recentTimestamp = new DateTime(2018, 9, 28);
             DateTime moreRecentTimestamp = new DateTime(2018, 9, 29);
-            foreach (var templateInfo in templates)
+            foreach (TemplateInfo templateInfo in templates)
             {
                 MountPointInfo mountPoint =
                     mountPoints.Single(mp => mp.MountPointId == templateInfo.ConfigMountPointId);
