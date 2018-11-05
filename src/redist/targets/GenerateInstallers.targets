@@ -1,0 +1,7 @@
+<Project>
+  <Target Name="GenerateInstallers"
+          DependsOnTargets="GetCurrentRuntimeInformation;
+                            GenerateMsis;
+                            GenerateDebs;"
+          />
+</Project>

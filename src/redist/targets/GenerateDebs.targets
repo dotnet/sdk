@@ -143,14 +143,15 @@
     </ItemGroup>
   </Target>
 
-  <!-- Outer GenerateDebs target so that GetCurrentRuntimeInformation will set IsDebianBasedDistro before target
-       condition is evaluated -->
-  <Target Name="GenerateDebsOuter"
+  <!-- Outer GenerateDebs target so that GetCurrentRuntimeInformation will set IsDebianBasedDistro before
+       GenerateDebsInner condition is evaluated -->
+  <Target Name="GenerateDebs"
           DependsOnTargets="GetCurrentRuntimeInformation;
                             GenerateDebs"/>
+
   
   <!-- Re-enable "TestSdkDeb" when the following issue is resolved: https://github.com/dotnet/cli/issues/9672 -->
-  <Target Name="GenerateDebs"
+  <Target Name="GenerateDebsInner"
           DependsOnTargets="SetupDebProps;
                             TestDebuild;
                             BuildSdkDeb"

@@ -30,4 +30,6 @@
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="Chmod" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="DotNetDebTool" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="BuildFPMToolPreReqs" AssemblyFile="$(CoreSdkTaskDll)"/>
+
 </Project>
