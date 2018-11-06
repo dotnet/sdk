@@ -18,5 +18,6 @@
   <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" />
   <Import Project="targets\GenerateDebs.targets" />
   <Import Project="targets\GenerateRPMs.targets" />
+  <Import Project="targets\GeneratePKG.targets" />
 
 </Project>

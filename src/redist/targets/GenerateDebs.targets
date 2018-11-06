@@ -11,7 +11,8 @@
                           GetCurrentRuntimeInformation;
                           SetupFileExtensions;
                           CalculateLinuxNativeInstallerDependencyVersions;
-                          SetSdkBrandingInfo">
+                          SetSdkBrandingInfo;
+                          SetInstallerInfo">
     <PropertyGroup>
       <DotnetDebToolDir>$(MSBuildProjectDirectory)</DotnetDebToolDir>
       <!--<DotnetDebToolDir>$(MSBuildThisFileDirectory)/dotnet-deb-tool-consumer</DotnetDebToolDir>-->
@@ -69,7 +70,7 @@
     <!-- Output Directories -->
     <PropertyGroup>
       <InstallerOutputDirectory>$(ArtifactsShippingPackagesDir)</InstallerOutputDirectory>
-      <SdkInstallerFile>$(InstallerOutputDirectory)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkInstallerFile>
+      <SdkDebInstallerFile>$(InstallerOutputDirectory)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkDebInstallerFile>
       <SdkDebianIntermediateDirectory>$(IntermediateOutputPath)debian/sdk/</SdkDebianIntermediateDirectory>
       <DotNetDebToolOutputDirectory>$(SdkDebianIntermediateDirectory)deb-tool-output</DotNetDebToolOutputDirectory>
       <DebianTestResultsXmlFile>$(SdkDebianIntermediateDirectory)debian-testResults.xml</DebianTestResultsXmlFile>
@@ -139,7 +140,7 @@
       <TestSdkDebTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />-->
 
       <!-- Consumed By Publish -->
-      <GeneratedInstallers Include="$(SdkInstallerFile)" />
+      <GeneratedInstallers Include="$(SdkDebInstallerFile)" />
     </ItemGroup>
   </Target>
 
@@ -190,7 +191,7 @@
                         PrepareDotnetDebTool;
                         GetAspNetSharedFxInstallArgs;"
       Inputs="@(CLISdkFiles)"
-      Outputs="$(SdkInstallerFile)" >
+      Outputs="$(SdkDebInstallerFile)" >
       <!-- Install Shared Framework Packages -->
 
       <Exec Command="sudo dpkg -i $(DownloadsFolder)$(DownloadedRuntimeDepsInstallerFileName)" />
@@ -251,7 +252,7 @@
       <Error Text="@(GeneratedDebFiles->Count()) .deb files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
 
       <Copy
-        DestinationFiles="$(SdkInstallerFile)"
+        DestinationFiles="$(SdkDebInstallerFile)"
         SourceFiles="@(GeneratedDebFiles)"
         OverwriteReadOnlyFiles="True"
         SkipUnchangedFiles="False"
@@ -280,7 +281,7 @@
       Inputs="$(DownloadedSharedHostInstallerFile);
               $(DownloadedHostFxrInstallerFile);
               $(DownloadedSharedFrameworkInstallerFile);
-              $(SdkInstallerFile);"
+              $(SdkDebInstallerFile);"
       Outputs="$(DebianTestResultsXmlFile)" >
 
       <!-- Install Dependencies and SDK Packages -->
@@ -290,7 +291,7 @@
       <Exec Command="sudo dpkg -i $(DownloadedSharedFrameworkInstallerFile)" />
       <Exec Command="sudo dpkg $(InstallAspNetCoreSharedFxArgs) -i $(DownloadedAspNetCoreSharedFxInstallerFile)" />
 
-      <Exec Command="sudo dpkg -i $(SdkInstallerFile)" />
+      <Exec Command="sudo dpkg -i $(SdkDebInstallerFile)" />
 
       <!-- Run E2E -->
       <DotNetRestore ProjectPath="$(EndToEndTestProject)"
@@ -321,7 +322,7 @@
     <!-- Clean the workspace -->
     <ItemGroup>
       <FilesToClean Remove="*" />
-      <FilesToClean Include="$(SdkInstallerFile)" />
+      <FilesToClean Include="$(SdkDebInstallerFile)" />
 
       <WorkspaceDirectories Remove="*" />
       <WorkspaceDirectories Include="$(SdkDebianIntermediateDirectory);

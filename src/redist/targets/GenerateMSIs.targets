@@ -28,8 +28,8 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <SdkInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkInstallerFile>
-      <CombinedFrameworkSdkHostInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostInstallerFile>
+      <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
+      <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
 
       <!--<SdkDebianIntermediateDirectory>$(IntermediateOutputPath)debian/sdk/</SdkDebianIntermediateDirectory>
       <LayoutDirectory Condition=" '$(OSName)' == 'ubuntu' OR '$(OSName)' == 'debian' ">$(SdkDebianIntermediateDirectory)debianLayoutDirectory</LayoutDirectory>
@@ -49,7 +49,7 @@
 
     <!-- Consumed By Publish -->
     <ItemGroup>
-      <GeneratedInstallers Include="$(SdkInstallerFile);$(CombinedFrameworkSdkHostInstallerFile)" />
+      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile)" />
     </ItemGroup>
 
     <GenerateMsiVersion CommitCount="$(GitCommitCount)"
@@ -59,12 +59,12 @@
       <Output TaskParameter="MsiVersion" PropertyName="MsiVersion" />
     </GenerateMsiVersion>
 
-    <GenerateGuidFromName Name="$(SdkInstallerFile)">
+    <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="SdkInstallerUpgradeCode" />
     </GenerateGuidFromName>
 
-    <GenerateGuidFromName Name="$(CombinedFrameworkSdkHostInstallerFile)">
+    <GenerateGuidFromName Name="$(CombinedFrameworkSdkHostMSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="CombinedFrameworkSDKHostInstallerUpgradeCode" />
     </GenerateGuidFromName>
@@ -98,11 +98,11 @@
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo"
           Condition=" '$(OS)' == 'Windows_NT'"
           Inputs="@(GenerateSdkMsiInputs)"
-          Outputs="$(SdkInstallerFile)">
+          Outputs="$(SdkMSIInstallerFile)">
 
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
                       '$(SdkInternalLayoutPath.TrimEnd('\'))' ^
-                      '$(SdkInstallerFile)' ^
+                      '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
@@ -117,21 +117,21 @@
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi"
           Condition=" '$(OS)' == 'Windows_NT'"
-          Inputs="$(SdkInstallerFile);
+          Inputs="$(SdkMSIInstallerFile);
                     $(DownloadedSharedFrameworkInstallerFile);
                     $(DownloadedHostFxrInstallerFile);
                     $(DownloadedSharedHostInstallerFile);
                     $(SdkGenerateBundlePowershellScript)"
-          Outputs="$(CombinedFrameworkSdkHostInstallerFile)">
+          Outputs="$(CombinedFrameworkSdkHostMSIInstallerFile)">
     
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
-                      '$(SdkInstallerFile)' ^
+                      '$(SdkMSIInstallerFile)' ^
                       '$(IntermediateOutputPath)downloads\$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
                       '$(IntermediateOutputPath)downloads\$(DownloadedSharedFrameworkInstallerFileName)' ^
                       '$(IntermediateOutputPath)downloads\$(DownloadedHostFxrInstallerFileName)' ^
                       '$(IntermediateOutputPath)downloads\$(DownloadedSharedHostInstallerFileName)' ^
                       '$(IntermediateOutputPath)downloads\$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
-                      '$(CombinedFrameworkSdkHostInstallerFile)' ^
+                      '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
@@ -147,13 +147,13 @@
   <Target Name="GenerateSdkNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkBundle"
           Condition=" '$(OS)' == 'Windows_NT'"
-          Inputs="$(CombinedFrameworkSdkHostInstallerFile);
+          Inputs="$(CombinedFrameworkSdkHostMSIInstallerFile);
                     $(SdkInstallerNuspecFile);
                     $(SdkGenerateNupkgPowershellScript)"
           Outputs="$(SdkInstallerNupkgFile)">
 
     <!--<Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateNupkgPowershellScript) ^
-                      '$(CombinedFrameworkSdkHostInstallerFile)' ^
+                      '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(FullNugetVersion)' ^
                       '$(SdkInstallerNuspecFile)' ^
                       '$(SdkInstallerNupkgFile)'" />-->
@@ -193,11 +193,11 @@
   <!-- These targets are used in signing, don't remove them! -->
   <!--<Target Name="ExtractEngineFromSdkBundle"
             DependsOnTargets="MsiTargetsSetupInputOutputs">
-      <Exec Command="$(WixRoot)/insignia.exe -ib $(CombinedFrameworkSdkHostInstallerFile) -o $(CombinedFrameworkSdkHostBundleEngineName)" />
+      <Exec Command="$(WixRoot)/insignia.exe -ib $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostBundleEngineName)" />
     </Target>
 
     <Target Name="ReattachEngineToSdkBundle"
             DependsOnTargets="MsiTargetsSetupInputOutputs">
-      <Exec Command="$(WixRoot)/insignia.exe -ab $(CombinedFrameworkSdkHostBundleEngineName) $(CombinedFrameworkSdkHostInstallerFile) -o $(CombinedFrameworkSdkHostInstallerFile)" />
+      <Exec Command="$(WixRoot)/insignia.exe -ab $(CombinedFrameworkSdkHostBundleEngineName) $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostMSIInstallerFile)" />
     </Target>-->
 </Project>

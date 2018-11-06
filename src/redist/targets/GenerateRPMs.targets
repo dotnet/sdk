@@ -105,7 +105,7 @@
       <TestSdkRpmTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />-->
 
       <!-- Consumed By Publish -->
-      <!--<GeneratedInstallers Include="$(SdkInstallerFile)" />-->
+      <!--<GeneratedInstallers Include="$(SdkRPMInstallerFile)" />-->
     </ItemGroup>
 
     <ReplaceFileContents InputFiles="$(AfterInstallHostScriptTemplateFile)"
@@ -157,8 +157,8 @@
       <RuntimeDepsPackageFileName>dotnet-runtime-deps-$(RuntimeDepsPackageVersion)</RuntimeDepsPackageFileName>
       <RpmPackageVersion>$(SdkVersion)</RpmPackageVersion>
       <InputRoot>$(RedistLayoutPath)sdk/</InputRoot>
-      <SdkInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkInstallerFile>
-      <RpmFile>$(SdkInstallerFile)</RpmFile>
+      <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
+      <RpmFile>$(SdkRPMInstallerFile)</RpmFile>
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
       <ManPagesDir>$(RepoRoot)/Documentation/manpages</ManPagesDir>
       <ConfigJsonFile>$(MSBuildThisFileDirectory)packaging/rpm/dotnet-config.json</ConfigJsonFile>
@@ -239,7 +239,7 @@
     <!-- Ignore dependencies, which may have an incoherent dependency on dotnet-runtime -->
     <Exec Command="sudo rpm --install --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
 
-    <Exec Command="sudo yum -y install $(SdkInstallerFile)" />
+    <Exec Command="sudo yum -y install $(SdkRPMInstallerFile)" />
 
     <!-- Run Tests -->
     <DotNetRestore ProjectPath="$(EndToEndTestProject)"
