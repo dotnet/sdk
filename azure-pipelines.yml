@@ -11,6 +11,7 @@ resources:
 # CI and PR triggers
 trigger:
 - master
+- switch-to-test-pool
 pr:
 - master
 
