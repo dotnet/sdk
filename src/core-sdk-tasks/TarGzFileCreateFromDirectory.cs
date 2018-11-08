@@ -38,6 +38,20 @@ namespace Microsoft.DotNet.Build.Tasks
         /// </summary>
         public ITaskItem[] ExcludePatterns { get; set; }
 
+        public bool IgnoreExitCode { get; set; }
+
+        protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
+        {
+            int returnCode = base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
+
+            if (IgnoreExitCode)
+            {
+                returnCode = 0;
+            }
+
+            return returnCode;
+        }
+
         protected override bool ValidateParameters()
         {
             base.ValidateParameters();
