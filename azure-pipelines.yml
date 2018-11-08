@@ -8,12 +8,11 @@ resources:
   - container: LinuxContainer
     image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
 
+# CI and PR triggers
 trigger:
 - master
-
-# To be added in the future when VSTS supports this feature
-# pr:
-# - master
+pr:
+- master
 
 # Three phases for each of the three OSes we want to run on
 phases:
