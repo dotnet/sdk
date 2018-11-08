@@ -16,65 +16,43 @@ namespace EndToEnd
 {
     public partial class GivenSelfContainedAppsRollForward : TestBase
     {
-        public const string NETCorePackageName = "Microsoft.NETCore.App";
-        public const string AspNetCoreAppPackageName = "Microsoft.AspNetCore.App";
-        public const string AspNetCoreAllPackageName = "Microsoft.AspNetCore.All";
 
-        [Theory(Skip = "https://github.com/dotnet/cli/issues/10123")]
+        [Theory]
         //  MemberData is used instead of InlineData here so we can access it in another test to
         //  verify that we are covering the latest release of .NET Core
         [ClassData(typeof(SupportedNetCoreAppVersions))]
         public void ItRollsForwardToTheLatestNetCoreVersion(string minorVersion)
         {
-            ItRollsForwardToTheLatestVersion(NETCorePackageName, minorVersion);
+            ItRollsForwardToTheLatestVersion(TestProjectCreator.NETCorePackageName, minorVersion);
         }
 
-        [Theory(Skip = "https://github.com/dotnet/cli/issues/10123")]
+        [Theory]
         [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItRollsForwardToTheLatestAspNetCoreAppVersion(string minorVersion)
         {
-            ItRollsForwardToTheLatestVersion(AspNetCoreAppPackageName, minorVersion);
+            ItRollsForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAppPackageName, minorVersion);
         }
 
-        [Theory(Skip = "https://github.com/dotnet/cli/issues/10123")]
-        [ClassData(typeof(SupportedAspNetCoreVersions))]
+        [Theory]
+        [ClassData(typeof(SupportedAspNetCoreAllVersions))]
         public void ItRollsForwardToTheLatestAspNetCoreAllVersion(string minorVersion)
         {
-            ItRollsForwardToTheLatestVersion(AspNetCoreAllPackageName, minorVersion);
+            ItRollsForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
         }
 
         public void ItRollsForwardToTheLatestVersion(string packageName, string minorVersion)
         {
-            var _testInstance = TestAssets.Get("TestAppSimple")
-                .CreateInstance(identifier: packageName + "_" + minorVersion)
-                .WithSourceFiles();
-
-            string projectDirectory = _testInstance.Root.FullName;
-
-            string projectPath = Path.Combine(projectDirectory, "TestAppSimple.csproj");
-
-            var project = XDocument.Load(projectPath);
-            var ns = project.Root.Name.Namespace;
-
-            //  Update TargetFramework to the right version of .NET Core
-            project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework")
-                .Value = "netcoreapp" + minorVersion;
-
-            var rid = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier();
-
-            //  Set RuntimeIdentifier to opt in to roll-forward behavior
-            project.Root.Element(ns + "PropertyGroup")
-                .Add(new XElement(ns + "RuntimeIdentifier", rid));
-
-            if (packageName != NETCorePackageName)
+            var testProjectCreator = new TestProjectCreator()
             {
-                //  Add implicit ASP.NET reference
-                project.Root.Add(new XElement(ns + "ItemGroup",
-                    new XElement(ns + "PackageReference", new XAttribute("Include", packageName))));
-            }
+                PackageName = packageName,
+                MinorVersion = minorVersion,
+                //  Set RuntimeIdentifier to opt in to roll-forward behavior
+                RuntimeIdentifier = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier()
+            };
 
-            project.Save(projectPath);
+            var testInstance = testProjectCreator.Create();
+
+            string projectDirectory = testInstance.Root.FullName;
 
             //  Get the version rolled forward to
             new RestoreCommand()
@@ -97,29 +75,40 @@ namespace EndToEnd
                 return;
             }
 
-            Directory.Delete(Path.Combine(projectDirectory, "obj"), true);
-            if (packageName == NETCorePackageName)
+            testProjectCreator.Identifier = "floating";
+
+            var floatingProjectInstance = testProjectCreator.Create();
+
+            var floatingProjectPath = Path.Combine(floatingProjectInstance.Root.FullName, "TestAppSimple.csproj");
+
+            var floatingProject = XDocument.Load(floatingProjectPath);
+            var ns = floatingProject.Root.Name.Namespace;
+
+
+            if (packageName == TestProjectCreator.NETCorePackageName)
             {
                 //  Float the RuntimeFrameworkVersion to get the latest version of the runtime available from feeds
-                project.Root.Element(ns + "PropertyGroup")
+                floatingProject.Root.Element(ns + "PropertyGroup")
                     .Add(new XElement(ns + "RuntimeFrameworkVersion", $"{minorVersion}.*"));
             }
             else
             {
-                project.Root.Element(ns + "ItemGroup")
+                floatingProject.Root.Element(ns + "ItemGroup")
                     .Element(ns + "PackageReference")
                     .Add(new XAttribute("Version", $"{minorVersion}.*"),
                         new XAttribute("AllowExplicitVersion", "true"));
             }
 
-            project.Save(projectPath);
+            floatingProject.Save(floatingProjectPath);
 
             new RestoreCommand()
-                    .WithWorkingDirectory(projectDirectory)
+                    .WithWorkingDirectory(floatingProjectInstance.Root.FullName)
                     .Execute()
                     .Should().Pass();
 
-            var floatedAssetsFile = new LockFileFormat().Read(assetsFilePath);
+            string floatingAssetsFilePath = Path.Combine(floatingProjectInstance.Root.FullName, "obj", "project.assets.json");
+
+            var floatedAssetsFile = new LockFileFormat().Read(floatingAssetsFilePath);
 
             var floatedVersion = GetPackageVersion(floatedAssetsFile, packageName);
             floatedVersion.Should().NotBeNull();
