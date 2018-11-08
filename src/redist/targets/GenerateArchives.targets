@@ -1,6 +1,6 @@
 <Project>
   <Target Name="GenerateArchives"
-          DependsOnTargets="GenerateLayout"
+          DependsOnTargets="GenerateLayout;GetCurrentRuntimeInformation"
           AfterTargets="Build">
 
     <ZipFileCreateFromDirectory
@@ -9,6 +9,7 @@
         OverwriteDestination="true" />
 
     <TarGzFileCreateFromDirectory
+        Condition=" '$(OSName)' != 'win' "
         SourceDirectory="$(RedistLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
         OverwriteDestination="true" />
