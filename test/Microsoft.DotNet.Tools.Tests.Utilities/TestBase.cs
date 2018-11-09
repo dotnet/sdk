@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             }
         }
 
-        protected static TestAssets TestAssets
+        public static TestAssets TestAssets
         {
             get
             {

@@ -19,49 +19,36 @@ namespace EndToEnd
         [ClassData(typeof(SupportedNetCoreAppVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfNetCore(string minorVersion)
         {
-            ItDoesNotRollForwardToTheLatestVersion(GivenSelfContainedAppsRollForward.NETCorePackageName, minorVersion);
+            ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.NETCorePackageName, minorVersion);
         }
 
-        [Theory(Skip = "https://github.com/dotnet/cli/issues/10123")]
+        [Theory]
         [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreApp(string minorVersion)
         {
-            ItDoesNotRollForwardToTheLatestVersion(GivenSelfContainedAppsRollForward.AspNetCoreAppPackageName, minorVersion);
+            ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAppPackageName, minorVersion);
         }
 
-        [Theory(Skip = "https://github.com/dotnet/cli/issues/10123")]
-        [ClassData(typeof(SupportedAspNetCoreVersions))]
+        [Theory]
+        [ClassData(typeof(SupportedAspNetCoreAllVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreAll(string minorVersion)
         {
-            ItDoesNotRollForwardToTheLatestVersion(GivenSelfContainedAppsRollForward.AspNetCoreAllPackageName, minorVersion);
+            ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
         }
 
         internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
         {
-            var _testInstance = TestAssets.Get("TestAppSimple")
-                .CreateInstance(identifier: packageName + "_" + minorVersion)
-                .WithSourceFiles();
+            var testProjectCreator = new TestProjectCreator()
+            {
+                PackageName = packageName,
+                MinorVersion = minorVersion,
+            };
+
+            var _testInstance = testProjectCreator.Create();
 
             string projectDirectory = _testInstance.Root.FullName;
 
             string projectPath = Path.Combine(projectDirectory, "TestAppSimple.csproj");
-
-            var project = XDocument.Load(projectPath);
-            var ns = project.Root.Name.Namespace;
-
-            //  Update TargetFramework to the right version of .NET Core
-            project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework")
-                .Value = "netcoreapp" + minorVersion;
-
-            if (packageName != GivenSelfContainedAppsRollForward.NETCorePackageName)
-            {
-                //  Add implicit ASP.NET reference
-                project.Root.Add(new XElement(ns + "ItemGroup",
-                    new XElement(ns + "PackageReference", new XAttribute("Include", packageName))));
-            }
-
-            project.Save(projectPath);
 
             //  Get the resolved version of .NET Core
             new RestoreCommand()
@@ -108,8 +95,8 @@ namespace EndToEnd
             {
                 //  ASP.NET 2.1.0 packages had exact version dependencies, which was problematic,
                 //  so the default version for 2.1 apps is 2.1.1.
-                if (packageName == GivenSelfContainedAppsRollForward.AspNetCoreAppPackageName ||
-                    packageName == GivenSelfContainedAppsRollForward.AspNetCoreAllPackageName)
+                if (packageName == TestProjectCreator.AspNetCoreAppPackageName ||
+                    packageName == TestProjectCreator.AspNetCoreAllPackageName)
                 {
                     if (minorVersion == "2.1")
                     {
