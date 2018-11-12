@@ -10,6 +10,7 @@
   <Import Project="targets\Versions.targets" />
   <Import Project="targets\SetBuildDefaults.targets" />
   <Import Project="targets\Branding.targets" />
+  <Import Project="targets\GenerateBundledVersions.targets" />
   <Import Project="targets\GenerateLayout.targets" />
   <Import Project="targets\FileExtensions.targets" />
   

@@ -7,6 +7,7 @@
   
   <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo;SetBuildDefaults">
     <PropertyGroup>
+      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(SdkVersion)</SdkOutputDirectory>
       <CoreSetupBlobRootUrl>https://dotnetcli.azureedge.net/dotnet/</CoreSetupBlobRootUrl>
       <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
       
@@ -190,17 +191,56 @@
     <RemoveDir Directories="$(RedistLayoutPath)" />
     <MakeDir Directories="$(RedistLayoutPath)" />
   </Target>
+
+  <Target Name="ExtractBundledComponents">
+    <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
+                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)" />    
+  </Target>
+
+  <Target Name="RetargetTools">
+    <PropertyGroup>
+      <ReplacementPattern>"version": ".*"</ReplacementPattern>
+      <ReplacementString>"version": "$(MicrosoftNETCoreAppPackageVersion)"</ReplacementString>
+    </PropertyGroup>
+    <ItemGroup>
+      <ToolRuntimeConfigPath Include="$(RedistLayoutPath)sdk/$(SdkVersion)/**/*.runtimeconfig.json" />
+    </ItemGroup>
+    <ReplaceFileContents
+      InputFiles="@(ToolRuntimeConfigPath)"
+      DestinationFiles="@(ToolRuntimeConfigPath)"
+      ReplacementPatterns="$(ReplacementPattern)"
+      ReplacementStrings="$(ReplacementString)" />
+  </Target>
   
-  <Target Name="GenerateLayout" DependsOnTargets="DownloadBundledComponents;CleanLayoutPath"
+  <Target Name="GenerateLayout"
+          DependsOnTargets="DownloadBundledComponents;
+                            CleanLayoutPath;
+                            ExtractBundledComponents;
+                            GenerateBundledVersions;
+                            RetargetTools"
+          AfterTargets="Build">
+  
+  </Target>
+  
+  <Target Name="GenerateInternalLayout"
+          DependsOnTargets="GenerateLayout"
           AfterTargets="Build">
 
-    <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
-                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)" />
-
+    <RemoveDir Directories="$(SdkInternalLayoutPath)" />
+    <MakeDir Directories="$(SdkInternalLayoutPath)" />
+    
     <!-- Create "SDK Internal" layout to create the MSI to bundle -->
-    <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
+    <ItemGroup>
+      <SdkInternalFiles Include="$(RedistLayoutPath)sdk/$(SdkVersion)/**/*.*"/>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(SdkInternalFiles)"
+          DestinationFolder="$(SdkInternalLayoutPath)sdk/$(SdkVersion)"/>
+
+    <!--<ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
                                DestinationDirectory="$(SdkInternalLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
-                               Condition="'%(BundledLayoutComponent.IncludeInInternalLayout)' == 'true'"/>
-  
+                               Condition="'%(BundledLayoutComponent.IncludeInInternalLayout)' == 'true'"/>-->
+
+
   </Target>
 </Project>
