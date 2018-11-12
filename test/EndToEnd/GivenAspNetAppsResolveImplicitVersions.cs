@@ -39,7 +39,7 @@ namespace EndToEnd
             //  Get the implicit version
             new RestoreCommand()
                     .WithWorkingDirectory(projectDirectory)
-                    .Execute()
+                    .Execute("/bl:restore.binlog")
                     .Should().Pass();
 
             var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
@@ -102,17 +102,22 @@ namespace EndToEnd
                 "Please update MSBuildExtensions.targets in this repo so these versions match.");
         }
 
-        [Theory(Skip = "https://github.com/dotnet/core-sdk/issues/21")]
+        [Theory]
         [MemberData(nameof(SupportedAspNetCoreAppVersions))]
         public void ItRollsForwardToTheLatestVersion(string minorVersion)
         {
-            var _testInstance = TestAssets.Get(AspNetTestProject)
-                .CreateInstance(identifier: minorVersion)
+            var testProjectCreator = new TestProjectCreator(identifier: minorVersion)
+            {
+                PackageName = TestProjectCreator.AspNetCoreAppPackageName,
+                MinorVersion = minorVersion ,
+            };
+
+            var _testInstance = testProjectCreator.Create()
                 .WithSourceFiles();
 
             string projectDirectory = _testInstance.Root.FullName;
 
-            string projectPath = Path.Combine(projectDirectory, $"{AspNetTestProject}.csproj");
+            string projectPath = Path.Combine(projectDirectory, $"TestAppSimple.csproj");
 
             var project = XDocument.Load(projectPath);
             var ns = project.Root.Name.Namespace;
@@ -172,7 +177,7 @@ namespace EndToEnd
                 "(see MSBuildExtensions.targets in this repo)");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/core-sdk/issues/21")]
+        [Fact]
         public void WeCoverLatestAspNetCoreAppRollForward()
         {
             var directory = TestAssets.CreateTestDirectory();
@@ -202,7 +207,7 @@ namespace EndToEnd
 
         private NuGetVersion GetAspNetCoreAppVersion(LockFile lockFile, bool portable = false)
         {
-            return lockFile?.Targets?.SingleOrDefault(t => portable || t.RuntimeIdentifier != null)
+            return lockFile?.Targets?.SingleOrDefault(t => portable == (t.RuntimeIdentifier == null))
                 ?.Libraries?.SingleOrDefault(l =>
                     string.Compare(l.Name, "Microsoft.AspNetCore.App", StringComparison.CurrentCultureIgnoreCase) == 0)
                 ?.Version;

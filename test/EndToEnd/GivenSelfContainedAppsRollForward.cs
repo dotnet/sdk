@@ -126,7 +126,7 @@ namespace EndToEnd
                 ?.Version;
         }
 
-        [Fact(Skip = "https://github.com/dotnet/cli/issues/9968")]
+        [Fact]
         public void WeCoverLatestNetCoreAppRollForward()
         {
             //  Run "dotnet new console", get TargetFramework property, and make sure it's covered in SupportedNetCoreAppVersions
