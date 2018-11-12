@@ -181,7 +181,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledVersionsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(SdkOutputDirectory)/$(BundledVersionsPropsFileName)"
+    <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledVersionsPropsFileName)"
                       Lines="$(BundledVersionsPropsContent)"
                       Overwrite="true" />
   </Target>
@@ -214,7 +214,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledBundledCliToolsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(SdkOutputDirectory)/$(BundledBundledCliToolsPropsFileName)"
+    <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
                       Overwrite="true" />
   </Target>
