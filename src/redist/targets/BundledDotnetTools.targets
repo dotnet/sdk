@@ -1,0 +1,39 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
+    <BundledDotnetTool Include="dotnet-dev-certs" Version="$(DotnetDevCertsPackageVersion)" />
+    <BundledDotnetTool Include="dotnet-ef" Version="$(DotnetEfPackageVersion)" ObsoletesCliTool="Microsoft.EntityFrameworkCore.Tools.DotNet" />
+    <BundledDotnetTool Include="dotnet-sql-cache" Version="$(DotnetSqlCachePackageVersion)" ObsoletesCliTool="Microsoft.Extensions.Caching.SqlConfig.Tools" />
+    <BundledDotnetTool Include="dotnet-user-secrets" Version="$(DotnetUserSecretsPackageVersion)" ObsoletesCliTool="Microsoft.Extensions.SecretManager.Tools" />
+    <BundledDotnetTool Include="dotnet-watch" Version="$(DotnetWatchPackageVersion)" ObsoletesCliTool="Microsoft.DotNet.Watcher.Tools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BundledDotnetTool Update="@(BundledDotnetTool)">
+      <PackagePathRelativeToPackageRoot>%(Identity)/%(Version)/</PackagePathRelativeToPackageRoot>
+      <RestoredPackagePath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(PackagePathRelativeToPackageRoot)', '').ToLower())/</RestoredPackagePath>
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(Version)/%(Identity).%(Version).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+    </BundledDotnetTool>
+  </ItemGroup>
+
+  <Target Name="LayoutBundledTools" DependsOnTargets="SetupBundledComponents">
+
+    <ItemGroup>
+      <BundledToolLayoutProject Include="$(MSBuildThisFileDirectory)LayoutTool.csproj">
+        <Properties>
+          PackageToRestore=%(BundledDotnetTool.Identity);
+          PackageVersionToRestore=%(BundledDotnetTool.Version);
+          RestoreProjectStyle=DotnetToolReference;
+          TargetFramework=$(TargetFramework);
+          LayoutFolder=$(SdkOutputDirectory)DotnetTools/
+        </Properties>
+      </BundledToolLayoutProject>
+    </ItemGroup>
+
+    <MSBuild
+        BuildInParallel="False"
+        Projects="@(BundledToolLayoutProject)">
+    </MSBuild>
+  </Target>
+
+</Project>
