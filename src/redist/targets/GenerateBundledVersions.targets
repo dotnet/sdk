@@ -158,13 +158,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     ')
 
     
-    <KnownFrameworkReference Include="Microsoft.DesktopUI"
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.0"
-                              RuntimeFrameworkName="Microsoft.DesktopUI.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftDesktopUIPackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftDesktopUIPackageVersion)"
-                              TargetingPackName="Microsoft.DesktopUI.App"
-                              TargetingPackVersion="$(MicrosoftDesktopUIPackageVersion)"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App"
+                              TargetingPackVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               />
 
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
