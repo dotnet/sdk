@@ -34,7 +34,7 @@
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
       <!--<DownloadedSharedFrameworkInstallerFile Condition=" '$(InstallerExtension)' != '' ">$(PackagesDirectory)/$(DownloadedSharedFrameworkInstallerFileName)</DownloadedSharedFrameworkInstallerFile>-->
 
-      <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-extension-$(MicrosoftDesktopUIPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
+      <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <!--<DownloadedWinFormsAndWpfSharedFrameworkInstallerFile Condition=" '$(InstallerExtension)' != '' ">$(PackagesDirectory)/$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFile>-->
 
       <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
@@ -56,7 +56,7 @@
       <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
       <!--<AspNetCoreSharedFxArchiveFile>$(PackagesDirectory)/$(AspNetCoreSharedFxArchiveFileName)</AspNetCoreSharedFxArchiveFile>-->
 
-      <WinFormsAndWpfSharedFxArchiveFileName>dotnet-extension-$(MicrosoftDesktopUIPackageVersion)-$(Architecture)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
+      <WinFormsAndWpfSharedFxArchiveFileName>dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(Architecture)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
       <!--<WinFormsAndWpfSharedFxArchiveFile>$(PackagesDirectory)/$(WinFormsAndWpfSharedFxArchiveFileName)</WinFormsAndWpfSharedFxArchiveFile>-->
 
       <!-- Used to detect if ASP.NET Core is built against the same version of Microsoft.NETCore.App. -->
@@ -151,7 +151,7 @@
     
     <ItemGroup Condition=" '$(IncludeWpfAndWinForms)' != 'false' ">
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftDesktopUIPackageVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftWindowsDesktopPackageVersion)</BaseUrl>
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath>shared</RelativeLayoutPath>
@@ -159,7 +159,7 @@
 
       <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
                            Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftDesktopUIPackageVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftWindowsDesktopPackageVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
