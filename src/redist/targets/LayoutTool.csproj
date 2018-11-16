@@ -18,8 +18,6 @@
       <BundledToolFiles Include="$(RestoredToolRoot)\**\*.*" />
     </ItemGroup>
 
-    <Exec Command="dir $(RestoredToolRoot)" />
-
     <Copy SourceFiles="@(BundledToolFiles)"
           DestinationFiles="@(BundledToolFiles->'$(LayoutFolder)$(PackageToRestore)\$(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
