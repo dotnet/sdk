@@ -147,7 +147,7 @@
       <FSharpFiles Remove="$(PublishDir)FSharp\**\*.resources.dll" />
       <RemainingFiles Remove="$(PublishDir)**\*.resources.dll" />
 
-      <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.*.dll" />
+      <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.$(DIASymReaderCrossgenFilter).dll" />
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">
