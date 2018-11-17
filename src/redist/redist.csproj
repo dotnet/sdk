@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), dir.tasks))\dir.tasks" />
-  <Import Project="$(RepoRoot)/build/compile/LzmaArchive.targets" />
   <Import Project="$(RepoRoot)/build/MSBuildExtensions.targets" />
 
    <PropertyGroup>
@@ -20,7 +19,6 @@
                             PublishRuntimes;
                             PublishToolset;
                             PublishTemplates;
-                            PublishLzmaArchive;
                             CrossgenPublishDir;
                             PublishDotnetTools;
                             PublishVersionFile;
@@ -251,11 +249,6 @@
       BuildInParallel="False"
       Projects="@(TemplatesToBundle)">
     </MSBuild>
-  </Target>
-
-  <Target Name="PublishLzmaArchive"
-          Condition="'$(CLIBUILD_SKIP_LZMA)' != 'true'"
-          DependsOnTargets="GetNuGetPackagesArchive">
   </Target>
 
   <Target Name="RetargetTools">
