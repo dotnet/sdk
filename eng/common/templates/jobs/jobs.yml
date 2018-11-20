@@ -48,48 +48,16 @@ jobs:
   - template: ../job/job.yml
     parameters: 
       # pass along parameters
-      continueOnError: ${{ parameters.continueOnError }}
-
-      enableMicrobuild: ${{ parameters.enableMicrobuild }}
-
-      enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
-
-      enablePublishBuildAssets: ${{ parameters.enablePublishBuildAssets }}
-
-      enablePublishTestResults: ${{ parameters.enablePublishTestResults }}
-
-      enableTelemetry: ${{ parameters.enableTelemetry }}
-
-      runAsPublic: ${{ parameters.runAsPublic }}
+      ${{ each parameter in parameters }}:
+        ${{ if ne(parameter.key, 'jobs') }}:
+          ${{ parameter.key }}: ${{ parameter.value }}
 
       # pass along job properties
-      cancelTimeoutInMinutes: ${{ job.cancelTimeoutInMinutes }}
-
-      condition: ${{ job.condition }}
-
-      container: ${{ job.container }}
-
-      dependsOn: ${{ job.dependsOn }}
-
-      displayName: ${{ job.displayName }}
-
-      helixRepo: ${{ parameters.helixRepo }}
-
-      helixType: ${{ parameters.helixType }}
+      ${{ each property in job }}:
+        ${{ if ne(property.key, 'job') }}:
+          ${{ property.key }}: ${{ property.value }}
 
       name: ${{ job.job }}
-
-      pool: ${{ job.pool }}
-
-      strategy: ${{ job.strategy }}
-
-      timeoutInMinutes: ${{ job.timeoutInMinutes }}
-
-      variables: ${{ job.variables }}
-
-      workspace: ${{ job.workspace }}
-
-      steps: ${{ job.steps }}
 
 - ${{ if and(eq(parameters.enablePublishBuildAssets, true), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: ../job/publish-build-assets.yml
