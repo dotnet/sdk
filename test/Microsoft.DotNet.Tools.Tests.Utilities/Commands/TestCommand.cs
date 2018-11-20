@@ -142,6 +142,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
             RemoveCliGeneratedEnvironmentVariablesFrom(psi);
 
+            psi.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
+            psi.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+
             AddEnvironmentVariablesTo(psi);
 
             AddWorkingDirectoryTo(psi);
@@ -203,11 +206,11 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
                 args = newArgs;
 
-                executable = new Muxer().MuxerPath;
+                executable = RepoDirectoriesProvider.DotnetUnderTest;
             }
             else if ( executable == "dotnet")
             {
-                executable = new Muxer().MuxerPath;
+                executable = RepoDirectoriesProvider.DotnetUnderTest;
             }
             else if (!Path.IsPathRooted(executable))
             {
