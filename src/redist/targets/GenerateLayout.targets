@@ -212,10 +212,17 @@
       ReplacementStrings="$(ReplacementString)" />
   </Target>
   
+  <Target Name="GenerateVersionFile" DependsOnTargets="SetupBundledComponents;GetCoreSdkGitCommitInfo">
+    <WriteLinesToFile File="$(SdkOutputDirectory).version"
+                      Lines="$(GitCommitHash);$(SdkVersion);$(Rid)"
+                      Overwrite="true" />
+  </Target>
+  
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
                             ExtractBundledComponents;
+                            GenerateVersionFile;
                             GenerateBundledVersions;
                             LayoutTemplates;
                             LayoutBundledTools;
