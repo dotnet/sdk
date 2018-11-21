@@ -109,7 +109,6 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 if (!Directory.Exists(testPackagesDirectory))
                 {
                     new DirectoryInfo(testPackagesDirectory).Create();
-                    //Directory.CreateDirectory(testPackagesDirectory);
                 }
 
                 var testPackageNames = new[]
