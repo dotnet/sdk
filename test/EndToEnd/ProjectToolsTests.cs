@@ -81,47 +81,6 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 .And.HaveStdOutContaining("Hello I prefer the cli runtime World!");;
         }
 
-        [Fact]
-        public void ItCanRunAToolThatInvokesADependencyToolInACSProj()
-        {
-            var repoDirectoriesProvider = new RepoDirectoriesProvider();
-
-            var testInstance = TestAssets.Get("TestAppWithProjDepTool")
-                                         .CreateInstance()
-                                         .WithSourceFiles();
-
-            var configuration = "Debug";
-
-            var testProjectDirectory = testInstance.Root;
-
-            new RestoreCommand()
-                .WithWorkingDirectory(testProjectDirectory)
-                .WithEnvironmentVariable("NUGET_PACKAGES", TestNuGetCache)
-                .WithEnvironmentVariable("TEST_PACKAGES", TestPackagesDirectory)
-                .Execute()
-                .Should()
-                .Pass();
-
-            new BuildCommand()
-                .WithWorkingDirectory(testProjectDirectory)
-                .WithEnvironmentVariable("NUGET_PACKAGES", TestNuGetCache)
-                .WithEnvironmentVariable("TEST_PACKAGES", TestPackagesDirectory)
-                .Execute($"-c {configuration} ")
-                .Should()
-                .Pass();
-
-            new DotnetCommand()
-                .WithWorkingDirectory(testProjectDirectory)
-                .WithEnvironmentVariable("NUGET_PACKAGES", TestNuGetCache)
-                .WithEnvironmentVariable("TEST_PACKAGES", TestPackagesDirectory)
-                .ExecuteWithCapturedOutput(
-                    $"-d dependency-tool-invoker -c {configuration} -f netcoreapp3.0 portable")
-                .Should().Pass()
-                     .And.HaveStdOutContaining("Hello Portable World!");
-        }
-
-
-
         public class TestPackagesFixture
         {
             public string TestPackagesDirectory { get; private set; }
@@ -156,8 +115,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 var testPackageNames = new[]
                 {
                     "dotnet-portable",
-                    "dotnet-prefercliruntime",
-                    "dotnet-dependency-tool-invoker"
+                    "dotnet-prefercliruntime"
                 };
 
                 foreach (var testPackageName in testPackageNames)
