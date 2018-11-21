@@ -63,13 +63,24 @@ namespace EndToEnd.Tests
         [Theory]
         [InlineData("console")]
         [InlineData("classlib")]
-        [InlineData("wpf")]
-        [InlineData("winforms")]
         [InlineData("mstest")]
         [InlineData("nunit")]
         [InlineData("web")]
         [InlineData("mvc")]
         public void ItCanBuildTemplates(string templateName)
+        {
+            TestTemplateBuild(templateName);
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData("wpf")]
+        [InlineData("winforms")]
+        public void ItCanBuildDesktopTemplates(string templateName)
+        {
+            TestTemplateBuild(templateName);
+        }
+
+        private void TestTemplateBuild(string templateName)
         {
             var directory = TestAssets.CreateTestDirectory(identifier: templateName);
             string projectDirectory = directory.FullName;
