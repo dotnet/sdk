@@ -2,7 +2,7 @@
 <Theme xmlns="http://wixtoolset.org/schemas/thmutil/2010">
   <Window Width="660" Height="488" HexStyle="100a0000" FontId="0">#(loc.Caption)</Window>
     <Font Id="0" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
-    <Font Id="1" Height="-24" Weight="900" Foreground="FFFFFF" Background="682079">Segoe UI</Font>
+    <Font Id="1" Height="-24" Weight="900" Foreground="FFFFFF" Background="792068">Segoe UI</Font>
     <Font Id="2" Height="-22" Weight="500" Foreground="666666">Segoe UI</Font>
     <Font Id="3" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
     <Font Id="4" Height="-12" Weight="500" Foreground="ff0000" Background="FFFFFF" Underline="yes">Segoe UI</Font>
@@ -11,7 +11,7 @@
     <Text X="11" Y="11" Width="-11" Height="64" FontId="1" Visible="yes" Center="yes" DisablePrefix="yes">#(loc.Title)</Text>
 
     <Page Name="Help">
-        <Text X="0" Y="0" Width="620" Height="75" FontId="1" />
+        <Text X="0" Y="0" Width="660" Height="75" FontId="1" />
 
         <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.HelpHeader)</Text>
         <Text X="20" Y="115" Width="-11" Height="-35" FontId="3" DisablePrefix="yes">#(loc.HelpText)</Text>

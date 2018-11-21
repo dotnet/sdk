@@ -10,25 +10,93 @@
           AboutUrl="https://dotnet.github.io/"
           Compressed="yes">
 
+    <bal:Condition Message="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X64]&quot;">
+        WixBundleInstalled OR ((NOT (DOTNETHOME_X64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
+    </bal:Condition>
+      
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.Foundation">
       <bal:WixStandardBootstrapperApplication
         LicenseFile="dummyeula.rtf"
         ShowFilesInUse="yes"
-        ShowVersion="yes"
-        />
+        ShowVersion="yes" />
 
       <PayloadGroupRef Id="DotnetCoreBAPayloads" />
     </BootstrapperApplicationRef>
 
     <swid:Tag Regid="microsoft.com" InstallPath="[DOTNETHOME]" />
 
-    <Variable Name="DOTNETHOME" Type="string" Value="[ProgramFiles6432Folder]dotnet" bal:Overridable="no" />
+      <util:RegistrySearch Id="CheckSDKInstallLocation_x86"
+              Variable="SDKInstallLocationExists_x86"
+              Result="exists"
+              Root="HKLM"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86\sdk"
+              Value="InstallLocation" />
+      <util:RegistrySearch Id="SDKInstallLocation_x86"
+              After="CheckSDKInstallLocation_x86"
+              Condition="SDKInstallLocationExists_x86"
+              Variable="DOTNETHOME_X86"
+              Result="value"
+              Root="HKLM"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86\sdk"
+              Value="InstallLocation" />
+
+      <util:FileSearch Id="DotnetExeSearch_x86"
+              After="SDKInstallLocation_x86"
+              Variable="DotnetExeExists_x86"
+              Condition="NOT SDKInstallLocationExists_x86"
+              Result="exists"
+              Path="[ProgramFilesFolder]dotnet\dotnet.exe"/>
+      <util:DirectorySearch Id="DotnetExeLocation_x86"
+              After="DotnetExeSearch_x86"
+              Condition="DotnetExeExists_x86"
+              Variable="DOTNETHOME_X86"
+              Path="[ProgramFilesFolder]dotnet"/>
+      
+    <util:RegistrySearch Id="CheckSDKInstallLocation_x64"
+              Variable="SDKInstallLocationExists_x64"
+              Result="exists"
+              Root="HKLM"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sdk"
+              Value="InstallLocation" />
+    <util:RegistrySearch Id="SDKInstallLocation_x64"
+              After="CheckSDKInstallLocation_x64"
+              Condition="SDKInstallLocationExists_x64"
+              Variable="DOTNETHOME_X64"
+              Result="value"
+              Root="HKLM"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sdk"
+              Value="InstallLocation" />
+
+    <util:FileSearch Id="DotnetExeSearch_x64"
+              After="SDKInstallLocation_x64"
+              Variable="DotnetExeExists_x64"
+              Condition="NOT SDKInstallLocationExists_x64"
+              Result="exists"
+              Path="[ProgramFiles64Folder]dotnet\dotnet.exe"/>
+    <util:DirectorySearch Id="DotnetExeLocation_x64"
+              After="DotnetExeSearch_x64"
+              Condition="DotnetExeExists_x64"
+              Variable="DOTNETHOME_X64"
+              Path="[ProgramFiles64Folder]dotnet"/>
+
+    <!-- 
+        When installing the SDK bundle to a custom location using the commandline parameters, it is intended that 
+        both "DOTNETHOME_X86" and "DOTNETHOME_X64" should be used on the commandline and should take this convention:
+            DOTNETHOME_X86=<InstallFolder>\x86
+            DOTNETHOME_X64=<InstallFolder>\x64
+        Example:
+            dotnet-sdk-3.0.100-alpha1-009719-win-x64.exe /install DOTNETHOME_X64="D:\dotnet\x64" DOTNETHOME_X86="D:\dotnet\x86" /log "installation.log" /quiet /norestart
+    -->
+    <Variable Name="DOTNETHOME_X86" Type="string" Value="[ProgramFilesFolder]dotnet" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME_X64" Type="string" Value="[ProgramFiles64Folder]dotnet" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME" Type="string" Value="[DOTNETHOME_$(var.PlatformToken)]" bal:Overridable="no" />
     <Variable Name="BUNDLEMONIKER" Type="string" Value="$(var.ProductMoniker)" bal:Overridable="no" />
     <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(var.DisplayVersion)" bal:Overridable="no" />
     <Variable Name="DOTNETRUNTIMEVERSION" Type="string" Value="$(var.DotNetRuntimeVersion)" bal:Overridable="no" />
     <Variable Name="ASPNETCOREVERSION" Type="string" Value="$(var.AspNetCoreVersion)" bal:Overridable="no" />
-
-    <Chain DisableSystemRestore="yes" ParallelCache="yes">
+    <Variable Name="DOTNETHOMESIMILARITYCHECKOVERRIDE" Type="string" Value="" bal:Overridable="yes" />
+      
+      <Chain DisableSystemRestore="yes" ParallelCache="yes">
       <MsiPackage SourceFile="$(var.SharedFXMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
@@ -41,9 +109,12 @@
       <MsiPackage SourceFile="$(var.WinFormsAndWpfMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
-       <MsiPackage SourceFile="$(var.CLISDKMsiSourcePath)">
+      <MsiPackage SourceFile="$(var.CLISDKMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+        <MsiProperty Name="DOTNETHOME_X86" Value="[DOTNETHOME_X86]" />
+        <MsiProperty Name="DOTNETHOME_X64" Value="[DOTNETHOME_X64]" />
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />
+        <MsiProperty Name="ALLOWCLISDKMSIINSTALL" Value="True" />
       </MsiPackage>
       <?if $(var.Platform)=x86?>
         <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
