@@ -67,8 +67,8 @@ namespace EndToEnd.Tests
         [InlineData("winforms")]
         [InlineData("mstest")]
         [InlineData("nunit")]
-        //[InlineData("web")]
-        //[InlineData("mvc")]
+        [InlineData("web")]
+        [InlineData("mvc")]
         public void ItCanBuildTemplates(string templateName)
         {
             var directory = TestAssets.CreateTestDirectory(identifier: templateName);
