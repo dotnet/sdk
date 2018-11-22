@@ -115,7 +115,6 @@
         <DownloadFileName>dotnet-toolset-internal-$(ToolsetVersion).zip</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath>sdk/$(SdkVersion)</RelativeLayoutPath>
-        <IncludeInInternalLayout>true</IncludeInInternalLayout>
       </BundledLayoutComponent>
     </ItemGroup>
     
@@ -245,10 +244,6 @@
 
     <Copy SourceFiles="@(SdkInternalFiles)"
           DestinationFolder="$(SdkInternalLayoutPath)sdk/$(SdkVersion)"/>
-
-    <!--<ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
-                               DestinationDirectory="$(SdkInternalLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
-                               Condition="'%(BundledLayoutComponent.IncludeInInternalLayout)' == 'true'"/>-->
 
 
   </Target>
