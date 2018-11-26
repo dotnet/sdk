@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "3.0.100-preview-009775",
+    "dotnet": "3.0.100-preview-009784",
     "vswhere": "2.2.7"
   },
   "msbuild-sdks": {
