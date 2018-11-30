@@ -28,8 +28,6 @@ namespace Microsoft.DotNet.TestFramework
 
         private bool _restored = false;
 
-        private bool _built = false;
-
         public TestAssetInstance(TestAssetInfo testAssetInfo, DirectoryInfo root)
         {
             if (testAssetInfo == null)
@@ -89,20 +87,6 @@ namespace Microsoft.DotNet.TestFramework
                 RestoreAllProjects();
 
                 _restored = true;
-            }
-
-            return this;
-        }
-
-        public TestAssetInstance WithBuildFiles()
-        {
-            if (!_built)
-            {
-                WithRestoreFiles();
-
-                BuildRootProjectOrSolution();
-
-                _built = true;
             }
 
             return this;
@@ -227,32 +211,6 @@ namespace Microsoft.DotNet.TestFramework
             }
         }
 
-        private void BuildRootProjectOrSolution()
-        {
-            string[] args = new string[] { "build" };
-
-            Console.WriteLine($"TestAsset Build '{TestAssetInfo.AssetName}'");
-
-            var commandResult = Command.Create(TestAssetInfo.DotnetExeFile.FullName, args)
-                                    .WorkingDirectory(Root.FullName)
-                                    .CaptureStdOut()
-                                    .CaptureStdErr()
-                                    .Execute();
-
-            int exitCode = commandResult.ExitCode;
-
-            if (exitCode != 0)
-            {
-                Console.WriteLine(commandResult.StdOut);
-
-                Console.WriteLine(commandResult.StdErr);
-
-                string message = string.Format($"TestAsset Build '{TestAssetInfo.AssetName}' Failed with {exitCode}");
-
-                throw new Exception(message);
-            }
-        }
-
         private IEnumerable<FileInfo> GetProjectFiles()
         {
             return Root.GetFiles(TestAssetInfo.ProjectFilePattern, SearchOption.AllDirectories);
@@ -262,10 +220,8 @@ namespace Microsoft.DotNet.TestFramework
         {
             var restoreArgs = new string[] { "restore", projectFile.FullName };
 
-            var commandResult = Command.Create(TestAssetInfo.DotnetExeFile.FullName, restoreArgs)
-                                .CaptureStdOut()
-                                .CaptureStdErr()
-                                .Execute();
+            var commandResult = new DotnetCommand()
+                .Execute(ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(restoreArgs));
 
             commandResult.Should().Pass();
         }
