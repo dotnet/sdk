@@ -41,7 +41,8 @@ namespace EndToEnd.Tests
             var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             if (!string.IsNullOrEmpty(dotnetRoot))
             {
-                runCommand = runCommand.WithEnvironmentVariable(Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
+                bool useX86 = RepoDirectoriesProvider.DotnetRidUnderTest.EndsWith("x86", StringComparison.InvariantCultureIgnoreCase);
+                runCommand = runCommand.WithEnvironmentVariable(useX86 ? "DOTNET_ROOT(x86)" : "DOTNET_ROOT",
                     dotnetRoot);
             }
 

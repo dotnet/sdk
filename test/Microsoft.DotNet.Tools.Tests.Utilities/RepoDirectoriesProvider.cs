@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using FluentAssertions;
 using Microsoft.DotNet.PlatformAbstractions;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
@@ -16,6 +17,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
    
         public readonly static string TestWorkingFolder;
         public readonly static string DotnetUnderTest;
+        public readonly static string DotnetRidUnderTest;
 
         static RepoDirectoriesProvider()
         {
@@ -58,6 +60,16 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                     DotnetUnderTest = Path.Combine(RepoRoot, "artifacts", "bin", "redist", configuration, "dotnet", "dotnet" + dotnetExtension);
                 }
             }
+
+            //  TODO: Resolve dotnet folder even if DotnetUnderTest doesn't have full path
+            var sdkFolders = Directory.GetDirectories(Path.Combine(Path.GetDirectoryName(DotnetUnderTest), "sdk"));
+            sdkFolders.Length.Should().Be(1, "Only one SDK folder is expected in the layout");
+
+            var sdkFolder = sdkFolders.Single();
+            var versionFile = Path.Combine(sdkFolder, ".version");
+
+            var lines = File.ReadAllLines(versionFile);
+            DotnetRidUnderTest = lines[2].Trim();
         }
 
     }
