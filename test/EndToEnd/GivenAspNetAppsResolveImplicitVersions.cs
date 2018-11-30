@@ -220,8 +220,7 @@ namespace EndToEnd
             get
             {
                 yield return new object[] { "2.1" };
-                //  2.2 not yet stable
-                //yield return new object[] { "2.2" };
+                yield return new object[] { "2.2" };
                 yield return new object[] { LatestSupportedAspNetCoreAppVersion };
             }
         }
