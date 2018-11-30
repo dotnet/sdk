@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public class PhysicalFileSystem : IPhysicalFileSystem
+    public class PhysicalFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
     {
         public bool DirectoryExists(string directory)
         {
@@ -89,6 +90,11 @@ namespace Microsoft.TemplateEngine.Utils
         public void SetFileAttributes(string file, FileAttributes attributes)
         {
             File.SetAttributes(file, attributes);
+        }
+
+        public DateTime GetLastWriteTimeUtc(string file)
+        {
+            return File.GetLastWriteTimeUtc(file);
         }
     }
 }

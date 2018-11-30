@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
 
 
-    public class MockFileSystem : IPhysicalFileSystem
+    public class MockFileSystem : IPhysicalFileSystem, IFileLastWriteTimeSource
     {
         private class FileSystemFile
         {
@@ -22,25 +22,40 @@ namespace Microsoft.TemplateEngine.Mocks
             {
                 Data = file.Data;
                 Attributes = file.Attributes;
+                LastWriteTimeUtc = file.LastWriteTimeUtc;
             }
 
             public byte[] Data;
             public FileAttributes Attributes;
+
+            public DateTime LastWriteTimeUtc;
+        }
+
+        public class DirectoryScanParameters
+        {
+            public string DirectoryName { get; set; }
+            public string Pattern { get; set; }
+            public SearchOption SearchOption { get; set; }
         }
 
         private HashSet<string> _directories = new HashSet<string>(StringComparer.Ordinal);
         private Dictionary<string, FileSystemFile> _files = new Dictionary<string, FileSystemFile>(StringComparer.Ordinal);
+        private List<DirectoryScanParameters> _directoriesScanned = new List<DirectoryScanParameters>();
 
-        public MockFileSystem Add(string filePath, string contents, Encoding encoding = null)
+        public MockFileSystem Add(string filePath, string contents, Encoding encoding = null, DateTime? lastWriteTime = null)
         {
-            _files[filePath] = new FileSystemFile() { Data = (encoding ?? Encoding.UTF8).GetBytes(contents) };
+            _files[filePath] = new FileSystemFile()
+            {
+                Data = (encoding ?? Encoding.UTF8).GetBytes(contents),
+                LastWriteTimeUtc = lastWriteTime ?? DateTime.UtcNow
+            };
 
             string currentParent = Path.GetDirectoryName(filePath);
 
             while (currentParent.IndexOfAny(new[] { '\\', '/' }) != currentParent.Length - 1)
             {
                 _directories.Add(currentParent);
-                currentParent = Path.GetDirectoryName(filePath);
+                currentParent = Path.GetDirectoryName(currentParent);
             }
 
             return this;
@@ -168,6 +183,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IEnumerable<string> EnumerateFileSystemEntries(string directoryName, string pattern, SearchOption searchOption)
         {
+            RecordDirectoryScan(directoryName, pattern, searchOption);
             Glob g = Glob.Parse(searchOption != SearchOption.AllDirectories ? "**/" + pattern : pattern);
 
             foreach (string entry in _files.Keys.Union(_directories).Where(x => x.StartsWith(directoryName, StringComparison.Ordinal) || x.StartsWith(directoryName, StringComparison.Ordinal) && (x[directoryName.Length] == Path.DirectorySeparatorChar || x[directoryName.Length] == Path.AltDirectorySeparatorChar)))
@@ -178,6 +194,18 @@ namespace Microsoft.TemplateEngine.Mocks
                     yield return entry;
                 }
             }
+        }
+
+        public IReadOnlyList<DirectoryScanParameters> DirectoriesScanned => _directoriesScanned;
+
+        private void RecordDirectoryScan(string directoryName, string pattern, SearchOption searchOption)
+        {
+            _directoriesScanned.Add(new DirectoryScanParameters
+            {
+                DirectoryName = directoryName,
+                Pattern = pattern,
+                SearchOption = searchOption
+            });
         }
 
         public FileAttributes GetFileAttributes(string file)
@@ -198,6 +226,16 @@ namespace Microsoft.TemplateEngine.Mocks
             }
 
             _files[file].Attributes = attributes;
+        }
+        
+        public DateTime GetLastWriteTimeUtc(string file)
+        {
+            if (!FileExists(file))
+            {
+                throw new Exception($"File {file} doesn't exist");
+            }
+
+            return _files[file].LastWriteTimeUtc;
         }
     }
 }

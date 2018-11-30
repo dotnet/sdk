@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
-    public class TemplateInfo : ITemplateInfo, IShortNameList
+    public class TemplateInfo : ITemplateInfo, IShortNameList, ITemplateWithTimestamp
     {
         public TemplateInfo()
         {
@@ -25,6 +25,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             versionReaders.Add("1.0.0.0", TemplateInfoReaderVersion1_0_0_0.FromJObject);
             versionReaders.Add("1.0.0.1", TemplateInfoReaderVersion1_0_0_1.FromJObject);
             versionReaders.Add("1.0.0.2", TemplateInfoReaderVersion1_0_0_2.FromJObject);
+            versionReaders.Add("1.0.0.3", TemplateInfoReaderVersion1_0_0_3.FromJObject);
             _infoVersionReaders = versionReaders;
 
             _defaultReader = TemplateInfoReaderInitialVersion.FromJObject;
@@ -221,5 +222,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonProperty]
         public bool HasScriptRunningPostActions { get; set; }
+
+        [JsonProperty]
+        public DateTime? ConfigTimestampUtc { get; set; }
     }
 }

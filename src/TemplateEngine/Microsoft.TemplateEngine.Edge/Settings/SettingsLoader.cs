@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
+using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -222,48 +224,78 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             EnsureLoaded();
 
-            if (IsVersionCurrent && !forceRebuild)
+            MountPointInfo[] mountPointsToScan = FindMountPointsToScan(forceRebuild).ToArray();
+
+            if (!mountPointsToScan.Any())
             {
+                // Nothing to do
                 return;
             }
 
-            // load up the culture neutral cache
-            // and get the mount points for templates from the culture neutral cache
-            IReadOnlyList<TemplateInfo> cultureNeutralTemplates = _userTemplateCache.GetTemplatesForLocale(null, _userSettings.Version);
-            HashSet<Guid> templateMountPointIds = new HashSet<Guid>(cultureNeutralTemplates.Select(x => x.ConfigMountPointId));
-
             TemplateCache workingCache = new TemplateCache(_environmentSettings);
-            HashSet<Guid> scannedMountPoints = new HashSet<Guid>();
-
-            // Scan the unique mount points for the templates.
-            foreach (MountPointInfo mountPoint in MountPoints)
+            foreach (MountPointInfo mountPoint in mountPointsToScan)
             {
-                if (templateMountPointIds.Contains(mountPoint.MountPointId) && scannedMountPoints.Add(mountPoint.MountPointId))
-                {
-                    workingCache.Scan(mountPoint.Place);
-                }
-            }
-
-            // loop through the localized caches and get all the locale mount points
-            HashSet<Guid> localeMountPointIds = new HashSet<Guid>();
-            foreach (string locale in _userTemplateCache.AllLocalesWithCacheFiles)
-            {
-                IReadOnlyList<TemplateInfo> templatesForLocale = _userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version);
-                localeMountPointIds.UnionWith(templatesForLocale.Select(x => x.LocaleConfigMountPointId));
-            }
-
-            // Scan the unique local mount points
-            foreach (MountPointInfo mountPoint in MountPoints)
-            {
-                if (localeMountPointIds.Contains(mountPoint.MountPointId) && scannedMountPoints.Add(mountPoint.MountPointId))
-                {
-                    workingCache.Scan(mountPoint.Place);
-                }
+                workingCache.Scan(mountPoint.Place);
             }
 
             Save(workingCache);
 
             ReloadTemplates();
+        }
+
+        private IEnumerable<MountPointInfo> FindMountPointsToScan(bool forceRebuild)
+        {
+            // If the user settings version is out of date, or
+            // we've been asked to rebuild everything then
+            // we need to scan everything
+            bool forceScanAll = !IsVersionCurrent || forceRebuild;
+
+            // load up the culture neutral cache
+            // and get the mount points for templates from the culture neutral cache
+            HashSet<TemplateInfo> allTemplates = new HashSet<TemplateInfo>(_userTemplateCache.GetTemplatesForLocale(null, _userSettings.Version));
+
+            // loop through the localized caches and get all the locale mount points
+            foreach (string locale in _userTemplateCache.AllLocalesWithCacheFiles)
+            {
+                allTemplates.UnionWith(_userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version));
+            }
+
+            foreach (TemplateInfo template in allTemplates)
+            {
+                if (!_mountPoints.TryGetValue(template.ConfigMountPointId, out MountPointInfo mountPoint))
+                {
+                    // TODO: This should never happen - throw an error?
+                    continue;
+                }
+                if (forceScanAll)
+                {
+                    yield return mountPoint;
+                    continue;
+                }
+
+                // For MountPoints using FileSystemMountPointFactories
+                // we scan the file system to see if the template
+                // is more recent than our cached version
+                if (mountPoint.MountPointFactoryId != FileSystemMountPointFactory.FactoryId)
+                {
+                    continue;
+                }
+
+                string pathToTemplateFile = Path.Combine(mountPoint.Place, template.ConfigPlace.TrimStart('/'));
+
+                DateTime? timestampOnDisk = null;
+                if (_environmentSettings.Host.FileSystem is IFileLastWriteTimeSource timeSource)
+                {
+                    timestampOnDisk = timeSource.GetLastWriteTimeUtc(pathToTemplateFile);
+                }
+
+                if (!template.ConfigTimestampUtc.HasValue
+                    || (timestampOnDisk.HasValue && template.ConfigTimestampUtc.Value < timestampOnDisk))
+                {
+                    // Template on disk is more recent
+                    yield return mountPoint;
+                }
+            }
         }
 
         private void ReloadTemplates()

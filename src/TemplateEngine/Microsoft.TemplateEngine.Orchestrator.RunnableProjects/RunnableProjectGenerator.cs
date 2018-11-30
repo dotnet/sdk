@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
@@ -274,6 +275,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     template = null;
                     return false;
+                }
+
+                // Record the timestamp of the template file so we
+                // know to reload it if it changes
+                if (host.FileSystem is IFileLastWriteTimeSource timeSource)
+                {
+                    runnableProjectTemplate.ConfigTimestampUtc = timeSource.GetLastWriteTimeUtc(templateFile.FullPath);
                 }
 
                 template = runnableProjectTemplate;

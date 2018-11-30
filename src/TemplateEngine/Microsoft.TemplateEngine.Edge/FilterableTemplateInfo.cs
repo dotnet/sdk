@@ -4,7 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Edge
 {
-    public class FilterableTemplateInfo : ITemplateInfo, IShortNameList
+    public class FilterableTemplateInfo : ITemplateInfo, IShortNameList, ITemplateWithTimestamp
     {
         public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
         {
@@ -37,6 +37,11 @@ namespace Microsoft.TemplateEngine.Edge
             if (source is IShortNameList sourceWithShortNameList)
             {
                 filterableTemplate.ShortNameList = sourceWithShortNameList.ShortNameList;
+            }
+
+            if (source is ITemplateWithTimestamp withTimestamp)
+            {
+                filterableTemplate.ConfigTimestampUtc = withTimestamp.ConfigTimestampUtc;
             }
 
             return filterableTemplate;
@@ -89,5 +94,7 @@ namespace Microsoft.TemplateEngine.Edge
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo { get; private set; }
 
         public bool HasScriptRunningPostActions { get; set; }
+
+        public DateTime? ConfigTimestampUtc { get; set; }
     }
 }
