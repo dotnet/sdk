@@ -226,7 +226,8 @@
                             GenerateBundledVersions;
                             LayoutTemplates;
                             LayoutBundledTools;
-                            RetargetTools"
+                            RetargetTools;
+                            CrossgenLayout"
           AfterTargets="Build">
   
   </Target>
