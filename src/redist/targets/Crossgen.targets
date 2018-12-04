@@ -19,18 +19,18 @@
 
     <!-- Download the runtime package with the crossgen executable in it -->
     <ItemGroup>
-      <DownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+      <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
         <Properties>
           PackageToRestore=$(RuntimeNETCoreAppPackageName);
           PackageVersionToRestore=$(MicrosoftNETCoreAppPackageVersion);
           TargetFramework=$(TargetFramework)
         </Properties>
-      </DownloadPackageProject>
+      </CrossGenDownloadPackageProject>
     </ItemGroup>
 
     <MSBuild
       BuildInParallel="False"
-      Projects="@(DownloadPackageProject)">
+      Projects="@(CrossGenDownloadPackageProject)">
     </MSBuild>
     
     <ItemGroup>

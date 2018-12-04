@@ -218,6 +218,70 @@
                       Overwrite="true" />
   </Target>
   
+  <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
+    
+    <PropertyGroup>
+      <NETCoreDotNetAppHostPackageName>Microsoft.NETCore.DotNetAppHost</NETCoreDotNetAppHostPackageName>
+      <AppHostRestorePath>$(IntermediateOutputPath)AppHostRestore\</AppHostRestorePath>
+      <AppHostTemplatePath>$(SdkOutputDirectory)AppHostTemplate</AppHostTemplatePath>
+    </PropertyGroup>
+    
+    <RemoveDir Directories="$(AppHostRestorePath)" />
+    <MakeDir Directories="$(AppHostRestorePath)" />
+
+    <ItemGroup>
+      <NETCoreDotNetAppHostPackageVersions Include="@(PackageDefinitions->'%(Version)')"
+                                           Condition="%(PackageDefinitions.Name) == $(NETCoreDotNetAppHostPackageName)" />
+    </ItemGroup>
+
+    <Error Condition="@(NETCoreDotNetAppHostPackageVersions->Distinct()->Count()) != 1"
+           Text="Failed to determine the $(NETCoreDotNetAppHostPackageName) version pulled in Microsoft.NETCore.App" />
+
+    <PropertyGroup>
+      <_NETCoreDotNetAppHostPackageVersion>@(NETCoreDotNetAppHostPackageVersions->Distinct())</_NETCoreDotNetAppHostPackageVersion>
+    </PropertyGroup>
+
+      
+    <ItemGroup>
+      <AppHostTemplateDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=$(NETCoreDotNetAppHostPackageName);
+          PackageVersionToRestore=$(_NETCoreDotNetAppHostPackageVersion);
+          TargetFramework=$(TargetFramework);
+          RestorePackagesPath=$(AppHostRestorePath);
+          RuntimeIdentifier=$(Rid)
+        </Properties>
+      </AppHostTemplateDownloadPackageProject>
+    </ItemGroup>
+
+    <MSBuild
+      BuildInParallel="False"
+      Projects="@(AppHostTemplateDownloadPackageProject)">
+    </MSBuild>
+    
+    <PropertyGroup>
+      <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AllFileOfRestoredAppHostPackage Include="$(AppHostRestorePath)\**\*.*" />
+      <NativeRestoredAppHostNETCore
+          Include="@(AllFileOfRestoredAppHostPackage)"
+          Condition="'%(FileName)%(Extension)' == '$(AppHostExecutableName)'"/>
+    </ItemGroup>
+
+    <Error Condition="@(NativeRestoredAppHostNETCore->Distinct()->Count()) != 1"
+           Text="Failed to determine the $(NETCoreDotNetAppHostPackageName) executable in @(AllFileOfRestoredAppHostPackage)" />
+
+    <Copy
+        SourceFiles="@(NativeRestoredAppHostNETCore)"
+        DestinationFolder="$(AppHostTemplatePath)" />
+
+    <Message Text="Copy from @(NativeRestoredAppHostNETCore) to $(AppHostTemplatePath)."
+             Importance="High" />
+  
+  </Target>
+  
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
@@ -227,6 +291,7 @@
                             LayoutTemplates;
                             LayoutBundledTools;
                             RetargetTools;
+                            LayoutAppHostTemplate;
                             CrossgenLayout"
           AfterTargets="Build">
   
