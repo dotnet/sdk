@@ -27,6 +27,7 @@
   <Import Project="targets\GenerateDebs.targets" />
   <Import Project="targets\GenerateRPMs.targets" />
   <Import Project="targets\GeneratePKG.targets" />
+  <Import Project="targets\GenerateInstallers.targets" />
 
   <Import Project="targets\Signing.targets" />
 

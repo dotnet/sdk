@@ -188,7 +188,7 @@
                             GenerateSdkBundle;
                             GenerateSdkNupkg;
                             GenerateSdkMSBuildExtensionsNupkg"
-        Condition=" '$(OS)' == 'Windows_NT'" />
+        Condition=" '$(OS)' == 'Windows_NT' and !$(Architecture.StartsWith('arm'))" />
 
   <!-- These targets are used in signing, don't remove them! -->
   <!--<Target Name="ExtractEngineFromSdkBundle"

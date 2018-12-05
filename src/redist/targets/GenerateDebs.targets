@@ -148,7 +148,7 @@
        GenerateDebsInner condition is evaluated -->
   <Target Name="GenerateDebs"
           DependsOnTargets="GetCurrentRuntimeInformation;
-                            GenerateDebs"/>
+                            GenerateDebsInner"/>
 
   
   <!-- Re-enable "TestSdkDeb" when the following issue is resolved: https://github.com/dotnet/cli/issues/9672 -->
