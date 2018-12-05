@@ -11,8 +11,7 @@
                           GetCurrentRuntimeInformation;
                           SetupFileExtensions;
                           CalculateLinuxNativeInstallerDependencyVersions;
-                          SetSdkBrandingInfo;
-                          SetInstallerInfo">
+                          SetSdkBrandingInfo">
     <PropertyGroup>
       <DotnetDebToolDir>$(MSBuildProjectDirectory)</DotnetDebToolDir>
       <!--<DotnetDebToolDir>$(MSBuildThisFileDirectory)/dotnet-deb-tool-consumer</DotnetDebToolDir>-->
