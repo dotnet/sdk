@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("Release.With-A Mix", "RELEASE_WITH_A_MIX")]
         public void Properly_changes_implicit_defines(string configuration, string expected)
         {
-            var targetFramework = "net45";
+            var targetFramework = "netcoreapp1.0";
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorldVB")
                 .WithSource()
@@ -47,9 +47,11 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, configuration);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
-                "HelloWorld.exe",
-                "HelloWorld.exe.config",
+                "HelloWorld.dll",
                 "HelloWorld.pdb",
+                "HelloWorld.deps.json",
+                "HelloWorld.runtimeconfig.dev.json",
+                "HelloWorld.runtimeconfig.json",
             });
         }
     }
