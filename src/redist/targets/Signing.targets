@@ -171,17 +171,14 @@
         Condition="'$(SignCoreSdk)' == 'true'"
         DependsOnTargets="SetSignProps">
 
-    <PropertyGroup>
-      <!-- Not sure if this filename is chosen by Wix or what -->
-      <CabFileName>dnet-1.cab</CabFileName>
-    </PropertyGroup>
-
     <ItemGroup>
       <SdkMsiFilesToSign Include="$(SdkMSIInstallerFile)" />
-      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)$(CabFileName)" />
+      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)*.cab" />
 
-      <SdkMsiFileSignInfo Include="$(ArtifactNameWithVersionSdk)$(InstallerExtension)" CertificateName="$(InternalCertificateId)"/>
-      <SdkMsiFileSignInfo Include="$(CabFileName)" CertificateName="$(InternalCertificateId)"/>
+      <SdkMsiFileSignInfo Include="@(SdkMsiFilesToSign->'%(Filename)%(Extension)')">
+        <CertificateName>$(InternalCertificateId)</CertificateName>
+      </SdkMsiFileSignInfo>
+      <DistinctSdkMsiFileSignInfo Include="@(SdkMsiFileSignInfo->Distinct())" />
     </ItemGroup>
 
     <Microsoft.DotNet.SignTool.SignToolTask
@@ -190,7 +187,7 @@
         CertificatesSignInfo="$(CertificatesSignInfo)"
         ItemsToSign="@(SdkMsiFilesToSign)"
         StrongNameSignInfo="@(StrongNameSignInfo)"
-        FileSignInfo="@(SdkMsiFileSignInfo)"
+        FileSignInfo="@(DistinctSdkMsiFileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
         TempDir="$(ArtifactsTmpDir)"
         LogDir="$(ArtifactsLogDir)"
