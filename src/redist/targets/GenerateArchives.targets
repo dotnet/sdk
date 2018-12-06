@@ -12,6 +12,11 @@
 
     <ZipFileCreateFromDirectory
         SourceDirectory="$(RedistLayoutPath)"
+        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).zip"
+        OverwriteDestination="true" />
+
+    <ZipFileCreateFromDirectory
+        SourceDirectory="$(SdkInternalLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).zip"
         OverwriteDestination="true" />
 
