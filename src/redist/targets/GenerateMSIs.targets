@@ -152,11 +152,11 @@
                     $(SdkGenerateNupkgPowershellScript)"
           Outputs="$(SdkInstallerNupkgFile)">
 
-    <!--<Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateNupkgPowershellScript) ^
+    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateNupkgPowershellScript) ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(FullNugetVersion)' ^
                       '$(SdkInstallerNuspecFile)' ^
-                      '$(SdkInstallerNupkgFile)'" />-->
+                      '$(SdkInstallerNupkgFile)'" />
   </Target>
 
   <Target Name="GenerateSdkMSBuildExtensionsNupkg"
@@ -167,7 +167,8 @@
                     $(SdkGenerateNupkgPowershellScript)"
           Outputs="$(SdkMSBuildExtensionsNupkgFile);$(SdkMSBuildExtensionsSwrFile)">
 
-    <!-- Disabling this for now because we don't have the MSBuildExtensions available. -->
+    <!-- Disabling this for now because we don't have the MSBuildExtensions available.
+         https://github.com/dotnet/cli/issues/10260 -->
 
     <!-- <Exec Command="powershell -NoProfile -NoLogo -InformationAction Continue $(SdkGenerateNupkgPowershellScript) ^
                       '$(MSBuildExtensionsLayoutDirectory)' ^
