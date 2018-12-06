@@ -126,11 +126,11 @@
     
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
                       '$(SdkMSIInstallerFile)' ^
-                      '$(IntermediateOutputPath)downloads\$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
-                      '$(IntermediateOutputPath)downloads\$(DownloadedSharedFrameworkInstallerFileName)' ^
-                      '$(IntermediateOutputPath)downloads\$(DownloadedHostFxrInstallerFileName)' ^
-                      '$(IntermediateOutputPath)downloads\$(DownloadedSharedHostInstallerFileName)' ^
-                      '$(IntermediateOutputPath)downloads\$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
@@ -185,7 +185,9 @@
                             MsiTargetsSetupInputOutputs;
                             AcquireWix;
                             GenerateSdkMsi;
+                            SignSdkMsi;
                             GenerateSdkBundle;
+                            SignSdkBundle;
                             GenerateSdkNupkg;
                             GenerateSdkMSBuildExtensionsNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and !$(Architecture.StartsWith('arm'))" />

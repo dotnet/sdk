@@ -153,6 +153,6 @@ if(!(Test-Path $DotnetMSIOutput))
     Exit -1
 }
 
-Write-Information -ForegroundColor Green "Successfully created dotnet MSI - $DotnetMSIOutput"
+Write-Information "Successfully created dotnet MSI - $DotnetMSIOutput"
 
 exit $LastExitCode

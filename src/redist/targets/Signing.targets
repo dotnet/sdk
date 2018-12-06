@@ -56,6 +56,33 @@
 
     <!-- Allow repository to customize signing configuration -->
     <!--<Import Project="$(RepositoryEngineeringDir)Signing.props" Condition="Exists('$(RepositoryEngineeringDir)Signing.props')" />-->
+
+    <!-- Logic copied from https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Arcade.Sdk/tools/Sign.proj -->
+    <Error Text="The value of DotNetSignType is invalid: '$(DotNetSignType)'"
+       Condition="'$(DotNetSignType)' != 'real' and '$(DotNetSignType)' != 'test' and '$(DotNetSignType)' != ''" />
+
+    <PropertyGroup>
+      <_DryRun>true</_DryRun>
+      <_DryRun Condition="'$(OfficialBuild)' == 'true'">false</_DryRun>
+
+      <_TestSign>false</_TestSign>
+      <_TestSign Condition="'$(DotNetSignType)' == 'test'">true</_TestSign>
+
+      <_DesktopMSBuildRequired>false</_DesktopMSBuildRequired>
+      <_DesktopMSBuildRequired Condition="'$(_DryRun)' != 'true' and '$(MSBuildRuntimeType)' == 'Core'">true</_DesktopMSBuildRequired>
+    </PropertyGroup>
+
+    <!-- We only need this if we are going to use the executable version. -->
+    <Exec Command='"$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe" -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild'
+          ConsoleToMsBuild="true"
+          StandardErrorImportance="high"
+          Condition="$(_DesktopMSBuildRequired)">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
+    </Exec>
+
+    <PropertyGroup>
+      <_DesktopMSBuildPath Condition="$(_DesktopMSBuildRequired)">$(_VSInstallDir)\MSBuild\15.0\Bin\msbuild.exe</_DesktopMSBuildPath>
+    </PropertyGroup>
   </Target>
   
   <Target Name="SignLayout"
@@ -121,37 +148,9 @@
       <DistinctLayoutFileSignInfo Include="@(FilesNotToSign)" CertificateName="None" />
     </ItemGroup>
 
-    <!-- Logic copied from https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Arcade.Sdk/tools/Sign.proj -->
-    <Error Text="The value of DotNetSignType is invalid: '$(DotNetSignType)'"
-       Condition="'$(DotNetSignType)' != 'real' and '$(DotNetSignType)' != 'test' and '$(DotNetSignType)' != ''" />
-
-    <PropertyGroup>
-      <_DryRun>true</_DryRun>
-      <_DryRun Condition="'$(OfficialBuild)' == 'true'">false</_DryRun>
-
-      <_TestSign>false</_TestSign>
-      <_TestSign Condition="'$(DotNetSignType)' == 'test'">true</_TestSign>
-
-      <_DesktopMSBuildRequired>false</_DesktopMSBuildRequired>
-      <_DesktopMSBuildRequired Condition="'$(_DryRun)' != 'true' and '$(MSBuildRuntimeType)' == 'Core'">true</_DesktopMSBuildRequired>
-    </PropertyGroup>
-
-    <!-- We only need this if we are going to use the executable version. -->
-    <Exec Command='"$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe" -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild'
-          ConsoleToMsBuild="true"
-          StandardErrorImportance="high"
-          Condition="$(_DesktopMSBuildRequired)">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
-    </Exec>
-
-    <PropertyGroup>
-      <_DesktopMSBuildPath Condition="$(_DesktopMSBuildRequired)">$(_VSInstallDir)\MSBuild\15.0\Bin\msbuild.exe</_DesktopMSBuildPath>
-    </PropertyGroup>
-
     <Error Condition="'$(AllowEmptySignList)' != 'true' AND '@(LayoutFilesToSign)' == ''"
            Text="List of files to sign is empty. Make sure that LayoutFilesToSign is configured correctly." />
     
-
     <Microsoft.DotNet.SignTool.SignToolTask
       DryRun="$(_DryRun)"
       TestSign="$(_TestSign)"
@@ -166,5 +165,91 @@
       SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
       MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
     
+  </Target>
+
+  <Target Name="SignSdkMsi"
+        Condition="'$(SignCoreSdk)' == 'true'"
+        DependsOnTargets="SetSignProps">
+
+    <PropertyGroup>
+      <!-- Not sure if this filename is chosen by Wix or what -->
+      <CabFileName>dnet-1.cab</CabFileName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SdkMsiFilesToSign Include="$(SdkMSIInstallerFile)" />
+      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)$(CabFileName)" />
+
+      <SdkMsiFileSignInfo Include="$(ArtifactNameWithVersionSdk)$(InstallerExtension)" CertificateName="$(InternalCertificateId)"/>
+      <SdkMsiFileSignInfo Include="$(CabFileName)" CertificateName="$(InternalCertificateId)"/>
+    </ItemGroup>
+
+    <Microsoft.DotNet.SignTool.SignToolTask
+        DryRun="$(_DryRun)"
+        TestSign="$(_TestSign)"
+        CertificatesSignInfo="$(CertificatesSignInfo)"
+        ItemsToSign="@(SdkMsiFilesToSign)"
+        StrongNameSignInfo="@(StrongNameSignInfo)"
+        FileSignInfo="@(SdkMsiFileSignInfo)"
+        FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        TempDir="$(ArtifactsTmpDir)"
+        LogDir="$(ArtifactsLogDir)"
+        MSBuildPath="$(_DesktopMSBuildPath)"
+        SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
+
+  </Target>
+
+  <Target Name="SignSdkBundle"
+      Condition="'$(SignCoreSdk)' == 'true'"
+      DependsOnTargets="SetSignProps">
+
+    <!-- Extract engine from bundle -->
+    <Exec Command="$(WixRoot)/insignia.exe -ib $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostBundleEngineName)" />
+    
+    <!-- Sign engine-->
+    <ItemGroup>
+      <EngineFileToSign Include="$(CombinedFrameworkSdkHostBundleEngineName)" />
+      <EngineFileSignInfo Include="$([System.IO.Path]::GetFileName('$(CombinedFrameworkSdkHostBundleEngineName)'))"
+                          CertificateName="$(InternalCertificateId)"/>
+    </ItemGroup>
+    <Microsoft.DotNet.SignTool.SignToolTask
+        DryRun="$(_DryRun)"
+        TestSign="$(_TestSign)"
+        CertificatesSignInfo="$(CertificatesSignInfo)"
+        ItemsToSign="@(EngineFileToSign)"
+        StrongNameSignInfo="@(StrongNameSignInfo)"
+        FileSignInfo="@(EngineFileSignInfo)"
+        FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        TempDir="$(ArtifactsTmpDir)"
+        LogDir="$(ArtifactsLogDir)"
+        MSBuildPath="$(_DesktopMSBuildPath)"
+        SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
+    
+    <!-- Reattach engine to bundle -->
+    <Exec Command="$(WixRoot)/insignia.exe -ab $(CombinedFrameworkSdkHostBundleEngineName) $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostMSIInstallerFile)" />
+    
+    <!-- Sign bundle -->
+    <ItemGroup>
+      <BundleFileToSign Include="$(CombinedFrameworkSdkHostMSIInstallerFile)" />
+      <BundleFileSignInfo Include="$([System.IO.Path]::GetFileName('$(CombinedFrameworkSdkHostMSIInstallerFile)'))"
+                          CertificateName="$(InternalCertificateId)"/>
+    </ItemGroup>
+
+    <Microsoft.DotNet.SignTool.SignToolTask
+        DryRun="$(_DryRun)"
+        TestSign="$(_TestSign)"
+        CertificatesSignInfo="$(CertificatesSignInfo)"
+        ItemsToSign="@(BundleFileToSign)"
+        StrongNameSignInfo="@(StrongNameSignInfo)"
+        FileSignInfo="@(BundleFileSignInfo)"
+        FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        TempDir="$(ArtifactsTmpDir)"
+        LogDir="$(ArtifactsLogDir)"
+        MSBuildPath="$(_DesktopMSBuildPath)"
+        SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
+
   </Target>
 </Project>
