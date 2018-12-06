@@ -236,7 +236,7 @@
         Mode="u+x" />-->
 
       <!-- Build SDK Deb package -->
-      <DotNetDebTool ToolPath="$(RepoRoot).dotnet"
+      <DotNetDebTool ToolPath="$(_DotNetRoot)"
                      InputDirectory="$(LayoutDirectory)"
                      OutputDirectory="$(DotNetDebToolOutputDirectory)"
                      PackageName="$(SdkDebianPackageName)"
