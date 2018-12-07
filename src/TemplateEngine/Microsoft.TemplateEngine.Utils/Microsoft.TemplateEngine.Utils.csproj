@@ -1,7 +1,7 @@
-﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard1.3;net45</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard1.3</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
     <Description>Components used by all Template Engine extensions and consumers</Description>
   </PropertyGroup>
 
@@ -11,7 +11,7 @@
   
   <ItemGroup>
     <PackageReference Include="SourceLink.Create.CommandLine" />
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Condition="'$(TargetFramework)' == 'netstandard1.3'"/>
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
     <DotNetCliToolReference Include="dotnet-sourcelink" />
   </ItemGroup>
 </Project>

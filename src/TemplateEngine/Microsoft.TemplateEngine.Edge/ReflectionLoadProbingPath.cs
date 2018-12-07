@@ -218,8 +218,8 @@ namespace Microsoft.TemplateEngine.Edge
                 {
                     IEnumerable<FileInfo> files = info.EnumerateFiles($"{stringName}.dll", SearchOption.AllDirectories)
                         .Where(x => x.FullName.IndexOf($"{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) > -1
-                        && (x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netstandard1.", StringComparison.OrdinalIgnoreCase) > -1
-                        || x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netcoreapp1.", StringComparison.OrdinalIgnoreCase) > -1))
+                        && (x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netstandard", StringComparison.OrdinalIgnoreCase) > -1
+                        || x.FullName.IndexOf($"{Path.DirectorySeparatorChar}netcoreapp", StringComparison.OrdinalIgnoreCase) > -1))
                         .OrderByDescending(x => x.FullName);
 #if !NET45
                     found = SelectBestMatch(assemblyLoadContext, assemblyName, files);

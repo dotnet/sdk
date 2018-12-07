@@ -18,7 +18,7 @@
   <ItemGroup>
     <Content Include="$(ArtifactsDir)\localize\**\Microsoft.TemplateEngine.Cli.resources.dll">
       <Pack>true</Pack>
-      <PackagePath>lib\netstandard1.5</PackagePath>
+      <PackagePath>lib\netstandard2.0</PackagePath>
     </Content>
     <Content Remove="$(ArtifactsDir)\localize\ploc\Microsoft.TemplateEngine.Cli.resources.dll" />
   </ItemGroup>
