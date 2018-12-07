@@ -193,14 +193,5 @@
                             GenerateSdkMSBuildExtensionsNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and !$(Architecture.StartsWith('arm'))" />
 
-  <!-- These targets are used in signing, don't remove them! -->
-  <!--<Target Name="ExtractEngineFromSdkBundle"
-            DependsOnTargets="MsiTargetsSetupInputOutputs">
-      <Exec Command="$(WixRoot)/insignia.exe -ib $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostBundleEngineName)" />
-    </Target>
 
-    <Target Name="ReattachEngineToSdkBundle"
-            DependsOnTargets="MsiTargetsSetupInputOutputs">
-      <Exec Command="$(WixRoot)/insignia.exe -ab $(CombinedFrameworkSdkHostBundleEngineName) $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostMSIInstallerFile)" />
-    </Target>-->
 </Project>
