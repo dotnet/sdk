@@ -52,8 +52,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
                     s_testAssets = new TestAssets(
                         new DirectoryInfo(assetsRoot),
-                        new FileInfo(new Muxer().MuxerPath),
-                        new RepoDirectoriesProvider().TestWorkingFolder); 
+                        new FileInfo(RepoDirectoriesProvider.DotnetUnderTest),
+                        RepoDirectoriesProvider.TestWorkingFolder); 
                 }
 
                 return s_testAssets;
@@ -112,8 +112,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 args.Add("exec");
                 args.Add(ArgumentEscaper.EscapeSingleArg(executablePath));
 
-                var muxer = new Muxer();
-                executablePath = muxer.MuxerPath;
+                executablePath = RepoDirectoriesProvider.DotnetUnderTest;
             }
 
             var executableCommand = new TestCommand(executablePath);

@@ -1,0 +1,32 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <BundledTemplate Include="Microsoft.DotNet.Common.ItemTemplates" Version="$(MicrosoftDotNetCommonItemTemplatesPackageVersion)" />
+    <BundledTemplate Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" Version="$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)" />
+    <BundledTemplate Include="Microsoft.DotNet.Test.ProjectTemplates.2.2" Version="$(MicrosoftDotNetTestProjectTemplates22PackageVersion)" />
+    <BundledTemplate Include="Microsoft.Dotnet.Wpf.ProjectTemplates" Version="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
+    <BundledTemplate Include="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
+
+    <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates" Version="$(AspNetCoreVersion)" />
+    <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Version="$(AspNetCoreVersion)" />
+    <BundledTemplate Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Version="$(AspNetCoreVersion)" />
+
+    <BundledTemplate Include="NUnit3.DotNetNew.Template" Version="$(NUnit3TemplatesVersion)" />
+  </ItemGroup>
+
+  <!-- Restore bundled templates via PackageReference -->
+  <ItemGroup>
+    <PackageReference Include="@(BundledTemplate)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BundledTemplate Update="@(BundledTemplate)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(Version)/%(Identity).%(Version).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+    </BundledTemplate>
+  </ItemGroup>
+
+  <Target Name="LayoutTemplates" DependsOnTargets="SetupBundledComponents">
+    <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
+          DestinationFolder="$(SdkOutputDirectory)Templates/"/>
+  </Target>
+</Project>

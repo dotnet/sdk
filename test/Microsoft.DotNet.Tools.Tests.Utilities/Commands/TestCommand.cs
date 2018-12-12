@@ -142,6 +142,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
             RemoveCliGeneratedEnvironmentVariablesFrom(psi);
 
+            psi.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
+            psi.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+
             AddEnvironmentVariablesTo(psi);
 
             AddWorkingDirectoryTo(psi);
@@ -203,11 +206,11 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
                 args = newArgs;
 
-                executable = new Muxer().MuxerPath;
+                executable = RepoDirectoriesProvider.DotnetUnderTest;
             }
             else if ( executable == "dotnet")
             {
-                executable = new Muxer().MuxerPath;
+                executable = RepoDirectoriesProvider.DotnetUnderTest;
             }
             else if (!Path.IsPathRooted(executable))
             {
@@ -238,9 +241,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 psi.Environment[item.Key] = item.Value;
 #endif
             }
-
-            //  Flow the TEST_PACKAGES environment variable to the child process
-            psi.Environment["TEST_PACKAGES"] = System.Environment.GetEnvironmentVariable("TEST_PACKAGES");
         }
 
         private void AddWorkingDirectoryTo(ProcessStartInfo psi)

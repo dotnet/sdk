@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Restore">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="$(PackageToRestore)" Version="$(PackageVersionToRestore)" />
+  </ItemGroup>
+  
+</Project>

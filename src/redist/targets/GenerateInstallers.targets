@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- TODO: Add GenerateDebs to this list: https://github.com/dotnet/core-sdk/issues/201 -->
+
+  <Target Name="GenerateInstallers"
+          AfterTargets="Pack"
+          DependsOnTargets="GetCurrentRuntimeInformation;
+                            GenerateMsis;
+                            GeneratePkgs;
+                            GenerateRpms;"
+          />
+</Project>

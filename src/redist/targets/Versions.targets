@@ -1,0 +1,50 @@
+<Project>
+  <PropertyGroup>
+    <VersionMajor>3</VersionMajor>
+    <VersionMinor>0</VersionMinor>
+    <VersionPatch>100</VersionPatch>
+    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">arcade</ReleaseSuffix>
+  </PropertyGroup>
+  
+  <Target Name="GetCoreSdkGitCommitInfo">
+    <Exec Command="git rev-list --count HEAD"
+          ConsoleToMSBuild="true"
+          Condition=" '$(GitCommitCount)' == '' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
+    </Exec>
+
+    <Exec Command="git rev-parse HEAD"
+          ConsoleToMSBuild="true"
+          Condition=" '$(GitCommitHash)' == '' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+
+    <PropertyGroup>
+      <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="SetSdkVersionInfo" DependsOnTargets="GetCoreSdkGitCommitInfo">
+    <PropertyGroup>
+      <MajorMinorVersion>$(VersionMajor).$(VersionMinor)</MajorMinorVersion>
+      <CliVersionNoSuffix>$(VersionMajor).$(VersionMinor).$(VersionPatch)</CliVersionNoSuffix>
+      <CliVersionPrefix>$(CliVersionNoSuffix)-$(ReleaseSuffix)</CliVersionPrefix>
+      <CliBrandingVersion Condition=" '$(DropSuffix)' != 'true' ">$(CliVersionNoSuffix) - $(ReleaseSuffix)</CliBrandingVersion>
+      <CliBrandingVersion Condition=" '$(DropSuffix)' == 'true' ">$(CliVersionNoSuffix)</CliBrandingVersion>
+      <SimpleVersion Condition=" '$(DropSuffix)' != 'true' ">$(CliVersionNoSuffix).$(GitCommitCount)</SimpleVersion>
+      <SimpleVersion Condition=" '$(SimpleVersion)' == '' ">$(CliVersionNoSuffix)</SimpleVersion>
+
+      <VersionSuffix Condition=" '$(DropSuffix)' != 'true' ">$(ReleaseSuffix)-$(GitCommitCount)</VersionSuffix>
+
+      <FullNugetVersion>$(CliVersionNoSuffix)-$(ReleaseSuffix)-$(GitCommitCount)</FullNugetVersion>
+
+      <NugetVersion Condition=" '$(DropSuffix)' != 'true' ">$(FullNugetVersion)</NugetVersion>
+      <NugetVersion Condition=" '$(NugetVersion)' == '' ">$(CliVersionNoSuffix)</NugetVersion>
+
+      <SdkVersion>$(NugetVersion)</SdkVersion>
+      <SdkNugetVersion>$(NugetVersion)</SdkNugetVersion>
+
+    </PropertyGroup>
+  </Target>
+  
+</Project>
