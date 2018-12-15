@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         private string _builtDotnet;
         private string _nugetPackages;
         private string _stage2Sdk;
+        private string _stage2AspNetCore;
         private string _stage2WithBackwardsCompatibleRuntimesDirectory;
         private string _testPackages;
         private string _testWorkingFolder;
@@ -90,6 +91,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         public string DotnetRoot => _dotnetRoot;
         public string NugetPackages => _nugetPackages;
         public string Stage2Sdk => _stage2Sdk;
+        public string Stage2AspNetCore => _stage2AspNetCore;
         public string Stage2WithBackwardsCompatibleRuntimesDirectory => _stage2WithBackwardsCompatibleRuntimesDirectory;
         public string TestPackages => _testPackages;
         public string TestWorkingFolder => _testWorkingFolder;
@@ -115,6 +117,12 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             _stage2Sdk = Directory
                 .EnumerateDirectories(Path.Combine(_artifacts, "dotnet", "sdk"))
                 .First(d => !d.Contains("NuGetFallbackFolder"));
+
+            string AspNetCoreDir = Path.Combine(_dotnetRoot, "shared", "Microsoft.AspNetCore.App");
+            if (Directory.Exists(AspNetCoreDir))
+            {
+                _stage2AspNetCore = Directory.EnumerateDirectories(AspNetCoreDir).First();
+            }
 
             _stage2WithBackwardsCompatibleRuntimesDirectory =
                 Path.Combine(_artifacts, "dotnetWithBackwardsCompatibleRuntimes");

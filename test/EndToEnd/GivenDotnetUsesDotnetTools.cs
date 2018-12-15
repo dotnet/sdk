@@ -6,7 +6,7 @@ namespace EndToEnd
 {
     public class GivenDotnetUsesDotnetTools : TestBase
     {
-        [Fact]
+        [RequiresAspNetCore]
         public void ThenOneDotnetToolsCanBeCalled()
         {
             new DotnetCommand()
