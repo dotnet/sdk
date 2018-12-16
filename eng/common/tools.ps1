@@ -136,11 +136,6 @@ function InitializeDotNetCli([bool]$install) {
     $env:DOTNET_INSTALL_DIR = $dotnetRoot
   }
 
-  # Add dotnet to PATH. This prevents any bare invocation of dotnet in custom
-  # build steps from using anything other than what we've downloaded.
-  # It also  ensures that VS msbuild will use the downloaded sdk targets.
-  $env:PATH = "$dotnetRoot;$env:PATH"
-
   return $global:_DotNetInstallDir = $dotnetRoot
 }
 
@@ -174,13 +169,12 @@ function InstallDotNetSdk([string] $dotnetRoot, [string] $version) {
 # Returns full path to msbuild.exe.
 # Throws on failure.
 #
-function InitializeVisualStudioMSBuild([bool]$install, [object]$vs = $null) {
+function InitializeVisualStudioMSBuild([bool]$install) {
   if (Test-Path variable:global:_MSBuildExe) {
     return $global:_MSBuildExe
   }
 
-  if (!$vs) { $vs = $GlobalJson.tools.vs }
-  $vsMinVersionStr = if ($vs.version) { $vs.version } else { "15.9" }
+  $vsMinVersionStr = if (!$GlobalJson.tools.vs.version) { $GlobalJson.tools.vs.version } else { "15.9" }
   $vsMinVersion = [Version]::new($vsMinVersionStr) 
 
   # Try msbuild command available in the environment.
@@ -197,7 +191,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vs = $null) {
   }
 
   # Locate Visual Studio installation or download x-copy msbuild.
-  $vsInfo = LocateVisualStudio $vs
+  $vsInfo = LocateVisualStudio  
   if ($vsInfo -ne $null) {
     $vsInstallDir = $vsInfo.installationPath
     $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
@@ -261,7 +255,7 @@ function InstallXCopyMSBuild([string] $packageVersion) {
 # Returns JSON describing the located VS instance (same format as returned by vswhere), 
 # or $null if no instance meeting the requirements is found on the machine.
 #
-function LocateVisualStudio([object]$vs = $null){
+function LocateVisualStudio {
   if (Get-Member -InputObject $GlobalJson.tools -Name "vswhere") {
     $vswhereVersion = $GlobalJson.tools.vswhere
   } else {
@@ -277,7 +271,7 @@ function LocateVisualStudio([object]$vs = $null){
     Invoke-WebRequest "https://github.com/Microsoft/vswhere/releases/download/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
   }
 
-  if (!$vs) { $vs = $GlobalJson.tools.vs }
+  $vs = $GlobalJson.tools.vs
   $args = @("-latest", "-prerelease", "-format", "json", "-requires", "Microsoft.Component.MSBuild")
   
   if (Get-Member -InputObject $vs -Name "version") { 

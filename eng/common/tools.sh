@@ -136,10 +136,6 @@ function InitializeDotNetCli {
     fi
   fi
 
-  # Add dotnet to PATH. This prevents any bare invocation of dotnet in custom
-  # build steps from using anything other than what we've downloaded.
-  export PATH="$dotnet_root:$PATH"
-
   # return value
   _InitializeDotNetCli="$dotnet_root"
 }
