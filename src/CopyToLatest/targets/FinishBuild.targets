@@ -8,5 +8,11 @@
                        NugetVersion="$(FullNugetVersion)"
                        Channel="$(Channel)"
                        CommitHash="$(GitCommitHash)" />
+
+    <CopyBlobsToLatest FeedUrl="$(DotNetPublishChecksumsBlobFeedUrl)"
+                       AccountKey="$(DotNetPublishChecksumsBlobFeedKey)"
+                       NugetVersion="$(FullNugetVersion)"
+                       Channel="$(Channel)"
+                       CommitHash="$(GitCommitHash)" />
   </Target>
 </Project>
