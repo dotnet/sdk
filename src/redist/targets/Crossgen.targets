@@ -15,6 +15,8 @@
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">x64_arm</LibCLRJitRid>
       <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppPackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
       <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppPackageVersion)</SharedFrameworkNameVersionPath>
+      <DIASymReaderCrossgenFilter>*</DIASymReaderCrossgenFilter>
+      <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86</DIASymReaderCrossgenFilter>
     </PropertyGroup>
 
     <!-- Download the runtime package with the crossgen executable in it -->
@@ -58,7 +60,7 @@
       <FSharpFiles Remove="$(SdkOutputDirectory)FSharp\**\*.resources.dll" />
       <RemainingFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
 
-      <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.*.dll" />
+      <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.$(DIASymReaderCrossgenFilter).dll" />
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">
