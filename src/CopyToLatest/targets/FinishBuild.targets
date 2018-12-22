@@ -3,8 +3,8 @@
   <Target Name="FinalizeBuild"
           DependsOnTargets="SetSdkVersionInfo"
           AfterTargets="Build">
-    <CopyBlobsToLatest FeedUrl="$(DotNetPublishBlobFeedUrl)"
-                       AccountKey="$(DotNetPublishBlobFeedKey)"
+    <CopyBlobsToLatest FeedUrl="$(DotnetPublishSdkAssetsBlobFeedUrl)"
+                       AccountKey="$(DotNetPublishSdkAssetsBlobFeedKey)"
                        NugetVersion="$(FullNugetVersion)"
                        Channel="$(Channel)"
                        CommitHash="$(GitCommitHash)" />
