@@ -13,6 +13,7 @@
       <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.svg" />
       <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
       <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.sha" />
+      <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.cab" />
       <ArtifactsForGeneratingChecksums Include="$(ArtifactsShippingPackagesDir)*.*" Exclude="@(FilesToExcludeForChecksum)" />
 
       <ArtifactsForGeneratingChecksums>
