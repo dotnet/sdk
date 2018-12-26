@@ -291,8 +291,8 @@
                             LayoutTemplates;
                             LayoutBundledTools;
                             RetargetTools;
-                            LayoutAppHostTemplate;
                             CrossgenLayout;
+                            LayoutAppHostTemplate;
                             SignLayout"
           AfterTargets="Build">
   

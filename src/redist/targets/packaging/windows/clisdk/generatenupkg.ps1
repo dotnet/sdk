@@ -11,7 +11,7 @@ param(
     [Parameter(Mandatory=$true)][string]$NupkgFile
 )
 
-. "$PSScriptRoot\..\..\..\scripts\common\_common.ps1"
+. "$PSScriptRoot\_common.ps1"
 $RepoRoot = Convert-Path "$PSScriptRoot\..\..\.."
 $NuGetDir = Join-Path $RepoRoot ".nuget"
 $NuGetExe = Join-Path $NuGetDir "nuget.exe"

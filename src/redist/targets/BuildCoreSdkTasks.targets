@@ -34,5 +34,7 @@
   <UsingTask TaskName="GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="Crossgen" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="CopyBlobsToLatest" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="GenerateChecksums" AssemblyFile="$(CoreSdkTaskDll)"/>
 
 </Project>

@@ -28,13 +28,6 @@
       <!--<ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
       <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />-->
 
-      <!-- Default certificate/strong-name to be used for all files with PKT=="31bf3856ad364e35". -->
-      <StrongNameSignInfo Include="MsSharedLib72" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
-      <StrongNameSignInfo Include="SilverlightCert121" PublicKeyToken="7cec85d7bea7798e" CertificateName="Microsoft400" />
-      <StrongNameSignInfo Include="StrongName" PublicKeyToken="b77a5c561934e089" CertificateName="Microsoft400" />
-      <StrongNameSignInfo Include="StrongName" PublicKeyToken="b03f5f7f11d50a3a" CertificateName="Microsoft400" />
-      <!--<StrongNameSignInfo Include="$(MSBuildThisFileDirectory)snk\Open.snk" PublicKeyToken="cc7b13ffcd2ddd51" CertificateName="Microsoft400" />-->
-
       <!--
       Map of file extensions to default certificate name. Files with these extensions are
       signed with the specified certificate. Particularly useful for files that don't have
