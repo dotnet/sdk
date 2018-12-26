@@ -3,7 +3,7 @@
     <VersionMajor>3</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionPatch>100</VersionPatch>
-    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">arcade</ReleaseSuffix>
+    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview</ReleaseSuffix>
   </PropertyGroup>
   
   <Target Name="GetCoreSdkGitCommitInfo">
