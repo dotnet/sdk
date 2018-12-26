@@ -36,7 +36,7 @@ namespace EndToEnd
             ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
         }
 
-        public void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
+        internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
         {
             var testProjectCreator = new TestProjectCreator()
             {

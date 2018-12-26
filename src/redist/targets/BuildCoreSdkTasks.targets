@@ -1,0 +1,40 @@
+<Project>
+  <PropertyGroup>
+    <!-- Tasks are multitargeted to support building in VS and with desktop MSBuild -->
+    <TaskTargetFramework>$(CoreSdkTargetFramework)</TaskTargetFramework>
+    <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
+    
+    <CoreSdkTaskDll>$(ArtifactsDir)tasks\bin\core-sdk-tasks\$(Configuration)\$(TaskTargetFramework)\core-sdk-tasks.dll</CoreSdkTaskDll>
+    <CoreSdkTaskProject>$(RepoRoot)src\core-sdk-tasks\core-sdk-tasks.csproj</CoreSdkTaskProject>
+  </PropertyGroup>
+  <Target Name="BuildCoreSdkTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+    <!-- Use a different ArtifactsDir for this invocation so that the tasks project can be part of the solution
+         (for easy editing), but we don't hit problems with the tasks DLL being locked when we try to build the solution. -->
+
+    <MSBuild Projects="$(CoreSdkTaskProject)"
+             Properties="ArtifactsDir=$(ArtifactsDir)tasks\;Phase=Restore"
+             Targets="Restore"/>
+
+    <MSBuild Projects="$(CoreSdkTaskProject)"
+             Properties="ArtifactsDir=$(ArtifactsDir)tasks\"/>
+  </Target>
+
+  <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="DownloadFile" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="ZipFileExtractToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="GenerateMsiVersion" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="GenerateGuidFromName" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="Chmod" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="DotNetDebTool" AssemblyFile="$(CoreSdkTaskDll)" />
+  <UsingTask TaskName="BuildFPMToolPreReqs" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="Crossgen" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="CopyBlobsToLatest" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="GenerateChecksums" AssemblyFile="$(CoreSdkTaskDll)"/>
+
+</Project>

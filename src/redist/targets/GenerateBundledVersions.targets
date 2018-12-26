@@ -1,0 +1,215 @@
+<Project>
+
+  <Target Name="GenerateBundledVersions"
+          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" />
+
+  <Target Name="GenerateBundledVersionsProps" DependsOnTargets="RunResolvePackageDependencies;SetupBundledComponents">
+    <PropertyGroup>
+      <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
+    </PropertyGroup>
+
+    <!--
+      The bundled version of Microsoft.NETCore.App is determined statically from DependencyVersions.props whereas the bundled version
+      of NETStandard.Library is defined by what Microsoft.NETCore.App pulls in. This digs in to the package resolution items of
+      of our build against Microsoft.NETCore.App to find the correct NETStandard.Library version
+    -->
+    <ItemGroup>
+      <_NETStandardLibraryPackageVersions Include="@(PackageDefinitions->'%(Version)')"
+                                   Condition="%(PackageDefinitions.Name) == 'NetStandard.Library'" />
+      <_NETCorePlatformsPackageVersions Include="@(PackageDefinitions->'%(Version)')"
+                                   Condition="%(PackageDefinitions.Name) == 'Microsoft.NETCore.Platforms'" />
+    </ItemGroup>
+
+    <Error Condition="@(_NETStandardLibraryPackageVersions->Distinct()->Count()) != 1"
+           Text="Failed to determine the NETStandard.Library version pulled in Microsoft.NETCore.App" />
+    <Error Condition="@(_NETCorePlatformsPackageVersions->Distinct()->Count()) != 1"
+           Text="Failed to determine the Microsoft.NETCore.Platforms version pulled in Microsoft.NETCore.App" />
+
+    <PropertyGroup>
+      <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppPackageVersion)</_NETCoreAppPackageVersion>
+      <_NETStandardLibraryPackageVersion>@(_NETStandardLibraryPackageVersions->Distinct())</_NETStandardLibraryPackageVersion>
+      <_NETCorePlatformsPackageVersion>@(_NETCorePlatformsPackageVersions->Distinct())</_NETCorePlatformsPackageVersion>
+      <_AspNetCoreAppPackageVersion>$(MicrosoftAspNetCoreAppPackageVersion)</_AspNetCoreAppPackageVersion>
+
+      <!-- Default aspnetcore patch versions, specified as a stabilized version -->
+      <_DefaultPatchVersionForAspNetCoreApp3_0>3.0.0</_DefaultPatchVersionForAspNetCoreApp3_0>
+      <!-- If we are currently building a prerelease of the version that we intend to lock to, set the default version to the ingested version instead of the stabilized version. -->
+      <_DefaultPatchVersionForAspNetCoreApp3_0 Condition="$(_AspNetCoreAppPackageVersion.StartsWith('$(_DefaultPatchVersionForAspNetCoreApp3_0)-'))">$(_AspNetCoreAppPackageVersion)</_DefaultPatchVersionForAspNetCoreApp3_0>
+
+      <!-- Use only major and minor in target framework version -->
+      <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
+      <_NETStandardTargetFrameworkVersion>$(_NETStandardLibraryPackageVersion.Split('.')[0]).$(_NETStandardLibraryPackageVersion.Split('.')[1])</_NETStandardTargetFrameworkVersion>
+      <_AspNetCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</_AspNetCoreAppTargetFrameworkVersion>
+
+      <_NETCoreSdkIsPreview Condition=" '$(DropSuffix)' != 'true' ">true</_NETCoreSdkIsPreview>
+    </PropertyGroup>
+
+    <!--
+        Setting the property to true if patch == 0 and preview == true. SDK will set DefaultNetCorePatchVersion according to this flag.
+        So that we don't need to manually update the version selection logic between when we ship a final release and when we ship the first patch
+      -->
+    <GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion
+      BundledNETCoreAppPackageVersion="$(_NETCoreAppPackageVersion)">
+      <Output TaskParameter="UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion"
+              PropertyName="_UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion" />
+    </GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion>
+
+    <ItemGroup>
+      <ImplicitPackageVariable Include="Microsoft.NETCore.App"
+                               TargetFrameworkVersion="1.0"
+                               DefaultVersion="1.0.5"
+                               LatestVersion="1.0.13" />
+      <ImplicitPackageVariable Include="Microsoft.NETCore.App"
+                               TargetFrameworkVersion="1.1"
+                               DefaultVersion="1.1.2"
+                               LatestVersion="1.1.10" />
+      <ImplicitPackageVariable Include="Microsoft.NETCore.App"
+                               TargetFrameworkVersion="2.0"
+                               DefaultVersion="2.0.0"
+                               LatestVersion="2.0.9" />
+      <ImplicitPackageVariable Include="Microsoft.NETCore.App"
+                               TargetFrameworkVersion="2.1"
+                               DefaultVersion="2.1.0"
+                               LatestVersion="2.1.6" />
+      <ImplicitPackageVariable Include="Microsoft.NETCore.App"
+                               TargetFrameworkVersion="2.2"
+                               DefaultVersion="2.2.0"
+                               LatestVersion="2.2.0" />
+      <ImplicitPackageVariable Include="Microsoft.NETCore.App"
+                               TargetFrameworkVersion="3.0"
+                               DefaultVersion="$(_NETCoreAppPackageVersion)"
+                               LatestVersion="$(_NETCoreAppPackageVersion)" />
+      
+      <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
+                               TargetFrameworkVersion="2.1"
+                               DefaultVersion="2.1.1"
+                               LatestVersion="2.1.6"/>
+      <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
+                               TargetFrameworkVersion="2.1"
+                               DefaultVersion="2.1.1"
+                               LatestVersion="2.1.6"/>
+
+      <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
+                               TargetFrameworkVersion="2.2"
+                               DefaultVersion="2.2.0"
+                               LatestVersion="2.2.0"/>
+      <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
+                               TargetFrameworkVersion="2.2"
+                               DefaultVersion="2.2.0"
+                               LatestVersion="2.2.0"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <BundledVersionsVariable Include="BundledAspNetCoreAppTargetFrameworkVersion" Value="$(_AspNetCoreAppTargetFrameworkVersion)" />
+      <BundledVersionsVariable Include="BundledAspNetCoreAppPackageVersion" Value="$(_AspNetCoreAppPackageVersion)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <BundledVersionsPropsContent>
+<![CDATA[
+<!--
+***********************************************************************************************
+$(BundledVersionsPropsFileName)
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
+  <PropertyGroup>
+    <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
+    <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
+    <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
+    <UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion>$(_UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion)</UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion>
+    <BundledNETStandardTargetFrameworkVersion>$(_NETStandardTargetFrameworkVersion)</BundledNETStandardTargetFrameworkVersion>
+    <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>
+    <BundledNETCorePlatformsPackageVersion>$(_NETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
+    @(BundledVersionsVariable->'<%(Identity)>%(Value)</%(Identity)>', '
+    ')
+    <NETCoreSdkVersion>$(SdkVersion)</NETCoreSdkVersion>
+    <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
+    <_NETCoreSdkIsPreview>$(_NETCoreSdkIsPreview)</_NETCoreSdkIsPreview>
+
+    <AddDotnetfeedProjectSource Condition="'%24(AddDotnetfeedProjectSource)' == ''">%24(_NETCoreSdkIsPreview)</AddDotnetfeedProjectSource>
+    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/dotnet-core/index.json</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreAdditionalProjectSources>
+
+    <!-- Default patch versions for each minor version of ASP.NET Core -->
+    <DefaultPatchVersionForAspNetCoreAll2_1>2.1.1</DefaultPatchVersionForAspNetCoreAll2_1>
+    <DefaultPatchVersionForAspNetCoreApp2_1>2.1.1</DefaultPatchVersionForAspNetCoreApp2_1>
+
+    <!-- Latest patch versions for each minor version of .NET Core -->
+    <LatestPatchVersionForNetCore1_0 Condition="'%24(LatestPatchVersionForNetCore1_0)' == ''">1.0.12</LatestPatchVersionForNetCore1_0>
+    <LatestPatchVersionForNetCore1_1 Condition="'%24(LatestPatchVersionForNetCore1_1)' == ''">1.1.9</LatestPatchVersionForNetCore1_1>
+    <LatestPatchVersionForNetCore2_0 Condition="'%24(LatestPatchVersionForNetCore2_0)' == ''">2.0.9</LatestPatchVersionForNetCore2_0>
+    <LatestPatchVersionForNetCore2_1 Condition="'%24(LatestPatchVersionForNetCore2_1)' == ''">2.1.2</LatestPatchVersionForNetCore2_1>
+  </PropertyGroup>
+  <ItemGroup>
+    @(ImplicitPackageVariable->'<ImplicitPackageReferenceVersion Include="%(Identity)" TargetFrameworkVersion="%(TargetFrameworkVersion)" DefaultVersion="%(DefaultVersion)" LatestVersion="%(LatestVersion)"/>', '
+    ')
+
+    
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App"
+                              TargetingPackVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.AspNetCore.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+                              TargetingPackName="Microsoft.AspNetCore.App"
+                              TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+                              />
+  </ItemGroup>
+</Project>
+]]>
+    </BundledVersionsPropsContent>
+  </PropertyGroup>
+
+    <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledVersionsPropsFileName)"
+                      Lines="$(BundledVersionsPropsContent)"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="GenerateBundledCliToolsProps" DependsOnTargets="SetupBundledComponents">
+    <PropertyGroup>
+      <BundledBundledCliToolsPropsFileName>Microsoft.NETCoreSdk.BundledCliTools.props</BundledBundledCliToolsPropsFileName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <BundledBundledCliToolsPropsContent>
+<![CDATA[
+<!--
+***********************************************************************************************
+$(BundledBundledCliToolsPropsFileName)
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
+  <ItemGroup>
+@(BundledDotnetTools->HasMetadata('ObsoletesCliTool')->'    %3CBundledDotNetCliToolReference Include="%(ObsoletesCliTool)" /%3E','%0A')
+  </ItemGroup>
+</Project>
+]]>
+    </BundledBundledCliToolsPropsContent>
+  </PropertyGroup>
+
+    <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
+                      Lines="$(BundledBundledCliToolsPropsContent)"
+                      Overwrite="true" />
+  </Target>
+</Project>

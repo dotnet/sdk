@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+   <PropertyGroup>
+    <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+  </PropertyGroup>
+
+  <Import Project="targets\BranchInfo.props" />
+  <Import Project="..\redist\targets\BuildCoreSdkTasks.targets" />
+  <Import Project="..\redist\targets\GetRuntimeInformation.targets" />
+  <Import Project="..\redist\targets\Versions.targets" />
+  <Import Project="..\redist\targets\SetBuildDefaults.targets" />
+  
+  <Import Project="targets\FinishBuild.targets" />
+</Project>

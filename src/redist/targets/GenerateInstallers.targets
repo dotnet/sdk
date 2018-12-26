@@ -1,0 +1,11 @@
+<Project>
+
+  <Target Name="GenerateInstallers"
+          AfterTargets="Pack"
+          DependsOnTargets="GetCurrentRuntimeInformation;
+                            GenerateMsis;
+                            GeneratePkgs;
+                            GenerateRpms;
+                            GenerateDebs"
+          />
+</Project>

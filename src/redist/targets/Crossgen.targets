@@ -1,0 +1,151 @@
+<Project>
+  <Target Name="CrossgenLayout"
+          Condition="'$(DISABLE_CROSSGEN)' == ''"
+          DependsOnTargets="SetSdkBrandingInfo">
+    
+    <PropertyGroup>
+      <RuntimeNETCoreAppPackageName>runtime.$(SharedFrameworkRid).microsoft.netcore.app</RuntimeNETCoreAppPackageName>
+      <_crossDir Condition="'$(Architecture)' == 'arm64'">/x64_arm64</_crossDir>
+      <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
+      <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">/x64_arm</_crossDir>
+      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppPackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
+      <LibCLRJitRid Condition="!$(Architecture.StartsWith('arm'))">$(SharedFrameworkRid)</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(Architecture)' == 'arm64'">x64_arm64</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86_arm</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">x64_arm</LibCLRJitRid>
+      <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppPackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
+      <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppPackageVersion)</SharedFrameworkNameVersionPath>
+      <DIASymReaderCrossgenFilter>*</DIASymReaderCrossgenFilter>
+      <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86</DIASymReaderCrossgenFilter>
+    </PropertyGroup>
+
+    <!-- Download the runtime package with the crossgen executable in it -->
+    <ItemGroup>
+      <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=$(RuntimeNETCoreAppPackageName);
+          PackageVersionToRestore=$(MicrosoftNETCoreAppPackageVersion);
+          TargetFramework=$(TargetFramework)
+        </Properties>
+      </CrossGenDownloadPackageProject>
+    </ItemGroup>
+
+    <MSBuild
+      BuildInParallel="False"
+      Projects="@(CrossGenDownloadPackageProject)">
+    </MSBuild>
+    
+    <ItemGroup>
+      <RoslynFiles Include="$(SdkOutputDirectory)Roslyn\bincore\**\*" />
+      <FSharpFiles Include="$(SdkOutputDirectory)FSharp\**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll" />
+      <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="@(RoslynFiles);@(FSharpFiles)" />
+
+      <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error -->
+      <RemainingFiles Remove="$(SdkOutputDirectory)TestHost*\**\*" />
+      <RemainingFiles Remove="$(SdkOutputDirectory)Sdks\**\*" />
+      <RemainingFiles Remove="$(SdkOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
+
+      <!-- Add back the .NET Core assemblies in the Sdks folder -->
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\netcoreapp2.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\**\*" />
+
+      <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
+      <RemainingFiles Remove="$(SdkOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
+
+      <!-- Don't CrossGen bundled DotnetTools -->
+      <RemainingFiles Remove="$(SdkOutputDirectory)DotnetTools\**\*" />
+
+      <!-- Don't crossgen satellite assemblies -->
+      <RoslynFiles Remove="$(SdkOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
+      <FSharpFiles Remove="$(SdkOutputDirectory)FSharp\**\*.resources.dll" />
+      <RemainingFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
+
+      <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.$(DIASymReaderCrossgenFilter).dll" />
+    </ItemGroup>
+
+    <AddMetadataIsPE Items="@(RoslynFiles)">
+      <Output TaskParameter="ResultItems" ItemName="RoslynFilesWithPEMarker" />
+    </AddMetadataIsPE>
+    <AddMetadataIsPE Items="@(FSharpFiles)">
+      <Output TaskParameter="ResultItems" ItemName="FSharpFilesWithPEMarker" />
+    </AddMetadataIsPE>
+    <AddMetadataIsPE Items="@(RemainingFiles)">
+      <Output TaskParameter="ResultItems" ItemName="RemainingFilesWithPEMarker" />
+    </AddMetadataIsPE>
+
+    <ItemGroup>
+      <RoslynTargets Include="%(RoslynFilesWithPEMarker.FullPath)" Condition=" '%(RoslynFilesWithPEMarker.IsPE)' == 'True' " />
+      <FSharpTargets Include="%(FSharpFilesWithPEMarker.FullPath)" Condition=" '%(FSharpFilesWithPEMarker.IsPE)' == 'True' " />
+      <RemainingTargets Include="%(RemainingFilesWithPEMarker.FullPath)" Condition=" '%(RemainingFilesWithPEMarker.IsPE)' == 'True' " />
+
+      <RoslynFolders Include="@(RoslynTargets-&gt;DirectoryName()-&gt;Distinct())" />
+      <FSharpFolders Include="@(FSharpTargets-&gt;DirectoryName()-&gt;Distinct())" />
+      <RemainingFolders Include="@(RemainingTargets-&gt;DirectoryName()-&gt;Distinct())" />
+
+      <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
+      <RemainingFolders Remove="$(PublishDir)FSharp\**\*" />
+    </ItemGroup>
+
+    <!-- Ensure crossgen tool is executable.  See https://github.com/NuGet/Home/issues/4424 -->
+    <!-- Probably not needed anymore -->
+    <!--<Chmod Condition=" '$(OSName)' != 'win' "
+           Glob="$(CrossgenPath)"
+           Mode="u+x" />-->
+
+    <!-- Crossgen does not support generating symbols on Mac  -->
+    <PropertyGroup Condition="'$(CreateCrossgenSymbols)' == ''">
+      <CreateCrossgenSymbols>true</CreateCrossgenSymbols>
+      <CreateCrossgenSymbols Condition="'$(OSName)' == 'osx'">false</CreateCrossgenSymbols>
+      <CreateCrossgenSymbols Condition="'$(OSName)' == 'freebsd'">false</CreateCrossgenSymbols>
+    </PropertyGroup>
+
+    <Crossgen
+        SourceAssembly="%(RoslynTargets.FullPath)"
+        DestinationPath="%(RoslynTargets.FullPath)"
+        JITPath="$(LibCLRJitPath)"
+        CrossgenPath="$(CrossgenPath)"
+        ReadyToRun="True"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        DiasymReaderPath="@(DiasymReaderPath)"
+        PlatformAssemblyPaths="@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
+
+    <Crossgen
+        SourceAssembly="%(FSharpTargets.FullPath)"
+        DestinationPath="%(FSharpTargets.FullPath)"
+        JITPath="$(LibCLRJitPath)"
+        CrossgenPath="$(CrossgenPath)"
+        ReadyToRun="True"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        DiasymReaderPath="@(DiasymReaderPath)"
+        PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
+
+    <Crossgen
+        SourceAssembly="%(RemainingTargets.FullPath)"
+        DestinationPath="%(RemainingTargets.FullPath)"
+        JITPath="$(LibCLRJitPath)"
+        CrossgenPath="$(CrossgenPath)"
+        ReadyToRun="True"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        DiasymReaderPath="@(DiasymReaderPath)"
+        PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
+
+
+    <ItemGroup>
+      <PdbsToMove Include="$(SdkOutputDirectory)**/*.pdb" />
+      <PdbsToMove Include="$(SdkOutputDirectory)**/*.ni.*.map" />
+    </ItemGroup>
+
+    <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
+    <Move SourceFiles="@(PdbsToMove)"
+          DestinationFiles="@(PdbsToMove->'$(ArtifactsShippingSymbolsDir)/sdk/$(SdkVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <Target Name="ChmodLayout"
+        AfterTargets="CrossgenLayout"
+        Condition=" '$(OSName)' != 'win' ">
+
+    <Exec Command="find $(SdkOutputDirectory) -type d -exec chmod 755 {} \;" />
+    <Exec Command="find $(SdkOutputDirectory) -type f -exec chmod 644 {} \;" />
+    <Chmod Mode="755" Glob="$(SdkOutputDirectory)/FSharp/RunFsc.sh" />
+  </Target>
+</Project>
