@@ -8,6 +8,13 @@
           <RegistryValue Action="write" Name="$(var.NugetVersion)" Type="integer" Value="1" KeyPath="yes"/>
         </RegistryKey>
       </Component>
+      <!--- The 'WpfWinformsTemplatesFlag' registry key is meant to be a temporary solution for Visual Studio 16.0 -->
+      <!--- https://devdiv.visualstudio.com/DevDiv/_workitems/edit/676485 -->
+      <Component Id="WpfWinformsTemplatesFlag" Directory="TARGETDIR" Win64="no">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\SDKFeatures">
+          <RegistryValue Action="write" Name="WpfWinformsTemplates" Type="integer" Value="1" KeyPath="yes"/>
+        </RegistryKey>
+      </Component>
       <Component Id="SDKInstallLocation_x64" Directory="TARGETDIR" Win64="no">
         <Condition>VersionNT64 AND DOTNETHOME_X64</Condition>
         <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sdk">

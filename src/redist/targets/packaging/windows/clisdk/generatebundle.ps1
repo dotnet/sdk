@@ -14,6 +14,7 @@ param(
     [Parameter(Mandatory=$true)][string]$DotnetMSIVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLIDisplayVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
+    [Parameter(Mandatory=$true)][string]$WindowsDesktopVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
     [Parameter(Mandatory=$true)][string]$Architecture,
     [Parameter(Mandatory=$true)][string]$DotNetRuntimeVersion,
@@ -41,6 +42,7 @@ function RunCandleForBundle
         -dHostFXRMsiSourcePath="$HostFxrMSIFile" `
         -dSharedHostMsiSourcePath="$SharedHostMSIFile" `
         -dWinFormsAndWpfMsiSourcePath="$WinFormsAndWpfMSIFile" `
+        -dWinFormsAndWpfVersion="$WindowsDesktopVersion" `
         -dAdditionalSharedFXMsiSourcePath="$AdditionalSharedFxMSIFile" `
         -dAdditionalHostFXRMsiSourcePath="$AdditionalHostFxrMSIFile" `
         -dAdditionalSharedHostMsiSourcePath="$AdditionalSharedHostMSIFile" `

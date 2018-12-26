@@ -96,6 +96,7 @@
     <PropertyGroup Condition="'$(CreateCrossgenSymbols)' == ''">
       <CreateCrossgenSymbols>true</CreateCrossgenSymbols>
       <CreateCrossgenSymbols Condition="'$(OSName)' == 'osx'">false</CreateCrossgenSymbols>
+      <CreateCrossgenSymbols Condition="'$(OSName)' == 'freebsd'">false</CreateCrossgenSymbols>
     </PropertyGroup>
 
     <Crossgen

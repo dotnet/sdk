@@ -94,6 +94,7 @@
     <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(var.DisplayVersion)" bal:Overridable="no" />
     <Variable Name="DOTNETRUNTIMEVERSION" Type="string" Value="$(var.DotNetRuntimeVersion)" bal:Overridable="no" />
     <Variable Name="ASPNETCOREVERSION" Type="string" Value="$(var.AspNetCoreVersion)" bal:Overridable="no" />
+    <Variable Name="WINFORMSANDWPFVERSION" Type="string" Value="$(var.WinFormsAndWpfVersion)" bal:Overridable="no" />
     <Variable Name="DOTNETHOMESIMILARITYCHECKOVERRIDE" Type="string" Value="" bal:Overridable="yes" />
       
       <Chain DisableSystemRestore="yes" ParallelCache="yes">

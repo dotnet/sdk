@@ -53,6 +53,7 @@ The following were installed at: '[DOTNETHOME]'
     • .NET Core SDK [DOTNETSDKVERSION]
     • .NET Core Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Core Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 This product collects usage data
     • More information and opt-out https://aka.ms/dotnet-cli-telemetry

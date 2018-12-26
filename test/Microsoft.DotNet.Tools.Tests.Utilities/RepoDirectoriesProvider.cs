@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         public readonly static string TestWorkingFolder;
         public readonly static string DotnetUnderTest;
         public readonly static string DotnetRidUnderTest;
+        public readonly static string Stage2AspNetCore;
 
         static RepoDirectoriesProvider()
         {
@@ -59,6 +60,17 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                     string configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent.Name;
                     DotnetUnderTest = Path.Combine(RepoRoot, "artifacts", "bin", "redist", configuration, "dotnet", "dotnet" + dotnetExtension);
                 }
+            }
+
+            string AspNetCoreDir = Path.Combine(
+                Path.GetDirectoryName(DotnetUnderTest),
+                "shared",
+                "Microsoft.AspNetCore.App");
+
+            if (Directory.Exists(AspNetCoreDir))
+            {
+                Stage2AspNetCore =
+                    Directory.EnumerateDirectories(AspNetCoreDir).First();
             }
 
             //  TODO: Resolve dotnet folder even if DotnetUnderTest doesn't have full path
