@@ -137,6 +137,7 @@
                       '$(MsiVersion)' ^
                       '$(SimpleVersion)' ^
                       '$(NugetVersion)' ^
+                      '$(MicrosoftWindowsDesktopPackageVersion)' ^
                       '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       '$(Architecture)' ^
                       '$(MicrosoftNETCoreAppPackageVersion)' ^
