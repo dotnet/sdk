@@ -29,7 +29,7 @@
 
     <TarGzFileCreateFromDirectory
         Condition=" '$(OSName)' != 'win' "
-        SourceDirectory="$(RedistLayoutPath)"
+        SourceDirectory="$(SdkInternalLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
         OverwriteDestination="true"
         IgnoreExitCode="$(IgnoreTarExitCode)"/>
