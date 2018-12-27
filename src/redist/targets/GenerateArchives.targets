@@ -23,6 +23,13 @@
     <TarGzFileCreateFromDirectory
         Condition=" '$(OSName)' != 'win' "
         SourceDirectory="$(RedistLayoutPath)"
+        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).tar.gz"
+        OverwriteDestination="true"
+        IgnoreExitCode="$(IgnoreTarExitCode)"/>
+
+    <TarGzFileCreateFromDirectory
+        Condition=" '$(OSName)' != 'win' "
+        SourceDirectory="$(RedistLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
         OverwriteDestination="true"
         IgnoreExitCode="$(IgnoreTarExitCode)"/>
