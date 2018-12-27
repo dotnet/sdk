@@ -311,8 +311,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(SdkInternalFiles)"
-          DestinationFolder="$(SdkInternalLayoutPath)sdk/$(SdkVersion)"/>
-
+          DestinationFiles="@(SdkInternalFiles -> '$(SdkInternalLayoutPath)sdk\$(SdkVersion)\%(RecursiveDir)%(Filename)%(Extension)')"/>
 
   </Target>
 </Project>
