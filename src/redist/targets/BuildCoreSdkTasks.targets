@@ -36,5 +36,6 @@
   <UsingTask TaskName="Crossgen" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="CopyBlobsToLatest" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GenerateChecksums" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(CoreSdkTaskDll)"/>
 
 </Project>

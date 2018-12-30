@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="targets\DownloadPackage.csproj" />
     <None Include="targets\LayoutTool.csproj" />
   </ItemGroup>
 
