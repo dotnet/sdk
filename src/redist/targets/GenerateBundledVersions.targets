@@ -44,6 +44,47 @@
       <_NETCoreSdkIsPreview Condition=" '$(DropSuffix)' != 'true' ">true</_NETCoreSdkIsPreview>
     </PropertyGroup>
 
+    <!-- Download "metapackages" for each shared framework in order to get the list of runtime identifers
+         for which there are runtime packs (from the runtime.json in the metapackage) -->
+    <ItemGroup>
+      <MetaPackageDownload Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=Microsoft.NETCore.App;
+          PackageVersionToRestore=$(MicrosoftNETCoreAppPackageVersion);
+          TargetFramework=$(TargetFramework)
+        </Properties>
+      </MetaPackageDownload>
+      <MetaPackageDownload Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=Microsoft.WindowsDesktop.App;
+          PackageVersionToRestore=$(MicrosoftWindowsDesktopPackageVersion);
+          TargetFramework=$(TargetFramework)
+        </Properties>
+      </MetaPackageDownload>
+      <MetaPackageDownload Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=Microsoft.AspNetCore.App;
+          PackageVersionToRestore=$(MicrosoftAspNetCoreAppPackageVersion);
+          TargetFramework=$(TargetFramework)
+        </Properties>
+      </MetaPackageDownload>
+    </ItemGroup>
+
+    <MSBuild
+      BuildInParallel="False"
+      Projects="@(MetaPackageDownload)">
+    </MSBuild>
+
+    <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.netcore.app/$(MicrosoftNETCoreAppPackageVersion)">
+      <Output TaskParameter="AvailableRuntimePackRuntimeIdentifiers" ItemName="NetCoreRuntimePackRids" />
+    </GetRuntimePackRids>
+    <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.windowsdesktop.app/$(MicrosoftWindowsDesktopPackageVersion)">
+      <Output TaskParameter="AvailableRuntimePackRuntimeIdentifiers" ItemName="WindowsDesktopRuntimePackRids" />
+    </GetRuntimePackRids>
+    <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.aspnetcore.app/$(MicrosoftAspNetCoreAppPackageVersion)">
+      <Output TaskParameter="AvailableRuntimePackRuntimeIdentifiers" ItemName="AspNetCoreRuntimePackRids" />
+    </GetRuntimePackRids>
+
     <!--
         Setting the property to true if patch == 0 and preview == true. SDK will set DefaultNetCorePatchVersion according to this flag.
         So that we don't need to manually update the version selection logic between when we ship a final release and when we ship the first patch
@@ -151,6 +192,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     @(ImplicitPackageVariable->'<ImplicitPackageReferenceVersion Include="%(Identity)" TargetFrameworkVersion="%(TargetFrameworkVersion)" DefaultVersion="%(DefaultVersion)" LatestVersion="%(LatestVersion)"/>', '
     ')
 
+    <KnownFrameworkReference Include="Microsoft.NETCore.App"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.NETCore.App"
+                              DefaultRuntimeFrameworkVersion="$(_NETCoreAppPackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(_NETCoreAppPackageVersion)"
+                              TargetingPackName="Microsoft.NETCore.App"
+                              TargetingPackVersion="$(_NETCoreAppPackageVersion)"
+                              AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
+                              AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids)"
+                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App;runtime.**RID**.Microsoft.NETCore.DotNetHostResolver;runtime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
+                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids)"
+                              />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.0"
@@ -159,6 +212,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App"
                               TargetingPackVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.WindowsDesktop.App"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids)"
                               />
 
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
@@ -168,6 +223,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                               LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App"
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.AspNetCore.App"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids)"
                               />
   </ItemGroup>
 </Project>
