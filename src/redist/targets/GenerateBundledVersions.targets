@@ -200,9 +200,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.NETCore.App"
                               TargetingPackVersion="$(_NETCoreAppPackageVersion)"
                               AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
-                              AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids)"
-                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App;runtime.**RID**.Microsoft.NETCore.DotNetHostResolver;runtime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
-                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids)"
+                              AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
+                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
@@ -213,7 +213,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.WindowsDesktop.App"
                               TargetingPackVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.WindowsDesktop.App"
-                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids)"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
                               />
 
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
@@ -224,7 +224,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.AspNetCore.App"
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.AspNetCore.App"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids)"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
                               />
   </ItemGroup>
 </Project>
