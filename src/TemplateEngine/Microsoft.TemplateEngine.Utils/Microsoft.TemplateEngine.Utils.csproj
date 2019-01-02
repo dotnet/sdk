@@ -1,16 +1,17 @@
-<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
-    <Description>Components used by all Template Engine extensions and consumers</Description>
-  </PropertyGroup>
+﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
+        <Description>Components used by all Template Engine extensions and consumers</Description>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SourceLink.Create.CommandLine" />
+        <DotNetCliToolReference Include="dotnet-sourcelink" />
+    </ItemGroup>
 </Project>

@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 .Returns(BaseDir);
         }
 
-        [Fact(DisplayName = nameof(RebuildCacheIfNotCurrentScansAll))]
+        //[Fact(DisplayName = nameof(RebuildCacheIfNotCurrentScansAll))]
         public void RebuildCacheIfNotCurrentScansAll()
         {
             _fixture.Customizations.Add(new MountPointInfoBuilder());
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
 
-        [Fact(DisplayName = nameof(RebuildCacheIfForceRebuildScansAll))]
+        //[Fact(DisplayName = nameof(RebuildCacheIfForceRebuildScansAll))]
         public void RebuildCacheIfForceRebuildScansAll()
         {
             _fixture.Customizations.Add(new MountPointInfoBuilder());
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             AssertMountPointsWereScanned(mountPoints);
         }
 
-        [Fact(DisplayName = nameof(RebuildCacheFromSettingsOnlyScansOutOfDateFileSystemMountPoints))]
+        //[Fact(DisplayName = nameof(RebuildCacheFromSettingsOnlyScansOutOfDateFileSystemMountPoints))]
         public void RebuildCacheFromSettingsOnlyScansOutOfDateFileSystemMountPoints()
         {
             _fixture.Customizations.Add(new MountPointInfoBuilder(FileSystemMountPointFactory.FactoryId));

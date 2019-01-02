@@ -1,24 +1,25 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
-    <Description>Helper package for adding Template Engine to consuming applications</Description>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
+        <Description>Helper package for adding Template Engine to consuming applications</Description>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.IO.Compression" />
-    <PackageReference Include="SourceLink.Create.CommandLine" />
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != 'net45'"/>
-    <DotNetCliToolReference Include="dotnet-sourcelink" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+        <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.IO.Compression" />
+        <PackageReference Include="SourceLink.Create.CommandLine" />
+        <PackageReference Include="Newtonsoft.Json" />
+        <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != 'net45'"/>
+        <DotNetCliToolReference Include="dotnet-sourcelink" />
+    </ItemGroup>
 </Project>

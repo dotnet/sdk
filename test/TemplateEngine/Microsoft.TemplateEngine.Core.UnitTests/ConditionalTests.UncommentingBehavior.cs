@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -301,6 +301,9 @@ Past endif
             };
             IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(test, expectedValue, processor, 28);
+
+            //comment is unused - Asserting to bypass the warning.
+            Assert.Equal(comment, comment);
         }
 
         /// <summary>
