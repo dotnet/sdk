@@ -30,8 +30,8 @@ trigger:
 Arcade is designed to make many of the more complex tasks (such as sending telemetry) simple to do out of the box. It is therefore recommended that all builds base themselves on Arcade's `base.yml` template. Today, this can be done by copying the `eng/common` folder from Arcade into a local `eng/common` folder.  In the near future, Engineering services will provide the capability to auto-update this folder via Maestro so that you don't need to manually take updates to common Arcade scripts.
 
 ```yaml
-phases:
-- template: /eng/common/templates/phases/base.yml
+jobs:
+- template: /eng/common/templates/job/job.yml
   parameters:
   ...
 ```
@@ -112,8 +112,8 @@ While this sample repository has no need to do so, there are many scenarios in w
 3. For official builds, add an "AzureKeyVault" task reference to `HelixProdKV`
 
 ```YAML
-phases:
-- template: /eng/common/templates/phases/base.yml@arcade
+jobs:
+- template: /eng/common/templates/job/job.yml
   parameters:
     agentOs: Windows_NT
     name: Windows_NT
@@ -137,6 +137,58 @@ phases:
         # conditions - https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=vsts
         condition: always()
 ```
+
+## Use Helix for cross-platform testing
+
+Arcade integrates with Helix, making it easy to do cross-platform testing at scale. To get started, you'll need to reference the Helix SDK in your [`global.json`](global.json):
+
+```json
+"msbuild-sdks": {
+  "Microsoft.DotNet.Helix.Sdk": "<most-recent-version>"
+}
+```
+
+Finally, reference the `send-to-helix.yml` template after your build step. Make sure to do it for each phase.
+
+```yaml
+# defining your variables first makes them easy to reuse between queues
+variables:
+  - name: _HelixType
+    value: build/product
+  - name: _HelixSource
+    value: pr/dotnet/arcade-minimalci-sample/$(Build.SourceBranch)
+  - name: _HelixTestType
+    value: test/product/
+  - name: _XUnitProject  # the reference(s) to the XUnit project(s) you wish to test, semicolon delimited
+    value: $(Build.SourcesDirectory)/HelloTests/HelloTests.csproj
+  - name: _XUnitTargetFramework # the xUnit framework you want to test on
+    value: netcoreapp2.0
+  - name: _XUnitRunnerVersion # the version of the xUnit runner you wish to use
+    value: 2.4.1
+  - name: _DotNetCliPackageType # either 'runtime' or 'sdk', depending on which you want to bootstrap onto the Helix machine
+    value: sdk
+  - name: _DotNetCliVersion # the version of the dotnet cli you want to bootstrap (probably the same as the one in your global.json!)
+    value: 2.1.403
+# ...
+# steps:
+# build step here
+- template: /eng/common/templates/steps/send-to-helix.yml
+  parameters:
+    HelixSource: $(_HelixSource)
+    HelixType: $(_HelixTestType)
+    HelixTargetQueues: Windows.10.Amd64.Open;Windows.7.Amd64.Open  # set queues appropriately for the machine you're building on
+    XUnitProjects: $(Build.SourcesDirectory)/HelloTests/HelloTests.csproj
+    XUnitTargetFramework: $(_XUnitTargetFramework)
+    XUnitRunnerVersion: $(_XUnitRunnerVersion)
+    IncludeDotNetCli: true
+    DotNetCliPackageType: $(_DotNetCliPackageType)
+    DotNetCliVersion: $(_DotNetCliVersion)
+    EnableXUnitReporter: true
+    WaitForWorkItemCompletion: true
+    condition: eq(variables['_BuildConfig'], 'Debug')
+```
+
+For more information, see the main documentation on sending jobs to Helix [here](https://github.com/dotnet/arcade/blob/master/Documentation/AzureDevOps/SendingJobsToHelix.md).
 
 ## Using the SignToolTask
 

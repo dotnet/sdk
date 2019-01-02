@@ -1,7 +1,23 @@
 variables:
-- name: Build.Repository.Clean
-  value: true
- 
+  - name: Build.Repository.Clean
+    value: true
+  - name: _HelixType
+    value: build/product
+  - name: _HelixSource
+    value: pr/dotnet/arcade-minimalci-sample/$(Build.SourceBranch)
+  - name: _HelixTestType
+    value: test/product/
+  - name: _XUnitProject
+    value: $(Build.SourcesDirectory)/HelloTests/HelloTests.csproj
+  - name: _XUnitTargetFramework
+    value: netcoreapp2.0
+  - name: _XUnitRunnerVersion
+    value: 2.4.1
+  - name: _DotNetCliPackageType
+    value: sdk
+  - name: _DotNetCliVersion
+    value: 2.1.403
+
 resources:
   containers:
   - container: LinuxContainer
@@ -37,6 +53,33 @@ jobs:
       name: Build
       displayName: Build
       condition: succeeded()
+    - template: /eng/common/templates/steps/send-to-helix.yml
+      parameters:
+        HelixSource: $(_HelixSource)
+        HelixType: $(_HelixTestType)
+        HelixTargetQueues: Windows.10.Amd64.Open;Windows.81.Amd64.Open;Windows.7.Amd64.Open
+        XUnitProjects: $(_XUnitProject)
+        XUnitPublishTargetFramework: $(_XUnitTargetFramework)
+        XUnitRuntimeTargetFramework: $(_XUnitTargetFramework)
+        XUnitRunnerVersion: $(_XUnitRunnerVersion)
+        IncludeDotNetCli: true
+        DotNetCliPackageType: $(_DotNetCliPackageType)
+        DotNetCliVersion: $(_DotNetCliVersion)
+        EnableXUnitReporter: true
+        WaitForWorkItemCompletion: true
+        IsExternal: true
+        Creator: arcade-minimalci-sample
+        condition: eq(variables['_BuildConfig'], 'Debug')
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs to VSTS
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+        PublishLocation: Container
+        ArtifactName: $(Agent.Os)_$(Agent.JobName)
+      continueOnError: true
+      condition: always()
+    variables:
+      _HelixBuildConfig: $(_BuildConfig)
 
 - template: /eng/common/templates/job/job.yml
   parameters:
@@ -60,6 +103,33 @@ jobs:
       name: Build
       displayName: Build
       condition: succeeded()
+    - template: /eng/common/templates/steps/send-to-helix.yml
+      parameters:
+        HelixSource: $(_HelixSource)
+        HelixType: $(_HelixTestType)
+        HelixTargetQueues: OSX.1012.Amd64.Open;OSX.1013.Amd64.Open
+        XUnitProjects: $(_XUnitProject)
+        XUnitPublishTargetFramework: $(_XUnitTargetFramework)
+        XUnitRuntimeTargetFramework: $(_XUnitTargetFramework)
+        XUnitRunnerVersion: $(_XUnitRunnerVersion)
+        IncludeDotNetCli: true
+        DotNetCliPackageType: $(_DotNetCliPackageType)
+        DotNetCliVersion: $(_DotNetCliVersion)
+        EnableXUnitReporter: true
+        WaitForWorkItemCompletion: true
+        IsExternal: true
+        Creator: arcade-minimalci-sample
+        condition: eq(variables['_BuildConfig'], 'Debug')
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs to VSTS
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+        PublishLocation: Container
+        ArtifactName: $(Agent.Os)_$(Agent.JobName)
+      continueOnError: true
+      condition: always()
+    variables:
+      _HelixBuildConfig: $(_BuildConfig)
 
 - template: /eng/common/templates/job/job.yml
   parameters:
@@ -83,3 +153,30 @@ jobs:
       name: Build
       displayName: Build
       condition: succeeded()
+    - template: /eng/common/templates/steps/send-to-helix.yml
+      parameters:
+        HelixSource: $(_HelixSource)
+        HelixType: $(_HelixTestType)
+        HelixTargetQueues: Debian.9.Amd64.Open;Fedora.27.Amd64.Open;RedHat.7.Amd64.Open;Ubuntu.1604.Amd64.Open
+        XUnitProjects: $(_XUnitProject)
+        XUnitPublishTargetFramework: $(_XUnitTargetFramework)
+        XUnitRuntimeTargetFramework: $(_XUnitTargetFramework)
+        XUnitRunnerVersion: $(_XUnitRunnerVersion)
+        IncludeDotNetCli: true
+        DotNetCliPackageType: $(_DotNetCliPackageType)
+        DotNetCliVersion: $(_DotNetCliVersion)
+        EnableXUnitReporter: true
+        WaitForWorkItemCompletion: true
+        IsExternal: true
+        Creator: arcade-minimalci-sample
+        condition: eq(variables['_BuildConfig'], 'Debug')
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs to VSTS
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+        PublishLocation: Container
+        ArtifactName: $(Agent.Os)_$(Agent.JobName)
+      continueOnError: true
+      condition: always()
+    variables:
+      _HelixBuildConfig: $(_BuildConfig)
