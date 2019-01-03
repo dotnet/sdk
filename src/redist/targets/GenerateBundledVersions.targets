@@ -168,7 +168,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledNETStandardTargetFrameworkVersion>$(_NETStandardTargetFrameworkVersion)</BundledNETStandardTargetFrameworkVersion>
     <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>
     <BundledNETCorePlatformsPackageVersion>$(_NETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
-    <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)runtime.json</BundledRuntimeIdentifierGraphFile>
+    <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
     @(BundledVersionsVariable->'<%(Identity)>%(Value)</%(Identity)>', '
     ')
     <NETCoreSdkVersion>$(SdkVersion)</NETCoreSdkVersion>
@@ -275,7 +275,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="GenerateBundledVersionsProps">
 
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
-          DestinationFiles="$(SdkOutputDirectory)runtime.json" 
+          DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json" 
           SkipUnchangedFiles="true"/> 
     
   </Target>
