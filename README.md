@@ -1,6 +1,6 @@
 # Arcade Minimal CI Sample
 
- [![Build status](https://dnceng.visualstudio.com/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/build/status/116?branchName=master)](https://dnceng.visualstudio.com/public/_build/latest?definitionId=116&branch=master)
+[![Build Status](https://dnceng.visualstudio.com/public/_apis/build/status/dotnet/arcade-minimalci-sample/arcade-minimalci-sample-ci?branchName=master)](https://dnceng.visualstudio.com/public/_build/latest?definitionId=209?branchName=master)
 
 This repository serves as an example of how to link GitHub repositories to Azure DevOps for CI and PR builds.
 
