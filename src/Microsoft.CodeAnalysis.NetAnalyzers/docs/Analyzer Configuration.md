@@ -18,7 +18,17 @@ For example, end users can configure the analyzed API surface for analyzers usin
       2. `dotnet_code_quality.Naming.api_surface = public`
 
 ## Enabling .editorconfig based configuration for a project
-End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory. In future, we plan to support hierarchical directory based configuration with an .editorconfig file at the solution directory, repo root directory or even individual document directories.
+1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory. In future, we plan to support hierarchical directory based configuration with an .editorconfig file at the solution directory, repo root directory or even individual document directories.
+2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
+```
+  <PropertyGroup>
+    <SkipDefaultEditorConfigAsAdditionalFile>true</SkipDefaultEditorConfigAsAdditionalFile>
+  </PropertyGroup>
+  <ItemGroup Condition="Exists('<%PathToSharedEditorConfig%>\.editorconfig')" >
+    <AdditionalFiles Include="<%PathToSharedEditorConfig%>\.editorconfig" />
+  </ItemGroup>
+```
+Note that this is a temporary workaround that is needed until the dotnet compilers and project system start understanding and respecting .editorconfig files.
 
 ## Supported .editorconfig options
 This section documents the list of supported .editorconfig key-value options for CA rules.
