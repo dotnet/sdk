@@ -39,7 +39,7 @@ Option Values:
 | Option Value | Summary |
 | --- | --- |
 | `public` | Analyzes public APIs that are externally visible outside the assembly. |
-| `internal` | Analyzes internal APIs that are visible within the assembly and to assemblies with [InternalsVisibleToAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute) access. |
+| `internal` or `friend` | Analyzes internal APIs that are visible within the assembly and to assemblies with [InternalsVisibleToAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute) access. |
 | `private` | Analyzes private APIs that are only visible within the containing type. |
 | `all` | Analyzes all APIs, regardless of the symbol visibility. |
 
