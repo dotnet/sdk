@@ -81,16 +81,11 @@ namespace Microsoft.NET.Perf.Tests
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildWebLarge30(ProjectPerfOperation operation)
         {
-            string sourceProject = Path.Combine(TestContext.GetRepoRoot(), ".perftestsource/PerformanceTestProjects/WebLarge");
+            string sourceProject = Path.Combine(TestContext.GetRepoRoot(), ".perftestsource/PerformanceTestProjects/WebLarge30");
             var testDir = _testAssetsManager.CreateTestDirectory("WebLarge30", identifier: operation.ToString());
             Console.WriteLine($"Mirroring {sourceProject} to {testDir}...");
             FolderSnapshot.MirrorFiles(sourceProject, testDir.Path);
             Console.WriteLine("Done");
-            if (File.Exists(Path.Combine(testDir.Path, "mvc", "mvc.csproj")))
-            {
-                File.Delete(Path.Combine(testDir.Path, "mvc", "mvc.csproj"));
-            }
-            File.Move(Path.Combine(testDir.Path, "mvc", "mvc30-csproj.txt"), Path.Combine(testDir.Path, "mvc", "mvc.csproj"));
 
             TestProject(Path.Combine(testDir.Path, "mvc"), "Build Web Large 3.0", operation);
         }
