@@ -33,8 +33,10 @@ Note that this is a temporary workaround that is needed until the dotnet compile
 ## Supported .editorconfig options
 This section documents the list of supported .editorconfig key-value options for CA rules.
 
+TODO: For each option, list the CA rule IDs that can be configured based on it.
+
 ### Analyzed API surface
-Option Name:  `api_surface`
+Option Name: `api_surface`
 Option Values:
 | Option Value | Summary |
 | --- | --- |
@@ -44,3 +46,8 @@ Option Values:
 | `all` | Analyzes all APIs, regardless of the symbol visibility. |
 
 Users can also provide a comma separated list of above option values. For example, `private, internal` configures analysis of the entire non-public API surface.
+
+### Async void methods
+Option Name: `skip_async_void_methods`
+Option Values: `true` or `false`
+Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca2007-do-not-directly-await-a-task)
