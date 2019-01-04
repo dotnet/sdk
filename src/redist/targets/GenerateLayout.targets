@@ -288,6 +288,7 @@
                             ExtractBundledComponents;
                             GenerateVersionFile;
                             GenerateBundledVersions;
+                            LayoutRuntimeGraph;
                             LayoutTemplates;
                             LayoutBundledTools;
                             RetargetTools;
