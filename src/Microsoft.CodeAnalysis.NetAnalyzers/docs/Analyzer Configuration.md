@@ -34,7 +34,10 @@ Note that this is a temporary workaround that is needed until the dotnet compile
 This section documents the list of supported .editorconfig key-value options for CA rules.
 
 ### Analyzed API surface
-Option Name:  `api_surface`
+Option Name: `api_surface`
+
+Configurable Rules: <To be documented>
+
 Option Values:
 | Option Value | Summary |
 | --- | --- |
@@ -43,4 +46,24 @@ Option Values:
 | `private` | Analyzes private APIs that are only visible within the containing type. |
 | `all` | Analyzes all APIs, regardless of the symbol visibility. |
 
-Users can also provide a comma separated list of above option values. For example, `private, internal` configures analysis of the entire non-public API surface.
+Example: `dotnet_code_quality.api_surface = all`
+
+Users can also provide a comma separated list of above option values. For example, `dotnet_code_quality.api_surface = private, internal` configures analysis of the entire non-public API surface.
+
+### Analyzed output kinds
+Option Name: `output_kind`
+
+Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca2007-do-not-directly-await-a-task)
+
+Option Values: One or more fields of enum [Microsoft.CodeAnalysis.CompilationOptions.OutputKind](http://source.roslyn.io/#q=Microsoft.CodeAnalysis.OutputKind) as a comma separated list.
+
+Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary`
+
+### Async void methods
+Option Name: `skip_async_void_methods`
+
+Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca2007-do-not-directly-await-a-task)
+
+Option Values: `true` or `false`
+
+Example: `dotnet_code_quality.CA2007.skip_async_void_methods = true`
