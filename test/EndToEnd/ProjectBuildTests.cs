@@ -61,6 +61,50 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
+        [Fact]
+        public void ItCanRunAnAppUsingTheWebSdk()
+        {
+            var directory = TestAssets.CreateTestDirectory();
+            string projectDirectory = directory.FullName;
+
+            string newArgs = "console --debug:ephemeral-hive --no-restore";
+            new NewCommandShim()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(newArgs)
+                .Should().Pass();
+
+            string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
+
+            var project = XDocument.Load(projectPath);
+            var ns = project.Root.Name.Namespace;
+
+            project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
+
+            project.Save(projectPath);
+
+            new BuildCommand()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should().Pass();
+
+            var runCommand = new RunCommand()
+                .WithWorkingDirectory(projectDirectory);
+
+            //  Set DOTNET_ROOT as workaround for https://github.com/dotnet/cli/issues/10196
+            var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
+            if (!string.IsNullOrEmpty(dotnetRoot))
+            {
+                bool useX86 = RepoDirectoriesProvider.DotnetRidUnderTest.EndsWith("x86", StringComparison.InvariantCultureIgnoreCase);
+                runCommand = runCommand.WithEnvironmentVariable(useX86 ? "DOTNET_ROOT(x86)" : "DOTNET_ROOT",
+                    dotnetRoot);
+            }
+
+            runCommand.ExecuteWithCapturedOutput()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello World!");
+
+        }
+
         [Theory]
         [InlineData("console")]
         [InlineData("classlib")]
