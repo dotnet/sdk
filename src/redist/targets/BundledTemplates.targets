@@ -2,7 +2,7 @@
   <ItemGroup>
     <BundledTemplate Include="Microsoft.DotNet.Common.ItemTemplates" Version="$(MicrosoftDotNetCommonItemTemplatesPackageVersion)" />
     <BundledTemplate Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" Version="$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)" />
-    <BundledTemplate Include="Microsoft.DotNet.Test.ProjectTemplates.2.2" Version="$(MicrosoftDotNetTestProjectTemplates22PackageVersion)" />
+    <BundledTemplate Include="Microsoft.DotNet.Test.ProjectTemplates.3.0" Version="$(MicrosoftDotNetTestProjectTemplates30PackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.Wpf.ProjectTemplates" Version="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
 
