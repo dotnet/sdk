@@ -126,6 +126,6 @@ if(!(Test-Path $DotnetBundleOutput))
     Exit -1
 }
 
-Write-Output -ForegroundColor Green "Successfully created dotnet bundle - $DotnetBundleOutput"
+Write-Output "Successfully created dotnet bundle - $DotnetBundleOutput"
 
 exit $LastExitCode
