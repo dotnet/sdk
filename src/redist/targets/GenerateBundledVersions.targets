@@ -177,6 +177,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <AddDotnetfeedProjectSource Condition="'%24(AddDotnetfeedProjectSource)' == ''">%24(_NETCoreSdkIsPreview)</AddDotnetfeedProjectSource>
     <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/dotnet-core/index.json</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json</RestoreAdditionalProjectSources>
     <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreAdditionalProjectSources>
 
     <!-- Default patch versions for each minor version of ASP.NET Core -->
