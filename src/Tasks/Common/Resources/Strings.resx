@@ -436,4 +436,16 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1080: A PackageReference to Microsoft.AspNetCore.App is not necessary when targeting .NET Core 3.0 or higher. If Microsoft.NET.Sdk.Web is used, the shared framework will be referenced automatically. Otherwise, the PackageReference should be replaced with a FrameworkReference.</value>
     <comment>{StrBegin="NETSDK1080: "}</comment>
   </data>
+  <data name="ClsidMapExportedTypesRequireExplicitGuid" xml:space="preserve">
+    <value>NETSDK1081: The COMVisible class '{0}' must have a GuidAttribute with the CLSID of the class to be made visible to COM in .NET Core.</value>
+    <comment>{StrBegin="NETSDK1081: "}
+{0} - The ComVisible class that doesn't have a GuidAttribute on it.</comment>
+  </data>
+  <data name="ClsidMapConflictingGuids" xml:space="preserve">
+    <value>NETSDK1082: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</value>
+    <comment>{StrBegin="NETSDK1082: "}
+{0} - The first type with the conflicting guid.
+{1} - The second type with the conflicting guid.
+{2} - The guid the two types have.</comment>
+  </data>
 </root>

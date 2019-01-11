@@ -12,6 +12,20 @@
         <target state="new">NETSDK1080: A PackageReference to Microsoft.AspNetCore.App is not necessary when targeting .NET Core 3.0 or higher. If Microsoft.NET.Sdk.Web is used, the shared framework will be referenced automatically. Otherwise, the PackageReference should be replaced with a FrameworkReference.</target>
         <note>{StrBegin="NETSDK1080: "}</note>
       </trans-unit>
+      <trans-unit id="ClsidMapConflictingGuids">
+        <source>NETSDK1082: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</source>
+        <target state="new">NETSDK1082: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</target>
+        <note>{StrBegin="NETSDK1082: "}
+{0} - The first type with the conflicting guid.
+{1} - The second type with the conflicting guid.
+{2} - The guid the two types have.</note>
+      </trans-unit>
+      <trans-unit id="ClsidMapExportedTypesRequireExplicitGuid">
+        <source>NETSDK1081: The COMVisible class '{0}' must have a GuidAttribute with the CLSID of the class to be made visible to COM in .NET Core.</source>
+        <target state="new">NETSDK1081: The COMVisible class '{0}' must have a GuidAttribute with the CLSID of the class to be made visible to COM in .NET Core.</target>
+        <note>{StrBegin="NETSDK1081: "}
+{0} - The ComVisible class that doesn't have a GuidAttribute on it.</note>
+      </trans-unit>
       <trans-unit id="FailedToLockResource">
         <source>NETSDK1077: Failed to lock resource.</source>
         <target state="new">NETSDK1077: Failed to lock resource.</target>

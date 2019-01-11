@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Text;
+using Microsoft.Build.Framework;
+
+namespace Microsoft.NET.Build.Tasks
+{
+    public class GenerateClsidMap : TaskBase
+    {
+        [Required]
+        public string IntermediateAssembly { get; set; }
+
+        [Required]
+        public string ClsidMapDestinationPath { get; set; }
+
+        protected override void ExecuteCore()
+        {
+            using (var assemblyStream = new FileStream(IntermediateAssembly, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+            {
+                try
+                {
+                    using (PEReader peReader = new PEReader(assemblyStream))
+                    {
+                        if (peReader.HasMetadata)
+                        {
+                            MetadataReader reader = peReader.GetMetadataReader();
+                            if (!reader.IsAssembly)
+                            {
+                                // TODO: Error
+                            }
+                            ClsidMap.Create(reader, ClsidMapDestinationPath);
+                        }
+                    }
+                }
+                catch (BadImageFormatException)
+                {
+                    // TODO: Error
+                }
+            }
+        }
+    }
+}
