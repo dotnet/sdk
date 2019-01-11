@@ -30,7 +30,8 @@ namespace Microsoft.NET.Build.Tasks
                             MetadataReader reader = peReader.GetMetadataReader();
                             if (!reader.IsAssembly)
                             {
-                                // TODO: Error
+                                Log.LogError(Strings.ClsidMapInvalidAssembly, IntermediateAssembly);
+                                return;
                             }
                             ClsidMap.Create(reader, ClsidMapDestinationPath);
                         }
@@ -38,7 +39,8 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 catch (BadImageFormatException)
                 {
-                    // TODO: Error
+                    Log.LogError(Strings.ClsidMapInvalidAssembly, IntermediateAssembly);
+                    return;
                 }
             }
         }

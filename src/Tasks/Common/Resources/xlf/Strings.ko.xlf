@@ -26,6 +26,12 @@
         <note>{StrBegin="NETSDK1081: "}
 {0} - The ComVisible class that doesn't have a GuidAttribute on it.</note>
       </trans-unit>
+      <trans-unit id="ClsidMapInvalidAssembly">
+        <source>NETSDK1083: The supplied assembly '{0}' is not valid. Cannot generate a CLSIDMap from it.</source>
+        <target state="new">NETSDK1083: The supplied assembly '{0}' is not valid. Cannot generate a CLSIDMap from it.</target>
+        <note>{StrBegin="NETSDK1083: "}
+{0} - The path to the invalid assembly.</note>
+      </trans-unit>
       <trans-unit id="FailedToLockResource">
         <source>NETSDK1077: Failed to lock resource.</source>
         <target state="new">NETSDK1077: Failed to lock resource.</target>

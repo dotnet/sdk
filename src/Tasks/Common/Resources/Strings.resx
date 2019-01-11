@@ -448,4 +448,9 @@ The following are names of parameters or literal values and should not be transl
 {1} - The second type with the conflicting guid.
 {2} - The guid the two types have.</comment>
   </data>
+  <data name="ClsidMapInvalidAssembly" xml:space="preserve">
+    <value>NETSDK1083: The supplied assembly '{0}' is not valid. Cannot generate a CLSIDMap from it.</value>
+    <comment>{StrBegin="NETSDK1083: "}
+{0} - The path to the invalid assembly.</comment>
+  </data>
 </root>
