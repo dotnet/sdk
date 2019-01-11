@@ -347,6 +347,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="CreateComHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
+  <PropertyGroup>
+    <_EmbedClsidMap Condition="'$(_EmbedClsidMap)' == ''">true</_EmbedClsidMap>
+  </PropertyGroup>
+
   <!--
     ============================================================
                                         _CreateComHost
@@ -365,19 +369,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CreateComHost
       ComHostSourcePath="@(_NativeRestoredComHostNETCore)"
       ComHostDestinationPath="@(_NativeComHostNETCore->'%(FullPath)')"
-      ClsidMapPath="@(ClsidMap)">
-      <Output TaskParameter="ClsidMapEmbedded" PropertyName="_ClsidMapEmbedded" />
-    </CreateComHost>
-
-    <!-- If we failed to embed the ClsidMap for any reason, copy it to the output directory.-->
-    <ItemGroup Condition="'$(_ClsidMapEmbedded)' == 'false'">
-      <None Include="@(ClsidMap)">
-        <Link>$(AssemblyName).cslidmap</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </None>
-    </ItemGroup>
+      ClsidMapPath="@(ClsidMap)"
+      EmbedClsidMap="$(_EmbedClsidMap)" />
   </Target>
+
+  <UsingTask TaskName="GetCanEmbedPEResources" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!--
     ============================================================
@@ -397,6 +393,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'@(_NativeComHostNETCore->Count())' > 1"
                  ResourceName="MultipleFilesResolved"
                  FormatArguments="$(_DotNetComHostLibraryName)" />
+
+    <GetCanEmbedPEResources>
+      <Output TaskParameter="CanEmbedResources" PropertyName="_ClsidMapEmbeddable" />
+    </GetCanEmbedPEResources>
   </Target>
   
   <!--
@@ -437,12 +437,19 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
     </ItemGroup>
+    
     <ItemGroup Condition="'@(_NativeComHostNETCore)' != ''">
       <None Include="@(_NativeComHostNETCore)">
         <Link>$(AssemblyName).$(_DotNetComHostLibraryName)</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
+      <None Include="@(ClsidMap)" Condition="'$(_ClsidMapEmbeddable)' != 'true' or '$(_EmbedClsidMap)' != 'true'">
+        <Link>$(AssemblyName).clsidmap</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+
     </ItemGroup>
   </Target>
 

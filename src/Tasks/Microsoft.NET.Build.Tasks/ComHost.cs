@@ -19,11 +19,11 @@ namespace Microsoft.NET.Build.Tasks
         /// <param name="intermediateAssembly">Path to the intermediate assembly, used for copying resources to PE apphosts.</param>
         /// <param name="clsidmap">The path to the *.clsidmap file.</param>
         /// <param name="log">Specify the logger used to log warnings and messages. If null, no logging is done.</param>
-        /// <returns>True if the CLSIDMap was embedded into the COMHost. False otherwise.</returns>
-        public static bool Create(
+        public static void Create(
             string comHostSourceFilePath,
             string comHostDestinationFilePath,
-            string clsidmapFilePath)
+            string clsidmapFilePath,
+            bool embedClsidMap)
         {
             var destinationDirectory = new FileInfo(comHostDestinationFilePath).Directory.FullName;
             if (!Directory.Exists(destinationDirectory))
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tasks
             // Copy apphost to destination path so it inherits the same attributes/permissions.
             File.Copy(comHostSourceFilePath, comHostDestinationFilePath, overwrite: true);
 
-            if (ResourceUpdater.IsSupportedOS())
+            if (ResourceUpdater.IsSupportedOS() && embedClsidMap)
             {
                 string clsidMap = File.ReadAllText(clsidmapFilePath);
                 byte[] clsidMapBytes = Encoding.UTF8.GetBytes(clsidMap);
@@ -42,9 +42,7 @@ namespace Microsoft.NET.Build.Tasks
                 ResourceUpdater updater = new ResourceUpdater(comHostDestinationFilePath);
                 updater.AddResource(clsidMapBytes, (IntPtr)ClsidmapResourceType, (IntPtr)ClsidmapResourceId);
                 updater.Update();
-                return true;
             }
-            return false;
         }
 
 

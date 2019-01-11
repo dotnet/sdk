@@ -16,15 +16,16 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string ClsidMapPath { get; set; }
 
-        [Output]
-        public bool ClsidMapEmbedded { get; set; }
+        [Required]
+        public bool EmbedClsidMap { get; set; }
 
         protected override void ExecuteCore()
         {
-            ClsidMapEmbedded = ComHost.Create(
+            ComHost.Create(
                 ComHostSourcePath,
                 ComHostDestinationPath,
-                ClsidMapPath);
+                ClsidMapPath,
+                EmbedClsidMap);
         }
     }
 }

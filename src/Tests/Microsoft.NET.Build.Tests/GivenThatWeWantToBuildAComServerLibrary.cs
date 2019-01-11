@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_copies_the_comhost_to_the_output_directory()
         {
             var testAsset = _testAssetsManager
@@ -40,6 +40,39 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.pdb",
                 "ComServer.deps.json",
                 "ComServer.comhost.dll"
+            });
+        }
+
+        [Theory]
+        [InlineData("win-x64")]
+        public void It_copies_the_comhost_and_clsidmap_to_the_output_directory_when_not_embedding(string rid)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("ComServer")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement("_EmbedClsidMap", false));
+                    propertyGroup.Add(new XElement("RuntimeIdentifier", rid));
+                })
+                .Restore(Log);
+
+            var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp3.0", runtimeIdentifier: rid);
+
+            outputDirectory.Should().OnlyHaveFiles(new[] {
+                "ComServer.dll",
+                "ComServer.pdb",
+                "ComServer.deps.json",
+                "ComServer.comhost.dll",
+                "ComServer.clsidmap"
             });
         }
 
