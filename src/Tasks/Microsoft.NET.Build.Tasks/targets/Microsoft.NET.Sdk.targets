@@ -67,11 +67,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_NativeLibraryExtension Condition="'$(_NativeLibraryExtension)' == ''">.so</_NativeLibraryExtension>
 
     <_NativeExecutableExtension Condition="'$(_NativeExecutableExtension)' == '' and ($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win')))">.exe</_NativeExecutableExtension>
+    <_ComHostLibraryExtension Condition="'$(_ComHostLibraryExtension)' == '' and ($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win')))">.dll</_ComHostLibraryExtension>
 
     <_DotNetHostExecutableName>dotnet$(_NativeExecutableExtension)</_DotNetHostExecutableName>
     <_DotNetAppHostExecutableNameWithoutExtension>apphost</_DotNetAppHostExecutableNameWithoutExtension>
     <_DotNetAppHostExecutableName>$(_DotNetAppHostExecutableNameWithoutExtension)$(_NativeExecutableExtension)</_DotNetAppHostExecutableName>
 
+    <_DotNetComHostLibraryNameWithoutExtension>comhost</_DotNetComHostLibraryNameWithoutExtension>
+    <_DotNetComHostLibraryName>$(_DotNetComHostLibraryNameWithoutExtension)$(_ComHostLibraryExtension)</_DotNetComHostLibraryName>
     <_DotNetHostPolicyLibraryName>$(_NativeLibraryPrefix)hostpolicy$(_NativeLibraryExtension)</_DotNetHostPolicyLibraryName>
     <_DotNetHostFxrLibraryName>$(_NativeLibraryPrefix)hostfxr$(_NativeLibraryExtension)</_DotNetHostFxrLibraryName>
   </PropertyGroup>
@@ -269,6 +272,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompileDependsOn>
       $(CompileDependsOn);
       _CreateAppHost;
+      _CreateComHost;
     </CompileDependsOn>
   </PropertyGroup>
 
@@ -318,6 +322,83 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$(_DotNetAppHostExecutableName)" />
   </Target>
 
+  <ItemGroup>
+    <ClsidMap Include="$(IntermediateOutputPath)$(AssemblyName).cslidmap" />
+  </ItemGroup>
+  
+  <!--
+      ============================================================
+                                        _GenerateClsidMap
+
+    Generates a *.clsidmap file from the built assembly.
+    ============================================================
+  -->
+  <UsingTask TaskName="GenerateClsidMap" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="_GenerateClsidMap"
+          Inputs="@(IntermediateAssembly)"
+          Outputs="@(ClsidMap)"
+          DependsOnTargets="CoreCompile"
+          Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and
+                     '$(UseComHost)' == 'true'">
+    <GenerateClsidMap
+        IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
+        CLsidMapDestinationPath="@(ClsidMap->'%(FullPath)')" />
+  </Target>
+
+  <UsingTask TaskName="CreateComHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <!--
+    ============================================================
+                                        _CreateComHost
+    If we found a restored comhost, create the modified destination apphost
+    with options from the project.
+    ============================================================
+     -->
+  <Target Name="_CreateComHost"
+          Inputs="@(IntermediateAssembly);@(_NativeRestoredComHostNETCore)"
+          Outputs="@(_NativeComHostNETCore)"
+          DependsOnTargets="_GetComHostPaths;CoreCompile;_GenerateClsidMap"
+          Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and
+                     '@(_NativeComHostNETCore)' != '' and
+                     Exists('@(IntermediateAssembly)') and
+                     Exists('@(_NativeRestoredComHostNETCore)')">
+    <CreateComHost
+      ComHostSourcePath="@(_NativeRestoredComHostNETCore)"
+      ComHostDestinationPath="@(_NativeComHostNETCore->'%(FullPath)')"
+      ClsidMapPath="@(ClsidMap)">
+      <Output TaskParameter="ClsidMapEmbedded" PropertyName="_ClsidMapEmbedded" />
+    </CreateComHost>
+
+    <!-- If we failed to embed the ClsidMap for any reason, copy it to the output directory.-->
+    <ItemGroup Condition="'$(_ClsidMapEmbedded)' == 'false'">
+      <None Include="@(ClsidMap)">
+        <Link>$(AssemblyName).cslidmap</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+                                        _GetComHostPaths
+
+    Gets the path to the restored comhost, and if the restored comhost
+    was present, computes the path for the destination comhost.
+    ============================================================
+     -->
+  <Target Name="_GetComHostPaths"
+          DependsOnTargets="ResolvePackageAssets"
+          Condition="'$(UseComHost)' == 'true' and '$(_IsExecutable)' != 'true'">
+    <ItemGroup>
+      <_NativeComHostNETCore Include="@(_NativeRestoredComHostNETCore->'$(IntermediateOutputPath)$(AssemblyName).$(_DotNetComHostLibraryNameWithoutExtension)%(Extension)')" />
+    </ItemGroup>
+
+    <NETSdkError Condition="'@(_NativeComHostNETCore->Count())' > 1"
+                 ResourceName="MultipleFilesResolved"
+                 FormatArguments="$(_DotNetComHostLibraryName)" />
+  </Target>
+  
   <!--
     ============================================================
                                         _ComputeNETCoreBuildOutputFiles
@@ -326,7 +407,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ComputeNETCoreBuildOutputFiles"
-          DependsOnTargets="_GetAppHostPaths"
+          DependsOnTargets="_GetAppHostPaths;_GetComHostPaths"
           BeforeTargets="AssignTargetPaths"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true'">
 
@@ -352,6 +433,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <None Include="@(_NativeAppHostNETCore)">
         <Link>$(AssemblyName)$(_NativeExecutableExtension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+    </ItemGroup>
+    <ItemGroup Condition="'@(_NativeComHostNETCore)' != ''">
+      <None Include="@(_NativeComHostNETCore)">
+        <Link>$(AssemblyName).$(_DotNetComHostLibraryName)</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>

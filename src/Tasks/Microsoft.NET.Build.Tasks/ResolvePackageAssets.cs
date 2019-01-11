@@ -142,6 +142,12 @@ namespace Microsoft.NET.Build.Tasks
         public string DotNetAppHostExecutableNameWithoutExtension { get; set; }
 
         /// <summary>
+        /// The file name of Comhost asset.
+        /// </summary>
+        [Required]
+        public string DotNetComHostLibraryNameWithoutExtension { get; set; }
+
+        /// <summary>
         /// Full paths to assemblies from packages to pass to compiler as analyzers.
         /// </summary>
         [Output]
@@ -944,6 +950,7 @@ namespace Microsoft.NET.Build.Tasks
                     });
 
                 WriteDefaultNativeApphostAsset();
+                WriteDefaultNativeComhostAsset();
             }
 
             private void WriteDefaultNativeApphostAsset()
@@ -953,15 +960,42 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
 
+                var runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(
+                        NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker),
+                        _task.DefaultAppHostRuntimeIdentifier
+                    );
                 var assetPathAndLibrary = FindApphostInRuntimeTarget(
                     _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(_task.DefaultAppHostRuntimeIdentifier),
+                    runtimeTarget
+                );
+
+                if (assetPathAndLibrary == null)
+                {
+                    throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
+                }
+
+                WriteItem(assetPathAndLibrary.Item1, assetPathAndLibrary.Item2);
+            }
+
+            private void WriteDefaultNativeComhostAsset()
+            {
+                if (string.IsNullOrEmpty(_task.DefaultAppHostRuntimeIdentifier))
+                {
+                    return;
+                }
+
+                var assetPathAndLibrary = FindApphostInRuntimeTarget(
+                    _task.DotNetComHostLibraryNameWithoutExtension + ".dll",
                     _lockFile.GetTargetAndThrowIfNotFound(
                         NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker),
                         _task.DefaultAppHostRuntimeIdentifier
                     )
                 );
 
-                WriteItem(assetPathAndLibrary.Item1, assetPathAndLibrary.Item2);
+                if (assetPathAndLibrary != null)
+                {
+                    WriteItem(assetPathAndLibrary.Item1, assetPathAndLibrary.Item2);
+                }
             }
 
             private void WriteApphostsForShimRuntimeIdentifiers()
@@ -979,6 +1013,11 @@ namespace Microsoft.NET.Build.Tasks
                     var apphostName = _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier);
 
                     Tuple<string, LockFileTargetLibrary> resolvedPackageAssetPathAndLibrary = FindApphostInRuntimeTarget(apphostName, runtimeTarget);
+
+                    if (resolvedPackageAssetPathAndLibrary == null)
+                    {
+                        throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
+                    }
 
                     WriteItem(resolvedPackageAssetPathAndLibrary.Item1, resolvedPackageAssetPathAndLibrary.Item2);
                     WriteMetadata(MetadataKeys.RuntimeIdentifier, runtimeIdentifier);
@@ -1240,7 +1279,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
+                return null;
             }
         }
     }

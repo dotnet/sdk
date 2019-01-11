@@ -234,6 +234,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       DisableFrameworkAssemblies="$(DisableLockFileFrameworks)"
       DisableTransitiveProjectReferences="$(DisableTransitiveProjectReferences)"
       DotNetAppHostExecutableNameWithoutExtension="$(_DotNetAppHostExecutableNameWithoutExtension)"
+      DotNetComHostLibraryNameWithoutExtension="$(_DotNetComHostLibraryNameWithoutExtension)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       EnsureRuntimePackageDependencies="$(EnsureRuntimePackageDependencies)"
       VerifyMatchingImplicitPackageVersion="$(VerifyMatchingImplicitPackageVersion)"
@@ -257,6 +258,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_NativeRestoredAppHostNETCore Include="@(NativeCopyLocalItems)"
                                      Condition="'%(NativeCopyLocalItems.FileName)%(NativeCopyLocalItems.Extension)' == '$(_DotNetAppHostExecutableName)'"/>
+      <_NativeRestoredComHostNETCore Include="@(NativeCopyLocalItems)"
+                                     Condition="'%(NativeCopyLocalItems.FileName)%(NativeCopyLocalItems.Extension)' == '$(_DotNetComHostLibraryName)'"/>
     </ItemGroup>
 
   </Target>
