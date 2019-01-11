@@ -120,7 +120,7 @@
     
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
       <BundledLayoutComponent Include="AspNetCoreSharedFxArchiveFile"
-                              Condition="( '$(AspNetCoreSharedFxArchiveRid)' == 'linux-arm' OR !$(Architecture.StartsWith('arm')) )">
+                              Condition="( $(AspNetCoreSharedFxArchiveRid.StartsWith('linux-arm')) OR !$(Architecture.StartsWith('arm')) )">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
