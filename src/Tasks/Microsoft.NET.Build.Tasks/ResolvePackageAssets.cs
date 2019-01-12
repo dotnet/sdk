@@ -179,6 +179,12 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] NativeLibraries { get; private set; }
 
         /// <summary>
+        /// The package folders from the assets file (ie the paths under which package assets may be found)
+        /// </summary>
+        [Output]
+        public ITaskItem[] PackageFolders { get; set; }
+
+        /// <summary>
         /// Full paths to satellite assemblies from packages.
         /// </summary>
         [Output]
@@ -261,7 +267,7 @@ namespace Microsoft.NET.Build.Tasks
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         private const int CacheFormatSignature = ('P' << 0) | ('K' << 8) | ('G' << 16) | ('A' << 24);
-        private const int CacheFormatVersion = 3;
+        private const int CacheFormatVersion = 4;
         private static readonly Encoding TextEncoding = Encoding.UTF8;
         private const int SettingsHashLength = 256 / 8;
         private HashAlgorithm CreateSettingsHash() => SHA256.Create();
@@ -290,6 +296,7 @@ namespace Microsoft.NET.Build.Tasks
                 ContentFilesToPreprocess = reader.ReadItemGroup();
                 FrameworkAssemblies = reader.ReadItemGroup();
                 NativeLibraries = reader.ReadItemGroup();
+                PackageFolders = reader.ReadItemGroup();
                 ResourceAssemblies = reader.ReadItemGroup();
                 RuntimeAssemblies = reader.ReadItemGroup();
                 RuntimeTargets = reader.ReadItemGroup();
@@ -683,6 +690,7 @@ namespace Microsoft.NET.Build.Tasks
                 WriteItemGroup(WriteContentFilesToPreprocess);
                 WriteItemGroup(WriteFrameworkAssemblies);
                 WriteItemGroup(WriteNativeLibraries);
+                WriteItemGroup(WritePackageFolders);
                 WriteItemGroup(WriteResourceAssemblies);
                 WriteItemGroup(WriteRuntimeAssemblies);
                 WriteItemGroup(WriteRuntimeTargets);
@@ -1024,6 +1032,14 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            private void WritePackageFolders()
+            {
+                foreach (var packageFolder in _lockFile.PackageFolders)
+                {
+                    WriteItem(packageFolder.Path);
+                }
+            }
+
             private void WriteResourceAssemblies()
             {
                 WriteItems(
@@ -1168,14 +1184,14 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            private void WriteCopyLocalMetadata(LockFileTargetLibrary package, string assetFileName, string assetType, string destinationSubDirectory = null)
+            private void WriteCopyLocalMetadata(LockFileTargetLibrary package, string assetsFileName, string assetType, string destinationSubDirectory = null)
             {
                 WriteMetadata(MetadataKeys.CopyLocal, "true");
                 WriteMetadata(
                     MetadataKeys.DestinationSubPath,
                     string.IsNullOrEmpty(destinationSubDirectory) ?
-                        assetFileName :
-                        Path.Combine(destinationSubDirectory, assetFileName));
+                        assetsFileName :
+                        Path.Combine(destinationSubDirectory, assetsFileName));
                 if (!string.IsNullOrEmpty(destinationSubDirectory))
                 {
                     WriteMetadata(MetadataKeys.DestinationSubDirectory, destinationSubDirectory);

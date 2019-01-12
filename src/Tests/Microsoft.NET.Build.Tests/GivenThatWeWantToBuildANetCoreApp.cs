@@ -15,6 +15,7 @@ using NuGet.ProjectModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text;
@@ -254,18 +255,18 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("netcoreapp2.1")]
+        [InlineData("netcoreapp3.0")]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld")
-                .WithSource();
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
             buildCommand
                 .Execute(new string[] {
                     "/restore",
-                    $"/p:TargetFramework={targetFramework}",
-                    $"/p:NETCoreSdkRuntimeIdentifier={EnvironmentInfo.GetCompatibleRid(targetFramework)}"
                 })
                 .Should()
                 .Pass();
@@ -294,30 +295,76 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
+        [WindowsOnlyTheory]
+        [InlineData("x86")]
+        [InlineData("x64")]
+        [InlineData("AnyCPU")]
+        [InlineData("")]
+        public void It_uses_an_apphost_based_on_platform_target(string target)
+        {
+            var targetFramework = "netcoreapp3.0";
+
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource();
+
+            var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
+            buildCommand
+                .Execute(new string[] {
+                    "/restore",
+                    $"/p:TargetFramework={targetFramework}",
+                    $"/p:PlatformTarget={target}",
+                    $"/p:NETCoreSdkRuntimeIdentifier={EnvironmentInfo.GetCompatibleRid(targetFramework)}"
+                })
+                .Should()
+                .Pass();
+
+            var apphostPath = Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, "HelloWorld.exe");
+            if (target == "x86")
+            {
+                IsPE32(apphostPath).Should().BeTrue();
+            }
+            else if (target == "x64")
+            {
+                IsPE32(apphostPath).Should().BeFalse();
+            }
+            else
+            {
+                IsPE32(apphostPath).Should().Be(!Environment.Is64BitProcess);
+            }
+        }
+
         [Theory]
         [InlineData("netcoreapp2.0")]
         [InlineData("netcoreapp2.1")]
+        [InlineData("netcoreapp3.0")]
         public void It_runs_the_app_from_the_output_folder(string targetFramework)
         {
             RunAppFromOutputFolder("RunFromOutputFolder_" + targetFramework, false, false, targetFramework);
         }
 
-        [Fact]
-        public void It_runs_a_rid_specific_app_from_the_output_folder()
+        [Theory]
+        [InlineData("netcoreapp2.1")]
+        [InlineData("netcoreapp3.0")]
+        public void It_runs_a_rid_specific_app_from_the_output_folder(string targetFramework)
         {
-            RunAppFromOutputFolder("RunFromOutputFolderWithRID", true, false);
+            RunAppFromOutputFolder("RunFromOutputFolderWithRID_" + targetFramework, true, false, targetFramework);
         }
 
-        [Fact]
-        public void It_runs_the_app_with_conflicts_from_the_output_folder()
+        [Theory]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp3.0")]
+        public void It_runs_the_app_with_conflicts_from_the_output_folder(string targetFramework)
         {
-            RunAppFromOutputFolder("RunFromOutputFolderConflicts", false, true);
+            RunAppFromOutputFolder("RunFromOutputFolderConflicts_" + targetFramework, false, true, targetFramework);
         }
 
-        [Fact]
-        public void It_runs_a_rid_specific_app_with_conflicts_from_the_output_folder()
+        [Theory]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp3.0")]
+        public void It_runs_a_rid_specific_app_with_conflicts_from_the_output_folder(string targetFramework)
         {
-            RunAppFromOutputFolder("RunFromOutputFolderWithRIDConflicts", true, true);
+            RunAppFromOutputFolder("RunFromOutputFolderWithRIDConflicts_" + targetFramework, true, true, targetFramework);
         }
 
         private void RunAppFromOutputFolder(string testName, bool useRid, bool includeConflicts,
@@ -389,13 +436,15 @@ public static class Program
 
         }
 
-        [Fact]
-        public void It_trims_conflicts_from_the_deps_file()
+        [Theory]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp3.0")]
+        public void It_trims_conflicts_from_the_deps_file(string targetFramework)
         {
             TestProject project = new TestProject()
             {
                 Name = "NetCore2App",
-                TargetFrameworks = "netcoreapp2.0",
+                TargetFrameworks = targetFramework,
                 IsExe = true,
                 IsSdkProject = true
             };
@@ -413,7 +462,7 @@ public static class Program
 }
 ";
 
-            var testAsset = _testAssetsManager.CreateTestProject(project)
+            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: targetFramework)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -561,6 +610,14 @@ public static class Program
                 .Select(Path.GetFileName)
                 .Should()
                 .BeEquivalentTo("netcoreapp1.1");
+        }
+
+        private static bool IsPE32(string path)
+        {
+            using (var reader = new PEReader(File.OpenRead(path)))
+            {
+                return reader.PEHeaders.PEHeader.Magic == PEMagic.PE32;
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <MicrosoftNETBuildTasksDirectoryRoot>$(MSBuildThisFileDirectory)..\tools\</MicrosoftNETBuildTasksDirectoryRoot>
     <MicrosoftNETBuildTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netcoreapp2.0</MicrosoftNETBuildTasksTFM>
-    <MicrosoftNETBuildTasksTFM Condition=" '$(MicrosoftNETBuildTasksTFM)' == ''">net46</MicrosoftNETBuildTasksTFM>
+    <MicrosoftNETBuildTasksTFM Condition=" '$(MicrosoftNETBuildTasksTFM)' == ''">net472</MicrosoftNETBuildTasksTFM>
     <MicrosoftNETBuildTasksDirectory>$(MicrosoftNETBuildTasksDirectoryRoot)$(MicrosoftNETBuildTasksTFM)/</MicrosoftNETBuildTasksDirectory>
     <MicrosoftNETBuildTasksAssembly>$(MicrosoftNETBuildTasksDirectory)Microsoft.NET.Build.Tasks.dll</MicrosoftNETBuildTasksAssembly>
 
@@ -27,15 +27,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <DefaultImplicitPackages>Microsoft.NETCore.App;NETStandard.Library</DefaultImplicitPackages>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Only use the default apphost if building without a RID and without a deps file path (used by GenerateDeps.proj for CLI tools). -->
-    <!-- This needs to be set prior to _IsExecutable being reassigned below. -->
-    <DefaultAppHostRuntimeIdentifier Condition="'$(DefaultAppHostRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' == '' and '$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true' and '$(ProjectDepsFilePath)' == ''">$(NETCoreSdkRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
-    <DefaultAppHostRuntimeIdentifier Condition="'$(DefaultAppHostRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' == '' and '$(UseComHost)' == 'true' and '$(_IsExecutable)' != 'true'">$(NETCoreSdkRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
-    <RuntimeIdentifiers Condition="'$(DefaultAppHostRuntimeIdentifier)' != ''">$(RuntimeIdentifiers);$(DefaultAppHostRuntimeIdentifier)</RuntimeIdentifiers>
-  </PropertyGroup>
-
+  
   <!--
      Some versions of Microsoft.NET.Test.Sdk.targets change the OutputType after we've set _IsExecutable and
      HasRuntimeOutput default in Microsoft.NET.Sdk.BeforeCommon.targets. Refresh these value here for backwards

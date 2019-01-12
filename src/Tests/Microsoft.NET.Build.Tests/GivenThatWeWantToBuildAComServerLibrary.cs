@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact(Skip = "Waiting on comhost being merged into core-setup.")]
+        [WindowsOnlyFact()]
         public void It_copies_the_comhost_to_the_output_directory()
         {
             var testAsset = _testAssetsManager
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
             buildCommand
-                .Execute()
+                .Execute("/bl")
                 .Should()
                 .Pass();
 
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1084: ");
+                .HaveStdOutContaining("NETSDK1088: ");
         }
     }
 }
