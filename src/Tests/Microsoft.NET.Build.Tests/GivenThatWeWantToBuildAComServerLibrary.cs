@@ -45,6 +45,7 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("win-x64")]
+        [InlineData("win-x86")]
         public void It_copies_the_comhost_and_clsidmap_to_the_output_directory_when_not_embedding(string rid)
         {
             var testAsset = _testAssetsManager
@@ -78,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("linux-x64")]
-        public void It_builds_successfully_for_platforms_without_comhost(string rid)
+        public void It_warns_for_platforms_without_comhost(string rid)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
@@ -93,17 +94,11 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
             buildCommand
-                .Execute("/p:RuntimeIdentifier=linux-x64")
+                .Execute("/bl")
                 .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp3.0", runtimeIdentifier: rid);
-
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                "ComServer.dll",
-                "ComServer.pdb",
-                "ComServer.deps.json"
-            });
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1084: ");
         }
     }
 }

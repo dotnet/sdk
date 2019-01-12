@@ -389,6 +389,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_NativeComHostNETCore Include="@(_NativeRestoredComHostNETCore->'$(IntermediateOutputPath)$(AssemblyName).$(_DotNetComHostLibraryNameWithoutExtension)%(Extension)')" />
     </ItemGroup>
+    <NETSdkError Condition="'@(_NativeComHostNETCore->Count())' == 0"
+                 ResourceName="CannotFindComhost" />
 
     <NETSdkError Condition="'@(_NativeComHostNETCore->Count())' > 1"
                  ResourceName="MultipleFilesResolved"

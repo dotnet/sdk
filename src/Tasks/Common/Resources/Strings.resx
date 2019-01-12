@@ -453,4 +453,8 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1083: "}
 {0} - The path to the invalid assembly.</comment>
   </data>
+  <data name="CannotFindComhost" xml:space="preserve">
+    <value>NETSDK1084: Unable to find a .NET Core COM host. The .NET Core COM host is only available on .NET Core 3.0 or higher when targeting Windows.</value>
+    <comment>{StrBegin="NETSDK1084: "}</comment>
+  </data>
 </root>
