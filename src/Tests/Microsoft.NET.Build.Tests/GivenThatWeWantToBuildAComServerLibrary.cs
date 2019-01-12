@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Waiting on comhost being merged into core-setup.")]
         public void It_copies_the_comhost_to_the_output_directory()
         {
             var testAsset = _testAssetsManager
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = "Waiting on comhost being merged into core-setup.")]
         [InlineData("win-x64")]
         [InlineData("win-x86")]
         public void It_copies_the_comhost_and_clsidmap_to_the_output_directory_when_not_embedding(string rid)
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("linux-x64")]
-        public void It_warns_for_platforms_without_comhost(string rid)
+        public void It_fails_for_platforms_without_comhost(string rid)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
