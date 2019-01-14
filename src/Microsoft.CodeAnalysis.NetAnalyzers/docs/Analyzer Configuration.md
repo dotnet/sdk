@@ -39,6 +39,7 @@ Option Name: `api_surface`
 Configurable Rules: <To be documented>
 
 Option Values:
+
 | Option Value | Summary |
 | --- | --- |
 | `public` | Analyzes public APIs that are externally visible outside the assembly. |
