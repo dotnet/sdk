@@ -332,6 +332,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup>
     <ClsidMap Include="$(IntermediateOutputPath)$(AssemblyName).clsidmap" />
+    <RegFreeComManifest Include="$(IntermediateOutputPath)$(AssemblyName).X.manifest" />
   </ItemGroup>
   
   <!--
@@ -365,7 +366,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CreateComHost"
           Inputs="@(IntermediateAssembly);$(ComHostSourcePath)"
           Outputs="$(ComHostIntermediatePath)"
-          DependsOnTargets="_GetComHostPaths;CoreCompile;_GenerateClsidMap"
+          DependsOnTargets="_GetComHostPaths;CoreCompile;_GenerateClsidMap;_GenerateRegFreeComManifest"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and
                      '$(ComHostIntermediatePath)' != '' and
                      Exists('@(IntermediateAssembly)') and
@@ -374,6 +375,29 @@ Copyright (c) .NET Foundation. All rights reserved.
       ComHostSourcePath="$(ComHostSourcePath)"
       ComHostDestinationPath="$(ComHostIntermediatePath)"
       ClsidMapPath="@(ClsidMap)" />
+  </Target>
+
+  <UsingTask TaskName="GenerateRegFreeComManifest" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <!-- 
+    ============================================================
+                                        _GenerateRegFreeComManifest
+
+    Gets the path to the restored comhost, and if the restored comhost
+    was present, computes the path for the destination comhost.
+    ============================================================
+  -->
+  <Target Name="_GenerateRegFreeComManifest"
+          DependsOnTargets="_GenerateClsidMap;_GetComHostPaths"
+          Inputs="@(ClsidMap);@(IntermediateAssembly)"
+          Outputs="@(RegFreeComManifest)"
+          Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and
+                     '$(UseComHost)' == 'true' and
+                     '$(EnableRegFreeCom)' == 'true'">
+    <GenerateRegFreeComManifest
+      IntermediateAssembly="@(IntermediateAssembly)"
+      ComHostName="$(ComHostFileName)"
+      ClsidMapPath="@(ClsidMap)"
+      ComManifestPath="@(RegFreeComManifest)" />
   </Target>
 
   <!--
@@ -388,7 +412,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="ResolvePackageAssets"
           Condition="'$(UseComHost)' == 'true' and '$(_IsExecutable)' != 'true'">
     <PropertyGroup>
-      <ComHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)$(AssemblyName).comhost$(_ComHostLibraryExtension)'))</ComHostIntermediatePath>
+      <ComHostFileName>$(AssemblyName).comhost$(_ComHostLibraryExtension)</ComHostFileName>
+      <ComHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)$(ComHostFileName)'))</ComHostIntermediatePath>
     </PropertyGroup>
 
     <NETSdkError Condition="'$(ComHostSourcePath)' == '' or !Exists('$(ComHostSourcePath)')"
@@ -449,6 +474,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
+      <None Include="@(RegFreeComManifest)" Condition="'$(EnableRegFreeCom)' == 'true'">
+        <Link>%(FileName)%(Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
+
     </ItemGroup>
   </Target>
 

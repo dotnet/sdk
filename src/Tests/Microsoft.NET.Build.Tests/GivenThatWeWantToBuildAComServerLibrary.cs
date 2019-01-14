@@ -47,6 +47,38 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+
+        [WindowsOnlyFact(Skip = "Waiting on comhost being merged into core-setup.")]
+        public void It_generates_a_regfree_com_manifest_when_requested()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("ComServer")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement("EnableRegFreeCom", true));
+                })
+                .Restore(Log);
+
+            var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp3.0");
+
+            outputDirectory.Should().OnlyHaveFiles(new[] {
+                "ComServer.dll",
+                "ComServer.pdb",
+                "ComServer.deps.json",
+                "ComServer.comhost.dll",
+                "ComServer.X.manifest"
+            });
+        }
+
         [WindowsOnlyTheory(Skip = "Waiting on comhost being merged into core-setup.")]
         [InlineData("win-x64")]
         [InlineData("win-x86")]
