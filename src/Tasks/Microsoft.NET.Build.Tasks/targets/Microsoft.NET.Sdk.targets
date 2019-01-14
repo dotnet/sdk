@@ -331,7 +331,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <ItemGroup>
-    <ClsidMap Include="$(IntermediateOutputPath)$(AssemblyName).cslidmap" />
+    <ClsidMap Include="$(IntermediateOutputPath)$(AssemblyName).clsidmap" />
   </ItemGroup>
   
   <!--
