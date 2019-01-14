@@ -55,11 +55,6 @@ namespace Microsoft.NET.Build.Tasks
         public string RuntimeIdentifier { get; set; }
 
         /// <summary>
-        /// The runtime identifier for the default apphost.
-        /// </summary>
-        public string DefaultAppHostRuntimeIdentifier { get; set; }
-
-        /// <summary>
         /// The platform library name for resolving copy local assets.
         /// </summary>
         public string PlatformLibraryName { get; set; }
@@ -140,12 +135,6 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         [Required]
         public string DotNetAppHostExecutableNameWithoutExtension { get; set; }
-
-        /// <summary>
-        /// The file name of Comhost asset.
-        /// </summary>
-        [Required]
-        public string DotNetComHostLibraryNameWithoutExtension { get; set; }
 
         /// <summary>
         /// Full paths to assemblies from packages to pass to compiler as analyzers.
@@ -267,7 +256,7 @@ namespace Microsoft.NET.Build.Tasks
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         private const int CacheFormatSignature = ('P' << 0) | ('K' << 8) | ('G' << 16) | ('A' << 24);
-        private const int CacheFormatVersion = 4;
+        private const int CacheFormatVersion = 5;
         private static readonly Encoding TextEncoding = Encoding.UTF8;
         private const int SettingsHashLength = 256 / 8;
         private HashAlgorithm CreateSettingsHash() => SHA256.Create();
@@ -403,7 +392,6 @@ namespace Microsoft.NET.Build.Tasks
                     writer.Write(ProjectLanguage ?? "");
                     writer.Write(ProjectPath);
                     writer.Write(RuntimeIdentifier ?? "");
-                    writer.Write(DefaultAppHostRuntimeIdentifier ?? "");
                     if (ShimRuntimeIdentifiers != null)
                     {
                         foreach (var r in ShimRuntimeIdentifiers)
@@ -956,54 +944,6 @@ namespace Microsoft.NET.Build.Tasks
                             WriteCopyLocalMetadata(package, Path.GetFileName(asset.Path), "native");
                         }
                     });
-
-                WriteDefaultNativeApphostAsset();
-                WriteDefaultNativeComhostAsset();
-            }
-
-            private void WriteDefaultNativeApphostAsset()
-            {
-                if (string.IsNullOrEmpty(_task.DefaultAppHostRuntimeIdentifier))
-                {
-                    return;
-                }
-
-                var runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(
-                        NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker),
-                        _task.DefaultAppHostRuntimeIdentifier
-                    );
-                var assetPathAndLibrary = FindApphostInRuntimeTarget(
-                    _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(_task.DefaultAppHostRuntimeIdentifier),
-                    runtimeTarget
-                );
-
-                if (assetPathAndLibrary == null)
-                {
-                    throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
-                }
-
-                WriteItem(assetPathAndLibrary.Item1, assetPathAndLibrary.Item2);
-            }
-
-            private void WriteDefaultNativeComhostAsset()
-            {
-                if (string.IsNullOrEmpty(_task.DefaultAppHostRuntimeIdentifier))
-                {
-                    return;
-                }
-
-                var assetPathAndLibrary = FindApphostInRuntimeTarget(
-                    _task.DotNetComHostLibraryNameWithoutExtension + ".dll",
-                    _lockFile.GetTargetAndThrowIfNotFound(
-                        NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker),
-                        _task.DefaultAppHostRuntimeIdentifier
-                    )
-                );
-
-                if (assetPathAndLibrary != null)
-                {
-                    WriteItem(assetPathAndLibrary.Item1, assetPathAndLibrary.Item2);
-                }
             }
 
             private void WriteApphostsForShimRuntimeIdentifiers()
@@ -1021,11 +961,6 @@ namespace Microsoft.NET.Build.Tasks
                     var apphostName = _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier);
 
                     Tuple<string, LockFileTargetLibrary> resolvedPackageAssetPathAndLibrary = FindApphostInRuntimeTarget(apphostName, runtimeTarget);
-
-                    if (resolvedPackageAssetPathAndLibrary == null)
-                    {
-                        throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
-                    }
 
                     WriteItem(resolvedPackageAssetPathAndLibrary.Item1, resolvedPackageAssetPathAndLibrary.Item2);
                     WriteMetadata(MetadataKeys.RuntimeIdentifier, runtimeIdentifier);
@@ -1295,7 +1230,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                return null;
+                throw new BuildErrorException(Strings.CannotFindApphostForRid, runtimeTarget.RuntimeIdentifier);
             }
         }
     }

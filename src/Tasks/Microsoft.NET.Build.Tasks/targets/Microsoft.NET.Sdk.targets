@@ -394,21 +394,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetComHostPaths"
           DependsOnTargets="ResolvePackageAssets"
           Condition="'$(UseComHost)' == 'true' and '$(_IsExecutable)' != 'true'">
-
-    <NETSdkError Condition="'@(_NativeRestoredAppHostNETCore->Count())' > 1"
-             ResourceName="MultipleFilesResolved"
-             FormatArguments="$(_DotNetAppHostExecutableName)" />
-    
     <PropertyGroup>
-      <!-- ComHostSourcePath will be set from ResolveFrameworkReferences if not using the ComHost from the assets file -->
-      <ComHostSourcePath Condition="'$(UseAppHostFromAssetsFile)' == 'true'">@(_NativeRestoredComHostNETCore)</ComHostSourcePath>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(UseAppHostFromAssetsFile)' == 'false' Or '@(_NativeRestoredComHostNETCore)' != ''">
       <ComHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)$(AssemblyName).comhost$(_ComHostLibraryExtension)'))</ComHostIntermediatePath>
     </PropertyGroup>
 
-
-    <NETSdkError Condition="!Exists('$(ComHostSourcePath)')"
+    <NETSdkError Condition="'$(ComHostSourcePath)' == '' or !Exists('$(ComHostSourcePath)')"
              ResourceName="CannotFindComhost" />
 
     <GetCanEmbedPEResources>
