@@ -355,10 +355,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="CreateComHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <PropertyGroup>
-    <_EmbedClsidMap Condition="'$(_EmbedClsidMap)' == ''">true</_EmbedClsidMap>
-  </PropertyGroup>
-
   <!--
     ============================================================
                                         _CreateComHost
@@ -377,11 +373,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CreateComHost
       ComHostSourcePath="$(ComHostSourcePath)"
       ComHostDestinationPath="$(ComHostIntermediatePath)"
-      ClsidMapPath="@(ClsidMap)"
-      EmbedClsidMap="$(_EmbedClsidMap)" />
+      ClsidMapPath="@(ClsidMap)" />
   </Target>
-
-  <UsingTask TaskName="GetCanEmbedPEResources" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!--
     ============================================================
@@ -400,10 +393,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkError Condition="'$(ComHostSourcePath)' == '' or !Exists('$(ComHostSourcePath)')"
              ResourceName="CannotFindComhost" />
-
-    <GetCanEmbedPEResources>
-      <Output TaskParameter="CanEmbedResources" PropertyName="_ClsidMapEmbeddable" />
-    </GetCanEmbedPEResources>
   </Target>
   
   <!--
@@ -460,12 +449,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
-      <None Include="@(ClsidMap)" Condition="'$(_ClsidMapEmbeddable)' != 'true' or '$(_EmbedClsidMap)' != 'true'">
-        <Link>$(AssemblyName).clsidmap</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </None>
-
     </ItemGroup>
   </Target>
 

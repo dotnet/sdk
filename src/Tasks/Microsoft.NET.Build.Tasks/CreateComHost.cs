@@ -19,16 +19,12 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string ClsidMapPath { get; set; }
 
-        [Required]
-        public bool EmbedClsidMap { get; set; }
-
         protected override void ExecuteCore()
         {
             ComHost.Create(
                 ComHostSourcePath,
                 ComHostDestinationPath,
-                ClsidMapPath,
-                EmbedClsidMap);
+                ClsidMapPath);
         }
     }
 }

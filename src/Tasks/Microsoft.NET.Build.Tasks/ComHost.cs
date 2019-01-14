@@ -26,8 +26,7 @@ namespace Microsoft.NET.Build.Tasks
         public static void Create(
             string comHostSourceFilePath,
             string comHostDestinationFilePath,
-            string clsidmapFilePath,
-            bool embedClsidMap)
+            string clsidmapFilePath)
         {
             var destinationDirectory = new FileInfo(comHostDestinationFilePath).Directory.FullName;
             if (!Directory.Exists(destinationDirectory))
@@ -38,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks
             // Copy apphost to destination path so it inherits the same attributes/permissions.
             File.Copy(comHostSourceFilePath, comHostDestinationFilePath, overwrite: true);
 
-            if (ResourceUpdater.IsSupportedOS() && embedClsidMap)
+            if (ResourceUpdater.IsSupportedOS())
             {
                 string clsidMap = File.ReadAllText(clsidmapFilePath);
                 byte[] clsidMapBytes = Encoding.UTF8.GetBytes(clsidMap);
@@ -47,47 +46,9 @@ namespace Microsoft.NET.Build.Tasks
                 updater.AddResource(clsidMapBytes, (IntPtr)ClsidmapResourceType, (IntPtr)ClsidmapResourceId);
                 updater.Update();
             }
-        }
-
-
-        /// <summary>
-        /// The first two bytes of a PE file are a constant signature.
-        /// </summary>
-        private const UInt16 PEFileSignature = 0x5A4D;
-
-        /// <summary>
-        /// The offset of the PE header pointer in the DOS header.
-        /// </summary>
-        private const int PEHeaderPointerOffset = 0x3C;
-
-        /// <summary>
-        /// Check whether the apphost file is a windows PE image by looking at the first few bytes.
-        /// </summary>
-        /// <param name="accessor">The memory accessor which has the apphost file opened.</param>
-        /// <returns>true if the accessor represents a PE image, false otherwise.</returns>
-        private static unsafe bool IsPEImage(MemoryMappedViewAccessor accessor)
-        {
-            byte* pointer = null;
-
-            try
+            else
             {
-                accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref pointer);
-                byte* bytes = pointer + accessor.PointerOffset;
-
-                // https://en.wikipedia.org/wiki/Portable_Executable
-                // Validate that we're looking at Windows PE file
-                if (((UInt16*)bytes)[0] != PEFileSignature || accessor.Capacity < PEHeaderPointerOffset + sizeof(UInt32))
-                {
-                    return false;
-                }
-                return true;
-            }
-            finally
-            {
-                if (pointer != null)
-                {
-                    accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-                }
+                throw new BuildErrorException(Strings.CannotEmbedClsidMapIntoComhost);
             }
         }
     }

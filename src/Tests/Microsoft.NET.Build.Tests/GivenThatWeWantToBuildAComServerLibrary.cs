@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using FluentAssertions;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -46,10 +47,10 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory(Skip = "Waiting on comhost being merged into core-setup.")]
+        [WindowsOnlyTheory(Skip = "Waiting on comhost being merged into core-setup.")]
         [InlineData("win-x64")]
         [InlineData("win-x86")]
-        public void It_copies_the_comhost_and_clsidmap_to_the_output_directory_when_not_embedding(string rid)
+        public void It_embeds_the_clsidmap_in_the_comhost_when_rid_specified(string rid)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
@@ -58,7 +59,6 @@ namespace Microsoft.NET.Build.Tests
                 {
                     var ns = project.Root.Name.Namespace;
                     var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                    propertyGroup.Add(new XElement("_EmbedClsidMap", false));
                     propertyGroup.Add(new XElement("RuntimeIdentifier", rid));
                 })
                 .Restore(Log);
@@ -75,14 +75,36 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.dll",
                 "ComServer.pdb",
                 "ComServer.deps.json",
-                "ComServer.comhost.dll",
-                "ComServer.clsidmap"
+                "ComServer.comhost.dll"
             });
         }
 
-        [Theory]
-        [InlineData("linux-x64")]
-        public void It_fails_for_platforms_without_comhost(string rid)
+        [PlatformSpecificFact(Platform.Linux, Platform.Darwin, Platform.FreeBSD, Skip = "Waiting on comhost being merged into core-setup.")]
+        public void It_fails_to_find_comhost_for_platforms_without_comhost()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("ComServer")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                })
+                .Restore(Log);
+
+            var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
+            buildCommand
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1088: ");
+        }
+
+        [PlatformSpecificTheory(Platform.Linux, Platform.Darwin, Platform.FreeBSD, Skip = "Waiting on comhost being merged into core-setup.")]
+        [InlineData("win-x64")]
+        [InlineData("win-x86")]
+        public void It_fails_to_embed_clsid_when_not_on_windows(string rid)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("ComServer")
@@ -97,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
             buildCommand
-                .Execute("/bl")
+                .Execute()
                 .Should()
                 .Fail()
                 .And
