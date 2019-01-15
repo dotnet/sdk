@@ -97,7 +97,7 @@ While this sample repository has no need to do so, there are many scenarios in w
     displayName: dotnet publish
 ```
 
-## Enabling telmetry
+## Enabling telemetry
 
 [Arcade](#base-your-builds-on-arcade-for-ease-of-use) provides the ability to send telemetry.  To enable telemetry you must...
 
