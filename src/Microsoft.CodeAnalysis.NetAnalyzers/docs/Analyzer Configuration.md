@@ -42,7 +42,7 @@ Option Values:
 | Option Value | Summary |
 | --- | --- |
 | `public` | Analyzes public APIs that are externally visible outside the assembly. |
-| `internal` or `friend` | Analyzes internal APIs that are visible within the assembly and to assemblies with [InternalsVisibleToAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute) access. |
+| `internal` or `friend` | Analyzes internal APIs that are visible within the assembly and to assemblies with [InternalsVisibleToAttribute](https://docs.microsoft.com/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute) access. |
 | `private` | Analyzes private APIs that are only visible within the containing type. |
 | `all` | Analyzes all APIs, regardless of the symbol visibility. |
 
@@ -67,3 +67,40 @@ Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.Co
 Option Values: `true` or `false`
 
 Example: `dotnet_code_quality.CA2007.skip_async_void_methods = true`
+
+### Dataflow analysis
+
+Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code), [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
+
+#### Interprocedural analysis Kind
+Option Name: `interprocedural_analysis_kind`
+
+Option Values:
+
+| Option Value | Summary |
+| --- | --- |
+| `None` | Skip interprocedural analysis for source method invocations. |
+| `NonContextSensitive` | Performs non-context sensitive interprocedural analysis for all source method invocations. |
+| `ContextSensitive` | Performs context sensitive interprocedural analysis for all source method invocations. |
+
+Default Value: Specific to each configurable rule.
+
+Example: `dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive`
+
+#### Maximum method call chain length to analyze for interprocedural dataflow analysis
+Option Name: `max_interprocedural_method_call_chain`
+
+Option Values: Unsigned integer
+
+Default Value: 3
+
+Example: `dotnet_code_quality.max_interprocedural_method_call_chain = 5`
+
+#### Maximum lambda or local function call chain length to analyze for interprocedural dataflow analysis
+Option Name: `max_interprocedural_lambda_or_local_function_call_chain`
+
+Option Values: Unsigned integer
+
+Default Value: 10
+
+Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 5`
