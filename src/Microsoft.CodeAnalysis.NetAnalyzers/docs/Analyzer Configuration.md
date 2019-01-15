@@ -47,6 +47,8 @@ Option Values:
 | `private` | Analyzes private APIs that are only visible within the containing type. |
 | `all` | Analyzes all APIs, regardless of the symbol visibility. |
 
+Default Value: `public`
+
 Example: `dotnet_code_quality.api_surface = all`
 
 Users can also provide a comma separated list of above option values. For example, `dotnet_code_quality.api_surface = private, internal` configures analysis of the entire non-public API surface.
@@ -58,6 +60,8 @@ Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.Co
 
 Option Values: One or more fields of enum [Microsoft.CodeAnalysis.CompilationOptions.OutputKind](http://source.roslyn.io/#q=Microsoft.CodeAnalysis.OutputKind) as a comma separated list.
 
+Default Value: All output kinds
+
 Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary`
 
 ### Async void methods
@@ -67,4 +71,17 @@ Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.Co
 
 Option Values: `true` or `false`
 
+Default Value: `false`
+
 Example: `dotnet_code_quality.CA2007.skip_async_void_methods = true`
+
+### Single letter type parameters
+Option Name: `allow_single_letter_type_parameters`
+
+Configurable Rules: [CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix)
+
+Option Values: `true` or `false`
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1715.allow_single_letter_type_parameters = true`
