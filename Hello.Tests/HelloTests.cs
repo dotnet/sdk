@@ -1,4 +1,4 @@
-using System;
+using HelloWorld;
 using Xunit;
 
 namespace HelloTests
@@ -8,7 +8,7 @@ namespace HelloTests
         [Fact]
         public void SuccessfulTest()
         {
-            Assert.True(true);
+            Assert.Equal(42, new Program().Magic);
         }
     }
 }

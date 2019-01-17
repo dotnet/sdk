@@ -6,8 +6,10 @@
 
 namespace HelloWorld
 {
-    class Program
+    public class Program
     {
+        public int Magic => 42;
+
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");

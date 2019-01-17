@@ -8,7 +8,7 @@ variables:
   - name: _HelixTestType
     value: test/product/
   - name: _XUnitProject
-    value: $(Build.SourcesDirectory)/HelloTests/HelloTests.csproj
+    value: $(Build.SourcesDirectory)/Hello.Tests/Hello.Tests.csproj
   - name: _XUnitTargetFramework
     value: netcoreapp2.0
   - name: _XUnitRunnerVersion
