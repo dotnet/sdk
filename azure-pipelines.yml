@@ -17,6 +17,8 @@ variables:
     value: sdk
   - name: _DotNetCliVersion
     value: 2.1.403
+  - name: _HelixAccessToken
+    value: ''
 
 resources:
   containers:
@@ -67,8 +69,8 @@ jobs:
         DotNetCliVersion: $(_DotNetCliVersion)
         EnableXUnitReporter: true
         WaitForWorkItemCompletion: true
-        IsExternal: true
         Creator: arcade-minimalci-sample
+        HelixAccessToken: $(_HelixAccessToken)
         condition: eq(variables['_BuildConfig'], 'Debug')
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs to VSTS
@@ -117,8 +119,8 @@ jobs:
         DotNetCliVersion: $(_DotNetCliVersion)
         EnableXUnitReporter: true
         WaitForWorkItemCompletion: true
-        IsExternal: true
         Creator: arcade-minimalci-sample
+        HelixAccessToken: $(_HelixAccessToken)
         condition: eq(variables['_BuildConfig'], 'Debug')
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs to VSTS
@@ -167,8 +169,8 @@ jobs:
         DotNetCliVersion: $(_DotNetCliVersion)
         EnableXUnitReporter: true
         WaitForWorkItemCompletion: true
-        IsExternal: true
         Creator: arcade-minimalci-sample
+        HelixAccessToken: $(_HelixAccessToken)
         condition: eq(variables['_BuildConfig'], 'Debug')
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs to VSTS
