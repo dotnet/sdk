@@ -71,8 +71,7 @@ namespace Microsoft.NET.Build.Tasks
                 TypeReference baseClass = metadataReader.GetTypeReference((TypeReferenceHandle)baseTypeEntity);
                 if (baseClass.ResolutionScope.Kind == HandleKind.AssemblyReference && ReferenceToCoreLibrary(metadataReader, (AssemblyReferenceHandle)baseClass.ResolutionScope))
                 {
-                    string baseClassName = GetTypeName(metadataReader, baseClass);
-                    if (baseClassName == "System.ValueType" || baseClassName == "System.Enum")
+                    if (HasTypeName(metadataReader, baseClass, "System", "ValueType") || HasTypeName(metadataReader, baseClass, "System", "Enum"))
                     {
                         return false;
                     }
@@ -91,11 +90,11 @@ namespace Microsoft.NET.Build.Tasks
 
         private static bool TypeIsPublic(MetadataReader reader, TypeDefinition type)
         {
-            if ((type.Attributes & TypeAttributes.Public) != 0)
+            if ((type.Attributes & TypeAttributes.VisibilityMask) != TypeAttributes.Public)
             {
                 return true;
             }
-            else if ((type.Attributes & TypeAttributes.NestedPublic) != 0)
+            else if ((type.Attributes & TypeAttributes.VisibilityMask) != TypeAttributes.NestedPublic)
             {
                 return TypeIsPublic(reader, reader.GetTypeDefinition(type.GetDeclaringType()));
             }
@@ -109,6 +108,11 @@ namespace Microsoft.NET.Build.Tasks
                 return $"{GetTypeName(metadataReader, metadataReader.GetTypeDefinition(type.GetDeclaringType()))}.{metadataReader.GetString(type.Name)}";
             }
             return $"{metadataReader.GetString(type.Namespace)}.{metadataReader.GetString(type.Name)}";
+        }
+
+        private static bool HasTypeName(MetadataReader metadataReader, TypeReference type, string ns, string name)
+        {
+            return metadataReader.StringComparer.Equals(type.Namespace, ns) && metadataReader.StringComparer.Equals(type.Name, name);
         }
 
         private static string GetTypeName(MetadataReader metadataReader, TypeReference type)
@@ -139,7 +143,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             CustomAttribute comVisibleAttribute = reader.GetCustomAttribute(handle);
-            CustomAttributeValue<KnownTypes> data = comVisibleAttribute.DecodeValue(new TypeResolver());
+            CustomAttributeValue<KnownType> data = comVisibleAttribute.DecodeValue(new TypeResolver());
             return (bool)data.FixedArguments[0].Value;
         }
 
@@ -154,7 +158,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 CustomAttribute comVisibleAttribute = metadataReader.GetCustomAttribute(handle);
-                CustomAttributeValue<KnownTypes> data = comVisibleAttribute.DecodeValue(new TypeResolver());
+                CustomAttributeValue<KnownType> data = comVisibleAttribute.DecodeValue(new TypeResolver());
                 return (bool)data.FixedArguments[0].Value;
             }
 
@@ -190,14 +194,14 @@ namespace Microsoft.NET.Build.Tasks
                 TypeReference attributeType = reader.GetTypeReference((TypeReferenceHandle)attributeConstructor.Parent);
                 if (reader.GetString(attributeType.Namespace) == "System.Runtime.InteropServices" && reader.GetString(attributeType.Name) == "GuidAttribute")
                 {
-                    CustomAttributeValue<KnownTypes> data = attribute.DecodeValue(new TypeResolver());
+                    CustomAttributeValue<KnownType> data = attribute.DecodeValue(new TypeResolver());
                     return (string)data.FixedArguments[0].Value;
                 }
             }
             throw new BuildErrorException(Strings.ClsidMapExportedTypesRequireExplicitGuid, GetTypeName(reader, type));
         }
 
-        private enum KnownTypes
+        private enum KnownType
         {
             Bool,
             String,
@@ -205,54 +209,54 @@ namespace Microsoft.NET.Build.Tasks
             Unknown
         }
 
-        private class TypeResolver : ICustomAttributeTypeProvider<KnownTypes>
+        private class TypeResolver : ICustomAttributeTypeProvider<KnownType>
         {
-            public KnownTypes GetPrimitiveType(PrimitiveTypeCode typeCode)
+            public KnownType GetPrimitiveType(PrimitiveTypeCode typeCode)
             {
                 switch (typeCode)
                 {
                     case PrimitiveTypeCode.Boolean:
-                        return KnownTypes.Bool;
+                        return KnownType.Bool;
                     case PrimitiveTypeCode.String:
-                        return KnownTypes.String;
+                        return KnownType.String;
                     default:
-                        return KnownTypes.Unknown;
+                        return KnownType.Unknown;
                 }
             }
 
-            public KnownTypes GetSystemType()
+            public KnownType GetSystemType()
             {
-                return KnownTypes.SystemType;
+                return KnownType.SystemType;
             }
 
-            public KnownTypes GetSZArrayType(KnownTypes elementType)
+            public KnownType GetSZArrayType(KnownType elementType)
             {
-                return KnownTypes.Unknown;
+                return KnownType.Unknown;
             }
 
-            public KnownTypes GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind)
+            public KnownType GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind)
             {
-                return KnownTypes.Unknown;
+                return KnownType.Unknown;
             }
 
-            public KnownTypes GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind)
+            public KnownType GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind)
             {
-                return KnownTypes.Unknown;
+                return KnownType.Unknown;
             }
 
-            public KnownTypes GetTypeFromSerializedName(string name)
+            public KnownType GetTypeFromSerializedName(string name)
             {
-                return KnownTypes.Unknown;
+                return KnownType.Unknown;
             }
 
-            public PrimitiveTypeCode GetUnderlyingEnumType(KnownTypes type)
+            public PrimitiveTypeCode GetUnderlyingEnumType(KnownType type)
             {
-                return PrimitiveTypeCode.Int32;
+                throw new BadImageFormatException("Unexpectedly got an enum parameter for an attribute.");
             }
 
-            public bool IsSystemType(KnownTypes type)
+            public bool IsSystemType(KnownType type)
             {
-                return type == KnownTypes.SystemType;
+                return type == KnownType.SystemType;
             }
         }
 
