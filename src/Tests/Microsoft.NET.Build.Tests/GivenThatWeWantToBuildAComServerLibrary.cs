@@ -43,7 +43,9 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.dll",
                 "ComServer.pdb",
                 "ComServer.deps.json",
-                "ComServer.comhost.dll"
+                "ComServer.comhost.dll",
+                "ComServer.runtimeconfig.json",
+                "ComServer.runtimeconfig.dev.json"
             });
         }
 
@@ -75,7 +77,9 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.pdb",
                 "ComServer.deps.json",
                 "ComServer.comhost.dll",
-                "ComServer.X.manifest"
+                "ComServer.X.manifest",
+                "ComServer.runtimeconfig.json",
+                "ComServer.runtimeconfig.dev.json"
             });
         }
 
@@ -107,7 +111,9 @@ namespace Microsoft.NET.Build.Tests
                 "ComServer.dll",
                 "ComServer.pdb",
                 "ComServer.deps.json",
-                "ComServer.comhost.dll"
+                "ComServer.comhost.dll",
+                "ComServer.runtimeconfig.json",
+                "ComServer.runtimeconfig.dev.json"
             });
         }
 
