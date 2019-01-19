@@ -90,15 +90,15 @@ namespace Microsoft.NET.Build.Tasks
 
         private static bool TypeIsPublic(MetadataReader reader, TypeDefinition type)
         {
-            if ((type.Attributes & TypeAttributes.VisibilityMask) != TypeAttributes.Public)
+            switch (type.Attributes & TypeAttributes.VisibilityMask)
             {
-                return true;
+                case TypeAttributes.Public:
+                    return true;
+                case TypeAttributes.NestedPublic:
+                    return TypeIsPublic(reader, reader.GetTypeDefinition(type.GetDeclaringType()));
+                default:
+                    return false;
             }
-            else if ((type.Attributes & TypeAttributes.VisibilityMask) != TypeAttributes.NestedPublic)
-            {
-                return TypeIsPublic(reader, reader.GetTypeDefinition(type.GetDeclaringType()));
-            }
-            return false;
         }
 
         private static string GetTypeName(MetadataReader metadataReader, TypeDefinition type)
