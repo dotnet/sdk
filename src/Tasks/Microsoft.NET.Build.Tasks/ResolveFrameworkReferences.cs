@@ -24,6 +24,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public string AppHostRuntimeIdentifier { get; set; }
 
+        public ITaskItem[] PackAsToolShimAppHostRuntimeIdentifier { get; set; }
+
         [Required]
         public string RuntimeGraphPath { get; set; }
 
@@ -58,6 +60,9 @@ namespace Microsoft.NET.Build.Tasks
         //  we can resolve the full path later)
         [Output]
         public ITaskItem[] AppHost { get; set; }
+        
+        [Output]
+        public ITaskItem[] PackAsToolShimAppHosts { get; set; }
 
         [Output]
         public string[] UnresolvedFrameworkReferences { get; set; }
@@ -180,57 +185,26 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            if (!string.IsNullOrEmpty(AppHostRuntimeIdentifier) && !string.IsNullOrEmpty(appHostPackPattern))
+            AppHost = GetAppHostItem(appHostPackPattern, appHostRuntimeIdentifiers, appHostPackVersion,
+                packagesToDownload, AppHostRuntimeIdentifier, "AppHost");
+
+            if (PackAsToolShimAppHosts != null)
             {
-                //  Choose AppHost RID as best match of the specified RID
-                string bestAppHostRuntimeIdentifier = GetBestRuntimeIdentifier(AppHostRuntimeIdentifier, appHostRuntimeIdentifiers, out bool wasInGraph);
-                if (bestAppHostRuntimeIdentifier == null)
+                var packAsToolShimAppHostsList = new List<ITaskItem>();
+                foreach (var packAsToolShimAppHost in PackAsToolShimAppHosts)
                 {
-                    if (wasInGraph)
-                    {
-                        //  NETSDK1084: There was no app host for available for the specified RuntimeIdentifier '{0}'.
-                        Log.LogError(Strings.NoAppHostAvailable, AppHostRuntimeIdentifier);
-                    }
-                    else
-                    {
-                        //  NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.
-                        Log.LogError(Strings.UnsupportedRuntimeIdentifier, AppHostRuntimeIdentifier);
-                    }
-                }
-                else
-                {
-                    string appHostPackName = appHostPackPattern.Replace("**RID**", bestAppHostRuntimeIdentifier);
-
-                    string appHostRelativePathInPackage = Path.Combine("runtimes", bestAppHostRuntimeIdentifier, "native",
-                        DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier));
-
-
-                    TaskItem appHostItem = new TaskItem("AppHost");
-                    string appHostPackPath = null;
-                    if (!string.IsNullOrEmpty(TargetingPackRoot))
-                    {
-                        appHostPackPath = GetPackPath(appHostPackName, appHostPackVersion);
-                    }
-                    if (appHostPackPath != null && Directory.Exists(appHostPackPath))
-                    {
-                        //  Use AppHost from packs folder
-                        appHostItem.SetMetadata(MetadataKeys.Path, Path.Combine(appHostPackPath, appHostRelativePathInPackage));
-                    }
-                    else
-                    {
-                        //  Download apphost pack
-                        TaskItem packageToDownload = new TaskItem(appHostPackName);
-                        packageToDownload.SetMetadata(MetadataKeys.Version, appHostPackVersion);
-                        packagesToDownload.Add(packageToDownload);
-
-                        appHostItem.SetMetadata(MetadataKeys.PackageName, appHostPackName);
-                        appHostItem.SetMetadata(MetadataKeys.PackageVersion, appHostPackVersion);
-                        appHostItem.SetMetadata(MetadataKeys.RelativePath, appHostRelativePathInPackage);
-                    }
-
-                    AppHost = new ITaskItem[] { appHostItem };
+                    packAsToolShimAppHostsList.AddRange(
+                        GetAppHostItem(
+                            appHostPackPattern,
+                            appHostRuntimeIdentifiers,
+                            appHostPackVersion,
+                            packagesToDownload,
+                            packAsToolShimAppHost.ItemSpec,
+                            "PackAsToolShimAppHost"));
                 }
             }
+
+            PackAsToolShimAppHosts = packAsToolShimAppHostsList.ToArray();
 
             if (packagesToDownload.Any())
             {
@@ -256,6 +230,70 @@ namespace Microsoft.NET.Build.Tasks
             {
                 UnresolvedFrameworkReferences = unresolvedFrameworkReferences.ToArray();
             }
+        }
+
+        private ITaskItem[] GetAppHostItem(
+            string appHostPackPattern, 
+            string appHostRuntimeIdentifiers,
+            string appHostPackVersion, List<ITaskItem> packagesToDownload, 
+            string appHostRuntimeIdentifier, 
+            string itemName)
+        {
+            if (!string.IsNullOrEmpty(appHostRuntimeIdentifier) && !string.IsNullOrEmpty(appHostPackPattern))
+            {
+                //  Choose AppHost RID as best match of the specified RID
+                string bestAppHostRuntimeIdentifier =
+                    GetBestRuntimeIdentifier(appHostRuntimeIdentifier, appHostRuntimeIdentifiers, out bool wasInGraph);
+                if (bestAppHostRuntimeIdentifier == null)
+                {
+                    if (wasInGraph)
+                    {
+                        //  NETSDK1084: There was no app host for available for the specified RuntimeIdentifier '{0}'.
+                        Log.LogError(Strings.NoAppHostAvailable, appHostRuntimeIdentifier);
+                    }
+                    else
+                    {
+                        //  NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.
+                        Log.LogError(Strings.UnsupportedRuntimeIdentifier, appHostRuntimeIdentifier);
+                    }
+                }
+                else
+                {
+                    string appHostPackName = appHostPackPattern.Replace("**RID**", bestAppHostRuntimeIdentifier);
+
+                    string appHostRelativePathInPackage = Path.Combine("runtimes", bestAppHostRuntimeIdentifier, "native",
+                        DotNetAppHostExecutableNameWithoutExtension +
+                        ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier));
+
+
+                    TaskItem appHostItem = new TaskItem(itemName);
+                    string appHostPackPath = null;
+                    if (!string.IsNullOrEmpty(TargetingPackRoot))
+                    {
+                        appHostPackPath = GetPackPath(appHostPackName, appHostPackVersion);
+                    }
+
+                    if (appHostPackPath != null && Directory.Exists(appHostPackPath))
+                    {
+                        //  Use AppHost from packs folder
+                        appHostItem.SetMetadata(MetadataKeys.Path, Path.Combine(appHostPackPath, appHostRelativePathInPackage));
+                    }
+                    else
+                    {
+                        //  Download apphost pack
+                        TaskItem packageToDownload = new TaskItem(appHostPackName);
+                        packageToDownload.SetMetadata(MetadataKeys.Version, appHostPackVersion);
+                        packagesToDownload.Add(packageToDownload);
+
+                        appHostItem.SetMetadata(MetadataKeys.PackageName, appHostPackName);
+                        appHostItem.SetMetadata(MetadataKeys.PackageVersion, appHostPackVersion);
+                        appHostItem.SetMetadata(MetadataKeys.RelativePath, appHostRelativePathInPackage);
+                    }
+
+                    return new ITaskItem[] {appHostItem};
+                }
+            }
+            return null;
         }
 
         private string GetBestRuntimeIdentifier(string targetRuntimeIdentifier, string availableRuntimeIdentifiers, out bool wasInGraph)
