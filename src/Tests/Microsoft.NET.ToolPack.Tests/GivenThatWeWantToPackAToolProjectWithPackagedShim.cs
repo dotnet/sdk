@@ -32,9 +32,10 @@ namespace Microsoft.NET.ToolPack.Tests
         private string SetupNuGetPackage(
             bool multiTarget,
             [CallerMemberName] string callingMethod = "",
-            Dictionary<string, string> additionalProperty = null)
+            Dictionary<string, string> additionalProperty = null,
+            string targetFramework = null)
         {
-            TestAsset helloWorldAsset = CreateTestAsset(multiTarget, callingMethod, additionalProperty);
+            TestAsset helloWorldAsset = CreateTestAsset(multiTarget, callingMethod, additionalProperty, targetFramework);
 
             _testRoot = helloWorldAsset.TestRoot;
 
@@ -49,7 +50,8 @@ namespace Microsoft.NET.ToolPack.Tests
         private TestAsset CreateTestAsset(
             bool multiTarget,
             string uniqueName,
-            Dictionary<string, string> additionalProperty = null)
+            Dictionary<string, string> additionalProperty = null,
+            string targetFramework = null)
         {
             return _testAssetsManager
                 .CopyTestAsset("PortableTool", uniqueName)
@@ -69,10 +71,20 @@ namespace Microsoft.NET.ToolPack.Tests
                         }
                     }
 
+                    if (targetFramework == null)
+                    {
+                        targetFramework = "netcoreapp2.1";
+                    }
+                    else
+                    {
+                        propertyGroup.Element(ns + "TargetFramework").Remove();
+                        propertyGroup.Add(new XElement(ns + "TargetFramework", targetFramework));
+                    }
+
                     if (multiTarget)
                     {
                         propertyGroup.Element(ns + "TargetFramework").Remove();
-                        propertyGroup.Add(new XElement(ns + "TargetFrameworks", "netcoreapp2.1"));
+                        propertyGroup.Add(new XElement(ns + "TargetFrameworks", targetFramework));
                     }
                 })
                 .Restore(Log);
@@ -117,6 +129,29 @@ namespace Microsoft.NET.ToolPack.Tests
         public void It_contains_shim(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+            {
+                IEnumerable<NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
+                supportedFrameworks.Should().NotBeEmpty();
+
+                foreach (NuGetFramework framework in supportedFrameworks)
+                {
+                    var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
+                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/win-x64/{_customToolCommandName}.exe",
+                        "Name should be the same as the command name even customized");
+                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/osx.10.12-x64/{_customToolCommandName}",
+                        "RID should be the exact match of the RID in the property, even Apphost only has version of win, osx and linux");
+                }
+            }
+        }
+
+        // Reproduce for https://github.com/dotnet/sdk/issues/2867
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Given_netcoreapp30app_it_contains_shim(bool multiTarget)
+        {
+            var nugetPackage = SetupNuGetPackage(multiTarget, targetFramework: "netcoreapp3.0");
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 IEnumerable<NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
