@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public string AppHostRuntimeIdentifier { get; set; }
 
-        public ITaskItem[] PackAsToolShimAppHostRuntimeIdentifier { get; set; }
+        public ITaskItem[] PackAsToolShimAppHostRuntimeIdentifiers { get; set; }
 
         [Required]
         public string RuntimeGraphPath { get; set; }
@@ -188,12 +188,11 @@ namespace Microsoft.NET.Build.Tasks
             AppHost = GetAppHostItem(appHostPackPattern, appHostRuntimeIdentifiers, appHostPackVersion,
                 packagesToDownload, AppHostRuntimeIdentifier, "AppHost");
 
-            if (PackAsToolShimAppHosts != null)
+            if (PackAsToolShimAppHostRuntimeIdentifiers != null)
             {
                 List<ITaskItem> packAsToolShimAppHostsList = new List<ITaskItem>();
-                foreach (var packAsToolShimAppHostRuntimeIdentifier in PackAsToolShimAppHostRuntimeIdentifier)
+                foreach (var packAsToolShimAppHostRuntimeIdentifier in PackAsToolShimAppHostRuntimeIdentifiers)
                 {
-
                     packAsToolShimAppHostsList.AddRange(
                         GetAppHostItem(
                             appHostPackPattern,
