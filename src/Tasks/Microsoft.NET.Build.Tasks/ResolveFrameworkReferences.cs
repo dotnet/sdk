@@ -190,21 +190,21 @@ namespace Microsoft.NET.Build.Tasks
 
             if (PackAsToolShimAppHosts != null)
             {
-                var packAsToolShimAppHostsList = new List<ITaskItem>();
-                foreach (var packAsToolShimAppHost in PackAsToolShimAppHosts)
+                List<ITaskItem> packAsToolShimAppHostsList = new List<ITaskItem>();
+                foreach (var packAsToolShimAppHostRuntimeIdentifier in PackAsToolShimAppHostRuntimeIdentifier)
                 {
+
                     packAsToolShimAppHostsList.AddRange(
                         GetAppHostItem(
                             appHostPackPattern,
                             appHostRuntimeIdentifiers,
                             appHostPackVersion,
                             packagesToDownload,
-                            packAsToolShimAppHost.ItemSpec,
+                            packAsToolShimAppHostRuntimeIdentifier.ItemSpec,
                             "PackAsToolShimAppHost"));
                 }
+                PackAsToolShimAppHosts = packAsToolShimAppHostsList.ToArray();
             }
-
-            PackAsToolShimAppHosts = packAsToolShimAppHostsList.ToArray();
 
             if (packagesToDownload.Any())
             {
@@ -244,6 +244,7 @@ namespace Microsoft.NET.Build.Tasks
                 //  Choose AppHost RID as best match of the specified RID
                 string bestAppHostRuntimeIdentifier =
                     GetBestRuntimeIdentifier(appHostRuntimeIdentifier, appHostRuntimeIdentifiers, out bool wasInGraph);
+
                 if (bestAppHostRuntimeIdentifier == null)
                 {
                     if (wasInGraph)
@@ -285,6 +286,7 @@ namespace Microsoft.NET.Build.Tasks
                         packageToDownload.SetMetadata(MetadataKeys.Version, appHostPackVersion);
                         packagesToDownload.Add(packageToDownload);
 
+                        appHostItem.SetMetadata(MetadataKeys.RuntimeIdentifier, appHostRuntimeIdentifier);
                         appHostItem.SetMetadata(MetadataKeys.PackageName, appHostPackName);
                         appHostItem.SetMetadata(MetadataKeys.PackageVersion, appHostPackVersion);
                         appHostItem.SetMetadata(MetadataKeys.RelativePath, appHostRelativePathInPackage);

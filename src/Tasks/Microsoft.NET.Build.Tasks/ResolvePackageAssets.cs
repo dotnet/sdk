@@ -948,23 +948,23 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteApphostsForShimRuntimeIdentifiers()
             {
-                if (_task.ShimRuntimeIdentifiers == null || _task.ShimRuntimeIdentifiers.Length == 0)
-                {
-                    return;
-                }
+                //if (_task.ShimRuntimeIdentifiers == null || _task.ShimRuntimeIdentifiers.Length == 0)
+                //{
+                //    return;
+                //}
 
-                foreach (var runtimeIdentifier in _task.ShimRuntimeIdentifiers.Select(r => r.ItemSpec))
-                {
-                    NuGetFramework targetFramework = NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker);
-                    LockFileTarget runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(targetFramework, runtimeIdentifier);
+                //foreach (var runtimeIdentifier in _task.ShimRuntimeIdentifiers.Select(r => r.ItemSpec))
+                //{
+                //    NuGetFramework targetFramework = NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker);
+                //    LockFileTarget runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(targetFramework, runtimeIdentifier);
 
-                    var apphostName = _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier);
+                //    var apphostName = _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier);
 
-                    Tuple<string, LockFileTargetLibrary> resolvedPackageAssetPathAndLibrary = FindApphostInRuntimeTarget(apphostName, runtimeTarget);
+                //    Tuple<string, LockFileTargetLibrary> resolvedPackageAssetPathAndLibrary = FindApphostInRuntimeTarget(apphostName, runtimeTarget);
 
-                    WriteItem(resolvedPackageAssetPathAndLibrary.Item1, resolvedPackageAssetPathAndLibrary.Item2);
-                    WriteMetadata(MetadataKeys.RuntimeIdentifier, runtimeIdentifier);
-                }
+                //    WriteItem(resolvedPackageAssetPathAndLibrary.Item1, resolvedPackageAssetPathAndLibrary.Item2);
+                //    WriteMetadata(MetadataKeys.RuntimeIdentifier, runtimeIdentifier);
+                //}
             }
 
             private void WritePackageFolders()

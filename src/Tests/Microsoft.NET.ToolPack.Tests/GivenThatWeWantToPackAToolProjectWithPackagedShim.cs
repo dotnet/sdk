@@ -40,8 +40,8 @@ namespace Microsoft.NET.ToolPack.Tests
             _testRoot = helloWorldAsset.TestRoot;
 
             var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
-
-            packCommand.Execute().Should().Pass();
+            packCommand.WorkingDirectory = helloWorldAsset.TestRoot;
+            packCommand.Execute("-bl").Should().Pass();
             _packageId = Path.GetFileNameWithoutExtension(packCommand.ProjectFile);
 
             return packCommand.GetNuGetPackage(packageVersion: _packageVersion);
