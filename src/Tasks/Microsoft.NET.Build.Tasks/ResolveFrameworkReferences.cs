@@ -187,7 +187,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             AppHost = GetAppHostItem(appHostPackPattern, appHostRuntimeIdentifiers, appHostPackVersion,
-                packagesToDownload, AppHostRuntimeIdentifier, "AppHost");
+                packagesToDownload, AppHostRuntimeIdentifier, "AppHost", TargetingPackRoot, new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath), DotNetAppHostExecutableNameWithoutExtension, Log);
 
             if (PackAsToolShimAppHostRuntimeIdentifiers != null)
             {
@@ -200,7 +200,7 @@ namespace Microsoft.NET.Build.Tasks
                             appHostPackVersion,
                             packagesToDownload,
                             packAsToolShimAppHostRuntimeIdentifier.ItemSpec,
-                            "PackAsToolShimAppHost");
+                            "PackAsToolShimAppHost", TargetingPackRoot, new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath), DotNetAppHostExecutableNameWithoutExtension, Log);
 
                     if (PackAsToolShimAppHosts != null)
                     {
@@ -236,29 +236,29 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private ITaskItem[] GetAppHostItem(
+        private static ITaskItem[] GetAppHostItem(
             string appHostPackPattern, 
             string appHostRuntimeIdentifiers,
             string appHostPackVersion, List<ITaskItem> packagesToDownload, 
             string appHostRuntimeIdentifier, 
-            string itemName)
+            string itemName, string targetingPackRoot, RuntimeGraph getRuntimeGraph, string dotNetAppHostExecutableNameWithoutExtension, Logger logger)
         {
             if (!string.IsNullOrEmpty(appHostRuntimeIdentifier) && !string.IsNullOrEmpty(appHostPackPattern))
             {
                 //  Choose AppHost RID as best match of the specified RID
-                string bestAppHostRuntimeIdentifier = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath).GetBestRuntimeIdentifier(appHostRuntimeIdentifier, appHostRuntimeIdentifiers, out bool wasInGraph);
+                string bestAppHostRuntimeIdentifier = getRuntimeGraph.GetBestRuntimeIdentifier(appHostRuntimeIdentifier, appHostRuntimeIdentifiers, out bool wasInGraph);
 
                 if (bestAppHostRuntimeIdentifier == null)
                 {
                     if (wasInGraph)
                     {
                         //  NETSDK1084: There was no app host for available for the specified RuntimeIdentifier '{0}'.
-                        Log.LogError(Strings.NoAppHostAvailable, appHostRuntimeIdentifier);
+                        logger.LogError(Strings.NoAppHostAvailable, appHostRuntimeIdentifier);
                     }
                     else
                     {
                         //  NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.
-                        Log.LogError(Strings.UnsupportedRuntimeIdentifier, appHostRuntimeIdentifier);
+                        logger.LogError(Strings.UnsupportedRuntimeIdentifier, appHostRuntimeIdentifier);
                     }
                 }
                 else
@@ -266,15 +266,15 @@ namespace Microsoft.NET.Build.Tasks
                     string appHostPackName = appHostPackPattern.Replace("**RID**", bestAppHostRuntimeIdentifier);
 
                     string appHostRelativePathInPackage = Path.Combine("runtimes", bestAppHostRuntimeIdentifier, "native",
-                        DotNetAppHostExecutableNameWithoutExtension +
+                        dotNetAppHostExecutableNameWithoutExtension +
                         ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier));
 
 
                     TaskItem appHostItem = new TaskItem(itemName);
                     string appHostPackPath = null;
-                    if (!string.IsNullOrEmpty(TargetingPackRoot))
+                    if (!string.IsNullOrEmpty(targetingPackRoot))
                     {
-                        appHostPackPath = GetPackPath(appHostPackName, appHostPackVersion);
+                        appHostPackPath = Path.Combine(targetingPackRoot, appHostPackName, appHostPackVersion);
                     }
 
                     if (appHostPackPath != null && Directory.Exists(appHostPackPath))
