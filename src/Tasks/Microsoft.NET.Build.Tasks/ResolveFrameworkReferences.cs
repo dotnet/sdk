@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks
 
             string appHostPackPattern = null;
             string appHostPackVersion = null;
-            string appHostRuntimeIdentifiers = null;
+            string appHostKnownRuntimeIdentifiers = null;
 
             foreach (var frameworkReference in FrameworkReferences)
             {
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Build.Tasks
                         {
                             appHostPackPattern = knownFrameworkReference.AppHostPackNamePattern;
                             appHostPackVersion = knownFrameworkReference.LatestRuntimeFrameworkVersion;
-                            appHostRuntimeIdentifiers = knownFrameworkReference.AppHostRuntimeIdentifiers;
+                            appHostKnownRuntimeIdentifiers = knownFrameworkReference.AppHostRuntimeIdentifiers;
                         }
                         else
                         {
@@ -186,7 +186,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            AppHost = GetAppHostItem(appHostPackPattern, appHostRuntimeIdentifiers, appHostPackVersion,
+            AppHost = GetAppHostItem(appHostPackPattern, appHostKnownRuntimeIdentifiers, appHostPackVersion,
                 packagesToDownload, AppHostRuntimeIdentifier, "AppHost", TargetingPackRoot, new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath), DotNetAppHostExecutableNameWithoutExtension, Log);
 
             if (PackAsToolShimAppHostRuntimeIdentifiers != null)
@@ -196,7 +196,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     var PackAsToolShimAppHosts = GetAppHostItem(
                             appHostPackPattern,
-                            appHostRuntimeIdentifiers,
+                            appHostKnownRuntimeIdentifiers,
                             appHostPackVersion,
                             packagesToDownload,
                             packAsToolShimAppHostRuntimeIdentifier.ItemSpec,
@@ -237,11 +237,12 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private static ITaskItem[] GetAppHostItem(
-            string appHostPackPattern, 
+            string appHostPackPattern,
             string appHostRuntimeIdentifiers,
-            string appHostPackVersion, List<ITaskItem> packagesToDownload, 
-            string appHostRuntimeIdentifier, 
-            string itemName, string targetingPackRoot, RuntimeGraph getRuntimeGraph, string dotNetAppHostExecutableNameWithoutExtension, Logger logger)
+            string appHostPackVersion, List<ITaskItem> packagesToDownload,
+            string appHostRuntimeIdentifier,
+            string itemName, string targetingPackRoot, RuntimeGraph getRuntimeGraph,
+            string dotNetAppHostExecutableNameWithoutExtension, Logger logger)
         {
             if (!string.IsNullOrEmpty(appHostRuntimeIdentifier) && !string.IsNullOrEmpty(appHostPackPattern))
             {
