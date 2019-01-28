@@ -137,7 +137,7 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         foreach (var runtimePackNamePattern in knownFrameworkReference.RuntimePackNamePatterns.Split(';'))
                         {
-                            string runtimePackRuntimeIdentifier = GetBestRuntimeIdentifier(
+                            string runtimePackRuntimeIdentifier = RuntimeGraphExtensions.GetBestRuntimeIdentifier(
                                 RuntimeIdentifier,
                                 knownFrameworkReference.RuntimePackRuntimeIdentifiers,
                                 new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
@@ -250,8 +250,7 @@ namespace Microsoft.NET.Build.Tasks
             if (!string.IsNullOrEmpty(appHostRuntimeIdentifier) && !string.IsNullOrEmpty(appHostPackPattern))
             {
                 //  Choose AppHost RID as best match of the specified RID
-                string bestAppHostRuntimeIdentifier =
-                    GetBestRuntimeIdentifier(
+                string bestAppHostRuntimeIdentifier = RuntimeGraphExtensions.GetBestRuntimeIdentifier(
                         appHostRuntimeIdentifier,
                         appHostRuntimeIdentifiers,
                         new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
@@ -308,22 +307,6 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
             return null;
-        }
-
-        private static string GetBestRuntimeIdentifier(string targetRuntimeIdentifier, string availableRuntimeIdentifiers,
-            RuntimeGraph runtimeGraph, out bool wasInGraph)
-        {
-            if (targetRuntimeIdentifier == null || availableRuntimeIdentifiers == null)
-            {
-                wasInGraph = false;
-                return null;
-            }
-
-            return NuGetUtils.GetBestMatchingRid(
-                runtimeGraph,
-                targetRuntimeIdentifier,
-                availableRuntimeIdentifiers.Split(';'),
-                out wasInGraph);
         }
 
         private string GetPackPath(string name, string version)
