@@ -15,11 +15,11 @@ In addition to implementation details of the analyzers we have decided to port, 
 
 ## CA1034: Nested types should not be visible
 
-The .NET Framework Design Guidelines for [nested types](https://msdn.microsoft.com/en-us/library/ms229027(v=vs.110).aspx) specifically mentions enumerations:
+The .NET Framework Design Guidelines for [nested types](https://docs.microsoft.com/dotnet/standard/design-guidelines/nested-types) specifically mentions enumerations:
 
 > For example, an enum passed to a method defined on a class should not be defined as a nested type in the class.
 
-But the [MSDN documentation](https://msdn.microsoft.com/en-us/library/ms182162.aspx) for this rule says:
+But the [documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1034-nested-types-should-not-be-visible) for this rule says:
 
 > Nested enumerations ... are exempt from this rule
 
@@ -47,7 +47,7 @@ and will discourage others from emulating it.
 
 These are good suggestions.
 
-With regard to item #2, the [MSDN documentation](https://msdn.microsoft.com/en-us/library/ms182248.aspx) for the rule actually does define the set of languages to which it applies:
+With regard to item #2, the [documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1716-identifiers-should-not-match-keywords) for the rule actually does define the set of languages to which it applies:
 
 > This rule checks against keywords in the following languages:
 >
@@ -74,3 +74,5 @@ Why shouldn't all publicly visible methods follow this rule?
 We decided not to port this because of a high false positive rate, and our opinion that it was not of high value. We have had the following pushback on this decision:
 
 > @stilgarSCA: :-1: on this decision. Despite the fact that this causes a lot of false positives, I think it's worth keeping the rule for the correctly identified issues. End users always have the option of disabling rules for which they find no value.
+
+> Several others have also argued for reversing this decision, as can be seen in the comments of [issue #695](https://github.com/dotnet/roslyn-analyzers/issues/695) and [issue #291](https://github.com/dotnet/roslyn-analyzers/issues/291).
