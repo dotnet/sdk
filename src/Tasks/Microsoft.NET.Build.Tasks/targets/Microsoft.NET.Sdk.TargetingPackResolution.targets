@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 
   <UsingTask TaskName="ResolveFrameworkReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ResolveApphostShimFromFrameworkReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <Target Name="ResolveFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences">
     <ItemGroup>
@@ -79,22 +80,27 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolvePackAsToolShimApphosts"
           Condition="$(PackAsToolShimRuntimeIdentifiers) !=''"
-          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences" DependsOnTargets="ResolveFrameworkReferences">
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences"
+          DependsOnTargets="ResolveFrameworkReferences">
 
     <ItemGroup>
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
-    <ResolveFrameworkReferences TargetingPackRoot="$(NetCoreTargetingPackRoot)"
+    <ResolveApphostShimFromFrameworkReferences
+                                TargetingPackRoot="$(NetCoreTargetingPackRoot)"
+                                TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
+                                TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
+                                KnownFrameworkReferences="@(KnownFrameworkReference)"
                                 RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
                                 DotNetAppHostExecutableNameWithoutExtension="$(_DotNetAppHostExecutableNameWithoutExtension)"
-                                FrameworkReferenceWithApphost="$(_FrameworkReferenceWithApphost)"
+                                FrameworkReferenceWithApphost="@(_FrameworkReferenceWithApphost)"
                                 PackAsToolShimAppHostRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)">
 
       <Output TaskParameter="PackagesToDownload" ItemName="_PackagesToDownloadForPackAsToolShimApphosts" />
       <Output TaskParameter="PackAsToolShimAppHosts" ItemName="PackAsToolShimAppHostPack" />
 
-    </ResolveFrameworkReferences>
+    </ResolveApphostShimFromFrameworkReferences>
 
     <ItemGroup>
       <PackageReference Include="@(_PackagesToDownloadForPackAsToolShimApphosts)"

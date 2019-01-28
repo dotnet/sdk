@@ -1,4 +1,7 @@
-﻿using Microsoft.Build.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Build.Framework;
 using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
@@ -35,6 +38,17 @@ namespace Microsoft.NET.Build.Tasks
             public string RuntimePackRuntimeIdentifiers => _item.GetMetadata("RuntimePackRuntimeIdentifiers");
 
             public NuGetFramework TargetFramework { get; }
+
+            public static Dictionary<string, KnownFrameworkReference> GetKnownFrameworkReferenceDictionary(
+                ITaskItem[] knownFrameworkReferences,
+                string targetFrameworkIdentifier,
+                string targetFrameworkVersion)
+            {
+                return knownFrameworkReferences.Select(item => new KnownFrameworkReference(item))
+                .Where(kfr => kfr.TargetFramework.Framework.Equals(targetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
+                              NormalizeVersion(kfr.TargetFramework.Version) == NormalizeVersion(new Version(targetFrameworkVersion)))
+                .ToDictionary(kfr => kfr.Name);
+            }
         }
     }
 }

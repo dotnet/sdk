@@ -21,36 +21,11 @@ namespace Microsoft.NET.Build.Tasks
                                string dotNetAppHostExecutableNameWithoutExtension,
                                Logger logger)
         {
-            if (string.IsNullOrWhiteSpace(appHostPackPattern))
-            {
-                throw new ArgumentException("message", nameof(appHostPackPattern));
-            }
-
-            if (string.IsNullOrWhiteSpace(appHostKnownRuntimeIdentifiers))
-            {
-                throw new ArgumentException("message", nameof(appHostKnownRuntimeIdentifiers));
-            }
-
-            if (string.IsNullOrWhiteSpace(appHostPackVersion))
-            {
-                throw new ArgumentException("message", nameof(appHostPackVersion));
-            }
-
-            if (string.IsNullOrWhiteSpace(targetingPackRoot))
-            {
-                throw new ArgumentException("message", nameof(targetingPackRoot));
-            }
-
-            if (string.IsNullOrWhiteSpace(dotNetAppHostExecutableNameWithoutExtension))
-            {
-                throw new ArgumentException("message", nameof(dotNetAppHostExecutableNameWithoutExtension));
-            }
-
             _appHostPackPattern = appHostPackPattern;
             _appHostKnownRuntimeIdentifiers = appHostKnownRuntimeIdentifiers;
             _appHostPackVersion = appHostPackVersion;
             _targetingPackRoot = targetingPackRoot;
-            _runtimeGraph = runtimeGraph ?? throw new ArgumentNullException(nameof(runtimeGraph));
+            _runtimeGraph = runtimeGraph;
             _dotNetAppHostExecutableNameWithoutExtension = dotNetAppHostExecutableNameWithoutExtension;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }

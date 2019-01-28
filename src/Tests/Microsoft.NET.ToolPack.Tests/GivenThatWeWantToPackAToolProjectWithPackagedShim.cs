@@ -194,10 +194,10 @@ namespace Microsoft.NET.ToolPack.Tests
             var cleanCommand = new CleanCommand(Log, helloWorldAsset.TestRoot);
             cleanCommand.Execute().Should().Pass();
 
-            var outputDirectory = packCommand.GetOutputDirectory("netcoreapp2.1");
-            string windowShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/win-x64/{_customToolCommandName}.exe");
+            var outputDirectory = packCommand.GetOutputDirectory(targetFramework);
+            string windowShimPath = Path.Combine(outputDirectory.FullName, $"shims/{targetFramework}/win-x64/{_customToolCommandName}.exe");
             File.Exists(windowShimPath).Should().BeFalse($"Shim {windowShimPath} should not exists");
-            string osxShimPath = Path.Combine(outputDirectory.FullName, $"shims/netcoreapp2.1/osx.10.12-x64/{_customToolCommandName}");
+            string osxShimPath = Path.Combine(outputDirectory.FullName, $"shims/{targetFramework}/osx.10.12-x64/{_customToolCommandName}");
             File.Exists(osxShimPath).Should().BeFalse($"Shim {osxShimPath} should not exists");
         }
 

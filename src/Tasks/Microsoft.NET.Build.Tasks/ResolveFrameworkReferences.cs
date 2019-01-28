@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -64,14 +65,15 @@ namespace Microsoft.NET.Build.Tasks
         public string[] UnresolvedFrameworkReferences { get; set; }
 
         [Output]
-        public ITaskItem FrameworkReferenceWithApphost { get; set; }
+        public ITaskItem[] FrameworkReferenceWithApphost { get; set; }
 
         protected override void ExecuteCore()
         {
-            var knownFrameworkReferences = KnownFrameworkReferences.Select(item => new KnownFrameworkReference(item))
-                .Where(kfr => kfr.TargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
-                              NormalizeVersion(kfr.TargetFramework.Version) == NormalizeVersion(new Version(TargetFrameworkVersion)))
-                .ToDictionary(kfr => kfr.Name);
+            Dictionary<string, KnownFrameworkReference> knownFrameworkReferences =
+                KnownFrameworkReference.GetKnownFrameworkReferenceDictionary(
+                    KnownFrameworkReferences,
+                    TargetFrameworkIdentifier,
+                    TargetFrameworkVersion);
 
             List<ITaskItem> packagesToDownload = new List<ITaskItem>();
             List<ITaskItem> runtimeFrameworks = new List<ITaskItem>();
@@ -96,7 +98,7 @@ namespace Microsoft.NET.Build.Tasks
                             appHostPackVersion = knownFrameworkReference.LatestRuntimeFrameworkVersion;
                             appHostKnownRuntimeIdentifiers = knownFrameworkReference.AppHostRuntimeIdentifiers;
 
-                            FrameworkReferenceWithApphost = frameworkReference;
+                            FrameworkReferenceWithApphost = FrameworkReferenceWithApphost = new ITaskItem[] { frameworkReference };
                         }
                         else
                         {
