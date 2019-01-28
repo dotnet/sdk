@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
-using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -137,7 +135,13 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         foreach (var runtimePackNamePattern in knownFrameworkReference.RuntimePackNamePatterns.Split(';'))
                         {
-                            string runtimePackRuntimeIdentifier = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath).GetBestRuntimeIdentifier(RuntimeIdentifier, knownFrameworkReference.RuntimePackRuntimeIdentifiers, out bool wasInGraph);
+                            string runtimePackRuntimeIdentifier =
+                                new RuntimeGraphCache(this)
+                                .GetRuntimeGraph(RuntimeGraphPath)
+                                .GetBestRuntimeIdentifier(
+                                    RuntimeIdentifier,
+                                    knownFrameworkReference.RuntimePackRuntimeIdentifiers,
+                                    out bool wasInGraph);
 
                             if (runtimePackRuntimeIdentifier == null)
                             {
@@ -186,8 +190,8 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            ApphostResolver apphostResolver
-                = new ApphostResolver(
+            ApphostResolver apphostResolver =
+                 new ApphostResolver(
                     appHostPackPattern,
                     appHostKnownRuntimeIdentifiers,
                     appHostPackVersion,
@@ -206,7 +210,10 @@ namespace Microsoft.NET.Build.Tasks
                 List<ITaskItem> packAsToolShimAppHostsList = new List<ITaskItem>();
                 foreach (var packAsToolShimAppHostRuntimeIdentifier in PackAsToolShimAppHostRuntimeIdentifiers)
                 {
-                    var shimApphostAndPackage = apphostResolver.GetAppHostItem(packAsToolShimAppHostRuntimeIdentifier.ItemSpec, "PackAsToolShimAppHost");
+                    var shimApphostAndPackage
+                        = apphostResolver.GetAppHostItem(
+                            packAsToolShimAppHostRuntimeIdentifier.ItemSpec,
+                            "PackAsToolShimAppHost");
 
                     var PackAsToolShimAppHosts = shimApphostAndPackage.AppHost;
                     packagesToDownload.AddRange(shimApphostAndPackage.AdditionalPackagesToDownload);
