@@ -11,49 +11,67 @@ using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    internal static class ApphostResolver
+    internal class ApphostResolver2
     {
-        public static (ITaskItem[] AppHost, List<TaskItem> AdditionalPackagesToDownload) GetAppHostItem(
-            string appHostPackPattern,
-            string appHostKnownRuntimeIdentifiers,
-            string appHostPackVersion,
+        public ApphostResolver2(string appHostPackPattern, string appHostKnownRuntimeIdentifiers, string appHostPackVersion, string targetingPackRoot, RuntimeGraph runtimeGraph, string dotNetAppHostExecutableNameWithoutExtension, Logger logger)
+        {
+            AppHostPackPattern = appHostPackPattern;
+            AppHostKnownRuntimeIdentifiers = appHostKnownRuntimeIdentifiers;
+            AppHostPackVersion = appHostPackVersion;
+            TargetingPackRoot = targetingPackRoot;
+            RuntimeGraph = runtimeGraph;
+            DotNetAppHostExecutableNameWithoutExtension = dotNetAppHostExecutableNameWithoutExtension;
+            Logger = logger;
+        }
+
+        public string AppHostPackPattern { get; private set; }
+        public string AppHostKnownRuntimeIdentifiers { get; private set; }
+        public string AppHostPackVersion { get; private set; }
+        public string TargetingPackRoot { get; private set; }
+        public RuntimeGraph RuntimeGraph { get; private set; }
+        public string DotNetAppHostExecutableNameWithoutExtension { get; private set; }
+        public Logger Logger { get; private set; }
+    }
+
+    internal class ApphostResolver
+    {
+        public static (ITaskItem[] AppHost, List<TaskItem> AdditionalPackagesToDownload) GetAppHostItem(ApphostResolver2 apphostResolver2,
             string appHostRuntimeIdentifier,
-            string outputItemName, string targetingPackRoot, RuntimeGraph getRuntimeGraph,
-            string dotNetAppHostExecutableNameWithoutExtension, Logger logger)
+            string outputItemName)
         {
             var additionalPackagesToDownload = new List<TaskItem>();
-            if (!String.IsNullOrEmpty(appHostRuntimeIdentifier) && !String.IsNullOrEmpty(appHostPackPattern))
+            if (!String.IsNullOrEmpty(appHostRuntimeIdentifier) && !String.IsNullOrEmpty(apphostResolver2.AppHostPackPattern))
             {
                 //  Choose AppHost RID as best match of the specified RID
-                string bestAppHostRuntimeIdentifier = getRuntimeGraph.GetBestRuntimeIdentifier(appHostRuntimeIdentifier, appHostKnownRuntimeIdentifiers, out bool wasInGraph);
+                string bestAppHostRuntimeIdentifier = apphostResolver2.RuntimeGraph.GetBestRuntimeIdentifier(appHostRuntimeIdentifier, apphostResolver2.AppHostKnownRuntimeIdentifiers, out bool wasInGraph);
 
                 if (bestAppHostRuntimeIdentifier == null)
                 {
                     if (wasInGraph)
                     {
                         //  NETSDK1084: There was no app host for available for the specified RuntimeIdentifier '{0}'.
-                        logger.LogError(Strings.NoAppHostAvailable, appHostRuntimeIdentifier);
+                        apphostResolver2.Logger.LogError(Strings.NoAppHostAvailable, appHostRuntimeIdentifier);
                     }
                     else
                     {
                         //  NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.
-                        logger.LogError(Strings.UnsupportedRuntimeIdentifier, appHostRuntimeIdentifier);
+                        apphostResolver2.Logger.LogError(Strings.UnsupportedRuntimeIdentifier, appHostRuntimeIdentifier);
                     }
                 }
                 else
                 {
-                    string appHostPackName = appHostPackPattern.Replace("**RID**", bestAppHostRuntimeIdentifier);
+                    string appHostPackName = apphostResolver2.AppHostPackPattern.Replace("**RID**", bestAppHostRuntimeIdentifier);
 
                     string appHostRelativePathInPackage = Path.Combine("runtimes", bestAppHostRuntimeIdentifier, "native",
-                        dotNetAppHostExecutableNameWithoutExtension +
+                        apphostResolver2.DotNetAppHostExecutableNameWithoutExtension +
                         ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier));
 
 
                     TaskItem appHostItem = new TaskItem(outputItemName);
                     string appHostPackPath = null;
-                    if (!String.IsNullOrEmpty(targetingPackRoot))
+                    if (!String.IsNullOrEmpty(apphostResolver2.TargetingPackRoot))
                     {
-                        appHostPackPath = Path.Combine(targetingPackRoot, appHostPackName, appHostPackVersion);
+                        appHostPackPath = Path.Combine(apphostResolver2.TargetingPackRoot, appHostPackName, apphostResolver2.AppHostPackVersion);
                     }
 
                     if (appHostPackPath != null && Directory.Exists(appHostPackPath))
@@ -65,12 +83,12 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         //  Download apphost pack
                         TaskItem packageToDownload = new TaskItem(appHostPackName);
-                        packageToDownload.SetMetadata(MetadataKeys.Version, appHostPackVersion);
+                        packageToDownload.SetMetadata(MetadataKeys.Version, apphostResolver2.AppHostPackVersion);
                         additionalPackagesToDownload.Add(packageToDownload);
 
                         appHostItem.SetMetadata(MetadataKeys.RuntimeIdentifier, appHostRuntimeIdentifier);
                         appHostItem.SetMetadata(MetadataKeys.PackageName, appHostPackName);
-                        appHostItem.SetMetadata(MetadataKeys.PackageVersion, appHostPackVersion);
+                        appHostItem.SetMetadata(MetadataKeys.PackageVersion, apphostResolver2.AppHostPackVersion);
                         appHostItem.SetMetadata(MetadataKeys.RelativePath, appHostRelativePathInPackage);
                     }
 
