@@ -186,7 +186,17 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            var AppHostAndAdditionalPackageToDownload = ApphostResolver.GetAppHostItem(new ApphostResolver2(appHostPackPattern, appHostKnownRuntimeIdentifiers, appHostPackVersion, TargetingPackRoot, new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath), DotNetAppHostExecutableNameWithoutExtension, Log), AppHostRuntimeIdentifier, "AppHost");
+            ApphostResolver apphostResolver
+                = new ApphostResolver(
+                    appHostPackPattern,
+                    appHostKnownRuntimeIdentifiers,
+                    appHostPackVersion,
+                    TargetingPackRoot,
+                    new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
+                    DotNetAppHostExecutableNameWithoutExtension,
+                    Log);
+
+            var AppHostAndAdditionalPackageToDownload = apphostResolver.GetAppHostItem(AppHostRuntimeIdentifier, "AppHost");
 
             AppHost = AppHostAndAdditionalPackageToDownload.AppHost;
             packagesToDownload.AddRange(AppHostAndAdditionalPackageToDownload.AdditionalPackagesToDownload);
@@ -196,7 +206,7 @@ namespace Microsoft.NET.Build.Tasks
                 List<ITaskItem> packAsToolShimAppHostsList = new List<ITaskItem>();
                 foreach (var packAsToolShimAppHostRuntimeIdentifier in PackAsToolShimAppHostRuntimeIdentifiers)
                 {
-                    var shimApphostAndPackage = ApphostResolver.GetAppHostItem(new ApphostResolver2(appHostPackPattern, appHostKnownRuntimeIdentifiers, appHostPackVersion, TargetingPackRoot, new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath), DotNetAppHostExecutableNameWithoutExtension, Log), packAsToolShimAppHostRuntimeIdentifier.ItemSpec, "PackAsToolShimAppHost");
+                    var shimApphostAndPackage = apphostResolver.GetAppHostItem(packAsToolShimAppHostRuntimeIdentifier.ItemSpec, "PackAsToolShimAppHost");
 
                     var PackAsToolShimAppHosts = shimApphostAndPackage.AppHost;
                     packagesToDownload.AddRange(shimApphostAndPackage.AdditionalPackagesToDownload);
