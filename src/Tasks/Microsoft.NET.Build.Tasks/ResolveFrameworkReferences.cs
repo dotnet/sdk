@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +16,7 @@ namespace Microsoft.NET.Build.Tasks
     /// targeting packs which provide the reference assemblies, and creates RuntimeFramework
     /// items, which are written to the runtimeconfig file
     /// </summary>
-    public class ResolveFrameworkReferences : TaskBase
+    public partial class ResolveFrameworkReferences : TaskBase
     {
         public string TargetFrameworkIdentifier { get; set; }
 
@@ -22,8 +25,6 @@ namespace Microsoft.NET.Build.Tasks
         public string TargetingPackRoot { get; set; }
 
         public string AppHostRuntimeIdentifier { get; set; }
-
-        public ITaskItem[] PackAsToolShimAppHostRuntimeIdentifiers { get; set; }
 
         [Required]
         public string RuntimeGraphPath { get; set; }
@@ -59,12 +60,12 @@ namespace Microsoft.NET.Build.Tasks
         //  we can resolve the full path later)
         [Output]
         public ITaskItem[] AppHost { get; set; }
-        
-        [Output]
-        public ITaskItem[] PackAsToolShimAppHosts { get; set; }
 
         [Output]
         public string[] UnresolvedFrameworkReferences { get; set; }
+
+        [Output]
+        public ITaskItem FrameworkReferenceWithApphost { get; set; }
 
         protected override void ExecuteCore()
         {
@@ -95,6 +96,8 @@ namespace Microsoft.NET.Build.Tasks
                             appHostPackPattern = knownFrameworkReference.AppHostPackNamePattern;
                             appHostPackVersion = knownFrameworkReference.LatestRuntimeFrameworkVersion;
                             appHostKnownRuntimeIdentifiers = knownFrameworkReference.AppHostRuntimeIdentifiers;
+
+                            FrameworkReferenceWithApphost = frameworkReference;
                         }
                         else
                         {
@@ -205,27 +208,6 @@ namespace Microsoft.NET.Build.Tasks
             AppHost = AppHostAndAdditionalPackageToDownload.AppHost;
             packagesToDownload.AddRange(AppHostAndAdditionalPackageToDownload.AdditionalPackagesToDownload);
 
-            if (PackAsToolShimAppHostRuntimeIdentifiers != null)
-            {
-                List<ITaskItem> packAsToolShimAppHostsList = new List<ITaskItem>();
-                foreach (var packAsToolShimAppHostRuntimeIdentifier in PackAsToolShimAppHostRuntimeIdentifiers)
-                {
-                    var shimApphostAndPackage
-                        = apphostResolver.GetAppHostItem(
-                            packAsToolShimAppHostRuntimeIdentifier.ItemSpec,
-                            "PackAsToolShimAppHost");
-
-                    var PackAsToolShimAppHosts = shimApphostAndPackage.AppHost;
-                    packagesToDownload.AddRange(shimApphostAndPackage.AdditionalPackagesToDownload);
-
-                    if (PackAsToolShimAppHosts != null)
-                    {
-                        packAsToolShimAppHostsList.AddRange(PackAsToolShimAppHosts);
-                    }
-                }
-                PackAsToolShimAppHosts = packAsToolShimAppHostsList.ToArray();
-            }
-
             if (packagesToDownload.Any())
             {
                 PackagesToDownload = packagesToDownload.ToArray();
@@ -272,38 +254,6 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             return version;
-        }
-
-        private class KnownFrameworkReference
-        {
-            ITaskItem _item;
-            public KnownFrameworkReference(ITaskItem item)
-            {
-                _item = item;
-                TargetFramework = NuGetFramework.Parse(item.GetMetadata("TargetFramework"));
-            }
-
-            //  The name / itemspec of the FrameworkReference used in the project
-            public string Name => _item.ItemSpec;
-
-            //  The framework name to write to the runtimeconfig file (and the name of the folder under dotnet/shared)
-            public string RuntimeFrameworkName => _item.GetMetadata("RuntimeFrameworkName");
-            public string DefaultRuntimeFrameworkVersion => _item.GetMetadata("DefaultRuntimeFrameworkVersion");
-            public string LatestRuntimeFrameworkVersion => _item.GetMetadata("LatestRuntimeFrameworkVersion");
-
-            //  The ID of the targeting pack NuGet package to reference
-            public string TargetingPackName => _item.GetMetadata("TargetingPackName");
-            public string TargetingPackVersion => _item.GetMetadata("TargetingPackVersion");
-
-            public string AppHostPackNamePattern => _item.GetMetadata("AppHostPackNamePattern");
-
-            public string AppHostRuntimeIdentifiers => _item.GetMetadata("AppHostRuntimeIdentifiers");
-
-            public string RuntimePackNamePatterns => _item.GetMetadata("RuntimePackNamePatterns");
-
-            public string RuntimePackRuntimeIdentifiers => _item.GetMetadata("RuntimePackRuntimeIdentifiers");
-
-            public NuGetFramework TargetFramework { get; }
         }
     }
 }
