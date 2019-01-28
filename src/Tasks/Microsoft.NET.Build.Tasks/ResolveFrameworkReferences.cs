@@ -241,7 +241,7 @@ namespace Microsoft.NET.Build.Tasks
             string appHostRuntimeIdentifiers,
             string appHostPackVersion, List<ITaskItem> packagesToDownload,
             string appHostRuntimeIdentifier,
-            string itemName, string targetingPackRoot, RuntimeGraph getRuntimeGraph,
+            string outputItemName, string targetingPackRoot, RuntimeGraph getRuntimeGraph,
             string dotNetAppHostExecutableNameWithoutExtension, Logger logger)
         {
             if (!string.IsNullOrEmpty(appHostRuntimeIdentifier) && !string.IsNullOrEmpty(appHostPackPattern))
@@ -271,7 +271,7 @@ namespace Microsoft.NET.Build.Tasks
                         ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier));
 
 
-                    TaskItem appHostItem = new TaskItem(itemName);
+                    TaskItem appHostItem = new TaskItem(outputItemName);
                     string appHostPackPath = null;
                     if (!string.IsNullOrEmpty(targetingPackRoot))
                     {
