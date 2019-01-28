@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks
         public string DotNetAppHostExecutableNameWithoutExtension { get; set; }
 
         [Output]
-        public ITaskItem[] AdditionalPackagesToDownload { get; set; }
+        public ITaskItem[] PackagesToDownload { get; set; }
 
         [Output]
         public ITaskItem[] PackAsToolShimAppHosts { get; set; }
@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 PackAsToolShimAppHosts = packAsToolShimAppHostsList.ToArray();
-                AdditionalPackagesToDownload = packagesToDownload.ToArray();
+                PackagesToDownload = packagesToDownload.ToArray();
             }
         }
     }

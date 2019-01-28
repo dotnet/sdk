@@ -46,17 +46,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AppHostRuntimeIdentifier Condition="'$(AppHostRuntimeIdentifier)' == ''">$(DefaultAppHostRuntimeIdentifier)</AppHostRuntimeIdentifier>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
-    </ItemGroup>
-
     <ResolveFrameworkReferences FrameworkReferences="@(FrameworkReference)"
                                 KnownFrameworkReferences="@(KnownFrameworkReference)"
                                 TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                                 TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                                 TargetingPackRoot="$(NetCoreTargetingPackRoot)"
                                 AppHostRuntimeIdentifier="$(AppHostRuntimeIdentifier)"
-                                PackAsToolShimAppHostRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
                                 RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
                                 SelfContained="$(SelfContained)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
@@ -67,14 +62,42 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetingPacks" ItemName="TargetingPack" />
       <Output TaskParameter="RuntimePacks" ItemName="RuntimePack" />
       <Output TaskParameter="AppHost" ItemName="AppHostPack" />
-      <Output TaskParameter="PackAsToolShimAppHosts" ItemName="PackAsToolShimAppHostPack" />
 
+      <Output TaskParameter="FrameworkReferenceWithApphost" ItemName="_FrameworkReferenceWithApphost" />
       <Output TaskParameter="UnresolvedFrameworkReferences" ItemName="_UnresolvedFrameworkReference" />
 
     </ResolveFrameworkReferences>
 
     <ItemGroup>
       <PackageReference Include="@(PackageReferenceToAdd)"
+                        IsImplicitlyDefined="true"
+                        PrivateAssets="all"
+                        ExcludeAssets="all" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="ResolvePackAsToolShimApphosts"
+          Condition="$(PackAsToolShimRuntimeIdentifiers) !=''"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences" DependsOnTargets="ResolveFrameworkReferences">
+
+    <ItemGroup>
+      <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
+    </ItemGroup>
+
+    <ResolveFrameworkReferences TargetingPackRoot="$(NetCoreTargetingPackRoot)"
+                                RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                                DotNetAppHostExecutableNameWithoutExtension="$(_DotNetAppHostExecutableNameWithoutExtension)"
+                                FrameworkReferenceWithApphost="$(_FrameworkReferenceWithApphost)"
+                                PackAsToolShimAppHostRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)">
+
+      <Output TaskParameter="PackagesToDownload" ItemName="_PackagesToDownloadForPackAsToolShimApphosts" />
+      <Output TaskParameter="PackAsToolShimAppHosts" ItemName="PackAsToolShimAppHostPack" />
+
+    </ResolveFrameworkReferences>
+
+    <ItemGroup>
+      <PackageReference Include="@(_PackagesToDownloadForPackAsToolShimApphosts)"
                         IsImplicitlyDefined="true"
                         PrivateAssets="all"
                         ExcludeAssets="all" />

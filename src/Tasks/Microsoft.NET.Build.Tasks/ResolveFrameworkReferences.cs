@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
