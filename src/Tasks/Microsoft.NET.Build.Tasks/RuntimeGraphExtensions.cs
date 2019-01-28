@@ -7,8 +7,9 @@ namespace Microsoft.NET.Build.Tasks
 {
     internal static class RuntimeGraphExtensions
     {
-        internal static string GetBestRuntimeIdentifier(string targetRuntimeIdentifier, string availableRuntimeIdentifiers,
-            RuntimeGraph runtimeGraph, out bool wasInGraph)
+        internal static string GetBestRuntimeIdentifier(this RuntimeGraph runtimeGraph, string targetRuntimeIdentifier,
+            string availableRuntimeIdentifiers,
+            out bool wasInGraph)
         {
             if (targetRuntimeIdentifier == null || availableRuntimeIdentifiers == null)
             {

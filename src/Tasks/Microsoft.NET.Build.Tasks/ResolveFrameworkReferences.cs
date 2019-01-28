@@ -137,11 +137,7 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         foreach (var runtimePackNamePattern in knownFrameworkReference.RuntimePackNamePatterns.Split(';'))
                         {
-                            string runtimePackRuntimeIdentifier = RuntimeGraphExtensions.GetBestRuntimeIdentifier(
-                                RuntimeIdentifier,
-                                knownFrameworkReference.RuntimePackRuntimeIdentifiers,
-                                new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
-                                out bool wasInGraph);
+                            string runtimePackRuntimeIdentifier = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath).GetBestRuntimeIdentifier(RuntimeIdentifier, knownFrameworkReference.RuntimePackRuntimeIdentifiers, out bool wasInGraph);
 
                             if (runtimePackRuntimeIdentifier == null)
                             {
@@ -250,11 +246,7 @@ namespace Microsoft.NET.Build.Tasks
             if (!string.IsNullOrEmpty(appHostRuntimeIdentifier) && !string.IsNullOrEmpty(appHostPackPattern))
             {
                 //  Choose AppHost RID as best match of the specified RID
-                string bestAppHostRuntimeIdentifier = RuntimeGraphExtensions.GetBestRuntimeIdentifier(
-                        appHostRuntimeIdentifier,
-                        appHostRuntimeIdentifiers,
-                        new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
-                        out bool wasInGraph);
+                string bestAppHostRuntimeIdentifier = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath).GetBestRuntimeIdentifier(appHostRuntimeIdentifier, appHostRuntimeIdentifiers, out bool wasInGraph);
 
                 if (bestAppHostRuntimeIdentifier == null)
                 {
