@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -63,12 +64,6 @@ namespace Microsoft.NET.Build.Tasks
         
         [Output]
         public ITaskItem[] PackAsToolShimAppHosts { get; set; }
-
-        // out of framework refrernce with apphost
-
-        // make a separate task for resolve app host
-
-        // 2.0 will use the old code to resolve, when it is bigger than 3.0.
 
         [Output]
         public string[] UnresolvedFrameworkReferences { get; set; }
@@ -142,8 +137,12 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         foreach (var runtimePackNamePattern in knownFrameworkReference.RuntimePackNamePatterns.Split(';'))
                         {
-                            string runtimePackRuntimeIdentifier = GetBestRuntimeIdentifier(RuntimeIdentifier, knownFrameworkReference.RuntimePackRuntimeIdentifiers,
-                                                                                            out bool wasInGraph);
+                            string runtimePackRuntimeIdentifier = GetBestRuntimeIdentifier(
+                                RuntimeIdentifier,
+                                knownFrameworkReference.RuntimePackRuntimeIdentifiers,
+                                new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
+                                out bool wasInGraph);
+
                             if (runtimePackRuntimeIdentifier == null)
                             {
                                 if (wasInGraph)
@@ -252,7 +251,11 @@ namespace Microsoft.NET.Build.Tasks
             {
                 //  Choose AppHost RID as best match of the specified RID
                 string bestAppHostRuntimeIdentifier =
-                    GetBestRuntimeIdentifier(appHostRuntimeIdentifier, appHostRuntimeIdentifiers, out bool wasInGraph);
+                    GetBestRuntimeIdentifier(
+                        appHostRuntimeIdentifier,
+                        appHostRuntimeIdentifiers,
+                        new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
+                        out bool wasInGraph);
 
                 if (bestAppHostRuntimeIdentifier == null)
                 {
@@ -307,7 +310,8 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        private string GetBestRuntimeIdentifier(string targetRuntimeIdentifier, string availableRuntimeIdentifiers, out bool wasInGraph)
+        private string GetBestRuntimeIdentifier(string targetRuntimeIdentifier, string availableRuntimeIdentifiers,
+            RuntimeGraph runtimeGraph, out bool wasInGraph)
         {
             if (targetRuntimeIdentifier == null || availableRuntimeIdentifiers == null)
             {
@@ -316,7 +320,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             return NuGetUtils.GetBestMatchingRid(
-                new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
+                runtimeGraph,
                 targetRuntimeIdentifier,
                 availableRuntimeIdentifiers.Split(';'),
                 out wasInGraph);
