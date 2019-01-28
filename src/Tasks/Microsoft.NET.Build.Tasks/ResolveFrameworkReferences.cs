@@ -310,7 +310,7 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        private string GetBestRuntimeIdentifier(string targetRuntimeIdentifier, string availableRuntimeIdentifiers,
+        private static string GetBestRuntimeIdentifier(string targetRuntimeIdentifier, string availableRuntimeIdentifiers,
             RuntimeGraph runtimeGraph, out bool wasInGraph)
         {
             if (targetRuntimeIdentifier == null || availableRuntimeIdentifiers == null)
