@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -16,7 +15,7 @@ namespace Microsoft.NET.Build.Tasks
     /// targeting packs which provide the reference assemblies, and creates RuntimeFramework
     /// items, which are written to the runtimeconfig file
     /// </summary>
-    public partial class ResolveFrameworkReferences : TaskBase
+    public class ResolveFrameworkReferences : TaskBase
     {
         public string TargetFrameworkIdentifier { get; set; }
 
@@ -238,23 +237,6 @@ namespace Microsoft.NET.Build.Tasks
         private string GetPackPath(string name, string version)
         {
             return Path.Combine(TargetingPackRoot, name, version);
-        }
-
-        private static Version NormalizeVersion(Version version)
-        {
-            if (version.Revision == 0)
-            {
-                if (version.Build == 0)
-                {
-                    return new Version(version.Major, version.Minor);
-                }
-                else
-                {
-                    return new Version(version.Major, version.Minor, version.Build);
-                }
-            }
-
-            return version;
         }
     }
 }
