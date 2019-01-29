@@ -60,15 +60,9 @@ namespace Microsoft.NET.Build.Tasks
         //  we can resolve the full path later)
         [Output]
         public ITaskItem[] AppHost { get; set; }
-        
+
         [Output]
         public ITaskItem[] PackAsToolShimAppHosts { get; set; }
-
-        // out of framework refrernce with apphost
-
-        // make a separate task for resolve app host
-
-        // 2.0 will use the old code to resolve, when it is bigger than 3.0.
 
         [Output]
         public string[] UnresolvedFrameworkReferences { get; set; }
