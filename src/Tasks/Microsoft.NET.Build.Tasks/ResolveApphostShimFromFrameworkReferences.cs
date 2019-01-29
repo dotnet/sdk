@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -64,7 +65,7 @@ namespace Microsoft.NET.Build.Tasks
                 knownFrameworkReference.AppHostRuntimeIdentifiers,
                 knownFrameworkReference.LatestRuntimeFrameworkVersion,
                 TargetingPackRoot,
-                new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
+                new Lazy<RuntimeGraph>(() => new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath)),
                 DotNetAppHostExecutableNameWithoutExtension,
                 Log);
 

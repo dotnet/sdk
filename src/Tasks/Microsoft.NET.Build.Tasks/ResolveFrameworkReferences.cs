@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -138,10 +139,12 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         foreach (var runtimePackNamePattern in knownFrameworkReference.RuntimePackNamePatterns.Split(';'))
                         {
+                            var runtimeGraph = new Lazy<RuntimeGraph>(
+                                () => new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath));
+
                             string runtimePackRuntimeIdentifier =
-                                new RuntimeGraphCache(this)
-                                .GetRuntimeGraph(RuntimeGraphPath)
-                                .GetBestRuntimeIdentifier(
+                                BestRuntimeIdentifierFinder.GetBestRuntimeIdentifier(
+                                    runtimeGraph,
                                     RuntimeIdentifier,
                                     knownFrameworkReference.RuntimePackRuntimeIdentifiers,
                                     out bool wasInGraph);
@@ -199,7 +202,7 @@ namespace Microsoft.NET.Build.Tasks
                     appHostKnownRuntimeIdentifiers,
                     appHostPackVersion,
                     TargetingPackRoot,
-                    new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
+                    new Lazy<RuntimeGraph>(() => new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath)),
                     DotNetAppHostExecutableNameWithoutExtension,
                     Log);
 

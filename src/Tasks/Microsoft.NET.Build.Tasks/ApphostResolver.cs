@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks
                                string appHostKnownRuntimeIdentifiers,
                                string appHostPackVersion,
                                string targetingPackRoot,
-                               RuntimeGraph runtimeGraph,
+                               Lazy<RuntimeGraph> runtimeGraph,
                                string dotNetAppHostExecutableNameWithoutExtension,
                                Logger logger)
         {
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tasks
         private readonly string _appHostKnownRuntimeIdentifiers;
         private readonly string _appHostPackVersion;
         private readonly string _targetingPackRoot;
-        private readonly RuntimeGraph _runtimeGraph;
+        private readonly Lazy<RuntimeGraph> _runtimeGraph;
         private readonly string _dotNetAppHostExecutableNameWithoutExtension;
         private readonly Logger _logger;
 
@@ -46,8 +46,10 @@ namespace Microsoft.NET.Build.Tasks
             if (!String.IsNullOrEmpty(appHostRuntimeIdentifier) && !String.IsNullOrEmpty(_appHostPackPattern))
             {
                 //  Choose AppHost RID as best match of the specified RID
+
                 string bestAppHostRuntimeIdentifier =
-                    _runtimeGraph.GetBestRuntimeIdentifier(
+                    BestRuntimeIdentifierFinder.GetBestRuntimeIdentifier(
+                        _runtimeGraph,
                         appHostRuntimeIdentifier,
                         _appHostKnownRuntimeIdentifiers,
                         out bool wasInGraph);
