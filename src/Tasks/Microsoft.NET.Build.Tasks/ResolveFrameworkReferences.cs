@@ -185,15 +185,21 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            AppHost = GetAppHostItem(appHostPackPattern, appHostRuntimeIdentifiers, appHostPackVersion,
-                packagesToDownload, AppHostRuntimeIdentifier, "AppHost");
+            AppHost = new ITaskItem[] {
+                        GetAppHostItem(appHostPackPattern,
+                            appHostRuntimeIdentifiers,
+                            appHostPackVersion,
+                            packagesToDownload,
+                            AppHostRuntimeIdentifier,
+                            "AppHost")
+            };
 
             if (PackAsToolShimAppHostRuntimeIdentifiers != null)
             {
                 List<ITaskItem> packAsToolShimAppHostsList = new List<ITaskItem>();
                 foreach (var packAsToolShimAppHostRuntimeIdentifier in PackAsToolShimAppHostRuntimeIdentifiers)
                 {
-                    var PackAsToolShimAppHosts = GetAppHostItem(
+                    var packAsToolShimAppHosts = GetAppHostItem(
                             appHostPackPattern,
                             appHostRuntimeIdentifiers,
                             appHostPackVersion,
@@ -201,9 +207,9 @@ namespace Microsoft.NET.Build.Tasks
                             packAsToolShimAppHostRuntimeIdentifier.ItemSpec,
                             "PackAsToolShimAppHost");
 
-                    if (PackAsToolShimAppHosts != null)
+                    if (packAsToolShimAppHosts != null)
                     {
-                        packAsToolShimAppHostsList.AddRange(PackAsToolShimAppHosts);
+                        packAsToolShimAppHostsList.Add(packAsToolShimAppHosts);
                     }
                 }
                 PackAsToolShimAppHosts = packAsToolShimAppHostsList.ToArray();
@@ -235,7 +241,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private ITaskItem[] GetAppHostItem(
+        private ITaskItem GetAppHostItem(
             string appHostPackPattern, 
             string appHostRuntimeIdentifiers,
             string appHostPackVersion, List<ITaskItem> packagesToDownload, 
@@ -295,7 +301,7 @@ namespace Microsoft.NET.Build.Tasks
                         appHostItem.SetMetadata(MetadataKeys.RelativePath, appHostRelativePathInPackage);
                     }
 
-                    return new ITaskItem[] {appHostItem};
+                    return appHostItem;
                 }
             }
             return null;

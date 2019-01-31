@@ -73,16 +73,8 @@ namespace Microsoft.NET.ToolPack.Tests
                             propertyGroup.Add(new XElement(ns + pair.Key, pair.Value));
                         }
                     }
-
-                    propertyGroup.Element(ns + "TargetFramework").Remove();
-                    propertyGroup.Add(new XElement(ns + "TargetFramework", targetFramework));
-
-                    if (multiTarget)
-                    {
-                        propertyGroup.Element(ns + "TargetFramework").Remove();
-                        propertyGroup.Add(new XElement(ns + "TargetFrameworks", targetFramework));
-                    }
                 })
+                .WithTargetFrameworkOrFrameworks(targetFramework, multiTarget)
                 .Restore(Log);
         }
 
@@ -121,16 +113,8 @@ namespace Microsoft.NET.ToolPack.Tests
                     propertyGroup.Add(new XElement(ns + "PackAsToolShimRuntimeIdentifiers", "win-x64;osx.10.12-x64"));
                     propertyGroup.Add(new XElement(ns + "ToolCommandName", _customToolCommandName));
                     propertyGroup.Add(new XElement(ns + "PackagedShimOutputRootDirectory", shimoutputPath));
-
-                    propertyGroup.Element(ns + "TargetFramework").Remove();
-                    propertyGroup.Add(new XElement(ns + "TargetFramework", targetFramework));
-
-                    if (multiTarget)
-                    {
-                        propertyGroup.Element(ns + "TargetFramework").Remove();
-                        propertyGroup.Add(new XElement(ns + "TargetFrameworks", targetFramework));
-                    }
                 })
+                .WithTargetFrameworkOrFrameworks(targetFramework, multiTarget)
                 .Restore(Log);
 
             _testRoot = helloWorldAsset.TestRoot;
