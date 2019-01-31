@@ -978,7 +978,8 @@ namespace Microsoft.NET.Build.Tasks
             /// </summary>
             private static bool CanResolveApphostFromFrameworkReference(NuGetFramework targetFramework)
             {
-                if (targetFramework.Version.Major >= 3)
+                if (targetFramework.Version.Major >= 3
+                    && targetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
