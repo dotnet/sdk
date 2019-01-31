@@ -950,7 +950,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 NuGetFramework targetFramework = NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker);
 
-                if (CannotResolveApphostFromAssetFile(targetFramework))
+                if (!CanResolveApphostFromFrameworkReference(targetFramework))
                 {
                     return;
                 }
@@ -976,14 +976,14 @@ namespace Microsoft.NET.Build.Tasks
             /// <summary>
             /// After netcoreapp3.0 apphost is resolved during ResolveFrameworkReferences. It should return nothing here
             /// </summary>
-            private static bool CannotResolveApphostFromAssetFile(NuGetFramework targetFramework)
+            private static bool CanResolveApphostFromFrameworkReference(NuGetFramework targetFramework)
             {
                 if (targetFramework.Version.Major >= 3)
                 {
-                    return true;
+                    return false;
                 }
 
-                return false;
+                return true;
             }
 
             private void WritePackageFolders()
