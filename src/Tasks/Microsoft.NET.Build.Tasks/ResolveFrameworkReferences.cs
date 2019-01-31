@@ -185,14 +185,16 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            AppHost = new ITaskItem[] {
-                        GetAppHostItem(appHostPackPattern,
-                            appHostRuntimeIdentifiers,
-                            appHostPackVersion,
-                            packagesToDownload,
-                            AppHostRuntimeIdentifier,
-                            "AppHost")
-            };
+            ITaskItem apphostTaskItem = GetAppHostItem(appHostPackPattern,
+                                                       appHostRuntimeIdentifiers,
+                                                       appHostPackVersion,
+                                                       packagesToDownload,
+                                                       AppHostRuntimeIdentifier,
+                                                       "AppHost");
+            if (apphostTaskItem != null)
+            {
+                AppHost = new ITaskItem[] { apphostTaskItem };
+            }
 
             if (PackAsToolShimAppHostRuntimeIdentifiers != null)
             {
