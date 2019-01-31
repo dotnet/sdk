@@ -83,23 +83,6 @@ namespace Microsoft.NET.ToolPack.Tests
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
         [InlineData(false, "netcoreapp3.0")]
-        public void Given_default_pack_and_result_nugetPackage(bool multiTarget, string targetFramework)
-        {
-            var nugetPackage = SetupNuGetPackage(multiTarget, targetFramework: targetFramework);
-            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
-            {
-                // Combine assertions to reuse setup and save non trivial time
-                It_packs_successfully(nugetPackage);
-                It_contains_dependencies_dll(nupkgReader);
-                It_contains_shim(nupkgReader);
-            }
-        }
-
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, "netcoreapp3.0")]
-        [InlineData(false, "netcoreapp3.0")]
         public void It_uses_customized_PackagedShimOutputRootDirectory(bool multiTarget, string targetFramework)
         {
             string shimoutputPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "shimoutput");
