@@ -46,12 +46,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AppHostRuntimeIdentifier Condition="'$(AppHostRuntimeIdentifier)' == ''">$(DefaultAppHostRuntimeIdentifier)</AppHostRuntimeIdentifier>
     </PropertyGroup>
 
+    <ItemGroup>
+      <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
+    </ItemGroup>
+
     <ResolveFrameworkReferences FrameworkReferences="@(FrameworkReference)"
                                 KnownFrameworkReferences="@(KnownFrameworkReference)"
                                 TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                                 TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                                 TargetingPackRoot="$(NetCoreTargetingPackRoot)"
                                 AppHostRuntimeIdentifier="$(AppHostRuntimeIdentifier)"
+                                PackAsToolShimAppHostRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
                                 RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
                                 SelfContained="$(SelfContained)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
@@ -59,12 +64,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 DotNetComHostLibraryNameWithoutExtension="$(_DotNetComHostLibraryNameWithoutExtension)">
 
       <Output TaskParameter="PackagesToDownload" ItemName="PackageReferenceToAdd" />
-      <Output TaskParameter="PackagesToReference" ItemName="PackageReference" />
       <Output TaskParameter="RuntimeFrameworks" ItemName="RuntimeFramework" />
       <Output TaskParameter="TargetingPacks" ItemName="TargetingPack" />
+      <Output TaskParameter="RuntimePacks" ItemName="RuntimePack" />
       <Output TaskParameter="AppHost" ItemName="AppHostPack" />
       <Output TaskParameter="ComHost" ItemName="ComHostPack" />
-
+      <Output TaskParameter="PackAsToolShimAppHosts" ItemName="PackAsToolShimAppHostPack" />
       <Output TaskParameter="UnresolvedFrameworkReferences" ItemName="_UnresolvedFrameworkReference" />
 
     </ResolveFrameworkReferences>
@@ -134,6 +139,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </GetPackageDirectory>
 
+    <GetPackageDirectory
+      Items="@(PackAsToolShimAppHostPack)"
+      ProjectPath="$(MSBuildProjectFullPath)"
+      PackageFolders="@(AssetsFilePackageFolder)">
+
+      <Output TaskParameter="Output" ItemName="_ApphostsForShimRuntimeIdentifiersGetPackageDirectory" />
+
+    </GetPackageDirectory>
+
+    <ItemGroup>
+      <_ApphostsForShimRuntimeIdentifiers Include="%(_ApphostsForShimRuntimeIdentifiersGetPackageDirectory.PackageDirectory)\%(_ApphostsForShimRuntimeIdentifiersGetPackageDirectory.RelativePath)" >
+        <RuntimeIdentifier>%(_ApphostsForShimRuntimeIdentifiersGetPackageDirectory.RuntimeIdentifier)</RuntimeIdentifier>
+       </_ApphostsForShimRuntimeIdentifiers>
+    </ItemGroup>
+
     <ItemGroup>
       <ResolvedAppHostPack>
         <Path Condition="'%(ResolvedAppHostPack.Path)' == ''">%(PackageDirectory)\%(RelativePath)</Path>
@@ -163,6 +183,32 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ComHostSourcePath>@(ResolvedComHostPack->'%(Path)')</ComHostSourcePath>
     </PropertyGroup>
 
+  </Target>
+  
+  <UsingTask TaskName="ResolveRuntimePackAssets" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  
+  <Target Name="ResolveRuntimePackAssets" DependsOnTargets="ResolvePackageAssets"
+          Condition="'@(RuntimePack)' != ''">
+    
+      <GetPackageDirectory
+        Items="@(RuntimePack)"
+        ProjectPath="$(MSBuildProjectFullPath)"
+        PackageFolders="@(AssetsFilePackageFolder)">
+
+      <Output TaskParameter="Output" ItemName="ResolvedRuntimePack" />
+      
+    </GetPackageDirectory>    
+    
+    <ResolveRuntimePackAssets ResolvedRuntimePacks="@(ResolvedRuntimePack)">
+      <Output TaskParameter="RuntimePackAssets" ItemName="RuntimePackAsset" />
+    </ResolveRuntimePackAssets>
+    
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Include="@(RuntimePackAsset)"
+                               Condition="'$(CopyLocalLockFileAssemblies)' == 'true'" />
+    </ItemGroup>
+  
+  
   </Target>
 
   <!--

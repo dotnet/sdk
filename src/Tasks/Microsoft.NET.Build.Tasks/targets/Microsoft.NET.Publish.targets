@@ -12,8 +12,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    
     <DefaultCopyToPublishDirectoryMetadata Condition="'$(DefaultCopyToPublishDirectoryMetadata)' == ''">true</DefaultCopyToPublishDirectoryMetadata>
     <_GetChildProjectCopyToPublishDirectoryItems Condition="'$(_GetChildProjectCopyToPublishDirectoryItems)' == ''">true</_GetChildProjectCopyToPublishDirectoryItems>
 
@@ -276,7 +274,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_ResolveCopyLocalAssetsForPublish"
           DependsOnTargets="ResolveLockFileCopyLocalFiles;
                             _ComputeUseBuildDependencyFile;
-                            _DefaultMicrosoftNETPlatformLibrary">
+                            _DefaultMicrosoftNETPlatformLibrary;
+                            ResolveRuntimePackAssets">
 
       <ResolveCopyLocalAssets ProjectPath="$(MSBuildProjectFullPath)"
                               AssetsFilePath="$(ProjectAssetsFile)"
@@ -291,6 +290,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                               Condition="'$(_UseBuildDependencyFile)' != 'true'">
         <Output TaskParameter="ResolvedAssets" ItemName="_ResolvedCopyLocalPublishAssets" />
       </ResolveCopyLocalAssets>
+
+      <ItemGroup>
+        <_ResolvedCopyLocalPublishAssets Include="@(RuntimePackAsset)"/>
+      </ItemGroup>
 
       <ItemGroup Condition="'$(_UseBuildDependencyFile)' != 'true'">
         <!-- Remove the apphost executable from publish copy local assets; we will copy the generated apphost instead -->
@@ -599,7 +602,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                             _DefaultMicrosoftNETPlatformLibrary;
                             _HandlePackageFileConflicts;
                             _HandlePackageFileConflictsForPublish;
-                            _ComputeReferenceAssemblies"
+                            _ComputeReferenceAssemblies;
+                            ResolveRuntimePackAssets"
           Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true'">
 
     <PropertyGroup>
@@ -618,6 +622,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ReferenceDependencyPaths="@(ReferenceDependencyPaths)"
                       ReferenceSatellitePaths="@(ReferenceSatellitePaths)"
                       ReferenceAssemblies="@(_ReferenceAssemblies)"
+                      RuntimePackAssets="@(RuntimePackAsset)"
                       IncludeMainProject="$(IncludeMainProjectInDepsFile)"
                       RuntimeIdentifier="$(RuntimeIdentifier)"
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
@@ -643,7 +648,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ComputeEmbeddedApphostPaths">
 
     <ItemGroup>
-      <_PackAsToolShimRuntimeIdentifiers Include="$(PackAsToolShimRuntimeIdentifiers)"/>
+      <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
     <GetEmbeddedApphostPaths

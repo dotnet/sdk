@@ -948,6 +948,13 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteApphostsForShimRuntimeIdentifiers()
             {
+                NuGetFramework targetFramework = NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker);
+
+                if (!CanResolveApphostFromFrameworkReference(targetFramework))
+                {
+                    return;
+                }
+
                 if (_task.ShimRuntimeIdentifiers == null || _task.ShimRuntimeIdentifiers.Length == 0)
                 {
                     return;
@@ -955,7 +962,6 @@ namespace Microsoft.NET.Build.Tasks
 
                 foreach (var runtimeIdentifier in _task.ShimRuntimeIdentifiers.Select(r => r.ItemSpec))
                 {
-                    NuGetFramework targetFramework = NuGetUtils.ParseFrameworkName(_task.TargetFrameworkMoniker);
                     LockFileTarget runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(targetFramework, runtimeIdentifier);
 
                     var apphostName = _task.DotNetAppHostExecutableNameWithoutExtension + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier);
@@ -965,6 +971,20 @@ namespace Microsoft.NET.Build.Tasks
                     WriteItem(resolvedPackageAssetPathAndLibrary.Item1, resolvedPackageAssetPathAndLibrary.Item2);
                     WriteMetadata(MetadataKeys.RuntimeIdentifier, runtimeIdentifier);
                 }
+            }
+
+            /// <summary>
+            /// After netcoreapp3.0 apphost is resolved during ResolveFrameworkReferences. It should return nothing here
+            /// </summary>
+            private static bool CanResolveApphostFromFrameworkReference(NuGetFramework targetFramework)
+            {
+                if (targetFramework.Version.Major >= 3
+                    && targetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
             }
 
             private void WritePackageFolders()
@@ -1028,7 +1048,7 @@ namespace Microsoft.NET.Build.Tasks
                             WriteCopyLocalMetadata(
                                 package,
                                 Path.GetFileName(asset.Path),
-                                asset.AssetType.ToLower(),
+                                asset.AssetType.ToLowerInvariant(),
                                 destinationSubDirectory: Path.GetDirectoryName(asset.Path) + Path.DirectorySeparatorChar);
                         }
                         else
@@ -1133,7 +1153,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 WriteMetadata(MetadataKeys.AssetType, assetType);
                 WriteMetadata(MetadataKeys.PackageName, package.Name);
-                WriteMetadata(MetadataKeys.PackageVersion, package.Version.ToString().ToLower());
+                WriteMetadata(MetadataKeys.PackageVersion, package.Version.ToString().ToLowerInvariant());
             }
 
             private int GetMetadataIndex(string value)
