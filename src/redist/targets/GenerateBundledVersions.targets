@@ -206,6 +206,13 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
                               RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               />
+
+    <KnownAppHostPack Include="Microsoft.NETCore.App"
+                      TargetFramework="netcoreapp3.0"
+                      AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
+                      AppHostPackVersion="$(_NETCoreAppPackageVersion)"
+                      AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                      />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.0"
