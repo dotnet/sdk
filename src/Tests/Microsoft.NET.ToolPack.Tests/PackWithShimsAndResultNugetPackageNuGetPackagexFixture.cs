@@ -2,27 +2,22 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using FluentAssertions;
-using Xunit;
 using Xunit.Abstractions;
-using NuGet.Packaging;
 using System.Xml.Linq;
-using System.Runtime.CompilerServices;
 using System;
-using NuGet.Frameworks;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    public class DefaultPackWithShimsAndResultNugetPackageNuGetPackagexFixture : IDisposable
+    public class NupkgOfPackWithShimsFixture : IDisposable
     {
         public const string _customToolCommandName = "customToolCommandName";
         private const string _packageVersion = "1.0.0";
-        public DefaultPackWithShimsAndResultNugetPackageNuGetPackagexFixture()
+        public NupkgOfPackWithShimsFixture()
         {
         }
 
@@ -40,7 +35,7 @@ namespace Microsoft.NET.ToolPack.Tests
         public Dictionary<(bool multiTarget, string targetFramework), string> assetMap
             = new Dictionary<(bool multiTarget, string targetFramework), string>();
 
-        public string GetAsset(bool multiTarget, string targetFramework)
+        public string GetTestToolPackagePath(bool multiTarget, string targetFramework)
         {
             var mapKey = (multiTarget, targetFramework);
             if (assetMap.ContainsKey(mapKey))
@@ -50,7 +45,6 @@ namespace Microsoft.NET.ToolPack.Tests
             else
             {
                 var package = SetupNuGetPackage(multiTarget,
-                    nameof(DefaultPackWithShimsAndResultNugetPackageNuGetPackagexFixture),
                     targetFramework);
                 assetMap[mapKey] = package;
                 return package;
@@ -59,12 +53,11 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private string SetupNuGetPackage(
             bool multiTarget,
-            string uniqueName,
             string targetFramework)
         {
             TestAsset helloWorldAsset = CreateTestAsset(
                 multiTarget,
-                uniqueName + multiTarget + targetFramework,
+                nameof(NupkgOfPackWithShimsFixture) + multiTarget + targetFramework,
                 targetFramework);
 
             var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);

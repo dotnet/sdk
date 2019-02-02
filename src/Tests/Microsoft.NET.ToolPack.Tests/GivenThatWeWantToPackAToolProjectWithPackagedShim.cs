@@ -18,15 +18,18 @@ using NuGet.Frameworks;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    public class GivenThatWeWantToPackAToolProjectWithPackagedShim : SdkTest
+    public class GivenThatWeWantToPackAToolProjectWithPackagedShim : SdkTest, IClassFixture<NupkgOfPackWithShimsFixture>
     {
         private string _testRoot;
         private string _packageId;
         private string _packageVersion = "1.0.0";
         private const string _customToolCommandName = "customToolCommandName";
+        readonly NupkgOfPackWithShimsFixture _fixture;
 
-        public GivenThatWeWantToPackAToolProjectWithPackagedShim(ITestOutputHelper log) : base(log)
+        public GivenThatWeWantToPackAToolProjectWithPackagedShim(NupkgOfPackWithShimsFixture fixture, ITestOutputHelper log) : base(log)
         {
+            fixture.Init(log, _testAssetsManager);
+            _fixture = fixture;
         }
 
         private string SetupNuGetPackage(
@@ -52,12 +55,12 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private TestAsset CreateTestAsset(
             bool multiTarget,
-            string uniqueName,
+            string assetName,
             string targetFramework,
             Dictionary<string, string> additionalProperty = null)
         {
             return _testAssetsManager
-                .CopyTestAsset("PortableTool", uniqueName)
+                .CopyTestAsset("PortableTool", assetName)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -76,6 +79,67 @@ namespace Microsoft.NET.ToolPack.Tests
                 })
                 .WithTargetFrameworkOrFrameworks(targetFramework, multiTarget)
                 .Restore(Log);
+        }
+
+        [Theory]
+        [InlineData(true, "netcoreapp2.1")]
+        [InlineData(false, "netcoreapp2.1")]
+        [InlineData(true, "netcoreapp3.0")]
+        [InlineData(false, "netcoreapp3.0")]
+        public void It_packs_successfully(bool multiTarget, string targetFramework)
+        {
+            var nugetPackage = _fixture.GetTestToolPackagePath(multiTarget, targetFramework: targetFramework);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+            {
+                nupkgReader
+                    .GetToolItems()
+                    .Should().NotBeEmpty();
+            }
+        }
+
+        [Theory]
+        [InlineData(true, "netcoreapp2.1")]
+        [InlineData(false, "netcoreapp2.1")]
+        [InlineData(true, "netcoreapp3.0")]
+        [InlineData(false, "netcoreapp3.0")]
+        public void It_contains_dependencies_dll(bool multiTarget, string targetFramework)
+        {
+            var nugetPackage = _fixture.GetTestToolPackagePath(multiTarget, targetFramework: targetFramework);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+            {
+                IEnumerable<NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
+                supportedFrameworks.Should().NotBeEmpty();
+
+                foreach (NuGetFramework framework in supportedFrameworks)
+                {
+                    var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
+                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/Newtonsoft.Json.dll");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(true, "netcoreapp2.1")]
+        [InlineData(false, "netcoreapp2.1")]
+        [InlineData(true, "netcoreapp3.0")]
+        [InlineData(false, "netcoreapp3.0")]
+        public void It_contains_shim(bool multiTarget, string targetFramework)
+        {
+            var nugetPackage = _fixture.GetTestToolPackagePath(multiTarget, targetFramework: targetFramework);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+            {
+                IEnumerable<NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
+                supportedFrameworks.Should().NotBeEmpty();
+
+                foreach (NuGetFramework framework in supportedFrameworks)
+                {
+                    var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
+                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/win-x64/{NupkgOfPackWithShimsFixture._customToolCommandName}.exe",
+                        "Name should be the same as the command name even customized");
+                    allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/osx.10.12-x64/{NupkgOfPackWithShimsFixture._customToolCommandName}",
+                        "RID should be the exact match of the RID in the property, even Apphost only has version of win, osx and linux");
+                }
+            }
         }
 
         [Theory]
@@ -330,43 +394,6 @@ namespace Microsoft.NET.ToolPack.Tests
                 targetFramework: targetFramework);
 
             AssertValidShim(_testRoot, nugetPackage);
-        }
-
-        private static void It_packs_successfully(string nugetPackage)
-        {
-            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
-            {
-                nupkgReader
-                    .GetToolItems()
-                    .Should().NotBeEmpty();
-            }
-        }
-
-        private static void It_contains_dependencies_dll(PackageArchiveReader nupkgReader)
-        {
-            IEnumerable<NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
-            supportedFrameworks.Should().NotBeEmpty();
-
-            foreach (NuGetFramework framework in supportedFrameworks)
-            {
-                var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
-                allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/Newtonsoft.Json.dll");
-            }
-        }
-
-        private static void It_contains_shim(PackageArchiveReader nupkgReader)
-        {
-            IEnumerable<NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
-            supportedFrameworks.Should().NotBeEmpty();
-
-            foreach (NuGetFramework framework in supportedFrameworks)
-            {
-                var allItems = nupkgReader.GetToolItems().SelectMany(i => i.Items).ToList();
-                allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/win-x64/{_customToolCommandName}.exe",
-                    "Name should be the same as the command name even customized");
-                allItems.Should().Contain($"tools/{framework.GetShortFolderName()}/any/shims/osx.10.12-x64/{_customToolCommandName}",
-                    "RID should be the exact match of the RID in the property, even Apphost only has version of win, osx and linux");
-            }
         }
 
         private void AssertValidShim(string testRoot, string nugetPackage)
