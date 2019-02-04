@@ -18,8 +18,10 @@ namespace Microsoft.NET.Build.Tasks
     {
         private struct ClsidEntry
         {
-            public string type;
-            public string assembly;
+            [JsonProperty(PropertyName = "type")]
+            public string Type;
+            [JsonProperty(PropertyName = "assembly")]
+            public string Assembly;
         }
 
         public static void Create(MetadataReader metadataReader, string clsidMapPath)
@@ -40,14 +42,14 @@ namespace Microsoft.NET.Build.Tasks
 
                     if (clsidMap.ContainsKey(guid))
                     {
-                        throw new BuildErrorException(Strings.ClsidMapConflictingGuids, clsidMap[guid].type, GetTypeName(metadataReader, definition), guid);
+                        throw new BuildErrorException(Strings.ClsidMapConflictingGuids, clsidMap[guid].Type, GetTypeName(metadataReader, definition), guid);
                     }
 
                     clsidMap.Add(guid,
                         new ClsidEntry
                         {
-                            type = GetTypeName(metadataReader, definition),
-                            assembly = assemblyName
+                            Type = GetTypeName(metadataReader, definition),
+                            Assembly = assemblyName
                         });
                 }
             }
@@ -85,7 +87,17 @@ namespace Microsoft.NET.Build.Tasks
 
         private static bool ReferenceToCoreLibrary(MetadataReader reader, AssemblyReferenceHandle assembly)
         {
-            return s_CoreLibraryNames.Contains(reader.GetString(reader.GetAssemblyReference(assembly).Name));
+            StringHandle assemblyName = reader.GetAssemblyReference(assembly).Name;
+
+            foreach (string coreLibraryName in s_CoreLibraryNames)
+            {
+                if (reader.StringComparer.Equals(assemblyName, coreLibraryName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool TypeIsPublic(MetadataReader reader, TypeDefinition type)
@@ -113,11 +125,6 @@ namespace Microsoft.NET.Build.Tasks
         private static bool HasTypeName(MetadataReader metadataReader, TypeReference type, string ns, string name)
         {
             return metadataReader.StringComparer.Equals(type.Namespace, ns) && metadataReader.StringComparer.Equals(type.Name, name);
-        }
-
-        private static string GetTypeName(MetadataReader metadataReader, TypeReference type)
-        {
-            return $"{metadataReader.GetString(type.Namespace)}.{metadataReader.GetString(type.Name)}";
         }
 
         private static AssemblyName GetAssemblyName(MetadataReader metadataReader)
@@ -177,7 +184,7 @@ namespace Microsoft.NET.Build.Tasks
                 CustomAttribute attribute = reader.GetCustomAttribute(attr);
                 MemberReference attributeConstructor = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
                 TypeReference attributeType = reader.GetTypeReference((TypeReferenceHandle)attributeConstructor.Parent);
-                if (reader.GetString(attributeType.Namespace) == "System.Runtime.InteropServices" && reader.GetString(attributeType.Name) == "ComVisibleAttribute")
+                if (reader.StringComparer.Equals(attributeType.Namespace, "System.Runtime.InteropServices") && reader.StringComparer.Equals(attributeType.Name, "ComVisibleAttribute"))
                 {
                     return attr;
                 }
@@ -192,7 +199,7 @@ namespace Microsoft.NET.Build.Tasks
                 CustomAttribute attribute = reader.GetCustomAttribute(attr);
                 MemberReference attributeConstructor = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
                 TypeReference attributeType = reader.GetTypeReference((TypeReferenceHandle)attributeConstructor.Parent);
-                if (reader.GetString(attributeType.Namespace) == "System.Runtime.InteropServices" && reader.GetString(attributeType.Name) == "GuidAttribute")
+                if (reader.StringComparer.Equals(attributeType.Namespace, "System.Runtime.InteropServices") && reader.StringComparer.Equals(attributeType.Name, "GuidAttribute"))
                 {
                     CustomAttributeValue<KnownType> data = attribute.DecodeValue(new TypeResolver());
                     return (string)data.FixedArguments[0].Value;

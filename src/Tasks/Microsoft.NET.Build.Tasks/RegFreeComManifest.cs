@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Build.Tasks
@@ -25,8 +26,13 @@ namespace Microsoft.NET.Build.Tasks
 
             XElement fileElement = new XElement(ns + "file", new XAttribute("name", comHostName));
 
+            JObject clsidMap;
             string clsidMapText = File.ReadAllText(clsidMapPath);
-            JObject clsidMap = JObject.Parse(clsidMapText);
+            using (StreamReader clsidMapReader = File.OpenText(clsidMapPath))
+            using (JsonTextReader jsonReader = new JsonTextReader(clsidMapReader))
+            {
+                clsidMap = JObject.Load(jsonReader);
+            }
 
             foreach (JProperty property in clsidMap.Properties())
             {

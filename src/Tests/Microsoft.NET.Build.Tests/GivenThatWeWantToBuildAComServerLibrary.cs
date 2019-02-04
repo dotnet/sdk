@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact(Skip = "Waiting on comhost being merged into core-setup.")]
+        [WindowsOnlyFact]
         public void It_copies_the_comhost_to_the_output_directory()
         {
             var testAsset = _testAssetsManager
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [WindowsOnlyFact(Skip = "Waiting on comhost being merged into core-setup.")]
+        [WindowsOnlyFact]
         public void It_generates_a_regfree_com_manifest_when_requested()
         {
             var testAsset = _testAssetsManager
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory(Skip = "Waiting on comhost being merged into core-setup.")]
+        [WindowsOnlyTheory]
         [InlineData("win-x64")]
         [InlineData("win-x86")]
         public void It_embeds_the_clsidmap_in_the_comhost_when_rid_specified(string rid)
@@ -117,7 +117,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [PlatformSpecificFact(Platform.Linux, Platform.Darwin, Platform.FreeBSD, Skip = "Waiting on comhost being merged into core-setup.")]
+        [PlatformSpecificFact(Platform.Linux, Platform.Darwin, Platform.FreeBSD)]
         public void It_fails_to_find_comhost_for_platforms_without_comhost()
         {
             var testAsset = _testAssetsManager
@@ -139,7 +139,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1088: ");
         }
 
-        [PlatformSpecificTheory(Platform.Linux, Platform.Darwin, Platform.FreeBSD, Skip = "Waiting on comhost being merged into core-setup.")]
+        [PlatformSpecificTheory(Platform.Linux, Platform.Darwin, Platform.FreeBSD)]
         [InlineData("win-x64")]
         [InlineData("win-x86")]
         public void It_fails_to_embed_clsid_when_not_on_windows(string rid)
