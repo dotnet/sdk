@@ -1,6 +1,12 @@
 ﻿param($installPath, $toolsPath, $package, $project)
 
-$analyzersPaths = Join-Path (Join-Path (Split-Path -Path $toolsPath -Parent) "analyzers" ) * -Resolve
+$analyzersDir = Join-Path (Split-Path -Path $toolsPath -Parent) "analyzers"
+if (-Not (Test-Path $analyzersDir))
+{
+    return
+}
+
+$analyzersPaths = Join-Path ( $analyzersDir ) * -Resolve
 
 foreach($analyzersPath in $analyzersPaths)
 {
