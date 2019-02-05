@@ -66,8 +66,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 };
             }
 
-            vars[config.VariableName] = g.ToString("D");
-            setter(pd, g.ToString("D"));
+            vars[config.VariableName] = g.ToString(config.DefaultFormat);
+            setter(pd, g.ToString(config.DefaultFormat));
         }
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
@@ -82,7 +82,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             deferredConfig.Parameters.TryGetValue("format", out JToken formatToken);
             string format = formatToken?.ToString();
 
-            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, format);
+            deferredConfig.Parameters.TryGetValue("defaultFormat", out JToken defaultFormatToken);
+            string defaultFormat = defaultFormatToken?.ToString();
+
+            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, format, defaultFormat);
             return realConfig;
         }
     }
