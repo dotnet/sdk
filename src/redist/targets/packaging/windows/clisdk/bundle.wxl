@@ -61,7 +61,7 @@ This product collects usage data
 Resources
     • Core Documentation https://aka.ms/dotnet-docs
     • SDK Documentation https://aka.ms/dotnet-cli-docs
-    • Release Notes https://aka.ms/20-p2-rel-notes
+    • Release Notes https://aka.ms/netcore3releasenotes
     • Tutorials https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
   <String Id="WelcomeDescription">
