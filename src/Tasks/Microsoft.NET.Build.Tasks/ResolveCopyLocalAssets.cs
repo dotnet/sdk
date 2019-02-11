@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tasks
             projectContext.PackagesToBeFiltered = packagestoBeFiltered;
 
             var assetsFileResolver =
-                new AssetsFileResolver(NuGetPackageResolver.CreateResolver(lockFile, ProjectPath))
+                new AssetsFileResolver(NuGetPackageResolver.CreateResolver(lockFile))
                     .WithExcludedPackages(PackageReferenceConverter.GetPackageIds(ExcludedPackageReferences))
                     .WithPreserveStoreLayout(PreserveStoreLayout);
 
