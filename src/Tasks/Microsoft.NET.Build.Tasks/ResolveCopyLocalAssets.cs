@@ -18,9 +18,6 @@ namespace Microsoft.NET.Build.Tasks
     {
         private readonly List<ITaskItem> _resolvedAssets = new List<ITaskItem>();
 
-        [Required]
-        public string ProjectPath { get; set; }
-
         public string AssetsFilePath { get; set; }
 
         [Required]

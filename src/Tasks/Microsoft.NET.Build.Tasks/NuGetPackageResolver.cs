@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tasks
         
         public string GetPackageDirectory(string packageId, NuGetVersion version, out string packageRoot)
         {
-            var packageInfo = _packagePathResolver?.GetPackageInfo(packageId,version);
+            var packageInfo = _packagePathResolver?.GetPackageInfo(packageId, version);
             if (packageInfo == null)
             {
                 packageRoot = null;
