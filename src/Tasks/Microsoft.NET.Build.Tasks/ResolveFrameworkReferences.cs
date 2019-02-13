@@ -27,6 +27,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool SelfContained { get; set; }
 
+        public bool ReadyToRunEnabled { get; set; }
+
         public string RuntimeIdentifier { get; set; }
 
         public string[] RuntimeIdentifiers { get; set; }
@@ -52,6 +54,9 @@ namespace Microsoft.NET.Build.Tasks
 
         [Output]
         public ITaskItem[] RuntimePacks { get; set; }
+
+        [Output]
+        public ITaskItem[] RuntimePackIdentifiers { get; set; }
 
         //  Runtime packs which aren't available for the specified RuntimeIdentifier
         [Output]
@@ -80,6 +85,7 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> targetingPacks = new List<ITaskItem>();
             List<ITaskItem> runtimePacks = new List<ITaskItem>();
             List<ITaskItem> unavailableRuntimePacks = new List<ITaskItem>();
+            List<ITaskItem> runtimePackIdentifiers = new List<ITaskItem>();
 
             HashSet<string> unrecognizedRuntimeIdentifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -134,12 +140,12 @@ namespace Microsoft.NET.Build.Tasks
 
                 bool processedPrimaryRuntimeIdentifier = false;
 
-                if (SelfContained &&
+                if ((SelfContained || ReadyToRunEnabled) &&
                     !string.IsNullOrEmpty(RuntimeIdentifier) &&
                     !string.IsNullOrEmpty(knownFrameworkReference.RuntimePackNamePatterns))
                 {
                     ProcessRuntimeIdentifier(RuntimeIdentifier, knownFrameworkReference, runtimeFrameworkVersion,
-                        unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks, packagesToDownload);
+                        unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks, packagesToDownload, runtimePackIdentifiers);
 
                     processedPrimaryRuntimeIdentifier = true;
                 }
@@ -157,7 +163,7 @@ namespace Microsoft.NET.Build.Tasks
                         //  Pass in null for the runtimePacks list, as for these runtime identifiers we only want to
                         //  download the runtime packs, but not use the assets from them
                         ProcessRuntimeIdentifier(runtimeIdentifier, knownFrameworkReference, runtimeFrameworkVersion,
-                            unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks: null, packagesToDownload);
+                            unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks: null, packagesToDownload, runtimePackIdentifiers);
                     }
                 }
 
@@ -196,11 +202,16 @@ namespace Microsoft.NET.Build.Tasks
             {
                 UnavailableRuntimePacks = unavailableRuntimePacks.ToArray();
             }
+
+            if (runtimePackIdentifiers.Any())
+            {
+                RuntimePackIdentifiers = runtimePackIdentifiers.ToArray();
+            }
         }
 
         private void ProcessRuntimeIdentifier(string runtimeIdentifier, KnownFrameworkReference knownFrameworkReference,
             string runtimeFrameworkVersion, HashSet<string> unrecognizedRuntimeIdentifiers,
-            List<ITaskItem> unavailableRuntimePacks, List<ITaskItem> runtimePacks, List<ITaskItem> packagesToDownload)
+            List<ITaskItem> unavailableRuntimePacks, List<ITaskItem> runtimePacks, List<ITaskItem> packagesToDownload, List<ITaskItem> runtimePackIdentifiers)
         {
             var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
             var knownFrameworkReferenceRuntimePackRuntimeIdentifiers = knownFrameworkReference.RuntimePackRuntimeIdentifiers.Split(';');
@@ -253,6 +264,10 @@ namespace Microsoft.NET.Build.Tasks
 
                     packagesToDownload.Add(packageToDownload);
                 }
+
+                TaskItem runtimePackRuntimeIdentifierItem = new TaskItem(runtimeIdentifier);
+                runtimePackRuntimeIdentifierItem.SetMetadata(MetadataKeys.TargetFrameworkMoniker, runtimePackRuntimeIdentifier);
+                runtimePackIdentifiers.Add(runtimePackRuntimeIdentifierItem);
             }
         }
 
