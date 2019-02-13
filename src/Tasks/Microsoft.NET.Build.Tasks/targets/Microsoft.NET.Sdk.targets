@@ -242,6 +242,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(TieredCompilation)' != ''"
                                     Value="$(TieredCompilation)" />
 
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation.DisableTier0Jit"
+                                    Condition="'$(DisableTier0Jit)' != ''"
+                                    Value="$(DisableTier0Jit)" />
+
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MinThreads"
                                     Condition="'$(ThreadPoolMinThreads)' != ''"
                                     Value="$(ThreadPoolMinThreads)" />
@@ -711,6 +715,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DisableStandardFrameworkResolution.targets" Condition="'$(DisableStandardFrameworkResolution)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DesignerSupport.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateAssemblyInfo.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateSupportedRuntime.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ComposeStore.targets" />
