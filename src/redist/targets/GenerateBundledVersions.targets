@@ -235,6 +235,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.AspNetCore.App"
                               RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
                               />
+                              
+     <KnownFrameworkReference Include="NETStandard.Library"
+                              TargetFramework="netstandard2.1"
+                              TargetingPackName="NETStandard.Library"
+                              TargetingPackVersion="$(NETStandardLibraryPackageVersion)"
+                              TargetingPackFormat="NETStandardLegacy"
+                              />
+
   </ItemGroup>
 </Project>
 ]]>
