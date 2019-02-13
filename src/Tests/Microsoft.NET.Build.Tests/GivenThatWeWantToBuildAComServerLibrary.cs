@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1088: ");
+                .HaveStdOutContaining("NETSDK1089: ");
         }
     }
 }
