@@ -1,5 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Restore">
-
+<Project  DefaultTargets="Restore">
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -10,4 +10,8 @@
     <PackageReference Include="$(PackageToRestore)" Version="$(PackageVersionToRestore)" />
   </ItemGroup>
   
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <!-- Workaround newer sdk preventing us from downloading Microsoft.AspNetCore.App via PackageReference above. -->
+  <Target Name="UpdateAspNetToFrameworkReference" />
 </Project>

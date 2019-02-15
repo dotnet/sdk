@@ -6,7 +6,7 @@
 
   <Target Name="GenerateVersionBadge"
           DependsOnTargets="SetBadgeProps"
-          AfterTargets="Build">
+          BeforeTargets="AfterBuild">
     <Message Text="$(VersionBadge)"  />
 
     <ReplaceFileContents

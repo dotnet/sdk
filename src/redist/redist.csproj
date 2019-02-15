@@ -11,6 +11,8 @@
          of the version from the stage 0 SDK. -->
     <PackageReference Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)"
                       PrivateAssets="All" Publish="true"/>
+
+    <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
