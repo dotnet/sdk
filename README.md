@@ -1,5 +1,12 @@
-﻿dotnet-format
+﻿## dotnet-format
+
 =============
+
+|Branch| Windows (Debug)| Windows (Release)| Linux (Debug) | Linux (Release)
+|---|:--:|:--:|:--:|:--:|
+[master](https://github.com/dotnet/format/tree/master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)
+
+
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used.
 
 ### How To Install
@@ -60,15 +67,12 @@ dotnet tool uninstall -g dotnet-format
 You can build and package the tool using the following commands. The instructions assume that you are in the root of the repository.
 
 ```console
-cd src
-cd Tools
-cd dotnet-format
-dotnet pack -c release -o nupkg /p:SemanticVersioningV1=false
+build -pack
 # The final line from the build will read something like
-# Successfully created package '..\roslyn\src\Tools\dotnet-code-format\nupkg\dotnet-format.3.0.0-dev.nupkg'.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.3.0.0-dev.nupkg'.
 # Use the value that is in the form `3.0.0-dev` as the version in the next command.
-dotnet tool install --add-source .\nupkg -g dotnet-format --version <version>
+dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```
 
-> Note: On macOS and Linux, `.\nupkg` will need be switched to `./nupkg` to accomodate for the different slash directions.
+> Note: On macOS and Linux, `.\artifacts` will need be switched to `./artifacts` to accommodate for the different slash directions.
