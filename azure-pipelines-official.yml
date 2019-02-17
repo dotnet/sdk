@@ -1,0 +1,71 @@
+resources:
+- repo: self
+  clean: true
+
+queue:
+  name: VSEng-MicroBuildVS2017
+  demands: Cmd
+ 
+variables:
+  BuildConfiguration: Release
+  SignType: real
+  TeamName: Roslyn
+  VisualStudioDropName: Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)
+
+# Branches that trigger a build on commit
+trigger:
+- master
+
+steps:
+- task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+  displayName: Install Signing Plugin
+  inputs:
+    signType: $(SignType)
+    esrpSigning: true
+  condition: and(succeeded(), ne(variables['SignType'], ''))
+
+- script: eng\common\CIBuild.cmd 
+            -configuration $(BuildConfiguration)
+            /p:OfficialBuildId=$(Build.BuildNumber)
+            /p:VisualStudioDropName=$(VisualStudioDropName)
+            /p:DotNetSignType=$(SignType)
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+  displayName: Build
+
+- task: NuGetPublisher@0
+  displayName: Publish NuGet Packages to MyGet
+  inputs:
+    searchPattern: 'artifacts\packages\$(BuildConfiguration)\Shipping\*.nupkg'
+    connectedServiceName: 'RoslynSdk - NuGet feed'
+    nuGetVersion: 4.0.0.2283
+  condition: succeeded()
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Logs
+  inputs:
+    PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
+    ArtifactName: 'Logs'
+  continueOnError: true
+  condition: not(succeeded())
+
+- task: PublishTestResults@1
+  displayName: Publish Test Results
+  inputs:
+    testRunner: XUnit
+    testResultsFiles: 'artifacts/TestResults/$(BuildConfiguration)/*.xml'
+    mergeTestResults: true
+    testRunTitle: 'Unit Tests'
+  condition: always()
+
+# Archive NuGet packages to DevOps.
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifact Packages
+  inputs:
+    PathtoPublish: 'artifacts\packages\$(BuildConfiguration)'
+    ArtifactName: 'Packages'
+  condition: succeeded()
+
+- task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
+  displayName: Cleanup
+  condition: always()
