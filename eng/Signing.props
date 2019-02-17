@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <!--
+    Non-default certificates.
+  -->
+  <ItemGroup>
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+  </ItemGroup>
+</Project>
