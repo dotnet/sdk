@@ -4,7 +4,6 @@
     <VersionPrefix>3.0.0</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
   </PropertyGroup>
-  
   <!-- 
     Dependency versions
   -->
@@ -17,7 +16,6 @@
     <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
     <MicrosoftCodeAnalysisVersion>3.0.0-beta3-final</MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
-
   <PropertyGroup>
     <RestoreSources>
       $(RestoreSources);
@@ -31,5 +29,4 @@
       https://vside.myget.org/F/vs-impl/api/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
-
 </Project>
