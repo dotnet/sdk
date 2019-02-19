@@ -18,7 +18,8 @@ param(
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
     [Parameter(Mandatory=$true)][string]$Architecture,
     [Parameter(Mandatory=$true)][string]$DotNetRuntimeVersion,
-    [Parameter(Mandatory=$true)][string]$AspNetCoreVersion
+    [Parameter(Mandatory=$true)][string]$AspNetCoreVersion,
+    [Parameter(Mandatory=$true)][string]$SDKProductBandVersion
 )
 
 function RunCandleForBundle
@@ -35,6 +36,7 @@ function RunCandleForBundle
         -dProductMoniker="$ProductMoniker" `
         -dBuildVersion="$DotnetMSIVersion" `
         -dDisplayVersion="$DotnetCLIDisplayVersion" `
+        -dSDKProductBandVersion="$SDKProductBandVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
         -dCLISDKMsiSourcePath="$CLISDKMSIFile" `
         -dUpgradeCode="$UpgradeCode" `

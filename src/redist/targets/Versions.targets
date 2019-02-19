@@ -2,7 +2,8 @@
   <PropertyGroup>
     <VersionMajor>3</VersionMajor>
     <VersionMinor>0</VersionMinor>
-    <VersionPatch>100</VersionPatch>
+    <VersionSDKMinor>1</VersionSDKMinor>
+    <VersionPatch>00</VersionPatch>
     <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview3</ReleaseSuffix>
   </PropertyGroup>
   
@@ -27,7 +28,8 @@
   <Target Name="SetSdkVersionInfo" DependsOnTargets="GetCoreSdkGitCommitInfo">
     <PropertyGroup>
       <MajorMinorVersion>$(VersionMajor).$(VersionMinor)</MajorMinorVersion>
-      <CliVersionNoSuffix>$(VersionMajor).$(VersionMinor).$(VersionPatch)</CliVersionNoSuffix>
+      <CliProductBandVersion>$(MajorMinorVersion).$(VersionSDKMinor)</CliProductBandVersion>
+      <CliVersionNoSuffix>$(CliProductBandVersion)$(VersionPatch)</CliVersionNoSuffix>
       <CliVersionPrefix>$(CliVersionNoSuffix)-$(ReleaseSuffix)</CliVersionPrefix>
       <CliBrandingVersion Condition=" '$(DropSuffix)' != 'true' ">$(CliVersionNoSuffix) - $(ReleaseSuffix)</CliBrandingVersion>
       <CliBrandingVersion Condition=" '$(DropSuffix)' == 'true' ">$(CliVersionNoSuffix)</CliBrandingVersion>

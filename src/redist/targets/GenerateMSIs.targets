@@ -32,6 +32,7 @@
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
       <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
+      <SdkBundleInstallerOutputGuidString>$(ProductBandCombinedHostHostFxrFrameworkSdkName)</SdkBundleInstallerOutputGuidString>
 
       <!--<SdkDebianIntermediateDirectory>$(IntermediateOutputPath)debian/sdk/</SdkDebianIntermediateDirectory>
       <LayoutDirectory Condition=" '$(OSName)' == 'ubuntu' OR '$(OSName)' == 'debian' ">$(SdkDebianIntermediateDirectory)debianLayoutDirectory</LayoutDirectory>
@@ -66,7 +67,7 @@
           PropertyName="SdkInstallerUpgradeCode" />
     </GenerateGuidFromName>
 
-    <GenerateGuidFromName Name="$(CombinedFrameworkSdkHostMSIInstallerFile)">
+    <GenerateGuidFromName Name="$(SdkBundleInstallerOutputGuidString)">
       <Output TaskParameter="OutputGuid"
           PropertyName="CombinedFrameworkSDKHostInstallerUpgradeCode" />
     </GenerateGuidFromName>
@@ -144,6 +145,7 @@
                       '$(Architecture)' ^
                       '$(MicrosoftNETCoreAppPackageVersion)' ^
                       '$(AspNetCoreVersion)' ^
+                      '$(CliProductBandVersion)' ^
                       -InformationAction Continue " />
   </Target>
 
