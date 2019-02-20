@@ -19,12 +19,12 @@ dotnet tool install -g dotnet-format --version 3.0.0-beta4-19105-10
 
 #### Installing Development Builds
 
-Development builds of `dotnet-format` are being hosted on myget. You can visit the [dotnet-format myget page](https://dotnet.myget.org/feed/roslyn/package/nuget/dotnet-format) to get the latest version number.
+Development builds of `dotnet-format` are being hosted on myget. You can visit the [dotnet-format myget page](https://dotnet.myget.org/feed/format/package/nuget/dotnet-format) to get the latest version number.
 
 You can install the tool using the following command.
 
 ```console
-dotnet tool install -g dotnet-format --version <version> --add-source https://dotnet.myget.org/F/roslyn/api/v3/index.json
+dotnet tool install -g dotnet-format --version 3.0.0-prerelease.19119.4 --add-source https://dotnet.myget.org/F/format/api/v3/index.json
 ```
 
 ### How To Use
