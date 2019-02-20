@@ -2,6 +2,7 @@
 <Project>
   <PropertyGroup>
     <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
+    <NoWarn>$(NoWarn);NU5125</NoWarn>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
