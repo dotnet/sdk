@@ -239,7 +239,7 @@ Copyright (c) .NET Foundation. All rights reserved.
      <KnownFrameworkReference Include="NETStandard.Library"
                               TargetFramework="netstandard2.1"
                               TargetingPackName="NETStandard.Library"
-                              TargetingPackVersion="$(NETStandardLibraryPackageVersion)"
+                              TargetingPackVersion="$(NETSTandardTargetingPackVersion)"
                               TargetingPackFormat="NETStandardLegacy"
                               />
 
