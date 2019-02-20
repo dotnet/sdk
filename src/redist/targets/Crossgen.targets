@@ -60,6 +60,9 @@
       <FSharpFiles Remove="$(SdkOutputDirectory)FSharp\**\*.resources.dll" />
       <RemainingFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
 
+      <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
+      <RemainingFiles Remove="$(SdkOutputDirectory)ref\*.dll" />
+
       <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.$(DIASymReaderCrossgenFilter).dll" />
     </ItemGroup>
 
@@ -146,6 +149,5 @@
 
     <Exec Command="find $(SdkOutputDirectory) -type d -exec chmod 755 {} \;" />
     <Exec Command="find $(SdkOutputDirectory) -type f -exec chmod 644 {} \;" />
-    <Chmod Mode="755" Glob="$(SdkOutputDirectory)/FSharp/RunFsc.sh" />
   </Target>
 </Project>
