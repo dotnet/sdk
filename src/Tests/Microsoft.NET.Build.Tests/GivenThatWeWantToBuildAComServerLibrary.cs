@@ -136,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1088: ");
+                .HaveStdOutContaining("NETSDK1091: ");
         }
 
         [PlatformSpecificTheory(Platform.Linux, Platform.Darwin, Platform.FreeBSD)]
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("NETSDK1089: ");
+                .HaveStdOutContaining("NETSDK1092: ");
         }
     }
 }

@@ -78,9 +78,9 @@
         <note>{StrBegin="NETSDK1001: "}</note>
       </trans-unit>
       <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1089: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="new">NETSDK1089: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</target>
-        <note>{StrBegin="NETSDK1089: "}</note>
+        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
+        <target state="new">NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</target>
+        <note>{StrBegin="NETSDK1092: "}</note>
       </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
@@ -88,9 +88,9 @@
         <note>{StrBegin="NETSDK1065: "}</note>
       </trans-unit>
       <trans-unit id="CannotFindComhost">
-        <source>NETSDK1088: Unable to find a .NET Core COM host. The .NET Core COM host is only available on .NET Core 3.0 or higher when targeting Windows.</source>
-        <target state="new">NETSDK1088: Unable to find a .NET Core COM host. The .NET Core COM host is only available on .NET Core 3.0 or higher when targeting Windows.</target>
-        <note>{StrBegin="NETSDK1088: "}</note>
+        <source>NETSDK1091: Unable to find a .NET Core COM host. The .NET Core COM host is only available on .NET Core 3.0 or higher when targeting Windows.</source>
+        <target state="new">NETSDK1091: Unable to find a .NET Core COM host. The .NET Core COM host is only available on .NET Core 3.0 or higher when targeting Windows.</target>
+        <note>{StrBegin="NETSDK1091: "}</note>
       </trans-unit>
       <trans-unit id="CannotFindProjectInfo">
         <source>NETSDK1007: Cannot find project info for '{0}'. This can indicate a missing project reference.</source>
@@ -138,23 +138,23 @@
         <note>{StrBegin="NETSDK1036: "}</note>
       </trans-unit>
       <trans-unit id="ClsidMapConflictingGuids">
-        <source>NETSDK1086: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</source>
-        <target state="new">NETSDK1086: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</target>
-        <note>{StrBegin="NETSDK1086: "}
+        <source>NETSDK1089: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</source>
+        <target state="new">NETSDK1089: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</target>
+        <note>{StrBegin="NETSDK1089: "}
 {0} - The first type with the conflicting guid.
 {1} - The second type with the conflicting guid.
 {2} - The guid the two types have.</note>
       </trans-unit>
       <trans-unit id="ClsidMapExportedTypesRequireExplicitGuid">
-        <source>NETSDK1085: The COMVisible class '{0}' must have a GuidAttribute with the CLSID of the class to be made visible to COM in .NET Core.</source>
-        <target state="new">NETSDK1085: The COMVisible class '{0}' must have a GuidAttribute with the CLSID of the class to be made visible to COM in .NET Core.</target>
-        <note>{StrBegin="NETSDK1085: "}
+        <source>NETSDK1088: The COMVisible class '{0}' must have a GuidAttribute with the CLSID of the class to be made visible to COM in .NET Core.</source>
+        <target state="new">NETSDK1088: The COMVisible class '{0}' must have a GuidAttribute with the CLSID of the class to be made visible to COM in .NET Core.</target>
+        <note>{StrBegin="NETSDK1088: "}
 {0} - The ComVisible class that doesn't have a GuidAttribute on it.</note>
       </trans-unit>
       <trans-unit id="ClsidMapInvalidAssembly">
-        <source>NETSDK1087: The supplied assembly '{0}' is not valid. Cannot generate a CLSIDMap from it.</source>
-        <target state="new">NETSDK1087: The supplied assembly '{0}' is not valid. Cannot generate a CLSIDMap from it.</target>
-        <note>{StrBegin="NETSDK1087: "}
+        <source>NETSDK1090: The supplied assembly '{0}' is not valid. Cannot generate a CLSIDMap from it.</source>
+        <target state="new">NETSDK1090: The supplied assembly '{0}' is not valid. Cannot generate a CLSIDMap from it.</target>
+        <note>{StrBegin="NETSDK1090: "}
 {0} - The path to the invalid assembly.</note>
       </trans-unit>
       <trans-unit id="ConflictCouldNotDetermineWinner">
@@ -262,6 +262,16 @@
         <target state="translated">NETSDK1052: Der FrameworkList-Dateipfad "{0}" enthält keinen Stamm. Nur vollständige Pfade werden unterstützt.</target>
         <note>{StrBegin="NETSDK1052: "}</note>
       </trans-unit>
+      <trans-unit id="FrameworkReferenceDuplicateError">
+        <source>NETSDK1087: Multiple FrameworkReference items for '{0}' were included in the project.</source>
+        <target state="new">NETSDK1087: Multiple FrameworkReference items for '{0}' were included in the project.</target>
+        <note>{StrBegin="NETSDK1087: "}</note>
+      </trans-unit>
+      <trans-unit id="FrameworkReferenceOverrideWarning">
+        <source>NETSDK1086: A FrameworkReference for '{0}' was included in the project. This is implicitly referenced by the .NET SDK and you do not typically need to reference it from your project. For more information, see {1}</source>
+        <target state="new">NETSDK1086: A FrameworkReference for '{0}' was included in the project. This is implicitly referenced by the .NET SDK and you do not typically need to reference it from your project. For more information, see {1}</target>
+        <note>{StrBegin="NETSDK1086: "}</note>
+      </trans-unit>
       <trans-unit id="GetDependsOnNETStandardFailedWithException">
         <source>NETSDK1049: Resolved file has a bad image, no metadata, or is otherwise inaccessible. {0} {1}</source>
         <target state="translated">NETSDK1049: Die aufgelöste Datei enthält ein fehlerhaftes Image oder keine Metadaten, oder der Zugriff ist aus anderen Gründen nicht möglich. {0} {1}</target>
@@ -325,6 +335,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
         <target state="translated">NETSDK1084: Für den angegebenen RuntimeIdentifier "{0}" ist kein Anwendungshost verfügbar.</target>
         <note>{StrBegin="NETSDK1084: "}</note>
+      </trans-unit>
+      <trans-unit id="NoBuildRequested">
+        <source>NETSDK1085: The 'NoBuild' property was set to true but the 'Build' target was invoked.</source>
+        <target state="new">NETSDK1085: The 'NoBuild' property was set to true but the 'Build' target was invoked.</target>
+        <note>{StrBegin="NETSDK1085: "}</note>
       </trans-unit>
       <trans-unit id="NoCompatibleTargetFramework">
         <source>NETSDK1002: Project '{0}' targets '{2}'. It cannot be referenced by a project that targets '{1}'.</source>
