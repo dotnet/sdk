@@ -217,8 +217,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <ItemGroup>
-      <ResolvedComHostPack Condition="'%(ResolvedAppHostPack.Path)' == '' and '%(ResolvedAppHostPack.PackageDirectory)' != ''">
-        <Path>%(ResolvedAppHostPack.PackageDirectory)\%(ResolvedAppHostPack.RelativePath)</Path>
+      <ResolvedComHostPack Condition="'%(ResolvedComHostPack.Path)' == '' and '%(ResolvedComHostPack.PackageDirectory)' != ''">
+        <Path>%(ResolvedComHostPack.PackageDirectory)\%(ResolvedComHostPack.RelativePath)</Path>
       </ResolvedComHostPack>
     </ItemGroup>
 

@@ -90,6 +90,11 @@ namespace Microsoft.NET.Build.Tasks
                     "AppHost",
                     isExecutable: true);
 
+                if (appHostItem != null)
+                {
+                    AppHost = new ITaskItem[] { appHostItem };
+                }
+
                 var comHostItem = GetHostItem(
                     AppHostRuntimeIdentifier,
                     knownAppHostPacksForTargetFramework,
@@ -98,9 +103,9 @@ namespace Microsoft.NET.Build.Tasks
                     "ComHost",
                     isExecutable: false);
 
-                if (appHostItem != null)
+                if (comHostItem != null)
                 {
-                    AppHost = new ITaskItem[] { appHostItem };
+                    ComHost = new ITaskItem[] { comHostItem };
                 }
             }
 

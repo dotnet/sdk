@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
             buildCommand
-                .Execute()
+                .Execute("/bl")
                 .Should()
                 .Pass();
 
