@@ -134,6 +134,8 @@
                       '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
