@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.Build
             return true;
         }
 
+        // Generate a Version 5 (SHA1 Name Based) Guid from a name.
         public static Guid GenerateGuid(string name)
         {
             // Any fixed GUID will do for a namespace.

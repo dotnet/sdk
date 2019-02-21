@@ -161,6 +161,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
   <PropertyGroup>
+    <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\packs'))</NetCoreTargetingPackRoot>
+  
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
@@ -199,8 +201,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimeFrameworkName="Microsoft.NETCore.App"
                               DefaultRuntimeFrameworkVersion="$(_NETCoreAppPackageVersion)"
                               LatestRuntimeFrameworkVersion="$(_NETCoreAppPackageVersion)"
-                              TargetingPackName="Microsoft.NETCore.App"
-                              TargetingPackVersion="$(_NETCoreAppPackageVersion)"
+                              TargetingPackName="Microsoft.NETCore.App.Ref"
+                              TargetingPackVersion="$(NetCoreAppTargetingPackVersion)"
                               AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
                               AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
@@ -230,8 +232,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-                              TargetingPackName="Microsoft.AspNetCore.App"
-                              TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+                              TargetingPackName="Microsoft.AspNetCore.App.Ref"
+                              TargetingPackVersion="$(AspNetTargetingPackVersion)"
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.AspNetCore.App"
                               RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
                               />
@@ -239,7 +241,7 @@ Copyright (c) .NET Foundation. All rights reserved.
      <KnownFrameworkReference Include="NETStandard.Library"
                               TargetFramework="netstandard2.1"
                               TargetingPackName="NETStandard.Library"
-                              TargetingPackVersion="$(NETStandardLibraryPackageVersion)"
+                              TargetingPackVersion="$(NETSTandardTargetingPackVersion)"
                               TargetingPackFormat="NETStandardLegacy"
                               />
 

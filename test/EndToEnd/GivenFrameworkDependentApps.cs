@@ -19,6 +19,11 @@ namespace EndToEnd
         [ClassData(typeof(SupportedNetCoreAppVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfNetCore(string minorVersion)
         {
+            if (minorVersion == "3.0")
+            {
+                //  https://github.com/dotnet/core-sdk/issues/621
+                return;
+            }
             ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.NETCorePackageName, minorVersion);
         }
 
@@ -26,6 +31,11 @@ namespace EndToEnd
         [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreApp(string minorVersion)
         {
+            if (minorVersion == "3.0")
+            {
+                //  https://github.com/dotnet/core-sdk/issues/621
+                return;
+            }
             ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAppPackageName, minorVersion);
         }
 

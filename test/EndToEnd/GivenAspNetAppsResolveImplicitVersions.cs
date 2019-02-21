@@ -106,6 +106,12 @@ namespace EndToEnd
         [MemberData(nameof(SupportedAspNetCoreAppVersions))]
         public void ItRollsForwardToTheLatestVersion(string minorVersion)
         {
+            if (minorVersion == "3.0")
+            {
+                //  https://github.com/dotnet/core-sdk/issues/621
+                return;
+            }
+
             var testProjectCreator = new TestProjectCreator(identifier: minorVersion)
             {
                 PackageName = TestProjectCreator.AspNetCoreAppPackageName,
