@@ -14,5 +14,6 @@
     </metadata>
     <files>
         <file src="$DOTNET_BUNDLE$\**\*" target="v15.0\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver" />
+        <file src="VS.Tools.Net.Core.SDK.Resolver.cxspec" />
     </files>
 </package>
