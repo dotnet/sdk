@@ -10,10 +10,27 @@
           AboutUrl="https://dotnet.github.io/"
           Compressed="yes">
 
-    <bal:Condition Message="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X64]&quot;">
+    <bal:Condition Message="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;">
         WixBundleInstalled OR ((NOT (DOTNETHOME_X64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
     </bal:Condition>
-      
+
+    <!-- ***** When the product-band version: "3.0.1xx" advances, remove this section ***** -->
+    <?if $(var.SDKProductBandVersion)=3.0.1?>
+      <?if $(var.Platform)~=x86?>
+        <!-- "Preview 1" 3.0.100-preview-009812-win-x86 upgrade-code -->
+        <RelatedBundle Action="Upgrade" Id="{489A47A1-5D69-51F1-3D54-3F8FE92E0963}"/>
+        <!-- "Preview 2" 3.0.100-preview-010184-win-x86 upgrade-code -->
+        <RelatedBundle Action="Upgrade" Id="{C1DD86C1-5FE4-573E-63FF-6BD0F23EBE69}"/>
+      <?endif?>
+      <?if $(var.Platform)~=x64?>
+        <!-- "Preview 1" 3.0.100-preview-009812-win-x64 upgrade-code -->
+        <RelatedBundle Action="Upgrade" Id="{18D28236-562F-73EB-340C-2B4B3A5347BB}"/>
+        <!-- "Preview 2" 3.0.100-preview-010184-win-x64 upgrade-code -->
+        <RelatedBundle Action="Upgrade" Id="{B47FC45A-5547-64E8-CFD1-B4C5CA275757}"/>
+      <?endif?>
+    <?endif?>
+    <!-- ********************************************************************************** -->
+
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.Foundation">
       <bal:WixStandardBootstrapperApplication
         LicenseFile="dummyeula.rtf"
@@ -80,7 +97,7 @@
               Path="[ProgramFiles64Folder]dotnet"/>
 
     <!-- 
-        When installing the SDK bundle to a custom location using the commandline parameters, it is intended that 
+        When installing the SDK bundle to a custom location using the commandline parameters, it is intended, not mandatory, that 
         both "DOTNETHOME_X86" and "DOTNETHOME_X64" should be used on the commandline and should take this convention:
             DOTNETHOME_X86=<InstallFolder>\x86
             DOTNETHOME_X64=<InstallFolder>\x64
@@ -91,7 +108,7 @@
     <Variable Name="DOTNETHOME_X64" Type="string" Value="[ProgramFiles64Folder]dotnet" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME" Type="string" Value="[DOTNETHOME_$(var.PlatformToken)]" bal:Overridable="no" />
     <Variable Name="BUNDLEMONIKER" Type="string" Value="$(var.ProductMoniker)" bal:Overridable="no" />
-    <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(var.DisplayVersion)" bal:Overridable="no" />
+    <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(var.NugetVersion)" bal:Overridable="no" />
     <Variable Name="DOTNETRUNTIMEVERSION" Type="string" Value="$(var.DotNetRuntimeVersion)" bal:Overridable="no" />
     <Variable Name="ASPNETCOREVERSION" Type="string" Value="$(var.AspNetCoreVersion)" bal:Overridable="no" />
     <Variable Name="WINFORMSANDWPFVERSION" Type="string" Value="$(var.WinFormsAndWpfVersion)" bal:Overridable="no" />
@@ -108,6 +125,12 @@
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
       <MsiPackage SourceFile="$(var.WinFormsAndWpfMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
+      <MsiPackage SourceFile="$(var.NetCoreAppTargetingPackMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
+      <MsiPackage SourceFile="$(var.AspNetTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
       <MsiPackage SourceFile="$(var.CLISDKMsiSourcePath)">

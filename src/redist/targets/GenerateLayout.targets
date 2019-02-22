@@ -19,23 +19,16 @@
 
       <!-- Downloaded Installers + Archives -->
       <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(CoreSetupRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
-      <!--<DownloadedRuntimeDepsInstallerFile Condition=" '$(InstallerExtension)' != '' ">$(PackagesDirectory)/$(DownloadedRuntimeDepsInstallerFileName)</DownloadedRuntimeDepsInstallerFile>-->
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
       <SharedFrameworkInstallerFileRid>$(CoreSetupRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">x64</SharedFrameworkInstallerFileRid>
 
       <DownloadedSharedHostInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
-      <!--<DownloadedSharedHostInstallerFile Condition=" '$(InstallerExtension)' != '' ">$(PackagesDirectory)/$(DownloadedSharedHostInstallerFileName)</DownloadedSharedHostInstallerFile>-->
-
       <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
-      <!--<DownloadedHostFxrInstallerFile Condition=" '$(InstallerExtension)' != '' ">$(PackagesDirectory)/$(DownloadedHostFxrInstallerFileName)</DownloadedHostFxrInstallerFile>-->
-
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
-      <!--<DownloadedSharedFrameworkInstallerFile Condition=" '$(InstallerExtension)' != '' ">$(PackagesDirectory)/$(DownloadedSharedFrameworkInstallerFileName)</DownloadedSharedFrameworkInstallerFile>-->
-
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
-      <!--<DownloadedWinFormsAndWpfSharedFrameworkInstallerFile Condition=" '$(InstallerExtension)' != '' ">$(PackagesDirectory)/$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFile>-->
+      <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack$(InstallerStartSuffix)-$(NetCoreAppTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
 
       <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
       <SharedFrameworkRid>$(CoreSetupRid)</SharedFrameworkRid>
@@ -51,17 +44,12 @@
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND '$(HostOSName)' != 'osx' ">aspnetcore-runtime-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
       <!-- Note: we use the "-internal" archives and installers that contain only the aspnetcore shared framework, and shouldn't overlap with Microsoft.NETCore.App. -->
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxInstallerFileName>
-      <!--<DownloadedAspNetCoreSharedFxInstallerFile Condition=" '$(InstallerExtension)' != '' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' ">$(PackagesDirectory)/$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadedAspNetCoreSharedFxInstallerFile>-->
-
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack$(InstallerStartSuffix)-$(AspNetTargetingPackVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
       <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
-      <!--<AspNetCoreSharedFxArchiveFile>$(PackagesDirectory)/$(AspNetCoreSharedFxArchiveFileName)</AspNetCoreSharedFxArchiveFile>-->
-
       <WinFormsAndWpfSharedFxArchiveFileName>dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(Architecture)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
-      <!--<WinFormsAndWpfSharedFxArchiveFile>$(PackagesDirectory)/$(WinFormsAndWpfSharedFxArchiveFileName)</WinFormsAndWpfSharedFxArchiveFile>-->
 
       <!-- Used to detect if ASP.NET Core is built against the same version of Microsoft.NETCore.App. -->
       <AspNetCoreSharedFxBaseRuntimeVersionFileName>aspnetcore_base_runtime.version</AspNetCoreSharedFxBaseRuntimeVersionFileName>
-      <AspNetCoreSharedFxBaseRuntimeVersionFile Condition=" '$(AspNetCoreSharedFxBaseRuntimeVersionFileName)' != '' ">$(PackagesDirectory)/$(AspNetCoreSharedFxBaseRuntimeVersionFileName)</AspNetCoreSharedFxBaseRuntimeVersionFile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -82,6 +70,18 @@
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
 
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppTargetingPackNupkg">
+        <PackageName>Microsoft.NETCore.App.Ref</PackageName>
+        <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
+        <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
+        <PackageVersion>$(AspNetTargetingPackVersion)</PackageVersion>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
       <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
                                  Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
@@ -97,7 +97,7 @@
       </BundledInstallerComponent>
       
       <BundledInstallerComponent Include="DownloadedSharedHostInstallerFile"
-                               Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(CoreSetupRootUrl)$(SharedHostVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedSharedHostInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
@@ -109,7 +109,14 @@
         <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
-    
+      
+      <BundledInstallerComponent Include="DownloadedNetCoreAppTargetingPackInstallerFile"
+                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(NetCoreAppTargetingPackVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+      
       <BundledLayoutComponent Include="ToolsetArchive">
         <BaseUrl>$(CoreSetupBlobRootUrl)Toolset/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
         <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
@@ -126,7 +133,13 @@
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
 
-      <!-- Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))" -->
+      <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
+                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetTargetingPackVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+      
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
@@ -157,7 +170,7 @@
       </BundledLayoutComponent>
 
       <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
-                           Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftWindowsDesktopPackageVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
@@ -182,7 +195,52 @@
     <DownloadFile Condition=" '@(ComponentToDownload)' != '' And '%(ComponentToDownload.ShouldDownload)' == 'true'"
                   Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)"
                   DestinationPath="%(ComponentToDownload.DownloadDestination)" />
-    
+
+    <ItemGroup>
+      <BundledLayoutPackageDownloadProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=%(BundledLayoutPackage.PackageName);
+          PackageVersionToRestore=%(BundledLayoutPackage.PackageVersion);
+          TargetFramework=$(TargetFramework);
+          LayoutPackageDescription=%(BundledLayoutPackage.Identity)
+        </Properties>
+      </BundledLayoutPackageDownloadProject>
+    </ItemGroup>
+
+    <MSBuild
+      BuildInParallel="False"
+      Projects="@(BundledLayoutPackageDownloadProject)">
+    </MSBuild>
+
+    <ItemGroup>
+      <!-- Use lowercase package name in package path -->
+      <BundledLayoutPackage>
+        <LoweredPackageName>$([MSBuild]::ValueOrDefault('%(BundledLayoutPackage.PackageName)', '').ToLower())</LoweredPackageName>
+      </BundledLayoutPackage>
+      
+      <BundledLayoutPackageDownloadFiles Include="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\**\*.*">
+        <RelativeLayoutPath>%(BundledLayoutPackage.RelativeLayoutPath)</RelativeLayoutPath>
+        <LayoutPackageDescription>%(BundledLayoutPackage.Identity)</LayoutPackageDescription>
+      </BundledLayoutPackageDownloadFiles>
+
+      <!-- Remove files from the root of the package, as these are either files NuGet writes, or not necessary -->
+      <BundledLayoutPackageDownloadFiles Remove="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\*.*" />
+
+      <!-- Set destination path in layout -->
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>%(BundledLayoutPackageDownloadFiles.RecursiveDir)%(BundledLayoutPackageDownloadFiles.Filename)%(BundledLayoutPackageDownloadFiles.Extension)</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>$(RedistLayoutPath)/%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>$([MSBuild]::NormalizePath(%(BundledLayoutPackageDownloadFiles.DestinationPath)))</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+
+      <!-- Creating a new item here isn't strictly necessary, but makes it easier to see what's going on in the .binlog,
+           since the metadata updates don't show up there -->
+      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledLayoutPackageDownloadFiles)"/>
+    </ItemGroup>
   </Target>
 
   <Target Name="CleanLayoutPath">
@@ -191,9 +249,15 @@
     <MakeDir Directories="$(RedistLayoutPath)" />
   </Target>
 
-  <Target Name="ExtractBundledComponents">
+  <Target Name="LayoutBundledComponents">
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
-                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)" />    
+                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)" />
+
+    <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
+          DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
+          SkipUnchangedFiles="true"
+          />
+    
   </Target>
 
   <Target Name="RetargetTools">
@@ -284,7 +348,7 @@
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
-                            ExtractBundledComponents;
+                            LayoutBundledComponents;
                             GenerateVersionFile;
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;
