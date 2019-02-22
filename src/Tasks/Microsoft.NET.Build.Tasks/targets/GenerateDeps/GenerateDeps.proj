@@ -51,9 +51,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          matches the one that would be resolved based on the TargetFramework that was passed in. -->
     <VerifyMatchingImplicitPackageVersion>false</VerifyMatchingImplicitPackageVersion>
 
-    <!-- In 3.0 and above. To match the same behavior as above and allow deps.json include assets from package we need to
-         disable ImplicitFrameworkReferences. So assets from the packages will be in deps.json instead of being removed by
-         conflict resolution.-->
+    <!--In 3.0 and above, disable implicit framework references so we don't resolve targeting packs and conflict resolve 
+        dependencies which need to be written to the deps file. -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 

@@ -30,6 +30,8 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "netcoreapp1.0",
             };
 
+            // The following is needed since part of the graph of Microsoft.VisualStudio.Web.CodeGeneration.Tools
+            // it not on netcoreapp. This line is in aspnet 1.0 template as well.
             toolProject.AdditionalProperties.Add("PackageTargetFallback", "$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;");
             toolProject.AdditionalProperties.Add("RestorePackagesPath", "packages");
             toolProject.PackageReferences.Add(
