@@ -4,7 +4,7 @@
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
     <VersionPatch>00</VersionPatch>
-    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview3</ReleaseSuffix>
+    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview4</ReleaseSuffix>
   </PropertyGroup>
   
   <Target Name="GetCoreSdkGitCommitInfo">

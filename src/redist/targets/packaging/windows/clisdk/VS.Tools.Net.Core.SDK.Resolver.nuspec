@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>VS.Tools.Net.Core.SDK.Resolver</id>
+        <version>1.0.0</version>
+        <title>VS.Tools.Net.Core.SDK.Resolver</title>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>https://www.microsoft.com/net/dotnet_library_license.htm</licenseUrl>
+        <projectUrl>https://github.com/dotnet/cli</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>.Net Core SDK MSBuild resolver for internal VS build consumption</description>
+        <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    </metadata>
+    <files>
+        <file src="$DOTNET_BUNDLE$\**\*" target="v15.0\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver" />
+        <file src="VS.Tools.Net.Core.SDK.Resolver.cxspec" />
+    </files>
+</package>

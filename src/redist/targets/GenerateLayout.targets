@@ -358,13 +358,13 @@
                             CrossgenLayout;
                             LayoutAppHostTemplate;
                             SignLayout"
-          AfterTargets="Build">
+          BeforeTargets="AfterBuild">
   
   </Target>
   
   <Target Name="GenerateInternalLayout"
           DependsOnTargets="GenerateLayout"
-          AfterTargets="Build">
+          BeforeTargets="AfterBuild">
 
     <RemoveDir Directories="$(SdkInternalLayoutPath)" />
     <MakeDir Directories="$(SdkInternalLayoutPath)" />
