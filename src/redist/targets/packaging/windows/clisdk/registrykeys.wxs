@@ -15,15 +15,15 @@
           <RegistryValue Action="write" Name="WpfWinformsTemplates" Type="integer" Value="1" KeyPath="yes"/>
         </RegistryKey>
       </Component>
-      <Component Id="SDKInstallLocation_x64" Directory="TARGETDIR" Win64="no">
+      <Component Id="DotnetInstallLocation_x64" Directory="TARGETDIR" Win64="no">
         <Condition>VersionNT64 AND DOTNETHOME_X64</Condition>
-        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sdk">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64">
           <RegistryValue Action="write" Name="InstallLocation" Type="string" Value="[DOTNETHOME_X64]" KeyPath="yes"/>
         </RegistryKey>
       </Component>
-      <Component Id="SDKInstallLocation_x86" Directory="TARGETDIR" Win64="no">
+      <Component Id="DotnetInstallLocation_x86" Directory="TARGETDIR" Win64="no">
         <Condition>DOTNETHOME_X86</Condition>
-        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86\sdk">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86">
           <RegistryValue Action="write" Name="InstallLocation" Type="string" Value="[DOTNETHOME_X86]" KeyPath="yes"/>
         </RegistryKey>
       </Component>
