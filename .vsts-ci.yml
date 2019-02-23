@@ -9,7 +9,7 @@ variables:
     PB_PublishBlobFeedUrl:
     _DotNetPublishToBlobFeed: false
   ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    PB_PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+    PB_PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-sdk/index.json
     _DotNetPublishToBlobFeed: true
 
 phases:
