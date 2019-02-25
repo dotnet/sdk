@@ -41,6 +41,16 @@ steps:
     nuGetVersion: 4.0.0.2283
   condition: succeeded()
 
+- script: eng\common\CIBuild.cmd 
+            -configuration $(BuildConfiguration)
+            /p:OfficialBuildId=$(Build.BuildNumber)
+            /p:VisualStudioDropName=$(VisualStudioDropName)
+            /p:DotNetSignType=$(SignType)
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+            /p:DotNetFinalVersionKind=release
+  displayName: Build
+
 - task: PublishBuildArtifacts@1
   displayName: Publish Logs
   inputs:
