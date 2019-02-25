@@ -29,6 +29,9 @@ steps:
             /p:OfficialBuildId=$(Build.BuildNumber)
             /p:VisualStudioDropName=$(VisualStudioDropName)
             /p:DotNetSignType=$(SignType)
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+            /p:DotNetFinalVersionKind=$(_additionalBuildArgs)
   displayName: Build
 
 - task: NuGetPublisher@0
@@ -38,14 +41,6 @@ steps:
     connectedServiceName: 'dotnet-format - NuGet feed'
     nuGetVersion: 4.0.0.2283
   condition: succeeded()
-
-- script: eng\common\CIBuild.cmd 
-            -configuration $(BuildConfiguration)
-            /p:OfficialBuildId=$(Build.BuildNumber)
-            /p:VisualStudioDropName=$(VisualStudioDropName)
-            /p:DotNetSignType=$(SignType)
-            /p:DotNetFinalVersionKind=release
-  displayName: Build
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Logs
