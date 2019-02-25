@@ -5,12 +5,6 @@
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
   </PropertyGroup>
   <!--
-    Aracde features
-  -->
-  <PropertyGroup>
-    <UsingToolNuGetRepack>true</UsingToolNuGetRepack>
-  </PropertyGroup>
-  <!--
     Dependency versions
   -->
   <PropertyGroup>
