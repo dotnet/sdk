@@ -4,7 +4,13 @@
     <VersionPrefix>3.0.1</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
   </PropertyGroup>
-  <!-- 
+  <!--
+    Aracde features
+  -->
+  <PropertyGroup>
+    <UsingToolNuGetRepack>true</UsingToolNuGetRepack>
+  </PropertyGroup>
+  <!--
     Dependency versions
   -->
   <PropertyGroup>
