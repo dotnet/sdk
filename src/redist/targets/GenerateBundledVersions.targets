@@ -224,8 +224,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
-                              TargetingPackName="Microsoft.WindowsDesktop.App"
-                              TargetingPackVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.WindowsDesktop.App"
                               RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
                               />
