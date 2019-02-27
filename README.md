@@ -2,7 +2,7 @@
 
 [![Nuget](https://img.shields.io/nuget/v/dotnet-format.svg)](https://www.nuget.org/packages/dotnet-format)
 
-[![MyGet](https://img.shields.io/dotnet.myget/format/v/dotnet-format.svg?label=myget)](https://dotnet.myget.org/feed/format/package/nuget/dotnet-format)
+[![MyGet](https://img.shields.io/dotnet.myget/format/vpre/dotnet-format.svg?label=myget)](https://dotnet.myget.org/feed/format/package/nuget/dotnet-format)
 
 |Branch| Windows (Debug)| Windows (Release)| Linux (Debug) | Linux (Release)
 |---|:--:|:--:|:--:|:--:|
