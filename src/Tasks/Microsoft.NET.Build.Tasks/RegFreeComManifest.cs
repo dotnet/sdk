@@ -14,6 +14,14 @@ namespace Microsoft.NET.Build.Tasks
 {
     internal static class RegFreeComManifest
     {
+        /// <summary>
+        /// Generates a side-by-side application manifest to enable reg-free COM.
+        /// </summary>
+        /// <param name="assemblyName">The name of the assembly.</param>
+        /// <param name="comHostName">The name of the comhost library.</param>
+        /// <param name="assemblyVersion">The version of the assembly.</param>
+        /// <param name="clsidMapPath">The path to the clasidmap file.</param>
+        /// <param name="comManifestPath">The path to which to write the manifest.</param>
         public static void CreateManifestFromClsidmap(string assemblyName, string comHostName, string assemblyVersion, string clsidMapPath, string comManifestPath)
         {
             XNamespace ns = "urn:shemas-microsoft-com:asm.v1";

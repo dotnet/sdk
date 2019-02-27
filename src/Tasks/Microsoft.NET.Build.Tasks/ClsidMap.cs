@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
             [JsonProperty(PropertyName = "assembly")]
             public string Assembly;
         }
-
+        
         public static void Create(MetadataReader metadataReader, string clsidMapPath)
         {
             Dictionary<string, ClsidEntry> clsidMap = new Dictionary<string, ClsidEntry>();
@@ -36,6 +36,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 TypeDefinition definition = metadataReader.GetTypeDefinition(type);
 
+                // Only public COM-visible classes can be exposed via the COM host.
                 if (TypeIsPublic(metadataReader, definition) && TypeIsClass(metadataReader, definition) && IsComVisible(metadataReader, definition, isAssemblyComVisible))
                 {
                     string guid = GetTypeGuid(metadataReader, definition);
@@ -71,7 +72,7 @@ namespace Microsoft.NET.Build.Tasks
             if (baseTypeEntity.Kind == HandleKind.TypeReference)
             {
                 TypeReference baseClass = metadataReader.GetTypeReference((TypeReferenceHandle)baseTypeEntity);
-                if (baseClass.ResolutionScope.Kind == HandleKind.AssemblyReference && ReferenceToCoreLibrary(metadataReader, (AssemblyReferenceHandle)baseClass.ResolutionScope))
+                if (baseClass.ResolutionScope.Kind == HandleKind.AssemblyReference)
                 {
                     if (HasTypeName(metadataReader, baseClass, "System", "ValueType") || HasTypeName(metadataReader, baseClass, "System", "Enum"))
                     {
@@ -81,23 +82,6 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             return true;
-        }
-
-        private static readonly string[] s_CoreLibraryNames = { "mscorlib", "System.Runtime", "netstandard" };
-
-        private static bool ReferenceToCoreLibrary(MetadataReader reader, AssemblyReferenceHandle assembly)
-        {
-            StringHandle assemblyName = reader.GetAssemblyReference(assembly).Name;
-
-            foreach (string coreLibraryName in s_CoreLibraryNames)
-            {
-                if (reader.StringComparer.Equals(assemblyName, coreLibraryName))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private static bool TypeIsPublic(MetadataReader reader, TypeDefinition type)
@@ -156,6 +140,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static bool IsComVisible(MetadataReader metadataReader, TypeDefinition definition, bool assemblyComVisible)
         {
+            // We need to ensure that all parent scopes of the given type are not explicitly non-ComVisible.
             bool? IsComVisibleCore(TypeDefinition typeDefinition)
             {
                 CustomAttributeHandle handle = GetComVisibleAttribute(metadataReader, typeDefinition.GetCustomAttributes());
@@ -194,6 +179,8 @@ namespace Microsoft.NET.Build.Tasks
 
         private static string GetTypeGuid(MetadataReader reader, TypeDefinition type)
         {
+            // Find the class' GUID by reading the GuidAttribute value.
+            // We do not support implicit runtime-generated GUIDs for the .NET Core COM host.
             foreach (CustomAttributeHandle attr in type.GetCustomAttributes())
             {
                 CustomAttribute attribute = reader.GetCustomAttribute(attr);
