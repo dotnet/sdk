@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
             [JsonProperty(PropertyName = "assembly")]
             public string Assembly;
         }
-        
+
         public static void Create(MetadataReader metadataReader, string clsidMapPath)
         {
             Dictionary<string, ClsidEntry> clsidMap = new Dictionary<string, ClsidEntry>();
