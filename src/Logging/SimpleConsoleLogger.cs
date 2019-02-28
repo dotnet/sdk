@@ -12,6 +12,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
 {
     internal class SimpleConsoleLogger : ILogger
     {
+        private readonly IConsole _console;
         private readonly ITerminal _terminal;
         private readonly LogLevel _logLevel;
 
@@ -29,6 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
         public SimpleConsoleLogger(IConsole console, LogLevel logLevel)
         {
             _terminal = console.GetTerminal();
+            _console = console;
             _logLevel = logLevel;
         }
 
@@ -39,13 +41,15 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
                 return;
             }
 
-            var messageColor = _logLevelColorMap[logLevel];
-            _terminal.ForegroundColor = messageColor;
-
             var message = formatter(state, exception);
-            _terminal.Out.WriteLine($"  {message}");
-
-            _terminal.ResetColor();
+            if (_terminal is null)
+            {
+                LogToConsole(message);
+            }
+            else
+            {
+                LogToTerminal(message, logLevel);
+            }
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -56,6 +60,19 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
         public IDisposable BeginScope<TState>(TState state)
         {
             return NullScope.Instance;
+        }
+
+        void LogToTerminal(string message, LogLevel logLevel)
+        {
+            var messageColor = _logLevelColorMap[logLevel];
+            _terminal.ForegroundColor = messageColor;
+            _terminal.Out.WriteLine($"  {message}");
+            _terminal.ResetColor();
+        }
+
+        void LogToConsole(string message)
+        {
+            _console.Out.WriteLine($"  {message}");
         }
     }
 }
