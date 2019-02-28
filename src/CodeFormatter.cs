@@ -39,6 +39,9 @@ namespace Microsoft.CodeAnalysis.Tools.CodeFormatter
                 // rather than a separate one. Any tasks isolated in AppDomains or tasks that create
                 // AppDomains will likely not work due to https://github.com/Microsoft/MSBuildLocator/issues/16.
                 { "AlwaysCompileMarkupFilesInSeparateDomain", bool.FalseString },
+                // This flag is used at restore time to avoid imports from packages changing the inputs to restore,
+                // without this it is possible to get different results between the first and second restore.
+                { "ExcludeRestorePackageImports", bool.TrueString },
             };
 
             var codingConventionsManager = CodingConventionsManagerFactory.CreateCodingConventionsManager();
