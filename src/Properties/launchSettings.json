@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "dotnet-format (--dry-run)": {
+      "commandName": "Project",
+      "commandLineArgs": "-w format.sln -v detailed --dry-run",
+      "workingDirectory": "$(SolutionDir)"
+    },
+    "dotnet-format": {
+      "commandName": "Project",
+      "commandLineArgs": "-w format.sln -v detailed",
+      "workingDirectory": "$(SolutionDir)"
+    }
+  }
+}
