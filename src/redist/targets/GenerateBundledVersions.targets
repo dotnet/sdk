@@ -29,17 +29,10 @@
       <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppPackageVersion)</_NETCoreAppPackageVersion>
       <_NETStandardLibraryPackageVersion>@(_NETStandardLibraryPackageVersions->Distinct())</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>@(_NETCorePlatformsPackageVersions->Distinct())</_NETCorePlatformsPackageVersion>
-      <_AspNetCoreAppPackageVersion>$(MicrosoftAspNetCoreAppPackageVersion)</_AspNetCoreAppPackageVersion>
-
-      <!-- Default aspnetcore patch versions, specified as a stabilized version -->
-      <_DefaultPatchVersionForAspNetCoreApp3_0>3.0.0</_DefaultPatchVersionForAspNetCoreApp3_0>
-      <!-- If we are currently building a prerelease of the version that we intend to lock to, set the default version to the ingested version instead of the stabilized version. -->
-      <_DefaultPatchVersionForAspNetCoreApp3_0 Condition="$(_AspNetCoreAppPackageVersion.StartsWith('$(_DefaultPatchVersionForAspNetCoreApp3_0)-'))">$(_AspNetCoreAppPackageVersion)</_DefaultPatchVersionForAspNetCoreApp3_0>
 
       <!-- Use only major and minor in target framework version -->
       <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
       <_NETStandardTargetFrameworkVersion>$(_NETStandardLibraryPackageVersion.Split('.')[0]).$(_NETStandardLibraryPackageVersion.Split('.')[1])</_NETStandardTargetFrameworkVersion>
-      <_AspNetCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</_AspNetCoreAppTargetFrameworkVersion>
 
       <_NETCoreSdkIsPreview Condition=" '$(DropSuffix)' != 'true' ">true</_NETCoreSdkIsPreview>
     </PropertyGroup>
@@ -61,13 +54,6 @@
           TargetFramework=$(TargetFramework)
         </Properties>
       </MetaPackageDownload>
-      <MetaPackageDownload Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
-        <Properties>
-          PackageToRestore=Microsoft.AspNetCore.App;
-          PackageVersionToRestore=$(MicrosoftAspNetCoreAppPackageVersion);
-          TargetFramework=$(TargetFramework)
-        </Properties>
-      </MetaPackageDownload>
     </ItemGroup>
 
     <MSBuild
@@ -81,9 +67,18 @@
     <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.windowsdesktop.app/$(MicrosoftWindowsDesktopPackageVersion)">
       <Output TaskParameter="AvailableRuntimePackRuntimeIdentifiers" ItemName="WindowsDesktopRuntimePackRids" />
     </GetRuntimePackRids>
-    <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.aspnetcore.app/$(MicrosoftAspNetCoreAppPackageVersion)">
-      <Output TaskParameter="AvailableRuntimePackRuntimeIdentifiers" ItemName="AspNetCoreRuntimePackRids" />
-    </GetRuntimePackRids>
+
+    <ItemGroup>
+      <AspNetCoreRuntimePackRids Include="
+        win-x64;
+        win-x86;
+        win-arm;
+        osx-x64;
+        linux-musl-x64;
+        linux-x64;
+        linux-arm;
+        linux-arm64" />
+    </ItemGroup>
 
     <!--
         Setting the property to true if patch == 0 and preview == true. SDK will set DefaultNetCorePatchVersion according to this flag.
@@ -139,11 +134,6 @@
                                DefaultVersion="2.2.0"
                                LatestVersion="2.2.2"/>
     </ItemGroup>
-    
-    <ItemGroup>
-      <BundledVersionsVariable Include="BundledAspNetCoreAppTargetFrameworkVersion" Value="$(_AspNetCoreAppTargetFrameworkVersion)" />
-      <BundledVersionsVariable Include="BundledAspNetCoreAppPackageVersion" Value="$(_AspNetCoreAppPackageVersion)" />
-    </ItemGroup>
 
     <PropertyGroup>
       <BundledVersionsPropsContent>
@@ -171,8 +161,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>
     <BundledNETCorePlatformsPackageVersion>$(_NETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
-    @(BundledVersionsVariable->'<%(Identity)>%(Value)</%(Identity)>', '
-    ')
     <NETCoreSdkVersion>$(SdkVersion)</NETCoreSdkVersion>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkIsPreview)</_NETCoreSdkIsPreview>
@@ -233,11 +221,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimeWinX64PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimeWinX64PackageVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(AspNetTargetingPackVersion)"
-                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.AspNetCore.App"
+                              RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
                               />
                               
