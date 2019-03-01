@@ -54,8 +54,12 @@ namespace Microsoft.CodeAnalysis.Tools
                 cancellationTokenSource.Cancel();
             };
 
+            string currentDirectory = string.Empty;
+
             try
             {
+                currentDirectory = Environment.CurrentDirectory;
+
                 var workingDirectory = Directory.GetCurrentDirectory();
                 var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(workingDirectory, workspace);
 
@@ -63,6 +67,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 // workspace, use its directory as our working directory which will take into account
                 // a global.json if present.
                 var workspaceDirectory = Path.GetDirectoryName(workspacePath);
+                Environment.CurrentDirectory = workingDirectory;
 
                 // Since we are running as a dotnet tool we should be able to find an instance of
                 // MSBuild in a .NET Core SDK.
@@ -85,6 +90,13 @@ namespace Microsoft.CodeAnalysis.Tools
             catch (OperationCanceledException)
             {
                 return 1;
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(currentDirectory))
+                {
+                    Environment.CurrentDirectory = currentDirectory;
+                }
             }
         }
 
