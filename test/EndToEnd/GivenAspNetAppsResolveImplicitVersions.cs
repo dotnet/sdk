@@ -226,7 +226,8 @@ namespace EndToEnd
             get
             {
                 yield return new object[] { "2.1" };
-                yield return new object[] { "2.2" };
+                // https://github.com/dotnet/core-sdk/issues/780
+                // yield return new object[] { "2.2" };
                 yield return new object[] { LatestSupportedAspNetCoreAppVersion };
             }
         }
