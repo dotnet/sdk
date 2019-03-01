@@ -20,7 +20,8 @@ namespace EndToEnd
                     "1.1",
                     "2.0",
                     "2.1",
-                    "2.2",
+                    // https://github.com/dotnet/core-sdk/issues/780
+                    // "2.2",
                     "3.0"
                 };
             }
