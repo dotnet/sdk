@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Tools.MSBuild;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.CodeAnalysis.Tools.CodeFormatter
+namespace Microsoft.CodeAnalysis.Tools
 {
     internal class Program
     {

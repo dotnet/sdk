@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis.Tools.CodeFormatter;
 
 namespace Microsoft.CodeAnalysis.Tools.MSBuild
 {

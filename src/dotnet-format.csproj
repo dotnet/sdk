@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>7.3</LangVersion> 
-    <RootNamespace>Microsoft.CodeAnalysis.Tools.CodeFormatter</RootNamespace>
+    <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
 
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -33,6 +33,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnet-format.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

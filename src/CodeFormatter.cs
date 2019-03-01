@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -17,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.CodingConventions;
 using Roslyn.Utilities;
 
-namespace Microsoft.CodeAnalysis.Tools.CodeFormatter
+namespace Microsoft.CodeAnalysis.Tools
 {
     internal static class CodeFormatter
     {

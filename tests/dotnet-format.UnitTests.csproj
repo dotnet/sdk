@@ -1,9 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.CodeAnalysis.Tools.Tests</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="projects\**" />
+    <EmbeddedResource Remove="projects\**" />
+    <None Remove="projects\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\src\dotnet-format.csproj" />
