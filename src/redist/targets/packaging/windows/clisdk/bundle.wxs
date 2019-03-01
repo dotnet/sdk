@@ -6,7 +6,7 @@
   <?include "Variables.wxi" ?>
 
   <Bundle Name="$(var.ProductName)" Manufacturer="$(var.Manufacturer)"
-          Version="$(var.DisplayVersion)" UpgradeCode="$(var.UpgradeCode)"
+          Version="$(var.SDKBundleVersion)" UpgradeCode="$(var.UpgradeCode)"
           AboutUrl="https://dotnet.github.io/"
           Compressed="yes">
 

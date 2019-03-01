@@ -4,7 +4,7 @@
   <?define Servicing_Key_SPIndex   =   "0" ?>
   <?define Servicing_Key_SPName   =   "Beta" ?>
   <?define Dotnet_ProductVersion   =   "$(var.BuildVersion)" ?>
-  <?define Dotnet_DisplayVersion   =   "$(var.DisplayVersion)" ?>
+  <?define Dotnet_SDKBundleVersion   =   "$(var.SDKBundleVersion)" ?>
   <?define Dotnet_BuildVersion   =   "$(var.BuildVersion)" ?>
   <?define Manufacturer     =   "Microsoft Corporation" ?>
   <?define ProductName      =   "$(var.ProductMoniker) ($(sys.BUILDARCH))" ?>
@@ -30,6 +30,6 @@
   <?error Invalid Platform ($(var.Platform))?>
   <?endif?>
 
-  <?define DependencyKey   = "Dotnet_CLI_$(var.Dotnet_DisplayVersion)_$(var.Platform)"?>
+  <?define DependencyKey   = "Dotnet_CLI_$(var.SDKBundleVersion)_$(var.Platform)"?>
   <?define DependencyKeyId = "$(var.DependencyKey)" ?>
 </Include>

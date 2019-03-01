@@ -113,7 +113,7 @@
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
-                      '$(SimpleVersion)' ^
+                      '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
                       '$(SdkInstallerUpgradeCode)' ^
                       '$(Architecture)' ^
@@ -144,7 +144,7 @@
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
-                      '$(SimpleVersion)' ^
+                      '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
                       '$(MicrosoftWindowsDesktopPackageVersion)' ^
                       '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^

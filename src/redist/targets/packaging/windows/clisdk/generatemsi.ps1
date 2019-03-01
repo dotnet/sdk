@@ -7,7 +7,7 @@ param(
     [Parameter(Mandatory=$true)][string]$WixRoot,
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
     [Parameter(Mandatory=$true)][string]$DotnetMSIVersion,
-    [Parameter(Mandatory=$true)][string]$DotnetCLIDisplayVersion,
+    [Parameter(Mandatory=$true)][string]$SDKBundleVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
     [Parameter(Mandatory=$true)][string]$Architecture,
@@ -63,7 +63,7 @@ function RunCandle
         -dMicrosoftEula="$PSScriptRoot\clisdk\dummyeula.rtf" `
         -dProductMoniker="$ProductMoniker" `
         -dBuildVersion="$DotnetMSIVersion" `
-        -dDisplayVersion="$DotnetCLIDisplayVersion" `
+        -dSDKBundleVersion="$SDKBundleVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
         -dUpgradeCode="$UpgradeCode" `
         -arch "$Architecture" `
