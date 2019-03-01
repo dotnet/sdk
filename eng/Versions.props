@@ -14,7 +14,6 @@
     <MicrosoftExtensionsDependencyInjectionVersion>2.1.1</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsLoggingVersion>2.1.1</MicrosoftExtensionsLoggingVersion>
     <MicrosoftVisualStudioCodingConventionsVersion>1.1.20180503.2</MicrosoftVisualStudioCodingConventionsVersion>
-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
     <MicrosoftCodeAnalysisVersion>3.0.0-beta3-final</MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
   <PropertyGroup>
