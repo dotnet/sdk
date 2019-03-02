@@ -7,6 +7,7 @@ pr:
 - master
 
 jobs:
+
 - job: Windows
   pool: dotnet-external-temp
   variables:
@@ -19,11 +20,9 @@ jobs:
       Release:
         _configuration: Release
   timeoutInMinutes: 20
-
   steps:
     - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine
       displayName: Build and Test
-
     - task: PublishTestResults@1
       inputs:
         testRunner: XUnit
@@ -54,7 +53,6 @@ jobs:
   steps:
     - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine
       displayName: Build and Test
-
     - task: PublishTestResults@2
       displayName: Publish xUnit Test Results
       inputs:
@@ -67,6 +65,36 @@ jobs:
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_configuration)'
+        ArtifactName: '$(_os) $(_configuration)'
+      continueOnError: true
+      condition: not(succeeded())
+      
+- job: Windows Spanish
+  pool: dnceng-windows-spanish-external-temp
+  variables:
+    _os: Windows
+  strategy:
+    maxParallel: 4
+    matrix:
+      Debug:
+        _configuration: Debug
+      Release:
+        _configuration: Release
+  timeoutInMinutes: 20
+  steps:
+    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine
+      displayName: Build and Test
+    - task: PublishTestResults@1
+      inputs:
+        testRunner: XUnit
+        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.xml'
+        mergeTestResults: true
+        testRunTitle: '$(_os) $(_configuration)'
+      condition: always()
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
         ArtifactName: '$(_os) $(_configuration)'
       continueOnError: true
       condition: not(succeeded())
