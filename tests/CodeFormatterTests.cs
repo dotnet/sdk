@@ -76,5 +76,21 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.True(match.Success);
             Assert.Equal("1", match.Groups[1].Value);
         }
+
+        [Fact]
+        public async Task FSharpProjectsDoNotCreateException()
+        {
+            var logger = new TestLogger();
+            var path = Path.GetFullPath("tests/projects/for_code_formatter/fsharp_project/fsharp_project.fsproj", SolutionPath);
+
+            var exitCode = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, cancellationToken: CancellationToken.None);
+            var logLines = logger.GetLog().Split(Environment.NewLine);
+
+            Assert.Equal(4, logLines.Length);
+            var actualErrorMessage = logLines[2];
+            var expectedErrorMessage = string.Format(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, path);
+            Assert.Equal(expectedErrorMessage, actualErrorMessage);
+            Assert.Equal(1, exitCode);
+        }
     }
 }
