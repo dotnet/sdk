@@ -69,7 +69,7 @@ jobs:
       continueOnError: true
       condition: not(succeeded())
       
-- job: Windows Spanish
+- job: Windows_Spanish
   pool: dnceng-windows-spanish-external-temp
   variables:
     _os: Windows
