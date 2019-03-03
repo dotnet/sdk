@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var log = logger.GetLog();
             var match = FilesFormatted.Match(log);
 
-            Assert.True(match.Success);
+            Assert.True(match.Success, log);
             Assert.Equal("0", match.Groups[1].Value);
             Assert.Equal(0, exitCode);
         }
@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var match = FilesFormatted.Match(log);
 
             Assert.Equal(0, exitCode);
-            Assert.True(match.Success);
+            Assert.True(match.Success, log);
             Assert.Equal("0", match.Groups[1].Value);
         }
 
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var log = logger.GetLog();
             var match = FilesFormatted.Match(log);
 
-            Assert.True(match.Success);
+            Assert.True(match.Success, log);
             Assert.Equal("1", match.Groups[1].Value);
             Assert.Equal(0, exitCode);
         }
@@ -73,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var match = FilesFormatted.Match(log);
 
             Assert.Equal(0, exitCode);
-            Assert.True(match.Success);
+            Assert.True(match.Success, log);
             Assert.Equal("1", match.Groups[1].Value);
         }
     }
