@@ -39,7 +39,7 @@ jobs:
       condition: not(succeeded())
 
 - job: Linux
-  pool: DotNetCore-Linux
+  pool: dnceng-linux-external-temp
   variables:
     _os: Linux
   strategy:
