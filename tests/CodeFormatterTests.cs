@@ -10,7 +10,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
     public class CodeFormatterTests : IClassFixture<MSBuildFixture>
     {
         private static string SolutionPath => Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.Parent.FullName;
-        private static Regex FilesFormatted => new Regex(@"Formatted (\d+) of \d+ files in ", RegexOptions.Multiline);
 
         public CodeFormatterTests(MSBuildFixture msBuildFixture)
         {
@@ -25,7 +24,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var exitCode = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, cancellationToken: CancellationToken.None);
             var log = logger.GetLog();
-            var match = FilesFormatted.Match(log);
+            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
+            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
+            var match = filesFormatted.Match(log);
 
             Assert.True(match.Success, log);
             Assert.Equal("0", match.Groups[1].Value);
@@ -40,7 +41,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var exitCode = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: true, logAllWorkspaceWarnings: false, saveFormattedFiles: false, cancellationToken: CancellationToken.None);
             var log = logger.GetLog();
-            var match = FilesFormatted.Match(log);
+            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
+            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
+            var match = filesFormatted.Match(log);
 
             Assert.Equal(0, exitCode);
             Assert.True(match.Success, log);
@@ -55,7 +58,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var exitCode = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, cancellationToken: CancellationToken.None);
             var log = logger.GetLog();
-            var match = FilesFormatted.Match(log);
+            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
+            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
+            var match = filesFormatted.Match(log);
 
             Assert.True(match.Success, log);
             Assert.Equal("1", match.Groups[1].Value);
@@ -70,7 +75,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var exitCode = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: true, logAllWorkspaceWarnings: false, saveFormattedFiles: false, cancellationToken: CancellationToken.None);
             var log = logger.GetLog();
-            var match = FilesFormatted.Match(log);
+            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
+            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
+            var match = filesFormatted.Match(log);
 
             Assert.Equal(0, exitCode);
             Assert.True(match.Success, log);
