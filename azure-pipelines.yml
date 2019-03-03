@@ -89,12 +89,12 @@ jobs:
         testRunner: XUnit
         testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.xml'
         mergeTestResults: true
-        testRunTitle: '$(_os) $(_configuration)'
+        testRunTitle: 'Spanish $(_os) $(_configuration)'
       condition: always()
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
-        ArtifactName: '$(_os) $(_configuration)'
+        ArtifactName: 'Spanish $(_os) $(_configuration)'
       continueOnError: true
       condition: not(succeeded())
