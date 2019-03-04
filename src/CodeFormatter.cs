@@ -56,8 +56,16 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
                 else
                 {
-                    await workspace.OpenProjectAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
-                    projectPath = solutionOrProjectPath;
+                    try
+                    {
+                        await workspace.OpenProjectAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        projectPath = solutionOrProjectPath;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        logger.LogError(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, solutionOrProjectPath);
+                        return 1;
+                    }
                 }
 
                 logger.LogTrace(Resources.Workspace_loaded_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
