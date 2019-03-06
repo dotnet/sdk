@@ -122,3 +122,30 @@ Option Values: Unsigned integer
 Default Value: 10
 
 Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 5`
+
+#### Dispose analysis kind for IDisposable rules
+Option Name: `dispose_analysis_kind`
+
+Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
+
+Option Values:
+
+| Option Value | Summary |
+| --- | --- |
+| `AllPaths` | Track and report missing dispose violations on all paths (non-exception and exception paths). Additionally, also flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+| `AllPathsOnlyNotDisposed` | Track and report missing dispose violations on all paths (non-exception and exception paths). Do not flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+| `NonExceptionPaths` | Track and report missing dispose violations only on non-exception program paths. Additionally, also flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+| `NonExceptionPathsOnlyNotDisposed` | Track and report missing dispose violations only on non-exception program paths. Do not flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+
+Default Value: `NonExceptionPaths`.
+
+Example: `dotnet_code_quality.dispose_analysis_kind = AllPaths`
+
+#### Configure execution of Copy analysis (tracks value and reference copies)
+Option Name: `copy_analysis`
+
+Option Values: `true` or `false`
+
+Default Value: Specific to each configurable rule ('true' by default for most rules)
+
+Example: `dotnet_code_quality.copy_analysis = true`
