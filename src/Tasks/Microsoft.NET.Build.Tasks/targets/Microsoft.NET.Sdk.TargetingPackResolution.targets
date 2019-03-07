@@ -99,7 +99,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="RuntimeFrameworks" ItemName="RuntimeFramework" />
       <Output TaskParameter="TargetingPacks" ItemName="TargetingPack" />
       <Output TaskParameter="RuntimePacks" ItemName="RuntimePack" />
-      <Output TaskParameter="RuntimePackIdentifiers" ItemName="RuntimePackIdentifier" />
       <Output TaskParameter="UnavailableRuntimePacks" ItemName="UnavailableRuntimePack" />
 
     </ResolveFrameworkReferences>

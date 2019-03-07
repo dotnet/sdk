@@ -1,8 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Reflection.PortableExecutable;
 using Microsoft.Build.Framework;
@@ -10,11 +12,9 @@ using Microsoft.Build.Utilities;
 using System.Reflection.Metadata;
 using System.Reflection;
 
-using CorFlags = System.Reflection.PortableExecutable.CorFlags;
-
 namespace Microsoft.NET.Build.Tasks
 {
-    public class RunCrossgen : TaskBase
+    public class RunCrossgen : ToolTaskBase
     {
         public ITaskItem[] FilesToPublishAlways { get; set; }
         public ITaskItem[] FilesToPublishPreserveNewest { get; set; }
@@ -25,13 +25,9 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string OutputPath { get; set; }
         [Required]
-        public string RuntimeIdentifier { get; set; }
-        [Required]
-        public ITaskItem[] RuntimePackIdentifiers { get; set; }
-        [Required]
         public string TargetFramework { get; set; }
         [Required]
-        public ITaskItem[] ResolvedRuntimePacks { get; set; }
+        public ITaskItem[] RuntimePacks { get; set; }
 
 
         [Output]
@@ -39,14 +35,18 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] R2RFilesToPublishPreserveNewest => _r2rPublishPreserveNewest.ToArray();
 
+        protected override string ToolName => Path.GetFileName(_crossgenPath);
+        protected override string GenerateFullPathToTool() => _crossgenPath;
 
         private List<ITaskItem> _r2rPublishAlways = new List<ITaskItem>();
         private List<ITaskItem> _r2rPublishPreserveNewest = new List<ITaskItem>();
 
-        private string _crossgenPath = null;
-        private string _clrjitPath = null;
-        private string _platformAssembliesPath = null;
-        private string _diasymreaderPath = null;
+        private string _runtimeIdentifier;
+        private string _packagePath;
+        private string _crossgenPath;
+        private string _clrjitPath;
+        private string _platformAssembliesPath;
+        private string _diasymreaderPath;
         private string _pathSeparatorCharacter = ";";
 
         private OSPlatform _targetPlatform;
@@ -54,25 +54,29 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            ITaskItem bestRuntimeIdentifier = RuntimePackIdentifiers.Where(rpi => String.Compare(rpi.ItemSpec, RuntimeIdentifier, true) == 0).FirstOrDefault();
-            if (bestRuntimeIdentifier != null)
-                RuntimeIdentifier = bestRuntimeIdentifier.GetMetadata(MetadataKeys.TargetFrameworkMoniker);
+            foreach (var pack in RuntimePacks)
+            {
+                if (String.Compare(pack.GetMetadata(MetadataKeys.FrameworkName), "Microsoft.NETCore.App", true) != 0)
+                    continue;
 
-            ITaskItem runtimePackage = ResolvedRuntimePacks.Where(pr => String.Compare(pr.ItemSpec, $"runtime.{RuntimeIdentifier}.Microsoft.NETCore.App", true) == 0).FirstOrDefault();
-            if(runtimePackage == null)
+                _runtimeIdentifier = pack.GetMetadata(MetadataKeys.RuntimeIdentifier);
+                _packagePath = pack.GetMetadata(MetadataKeys.PackageDirectory);
+                break;
+            }
+
+            if(_runtimeIdentifier == null || _packagePath == null)
             {
                 Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                 return;
             }
-            string runtimePackagePath = runtimePackage.GetMetadata(MetadataKeys.PackageDirectory);
 
-            if (!ExtractTargetPlatformAndArchitectureFromRuntimeIdentifier() || !GetCrossgenComponentsPaths(runtimePackagePath) || !File.Exists(_crossgenPath) || !File.Exists(_clrjitPath))
+            if (!ExtractTargetPlatformAndArchitectureFromRuntimeIdentifier() || !GetCrossgenComponentsPaths(_packagePath) || !File.Exists(_crossgenPath) || !File.Exists(_clrjitPath))
             {
                 Log.LogError(Strings.ReadyToRunTargedNotSuppotedError);
                 return;
             }
 
-            // TODO: Detect unchanged assemblies and skip crossgenning? (incremental build scenario)
+            LogStandardErrorAsError = true;
 
             // Run Crossgen on input assemblies
             ProcessInputFileList(FilesToPublishPreserveNewest, _r2rPublishPreserveNewest);
@@ -82,10 +86,12 @@ namespace Microsoft.NET.Build.Tasks
         void ProcessInputFileList(ITaskItem[] inputFiles, List<ITaskItem> outputFiles)
         {
             if (inputFiles == null)
+            {
                 return;
+            }
 
             // There seems to be duplicate entries of the same files in the input lists. Unify them
-            Dictionary<string, ITaskItem> filteredInputs = new Dictionary<string, ITaskItem>(StringComparer.InvariantCultureIgnoreCase);
+            var filteredInputs = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in inputFiles)
                 filteredInputs[file.ItemSpec] = file;
 
@@ -93,6 +99,8 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (InputFileEligibleForCompilation(file))
                 {
+                    Log.LogMessage(MessageImportance.Normal, Strings.ReadyToRunCompiling, file.ItemSpec);
+
                     string outputR2RImage;
                     if (CreateR2RImage(file, out outputR2RImage))
                     {
@@ -204,7 +212,7 @@ namespace Microsoft.NET.Build.Tasks
                 $"/out \"{outputR2RImage}\" " +
                 $"\"{file.ItemSpec}\"";
 
-            return RunCrossgenProcessAndLog(arguments);
+            return ExecuteTool(_crossgenPath, null, arguments) == 0;
         }
 
         private bool CreatePDBForImage(ITaskItem file, out string outputPDBImage)
@@ -243,49 +251,25 @@ namespace Microsoft.NET.Build.Tasks
                     $"\"{file.ItemSpec}\"";
             }
 
-            return arguments == null ? false : RunCrossgenProcessAndLog(arguments);
-        }
-
-        bool RunCrossgenProcessAndLog(string arguments)
-        {
-            Process crossgenProcess = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    CreateNoWindow = true,
-                    Arguments = arguments,
-                    FileName = _crossgenPath,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            };
-
-            crossgenProcess.Start();
-            string stdout = crossgenProcess.StandardOutput.ReadToEnd();
-            string stderr = crossgenProcess.StandardError.ReadToEnd();
-            crossgenProcess.WaitForExit();
-
-            if (crossgenProcess.ExitCode != 0)
-            {
-                Log.LogError(Strings.ReadyToRunCompilerOutput, stderr.Trim());
-                return false;
-            }
-
-            Log.LogMessage(MessageImportance.Normal, Strings.ReadyToRunCompilerOutput, stdout.Trim());
-
-            return true;
+            return arguments == null ? false : (ExecuteTool(_crossgenPath, null, arguments) == 0);
         }
 
         bool ExtractTargetPlatformAndArchitectureFromRuntimeIdentifier()
         {
-            string targetPlatform = RuntimeIdentifier.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)[0].ToLower();
-            string targetArchitecture = RuntimeIdentifier.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)[1].ToLower();
+            int separator = _runtimeIdentifier.LastIndexOf('-');
+            if (separator < 0 || separator >= _runtimeIdentifier.Length)
+            {
+                return false;
+            }
 
-            if (targetPlatform == "linux")
+            string targetPlatform = _runtimeIdentifier.Substring(0, separator).ToLowerInvariant();
+            string targetArchitecture = _runtimeIdentifier.Substring(separator + 1).ToLowerInvariant();
+
+            if (targetPlatform.Contains("linux"))
                 _targetPlatform = OSPlatform.Linux;
-            else if (targetPlatform == "osx")
+            else if (targetPlatform.Contains("osx"))
                 _targetPlatform = OSPlatform.OSX;
-            else if (targetPlatform == "win")
+            else if (targetPlatform.Contains("win"))
                 _targetPlatform = OSPlatform.Windows;
             else
                 return false;
@@ -315,7 +299,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     _crossgenPath = Path.Combine(runtimePackagePath, "tools", "x86_arm", "crossgen.exe");
                     _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", "x86_arm", "native", "clrjit.dll");
-                    _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
+                    _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
                 }
                 else if (_targetArchitecture == Architecture.Arm64)
                 {
@@ -325,16 +309,16 @@ namespace Microsoft.NET.Build.Tasks
 
                     _crossgenPath = Path.Combine(runtimePackagePath, "tools", "x64_arm64", "crossgen.exe");
                     _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", "x64_arm64", "native", "clrjit.dll");
-                    _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
+                    _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
                 }
                 else
                 {
                     _crossgenPath = Path.Combine(runtimePackagePath, "tools", "crossgen.exe");
-                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native", "clrjit.dll");
+                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "clrjit.dll");
                     if(_targetArchitecture == Architecture.X64)
-                        _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
+                        _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
                     else
-                        _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
+                        _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -357,7 +341,7 @@ namespace Microsoft.NET.Build.Tasks
                 else
                 {
                     _crossgenPath = Path.Combine(runtimePackagePath, "tools", "crossgen");
-                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native", "libclrjit.so");
+                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.so");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -369,7 +353,7 @@ namespace Microsoft.NET.Build.Tasks
                     return false;
 
                 _crossgenPath = Path.Combine(runtimePackagePath, "tools", "crossgen");
-                _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native", "libclrjit.dylib");
+                _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.dylib");
             }
             else
             {
@@ -378,8 +362,8 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             _platformAssembliesPath =
-                Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "native") + _pathSeparatorCharacter +
-                Path.Combine(runtimePackagePath, "runtimes", RuntimeIdentifier, "lib", TargetFramework);
+                Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native") + _pathSeparatorCharacter +
+                Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "lib", TargetFramework);
 
             return true;
         }

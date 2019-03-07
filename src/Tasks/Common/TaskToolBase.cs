@@ -6,11 +6,11 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public abstract class TaskBase : Task
+    public abstract class ToolTaskBase : ToolTask
     {
         private Logger _logger;
 
-        internal TaskBase(Logger logger = null)
+        internal ToolTaskBase(Logger logger = null)
         {
             _logger = logger;
         }
