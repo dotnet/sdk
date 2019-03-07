@@ -14,11 +14,10 @@ using System.Reflection;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class RunCrossgen : ToolTaskBase
+    public class CompileReadyToRunImages : ToolTaskBase
     {
         public ITaskItem[] FilesToPublishAlways { get; set; }
         public ITaskItem[] FilesToPublishPreserveNewest { get; set; }
-        public string[] ReferenceAssembliesToExclude { get; set; }
         public string[] ReadyToRunExcludeList { get; set; }
         public bool ReadyToRunEmitSymbols { get; set; }
 
@@ -143,14 +142,6 @@ namespace Microsoft.NET.Build.Tasks
                         return false;
             }
 
-            // Check if the file is a reference assembly (these need to be excluded. Crossgen will fail on them)
-            if (ReferenceAssembliesToExclude != null)
-            {
-                foreach (var item in ReferenceAssembliesToExclude)
-                    if (String.Compare(file.ItemSpec, item, true) == 0)
-                        return false;
-            }
-
             // Check to see if this is a valid ILOnly image that we can compile
             try
             {
@@ -172,6 +163,35 @@ namespace Microsoft.NET.Build.Tasks
                         if ((assemblyRef.Flags & AssemblyFlags.WindowsRuntime) == AssemblyFlags.WindowsRuntime)
                             return false;
                     }
+
+                    // Skip reference assemblies
+                    foreach (var attributeHandle in mdReader.GetAssemblyDefinition().GetCustomAttributes())
+                    {
+                        EntityHandle attributeCtor = mdReader.GetCustomAttribute(attributeHandle).Constructor;
+
+                        string attributeTypeName = null, attributeTypeNamespace = null;
+
+                        if (attributeCtor.Kind == HandleKind.MemberReference)
+                        {
+                            EntityHandle attributeMemberParent = mdReader.GetMemberReference((MemberReferenceHandle)attributeCtor).Parent;
+                            if (attributeMemberParent.Kind == HandleKind.TypeReference)
+                            {
+                                TypeReference attributeTypeRef = mdReader.GetTypeReference((TypeReferenceHandle)attributeMemberParent);
+                                attributeTypeName = mdReader.GetString(attributeTypeRef.Name);
+                                attributeTypeNamespace = mdReader.GetString(attributeTypeRef.Namespace);
+                            }
+                        }
+                        else if (attributeCtor.Kind == HandleKind.MethodDefinition)
+                        {
+                            var attributeTypeDefHandle = (TypeDefinitionHandle)mdReader.GetMethodDefinition((MethodDefinitionHandle)attributeCtor).GetDeclaringType();
+                            TypeDefinition attributeTypeDef = mdReader.GetTypeDefinition(attributeTypeDefHandle);
+                            attributeTypeName = mdReader.GetString(attributeTypeDef.Name);
+                            attributeTypeNamespace = mdReader.GetString(attributeTypeDef.Namespace);
+                        }
+
+                        if (attributeTypeName == "ReferenceAssemblyAttribute" && attributeTypeNamespace == "System.Runtime.CompilerServices")
+                            return false;
+                    }
                 }
             }
             catch
@@ -182,28 +202,13 @@ namespace Microsoft.NET.Build.Tasks
             return true;
         }
 
-        private bool IsExcluded(ITaskItem file)
-        {
-            if (ReadyToRunExcludeList != null)
-            {
-                foreach (var item in ReadyToRunExcludeList)
-                    if (String.Compare(Path.GetFileName(file.ItemSpec), item, true) == 0)
-                        return true;
-            }
-
-            if (ReferenceAssembliesToExclude != null)
-            {
-                foreach (var item in ReferenceAssembliesToExclude)
-                    if (String.Compare(file.ItemSpec, item, true) == 0)
-                        return true;
-            }
-
-            return false;
-        }
-
         private bool CreateR2RImage(ITaskItem file, out string outputR2RImage)
         {
-            outputR2RImage = Path.Combine(OutputPath, Path.GetFileName(file.ItemSpec));
+            outputR2RImage = Path.Combine(OutputPath, file.GetMetadata(MetadataKeys.RelativePath));
+
+            string dirName = Path.GetDirectoryName(outputR2RImage);
+            if (!Directory.Exists(dirName))
+                Directory.CreateDirectory(dirName);
 
             string arguments = $"/nologo " +
                 $"/MissingDependenciesOK " +

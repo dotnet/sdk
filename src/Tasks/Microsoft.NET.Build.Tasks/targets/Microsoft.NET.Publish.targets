@@ -177,12 +177,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        _CreateReadyToRunImages
+                                        CreateReadyToRunImages
 
     Create ReadyToRun images for managed assemblies in _ResolvedFileToPublishAlways and _ResolvedFileToPublishPreserveNewest.
     ============================================================
     -->
-  <UsingTask TaskName="RunCrossgen" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="CompileReadyToRunImages" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="CreateReadyToRunImages"
           DependsOnTargets="_ComputeResolvedFilesToPublishTypes"
           Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(ReadyToRun)' == 'true' And '$(RuntimeIdentifier)' != ''">
@@ -193,18 +193,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <MakeDir Directories="$(_ReadyToRunOutputPath)" />
 
-    <RunCrossgen TargetFramework="$(TargetFramework)"
-                 RuntimePacks="@(ResolvedRuntimePack)"
-                 OutputPath="$(_ReadyToRunOutputPath)"
-                 FilesToPublishAlways="@(_ResolvedFileToPublishAlways)"
-                 FilesToPublishPreserveNewest="@(_ResolvedFileToPublishPreserveNewest)"
-                 ReferenceAssembliesToExclude="@(ReferencePath)"
-                 ReadyToRunExcludeList="@(ReadyToRunExclude)"
-                 ReadyToRunEmitSymbols="$(ReadyToRunEmitSymbols)">
+    <CompileReadyToRunImages TargetFramework="$(TargetFramework)"
+                             RuntimePacks="@(ResolvedRuntimePack)"
+                             OutputPath="$(_ReadyToRunOutputPath)"
+                             FilesToPublishAlways="@(_ResolvedFileToPublishAlways)"
+                             FilesToPublishPreserveNewest="@(_ResolvedFileToPublishPreserveNewest)"
+                             ReadyToRunExcludeList="@(ReadyToRunExclude)"
+                             ReadyToRunEmitSymbols="$(ReadyToRunEmitSymbols)">
       
       <Output TaskParameter="R2RFilesToPublishAlways" ItemName="_R2RFilesToPublishAlways" />
       <Output TaskParameter="R2RFilesToPublishPreserveNewest" ItemName="_R2RFilesToPublishPreserveNewest" />
-    </RunCrossgen>
+    </CompileReadyToRunImages>
 
     <ItemGroup>
       <_ResolvedFileToPublishAlways Remove="@(_ResolvedFileToPublishAlways)" />
