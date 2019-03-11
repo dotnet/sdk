@@ -65,7 +65,7 @@ Default Value: All output kinds
 Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary`
 
 ### Async void methods
-Option Name: `skip_async_void_methods`
+Option Name: `exclude_async_void_methods`
 
 Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca2007-do-not-directly-await-a-task)
 
@@ -73,10 +73,10 @@ Option Values: `true` or `false`
 
 Default Value: `false`
 
-Example: `dotnet_code_quality.CA2007.skip_async_void_methods = true`
+Example: `dotnet_code_quality.CA2007.exclude_async_void_methods = true`
 
 ### Single letter type parameters
-Option Name: `allow_single_letter_type_parameters`
+Option Name: `exclude_single_letter_type_parameters`
 
 Configurable Rules: [CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix)
 
@@ -84,7 +84,7 @@ Option Values: `true` or `false`
 
 Default Value: `false`
 
-Example: `dotnet_code_quality.CA1715.allow_single_letter_type_parameters = true`
+Example: `dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true`
 
 ### Dataflow analysis
 
