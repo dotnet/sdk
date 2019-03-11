@@ -43,7 +43,7 @@ Option Values:
 | Option Value | Summary |
 | --- | --- |
 | `public` | Analyzes public APIs that are externally visible outside the assembly. |
-| `internal` or `friend` | Analyzes internal APIs that are visible within the assembly and to assemblies with [InternalsVisibleToAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute) access. |
+| `internal` or `friend` | Analyzes internal APIs that are visible within the assembly and to assemblies with [InternalsVisibleToAttribute](https://docs.microsoft.com/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute) access. |
 | `private` | Analyzes private APIs that are only visible within the containing type. |
 | `all` | Analyzes all APIs, regardless of the symbol visibility. |
 
@@ -85,3 +85,67 @@ Option Values: `true` or `false`
 Default Value: `false`
 
 Example: `dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true`
+
+### Dataflow analysis
+
+Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code), [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
+
+#### Interprocedural analysis Kind
+Option Name: `interprocedural_analysis_kind`
+
+Option Values:
+
+| Option Value | Summary |
+| --- | --- |
+| `None` | Skip interprocedural analysis for source method invocations. |
+| `NonContextSensitive` | Performs non-context sensitive interprocedural analysis for all source method invocations. |
+| `ContextSensitive` | Performs context sensitive interprocedural analysis for all source method invocations. |
+
+Default Value: Specific to each configurable rule.
+
+Example: `dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive`
+
+#### Maximum method call chain length to analyze for interprocedural dataflow analysis
+Option Name: `max_interprocedural_method_call_chain`
+
+Option Values: Unsigned integer
+
+Default Value: 3
+
+Example: `dotnet_code_quality.max_interprocedural_method_call_chain = 5`
+
+#### Maximum lambda or local function call chain length to analyze for interprocedural dataflow analysis
+Option Name: `max_interprocedural_lambda_or_local_function_call_chain`
+
+Option Values: Unsigned integer
+
+Default Value: 10
+
+Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 5`
+
+#### Dispose analysis kind for IDisposable rules
+Option Name: `dispose_analysis_kind`
+
+Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
+
+Option Values:
+
+| Option Value | Summary |
+| --- | --- |
+| `AllPaths` | Track and report missing dispose violations on all paths (non-exception and exception paths). Additionally, also flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+| `AllPathsOnlyNotDisposed` | Track and report missing dispose violations on all paths (non-exception and exception paths). Do not flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+| `NonExceptionPaths` | Track and report missing dispose violations only on non-exception program paths. Additionally, also flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+| `NonExceptionPathsOnlyNotDisposed` | Track and report missing dispose violations only on non-exception program paths. Do not flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
+
+Default Value: `NonExceptionPaths`.
+
+Example: `dotnet_code_quality.dispose_analysis_kind = AllPaths`
+
+#### Configure execution of Copy analysis (tracks value and reference copies)
+Option Name: `copy_analysis`
+
+Option Values: `true` or `false`
+
+Default Value: Specific to each configurable rule ('true' by default for most rules)
+
+Example: `dotnet_code_quality.copy_analysis = true`
