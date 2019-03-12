@@ -183,4 +183,7 @@
   <data name="Format_files_but_do_not_save_changes_to_disk" xml:space="preserve">
     <value>Format files, but do not save changes to disk.</value>
   </data>
+  <data name="Terminate_with_non_zero_exit_code_if_any_files_formatted" xml:space="preserve">
+    <value>Terminate with non-zero exit code if any files formatted.</value>
+  </data>
 </root>

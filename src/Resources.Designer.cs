@@ -212,6 +212,15 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Terminate with non-zero exit code if any files formatted..
+        /// </summary>
+        internal static string Terminate_with_non_zero_exit_code_if_any_files_formatted {
+            get {
+                return ResourceManager.GetString("Terminate_with_non_zero_exit_code_if_any_files_formatted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The file &apos;{0}&apos; does not appear to be a valid project or solution file..
         /// </summary>
         internal static string The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file {

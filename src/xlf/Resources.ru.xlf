@@ -82,6 +82,11 @@
         <target state="translated">Пропуск указанного проекта "{0}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="Terminate_with_non_zero_exit_code_if_any_files_formatted">
+        <source>Terminate with non-zero exit code if any files formatted.</source>
+        <target state="new">Terminate with non-zero exit code if any files formatted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
         <source>The file '{0}' does not appear to be a valid project or solution file.</source>
         <target state="translated">Файл "{0}" не является допустимым файлом проекта или решения.</target>

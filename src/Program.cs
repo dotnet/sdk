@@ -32,13 +32,14 @@ namespace Microsoft.CodeAnalysis.Tools
                 .AddOption(new Option(new[] { "-w", "--workspace" }, Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one, new Argument<string>(() => null)))
                 .AddOption(new Option(new[] { "-v", "--verbosity" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic, new Argument<string>() { Arity = ArgumentArity.ExactlyOne }.FromAmong(_verbosityLevels)))
                 .AddOption(new Option(new[] { "--dry-run" }, Resources.Format_files_but_do_not_save_changes_to_disk, new Argument<bool>()))
+                .AddOption(new Option(new[] { "--check" }, Resources.Terminate_with_non_zero_exit_code_if_any_files_formatted, new Argument<bool>()))
                 .UseVersionOption()
                 .Build();
 
             return await parser.InvokeAsync(args).ConfigureAwait(false);
         }
 
-        public static async Task<int> Run(string workspace, string verbosity, bool dryRun, IConsole console = null)
+        public static async Task<int> Run(string workspace, string verbosity, bool dryRun, bool check, IConsole console = null)
         {
             var serviceCollection = new ServiceCollection();
             var logLevel = GetLogLevel(verbosity);
@@ -81,13 +82,15 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
 
-                return await CodeFormatter.FormatWorkspaceAsync(
+                var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                     logger,
                     workspacePath,
                     isSolution,
                     logAllWorkspaceWarnings: logLevel == LogLevel.Trace,
                     saveFormattedFiles: !dryRun,
                     cancellationTokenSource.Token).ConfigureAwait(false);
+
+                return GetExitCode(formatResult, check);
             }
             catch (FileNotFoundException fex)
             {
@@ -106,6 +109,9 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
             }
         }
+
+        public static int GetExitCode(WorkspaceFormatResult formatResult, bool check) =>
+            !check ? formatResult.ExitCode : (formatResult.FilesFormatted == 0 ? 0 : 1);
 
         private static LogLevel GetLogLevel(string verbosity)
         {

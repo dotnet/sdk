@@ -22,14 +22,17 @@ namespace Microsoft.CodeAnalysis.Tools
     {
         private const int MaxLoggedWorkspaceWarnings = 5;
 
-        public static async Task<int> FormatWorkspaceAsync(ILogger logger, string solutionOrProjectPath, bool isSolution, bool logAllWorkspaceWarnings, bool saveFormattedFiles, CancellationToken cancellationToken)
+        public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(ILogger logger, string solutionOrProjectPath, bool isSolution, bool logAllWorkspaceWarnings, bool saveFormattedFiles, CancellationToken cancellationToken)
         {
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, solutionOrProjectPath));
 
             logger.LogTrace(Resources.Loading_workspace);
 
             var loggedWarningCount = 0;
-            var exitCode = 1;
+            var formatResult = new WorkspaceFormatResult()
+            {
+                ExitCode = 1
+            };
             var workspaceStopwatch = Stopwatch.StartNew();
 
             var properties = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -64,23 +67,21 @@ namespace Microsoft.CodeAnalysis.Tools
                     catch (InvalidOperationException)
                     {
                         logger.LogError(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, solutionOrProjectPath);
-                        return 1;
+                        return formatResult;
                     }
                 }
 
                 logger.LogTrace(Resources.Workspace_loaded_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
                 workspaceStopwatch.Restart();
 
-                int fileCount;
-                int filesFormatted;
-                (exitCode, fileCount, filesFormatted) = await FormatFilesInWorkspaceAsync(logger, workspace, projectPath, codingConventionsManager, saveFormattedFiles, cancellationToken).ConfigureAwait(false);
+                (formatResult.ExitCode, formatResult.FileCount, formatResult.FilesFormatted) = await FormatFilesInWorkspaceAsync(logger, workspace, projectPath, codingConventionsManager, saveFormattedFiles, cancellationToken).ConfigureAwait(false);
 
-                logger.LogDebug(Resources.Formatted_0_of_1_files_in_2_ms, filesFormatted, fileCount, workspaceStopwatch.ElapsedMilliseconds);
+                logger.LogDebug(Resources.Formatted_0_of_1_files_in_2_ms, formatResult.FilesFormatted, formatResult.FileCount, workspaceStopwatch.ElapsedMilliseconds);
             }
 
             logger.LogInformation(Resources.Format_complete);
 
-            return exitCode;
+            return formatResult;
 
             void LogWorkspaceWarnings(object sender, WorkspaceDiagnosticEventArgs args)
             {
@@ -205,13 +206,13 @@ namespace Microsoft.CodeAnalysis.Tools
             return (formattedSolution, filesFormatted);
         }
 
-        private static Func<SyntaxTrivia, bool> IsCSharpCommentTrivia =
+        private static readonly Func<SyntaxTrivia, bool> IsCSharpCommentTrivia =
             (syntaxTrivia) => syntaxTrivia.IsKind(CSharp.SyntaxKind.SingleLineCommentTrivia)
                 || syntaxTrivia.IsKind(CSharp.SyntaxKind.MultiLineCommentTrivia)
                 || syntaxTrivia.IsKind(CSharp.SyntaxKind.SingleLineDocumentationCommentTrivia)
                 || syntaxTrivia.IsKind(CSharp.SyntaxKind.MultiLineDocumentationCommentTrivia);
 
-        private static Func<SyntaxTrivia, bool> IsVisualBasicCommentTrivia =
+        private static readonly Func<SyntaxTrivia, bool> IsVisualBasicCommentTrivia =
             (syntaxTrivia) => syntaxTrivia.IsKind(VisualBasic.SyntaxKind.CommentTrivia)
                 || syntaxTrivia.IsKind(VisualBasic.SyntaxKind.DocumentationCommentTrivia);
     }
