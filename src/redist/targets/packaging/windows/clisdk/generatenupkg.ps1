@@ -28,5 +28,5 @@ if (Test-Path $NupkgFile) {
     Remove-Item -Force $NupkgFile
 }
 
-& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoPackageAnalysis -Properties DOTNET_BUNDLE=$SdkBundlePath
+& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties DOTNET_BUNDLE=$SdkBundlePath
 Exit $LastExitCode
