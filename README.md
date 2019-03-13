@@ -44,8 +44,8 @@ Options:
                      the current directory for one.
   -v, --verbosity    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
                      diag[nostic]
-  --check            Terminate with non-zero exit code if any files formatted.
   --dry-run          Format files, but do not save changes to disk.
+  --check            Terminate with non-zero exit code if any files need to be formatted in the workspace.
   --version          Display version information
 ```
 

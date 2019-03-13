@@ -82,9 +82,9 @@
         <target state="translated">Omitiendo projecto al que se hace referencia "{0}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="Terminate_with_non_zero_exit_code_if_any_files_formatted">
-        <source>Terminate with non-zero exit code if any files formatted.</source>
-        <target state="new">Terminate with non-zero exit code if any files formatted.</target>
+      <trans-unit id="Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_workspace">
+        <source>Terminate with non-zero exit code if any files need to be formatted in the workspace.</source>
+        <target state="new">Terminate with non-zero exit code if any files need to be formatted in the workspace.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">

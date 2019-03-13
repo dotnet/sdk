@@ -212,11 +212,12 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Terminate with non-zero exit code if any files formatted..
+        ///   Looks up a localized string similar to Terminate with non-zero exit code if any files need to be formatted in the workspace..
         /// </summary>
-        internal static string Terminate_with_non_zero_exit_code_if_any_files_formatted {
+        internal static string Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_workspace {
             get {
-                return ResourceManager.GetString("Terminate_with_non_zero_exit_code_if_any_files_formatted", resourceCulture);
+                return ResourceManager.GetString("Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_worksp" +
+                        "ace", resourceCulture);
             }
         }
         
