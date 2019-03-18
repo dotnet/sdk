@@ -141,6 +141,17 @@ Default Value: `NonExceptionPaths`.
 
 Example: `dotnet_code_quality.dispose_analysis_kind = AllPaths`
 
+#### Configure dispose ownership transfer for arguments passed to constructor invocation
+Option Name: `dispose_ownership_transfer_at_constructor`
+
+Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
+
+Option Values: `true` or `false`
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.dispose_ownership_transfer_at_constructor = true`
+
 #### Configure execution of Copy analysis (tracks value and reference copies)
 Option Name: `copy_analysis`
 
