@@ -185,7 +185,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="CompileReadyToRunImages" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="CreateReadyToRunImages"
           DependsOnTargets="_ComputeResolvedFilesToPublishTypes"
-          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(ReadyToRun)' == 'true' And '$(RuntimeIdentifier)' != ''">
+          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(ReadyToRun)' == 'true' And '$(RuntimeIdentifier)' != '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
 
     <PropertyGroup>
       <_ReadyToRunOutputPath>$(IntermediateOutputPath)R2R</_ReadyToRunOutputPath>
@@ -195,6 +195,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <CompileReadyToRunImages TargetFramework="$(TargetFramework)"
                              RuntimePacks="@(ResolvedRuntimePack)"
+                             RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                             KnownFrameworkReferences="@(KnownFrameworkReference)"
                              OutputPath="$(_ReadyToRunOutputPath)"
                              FilesToPublishAlways="@(_ResolvedFileToPublishAlways)"
                              FilesToPublishPreserveNewest="@(_ResolvedFileToPublishPreserveNewest)"

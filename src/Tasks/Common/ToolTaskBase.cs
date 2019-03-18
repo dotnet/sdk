@@ -27,21 +27,5 @@ namespace Microsoft.NET.Build.Tasks
                 return _logger;
             }
         }
-
-        public override bool Execute()
-        {
-            try
-            {
-                ExecuteCore();
-            }
-            catch (BuildErrorException e)
-            {
-                Log.LogError(e.Message);
-            }
-
-            return !Log.HasLoggedErrors;
-        }
-
-        protected abstract void ExecuteCore();
     }
 }

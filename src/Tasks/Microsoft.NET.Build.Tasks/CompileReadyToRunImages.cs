@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Reflection.PortableExecutable;
@@ -27,6 +28,10 @@ namespace Microsoft.NET.Build.Tasks
         public string TargetFramework { get; set; }
         [Required]
         public ITaskItem[] RuntimePacks { get; set; }
+        [Required]
+        public ITaskItem[] KnownFrameworkReferences { get; set; }
+        [Required]
+        public string RuntimeGraphPath { get; set; }
 
 
         [Output]
@@ -48,31 +53,49 @@ namespace Microsoft.NET.Build.Tasks
         private string _diasymreaderPath;
         private string _pathSeparatorCharacter = ";";
 
-        private OSPlatform _targetPlatform;
         private Architecture _targetArchitecture;
 
-        protected override void ExecuteCore()
+        private bool _crossgenFailures = false;
+
+        public override bool Execute()
         {
-            foreach (var pack in RuntimePacks)
-            {
-                if (String.Compare(pack.GetMetadata(MetadataKeys.FrameworkName), "Microsoft.NETCore.App", true) != 0)
-                    continue;
+            // Get the list of runtime identifiers that we support and can target
+            ITaskItem frameworkRef = KnownFrameworkReferences.Where(item => String.Compare(item.ItemSpec, "Microsoft.NETCore.App", true) == 0).SingleOrDefault();
+            string supportedRuntimeIdentifiers = frameworkRef == null ? null : frameworkRef.GetMetadata("RuntimePackRuntimeIdentifiers");
 
-                _runtimeIdentifier = pack.GetMetadata(MetadataKeys.RuntimeIdentifier);
-                _packagePath = pack.GetMetadata(MetadataKeys.PackageDirectory);
-                break;
-            }
+            // Get information on the runtime package used for the current target
+            ITaskItem frameworkPack = RuntimePacks.Where(pack => pack.ItemSpec.EndsWith(".Microsoft.NETCore.App", StringComparison.InvariantCultureIgnoreCase)).SingleOrDefault();
+            _runtimeIdentifier = frameworkPack == null ? null : frameworkPack.GetMetadata(MetadataKeys.RuntimeIdentifier);
+            _packagePath = frameworkPack == null ? null : frameworkPack.GetMetadata(MetadataKeys.PackageDirectory);
 
-            if(_runtimeIdentifier == null || _packagePath == null)
+            var runtimeGraph = new RuntimeGraphCache(BuildEngine4, Log).GetRuntimeGraph(RuntimeGraphPath);
+            var supportedRIDsList = supportedRuntimeIdentifiers == null ? Array.Empty<string>() : supportedRuntimeIdentifiers.Split(';');
+
+            // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
+            string hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(
+                runtimeGraph, 
+                DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier(), 
+                supportedRIDsList, 
+                out bool wasInGraph);
+
+            if (hostRuntimeIdentifier == null || _runtimeIdentifier == null || _packagePath == null)
             {
                 Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
-                return;
+                return false;
             }
 
-            if (!ExtractTargetPlatformAndArchitectureFromRuntimeIdentifier() || !GetCrossgenComponentsPaths(_packagePath) || !File.Exists(_crossgenPath) || !File.Exists(_clrjitPath))
+            if (!ExtractTargetPlatformAndArchitecture(_runtimeIdentifier, out string targetPlatform, out _targetArchitecture) ||
+                !ExtractTargetPlatformAndArchitecture(hostRuntimeIdentifier, out string hostPlatform, out Architecture hostArchitecture) ||
+                targetPlatform != hostPlatform)
             {
-                Log.LogError(Strings.ReadyToRunTargedNotSuppotedError);
-                return;
+                Log.LogError(Strings.ReadyToRunTargetNotSuppotedError);
+                return false;
+            }
+
+            if (!GetCrossgenComponentsPaths() || !File.Exists(_crossgenPath) || !File.Exists(_clrjitPath))
+            {
+                Log.LogError(Strings.ReadyToRunTargetNotSuppotedError);
+                return false;
             }
 
             LogStandardErrorAsError = true;
@@ -80,6 +103,13 @@ namespace Microsoft.NET.Build.Tasks
             // Run Crossgen on input assemblies
             ProcessInputFileList(FilesToPublishPreserveNewest, _r2rPublishPreserveNewest);
             ProcessInputFileList(FilesToPublishAlways, _r2rPublishAlways);
+
+            if (_crossgenFailures && !HasLoggedErrors)
+            {
+                Log.LogError(Strings.ReadyToRunCompilationsFailure);
+            }
+
+            return !HasLoggedErrors;
         }
 
         void ProcessInputFileList(ITaskItem[] inputFiles, List<ITaskItem> outputFiles)
@@ -89,12 +119,7 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            // There seems to be duplicate entries of the same files in the input lists. Unify them
-            var filteredInputs = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in inputFiles)
-                filteredInputs[file.ItemSpec] = file;
-
-            foreach (var file in filteredInputs.Values)
             {
                 if (InputFileEligibleForCompilation(file))
                 {
@@ -143,63 +168,90 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             // Check to see if this is a valid ILOnly image that we can compile
-            try
+            using (FileStream fs = new FileStream(file.ItemSpec, FileMode.Open, FileAccess.Read))
             {
-                using (FileStream fs = new FileStream(file.ItemSpec, FileMode.Open, FileAccess.Read))
+                try
                 {
-                    PEReader pereader = new PEReader(fs);
-
-                    if (pereader.PEHeaders == null || pereader.PEHeaders.CorHeader == null)
-                        return false;
-
-                    if ((pereader.PEHeaders.CorHeader.Flags & CorFlags.ILOnly) != CorFlags.ILOnly)
-                        return false;
-
-                    // Skip assemblies that reference winmds
-                    MetadataReader mdReader = pereader.GetMetadataReader();
-                    foreach (var assemblyRefHandle in mdReader.AssemblyReferences)
+                    using (var pereader = new PEReader(fs))
                     {
-                        AssemblyReference assemblyRef = mdReader.GetAssemblyReference(assemblyRefHandle);
-                        if ((assemblyRef.Flags & AssemblyFlags.WindowsRuntime) == AssemblyFlags.WindowsRuntime)
+                        if (!pereader.HasMetadata)
                             return false;
-                    }
 
-                    // Skip reference assemblies
-                    foreach (var attributeHandle in mdReader.GetAssemblyDefinition().GetCustomAttributes())
-                    {
-                        EntityHandle attributeCtor = mdReader.GetCustomAttribute(attributeHandle).Constructor;
+                        if ((pereader.PEHeaders.CorHeader.Flags & CorFlags.ILOnly) != CorFlags.ILOnly)
+                            return false;
 
-                        string attributeTypeName = null, attributeTypeNamespace = null;
-
-                        if (attributeCtor.Kind == HandleKind.MemberReference)
+                        MetadataReader mdReader = pereader.GetMetadataReader();
+                        if (!mdReader.IsAssembly)
                         {
-                            EntityHandle attributeMemberParent = mdReader.GetMemberReference((MemberReferenceHandle)attributeCtor).Parent;
-                            if (attributeMemberParent.Kind == HandleKind.TypeReference)
-                            {
-                                TypeReference attributeTypeRef = mdReader.GetTypeReference((TypeReferenceHandle)attributeMemberParent);
-                                attributeTypeName = mdReader.GetString(attributeTypeRef.Name);
-                                attributeTypeNamespace = mdReader.GetString(attributeTypeRef.Namespace);
-                            }
-                        }
-                        else if (attributeCtor.Kind == HandleKind.MethodDefinition)
-                        {
-                            var attributeTypeDefHandle = (TypeDefinitionHandle)mdReader.GetMethodDefinition((MethodDefinitionHandle)attributeCtor).GetDeclaringType();
-                            TypeDefinition attributeTypeDef = mdReader.GetTypeDefinition(attributeTypeDefHandle);
-                            attributeTypeName = mdReader.GetString(attributeTypeDef.Name);
-                            attributeTypeNamespace = mdReader.GetString(attributeTypeDef.Namespace);
+                            return false;
                         }
 
-                        if (attributeTypeName == "ReferenceAssemblyAttribute" && attributeTypeNamespace == "System.Runtime.CompilerServices")
+                        // Skip reference assemblies and assemblies that reference winmds
+                        if (ReferencesWinMD(mdReader) || IsReferenceAssembly(mdReader))
+                        {
                             return false;
+                        }
                     }
                 }
-            }
-            catch
-            {
-                return false;
+                catch (BadImageFormatException)
+                {
+                    // Not a valid assembly file
+                    return false;
+                }
             }
 
             return true;
+        }
+
+        private bool IsReferenceAssembly(MetadataReader mdReader)
+        {
+            foreach (var attributeHandle in mdReader.GetAssemblyDefinition().GetCustomAttributes())
+            {
+                EntityHandle attributeCtor = mdReader.GetCustomAttribute(attributeHandle).Constructor;
+
+                StringHandle attributeTypeName = default;
+                StringHandle attributeTypeNamespace = default;
+
+                if (attributeCtor.Kind == HandleKind.MemberReference)
+                {
+                    EntityHandle attributeMemberParent = mdReader.GetMemberReference((MemberReferenceHandle)attributeCtor).Parent;
+                    if (attributeMemberParent.Kind == HandleKind.TypeReference)
+                    {
+                        TypeReference attributeTypeRef = mdReader.GetTypeReference((TypeReferenceHandle)attributeMemberParent);
+                        attributeTypeName = attributeTypeRef.Name;
+                        attributeTypeNamespace = attributeTypeRef.Namespace;
+                    }
+                }
+                else if (attributeCtor.Kind == HandleKind.MethodDefinition)
+                {
+                    TypeDefinitionHandle attributeTypeDefHandle = mdReader.GetMethodDefinition((MethodDefinitionHandle)attributeCtor).GetDeclaringType();
+                    TypeDefinition attributeTypeDef = mdReader.GetTypeDefinition(attributeTypeDefHandle);
+                    attributeTypeName = attributeTypeDef.Name;
+                    attributeTypeNamespace = attributeTypeDef.Namespace;
+                }
+
+                if (!attributeTypeName.IsNil && 
+                    !attributeTypeNamespace.IsNil && 
+                    mdReader.StringComparer.Equals(attributeTypeName, "ReferenceAssemblyAttribute") && 
+                    mdReader.StringComparer.Equals(attributeTypeNamespace, "System.Runtime.CompilerServices"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool ReferencesWinMD(MetadataReader mdReader)
+        {
+            foreach (var assemblyRefHandle in mdReader.AssemblyReferences)
+            {
+                AssemblyReference assemblyRef = mdReader.GetAssemblyReference(assemblyRefHandle);
+                if ((assemblyRef.Flags & AssemblyFlags.WindowsRuntime) == AssemblyFlags.WindowsRuntime)
+                    return true;
+            }
+
+            return false;
         }
 
         private bool CreateR2RImage(ITaskItem file, out string outputR2RImage)
@@ -207,8 +259,7 @@ namespace Microsoft.NET.Build.Tasks
             outputR2RImage = Path.Combine(OutputPath, file.GetMetadata(MetadataKeys.RelativePath));
 
             string dirName = Path.GetDirectoryName(outputR2RImage);
-            if (!Directory.Exists(dirName))
-                Directory.CreateDirectory(dirName);
+            Directory.CreateDirectory(dirName);
 
             string arguments = $"/nologo " +
                 $"/MissingDependenciesOK " +
@@ -217,20 +268,22 @@ namespace Microsoft.NET.Build.Tasks
                 $"/out \"{outputR2RImage}\" " +
                 $"\"{file.ItemSpec}\"";
 
-            return ExecuteTool(_crossgenPath, null, arguments) == 0;
+            if (ExecuteTool(_crossgenPath, null, arguments) != 0)
+            {
+                _crossgenFailures = true;
+                return false;
+            }
+
+            return true;
         }
 
         private bool CreatePDBForImage(ITaskItem file, out string outputPDBImage)
         {
             outputPDBImage = null;
-
             string arguments = null;
 
-            if (_targetPlatform == OSPlatform.Windows)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && _diasymreaderPath != null && File.Exists(_diasymreaderPath))
             {
-                if (_diasymreaderPath == null || !File.Exists(_diasymreaderPath))
-                    return false;
-
                 outputPDBImage = Path.ChangeExtension(file.ItemSpec, "ni.pdb");
 
                 arguments = $"/nologo " +
@@ -239,7 +292,7 @@ namespace Microsoft.NET.Build.Tasks
                     $"/CreatePDB \"{Path.GetDirectoryName(file.ItemSpec)}\" " +
                     $"\"{file.ItemSpec}\"";
             }
-            else if(_targetPlatform == OSPlatform.Linux)
+            else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 using (FileStream fs = new FileStream(file.ItemSpec, FileMode.Open, FileAccess.Read))
                 {
@@ -256,55 +309,65 @@ namespace Microsoft.NET.Build.Tasks
                     $"\"{file.ItemSpec}\"";
             }
 
-            return arguments == null ? false : (ExecuteTool(_crossgenPath, null, arguments) == 0);
-        }
-
-        bool ExtractTargetPlatformAndArchitectureFromRuntimeIdentifier()
-        {
-            int separator = _runtimeIdentifier.LastIndexOf('-');
-            if (separator < 0 || separator >= _runtimeIdentifier.Length)
+            if (arguments == null)
             {
+                // Not a failure. Just a platform where we don't emit native symbols (ex: OSX)
                 return false;
             }
 
-            string targetPlatform = _runtimeIdentifier.Substring(0, separator).ToLowerInvariant();
-            string targetArchitecture = _runtimeIdentifier.Substring(separator + 1).ToLowerInvariant();
-
-            if (targetPlatform.Contains("linux"))
-                _targetPlatform = OSPlatform.Linux;
-            else if (targetPlatform.Contains("osx"))
-                _targetPlatform = OSPlatform.OSX;
-            else if (targetPlatform.Contains("win"))
-                _targetPlatform = OSPlatform.Windows;
-            else
+            if (ExecuteTool(_crossgenPath, null, arguments) != 0)
+            {
+                _crossgenFailures = true;
                 return false;
-
-            if (targetArchitecture == "arm")
-                _targetArchitecture = Architecture.Arm;
-            else if (targetArchitecture == "arm64")
-                _targetArchitecture = Architecture.Arm64;
-            else if (targetArchitecture == "x64")
-                _targetArchitecture = Architecture.X64;
-            else if (targetArchitecture == "x86")
-                _targetArchitecture = Architecture.X86;
-            else
-                return false;
+            }
 
             return true;
         }
 
-        bool GetCrossgenComponentsPaths(string runtimePackagePath)
+        bool ExtractTargetPlatformAndArchitecture(string runtimeIdentifier, out string platform, out Architecture architecture)
+        {
+            platform = null;
+            architecture = default;
+
+            int separator = runtimeIdentifier.LastIndexOf('-');
+            if (separator < 0 || separator >= runtimeIdentifier.Length)
+            {
+                return false;
+            }
+
+            platform = runtimeIdentifier.Substring(0, separator).ToLowerInvariant();
+            string architectureStr = runtimeIdentifier.Substring(separator + 1).ToLowerInvariant();
+
+            switch (architectureStr)
+            {
+                case "arm":
+                    architecture = Architecture.Arm;
+                    break;
+                case "arm64":
+                    architecture = Architecture.Arm64;
+                    break;
+                case "x64":
+                    architecture = Architecture.X64;
+                    break;
+                case "x86":
+                    architecture = Architecture.X86;
+                    break;
+                default:
+                    return false;
+            }
+
+            return true;
+        }
+
+        bool GetCrossgenComponentsPaths()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (_targetPlatform !=  OSPlatform.Windows)
-                    return false;
-
                 if (_targetArchitecture == Architecture.Arm)
                 {
-                    _crossgenPath = Path.Combine(runtimePackagePath, "tools", "x86_arm", "crossgen.exe");
-                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", "x86_arm", "native", "clrjit.dll");
-                    _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
+                    _crossgenPath = Path.Combine(_packagePath, "tools", "x86_arm", "crossgen.exe");
+                    _clrjitPath = Path.Combine(_packagePath, "runtimes", "x86_arm", "native", "clrjit.dll");
+                    _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
                 }
                 else if (_targetArchitecture == Architecture.Arm64)
                 {
@@ -312,26 +375,23 @@ namespace Microsoft.NET.Build.Tasks
                     if (RuntimeInformation.OSArchitecture != Architecture.X64)
                         return false;
 
-                    _crossgenPath = Path.Combine(runtimePackagePath, "tools", "x64_arm64", "crossgen.exe");
-                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", "x64_arm64", "native", "clrjit.dll");
-                    _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
+                    _crossgenPath = Path.Combine(_packagePath, "tools", "x64_arm64", "crossgen.exe");
+                    _clrjitPath = Path.Combine(_packagePath, "runtimes", "x64_arm64", "native", "clrjit.dll");
+                    _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
                 }
                 else
                 {
-                    _crossgenPath = Path.Combine(runtimePackagePath, "tools", "crossgen.exe");
-                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "clrjit.dll");
+                    _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen.exe");
+                    _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "clrjit.dll");
                     if(_targetArchitecture == Architecture.X64)
-                        _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
                     else
-                        _diasymreaderPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 _pathSeparatorCharacter = ":";
-
-                if (_targetPlatform != OSPlatform.Linux)
-                    return false;
 
                 if (_targetArchitecture == Architecture.Arm || _targetArchitecture == Architecture.Arm64)
                 {
@@ -340,13 +400,13 @@ namespace Microsoft.NET.Build.Tasks
                         return false;
 
                     string xarchPath = (_targetArchitecture == Architecture.Arm ? "x64_arm" : "x64_arm64");
-                    _crossgenPath = Path.Combine(runtimePackagePath, "tools", xarchPath, "crossgen");
-                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", xarchPath, "native", "libclrjit.so");
+                    _crossgenPath = Path.Combine(_packagePath, "tools", xarchPath, "crossgen");
+                    _clrjitPath = Path.Combine(_packagePath, "runtimes", xarchPath, "native", "libclrjit.so");
                 }
                 else
                 {
-                    _crossgenPath = Path.Combine(runtimePackagePath, "tools", "crossgen");
-                    _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.so");
+                    _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen");
+                    _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.so");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -354,11 +414,11 @@ namespace Microsoft.NET.Build.Tasks
                 _pathSeparatorCharacter = ":";
 
                 // Only x64 supported for OSX
-                if (_targetPlatform != OSPlatform.OSX || _targetArchitecture != Architecture.X64 || RuntimeInformation.OSArchitecture != Architecture.X64)
+                if (_targetArchitecture != Architecture.X64 || RuntimeInformation.OSArchitecture != Architecture.X64)
                     return false;
 
-                _crossgenPath = Path.Combine(runtimePackagePath, "tools", "crossgen");
-                _clrjitPath = Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.dylib");
+                _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen");
+                _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.dylib");
             }
             else
             {
@@ -367,8 +427,8 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             _platformAssembliesPath =
-                Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "native") + _pathSeparatorCharacter +
-                Path.Combine(runtimePackagePath, "runtimes", _runtimeIdentifier, "lib", TargetFramework);
+                Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native") + _pathSeparatorCharacter +
+                Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "lib", TargetFramework);
 
             return true;
         }
