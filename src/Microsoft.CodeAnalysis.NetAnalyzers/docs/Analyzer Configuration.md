@@ -152,6 +152,29 @@ Default Value: `false`
 
 Example: `dotnet_code_quality.dispose_ownership_transfer_at_constructor = true`
 
+For example, consider the below code:
+```csharp
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    DisposableOwnerType M1()
+    {
+        // Dispose ownership for allocation 'new A()' is assumed to be transferred to the returned 'DisposableOwnerType' instance
+        // only if 'dotnet_code_quality.dispose_ownership_transfer_at_constructor = true'.
+        // Otherwise, current method 'M1' has the dispose ownership for 'new A()', and it fires a CA2000 as a dispose leak for the below code.
+        return new DisposableOwnerType(new A());
+    }
+}
+```
+
 #### Configure execution of Copy analysis (tracks value and reference copies)
 Option Name: `copy_analysis`
 
