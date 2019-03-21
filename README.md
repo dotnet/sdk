@@ -46,6 +46,7 @@ Options:
                      diag[nostic]
   --dry-run          Format files, but do not save changes to disk.
   --check            Terminate with non-zero exit code if any files need to be formatted in the workspace.
+  --files            The files to operate on. If none specified, all files in workspace will be operated on.
   --version          Display version information
 ```
 

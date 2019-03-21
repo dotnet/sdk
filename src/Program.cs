@@ -33,13 +33,14 @@ namespace Microsoft.CodeAnalysis.Tools
                 .AddOption(new Option(new[] { "-v", "--verbosity" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic, new Argument<string>() { Arity = ArgumentArity.ExactlyOne }.FromAmong(_verbosityLevels)))
                 .AddOption(new Option(new[] { "--dry-run" }, Resources.Format_files_but_do_not_save_changes_to_disk, new Argument<bool>()))
                 .AddOption(new Option(new[] { "--check" }, Resources.Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_workspace, new Argument<bool>()))
+                .AddOption(new Option(new[] { "--files" }, Resources.The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated_on, new Argument<string>(() => null)))
                 .UseVersionOption()
                 .Build();
 
             return await parser.InvokeAsync(args).ConfigureAwait(false);
         }
 
-        public static async Task<int> Run(string workspace, string verbosity, bool dryRun, bool check, IConsole console = null)
+        public static async Task<int> Run(string workspace, string verbosity, bool dryRun, bool check, string files, IConsole console = null)
         {
             var serviceCollection = new ServiceCollection();
             var logLevel = GetLogLevel(verbosity);
@@ -70,6 +71,8 @@ namespace Microsoft.CodeAnalysis.Tools
                 var workspaceDirectory = Path.GetDirectoryName(workspacePath);
                 Environment.CurrentDirectory = workingDirectory;
 
+                var fileList = GetFileList(files);
+
                 // Since we are running as a dotnet tool we should be able to find an instance of
                 // MSBuild in a .NET Core SDK.
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
@@ -88,6 +91,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     isSolution,
                     logAllWorkspaceWarnings: logLevel == LogLevel.Trace,
                     saveFormattedFiles: !dryRun,
+                    filesToFormat: fileList,
                     cancellationTokenSource.Token).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
@@ -141,6 +145,11 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             serviceCollection.AddSingleton(new LoggerFactory().AddSimpleConsole(console, logLevel));
             serviceCollection.AddLogging();
+        }
+        
+        internal static string[] GetFileList(string files)
+        {
+            return files?.Split(',').Select(path => Path.GetRelativePath(Environment.CurrentDirectory, path)).ToArray();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.IO;
+using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
@@ -39,6 +40,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var exitCode = Program.GetExitCode(formatResult, check: false);
 
             Assert.Equal(formatResult.ExitCode, exitCode);
+        }
+
+        [Fact]
+        public void FilesFormattedDirectorySeparatorInsensitive()
+        {
+            var filePath = $"other_items{Path.DirectorySeparatorChar}OtherClass.cs";
+            var files = Program.GetFileList(filePath);
+            
+            var filePathAlt = $"other_items{Path.AltDirectorySeparatorChar}OtherClass.cs";
+            var filesAlt = Program.GetFileList(filePathAlt);
+
+            Assert.True(files[0] == filesAlt[0]);
         }
     }
 }

@@ -117,6 +117,11 @@
         <target state="translated">{0} 毫秒內載入的工作區。</target>
         <note />
       </trans-unit>
+      <trans-unit id="The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated_on">
+        <source>The files to operate on. If none specified, all files in workspace will be operated on.</source>
+        <target state="new">The files to operate on. If none specified, all files in workspace will be operated on.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

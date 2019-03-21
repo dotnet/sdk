@@ -275,5 +275,15 @@ namespace Microsoft.CodeAnalysis.Tools {
                 return ResourceManager.GetString("Workspace_loaded_in_0_ms", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The files to operate on. If none specified, all files in workspace will be operated on..
+        /// </summary>
+        internal static string The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated_on {
+            get {
+                return ResourceManager.GetString("The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated" +
+                                                 "_on", resourceCulture);
+            }
+        }
     }
 }
