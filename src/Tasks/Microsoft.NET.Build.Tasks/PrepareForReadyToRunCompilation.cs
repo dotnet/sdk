@@ -32,6 +32,8 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] KnownFrameworkReferences { get; set; }
         [Required]
         public string RuntimeGraphPath { get; set; }
+        [Required]
+        public string NETCoreSdkRuntimeIdentifier { get; set; }
 
         [Output]
         public ITaskItem CrossgenTool { get; set; }
@@ -90,7 +92,7 @@ namespace Microsoft.NET.Build.Tasks
             // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
             string hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(
                 runtimeGraph,
-                DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier(),
+                NETCoreSdkRuntimeIdentifier,
                 supportedRIDsList,
                 out bool wasInGraph);
 

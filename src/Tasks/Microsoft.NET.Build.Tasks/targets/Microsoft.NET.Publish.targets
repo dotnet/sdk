@@ -227,6 +227,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                      RuntimePacks="@(ResolvedRuntimePack)"
                                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
                                      KnownFrameworkReferences="@(KnownFrameworkReference)"
+                                     NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                      OutputPath="$(_ReadyToRunOutputPath)"
                                      FilesToPublishAlways="@(_ResolvedFileToPublishAlways)"
                                      FilesToPublishPreserveNewest="@(_ResolvedFileToPublishPreserveNewest)"
