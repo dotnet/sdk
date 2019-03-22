@@ -49,7 +49,7 @@
     <Exec Command="dotnet new tool-manifest"
       WorkingDirectory="$(TestLocalToolFolder)"/>
     
-    <Exec Command="dotnet tool install --local $(ToolCommandName) --version $(PackageVersion) --add-source $(ArtifactsShippingPackagesDir)"
+    <Exec Command="dotnet tool install --local $(ToolCommandName) --version $(PackageVersion) --add-source $(ArtifactsNonShippingPackagesDir)"
       WorkingDirectory="$(TestLocalToolFolder)"/>
 
     <PropertyGroup>
