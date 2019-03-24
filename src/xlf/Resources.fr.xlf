@@ -122,6 +122,11 @@
         <target state="new">The files to operate on. If none specified, all files in workspace will be operated on.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Formatted_code_file_0">
+        <source>Formatted code file '{0}'.</source>
+        <target state="new">Formatted code file '{0}'.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

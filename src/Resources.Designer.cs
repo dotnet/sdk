@@ -285,5 +285,14 @@ namespace Microsoft.CodeAnalysis.Tools {
                                                  "_on", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Formatted code file &apos;{0}&apos;..
+        /// </summary>
+        internal static string Formatted_code_file_0 {
+            get {
+                return ResourceManager.GetString("Formatted_code_file_0", resourceCulture);
+            }
+        }
     }
 }

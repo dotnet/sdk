@@ -156,5 +156,23 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal(0, formatResult.FilesFormatted);
             Assert.Equal(4, formatResult.FileCount);
         }
+
+        [Fact]
+        public async Task OnlyLogFormattedFiles()
+        {
+            var logger = new TestLogger();
+            var path = Path.GetFullPath("tests/projects/for_code_formatter/unformatted_solution/unformatted_solution.sln", SolutionPath);
+
+            var files = new[] {"Program.cs"};
+            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: true, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: files, cancellationToken: CancellationToken.None);
+            var log = logger.GetLog();
+
+            var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
+            var fileFormatted = new Regex(pattern, RegexOptions.Multiline);
+            var match = fileFormatted.Match(log);
+
+            Assert.True(match.Success, log);
+            Assert.Equal("Program.cs", match.Groups[1].Value);
+        }
     }
 }

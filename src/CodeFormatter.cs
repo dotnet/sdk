@@ -194,6 +194,8 @@ namespace Microsoft.CodeAnalysis.Tools
                         return null;
                     }
 
+                    logger.LogInformation(Resources.Formatted_code_file_0, Path.GetFileName(document.FilePath));
+
                     return formattedSourceText;
                 }, cancellationToken);
 
