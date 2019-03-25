@@ -3,3 +3,6 @@
 # but it's unlikely one will be available.
 
 useInstalledDotNetCli="false"
+
+# To further isolate between each build. It has sential files and local tools resolver cache
+export DOTNET_CLI_HOME=$repo_root/artifacts/DotnetCliHome

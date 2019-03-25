@@ -4,3 +4,6 @@
 
 $script:useInstalledDotNetCli = $false
 
+# To further isolate between each build. It has sential files and local tools resolver cache
+
+$env:DOTNET_CLI_HOME = Join-Path -Path (Join-Path -Path  $RepoRoot -ChildPath "artifacts") -ChildPath "DotnetCliHome"
