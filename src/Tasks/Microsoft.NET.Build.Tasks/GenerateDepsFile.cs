@@ -106,7 +106,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            LoadFilesToSkip();
+            //LoadFilesToSkip();
 
             LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
             CompilationOptions compilationOptions = CompilationOptionsConverter.ConvertFrom(CompilerOptions);
@@ -155,6 +155,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithCompilationOptions(compilationOptions)
                 .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath())
                 .WithPackagesThatWhereFiltered(GetFilteredPackages())
+                //.WithFilesToSkip(FilesToSkip.Select(item => item.ItemSpec))
                 .Build();
 
             if (compileFilesToSkip.Any() || runtimeFilesToSkip.Any())

@@ -36,6 +36,7 @@ namespace Microsoft.NET.Build.Tasks
         private bool _includeMainProjectInDepsFile = true;
         private HashSet<string> _usedLibraryNames;
         private Dictionary<ReferenceInfo, string> _referenceLibraryNames;
+        private HashSet<string> _filesToSkip;
 
         public DependencyContextBuilder(SingleProjectInfo mainProjectInfo, ProjectContext projectContext, bool includeRuntimeFileVersions)
         {
@@ -150,6 +151,15 @@ namespace Microsoft.NET.Build.Tasks
         public DependencyContextBuilder WithPackagesThatWhereFiltered(Dictionary<PackageIdentity, string> packagesThatWhereFiltered)
         {
             _filteredPackages = packagesThatWhereFiltered;
+            return this;
+        }
+
+        public DependencyContextBuilder WithFilesToSkip(IEnumerable<string> filesToSkip)
+        {
+            if (filesToSkip != null)
+            {
+                _filesToSkip = new HashSet<string>(filesToSkip, StringComparer.OrdinalIgnoreCase);
+            }
             return this;
         }
 

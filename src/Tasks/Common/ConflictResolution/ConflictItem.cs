@@ -158,11 +158,43 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_packageId == null)
                 {
-                    _packageId = OriginalItem?.GetMetadata(MetadataNames.NuGetPackageId) ?? String.Empty;
+                    _packageId = OriginalItem?.GetMetadata(MetadataNames.NuGetPackageId);
+
+                    if (string.IsNullOrEmpty(_packageId))
+                    {
+                        _packageId = OriginalItem?.GetMetadata(MetadataKeys.PackageName) ?? string.Empty;
+                    }
 
                     if (_packageId.Length == 0)
                     {
-                        _packageId = NuGetUtils.GetPackageIdFromSourcePath(SourcePath) ?? String.Empty;
+                        string packageIdFromPath = NuGetUtils.GetPackageIdFromSourcePath(SourcePath);
+                        if (!string.IsNullOrEmpty(packageIdFromPath))
+                        {
+                            string path = OriginalItem?.ItemSpec;
+                            if (string.IsNullOrEmpty(path))
+                            {
+                                path = SourcePath;
+                            }
+                            throw new InvalidOperationException("NuGetPackageId metadata not set on " + path);
+                        }
+
+                        ////  For files that exist, we expect a package ID.  For simple name references ("System"), we don't
+                        //if (Exists)
+                        //{
+                        //    string path = OriginalItem?.ItemSpec;
+                        //    if (string.IsNullOrEmpty(path))
+                        //    {
+                        //        path = SourcePath;
+                        //    }
+                        //    throw new InvalidOperationException("NuGetPackageId metadata not set on " + path);
+                        //}
+                        //else
+                        //{
+                        //    _packageId = string.Empty;
+                        //}
+                        ////_packageId = NuGetUtils.GetPackageIdFromSourcePath(SourcePath) ?? String.Empty;
+
+                        _packageId = string.Empty;
                     }
                 }
 
