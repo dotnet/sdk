@@ -178,7 +178,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute("/v:n")
                 .Should()
                 .Fail()
-                .And.HaveStdOutContainingIgnoreCase("not supported for the selected target platform or architecture");
+                .And.HaveStdOutContainingIgnoreCase("NETSDK1094");
         }
 
         private TestProject CreateTestProjectForR2RTesting(string ridToUse, string mainProjectName, string referenceProjectName)

@@ -18,12 +18,6 @@ namespace Microsoft.NET.Build.Tasks
             _log = task.Log;
         }
 
-        public RuntimeGraphCache(IBuildEngine4 buildEngine4, Logger log)
-        {
-            _buildEngine = buildEngine4;
-            _log = log;
-        }
-
         public RuntimeGraph GetRuntimeGraph(string runtimeJsonPath)
         {
             if (string.IsNullOrEmpty(runtimeJsonPath))

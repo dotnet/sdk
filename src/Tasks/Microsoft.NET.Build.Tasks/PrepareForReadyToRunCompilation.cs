@@ -86,7 +86,7 @@ namespace Microsoft.NET.Build.Tasks
             _runtimeIdentifier = frameworkPack == null ? null : frameworkPack.GetMetadata(MetadataKeys.RuntimeIdentifier);
             _packagePath = frameworkPack == null ? null : frameworkPack.GetMetadata(MetadataKeys.PackageDirectory);
 
-            var runtimeGraph = new RuntimeGraphCache(BuildEngine4, Log).GetRuntimeGraph(RuntimeGraphPath);
+            var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
             var supportedRIDsList = supportedRuntimeIdentifiers == null ? Array.Empty<string>() : supportedRuntimeIdentifiers.Split(';');
 
             // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture

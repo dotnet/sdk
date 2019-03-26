@@ -391,10 +391,17 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1059: 工具 '{0}' 現已包含在 .NET Core SDK 中。解決此警告的資訊位於 (https://aka.ms/dotnetclitools-in-box)。</target>
         <note>{StrBegin="NETSDK1059: "}</note>
       </trans-unit>
+<<<<<<< HEAD
       <trans-unit id="ReadyToRunCompilerOutput">
         <source>NETSDK1089: {0}</source>
         <target state="new">NETSDK1089: {0}</target>
         <note>{StrBegin="NETSDK1089: "}</note>
+=======
+      <trans-unit id="ReadyToRunCompilationFailed">
+        <source>NETSDK1095: Optimizing assemblies for performance failed. You can either exclude the failing assemblies from being optimized, or set the ReadyToRun property to false.</source>
+        <target state="new">NETSDK1095: Optimizing assemblies for performance failed. You can either exclude the failing assemblies from being optimized, or set the ReadyToRun property to false.</target>
+        <note>{StrBegin="NETSDK1095: "}</note>
+>>>>>>> 5a5dad24... CR feedback
       </trans-unit>
       <trans-unit id="ReadyToRunNoValidRuntimePackageError">
         <source>NETSDK1087: Unable to optimize assemblies for performance: a valid runtime package was not found. Either set the ReadyToRun property to false, or use a supported runtime identifier when publishing.</source>

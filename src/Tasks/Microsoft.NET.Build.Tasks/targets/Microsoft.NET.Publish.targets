@@ -191,6 +191,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                             _CreateR2RImagePublishAlways;
                             _CreateR2RSymbolsPublishAlways">
 
+    <NETSdkError Condition="'@(_ReadyToRunCompilationFailures)' != ''" ResourceName="ReadyToRunCompilationFailed" />
+
     <ItemGroup>
       <!-- 
       Note: we only remove the entries for the IL images and replace them with the entries for the R2R images.
@@ -263,8 +265,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <RunReadyToRunCompiler CrossgenTool="@(_CrossgenTool)"
                            CompilationEntry="@(_ReadyToRunCompileListPreserveNewest)"
-                           ContinueOnError="ErrorAndContinue" />
+                           ContinueOnError="ErrorAndContinue">
+      <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />
+    </RunReadyToRunCompiler>
 
+    <ItemGroup>
+      <_ReadyToRunCompilationFailures Condition="'$(_ReadyToRunCompilerExitCode)' != '' And $(_ReadyToRunCompilerExitCode) != 0"
+                                      Include="@(_ReadyToRunCompileListPreserveNewest)" />
+    </ItemGroup>
   </Target>
 
   <!--
@@ -280,8 +288,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <RunReadyToRunCompiler CrossgenTool="@(_CrossgenTool)"
                            CompilationEntry="@(_ReadyToRunSymbolsCompileListPreserveNewest)"
-                           ContinueOnError="ErrorAndContinue" />
+                           ContinueOnError="ErrorAndContinue">
+      <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />
+    </RunReadyToRunCompiler>
 
+    <ItemGroup>
+      <_ReadyToRunCompilationFailures Condition="'$(_ReadyToRunCompilerExitCode)' != '' And $(_ReadyToRunCompilerExitCode) != 0"
+                                      Include="@(_ReadyToRunSymbolsCompileListPreserveNewest)" />
+    </ItemGroup>
   </Target>
 
   <!--
@@ -297,8 +311,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <RunReadyToRunCompiler CrossgenTool="@(_CrossgenTool)"
                            CompilationEntry="@(_ReadyToRunCompileListPublishAlways)"
-                           ContinueOnError="ErrorAndContinue" />
+                           ContinueOnError="ErrorAndContinue">
+      <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />
+    </RunReadyToRunCompiler>
 
+    <ItemGroup>
+      <_ReadyToRunCompilationFailures Condition="'$(_ReadyToRunCompilerExitCode)' != '' And $(_ReadyToRunCompilerExitCode) != 0"
+                                      Include="@(_ReadyToRunCompileListPublishAlways)" />
+    </ItemGroup>
   </Target>
 
   <!--
@@ -314,8 +334,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <RunReadyToRunCompiler CrossgenTool="@(_CrossgenTool)"
                            CompilationEntry="@(_ReadyToRunSymbolsCompileListPublishAlways)"
-                           ContinueOnError="ErrorAndContinue" />
+                           ContinueOnError="ErrorAndContinue">
+      <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />
+    </RunReadyToRunCompiler>
 
+    <ItemGroup>
+      <_ReadyToRunCompilationFailures Condition="'$(_ReadyToRunCompilerExitCode)' != '' And $(_ReadyToRunCompilerExitCode) != 0"
+                                      Include="@(_ReadyToRunSymbolsCompileListPublishAlways)" />
+    </ItemGroup>
   </Target>
 
   <!--
