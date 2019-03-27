@@ -132,7 +132,7 @@ phases:
         parallel: 2
         timeoutInMinutes: 120
         matrix:
-          Build_Debug:
+          Build_Release:
             _BuildConfig: Release
             _PublishType: none
             _SignType: test
@@ -145,7 +145,7 @@ phases:
         parallel: 2
         timeoutInMinutes: 120
         matrix:
-          Build_Debug:
+          Build_Release:
             _BuildConfig: Release
             _PublishType: none
             _SignType: test
