@@ -60,23 +60,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
-    <_NativeLibraryPrefix Condition="'$(_NativeLibraryPrefix)' == '' and !$(RuntimeIdentifier.StartsWith('win'))">lib</_NativeLibraryPrefix>
-
-    <_NativeLibraryExtension Condition="'$(_NativeLibraryExtension)' == '' and $(RuntimeIdentifier.StartsWith('win'))">.dll</_NativeLibraryExtension>
-    <_NativeLibraryExtension Condition="'$(_NativeLibraryExtension)' == '' and $(RuntimeIdentifier.StartsWith('osx'))">.dylib</_NativeLibraryExtension>
-    <_NativeLibraryExtension Condition="'$(_NativeLibraryExtension)' == ''">.so</_NativeLibraryExtension>
-
-    <_NativeExecutableExtension Condition="'$(_NativeExecutableExtension)' == '' and $(RuntimeIdentifier.StartsWith('win'))">.exe</_NativeExecutableExtension>
-
-    <_DotNetHostExecutableName>dotnet$(_NativeExecutableExtension)</_DotNetHostExecutableName>
-    <_DotNetAppHostExecutableNameWithoutExtension>apphost</_DotNetAppHostExecutableNameWithoutExtension>
-    <_DotNetAppHostExecutableName>$(_DotNetAppHostExecutableNameWithoutExtension)$(_NativeExecutableExtension)</_DotNetAppHostExecutableName>
-
-    <_DotNetHostPolicyLibraryName>$(_NativeLibraryPrefix)hostpolicy$(_NativeLibraryExtension)</_DotNetHostPolicyLibraryName>
-    <_DotNetHostFxrLibraryName>$(_NativeLibraryPrefix)hostfxr$(_NativeLibraryExtension)</_DotNetHostFxrLibraryName>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <_DefaultUserProfileRuntimeStorePath>$(HOME)</_DefaultUserProfileRuntimeStorePath>
     <_DefaultUserProfileRuntimeStorePath Condition="'$(OS)' == 'Windows_NT'">$(USERPROFILE)</_DefaultUserProfileRuntimeStorePath>
     <_DefaultUserProfileRuntimeStorePath>$([System.IO.Path]::Combine($(_DefaultUserProfileRuntimeStorePath), '.dotnet', 'store'))</_DefaultUserProfileRuntimeStorePath>
@@ -104,6 +87,32 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(RebuildDependsOn)
     </RebuildDependsOn>
   </PropertyGroup>
+
+  <!--
+    ============================================================
+    _ComputeDotNetRuntimeFiles
+
+    Computes various runtime file properties based on the current RuntimeIdentifier.
+    ============================================================
+  -->
+  <Target Name="_ComputeDotNetRuntimeFiles">
+    <PropertyGroup>
+      <_NativeLibraryPrefix Condition="'$(_NativeLibraryPrefix)' == '' and !$(RuntimeIdentifier.StartsWith('win'))">lib</_NativeLibraryPrefix>
+
+      <_NativeLibraryExtension Condition="'$(_NativeLibraryExtension)' == '' and $(RuntimeIdentifier.StartsWith('win'))">.dll</_NativeLibraryExtension>
+      <_NativeLibraryExtension Condition="'$(_NativeLibraryExtension)' == '' and $(RuntimeIdentifier.StartsWith('osx'))">.dylib</_NativeLibraryExtension>
+      <_NativeLibraryExtension Condition="'$(_NativeLibraryExtension)' == ''">.so</_NativeLibraryExtension>
+
+      <_NativeExecutableExtension Condition="'$(_NativeExecutableExtension)' == '' and $(RuntimeIdentifier.StartsWith('win'))">.exe</_NativeExecutableExtension>
+
+      <_DotNetHostExecutableName>dotnet$(_NativeExecutableExtension)</_DotNetHostExecutableName>
+      <_DotNetAppHostExecutableNameWithoutExtension>apphost</_DotNetAppHostExecutableNameWithoutExtension>
+      <_DotNetAppHostExecutableName>$(_DotNetAppHostExecutableNameWithoutExtension)$(_NativeExecutableExtension)</_DotNetAppHostExecutableName>
+
+      <_DotNetHostPolicyLibraryName>$(_NativeLibraryPrefix)hostpolicy$(_NativeLibraryExtension)</_DotNetHostPolicyLibraryName>
+      <_DotNetHostFxrLibraryName>$(_NativeLibraryPrefix)hostfxr$(_NativeLibraryExtension)</_DotNetHostFxrLibraryName>
+    </PropertyGroup>
+  </Target>
 
   <!--
     ============================================================
@@ -276,7 +285,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <UsingTask TaskName="EmbedAppNameInHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="_ComputeNETCoreBuildOutputFiles"
-          DependsOnTargets="ResolvePackageAssets"
+          DependsOnTargets="_ComputeDotNetRuntimeFiles;ResolvePackageAssets"
           AfterTargets="ResolveReferences"
           BeforeTargets="AssignTargetPaths"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true'">
@@ -350,7 +359,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ComputeReferenceAssemblies"
-          DependsOnTargets="ResolveAssemblyReferences">
+          DependsOnTargets="_ComputeDotNetRuntimeFiles;ResolveAssemblyReferences">
 
     <ItemGroup>
       <_FrameworkReferenceAssemblies Include="@(ReferencePath)"

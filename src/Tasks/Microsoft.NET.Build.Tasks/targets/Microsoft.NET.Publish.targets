@@ -17,9 +17,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultCopyToPublishDirectoryMetadata Condition="'$(DefaultCopyToPublishDirectoryMetadata)' == ''">true</DefaultCopyToPublishDirectoryMetadata>
     <_GetChildProjectCopyToPublishDirectoryItems Condition="'$(_GetChildProjectCopyToPublishDirectoryItems)' == ''">true</_GetChildProjectCopyToPublishDirectoryItems>
 
-    <!-- publishing with the apphost should publish the native host as $(AssemblyName).exe -->
-    <DeployAppHost Condition="'$(DeployAppHost)' == '' and '$(_IsExecutable)' == 'true' and '$(RuntimeIdentifier)' != '' and '$(UseAppHost)' == 'true'">true</DeployAppHost>
-  
     <IsPublishable Condition="'$(IsPublishable)'==''">true</IsPublishable>
   </PropertyGroup>
 
@@ -627,21 +624,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="DeployAppHost"
-          DependsOnTargets="_ComputeNETCoreBuildOutputFiles"
+          DependsOnTargets="_ComputeDotNetRuntimeFiles;_ComputeNETCoreBuildOutputFiles"
           AfterTargets="ComputeFilesToPublish"
-          BeforeTargets="CopyFilesToPublishDirectory"
-          Condition="'$(DeployAppHost)' == 'true'">
+          BeforeTargets="CopyFilesToPublishDirectory">
 
-    <ItemGroup>
+    <!-- publishing with the apphost should publish the native host as $(AssemblyName).exe -->
+    <PropertyGroup>
+      <DeployAppHost Condition="'$(DeployAppHost)' == '' and '$(_IsExecutable)' == 'true' and '$(RuntimeIdentifier)' != '' and '$(UseAppHost)' == 'true'">true</DeployAppHost>
+    </PropertyGroup>
 
+    <ItemGroup Condition="'$(DeployAppHost)' == 'true'">
       <ResolvedFileToRemove  Include ="%(ResolvedFileToPublish.Identity)" Condition="'%(ResolvedFileToPublish.RelativePath)' == '$(_DotNetHostExecutableName)' Or '%(ResolvedFileToPublish.RelativePath)' == '$(_DotNetAppHostExecutableName)'"/>
       <ResolvedFileToPublish Remove ="%(ResolvedFileToRemove.Identity)"/>
 
       <ResolvedFileToPublish Include="%(NativeAppHostNETCore.Identity)">
         <RelativePath>$(AssemblyName)$(_NativeExecutableExtension)</RelativePath>
       </ResolvedFileToPublish>
-
-
     </ItemGroup>
 
   </Target>
