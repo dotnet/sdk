@@ -38,8 +38,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotnetCliToolTargetFramework)' == '' And '$(BundledNETCoreAppTargetFrameworkVersion)' != ''">
-    <!-- Set the TFM used to restore .NET CLI tools to match the version of .NET Core bundled in the CLI -->
-    <DotnetCliToolTargetFramework>netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</DotnetCliToolTargetFramework>
+    <!-- To move away from project tools. The highest available project tools TFM is netcoreapp2.2 -->
+    <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
