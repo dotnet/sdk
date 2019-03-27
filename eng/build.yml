@@ -16,7 +16,7 @@ phases:
       _HelixType: build/product
       _HelixBuildConfig: $(_BuildConfig)
       _TeamName: DotNetCore
-      _PerformanceArgs: /p:PerfIterations=10 /p:PerfCollectionType=stopwatch
+      _PerformanceArgs: /p:PerfIterations=4
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         _HelixSource: pr/dotnet/sdk/$(Build.SourceBranch)
         _OfficialBuildIdArgs: ''
@@ -32,7 +32,6 @@ phases:
                   /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                   /p:PB_PublishType=$(_PublishType)
         _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        
 
     steps:
     - ${{ if ne(variables['System.TeamProject'], 'public') }}:
