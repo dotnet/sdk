@@ -17,12 +17,12 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Restore.Tests
 {
-    public class GivenThatWeWantToRestoreAndGenerateDepsjsonDotNetCliToolReference : SdkTest
+    public class GivenThatWeWantToRestoreDotNetCliToolReference : SdkTest
     {
         private const string ProjectToolVersion = "1.0.0";
         private const string ExpectedProjectToolRestoreTargetFrameworkMoniker = "netcoreapp2.2";
 
-        public GivenThatWeWantToRestoreAndGenerateDepsjsonDotNetCliToolReference(ITestOutputHelper log) : base(log)
+        public GivenThatWeWantToRestoreDotNetCliToolReference(ITestOutputHelper log) : base(log)
         {
         }
 
