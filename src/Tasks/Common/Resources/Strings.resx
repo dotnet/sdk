@@ -490,7 +490,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1092: "}</comment>
   </data>
   <data name="ProjectToolOnlySupportTFMLowerThanNetcoreapp22" xml:space="preserve">
-    <value>NETSDK1093: Project tools(DotnetCliTool) only support Target Framework Moniker lower than or equal to netcoreapp2.2.</value>
+    <value>NETSDK1093: NETSDK1093: Project tools (DotnetCliTool) only support targeting .NET Core 2.2 and lower.</value>
     <comment>{StrBegin="NETSDK1093: "}</comment>
   </data>
 </root>

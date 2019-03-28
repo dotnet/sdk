@@ -392,8 +392,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1059: "}</note>
       </trans-unit>
       <trans-unit id="ProjectToolOnlySupportTFMLowerThanNetcoreapp22">
-        <source>NETSDK1093: Project tools(DotnetCliTool) only support Target Framework Moniker lower than or equal to netcoreapp2.2.</source>
-        <target state="new">NETSDK1093: Project tools(DotnetCliTool) only support Target Framework Moniker lower than or equal to netcoreapp2.2.</target>
+        <source>NETSDK1093: NETSDK1093: Project tools (DotnetCliTool) only support targeting .NET Core 2.2 and lower.</source>
+        <target state="new">NETSDK1093: NETSDK1093: Project tools (DotnetCliTool) only support targeting .NET Core 2.2 and lower.</target>
         <note>{StrBegin="NETSDK1093: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">

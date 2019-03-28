@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_packs_project_tools_has_tfm_lower_or_equal_to_netcoreapp2_2()
+        public void It_packs_project_tools_targeting_netcoreapp2_2()
         {
             TestProject toolProject = new TestProject()
             {
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_packs_project_tools_has_tfm_higher_than_netcoreapp2_2()
+        public void It_fails_to_pack_project_tools_targeting_netcoreapp3_0()
         {
             TestProject toolProject = new TestProject()
             {
@@ -58,11 +58,11 @@ namespace Microsoft.NET.Build.Tests
                        .Restore(Log, toolProject.Name);
 
             var result = new PackCommand(Log, Path.Combine(asset.TestRoot, toolProject.Name)).Execute();
-            result.ExitCode.Should().NotBe(0);
+            result
+                .Should()
+                .Fail()
+                .And.HaveStdOutContaining(Strings.ProjectToolOnlySupportTFMLowerThanNetcoreapp22);
 
-            string expectedErrorMessage = Strings.ProjectToolOnlySupportTFMLowerThanNetcoreapp22;
-
-            result.StdOut.Should().Contain(expectedErrorMessage);
         }
     }
 }

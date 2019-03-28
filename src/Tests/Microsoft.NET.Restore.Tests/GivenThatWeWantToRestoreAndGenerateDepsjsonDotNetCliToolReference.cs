@@ -86,7 +86,7 @@ namespace Microsoft.NET.Restore.Tests
             LockFile lockFile = LockFileUtilities.GetLockFile(assetsJsonPath, NullLogger.Instance);
             lockFile.Targets.Single().TargetFramework
                 .Should().Be(NuGetFramework.Parse(ExpectedProjectToolRestoreTargetFrameworkMoniker),
-                "Restore target framework should be caped at netcoreapp2.2 due to moving away from project tools." +
+                "Restore target framework should be capped at netcoreapp2.2 due to moving away from project tools." +
                 "Even when SDK's TFM is higher and the project's TFM is netcoreapp1.0");
         }
 

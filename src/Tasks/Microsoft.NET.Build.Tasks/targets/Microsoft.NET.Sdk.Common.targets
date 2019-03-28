@@ -38,7 +38,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotnetCliToolTargetFramework)' == '' And '$(BundledNETCoreAppTargetFrameworkVersion)' != ''">
-    <!-- To move away from project tools. The highest available project tools TFM is netcoreapp2.2 -->
+    <!-- Maximum supported target framework for DotnetCliProjectTools is .NET Core 2.2 -->
     <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
