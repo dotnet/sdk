@@ -155,13 +155,13 @@ namespace Microsoft.NET.Build.Tasks
                 .WithCompilationOptions(compilationOptions)
                 .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath())
                 .WithPackagesThatWhereFiltered(GetFilteredPackages())
-                //.WithFilesToSkip(FilesToSkip.Select(item => item.ItemSpec))
+                .WithFilesToSkip(FilesToSkip.Select(item => item.ItemSpec))
                 .Build();
 
-            if (compileFilesToSkip.Any() || runtimeFilesToSkip.Any())
-            {
-                dependencyContext = TrimFilesToSkip(dependencyContext);
-            }
+            //if (compileFilesToSkip.Any() || runtimeFilesToSkip.Any())
+            //{
+            //    dependencyContext = TrimFilesToSkip(dependencyContext);
+            //}
 
             var writer = new DependencyContextWriter();
             using (var fileStream = File.Create(DepsFilePath))

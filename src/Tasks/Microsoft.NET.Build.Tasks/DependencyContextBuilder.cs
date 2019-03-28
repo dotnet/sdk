@@ -196,7 +196,7 @@ namespace Microsoft.NET.Build.Tasks
                 });
             }
             runtimeLibraries = runtimeLibraries
-                .Concat(GetRuntimePackLibraries(_runtimePackAssets))
+                .Concat(GetRuntimePackLibraries(FilterSkippedFiles(_runtimePackAssets)))
                 .Concat(GetLibraries(runtimeExports, libraryLookup, dependencyLookup, runtime: true).Cast<RuntimeLibrary>())
                 .Concat(GetDirectReferenceRuntimeLibraries())
                 .Concat(GetDependencyReferenceRuntimeLibraries());
@@ -516,7 +516,8 @@ namespace Microsoft.NET.Build.Tasks
                 assemblyGroups.Add(
                     new RuntimeAssetGroup(
                         string.Empty,
-                        targetLibrary.RuntimeAssemblies.FilterPlaceholderFiles().Select(a => CreateRuntimeFile(targetLibrary, a))));
+                        FilterSkippedFiles(targetLibrary.RuntimeAssemblies.FilterPlaceholderFiles())
+                            .Select(a => CreateRuntimeFile(targetLibrary, a))));
 
                 foreach (var runtimeTargetsGroup in targetLibrary.GetRuntimeTargetsGroups("runtime"))
                 {
@@ -736,6 +737,26 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             return path + trailingCharacter;
+        }
+
+        private IEnumerable<RuntimePackAssetInfo> FilterSkippedFiles(IEnumerable<RuntimePackAssetInfo> runtimePackAssets)
+        {
+            if (_filesToSkip == null)
+            {
+                return runtimePackAssets;
+            }
+
+            return runtimePackAssets.Where(asset => !_filesToSkip.Contains(asset.SourcePath));
+        }
+
+        private IEnumerable<LockFileItem> FilterSkippedFiles(IEnumerable<LockFileItem> lockFileItems)
+        {
+            if (_filesToSkip == null)
+            {
+                return lockFileItems;
+            }
+
+            return lockFileItems.Where(item => !_filesToSkip.Contains(item.Path));
         }
     }
 }
