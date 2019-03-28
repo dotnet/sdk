@@ -19,19 +19,34 @@ namespace Microsoft.NET.Restore.Tests
 {
     public class GivenThatWeWantToRestoreAndGenerateDepsjsonDotNetCliToolReference : SdkTest
     {
-        private const string ProjectToolVersion = "1.0.3";
-        private const string CodeGenerationPackageName = "microsoft.visualstudio.web.codegeneration.tools";
+        private const string ProjectToolVersion = "1.0.0";
         private const string ExpectedProjectToolRestoreTargetFrameworkMoniker = "netcoreapp2.2";
-        private const string FolderNameForRestorePackages = "packages";
 
         public GivenThatWeWantToRestoreAndGenerateDepsjsonDotNetCliToolReference(ITestOutputHelper log) : base(log)
         {
         }
 
         [Fact]
-        public void It_can_generate_correct_deps_json()
+        public void It_can_restore_with_netcoreapp2_2()
         {
             TestProject toolProject = new TestProject()
+            {
+                Name = "TestTool" + nameof(It_can_restore_with_netcoreapp2_2),
+                IsSdkProject = true,
+                TargetFrameworks = "netcoreapp1.0",
+                IsExe = true
+            };
+            toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
+
+            var toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name);
+            toolProjectInstance.Restore(Log, toolProject.Name, "/v:n");
+
+            var packCommand = new PackCommand(Log, Path.Combine(toolProjectInstance.TestRoot, toolProject.Name));
+            packCommand.Execute().Should().Pass();
+
+            string nupkgPath = Path.Combine(packCommand.ProjectRootPath, "bin", "Debug");
+
+            TestProject toolReferenceProject = new TestProject()
             {
                 Name = "DotNetCliToolReferenceProject",
                 IsSdkProject = true,
@@ -39,56 +54,48 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "netcoreapp1.0",
             };
 
-            toolProject.AdditionalProperties.Add("PackageTargetFallback", "$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;");
-            toolProject.AdditionalProperties.Add("RestorePackagesPath", FolderNameForRestorePackages);
-            toolProject.PackageReferences.Add(
-                new TestPackageReference(
-                    id: "Microsoft.VisualStudio.Web.CodeGeneration.Design",
-                    version: ProjectToolVersion,
-                    nupkgPath: null));
-            toolProject.DotNetCliToolReferences.Add(
-                new TestPackageReference(id: CodeGenerationPackageName,
-                                         version: ProjectToolVersion,
-                                         nupkgPath: null));
+            toolReferenceProject.DotNetCliToolReferences.Add(
+                new TestPackageReference(id: toolProject.Name,
+                             version: ProjectToolVersion,
+                             nupkgPath: null));
 
-            TestAsset toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name);
+            TestAsset toolReferenceProjectInstance = _testAssetsManager.CreateTestProject(toolReferenceProject, identifier: toolReferenceProject.Name);
 
-            NuGetConfigWriter.Write(toolProjectInstance.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
+            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
+            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
+            NuGetConfigWriter.Write(toolReferenceProjectInstance.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed, nupkgPath);
 
-            RestoreCommand restoreCommand = toolProjectInstance.GetRestoreCommand(log: Log, relativePath: toolProject.Name);
+            RestoreCommand restoreCommand =
+                toolReferenceProjectInstance.GetRestoreCommand(log: Log, relativePath: toolReferenceProject.Name);
+
             var restoreResult = restoreCommand
                 .Execute("/v:n");
 
             if (restoreResult.ExitCode != 0)
             {
                 // retry once since it downloads from the web
-                toolProjectInstance.Restore(Log, toolProject.Name, "/v:n");
+                toolReferenceProjectInstance.Restore(Log, toolReferenceProject.Name, "/v:n");
             }
 
-            AssertRestoreTargetFramework(restoreCommand);
-
-            var runProjectToolCommand = new DotnetCommand(Log, "aspnet-codegenerator")
-            {
-                WorkingDirectory = Path.Combine(toolProjectInstance.TestRoot, toolProject.Name)
-            };
-
-            runProjectToolCommand.Execute().Should().Pass();
-        }
-
-        private static void AssertRestoreTargetFramework(RestoreCommand restoreCommand)
-        {
-            var assetsJsonPath = Path.Combine(restoreCommand.ProjectRootPath,
-                                              FolderNameForRestorePackages,
-                                              ".tools",
-                                              CodeGenerationPackageName,
-                                              ProjectToolVersion,
-                                              ExpectedProjectToolRestoreTargetFrameworkMoniker,
-                                              "project.assets.json");
+            var assetsJsonPath = Path.Combine(TestContext.Current.NuGetCachePath,
+                                             ".tools",
+                                             toolProject.Name.ToLowerInvariant(),
+                                             ProjectToolVersion,
+                                             ExpectedProjectToolRestoreTargetFrameworkMoniker,
+                                             "project.assets.json");
             LockFile lockFile = LockFileUtilities.GetLockFile(assetsJsonPath, NullLogger.Instance);
             lockFile.Targets.Single().TargetFramework
                 .Should().Be(NuGetFramework.Parse(ExpectedProjectToolRestoreTargetFrameworkMoniker),
                 "Restore target framework should be caped at netcoreapp2.2 due to moving away from project tools." +
                 "Even when SDK's TFM is higher and the project's TFM is netcoreapp1.0");
+        }
+
+        private static void DeleteFolder(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
+            }
         }
     }
 }
