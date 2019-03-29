@@ -178,7 +178,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute("/v:n")
                 .Should()
                 .Fail()
-                .And.HaveStdOutContainingIgnoreCase("NETSDK1094");
+                .And.HaveStdOutContainingIgnoreCase("NETSDK1095");
         }
 
         private TestProject CreateTestProjectForR2RTesting(string ridToUse, string mainProjectName, string referenceProjectName)
