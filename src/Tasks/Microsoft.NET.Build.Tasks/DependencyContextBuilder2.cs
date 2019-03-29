@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyModel;
+using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -15,8 +16,13 @@ namespace Microsoft.NET.Build.Tasks
         private Dictionary<string, List<RuntimePackAssetInfo>> _runtimePackAssets;
         private bool _includeMainProjectInDepsFile = true;
         private Dictionary<string, Dependency> _dependencyLookup;
+        private List<DependencyLibrary> _dependencyLibraries;
+        private Dictionary<string, List<LibraryDependency>> _libraryDependencies;
         private List<string> _mainProjectDependencies;
         private HashSet<string> _usedLibraryNames;
+        private bool _isFrameworkDependent;
+        private string _platformLibrary;
+
         private Dictionary<ReferenceInfo, string> _referenceLibraryNames;
 
         public DependencyContextBuilder2(SingleProjectInfo mainProjectInfo, ProjectContext projectContext, bool includeRuntimeFileVersions)
@@ -28,9 +34,30 @@ namespace Microsoft.NET.Build.Tasks
                 .Select(library => new Dependency(library.Name, library.Version.ToString()))
                 .ToDictionary(d => d.Name, StringComparer.OrdinalIgnoreCase);
 
-            _usedLibraryNames = new HashSet<string>(_dependencyLookup.Keys, StringComparer.OrdinalIgnoreCase);
+            _dependencyLibraries = projectContext.LockFileTarget.Libraries
+                .Select(lockFileTargetLibrary => new DependencyLibrary()
+                {
+                    Name = lockFileTargetLibrary.Name,
+                    Type = lockFileTargetLibrary.Type
+                }).ToList();
+
+            _libraryDependencies = new Dictionary<string, List<LibraryDependency>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var library in projectContext.LockFileTarget.Libraries)
+            {
+                _libraryDependencies[library.Name] = library.Dependencies
+                    .Select(d => new LibraryDependency()
+                    {
+                        Name = d.Id,
+                        MinVersion = d.VersionRange.MinVersion
+                    }).ToList();
+            }
 
             _mainProjectDependencies = projectContext.GetTopLevelDependencies().ToList();
+
+            _usedLibraryNames = new HashSet<string>(_dependencyLookup.Keys, StringComparer.OrdinalIgnoreCase);
+
+            _isFrameworkDependent = projectContext.IsFrameworkDependent;
+            _platformLibrary = projectContext.PlatformLibrary?.Name;
         }
 
         private Dictionary<ReferenceInfo, string> ReferenceLibraryNames
@@ -68,7 +95,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public DependencyContextBuilder2 WithRuntimePackAssets(IEnumerable<RuntimePackAssetInfo> runtimePackAssets)
         {
-            //_runtimePackAssets = runtimePackAssets;
+            _runtimePackAssets = new Dictionary<string, List<RuntimePackAssetInfo>>();
             foreach (var runtimePackGroup in runtimePackAssets.GroupBy(a => a.PackageName))
             {
                 var dependency = new Dependency(runtimePackGroup.Key, runtimePackGroup.First().PackageVersion);
@@ -188,6 +215,28 @@ namespace Microsoft.NET.Build.Tasks
                 .Select(r => new ResourceAssembly(r.RelativePath, r.Culture));
         }
 
+        private IEnumerable<DependencyLibrary> GetFilteredLibraries()
+        {
+            var libraries = _dependencyLibraries;
+
+            HashSet<string> allExclusionList = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (_isFrameworkDependent && !string.IsNullOrEmpty(_platformLibrary))
+            {
+                allExclusionList.Add(_platformLibrary);
+
+                Stack<LibraryDependency> dependenciesToWalk = new Stack<LibraryDependency>(_libraryDependencies[_platformLibrary]);
+
+                while (dependenciesToWalk.Any())
+                {
+
+                }
+                
+            }
+
+            throw new NotImplementedException();
+        }
+
         private string GetReferenceLibraryName(ReferenceInfo reference)
         {
             if (!ReferenceLibraryNames.TryGetValue(reference, out string name))
@@ -223,6 +272,18 @@ namespace Microsoft.NET.Build.Tasks
         private string GetRuntimeStoreManifestName(string packageName, string packageVersion)
         {
             throw new NotImplementedException();
+        }
+
+        private struct DependencyLibrary
+        {
+            public string Name { get; set; }
+            public string Type { get; set; }
+        }
+
+        private struct LibraryDependency
+        {
+            public string Name { get; set; }
+            public NuGetVersion MinVersion { get; set; }
         }
     }
 }
