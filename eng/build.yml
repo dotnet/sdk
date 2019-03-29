@@ -9,23 +9,24 @@ parameters:
   variables: {}
 
   # Build strategy - matrix
-  strategy: {}
+  strategy: ''
 
   # Job timeout
-  timeoutInMinutes: 180
+  timeoutInMinutes: 120
 
 jobs:
-- template: /eng/common/templates/phases/base.yml
+- template: /eng/common/templates/job/job.yml
   parameters:
     name: ${{ parameters.agentOs }}
-    ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
-      enableMicrobuild: true
+    enableMicrobuild: true
     enablePublishBuildArtifacts: true
     enablePublishBuildAssets: true
     enablePublishTestResults: true
     enableTelemetry: true
     helixRepo: dotnet/sdk
     pool: ${{ parameters.pool }}
+    ${{ if ne(parameters.strategy, '') }}:
+      strategy: ${{ parameters.strategy }}
     variables: 
       - ${{ insert }}: ${{ parameters.variables }}
       - _AgentOSName: ${{ parameters.agentOs }}
@@ -116,21 +117,3 @@ jobs:
           BuildConfig: $(_BuildConfig)
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
-
-    - ${{ if and(eq(parameters.enablePublishBuildAssets, true), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - task: CopyFiles@2
-            displayName: Gather Asset Manifests
-            inputs:
-              SourceFolder: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/AssetManifest'
-              TargetFolder: '$(Build.StagingDirectory)/AssetManifests'
-            continueOnError: ${{ parameters.continueOnError }}
-            condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'), eq(variables['_PublishBuildAssetManifest'], 'true'))
-          - task: PublishBuildArtifacts@1
-            displayName: Push Asset Manifests
-            inputs:
-              PathtoPublish: '$(Build.StagingDirectory)/AssetManifests'
-              PublishLocation: Container
-              ArtifactName: AssetManifests
-            continueOnError: ${{ parameters.continueOnError }}
-            condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'), eq(variables['_PublishBuildAssetManifest'], 'true'))
-
