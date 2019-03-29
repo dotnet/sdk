@@ -12,17 +12,19 @@ variables:
     PB_PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
     _DotNetPublishToBlobFeed: true
 
-phases:
+jobs:
 - template: /eng/build.yml
   parameters:
     agentOs: Windows_NT
-    queue:
+    pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        name: dotnet-external-temp
+        name: NetCorePublic-Int-Pool
+        queue: buildpool.windows.10.amd64.vs2017.open
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
-        name: dotnet-internal-temp
-      parallel: 2
-      timeoutInMinutes: 120
+        name: NetCoreInternal-Int-Pool
+        queue: buildpool.windows.10.amd64.vs2017
+    timeoutInMinutes: 120
+    strategy:
       matrix:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           Build_Debug:
@@ -42,10 +44,11 @@ phases:
   - template: /eng/build.yml
     parameters:
       agentOs: Windows_NT_FullFramework
-      queue:
-        name: dotnet-external-temp
-        parallel: 2
-        timeoutInMinutes: 120
+      pool:
+        name: NetCorePublic-Int-Pool
+        queue: buildpool.windows.10.amd64.vs2017.open
+      timeoutInMinutes: 120
+      strategy:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
@@ -59,10 +62,11 @@ phases:
   - template: /eng/build.yml
     parameters:
       agentOs: Windows_NT_TestAsTools
-      queue:
-        name: dotnet-external-temp
-        parallel: 2
-        timeoutInMinutes: 120
+      pool:
+        name: NetCorePublic-Int-Pool
+        queue: buildpool.windows.10.amd64.vs2017.open
+      timeoutInMinutes: 120
+      strategy:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
@@ -72,10 +76,10 @@ phases:
   - template: /eng/build.yml
     parameters:
       agentOs: Ubuntu_14_04
-      queue: 
+      pool:
         name: Hosted Ubuntu 1604
-        parallel: 2
-        timeoutInMinutes: 120
+      timeoutInMinutes: 120
+      strategy:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
@@ -91,10 +95,10 @@ phases:
   - template: /eng/build.yml
     parameters:
       agentOs: Ubuntu_16_04
-      queue: 
+      pool:
         name: Hosted Ubuntu 1604
-        parallel: 2
-        timeoutInMinutes: 120
+      timeoutInMinutes: 120
+      strategy:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
@@ -110,10 +114,10 @@ phases:
   - template: /eng/build.yml
     parameters:
       agentOs: Darwin
-      queue: 
+      pool:
         name: DotNetCore-Mac
-        parallel: 2
-        timeoutInMinutes: 120
+      timeoutInMinutes: 120
+      strategy:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
@@ -127,10 +131,11 @@ phases:
   - template: /eng/build.yml
     parameters:
       agentOs: Windows_Performance
-      queue:
-        name: dotnet-external-temp
-        parallel: 2
-        timeoutInMinutes: 120
+      pool:
+        name: NetCorePublic-Int-Pool
+        queue: buildpool.windows.10.amd64.vs2017.open
+      timeoutInMinutes: 120
+      strategy:
         matrix:
           Build_Release:
             _BuildConfig: Release
@@ -140,10 +145,10 @@ phases:
   - template: /eng/build.yml
     parameters:
       agentOs: Linux_Performance
-      queue:
+      pool:
         name: Hosted Ubuntu 1604
-        parallel: 2
-        timeoutInMinutes: 120
+      timeoutInMinutes: 120
+      strategy:
         matrix:
           Build_Release:
             _BuildConfig: Release
