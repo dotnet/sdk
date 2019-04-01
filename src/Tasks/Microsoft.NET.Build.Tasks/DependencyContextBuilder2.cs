@@ -149,12 +149,27 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var library in GetFilteredLibraries())
             {
+                bool serviceable = true;
+
+                var libraryDependencies = new HashSet<Dependency>();
+                foreach (var dependency in _libraryDependencies[library.Name])
+                {
+                    if (_dependencyLibraries.TryGetValue(library.Name, out var libraryDependency))
+                    {
+                        libraryDependencies.Add(libraryDependency.Dependency);
+                    }
+                }
+
                 string hash = string.Empty;
                 string path = null;
                 string hashPath = null;
+                SingleProjectInfo referenceProjectInfo = null;
 
                 if (library.Type == "package")
                 {
+                    // TEMPORARY: All packages are serviceable in RC2
+                    // See https://github.com/dotnet/cli/issues/2569
+                    serviceable = true;
                     if (!string.IsNullOrEmpty(library.Sha512))
                     {
                         hash = "sha512-" + library.Sha512;
@@ -165,13 +180,46 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else if (library.Type == "project")
                 {
-                    var referenceProjectInfo = GetProjectInfo(library);
+                    serviceable = false;
+                    referenceProjectInfo = GetProjectInfo(library);
                     if (referenceProjectInfo is UnreferencedProjectInfo)
                     {
                         // unreferenced ProjectInfos will be added later as simple dll dependencies
                         continue;
                     }
+
+                    foreach (var dependencyReference in referenceProjectInfo.DependencyReferences)
+                    {
+                        libraryDependencies.Add(
+                            new Dependency(
+                                GetReferenceLibraryName(dependencyReference),
+                                dependencyReference.Version));
+                    }
                 }
+
+                List<RuntimeAssetGroup> runtimeAssemblyGroups = new List<RuntimeAssetGroup>();
+                if (library.Type == "project" && !(referenceProjectInfo is UnreferencedProjectInfo))
+                {
+                    runtimeAssemblyGroups.Add(new RuntimeAssetGroup(string.Empty, referenceProjectInfo.OutputName));
+                }
+                else
+                {
+                    //runtimeAssemblyGroups.Add(new RuntimeAssetGroup(string.Empty,))
+                }
+
+                var runtimeLibrary = new RuntimeLibrary(
+                    type: library.Type,
+                    name: library.Name,
+                    version: library.Version.ToString(),
+                    hash: hash,
+                    runtimeAssemblyGroups: runtimeAssemblyGroups,
+                    nativeLibraryGroups: nativeLibraryGroups,
+                    resourceAssemblies: resourceAssemblies,
+                    dependencies: libraryDependencies,
+                    path: path,
+                    hashPath: hashPath,
+                    runtimeStoreManifestName: GetRuntimeStoreManifestName(library.Name, library.Version.ToString()),
+                    serviceable: serviceable);
             }
 
             throw new NotImplementedException();
