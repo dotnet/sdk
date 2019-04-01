@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
@@ -114,10 +115,17 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        public static int GetExitCode(WorkspaceFormatResult formatResult, bool check) =>
-            !check ? formatResult.ExitCode : (formatResult.FilesFormatted == 0 ? 0 : 1);
+        internal static int GetExitCode(WorkspaceFormatResult formatResult, bool check)
+        {
+            if (!check)
+            {
+                return formatResult.ExitCode;
+            }
 
-        private static LogLevel GetLogLevel(string verbosity)
+            return formatResult.FilesFormatted == 0 ? 0 : 1;
+        }
+
+        internal static LogLevel GetLogLevel(string verbosity)
         {
             switch (verbosity)
             {
@@ -146,10 +154,17 @@ namespace Microsoft.CodeAnalysis.Tools
             serviceCollection.AddSingleton(new LoggerFactory().AddSimpleConsole(console, logLevel));
             serviceCollection.AddLogging();
         }
-        
-        internal static string[] GetFileList(string files)
+
+        internal static ImmutableHashSet<string> GetFileList(string files)
         {
-            return files?.Split(',').Select(path => Path.GetRelativePath(Environment.CurrentDirectory, path)).ToArray();
+            if (string.IsNullOrEmpty(files))
+            {
+                return ImmutableHashSet.Create<string>();
+            }
+
+            return files.Split(',')
+                .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
+                .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

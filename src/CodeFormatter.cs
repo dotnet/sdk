@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CodeStyle;
@@ -23,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools
     {
         private const int MaxLoggedWorkspaceWarnings = 5;
 
-        public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(ILogger logger, string solutionOrProjectPath, bool isSolution, bool logAllWorkspaceWarnings, bool saveFormattedFiles, string[] filesToFormat, CancellationToken cancellationToken)
+        public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(ILogger logger, string solutionOrProjectPath, bool isSolution, bool logAllWorkspaceWarnings, bool saveFormattedFiles, ImmutableHashSet<string> filesToFormat, CancellationToken cancellationToken)
         {
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, solutionOrProjectPath));
 
@@ -106,7 +105,7 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        private static async Task<(int status, int fileCount, int filesFormatted)> FormatFilesInWorkspaceAsync(ILogger logger, Workspace workspace, string projectPath, ICodingConventionsManager codingConventionsManager, bool saveFormattedFiles, string[] filesToFormat, CancellationToken cancellationToken)
+        private static async Task<(int status, int fileCount, int filesFormatted)> FormatFilesInWorkspaceAsync(ILogger logger, Workspace workspace, string projectPath, ICodingConventionsManager codingConventionsManager, bool saveFormattedFiles, ImmutableHashSet<string> filesToFormat, CancellationToken cancellationToken)
         {
             var projectIds = workspace.CurrentSolution.ProjectIds.ToImmutableArray();
             var optionsApplier = new EditorConfigOptionsApplier();
@@ -143,7 +142,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return (0, totalFileCount, totalFilesFormatted);
         }
 
-        private static async Task<(Solution solution, int filesFormatted)> FormatFilesInProjectAsync(ILogger logger, Project project, ICodingConventionsManager codingConventionsManager, EditorConfigOptionsApplier optionsApplier, string[] filesToFormat, CancellationToken cancellationToken)
+        private static async Task<(Solution solution, int filesFormatted)> FormatFilesInProjectAsync(ILogger logger, Project project, ICodingConventionsManager codingConventionsManager, EditorConfigOptionsApplier optionsApplier, ImmutableHashSet<string> filesToFormat, CancellationToken cancellationToken)
         {
             var isCommentTrivia = project.Language == LanguageNames.CSharp
                 ? IsCSharpCommentTrivia
@@ -158,14 +157,9 @@ namespace Microsoft.CodeAnalysis.Tools
                     continue;
                 }
 
-                if (filesToFormat != null)
+                if (!filesToFormat.IsEmpty && !filesToFormat.Contains(document.FilePath))
                 {
-                    var fileInArgumentList = filesToFormat.Any(relativePath => document.FilePath.EndsWith(relativePath, StringComparison.OrdinalIgnoreCase));
-
-                    if (!fileInArgumentList)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 var formatTask = Task.Run(async () =>

@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
+using System.IO;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
@@ -51,7 +53,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var filePathAlt = $"other_items{Path.AltDirectorySeparatorChar}OtherClass.cs";
             var filesAlt = Program.GetFileList(filePathAlt);
 
-            Assert.True(files[0] == filesAlt[0]);
+            Assert.True(files.IsSubsetOf(filesAlt));
         }
     }
 }

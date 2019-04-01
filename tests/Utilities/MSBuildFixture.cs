@@ -1,10 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Tools.MSBuild;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
+    /// <summary>
+    /// This test fixture ensures that MSBuild is loaded.
+    /// </summary>
     public class MSBuildFixture : IDisposable
     {
         private static int _registered = 0;

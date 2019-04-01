@@ -36,21 +36,6 @@ namespace Microsoft.CodeAnalysis.CodeStyle
             return optionSet;
         }
 
-        private OptionSet ApplyConventionsForOptions(OptionSet optionSet, IEnumerable<(IOption, OptionStorageLocation, MethodInfo)> optionsWithStorage, ICodingConventionsSnapshot codingConventions, string languageName)
-        {
-            foreach (var optionWithStorage in optionsWithStorage)
-            {
-                if (TryGetConventionValue(optionWithStorage, codingConventions, out var value))
-                {
-                    var option = optionWithStorage.Item1;
-                    var optionKey = new OptionKey(option, option.IsPerLanguage ? languageName : null);
-                    optionSet = optionSet.WithChangedOption(optionKey, value);
-                }
-            }
-
-            return optionSet;
-        }
-
         internal ImmutableArray<(IOption, OptionStorageLocation, MethodInfo)> GetOptionsWithStorageFromTypes(params Type[] formattingOptionTypes)
         {
             var optionType = typeof(IOption);

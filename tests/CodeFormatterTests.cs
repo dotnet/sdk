@@ -1,5 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,172 +12,148 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
-    public class CodeFormatterTests : IClassFixture<MSBuildFixture>
+    public class CodeFormatterTests : IClassFixture<MSBuildFixture>, IClassFixture<SolutionPathFixture>
     {
-        private static string SolutionPath => Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.Parent.FullName;
+        private const string FormattedProjectPath = "tests/projects/for_code_formatter/formatted_project";
+        private const string FormattedProjectFilePath = FormattedProjectPath + "/formatted_project.csproj";
+        private const string FormattedSolutionFilePath = "tests/projects/for_code_formatter/formatted_solution/formatted_solution.sln";
 
-        public CodeFormatterTests(MSBuildFixture msBuildFixture)
+        private const string UnformattedProjectPath = "tests/projects/for_code_formatter/unformatted_project";
+        private const string UnformattedProjectFilePath = UnformattedProjectPath + "/unformatted_project.csproj";
+        private const string UnformattedProgramFilePath = UnformattedProjectPath + "/program.cs";
+        private const string UnformattedSolutionFilePath = "tests/projects/for_code_formatter/unformatted_solution/unformatted_solution.sln";
+
+        private const string FSharpProjectPath = "tests/projects/for_code_formatter/fsharp_project";
+        private const string FSharpProjectFilePath = FSharpProjectPath + "/fsharp_project.fsproj";
+
+        private static IEnumerable<string> EmptyFilesToFormat => Array.Empty<string>();
+
+        public CodeFormatterTests(MSBuildFixture msBuildFixture, SolutionPathFixture solutionPathFixture)
         {
             msBuildFixture.RegisterInstance();
+            solutionPathFixture.SetCurrentDirectory();
         }
 
         [Fact]
         public async Task NoFilesFormattedInFormattedProject()
         {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/formatted_project/formatted_project.csproj", SolutionPath);
-
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: null, cancellationToken: CancellationToken.None);
-            var log = logger.GetLog();
-            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
-            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
-            var match = filesFormatted.Match(log);
-
-            Assert.True(match.Success, log);
-            Assert.Equal("0", match.Groups[1].Value);
-
-            Assert.Equal(0, formatResult.ExitCode);
-            Assert.Equal(0, formatResult.FilesFormatted);
-            Assert.Equal(3, formatResult.FileCount);
+            await TestFormatWorkspaceAsync(
+                FormattedProjectFilePath,
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 3);
         }
 
         [Fact]
         public async Task NoFilesFormattedInFormattedSolution()
         {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/formatted_solution/formatted_solution.sln", SolutionPath);
-
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: true, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: null, cancellationToken: CancellationToken.None);
-            var log = logger.GetLog();
-            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
-            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
-            var match = filesFormatted.Match(log);
-
-            Assert.Equal(0, formatResult.ExitCode);
-            Assert.Equal(0, formatResult.FilesFormatted);
-            Assert.Equal(3, formatResult.FileCount);
-
-            Assert.True(match.Success, log);
-            Assert.Equal("0", match.Groups[1].Value);
+            await TestFormatWorkspaceAsync(
+                FormattedSolutionFilePath,
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 3);
         }
 
         [Fact]
         public async Task FilesFormattedInUnformattedProject()
         {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/unformatted_project/unformatted_project.csproj", SolutionPath);
-
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: null, cancellationToken: CancellationToken.None);
-            var log = logger.GetLog();
-            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
-            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
-            var match = filesFormatted.Match(log);
-
-            Assert.True(match.Success, log);
-            Assert.Equal("2", match.Groups[1].Value);
-
-            Assert.Equal(0, formatResult.ExitCode);
-            Assert.Equal(2, formatResult.FilesFormatted);
-            Assert.Equal(4, formatResult.FileCount);
+            await TestFormatWorkspaceAsync(
+                UnformattedProjectFilePath,
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 2,
+                expectedFileCount: 4);
         }
 
         [Fact]
         public async Task FilesFormattedInUnformattedSolution()
         {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/unformatted_solution/unformatted_solution.sln", SolutionPath);
-
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: true, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: null, cancellationToken: CancellationToken.None);
-            var log = logger.GetLog();
-            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
-            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
-            var match = filesFormatted.Match(log);
-
-            Assert.Equal(0, formatResult.ExitCode);
-            Assert.Equal(2, formatResult.FilesFormatted);
-            Assert.Equal(4, formatResult.FileCount);
-
-            Assert.True(match.Success, log);
-            Assert.Equal("2", match.Groups[1].Value);
+            await TestFormatWorkspaceAsync(
+                UnformattedSolutionFilePath,
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 2,
+                expectedFileCount: 4);
         }
 
         [Fact]
         public async Task FSharpProjectsDoNotCreateException()
         {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/fsharp_project/fsharp_project.fsproj", SolutionPath);
+            var log = await TestFormatWorkspaceAsync(
+                FSharpProjectFilePath,
+                EmptyFilesToFormat,
+                expectedExitCode: 1,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 0);
 
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: null, cancellationToken: CancellationToken.None);
-            var logLines = logger.GetLog().Split(Environment.NewLine);
-
-            Assert.Equal(4, logLines.Length);
-            var actualErrorMessage = logLines[2];
-            var expectedErrorMessage = string.Format(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, path);
-            Assert.Equal(expectedErrorMessage, actualErrorMessage);
-
-            Assert.Equal(1, formatResult.ExitCode);
-            Assert.Equal(0, formatResult.FilesFormatted);
-            Assert.Equal(0, formatResult.FileCount);
-        }
-
-       [Fact]
-        public async Task OnlyFormatFilesFromList()
-        {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/unformatted_project/unformatted_project.csproj", SolutionPath);
-
-            var files = new[] {"OtherClass.cs"};
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: files, cancellationToken: CancellationToken.None);
-            var log = logger.GetLog();
-            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
-            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
-            var match = filesFormatted.Match(log);
+            var pattern = string.Format(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, "(.*)");
+            var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
 
             Assert.True(match.Success, log);
-            Assert.Equal("1", match.Groups[1].Value);
+            Assert.Equal(match.Groups[1].Value, Path.GetFullPath(FSharpProjectFilePath));
+        }
 
-            Assert.Equal(0, formatResult.ExitCode);
-            Assert.Equal(1, formatResult.FilesFormatted);
-            Assert.Equal(4, formatResult.FileCount);
+        [Fact]
+        public async Task OnlyFormatFilesFromList()
+        {
+            var filesToFormat = new[] { UnformattedProgramFilePath };
+
+            await TestFormatWorkspaceAsync(
+                UnformattedProjectFilePath,
+                filesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 1,
+                expectedFileCount: 4);
         }
 
         [Fact]
         public async Task NoFilesFormattedWhenNotInList()
         {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/unformatted_project/unformatted_project.csproj", SolutionPath);
+            var filesToFormat = new[] { Path.Combine(UnformattedProjectPath, "does_not_exist.cs") };
 
-            var files = new[] {"ThisFileDoesNotExist.cs"};
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: false, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: files, cancellationToken: CancellationToken.None);
-            var log = logger.GetLog();
-            var pattern = string.Format(Resources.Formatted_0_of_1_files_in_2_ms, "(\\d+)", "\\d+", "\\d+");
-            var filesFormatted = new Regex(pattern, RegexOptions.Multiline);
-            var match = filesFormatted.Match(log);
-
-            Assert.True(match.Success, log);
-            Assert.Equal("0", match.Groups[1].Value);
-
-            Assert.Equal(0, formatResult.ExitCode);
-            Assert.Equal(0, formatResult.FilesFormatted);
-            Assert.Equal(4, formatResult.FileCount);
+            await TestFormatWorkspaceAsync(
+                UnformattedProjectFilePath, 
+                filesToFormat, 
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 4);
         }
 
         [Fact]
         public async Task OnlyLogFormattedFiles()
         {
-            var logger = new TestLogger();
-            var path = Path.GetFullPath("tests/projects/for_code_formatter/unformatted_solution/unformatted_solution.sln", SolutionPath);
+            var filesToFormat = new[] { UnformattedProgramFilePath };
 
-            var files = new[] {"Program.cs"};
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, path, isSolution: true, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: files, cancellationToken: CancellationToken.None);
-            var log = logger.GetLog();
+            var log = await TestFormatWorkspaceAsync(
+                UnformattedSolutionFilePath, 
+                filesToFormat, 
+                expectedExitCode: 0, 
+                expectedFilesFormatted: 1, 
+                expectedFileCount: 4);
 
             var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
-            var fileFormatted = new Regex(pattern, RegexOptions.Multiline);
-            var match = fileFormatted.Match(log);
+            var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
 
             Assert.True(match.Success, log);
             Assert.Equal("Program.cs", match.Groups[1].Value);
+        }
+
+        public async Task<string> TestFormatWorkspaceAsync(string solutionOrProjectPath, IEnumerable<string> filesToFormat, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
+        {
+            var workspacePath = Path.GetFullPath(solutionOrProjectPath);
+            var isSolution = workspacePath.EndsWith(".sln");
+            var files = filesToFormat.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var logger = new TestLogger();
+            var formatResult = await CodeFormatter.FormatWorkspaceAsync(logger, workspacePath, isSolution, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat: files, cancellationToken: CancellationToken.None);
+
+            Assert.Equal(expectedExitCode, formatResult.ExitCode);
+            Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);
+            Assert.Equal(expectedFileCount, formatResult.FileCount);
+
+            return logger.GetLog();
         }
     }
 }
