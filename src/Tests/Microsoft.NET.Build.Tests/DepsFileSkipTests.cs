@@ -82,6 +82,24 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
+        public void RuntimeTargetFromPackageCanBeSkipped()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SkipNativeAssetFromPackage",
+                TargetFrameworks = "netcoreapp3.0",
+                IsSdkProject = true,
+                IsExe = true
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            string filenameToSkip = FileConstants.DynamicLibPrefix + "sqlite3" + FileConstants.DynamicLibSuffix;
+
+            TestSkippingFile(testProject, filenameToSkip, "runtimeTargets");
+        }
+
+        [Fact]
         public void NativeAssetFromRuntimePackCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -223,7 +241,7 @@ namespace Microsoft.NET.Build.Tests
             else
             {
                 var fileToSkipItem = new XElement(ns + "_FileToSkip",
-                                        new XAttribute("Include", "@(ReferencePath);@(ReferenceDependencyPaths);@(RuntimePackAsset);@(NativeCopyLocalItems);@(ResourceCopyLocalItems)"),
+                                        new XAttribute("Include", "@(ReferencePath);@(ReferenceDependencyPaths);@(RuntimePackAsset);@(NativeCopyLocalItems);@(ResourceCopyLocalItems);@(RuntimeTargetsCopyLocalItems)"),
                                         new XAttribute("Condition", $"'%(Filename)%(Extension)' == '{filenameToSkip}'"));
 
                 itemGroup.Add(fileToSkipItem);
