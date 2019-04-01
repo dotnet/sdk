@@ -12,9 +12,8 @@
           DependsOnTargets="GetCurrentRuntimeInformation;
                             GenerateRpmsInner" />
 
-  <!-- Re-enable "TestSdkRpm" when the following issue is resolved: https://github.com/dotnet/cli/issues/9672 -->
   <Target Name="GenerateRpmsInner"
-          DependsOnTargets="TestFPMTool;BuildRpms"
+          DependsOnTargets="TestFPMTool;BuildRpms;TestSdkRpm"
           Condition=" '$(IsRPMBasedDistro)' == 'True' "
           Outputs="@(GeneratedInstallers)"/>
 
@@ -71,17 +70,23 @@
 
     <!-- Replace config json variables -->
     <ItemGroup>
-      <SDKTokenValue Include="%SHARED_HOST_RPM_VERSION%">
+      <SDKTokenValue Include="%SHARED_FRAMEWORK_RPM_PACKAGE_VERSION%">
         <ReplacementString>$(MicrosoftNETCoreAppMajorMinorPatchVersion)</ReplacementString>
-      </SDKTokenValue>
-      <SDKTokenValue Include="%ASPNETCORE_SHAREDFX_RPM_PACKAGE_NAME%">
-        <ReplacementString>$(AspNetCoreSharedFxRpmPackageName)</ReplacementString>
       </SDKTokenValue>
       <SDKTokenValue Include="%ASPNETCORE_SHAREDFX_RPM_PACKAGE_VERSION%">
         <ReplacementString>$(AspNetCoreMajorMinorPatchVersion)</ReplacementString>
       </SDKTokenValue>
-      <SDKTokenValue Include="%SHARED_HOST_RPM_NAME%">
+      <SDKTokenValue Include="%SHARED_FRAMEWORK_RPM_PACKAGE_NAME%">
         <ReplacementString>$(SharedFxRpmPackageName)</ReplacementString>
+      </SDKTokenValue>
+      <SDKTokenValue Include="%NETCOREAPP_TARGETING_PACK_RPM_PACKAGE_NAME%">
+        <ReplacementString>$(NetCoreAppTargetingPackRpmPackageName)</ReplacementString>
+      </SDKTokenValue>
+      <SDKTokenValue Include="%ASPNETCORE_SHAREDFX_RPM_PACKAGE_NAME%">
+        <ReplacementString>$(AspNetCoreSharedFxRpmPackageName)</ReplacementString>
+      </SDKTokenValue>
+      <SDKTokenValue Include="%ASPNET_TARGETING_PACK_RPM_PACKAGE_NAME%">
+        <ReplacementString>$(AspNetTargetingPackRpmPackageName)</ReplacementString>
       </SDKTokenValue>
       <SDKTokenValue Include="%SDK_NUGET_VERSION%">
         <ReplacementString>$(SdkVersion)</ReplacementString>
@@ -100,9 +105,9 @@
 
     <ItemGroup>
       <TestSdkRpmTaskEnvironmentVariables Include="PATH=$(RpmInstalledDirectory)$(PathListSeparator)$(PATH)" />
-      <!--<TestSdkRpmTaskEnvironmentVariables Include="TEST_ARTIFACTS=$(TestArtifactsDir)" />
+      <TestSdkRpmTaskEnvironmentVariables Include="TEST_ARTIFACTS=$(TestArtifactsDir)" />
       <TestSdkRpmTaskEnvironmentVariables Include="TEST_PACKAGES=$(TestPackagesDir)" />
-      <TestSdkRpmTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />-->
+      <TestSdkRpmTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />
 
       <!-- Consumed By Publish -->
       <!--<GeneratedInstallers Include="$(SdkRPMInstallerFile)" />-->
@@ -152,18 +157,16 @@
     <PropertyGroup>
       <SdkRpmPackageVersion>$(MajorMinorVersion)</SdkRpmPackageVersion>
       <SdkRpmPackageName>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(SdkRpmPackageVersion)</SdkRpmPackageName>
-      
-      <RuntimeDepsPackageVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeDepsPackageVersion>
-      <RuntimeDepsPackageFileName>dotnet-runtime-deps-$(RuntimeDepsPackageVersion)</RuntimeDepsPackageFileName>
       <RpmPackageVersion>$(SdkVersion)</RpmPackageVersion>
       <InputRoot>$(RedistLayoutPath)sdk/</InputRoot>
       <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
       <RpmFile>$(SdkRPMInstallerFile)</RpmFile>
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
       <ManPagesDir>$(RepoRoot)/Documentation/manpages</ManPagesDir>
+      <EndToEndTestProject>$(RepoRoot)/test/EndToEnd/EndToEnd.csproj</EndToEndTestProject>
       <ConfigJsonFile>$(MSBuildThisFileDirectory)packaging/rpm/dotnet-config.json</ConfigJsonFile>
       <RpmIntermediatesDir>$(IntermediateOutputPath)$(SdkRpmPackageName)/$(RpmPackageVersion)</RpmIntermediatesDir>
-      <RpmTestResultsXmlFile>$(RpmIntermediatesDir)/debian-testResults.xml</RpmTestResultsXmlFile>
+      <RpmTestResultsXmlFile>$(RpmIntermediatesDir)/rpm-testResults.xml</RpmTestResultsXmlFile>
       <RpmInstalledDirectory>/usr/share/dotnet</RpmInstalledDirectory>
     </PropertyGroup>
 
@@ -177,27 +180,41 @@
     </PropertyGroup>
 
     <PropertyGroup>
-
       <SharedFxRpmPackageVersion>$(MicrosoftNETCoreAppMajorMinorVersion)</SharedFxRpmPackageVersion>
       <SharedFxRpmPackageFileVersion>$(MicrosoftNETCoreAppPackageVersion)</SharedFxRpmPackageFileVersion>
       <SharedFxRpmPackageName>dotnet-runtime-$(SharedFxRpmPackageVersion)</SharedFxRpmPackageName>
       <SharedFxRpmPackageName>$(SharedFxRpmPackageName.ToLower())</SharedFxRpmPackageName>
       <SharedFxRpmPackageFileName>dotnet-runtime-$(SharedFxRpmPackageFileVersion)</SharedFxRpmPackageFileName>
       <SharedFxRpmPackageFileName>$(SharedFxRpmPackageFileName.ToLower())</SharedFxRpmPackageFileName>
-      <HostFxrRpmPackageVersion>$(HostFxrVersion)</HostFxrRpmPackageVersion>
-      <HostFxrRpmPackageName>dotnet-hostfxr-$(HostFxrRpmPackageVersion)</HostFxrRpmPackageName>
+      <NetCoreAppTargetingPackRpmPackageName>dotnet-targeting-pack-$(SharedFxRpmPackageVersion)</NetCoreAppTargetingPackRpmPackageName>
+      <NetCoreAppTargetingPackRpmPackageName>$(NetCoreAppTargetingPackRpmPackageName.ToLower())</NetCoreAppTargetingPackRpmPackageName>
+      <NetCoreAppTargetingPackRpmPackageFileName>dotnet-targeting-pack-$(SharedFxRpmPackageFileVersion)</NetCoreAppTargetingPackRpmPackageFileName>
+      <NetCoreAppTargetingPackRpmPackageFileName>$(NetCoreAppTargetingPackRpmPackageFileName.ToLower())</NetCoreAppTargetingPackRpmPackageFileName>
+      <HostFxrRpmPackageName>dotnet-hostfxr-$(SharedFxRpmPackageVersion)</HostFxrRpmPackageName>
       <HostFxrRpmPackageName>$(HostFxrRpmPackageName.ToLower())</HostFxrRpmPackageName>
-      <HostRpmPackageName>dotnet-host</HostRpmPackageName>
+      <RuntimeDepsPackageName>dotnet-runtime-deps-$(SharedFxRpmPackageVersion)</RuntimeDepsPackageName>
+      <RuntimeDepsPackageName>$(RuntimeDepsPackageName.ToLower())</RuntimeDepsPackageName>
+      <SharedHostRpmPackageName>dotnet-host</SharedHostRpmPackageName>
       <AspNetCoreSharedFxRpmPackageName>aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)</AspNetCoreSharedFxRpmPackageName>
       <AspNetCoreSharedFxRpmPackageName>$(AspNetCoreSharedFxRpmPackageName.ToLower())</AspNetCoreSharedFxRpmPackageName>
       <AspNetCoreSharedFxRpmPackageFileName>aspnetcore-runtime-$(AspNetCoreVersion)</AspNetCoreSharedFxRpmPackageFileName>
       <AspNetCoreSharedFxRpmPackageFileName>$(AspNetCoreSharedFxRpmPackageFileName.ToLower())</AspNetCoreSharedFxRpmPackageFileName>
+      <AspNetTargetingPackRpmPackageName>aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)</AspNetTargetingPackRpmPackageName>
+      <AspNetTargetingPackRpmPackageName>$(AspNetTargetingPackRpmPackageName.ToLower())</AspNetTargetingPackRpmPackageName>
+      <AspNetTargetingPackRpmPackageFileName>aspnetcore-targeting-pack-$(AspNetCoreVersion)</AspNetTargetingPackRpmPackageFileName>
+      <AspNetTargetingPackRpmPackageFileName>$(AspNetTargetingPackRpmPackageFileName.ToLower())</AspNetTargetingPackRpmPackageFileName>
       <AfterInstallHostScriptTemplateFile>$(ScriptsDir)/$(AfterInstallHostScriptName)</AfterInstallHostScriptTemplateFile>
       <AfterInstallHostScriptDestinationFile>$(RpmLayoutScripts)/$(AfterInstallHostScriptName)</AfterInstallHostScriptDestinationFile>
     </PropertyGroup>
 
     <PropertyGroup>
-      <EndToEndTestProject>$(RepoRoot)/test/EndToEnd/EndToEnd.csproj</EndToEndTestProject>
+      <DownloadedNetCoreAppTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadedNetCoreAppTargetingPackInstallerFile>
+      <DownloadedAspNetTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadedAspNetTargetingPackInstallerFile>
+      <DownloadedRuntimeDepsInstallerFile>$(DownloadsFolder)$(DownloadedRuntimeDepsInstallerFileName)</DownloadedRuntimeDepsInstallerFile>
+      <DownloadedSharedHostInstallerFile>$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)</DownloadedSharedHostInstallerFile>
+      <DownloadedHostFxrInstallerFile>$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)</DownloadedHostFxrInstallerFile>
+      <DownloadedSharedFrameworkInstallerFile>$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)</DownloadedSharedFrameworkInstallerFile>
+      <DownloadedAspNetCoreSharedFxInstallerFile>$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadedAspNetCoreSharedFxInstallerFile>
     </PropertyGroup>
   </Target>
 
@@ -222,39 +239,45 @@
   </Target>
 
   <Target Name="TestSdkRpm"
-          DependsOnTargets="RestoreTests"
           Condition="  '$(CLIBUILD_SKIP_TESTS)' != 'true' and '$(IsRPMBasedDistro)' == 'True' and '$(FPMPresent)' == 'True' "
-          Inputs="$(DownloadedSharedHostInstallerFile);
-              $(DownloadedHostFxrInstallerFile);
-              $(DownloadedSharedFrameworkInstallerFile);
-              $(DownloadedAspNetCoreSharedFxInstallerFile);
-              $(RpmTestResultsXmlFile);"
+          Inputs="$(DownloadedNetCoreAppTargetingPackInstallerFile);
+                  $(DownloadedAspNetTargetingPackInstallerFile);
+                  $(DownloadedRuntimeDepsInstallerFile);
+                  $(DownloadedSharedHostInstallerFile);
+                  $(DownloadedHostFxrInstallerFile);
+                  $(DownloadedSharedFrameworkInstallerFile);
+                  $(DownloadedAspNetCoreSharedFxInstallerFile);
+                  $(SdkRPMInstallerFile);
+                  $(RpmTestResultsXmlFile);"
           Outputs="$(RpmTestResultsXmlFile)" >
 
     <!-- Install Dependencies and SDK Packages -->
-    <Exec Command="sudo yum -y install $(DownloadedRuntimeDepsInstallerFile)" />
-    <Exec Command="sudo yum -y install $(DownloadedSharedHostInstallerFile)" />
-    <Exec Command="sudo yum -y install $(DownloadedHostFxrInstallerFile)" />
-    <Exec Command="sudo yum -y install $(DownloadedSharedFrameworkInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedRuntimeDepsInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedAspNetTargetingPackInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedSharedHostInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedHostFxrInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedSharedFrameworkInstallerFile)" />
     <!-- Ignore dependencies, which may have an incoherent dependency on dotnet-runtime -->
-    <Exec Command="sudo rpm --install --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
+    <Exec Command="sudo rpm -iv --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
 
-    <Exec Command="sudo yum -y install $(SdkRPMInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(SdkRPMInstallerFile)" />
 
-    <!-- Run Tests -->
+    <!-- Run End-2-end Tests https://github.com/dotnet/core-sdk/issues/1174
     <DotNetRestore ProjectPath="$(EndToEndTestProject)"
                    ToolPath="$(RpmInstalledDirectory)" />
-
     <DotNetTest ProjectPath="$(EndToEndTestProject)"
                 EnvironmentVariables="@(TestSdkRpmTaskEnvironmentVariables)"
-                ToolPath="$(RpmInstalledDirectory)" />
-
+                ToolPath="$(RpmInstalledDirectory)" />-->
+    
     <!-- Clean up Packages -->
-    <Exec Command="sudo yum remove -y $(SdkRpmPackageName)" />
-    <Exec Command="sudo yum remove -y $(AspNetCoreSharedFxRpmPackageFileName)" />
-    <Exec Command="sudo yum remove -y $(SharedFxRpmPackageFileName)" />
-    <Exec Command="sudo yum remove -y $(HostFxrRpmPackageName)" />
-    <Exec Command="sudo yum remove -y $(HostRpmPackageName)" />
-    <Exec Command="sudo yum remove -y $(RuntimeDepsPackageFileName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(SdkRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(AspNetCoreSharedFxRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(SharedFxRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(HostFxrRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(SharedHostRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(AspNetTargetingPackRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(NetCoreAppTargetingPackRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(RuntimeDepsPackageName)" />
   </Target>
 </Project>

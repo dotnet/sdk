@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <Target Name="GenerateInstallers"
-          AfterTargets="Pack"
+          BeforeTargets="Pack"
           DependsOnTargets="$(_BuildUnlessNoBuild);
                             GetCurrentRuntimeInformation;
                             GenerateMsis;
