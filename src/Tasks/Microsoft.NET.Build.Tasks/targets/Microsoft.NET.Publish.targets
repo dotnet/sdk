@@ -48,6 +48,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       PrepareForPublish;
       ComputeAndCopyFilesToPublishDirectory;
       GeneratePublishDependencyFile;
+      BundlePublishDirectory;
     </_CorePublishTargets>
   </PropertyGroup>
 
@@ -88,8 +89,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
       <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
+      
+      <PreBundlePublishDir Condition="'$(PublishSingleFile)' == 'true'">$(IntermediateOutputPath)PublishTemp\</PreBundlePublishDir>
+      <PreBundlePublishDir Condition="'$(PublishSingleFile)' != 'true'">$(PublishDir)</PreBundlePublishDir>
     </PropertyGroup>
 
+    <MakeDir Directories="$(PreBundlePublishDir)" Condition="'$(PublishSingleFile)' == 'true'" />
     <MakeDir Directories="$(PublishDir)" />
 
   </Target>
@@ -127,14 +132,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CopyResolvedFilesToPublishPreserveNewest"
           DependsOnTargets="_ComputeResolvedFilesToPublishTypes"
           Inputs="@(_ResolvedFileToPublishPreserveNewest)"
-          Outputs="@(_ResolvedFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')">
+          Outputs="@(_ResolvedFileToPublishPreserveNewest->'$(PreBundlePublishDir)%(RelativePath)')">
 
     <!--
         Not using SkipUnchangedFiles="true" because the application may want to change
         one of these files and not have an incremental build replace it.
         -->
     <Copy SourceFiles = "@(_ResolvedFileToPublishPreserveNewest)"
-          DestinationFiles="@(_ResolvedFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')"
+          DestinationFiles="@(_ResolvedFileToPublishPreserveNewest->'$(PreBundlePublishDir)%(RelativePath)')"
           OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -162,7 +167,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         one of these files and not have an incremental build replace it.
         -->
     <Copy SourceFiles = "@(_ResolvedFileToPublishAlways)"
-          DestinationFiles="@(_ResolvedFileToPublishAlways->'$(PublishDir)%(RelativePath)')"
+          DestinationFiles="@(_ResolvedFileToPublishAlways->'$(PreBundlePublishDir)%(RelativePath)')"
           OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -172,7 +177,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
 
     </Copy>
+  </Target>
 
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Build.Bundle" />
+
+  <Target Name="BundlePublishDirectory" Condition="'$(PublishSingleFile)' == 'true'">
+    <Exec Command="$(DOTNET_HOST_PATH) $(MicrosoftDotnetBundle) --source $(PreBundlePublishDir) --apphost $(AssemblyName)$(_NativeExecutableExtension) -o $(PublishDir)" />
   </Target>
 
   <!--
@@ -786,7 +796,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true'">
 
     <PropertyGroup>
-      <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' ">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>
+      <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' ">$(PreBundlePublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>
     </PropertyGroup>
 
     <GenerateDepsFile ProjectPath="$(MSBuildProjectFullPath)"
