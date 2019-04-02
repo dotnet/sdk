@@ -47,9 +47,10 @@
       <!-- Note: we use the "-internal" archives and installers that contain only the aspnetcore shared framework, and shouldn't overlap with Microsoft.NETCore.App. -->
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxInstallerFileName>
       <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
-      <!-- The AspNetTargetingPackInstallerFileName is misnamed for DEB types at this time.
-           https://github.com/aspnet/AspNetCore/issues/8835 when resolved, remove the 'IsDebianBaseDistro' special contitioned line below. -->
+      <!-- AspNet targeting pack assets have unexpected asset names for DEB and tar.gz types:
+           https://github.com/aspnet/AspNetCore/issues/8835 -->
       <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(IsDebianBaseDistro)' == 'true' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(AspNetCoreVersion)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
       <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(Architecture)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
@@ -159,15 +160,23 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
-      <BundledLayoutComponent Include="AspNetCoreSharedFxArchiveFile">
+      <BundledLayoutComponent Include="DownloadedAspNetCoreSharedFxArchiveFile">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
 
-      <!-- The AspNetTargetingPackInstallerFile for PKG types does not exist at this time.
-           https://github.com/aspnet/AspNetCore/issues/8806 when resolved, change the 'Condition' below. -->
+      <!-- The AspNet does not provide native MacOS PKG installers at this time; we use AspNet archives.
+           https://github.com/aspnet/AspNetCore/issues/8806 -->
+      <BundledLayoutComponent Include="DownloadedAspNetTargetingPackArchiveFile"
+                              Condition="'$(InstallerExtension)' == '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <DownloadFileName>$(AspNetTargetingPackArchiveFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+        <RelativeLayoutPath></RelativeLayoutPath>
+      </BundledLayoutComponent>
+      
       <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetTargetingPackVersion)</BaseUrl>
