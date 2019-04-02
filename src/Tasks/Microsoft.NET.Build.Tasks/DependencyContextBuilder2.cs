@@ -17,6 +17,7 @@ namespace Microsoft.NET.Build.Tasks
         private IEnumerable<ReferenceInfo> _referenceAssemblies;
         private IEnumerable<ReferenceInfo> _directReferences;
         private IEnumerable<ReferenceInfo> _dependencyReferences;
+        private Dictionary<string, List<ReferenceInfo>> _compileReferences;
         private Dictionary<string, List<ResolvedFile>> _resolvedNuGetFiles;
         private Dictionary<string, SingleProjectInfo> _referenceProjectInfos;
         private IEnumerable<string> _excludeFromPublishPackageIds;
@@ -30,6 +31,9 @@ namespace Microsoft.NET.Build.Tasks
         private HashSet<PackageIdentity> _packagesToBeFiltered;
         private bool _isFrameworkDependent;
         private string _platformLibrary;
+        private string _dotnetFrameworkName;
+        private string _runtimeIdentifier;
+        private bool _isPortable;
         private HashSet<string> _usedLibraryNames;
 
         private Dictionary<ReferenceInfo, string> _referenceLibraryNames;
@@ -75,6 +79,9 @@ namespace Microsoft.NET.Build.Tasks
 
             _isFrameworkDependent = projectContext.IsFrameworkDependent;
             _platformLibrary = projectContext.PlatformLibrary?.Name;
+            _dotnetFrameworkName = projectContext.LockFileTarget.TargetFramework.DotNetFrameworkName;
+            _runtimeIdentifier = projectContext.LockFileTarget.RuntimeIdentifier;
+            _isPortable = projectContext.IsPortable;
 
             _usedLibraryNames = new HashSet<string>(_dependencyLibraries.Keys, StringComparer.OrdinalIgnoreCase);
         }
@@ -111,6 +118,17 @@ namespace Microsoft.NET.Build.Tasks
         public DependencyContextBuilder2 WithDependencyReferences(IEnumerable<ReferenceInfo> dependencyReferences)
         {
             _dependencyReferences = dependencyReferences;
+            return this;
+        }
+
+        public DependencyContextBuilder2 WithCompileReferences(IEnumerable<ReferenceInfo> compileReferences)
+        {
+            _compileReferences = new Dictionary<string, List<ReferenceInfo>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var group in compileReferences.GroupBy(r => r.PackageName, StringComparer.OrdinalIgnoreCase))
+            {
+                _compileReferences.Add(group.Key, group.ToList());
+            }
+
             return this;
         }
 
@@ -271,11 +289,44 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
+                foreach (var library in GetFilteredLibraries(runtime: false))
+                {
+                    var compilationLibrary = GetCompilationLibrary(library);
+                    if (compilationLibrary != null)
+                    {
+                        compilationLibraries.Add(compilationLibrary);
+                    }
+                }
 
+                if (_directReferences != null)
+                {
+                    foreach (var directReference in _directReferences)
+                    {
+                        compilationLibraries.Add(new CompilationLibrary(
+                            type: "reference",
+                            name: GetReferenceLibraryName(directReference),
+                            version: directReference.Version,
+                            hash: string.Empty,
+                            assemblies: new[] { directReference.FileName },
+                            dependencies: Enumerable.Empty<Dependency>(),
+                            serviceable: false));
+                    }
+                }
             }
-            
 
-            throw new NotImplementedException();
+
+            var targetInfo = new TargetInfo(
+                _dotnetFrameworkName,
+                _runtimeIdentifier,
+                runtimeSignature: string.Empty,
+                _isPortable);
+
+            return new DependencyContext(
+                targetInfo,
+                _compilationOptions ?? CompilationOptions.Default,
+                compilationLibraries,
+                runtimeLibraries,
+                new RuntimeFallbacks[] { });
         }
 
         private RuntimeLibrary GetProjectRuntimeLibrary()
@@ -375,52 +426,18 @@ namespace Microsoft.NET.Build.Tasks
 
         private RuntimeLibrary GetRuntimeLibrary(DependencyLibrary library)
         {
-            bool serviceable = true;
+            GetCommonLibraryProperties(library,
+                out string hash,
+                out HashSet<Dependency> libraryDependencies,
+                out bool serviceable,
+                out string path,
+                out string hashPath,
+                out SingleProjectInfo referenceProjectInfo);
 
-            var libraryDependencies = new HashSet<Dependency>();
-            foreach (var dependency in _libraryDependencies[library.Name])
+            if (referenceProjectInfo is UnreferencedProjectInfo)
             {
-                if (_dependencyLibraries.TryGetValue(library.Name, out var libraryDependency))
-                {
-                    libraryDependencies.Add(libraryDependency.Dependency);
-                }
-            }
-
-            string hash = string.Empty;
-            string path = null;
-            string hashPath = null;
-            SingleProjectInfo referenceProjectInfo = null;
-
-            if (library.Type == "package")
-            {
-                // TEMPORARY: All packages are serviceable in RC2
-                // See https://github.com/dotnet/cli/issues/2569
-                serviceable = true;
-                if (!string.IsNullOrEmpty(library.Sha512))
-                {
-                    hash = "sha512-" + library.Sha512;
-                    hashPath = _versionFolderPathResolver.GetHashFileName(library.Name, library.Version);
-                }
-
-                path = library.Path;
-            }
-            else if (library.Type == "project")
-            {
-                serviceable = false;
-                referenceProjectInfo = GetProjectInfo(library);
-                if (referenceProjectInfo is UnreferencedProjectInfo)
-                {
-                    // unreferenced ProjectInfos will be added later as simple dll dependencies
-                    return null;
-                }
-
-                foreach (var dependencyReference in referenceProjectInfo.DependencyReferences)
-                {
-                    libraryDependencies.Add(
-                        new Dependency(
-                            GetReferenceLibraryName(dependencyReference),
-                            dependencyReference.Version));
-                }
+                // unreferenced ProjectInfos will be added later as simple dll dependencies
+                return null;
             }
 
             List<RuntimeAssetGroup> runtimeAssemblyGroups = new List<RuntimeAssetGroup>();
@@ -491,22 +508,89 @@ namespace Microsoft.NET.Build.Tasks
 
         private CompilationLibrary GetCompilationLibrary(DependencyLibrary library)
         {
+            GetCommonLibraryProperties(library,
+                out string hash,
+                out HashSet<Dependency> libraryDependencies,
+                out bool serviceable,
+                out string path,
+                out string hashPath,
+                out SingleProjectInfo referenceProjectInfo);
+
             List<string> assemblies = new List<string>();
 
-            SingleProjectInfo referenceProjectInfo = null;
-            if (library.Type == "project")
-            {
-                referenceProjectInfo = GetProjectInfo(library);
-            }
             if (library.Type == "project" && !(referenceProjectInfo is UnreferencedProjectInfo))
             {
                 assemblies.Add(referenceProjectInfo.OutputName);
             }
-            else
+            else if (_compileReferences != null && _compileReferences.TryGetValue(library.Name, out var compileReferences))
             {
-                
+                foreach (var compileReference in compileReferences)
+                {
+                    assemblies.Add(compileReference.RelativePath);
+                }
             }
-                
+
+            return new CompilationLibrary(
+                type: library.Type,
+                name: library.Name,
+                version: library.Version.ToString(),
+                hash,
+                assemblies,
+                libraryDependencies,
+                serviceable,
+                path,
+                hashPath);
+        }
+
+        private void GetCommonLibraryProperties(DependencyLibrary library,
+                    out string hash,
+                    out HashSet<Dependency> libraryDependencies,
+                    out bool serviceable,
+                    out string path,
+                    out string hashPath,
+                    out SingleProjectInfo referenceProjectInfo)
+        {
+            serviceable = true;
+            referenceProjectInfo = null;
+
+            libraryDependencies = new HashSet<Dependency>();
+            foreach (var dependency in _libraryDependencies[library.Name])
+            {
+                if (_dependencyLibraries.TryGetValue(library.Name, out var libraryDependency))
+                {
+                    libraryDependencies.Add(libraryDependency.Dependency);
+                }
+            }
+
+            hash = string.Empty;
+            path = null;
+            hashPath = null;
+            if (library.Type == "package")
+            {
+                // TEMPORARY: All packages are serviceable in RC2
+                // See https://github.com/dotnet/cli/issues/2569
+                serviceable = true;
+                if (!string.IsNullOrEmpty(library.Sha512))
+                {
+                    hash = "sha512-" + library.Sha512;
+                    hashPath = _versionFolderPathResolver.GetHashFileName(library.Name, library.Version);
+                }
+
+                path = library.Path;
+            }
+            else if (library.Type == "project")
+            {
+                serviceable = false;
+                referenceProjectInfo = GetProjectInfo(library);
+
+                foreach (var dependencyReference in referenceProjectInfo.DependencyReferences)
+                {
+                    libraryDependencies.Add(
+                        new Dependency(
+                            GetReferenceLibraryName(dependencyReference),
+                            dependencyReference.Version));
+                }
+            }
         }
 
         private RuntimeFile CreateRuntimeFile(ResolvedFile resolvedFile)
