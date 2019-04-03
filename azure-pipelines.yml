@@ -9,7 +9,7 @@ pr:
 jobs:
 
 - job: Windows
-  pool: dotnet-external-temp
+  pool: buildpool.windows.10.amd64.vs2017.open
   variables:
     _os: Windows
   strategy:
@@ -39,7 +39,7 @@ jobs:
       condition: not(succeeded())
 
 - job: Linux
-  pool: dnceng-linux-external-temp
+  pool: buildpool.ubuntu.1604.amd64.open
   variables:
     _os: Linux
   strategy:
@@ -70,7 +70,7 @@ jobs:
       condition: not(succeeded())
       
 - job: Windows_Spanish
-  pool: dnceng-windows-spanish-external-temp
+  pool: buildpool.ubuntu.1604.amd64.open
   variables:
     _os: Windows
   strategy:
