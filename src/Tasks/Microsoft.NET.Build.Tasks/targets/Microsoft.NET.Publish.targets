@@ -90,7 +90,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
       <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
       
-      <PreBundlePublishDir Condition="'$(PublishSingleFile)' == 'true'">$(IntermediateOutputPath)PublishTemp\</PreBundlePublishDir>
+      <PreBundlePublishDir Condition="'$(PublishSingleFile)' == 'true'">$(IntermediateOutputPath)PreBundlePublish\</PreBundlePublishDir>
       <PreBundlePublishDir Condition="'$(PublishSingleFile)' != 'true'">$(PublishDir)</PreBundlePublishDir>
     </PropertyGroup>
 
@@ -115,12 +115,72 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
                                         CopyFilesToPublishDirectory
 
-    Copy all build outputs, satellites and other necessary files to the publish directory.
+    Copy all build outputs, satellites and other necessary files to the pre-bundle publish directory.
+    Some outputs (ex: PDB files) may be directly copied to the final publish directory, based on settings.
     ============================================================
     -->
   <Target Name="CopyFilesToPublishDirectory"
-          DependsOnTargets="_CopyResolvedFilesToPublishPreserveNewest;
+          DependsOnTargets="_CopyResolvedFilesToPreBundlePublishPreserveNewest;
+                            _CopyResolvedFilesToPreBundlePublishAlways;
+                            _CopyResolvedFilesToPublishPreserveNewest;
                             _CopyResolvedFilesToPublishAlways" />
+
+  <!--
+    ============================================================
+                                       _CopyResolvedFilesToPreBundlePublishPreserveNewest
+
+    Copy _ResolvedFileToPreBundlePublishPreserveNewest items to the pre-bundle publish directory.
+    ============================================================
+    -->
+  <Target Name="_CopyResolvedFilesToPreBundlePublishPreserveNewest"
+          DependsOnTargets="_ComputeResolvedFilesToPublishTypes"
+          Inputs="@(_ResolvedFileToPreBundlePublishPreserveNewest)"
+          Outputs="@(_ResolvedFileToPreBundlePublishPreserveNewest->'$(PreBundlePublishDir)%(RelativePath)')">
+
+    <!--
+        Not using SkipUnchangedFiles="true" because the application may want to change
+        one of these files and not have an incremental build replace it.
+        -->
+    <Copy SourceFiles = "@(_ResolvedFileToPreBundlePublishPreserveNewest)"
+          DestinationFiles="@(_ResolvedFileToPreBundlePublishPreserveNewest->'$(PreBundlePublishDir)%(RelativePath)')"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+          UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                      _CopyResolvedFilesToPreBundlePublishAlways
+
+    Copy _ResolvedFileToPreBundlePublishAlways items to the pre-bundle publish directory.
+    ============================================================
+    -->
+  <Target Name="_CopyResolvedFilesToPreBundlePublishAlways"
+          DependsOnTargets="_ComputeResolvedFilesToPublishTypes">
+
+    <!--
+        Not using SkipUnchangedFiles="true" because the application may want to change
+        one of these files and not have an incremental build replace it.
+        -->
+    <Copy SourceFiles = "@(_ResolvedFileToPreBundlePublishAlways)"
+          DestinationFiles="@(_ResolvedFileToPreBundlePublishAlways->'$(PreBundlePublishDir)%(RelativePath)')"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+          UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+  </Target>
 
   <!--
     ============================================================
@@ -139,7 +199,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         one of these files and not have an incremental build replace it.
         -->
     <Copy SourceFiles = "@(_ResolvedFileToPublishPreserveNewest)"
-          DestinationFiles="@(_ResolvedFileToPublishPreserveNewest->'$(PreBundlePublishDir)%(RelativePath)')"
+          DestinationFiles="@(_ResolvedFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')"
           OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -167,7 +227,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         one of these files and not have an incremental build replace it.
         -->
     <Copy SourceFiles = "@(_ResolvedFileToPublishAlways)"
-          DestinationFiles="@(_ResolvedFileToPublishAlways->'$(PreBundlePublishDir)%(RelativePath)')"
+          DestinationFiles="@(_ResolvedFileToPublishAlways->'$(PublishDir)%(RelativePath)')"
           OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -177,12 +237,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
 
     </Copy>
-  </Target>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Build.Bundle" />
-
-  <Target Name="BundlePublishDirectory" Condition="'$(PublishSingleFile)' == 'true'">
-    <Exec Command="$(DOTNET_HOST_PATH) $(MicrosoftDotnetBundle) --source $(PreBundlePublishDir) --apphost $(AssemblyName)$(_NativeExecutableExtension) -o $(PublishDir)" />
   </Target>
 
   <!--
@@ -363,11 +417,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Target Name="_ComputeResolvedFilesToPublishTypes">
     <ItemGroup>
+
+      <_ResolvedFileToPreBundlePublishPreserveNewest Include="@(ResolvedFileToPublish)"
+                                                     Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='PreserveNewest' and 
+                                                                '%(ResolvedFileToPublish.IncludeInSingleFile)'!='false'" />
+
+      <_ResolvedFileToPreBundlePublishAlways Include="@(ResolvedFileToPublish)"
+                                             Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='Always' and 
+                                                        '%(ResolvedFileToPublish.IncludeInSingleFile)'!='false'" />
+
       <_ResolvedFileToPublishPreserveNewest Include="@(ResolvedFileToPublish)"
-                                             Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='PreserveNewest'" />
+                                            Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='PreserveNewest' and 
+                                                       '%(ResolvedFileToPublish.IncludeInSingleFile)'=='false'" />
 
       <_ResolvedFileToPublishAlways Include="@(ResolvedFileToPublish)"
-                                     Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='Always'" />
+                                    Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='Always' and 
+                                               '%(ResolvedFileToPublish.IncludeInSingleFile)'=='false'" />
     </ItemGroup>
   </Target>
 
@@ -422,6 +487,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                              Condition="'$(_DebugSymbolsProduced)'=='true' and '$(CopyOutputSymbolsToPublishDirectory)'=='true'">
         <RelativePath>@(_DebugSymbolsIntermediatePath->'%(Filename)%(Extension)')</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <IncludeInSingleFile Condition="'$(BundlePDBs)'!='true'">false</IncludeInSingleFile>
       </ResolvedFileToPublish>
 
       <!-- Copy satellite assemblies. -->
@@ -778,6 +844,19 @@ Copyright (c) .NET Foundation. All rights reserved.
                                           '$(PreserveStoreLayout)' != 'true'">true</_UseBuildDependencyFile>
     </PropertyGroup>
 
+  </Target>
+
+  <!--
+    ============================================================
+                                        BundlePublishDirectory
+
+    Bundle the items in PreBundlePublishDir into one file in PublishDir
+    ============================================================
+    -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Build.Bundle" />
+
+  <Target Name="BundlePublishDirectory" Condition="'$(PublishSingleFile)' == 'true'">
+    <Exec Command="$(DOTNET_HOST_PATH) $(MicrosoftDotnetBundle) --source $(PreBundlePublishDir) --apphost $(AssemblyName)$(_NativeExecutableExtension) -o $(PublishDir)" />
   </Target>
 
   <!--
