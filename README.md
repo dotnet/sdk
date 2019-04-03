@@ -1,4 +1,4 @@
-﻿﻿## dotnet-format
+﻿## dotnet-format
 
 [![Nuget](https://img.shields.io/nuget/v/dotnet-format.svg)](https://www.nuget.org/packages/dotnet-format)
 
