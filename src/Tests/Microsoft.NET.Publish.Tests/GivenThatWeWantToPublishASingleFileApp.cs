@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
@@ -57,10 +58,10 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutAppHost);
         }
 
-        [Fact]
-        public void It_generates_a_single_file_for_framework_dependent_apps()
+        private void RunTest(bool isSelfContained, bool includePdb)
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();
+            const string targetFramework = "netcoreapp3.0";
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset(TestProjectName)
@@ -69,46 +70,38 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(Log, testAsset.TestRoot);
             publishCommand
                 .Execute(
-                    "/p:SelfContained=false",
-                    $"/p:RuntimeIdentifier={runtimeIdentifier}")
+                    $"/p:TargetFramework={targetFramework}",
+                    $"/p:RuntimeIdentifier={runtimeIdentifier}",
+                    "/p:SelfContained=" + ((isSelfContained) ? "true" : "false"),
+                    "/p:IncludePdbInSingleFile=" + ((includePdb) ? "true" : "false"))
                 .Should()
                 .Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework,
+                                                                     runtimeIdentifier: runtimeIdentifier);
+            var exeFile = $"{TestProjectName}{Constants.ExeSuffix}";
+            var pdbFile = $"{TestProjectName}.pdb";
+
+            string[] expectedFiles = (includePdb) ? new string[] { exeFile } : new string[] { exeFile, pdbFile };
+            publishDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [Fact]
+        public void It_generates_a_single_file_for_framework_dependent_apps()
+        {
+            RunTest(isSelfContained: false, includePdb: false);
         }
 
         [Fact]
         public void It_generates_a_single_file_for_self_contained_apps()
         {
-            var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset(TestProjectName)
-                .WithSource();
-
-            var publishCommand = new PublishCommand(Log, testAsset.TestRoot);
-            publishCommand
-                .Execute(
-                    "/p:SelfContained=true",
-                    $"/p:RuntimeIdentifier={runtimeIdentifier}")
-                .Should()
-                .Pass();
+            RunTest(isSelfContained: true, includePdb: false);
         }
 
         [Fact]
         public void It_generates_a_single_file_including_pdbs()
         {
-            var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset(TestProjectName)
-                .WithSource();
-
-            var publishCommand = new PublishCommand(Log, testAsset.TestRoot);
-            publishCommand
-                .Execute(
-                    "/p:IncludePdbInSingleFile",
-                    $"/p:RuntimeIdentifier={runtimeIdentifier}")
-                .Should()
-                .Pass();
+            RunTest(isSelfContained: true, includePdb: true);
         }
     }
 }
