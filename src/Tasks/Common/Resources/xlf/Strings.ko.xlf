@@ -107,6 +107,16 @@
         <target state="translated">NETSDK1031: RuntimeIdentifier를 지정하지 않으면 자체 포함 애플리케이션의 빌드 또는 게시가 지원되지 않습니다. RuntimeIdentifier를 지정하거나 SelfContained를 false로 설정하세요.</target>
         <note>{StrBegin="NETSDK1031: "}</note>
       </trans-unit>
+      <trans-unit id="CannotHaveSingleFileWithoutRuntimeIdentifier">
+        <source>NETSDK1097: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</source>
+        <target state="new">NETSDK1097: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</target>
+        <note>{StrBegin="NETSDK1097: "}</note>
+      </trans-unit>
+      <trans-unit id="CannotHaveSingleFileWithoutAppHost">
+        <source>NETSDK1098: Applications published to a single-file are required to use the application host. Please either set PublishSingleFile to false or set UseAppHost to true.</source>
+        <target state="new">NETSDK1098: Applications published to a single-file are required to use the application host. Please either set PublishSingleFile to false or set UseAppHost to true.</target>
+        <note>{StrBegin="NETSDK1098: "}</note>
+      </trans-unit>
       <trans-unit id="CannotInferTargetFrameworkIdentifierAndVersion">
         <source>NETSDK1013: The TargetFramework value '{0}' was not recognized. It may be misspelled. If not, then the TargetFrameworkIdentifier and/or TargetFrameworkVersion properties must be specified explicitly.</source>
         <target state="translated">NETSDK1013: TargetFramework 값 '{0}'을(를) 인식하지 못했습니다. 철자가 틀렸을 수 있습니다. 그렇지 않은 경우 TargetFrameworkIdentifier 및/또는 TargetFrameworkVersion 속성을 명시적으로 지정해야 합니다.</target>
@@ -485,16 +495,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1057: You are using a preview version of .NET Core. See: https://aka.ms/dotnet-core-preview</source>
         <target state="translated">NETSDK1057: .NET Core의 미리 보기 버전을 사용 중입니다. 참조: https://aka.ms/dotnet-core-preview</target>
         <note>{StrBegin="NETSDK1057: "}</note>
-      </trans-unit>
-      <trans-unit id="CannotHaveSingleFileWithoutRuntimeIdentifier">
-        <source>NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</source>
-        <target state="new">NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</target>
-        <note>{StrBegin="NETSDK1093: "}</note>
-      </trans-unit>
-      <trans-unit id="CannotHaveSingleFileWithoutAppHost">
-        <source>NETSDK1094: Applications published to a single-file are required to use the application host. Please either set PublishSingleFile to false or set UseAppHost to true.</source>
-        <target state="new">NETSDK1094: Applications published to a single-file are required to use the application host. Please either set PublishSingleFile to false or set UseAppHost to true.</target>
-        <note>{StrBegin="NETSDK1094: "}</note>
       </trans-unit>
     </body>
   </file>
