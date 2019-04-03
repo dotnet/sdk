@@ -505,4 +505,8 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1096: Optimizing assemblies for performance failed. You can either exclude the failing assemblies from being optimized, or set the ReadyToRun property to false.</value>
     <comment>{StrBegin="NETSDK1096: "}</comment>
   </data>
+  <data name="CannotHaveSingleFileWithoutRuntimeIdentifier" xml:space="preserve">
+    <value>NETSDK1097: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</value>
+    <comment>{StrBegin="NETSDK1097: "}</comment>
+  </data>  
 </root>

@@ -89,7 +89,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
       <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
-      
+
       <PreBundlePublishDir Condition="'$(PublishSingleFile)' == 'true'">$(IntermediateOutputPath)PreBundlePublish\</PreBundlePublishDir>
       <PreBundlePublishDir Condition="'$(PublishSingleFile)' != 'true'">$(PublishDir)</PreBundlePublishDir>
     </PropertyGroup>

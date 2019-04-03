@@ -486,6 +486,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: Вы используете предварительную версию .NET Core. Дополнительные сведения см. на странице https://aka.ms/dotnet-core-preview</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
+      <trans-unit id="CannotHaveSingleFileWithoutRuntimeIdentifier">
+        <source>NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</source>
+        <target state="new">NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</target>
+        <note>{StrBegin="NETSDK1093: "}</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

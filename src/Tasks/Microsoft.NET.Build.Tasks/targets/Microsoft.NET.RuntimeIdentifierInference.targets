@@ -127,6 +127,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(RuntimeIdentifier)' == ''"
                  ResourceName="CannotHaveSelfContainedWithoutRuntimeIdentifier" />
 
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(RuntimeIdentifier)' == ''"
+                 ResourceName="CannotHaveSingleFileWithoutRuntimeIdentifier" />
+    
     <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(UseAppHost)' != 'true'"
                  ResourceName="CannotUseSelfContainedWithoutAppHost" />
 
