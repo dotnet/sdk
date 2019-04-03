@@ -6,6 +6,7 @@
     <LangVersion>7.3</LangVersion> 
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
 
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <IsPackable>true</IsPackable>
