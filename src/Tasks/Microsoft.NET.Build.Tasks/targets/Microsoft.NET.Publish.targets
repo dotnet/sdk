@@ -855,7 +855,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Build.Bundle" />
 
-  <Target Name="BundlePublishDirectory" Condition="'$(PublishSingleFile)' == 'true'">
+  <Target Name="BundlePublishDirectory" 
+          Condition="'$(PublishSingleFile)' == 'true'"
+          Inputs="$(PreBundlePublishDir)\**\*.*"
+          Outputs="$(PublishDir)\$(AssemblyName)$(_NativeExecutableExtension)">
     <PropertyGroup>
       <BundleArgs>--source $(PreBundlePublishDir) </BundleArgs>
       <BundleArgs>$(BundleArgs) --apphost $(AssemblyName)$(_NativeExecutableExtension)</BundleArgs>

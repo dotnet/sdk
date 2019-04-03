@@ -486,11 +486,16 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: Sie verwenden eine Vorschauversion von .NET Core. Weitere Informationen: https://aka.ms/dotnet-core-preview</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
-        <trans-unit id="CannotHaveSingleFileWithoutRuntimeIdentifier">
-            <source>NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</source>
-            <target state="new">NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</target>
-            <note>{StrBegin="NETSDK1093: "}</note>
-        </trans-unit>
+      <trans-unit id="CannotHaveSingleFileWithoutRuntimeIdentifier">
+        <source>NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</source>
+        <target state="new">NETSDK1093: It is not supported to publish an application to a single-file without specifying a RuntimeIdentifier. Please either specify a RuntimeIdentifier or set PublishSingleFile to false.</target>
+        <note>{StrBegin="NETSDK1093: "}</note>
+      </trans-unit>
+      <trans-unit id="CannotHaveSingleFileWithoutAppHost">
+        <source>NETSDK1094: Applications published to a single-file are required to use the application host. Please either set PublishSingleFile to false or set UseAppHost to true.</source>
+        <target state="new">NETSDK1094: Applications published to a single-file are required to use the application host. Please either set PublishSingleFile to false or set UseAppHost to true.</target>
+        <note>{StrBegin="NETSDK1094: "}</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
