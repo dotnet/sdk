@@ -1,4 +1,4 @@
-﻿## dotnet-format
+﻿﻿## dotnet-format
 
 [![Nuget](https://img.shields.io/nuget/v/dotnet-format.svg)](https://www.nuget.org/packages/dotnet-format)
 
@@ -28,7 +28,7 @@ Development builds of `dotnet-format` are being hosted on myget. You can visit t
 You can install the tool using the following command.
 
 ```console
-dotnet tool install -g dotnet-format --version 3.0.0-prerelease.19119.4 --add-source https://dotnet.myget.org/F/format/api/v3/index.json
+dotnet tool install -g dotnet-format --version 3.0.5-prerelease.19203.5 --add-source https://dotnet.myget.org/F/format/api/v3/index.json
 ```
 
 ### How To Use
@@ -45,19 +45,20 @@ Options:
   -v, --verbosity    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
                      diag[nostic]
   --dry-run          Format files, but do not save changes to disk.
-  --check            Terminate with non-zero exit code if any files need to be formatted in the workspace.
-  --files            The files to operate on. If none specified, all files in workspace will be operated on.
+  --check            Terminates with a non-zero exit code if any files were formatted.
+  --files            A comma separated list of relative file paths to format. All files are formatted if empty.
   --version          Display version information
 ```
 
 Add `format` after `dotnet` and before the command arguments that you want to run:
 
-| Examples                                                 |
-| -------------------------------------------------------- |
-| dotnet **format**                                        |
-| dotnet **format** -w &lt;workspace&gt;                   |
-| dotnet **format** -v diag                                |
-| dotnet **format** -w &lt;workspace&gt; -v diag           |
+| Examples                                                 | Description                                                                                   |
+| -------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
+| dotnet **format**                                        | Formats the project or solution in the current directory.                                     |
+| dotnet **format** -w &lt;workspace&gt;                   | Formats a specific project or solution.                                                       | 
+| dotnet **format** -v diag                                | Formats with very verbose logging.                                                            |
+| dotnet **format** --files Programs.cs,Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
+| dotnet **format** --check --dry-run                      | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
 
 ### How To Uninstall
 

@@ -183,11 +183,11 @@
   <data name="Format_files_but_do_not_save_changes_to_disk" xml:space="preserve">
     <value>Format files, but do not save changes to disk.</value>
   </data>
-  <data name="Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_workspace" xml:space="preserve">
-    <value>Terminate with non-zero exit code if any files need to be formatted in the workspace.</value>
+  <data name="Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted" xml:space="preserve">
+    <value>Terminates with a non-zero exit code if any files were formatted.</value>
   </data>
-  <data name="The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated_on" xml:space="preserve">
-    <value>The files to operate on. If none specified, all files in workspace will be operated on.</value>
+  <data name="A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_if_empty" xml:space="preserve">
+    <value>A comma separated list of relative file paths to format. All files are formatted if empty.</value>
   </data>
   <data name="Formatted_code_file_0" xml:space="preserve">
     <value>Formatted code file '{0}'.</value>

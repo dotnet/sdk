@@ -33,8 +33,8 @@ namespace Microsoft.CodeAnalysis.Tools
                 .AddOption(new Option(new[] { "-w", "--workspace" }, Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one, new Argument<string>(() => null)))
                 .AddOption(new Option(new[] { "-v", "--verbosity" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic, new Argument<string>() { Arity = ArgumentArity.ExactlyOne }.FromAmong(_verbosityLevels)))
                 .AddOption(new Option(new[] { "--dry-run" }, Resources.Format_files_but_do_not_save_changes_to_disk, new Argument<bool>()))
-                .AddOption(new Option(new[] { "--check" }, Resources.Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_workspace, new Argument<bool>()))
-                .AddOption(new Option(new[] { "--files" }, Resources.The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated_on, new Argument<string>(() => null)))
+                .AddOption(new Option(new[] { "--check" }, Resources.Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted, new Argument<bool>()))
+                .AddOption(new Option(new[] { "--files" }, Resources.A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_if_empty, new Argument<string>(() => null)))
                 .UseVersionOption()
                 .Build();
 

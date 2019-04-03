@@ -61,6 +61,16 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A comma separated list of relative file paths to format. All files are formatted if empty..
+        /// </summary>
+        internal static string A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_if_empty {
+            get {
+                return ResourceManager.GetString("A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_i" +
+                        "f_empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Both a MSBuild project file and solution file found in &apos;{0}&apos;. Specify which to use with the --workspace option..
         /// </summary>
         internal static string Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option {
@@ -123,6 +133,15 @@ namespace Microsoft.CodeAnalysis.Tools {
         internal static string Formatted_0_of_1_files_in_2_ms {
             get {
                 return ResourceManager.GetString("Formatted_0_of_1_files_in_2_ms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Formatted code file &apos;{0}&apos;..
+        /// </summary>
+        internal static string Formatted_code_file_0 {
+            get {
+                return ResourceManager.GetString("Formatted_code_file_0", resourceCulture);
             }
         }
         
@@ -212,12 +231,11 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Terminate with non-zero exit code if any files need to be formatted in the workspace..
+        ///   Looks up a localized string similar to Terminates with a non-zero exit code if any files were formatted..
         /// </summary>
-        internal static string Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_workspace {
+        internal static string Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted {
             get {
-                return ResourceManager.GetString("Terminate_with_non_zero_exit_code_if_any_files_need_to_be_formatted_in_the_worksp" +
-                        "ace", resourceCulture);
+                return ResourceManager.GetString("Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted", resourceCulture);
             }
         }
         
@@ -273,25 +291,6 @@ namespace Microsoft.CodeAnalysis.Tools {
         internal static string Workspace_loaded_in_0_ms {
             get {
                 return ResourceManager.GetString("Workspace_loaded_in_0_ms", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The files to operate on. If none specified, all files in workspace will be operated on..
-        /// </summary>
-        internal static string The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated_on {
-            get {
-                return ResourceManager.GetString("The_files_to_operate_on_If_none_specified_all_files_in_workspace_will_be_operated" +
-                                                 "_on", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Formatted code file &apos;{0}&apos;..
-        /// </summary>
-        internal static string Formatted_code_file_0 {
-            get {
-                return ResourceManager.GetString("Formatted_code_file_0", resourceCulture);
             }
         }
     }
