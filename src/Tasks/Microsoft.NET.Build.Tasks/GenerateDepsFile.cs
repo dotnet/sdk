@@ -268,7 +268,8 @@ namespace Microsoft.NET.Build.Tasks
 
             newJson.Should().BeEquivalentTo(oldJson);
 
-
+            //  If the files matched, then delete the .new.json file
+            File.Delete(newDepsFilePath);
 
         }
 
