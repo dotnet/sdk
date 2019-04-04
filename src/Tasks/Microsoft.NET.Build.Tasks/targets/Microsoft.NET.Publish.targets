@@ -192,7 +192,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CopyResolvedFilesToPublishPreserveNewest"
           DependsOnTargets="_ComputeResolvedFilesToPublishTypes"
           Inputs="@(_ResolvedFileToPublishPreserveNewest)"
-          Outputs="@(_ResolvedFileToPublishPreserveNewest->'$(PreBundlePublishDir)%(RelativePath)')">
+          Outputs="@(_ResolvedFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')">
 
     <!--
         Not using SkipUnchangedFiles="true" because the application may want to change
@@ -855,10 +855,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Build.Bundle" />
 
+  <Target Name="_ComputeFilesToBundle"
+        Condition="'$(PublishSingleFile)' == 'true'">
+
+    <ItemGroup>
+      <_FilesToBundle Include="$(PreBundlePublishDir)\**\*.*"/>
+    </ItemGroup>
+
+  </Target>
+
   <Target Name="BundlePublishDirectory" 
           Condition="'$(PublishSingleFile)' == 'true'"
-          Inputs="$(PreBundlePublishDir)\**\*.*"
+          DependsOnTargets="_ComputeFilesToBundle" 
+          Inputs="@(_FilesToBundle)"
           Outputs="$(PublishDir)\$(AssemblyName)$(_NativeExecutableExtension)">
+    
     <PropertyGroup>
       <BundleArgs>--source $(PreBundlePublishDir) </BundleArgs>
       <BundleArgs>$(BundleArgs) --apphost $(AssemblyName)$(_NativeExecutableExtension)</BundleArgs>
@@ -867,6 +878,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     
     <Exec Command="$(DOTNET_HOST_PATH) $(MicrosoftDotnetBundle) $(BundleArgs)" />
+    
   </Target>
 
   <!--
