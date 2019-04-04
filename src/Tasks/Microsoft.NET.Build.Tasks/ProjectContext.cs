@@ -48,10 +48,12 @@ namespace Microsoft.NET.Build.Tasks
 
         public LockFileTargetLibrary PlatformLibrary { get; }
 
-        public RuntimeFramework [] RuntimeFrameworks { get; }
+        public RuntimeFramework[] RuntimeFrameworks { get; }
 
         public LockFile LockFile => _lockFile;
         public LockFileTarget LockFileTarget => _lockFileTarget;
+
+        public LockFileTarget CompilationLockFileTarget { get; }
 
         public ProjectContext(LockFile lockFile, LockFileTarget lockFileTarget,
             //  Trimmed from publish output, and if there are no runtimeFrameworks, written to runtimeconfig.json
@@ -70,6 +72,14 @@ namespace Microsoft.NET.Build.Tasks
 
             _lockFile = lockFile;
             _lockFileTarget = lockFileTarget;
+            if (string.IsNullOrEmpty(lockFileTarget.RuntimeIdentifier))
+            {
+                CompilationLockFileTarget = lockFileTarget;
+            }
+            else
+            {
+                CompilationLockFileTarget = lockFile.GetTargetAndThrowIfNotFound(lockFileTarget.TargetFramework, null);
+            }
 
             PlatformLibrary = platformLibrary;
             RuntimeFrameworks = runtimeFrameworks;
