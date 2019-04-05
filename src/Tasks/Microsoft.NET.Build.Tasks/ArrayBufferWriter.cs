@@ -12,6 +12,7 @@ namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
     /// Implementation of System.Buffers.IBufferWriter backed by ArrayPool.Shared.
+    /// TODO Remove once we have https://github.com/dotnet/corefx/issues/34894
     /// </summary>
     internal class ArrayBufferWriter : IBufferWriter<byte>, IDisposable
     {
