@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -18,9 +18,7 @@ namespace Microsoft.NET.Build.Tasks
     {
         private struct ClsidEntry
         {
-            [JsonProperty(PropertyName = "type")]
             public string Type;
-            [JsonProperty(PropertyName = "assembly")]
             public string Assembly;
         }
 
@@ -55,9 +53,9 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            using (StreamWriter writer = File.CreateText(clsidMapPath))
+            using (FileStream clsidMapFile = File.Create(clsidMapPath))
             {
-                writer.Write(JsonConvert.SerializeObject(clsidMap));
+                WriteClsidMap(clsidMapFile, clsidMap);
             }
         }
 
@@ -189,10 +187,44 @@ namespace Microsoft.NET.Build.Tasks
                 if (reader.StringComparer.Equals(attributeType.Namespace, "System.Runtime.InteropServices") && reader.StringComparer.Equals(attributeType.Name, "GuidAttribute"))
                 {
                     CustomAttributeValue<KnownType> data = attribute.DecodeValue(new TypeResolver());
-                    return (string)data.FixedArguments[0].Value;
+                    return $"{{{(string)data.FixedArguments[0].Value}}}";
                 }
             }
             throw new BuildErrorException(Strings.ClsidMapExportedTypesRequireExplicitGuid, GetTypeName(reader, type));
+        }
+
+        private static void WriteClsidMap(Stream clsidMapFile, Dictionary<string, ClsidEntry> map)
+        {
+            const int SyncWriteThreshold = 1_000; // Copy to stream after writing this many bytes
+
+            ArrayBufferWriter buffer = new ArrayBufferWriter();
+            Utf8JsonWriter json = new Utf8JsonWriter(buffer);
+
+            long prevBytesWritten = 0;
+
+            // Write some JSON, let's say an array of JSON objects in a loop
+            json.WriteStartObject();
+
+            foreach (KeyValuePair<string, ClsidEntry> clsid in map)
+            {
+                json.WriteStartObject(clsid.Key);
+
+                json.WriteString("assembly", clsid.Value.Assembly);
+                json.WriteString("type", clsid.Value.Type);
+
+                json.WriteEndObject();
+
+                prevBytesWritten = json.BytesWritten - prevBytesWritten;
+                if (prevBytesWritten > SyncWriteThreshold)
+                {
+                    json.Flush(isFinalBlock: false);
+                    buffer.CopyTo(clsidMapFile);
+                }
+            }
+
+            json.WriteEndObject();
+            json.Flush(isFinalBlock: true);
+            buffer.CopyTo(clsidMapFile);
         }
 
         private enum KnownType

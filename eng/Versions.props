@@ -15,7 +15,7 @@
     <MicrosoftBuildUtilitiesCoreVersion>15.4.8</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftExtensionsDependencyModelVersion>2.1.0-preview2-26306-03</MicrosoftExtensionsDependencyModelVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
+    <MicrosoftBclJsonSourcesVersion>4.6.0-preview3.19128.7</MicrosoftBclJsonSourcesVersion>
     <NuGetBuildTasksPackVersion>5.0.0-rtm.5821</NuGetBuildTasksPackVersion>
     <NuGetPackagingVersion>$(NuGetBuildTasksPackVersion)</NuGetPackagingVersion>
     <NuGetProjectModelVersion>$(NuGetBuildTasksPackVersion)</NuGetProjectModelVersion>
@@ -31,6 +31,7 @@
   </PropertyGroup>
   <!-- Test Dependencies -->
   <PropertyGroup>
+    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
     <FluentAssertionsVersion>4.19.2</FluentAssertionsVersion>
     <FluentAssertionsJsonVersion>4.19.0</FluentAssertionsJsonVersion>
     <MicrosoftDotNetCliUtilsVersion>2.0.0</MicrosoftDotNetCliUtilsVersion>

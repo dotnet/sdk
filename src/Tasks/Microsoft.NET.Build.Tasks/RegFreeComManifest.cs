@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <param name="assemblyVersion">The version of the assembly.</param>
         /// <param name="clsidMapPath">The path to the clasidmap file.</param>
         /// <param name="comManifestPath">The path to which to write the manifest.</param>
-        private static void CreateManifestFromClsidmap(string assemblyName, string comHostName, string assemblyVersion, string clsidMapPath, string comManifestPath)
+        public static void CreateManifestFromClsidmap(string assemblyName, string comHostName, string assemblyVersion, string clsidMapPath, string comManifestPath)
         {
             XNamespace ns = "urn:shemas-microsoft-com:asm.v1";
 
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tasks
             JsonDocument clsidMap;
             using (Stream fileStream = File.OpenRead(clsidMapPath))
             {
-                clsidMap = JsonDocument.Parse(clsidMapPath);
+                clsidMap = JsonDocument.Parse(fileStream);
             }
 
             foreach (var clsid in clsidMap.RootElement.EnumerateObject())
