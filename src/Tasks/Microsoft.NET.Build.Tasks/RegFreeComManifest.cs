@@ -7,8 +7,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -22,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <param name="assemblyVersion">The version of the assembly.</param>
         /// <param name="clsidMapPath">The path to the clasidmap file.</param>
         /// <param name="comManifestPath">The path to which to write the manifest.</param>
-        public static void CreateManifestFromClsidmap(string assemblyName, string comHostName, string assemblyVersion, string clsidMapPath, string comManifestPath)
+        private static void CreateManifestFromClsidmap(string assemblyName, string comHostName, string assemblyVersion, string clsidMapPath, string comManifestPath)
         {
             XNamespace ns = "urn:shemas-microsoft-com:asm.v1";
 
@@ -34,18 +33,15 @@ namespace Microsoft.NET.Build.Tasks
 
             XElement fileElement = new XElement(ns + "file", new XAttribute("name", comHostName));
 
-            JObject clsidMap;
-            string clsidMapText = File.ReadAllText(clsidMapPath);
-            using (StreamReader clsidMapReader = File.OpenText(clsidMapPath))
-            using (JsonTextReader jsonReader = new JsonTextReader(clsidMapReader))
+            JsonDocument clsidMap;
+            using (Stream fileStream = File.OpenRead(clsidMapPath))
             {
-                clsidMap = JObject.Load(jsonReader);
+                clsidMap = JsonDocument.Parse(clsidMapPath);
             }
 
-            foreach (JProperty property in clsidMap.Properties())
+            foreach (var clsid in clsidMap.RootElement.EnumerateObject())
             {
-                string guid = property.Name;
-                fileElement.Add(new XElement(ns + "comClass", new XAttribute("clsid", guid), new XAttribute("threadingModel", "Both")));
+                fileElement.Add(new XElement(ns + "comClass", new XAttribute("clsid", clsid.Name), new XAttribute("threadingModel", "Both")));
             }
 
             manifest.Add(fileElement);
