@@ -17,9 +17,7 @@
 
     <ItemGroup>
         <PackageReference Include="System.IO.Compression" />
-        <PackageReference Include="SourceLink.Create.CommandLine" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != 'net45'"/>
-        <DotNetCliToolReference Include="dotnet-sourcelink" />
     </ItemGroup>
 </Project>
