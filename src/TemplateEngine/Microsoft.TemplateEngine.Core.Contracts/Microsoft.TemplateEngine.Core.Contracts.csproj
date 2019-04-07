@@ -9,9 +9,4 @@
     <ItemGroup>
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="SourceLink.Create.CommandLine" />
-        <DotNetCliToolReference Include="dotnet-sourcelink" />
-    </ItemGroup>
 </Project>
