@@ -5,9 +5,4 @@
         <Description>Contracts for extending Template Engine</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="SourceLink.Create.CommandLine" />
-        <DotNetCliToolReference Include="dotnet-sourcelink" />
-    </ItemGroup>
 </Project>
