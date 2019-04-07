@@ -11,9 +11,4 @@
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Core.Contracts\Microsoft.TemplateEngine.Core.Contracts.csproj" />
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="SourceLink.Create.CommandLine" />
-        <DotNetCliToolReference Include="dotnet-sourcelink" />
-    </ItemGroup>
 </Project>

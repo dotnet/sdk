@@ -18,9 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="SourceLink.Create.CommandLine" />
         <PackageReference Include="Newtonsoft.Json" />
-        <DotNetCliToolReference Include="dotnet-sourcelink" />
     </ItemGroup>
 
     <ItemGroup>
