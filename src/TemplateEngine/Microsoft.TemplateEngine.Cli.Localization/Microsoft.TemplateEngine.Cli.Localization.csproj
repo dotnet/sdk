@@ -8,7 +8,7 @@
         <EnableDefaultItems>False</EnableDefaultItems>
         <DisabledWarnings>CS2008</DisabledWarnings>
         <IsPackable>true</IsPackable>
-        <NoWarn>2008;NU5125</NoWarn>
+        <NoWarn>2008;NU5105</NoWarn>
         <PackageId>Microsoft.TemplateEngine.Cli.Localization</PackageId>
     </PropertyGroup>
 
