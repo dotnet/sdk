@@ -238,7 +238,7 @@ namespace Microsoft.NET.Build.Tasks
                         }
 
                         // Skip reference assemblies and assemblies that reference winmds
-                        if (ReferencesWinMD(mdReader) || IsReferenceAssembly(mdReader))
+                        if (ReferencesWinMD(mdReader) || IsReferenceAssembly(mdReader) || !HasILCode(pereader, mdReader))
                         {
                             return false;
                         }
@@ -300,6 +300,22 @@ namespace Microsoft.NET.Build.Tasks
                 AssemblyReference assemblyRef = mdReader.GetAssemblyReference(assemblyRefHandle);
                 if ((assemblyRef.Flags & AssemblyFlags.WindowsRuntime) == AssemblyFlags.WindowsRuntime)
                     return true;
+            }
+
+            return false;
+        }
+
+        private bool HasILCode(PEReader peReader, MetadataReader mdReader)
+        {
+            foreach (var methoddefHandle in mdReader.MethodDefinitions)
+            {
+                MethodDefinition methodDef = mdReader.GetMethodDefinition(methoddefHandle);
+                if (methodDef.RelativeVirtualAddress > 0)
+                {
+                    MethodBodyBlock methodBody = PEReaderExtensions.GetMethodBody(peReader, methodDef.RelativeVirtualAddress);
+                    if (methodBody.Size > 0)
+                        return true;
+                }
             }
 
             return false;
