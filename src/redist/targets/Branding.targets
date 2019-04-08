@@ -4,11 +4,10 @@
       <BuildName>cli</BuildName>
       <SdkBrandName>Microsoft .NET Core SDK $(CliBrandingVersion)</SdkBrandName>
       <MSBuildExtensionsBrandName>.NET Standard Support for Visual Studio 2015</MSBuildExtensionsBrandName>
-      <!-- TODO: "Preview" shouldn't be hardcoded in these properties -->
-      <SharedFrameworkBrandName>Microsoft .NET Core Runtime $(CliVersionNoSuffix) - Preview</SharedFrameworkBrandName>
-      <SharedHostBrandName>Microsoft .NET Core Host $(CliVersionNoSuffix) - Preview</SharedHostBrandName>
-      <HostFxrBrandName>Microsoft .NET Core Host FX Resolver $(CliVersionNoSuffix) - Preview</HostFxrBrandName>
-
+      <SharedFrameworkBrandName>Microsoft .NET Core Runtime $(MicrosoftNETCoreAppPackageVersion)</SharedFrameworkBrandName>
+      <NetCoreAppTargetingPackBrandName>Microsoft .NET Core Targeting Pack $(MicrosoftNETCoreAppPackageVersion)</NetCoreAppTargetingPackBrandName>
+      <SharedHostBrandName>Microsoft .NET Core Host $(MicrosoftNETCoreAppPackageVersion)</SharedHostBrandName>
+      <HostFxrBrandName>Microsoft .NET Core Host FX Resolver $(MicrosoftNETCoreAppPackageVersion)</HostFxrBrandName>
       <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
       <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
     </PropertyGroup>

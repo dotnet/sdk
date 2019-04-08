@@ -1,8 +1,13 @@
 <Project>
 
+  <PropertyGroup>
+     <_BuildUnlessNoBuild Condition="'$(NoBuild)' != 'true'">Build</_BuildUnlessNoBuild>
+  </PropertyGroup>
+
   <Target Name="GenerateInstallers"
-          AfterTargets="Pack"
-          DependsOnTargets="GetCurrentRuntimeInformation;
+          BeforeTargets="Pack"
+          DependsOnTargets="$(_BuildUnlessNoBuild);
+                            GetCurrentRuntimeInformation;
                             GenerateMsis;
                             GeneratePkgs;
                             GenerateRpms;

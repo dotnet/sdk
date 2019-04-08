@@ -1,5 +1,7 @@
 <Project>
-  <Import Project="$(NuGetPackageRoot)microsoft.dotnet.signtool\$(MicrosoftDotNetSignToolVersion)\build\Microsoft.DotNet.SignTool.props" />
+  <ItemGroup>
+     <PackageReference Include="Microsoft.DotNet.SignTool" Version="$(MicrosoftDotNetSignToolVersion)" PrivateAssets="All"  />
+  </ItemGroup>
 
   <Target Name="SetSignProps"
           Condition="'$(SignCoreSdk)' == 'true'">

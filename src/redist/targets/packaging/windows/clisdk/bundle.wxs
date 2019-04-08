@@ -6,7 +6,7 @@
   <?include "Variables.wxi" ?>
 
   <Bundle Name="$(var.ProductName)" Manufacturer="$(var.Manufacturer)"
-          Version="$(var.DisplayVersion)" UpgradeCode="$(var.UpgradeCode)"
+          Version="$(var.SDKBundleVersion)" UpgradeCode="$(var.UpgradeCode)"
           AboutUrl="https://dotnet.github.io/"
           Compressed="yes">
 
@@ -42,25 +42,25 @@
 
     <swid:Tag Regid="microsoft.com" InstallPath="[DOTNETHOME]" />
 
-      <util:RegistrySearch Id="CheckSDKInstallLocation_x86"
-              Variable="SDKInstallLocationExists_x86"
+      <util:RegistrySearch Id="CheckDotnetInstallLocation_x86"
+              Variable="DotnetInstallLocationExists_x86"
               Result="exists"
               Root="HKLM"
-              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86\sdk"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86"
               Value="InstallLocation" />
-      <util:RegistrySearch Id="SDKInstallLocation_x86"
-              After="CheckSDKInstallLocation_x86"
-              Condition="SDKInstallLocationExists_x86"
+      <util:RegistrySearch Id="DotnetInstallLocation_x86"
+              After="CheckDotnetInstallLocation_x86"
+              Condition="DotnetInstallLocationExists_x86"
               Variable="DOTNETHOME_X86"
               Result="value"
               Root="HKLM"
-              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86\sdk"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86"
               Value="InstallLocation" />
 
       <util:FileSearch Id="DotnetExeSearch_x86"
-              After="SDKInstallLocation_x86"
+              After="DotnetInstallLocation_x86"
               Variable="DotnetExeExists_x86"
-              Condition="NOT SDKInstallLocationExists_x86"
+              Condition="NOT DotnetInstallLocationExists_x86"
               Result="exists"
               Path="[ProgramFilesFolder]dotnet\dotnet.exe"/>
       <util:DirectorySearch Id="DotnetExeLocation_x86"
@@ -69,25 +69,25 @@
               Variable="DOTNETHOME_X86"
               Path="[ProgramFilesFolder]dotnet"/>
       
-    <util:RegistrySearch Id="CheckSDKInstallLocation_x64"
-              Variable="SDKInstallLocationExists_x64"
+    <util:RegistrySearch Id="CheckDotnetInstallLocation_x64"
+              Variable="DotnetInstallLocationExists_x64"
               Result="exists"
               Root="HKLM"
-              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sdk"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64"
               Value="InstallLocation" />
-    <util:RegistrySearch Id="SDKInstallLocation_x64"
-              After="CheckSDKInstallLocation_x64"
-              Condition="SDKInstallLocationExists_x64"
+    <util:RegistrySearch Id="DotnetInstallLocation_x64"
+              After="CheckDotnetInstallLocation_x64"
+              Condition="DotnetInstallLocationExists_x64"
               Variable="DOTNETHOME_X64"
               Result="value"
               Root="HKLM"
-              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64\sdk"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64"
               Value="InstallLocation" />
 
     <util:FileSearch Id="DotnetExeSearch_x64"
-              After="SDKInstallLocation_x64"
+              After="DotnetInstallLocation_x64"
               Variable="DotnetExeExists_x64"
-              Condition="NOT SDKInstallLocationExists_x64"
+              Condition="NOT DotnetInstallLocationExists_x64"
               Result="exists"
               Path="[ProgramFiles64Folder]dotnet\dotnet.exe"/>
     <util:DirectorySearch Id="DotnetExeLocation_x64"
@@ -131,6 +131,9 @@
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
       <MsiPackage SourceFile="$(var.AspNetTargetingPackMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
+      <MsiPackage SourceFile="$(var.WindowsDesktopTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
       <MsiPackage SourceFile="$(var.CLISDKMsiSourcePath)">

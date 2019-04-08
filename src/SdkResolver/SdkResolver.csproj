@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateRuntimeCofigurationFiles>false</GenerateRuntimeCofigurationFiles>
+    <AssemblyName>UNUSED</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.MSBuildSdkResolver" Version="$(MicrosoftDotNetMSBuildSdkResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true"/>
+    <PackageReference Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <Target
+    Name="GenerateLayout" 
+    Condition=" '$(OS)' == 'Windows_NT' "
+    BeforeTargets="AfterBuild"
+    >
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(OutputPath)" />
+
+    <RemoveDir Directories="$(OutputPath)" />
+    <MakeDir Directories="$(OutputPath)" />
+
+    <ItemGroup>
+      <_SdkResolverSrc Include="$(Pkgruntime_win-x86_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
+      <_SdkResolverSrc Include="$(Pkgruntime_win-x64_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
+      <_SdkResolverSrc Include="$(PkgMicrosoft_DotNet_MSBuildSdkResolver)\lib\net472\**\*.dll" Arch="" />
+      <_SdkResolverDst Include="@(_SdkResolverSrc->'$(OutputPath)%(Arch)%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_SdkResolverSrc)" DestinationFiles="@(_SdkResolverDst)" />
+  </Target>
+
+</Project>

@@ -10,11 +10,12 @@ param(
     [Parameter(Mandatory=$true)][string]$WinFormsAndWpfMSIFile,
     [Parameter(Mandatory=$true)][string]$NetCoreAppTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AspNetTargetingPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$DotnetBundleOutput,
     [Parameter(Mandatory=$true)][string]$WixRoot,
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
     [Parameter(Mandatory=$true)][string]$DotnetMSIVersion,
-    [Parameter(Mandatory=$true)][string]$DotnetCLIDisplayVersion,
+    [Parameter(Mandatory=$true)][string]$SDKBundleVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
@@ -37,7 +38,7 @@ function RunCandleForBundle
         -dMicrosoftEula="$PSScriptRoot\dummyeula.rtf" `
         -dProductMoniker="$ProductMoniker" `
         -dBuildVersion="$DotnetMSIVersion" `
-        -dDisplayVersion="$DotnetCLIDisplayVersion" `
+        -dSDKBundleVersion="$SDKBundleVersion" `
         -dSDKProductBandVersion="$SDKProductBandVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
         -dCLISDKMsiSourcePath="$CLISDKMSIFile" `
@@ -48,6 +49,7 @@ function RunCandleForBundle
         -dWinFormsAndWpfMsiSourcePath="$WinFormsAndWpfMSIFile" `
         -dNetCoreAppTargetingPackMsiSourcePath="$NetCoreAppTargetingPackMSIFile" `
         -dAspNetTargetingPackMsiSourcePath="$AspNetTargetingPackMSIFile" `
+        -dWindowsDesktopTargetingPackMsiSourcePath="$WindowsDesktopTargetingPackMSIFile" `
         -dWinFormsAndWpfVersion="$WindowsDesktopVersion" `
         -dAdditionalSharedFXMsiSourcePath="$AdditionalSharedFxMSIFile" `
         -dAdditionalHostFXRMsiSourcePath="$AdditionalHostFxrMSIFile" `

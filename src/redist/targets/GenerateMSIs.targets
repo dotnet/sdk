@@ -24,6 +24,10 @@
       <VSToolsNuspecFile>$(MSBuildThisFileDirectory)/packaging/windows/clisdk/VS.Tools.Net.Core.SDK.$(Architecture).nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
+      <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
+      <VSToolsResolverNuspecFile>$(MSBuildThisFileDirectory)/packaging/windows/clisdk/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
+      <VSToolsResolverNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.Resolver.nupkg</VSToolsResolverNupkgFile>
+
       <!--<SdkMSBuildExtensionsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>-->
@@ -109,7 +113,7 @@
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
-                      '$(SimpleVersion)' ^
+                      '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
                       '$(SdkInstallerUpgradeCode)' ^
                       '$(Architecture)' ^
@@ -136,11 +140,12 @@
                       '$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
-                      '$(SimpleVersion)' ^
+                      '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
                       '$(MicrosoftWindowsDesktopPackageVersion)' ^
                       '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
@@ -181,6 +186,21 @@
                     '$(VSToolsNupkgFile)'" />
   </Target>
 
+  <Target Name="GenerateVSToolsResolverNupkg"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkBundle"
+          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86'"
+          Inputs="$(SdkResolverLayoutPath)/**/*;
+                  $(VSToolsResolverNuspecFile);
+                  $(SdkGenerateNupkgPowershellScript)"
+          Outputs="$(VSToolsResolverNupkgFile)">
+
+    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateNupkgPowershellScript) ^
+                    '$(SdkResolverLayoutPath.TrimEnd('\'))' ^
+                    '$(FullNugetVersion)' ^
+                    '$(VSToolsResolverNuspecFile)' ^
+                    '$(VSToolsResolverNupkgFile)'" />
+  </Target>
+
   <Target Name="GenerateSdkMSBuildExtensionsNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkBundle"
           Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
@@ -213,6 +233,7 @@
                             SignSdkBundle;
                             GenerateSdkNupkg;
                             GenerateVSToolsNupkg;
+                            GenerateVSToolsResolverNupkg;
                             GenerateSdkMSBuildExtensionsNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and !$(Architecture.StartsWith('arm'))" />
 

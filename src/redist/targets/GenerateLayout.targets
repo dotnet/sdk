@@ -29,7 +29,8 @@
       <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
-      <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack$(InstallerStartSuffix)-$(NetCoreAppTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
+      <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(NetCoreAppTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
+      <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-targeting-pack-$(WindowsDesktopTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
 
       <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
       <SharedFrameworkRid>$(CoreSetupRid)</SharedFrameworkRid>
@@ -45,7 +46,11 @@
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND '$(HostOSName)' != 'osx' ">aspnetcore-runtime-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
       <!-- Note: we use the "-internal" archives and installers that contain only the aspnetcore shared framework, and shouldn't overlap with Microsoft.NETCore.App. -->
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxInstallerFileName>
-      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack$(InstallerStartSuffix)-$(AspNetTargetingPackVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <!-- AspNet targeting pack assets have unexpected asset names for DEB and tar.gz types:
+           https://github.com/aspnet/AspNetCore/issues/8835 -->
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(IsDebianBaseDistro)' == 'true' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(AspNetCoreVersion)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
       <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(Architecture)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
@@ -60,9 +65,12 @@
       <CoreSetupDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppPackageVersion)</CoreSetupDownloadDirectory>
       <CombinedSharedHostAndFrameworkArchive>$(CoreSetupDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
-    <PropertyGroup>
-      
+
+    <PropertyGroup Condition="'$(HostOSName)' == 'win'">
+      <AlternateAppHostRid Condition="'$(Architecture)' == 'x86'">win-x64</AlternateAppHostRid>
+      <AlternateAppHostRid Condition="'$(Architecture)' == 'x64'">win-x86</AlternateAppHostRid>
     </PropertyGroup>
+    
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
         <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
@@ -80,6 +88,24 @@
       <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
         <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
         <PackageVersion>$(AspNetTargetingPackVersion)</PackageVersion>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg">
+        <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
+        <PackageVersion>$(WindowsDesktopTargetingPackVersion)</PackageVersion>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
+        <PackageName>runtime.$(SharedFrameworkRid).Microsoft.NETCore.DotNetAppHost</PackageName>
+        <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Altnernate" Condition="'$(AlternateAppHostRid)' != ''">
+        <PackageName>runtime.$(AlternateAppHostRid).Microsoft.NETCore.DotNetAppHost</PackageName>
+        <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
@@ -112,12 +138,19 @@
       </BundledInstallerComponent>
       
       <BundledInstallerComponent Include="DownloadedNetCoreAppTargetingPackInstallerFile"
-                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(CoreSetupRootUrl)$(NetCoreAppTargetingPackVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
-      
+
+      <BundledInstallerComponent Include="DownloadedWindowsDesktopTargetingPackInstallerFile"
+                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(WindowsDesktopTargetingPackVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+
       <BundledLayoutComponent Include="ToolsetArchive">
         <BaseUrl>$(DotnetToolsetBlobRootUrl)Toolset/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
         <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
@@ -125,22 +158,32 @@
         <RelativeLayoutPath>sdk/$(SdkVersion)</RelativeLayoutPath>
       </BundledLayoutComponent>
     </ItemGroup>
-    
+
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
-      <BundledLayoutComponent Include="AspNetCoreSharedFxArchiveFile">
+      <BundledLayoutComponent Include="DownloadedAspNetCoreSharedFxArchiveFile">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
 
+      <!-- The AspNet does not provide native MacOS PKG installers at this time; we use AspNet archives.
+           https://github.com/aspnet/AspNetCore/issues/8806 -->
+      <BundledLayoutComponent Include="DownloadedAspNetTargetingPackArchiveFile"
+                              Condition="'$(InstallerExtension)' == '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <DownloadFileName>$(AspNetTargetingPackArchiveFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+        <RelativeLayoutPath></RelativeLayoutPath>
+      </BundledLayoutComponent>
+      
       <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
-                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetTargetingPackVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
-      
+
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
@@ -359,13 +402,13 @@
                             CrossgenLayout;
                             LayoutAppHostTemplate;
                             SignLayout"
-          AfterTargets="Build">
+          BeforeTargets="AfterBuild">
   
   </Target>
   
   <Target Name="GenerateInternalLayout"
           DependsOnTargets="GenerateLayout"
-          AfterTargets="Build">
+          BeforeTargets="AfterBuild">
 
     <RemoveDir Directories="$(SdkInternalLayoutPath)" />
     <MakeDir Directories="$(SdkInternalLayoutPath)" />
