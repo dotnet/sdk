@@ -311,11 +311,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 MethodDefinition methodDef = mdReader.GetMethodDefinition(methoddefHandle);
                 if (methodDef.RelativeVirtualAddress > 0)
-                {
-                    MethodBodyBlock methodBody = PEReaderExtensions.GetMethodBody(peReader, methodDef.RelativeVirtualAddress);
-                    if (methodBody.Size > 0)
-                        return true;
-                }
+                    return true;
             }
 
             return false;
