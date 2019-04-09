@@ -5,8 +5,11 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions.Internal;
 
-namespace Microsoft.CodeAnalysis.Tools.Tests
+namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
+    /// <summary>
+    /// Logger that records all logged messages.
+    /// </summary>
     internal class TestLogger : ILogger
     {
         private readonly StringBuilder _builder = new StringBuilder();

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Tools.MSBuild;
 
-namespace Microsoft.CodeAnalysis.Tools.Tests
+namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
     /// <summary>
     /// This test fixture ensures that MSBuild is loaded.

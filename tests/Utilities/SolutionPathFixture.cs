@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace Microsoft.CodeAnalysis.Tools.Tests
+namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
     /// <summary>
     /// This test fixture sets the <see cref="Environment.CurrentDirectory" /> to the dotnet-format solution's path.

@@ -43,6 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static async Task<int> Run(string workspace, string verbosity, bool dryRun, bool check, string files, IConsole console = null)
         {
+            // Setup logging
             var serviceCollection = new ServiceCollection();
             var logLevel = GetLogLevel(verbosity);
             ConfigureServices(serviceCollection, console, logLevel);
@@ -50,6 +51,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var logger = serviceProvider.GetService<ILogger<Program>>();
 
+            // Hook so we can process ctrl+c key presses
             var cancellationTokenSource = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, e) =>
             {
@@ -72,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var workspaceDirectory = Path.GetDirectoryName(workspacePath);
                 Environment.CurrentDirectory = workingDirectory;
 
-                var fileList = GetFileList(files);
+                var filesToFormat = GetFilesToFormat(files);
 
                 // Since we are running as a dotnet tool we should be able to find an instance of
                 // MSBuild in a .NET Core SDK.
@@ -87,12 +89,12 @@ namespace Microsoft.CodeAnalysis.Tools
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
 
                 var formatResult = await CodeFormatter.FormatWorkspaceAsync(
-                    logger,
                     workspacePath,
                     isSolution,
                     logAllWorkspaceWarnings: logLevel == LogLevel.Trace,
                     saveFormattedFiles: !dryRun,
-                    filesToFormat: fileList,
+                    filesToFormat,
+                    logger,
                     cancellationTokenSource.Token).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
@@ -155,7 +157,10 @@ namespace Microsoft.CodeAnalysis.Tools
             serviceCollection.AddLogging();
         }
 
-        internal static ImmutableHashSet<string> GetFileList(string files)
+        /// <summary>
+        /// Converts a comma-separated list of relative file paths to a hashmap of full file paths.
+        /// </summary>
+        internal static ImmutableHashSet<string> GetFilesToFormat(string files)
         {
             if (string.IsNullOrEmpty(files))
             {

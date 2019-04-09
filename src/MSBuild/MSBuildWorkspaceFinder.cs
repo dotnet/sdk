@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
     internal class MSBuildWorkspaceFinder
     {
         // Used to exclude dnx projects
-        private const string s_dnxProjectExtension = ".xproj";
+        private const string DnxProjectExtension = ".xproj";
 
         /// <summary>
         /// Finds a compatible MSBuild project or solution.
@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
             var isSolution = workspaceExtension.Equals(".sln", StringComparison.OrdinalIgnoreCase);
             var isProject = !isSolution
                 && workspaceExtension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
-                && !workspaceExtension.Equals(s_dnxProjectExtension, StringComparison.OrdinalIgnoreCase);
+                && !workspaceExtension.Equals(DnxProjectExtension, StringComparison.OrdinalIgnoreCase);
 
             if (!isSolution && !isProject)
             {
@@ -80,7 +80,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
         private static IEnumerable<string> FindSolutionFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.sln", SearchOption.TopDirectoryOnly);
 
         private static IEnumerable<string> FindProjectFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.*proj", SearchOption.TopDirectoryOnly)
-                    .Where(f => !s_dnxProjectExtension.Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
+                    .Where(f => !DnxProjectExtension.Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
 
         private static string FindMatchingFile(string searchBase, Func<string, IEnumerable<string>> fileSelector, string multipleFilesFoundError)
         {

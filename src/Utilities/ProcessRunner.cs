@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RunTests
+namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
     public readonly struct ProcessResult
     {

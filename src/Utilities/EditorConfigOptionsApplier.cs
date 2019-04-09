@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.VisualStudio.CodingConventions;
 
-namespace Microsoft.CodeAnalysis.CodeStyle
+namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
     internal class EditorConfigOptionsApplier
     {
@@ -21,6 +20,9 @@ namespace Microsoft.CodeAnalysis.CodeStyle
             _formattingOptionsWithStorage = GetOptionsWithStorageFromTypes(new[] { commonOptionsType, csharpOptionsType });
         }
 
+        /// <summary>
+        /// Apply .editorconfig settings to the <see cref="OptionSet" />.
+        /// </summary>
         public OptionSet ApplyConventions(OptionSet optionSet, ICodingConventionsSnapshot codingConventions, string languageName)
         {
             foreach (var optionWithStorage in _formattingOptionsWithStorage)
