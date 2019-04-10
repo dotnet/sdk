@@ -31,6 +31,8 @@
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-extension-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(NetCoreAppTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
       <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-targeting-pack-$(WindowsDesktopTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
+      <DownloadedNetStandardTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
+      <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
 
       <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
       <SharedFrameworkRid>$(CoreSetupRid)</SharedFrameworkRid>
@@ -82,30 +84,42 @@
       <BundledLayoutPackage Include="MicrosoftNetCoreAppTargetingPackNupkg">
         <PackageName>Microsoft.NETCore.App.Ref</PackageName>
         <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
+      <BundledLayoutPackage Include="MicrosoftNetStandardTargetingPackNupkg">
+        <PackageName>NETStandard.Library.Ref</PackageName>
+        <PackageVersion>$(NETStandardLibraryRefPackageVersion)</PackageVersion>
+        <TargetFramework>$(NetStandardTargetingPackTargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+      
       <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
         <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
         <PackageVersion>$(AspNetTargetingPackVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
       <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg">
         <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
         <PackageVersion>$(WindowsDesktopTargetingPackVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
         <PackageName>runtime.$(SharedFrameworkRid).Microsoft.NETCore.DotNetAppHost</PackageName>
         <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Altnernate" Condition="'$(AlternateAppHostRid)' != ''">
         <PackageName>runtime.$(AlternateAppHostRid).Microsoft.NETCore.DotNetAppHost</PackageName>
         <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
@@ -144,6 +158,13 @@
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
 
+      <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
+                           Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+      
       <BundledInstallerComponent Include="DownloadedWindowsDesktopTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(CoreSetupRootUrl)$(WindowsDesktopTargetingPackVersion)</BaseUrl>
@@ -245,7 +266,7 @@
         <Properties>
           PackageToRestore=%(BundledLayoutPackage.PackageName);
           PackageVersionToRestore=%(BundledLayoutPackage.PackageVersion);
-          TargetFramework=$(TargetFramework);
+          TargetFramework=%(BundledLayoutPackage.TargetFramework);
           LayoutPackageDescription=%(BundledLayoutPackage.Identity)
         </Properties>
       </BundledLayoutPackageDownloadProject>

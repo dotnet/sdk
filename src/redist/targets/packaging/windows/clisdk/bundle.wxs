@@ -130,6 +130,9 @@
       <MsiPackage SourceFile="$(var.NetCoreAppTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
+      <MsiPackage SourceFile="$(var.NetStandardTargetingPackMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
       <MsiPackage SourceFile="$(var.AspNetTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>

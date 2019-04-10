@@ -9,6 +9,7 @@ param(
     [Parameter(Mandatory=$true)][string]$SharedHostMSIFile,
     [Parameter(Mandatory=$true)][string]$WinFormsAndWpfMSIFile,
     [Parameter(Mandatory=$true)][string]$NetCoreAppTargetingPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$NetStandardTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AspNetTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$DotnetBundleOutput,
@@ -48,6 +49,7 @@ function RunCandleForBundle
         -dSharedHostMsiSourcePath="$SharedHostMSIFile" `
         -dWinFormsAndWpfMsiSourcePath="$WinFormsAndWpfMSIFile" `
         -dNetCoreAppTargetingPackMsiSourcePath="$NetCoreAppTargetingPackMSIFile" `
+        -dNetStandardTargetingPackMsiSourcePath="$NetStandardTargetingPackMSIFile" `
         -dAspNetTargetingPackMsiSourcePath="$AspNetTargetingPackMSIFile" `
         -dWindowsDesktopTargetingPackMsiSourcePath="$WindowsDesktopTargetingPackMSIFile" `
         -dWinFormsAndWpfVersion="$WindowsDesktopVersion" `

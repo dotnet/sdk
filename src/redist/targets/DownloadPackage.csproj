@@ -14,4 +14,6 @@
 
   <!-- Workaround newer sdk preventing us from downloading Microsoft.AspNetCore.App via PackageReference above. -->
   <Target Name="UpdateAspNetToFrameworkReference" />
+  <!-- Workaround: prevents a downgrade error for arm* legs from 'ResolveAppHosts' -->
+  <Target Name="ResolveFrameworkReferences" />
 </Project>

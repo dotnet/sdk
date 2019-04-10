@@ -73,6 +73,9 @@
       <SDKTokenValue Include="%SHARED_FRAMEWORK_RPM_PACKAGE_VERSION%">
         <ReplacementString>$(MicrosoftNETCoreAppMajorMinorPatchVersion)</ReplacementString>
       </SDKTokenValue>
+      <SDKTokenValue Include="%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_VERSION%">
+        <ReplacementString>$(NetStandardTargetingPackMajorMinorPatchVersion)</ReplacementString>
+      </SDKTokenValue>
       <SDKTokenValue Include="%ASPNETCORE_SHAREDFX_RPM_PACKAGE_VERSION%">
         <ReplacementString>$(AspNetCoreMajorMinorPatchVersion)</ReplacementString>
       </SDKTokenValue>
@@ -81,6 +84,9 @@
       </SDKTokenValue>
       <SDKTokenValue Include="%NETCOREAPP_TARGETING_PACK_RPM_PACKAGE_NAME%">
         <ReplacementString>$(NetCoreAppTargetingPackRpmPackageName)</ReplacementString>
+      </SDKTokenValue>
+      <SDKTokenValue Include="%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_NAME%">
+        <ReplacementString>$(NetStandardTargetingPackRpmPackageName)</ReplacementString>
       </SDKTokenValue>
       <SDKTokenValue Include="%ASPNETCORE_SHAREDFX_RPM_PACKAGE_NAME%">
         <ReplacementString>$(AspNetCoreSharedFxRpmPackageName)</ReplacementString>
@@ -190,6 +196,10 @@
       <NetCoreAppTargetingPackRpmPackageName>$(NetCoreAppTargetingPackRpmPackageName.ToLower())</NetCoreAppTargetingPackRpmPackageName>
       <NetCoreAppTargetingPackRpmPackageFileName>dotnet-targeting-pack-$(SharedFxRpmPackageFileVersion)</NetCoreAppTargetingPackRpmPackageFileName>
       <NetCoreAppTargetingPackRpmPackageFileName>$(NetCoreAppTargetingPackRpmPackageFileName.ToLower())</NetCoreAppTargetingPackRpmPackageFileName>
+      <NetStandardTargetingPackRpmPackageName>netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion.Split('.')[0]).$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackRpmPackageName>
+      <NetStandardTargetingPackRpmPackageName>$(NetStandardTargetingPackRpmPackageName.ToLower())</NetStandardTargetingPackRpmPackageName>
+      <NetStandardTargetingPackRpmPackageFileName>netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackRpmPackageFileName>
+      <NetStandardTargetingPackRpmPackageFileName>$(NetStandardTargetingPackRpmPackageFileName.ToLower())</NetStandardTargetingPackRpmPackageFileName>
       <HostFxrRpmPackageName>dotnet-hostfxr-$(SharedFxRpmPackageVersion)</HostFxrRpmPackageName>
       <HostFxrRpmPackageName>$(HostFxrRpmPackageName.ToLower())</HostFxrRpmPackageName>
       <RuntimeDepsPackageName>dotnet-runtime-deps-$(SharedFxRpmPackageVersion)</RuntimeDepsPackageName>
@@ -209,6 +219,7 @@
 
     <PropertyGroup>
       <DownloadedNetCoreAppTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadedNetCoreAppTargetingPackInstallerFile>
+      <DownloadedNetStandardTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadedNetStandardTargetingPackInstallerFile>
       <DownloadedAspNetTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadedAspNetTargetingPackInstallerFile>
       <DownloadedRuntimeDepsInstallerFile>$(DownloadsFolder)$(DownloadedRuntimeDepsInstallerFileName)</DownloadedRuntimeDepsInstallerFile>
       <DownloadedSharedHostInstallerFile>$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)</DownloadedSharedHostInstallerFile>
@@ -241,6 +252,7 @@
   <Target Name="TestSdkRpm"
           Condition="  '$(CLIBUILD_SKIP_TESTS)' != 'true' and '$(IsRPMBasedDistro)' == 'True' and '$(FPMPresent)' == 'True' "
           Inputs="$(DownloadedNetCoreAppTargetingPackInstallerFile);
+                  $(DownloadedNetStandardTargetingPackInstallerFile);
                   $(DownloadedAspNetTargetingPackInstallerFile);
                   $(DownloadedRuntimeDepsInstallerFile);
                   $(DownloadedSharedHostInstallerFile);
@@ -254,6 +266,7 @@
     <!-- Install Dependencies and SDK Packages -->
     <Exec Command="sudo rpm -iv $(DownloadedRuntimeDepsInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedNetStandardTargetingPackInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedAspNetTargetingPackInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedSharedHostInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedHostFxrInstallerFile)" />
@@ -277,6 +290,7 @@
     <Exec Command="sudo rpm -ev --nodeps $(HostFxrRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(SharedHostRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(AspNetTargetingPackRpmPackageName)" />
+    <Exec Command="sudo rpm -ev --nodeps $(NetStandardTargetingPackRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(NetCoreAppTargetingPackRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(RuntimeDepsPackageName)" />
   </Target>
