@@ -159,7 +159,7 @@ jobs:
             _SignType: test
 
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - template: /eng/common/templates/phases/publish-build-assets.yml
+  - template: /eng/common/templates/job/publish-build-assets.yml
     parameters:
       dependsOn:
         - Windows_NT

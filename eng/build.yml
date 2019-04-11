@@ -32,7 +32,7 @@ jobs:
       - ${{ insert }}: ${{ parameters.variables }}
       - _AgentOSName: ${{ parameters.agentOs }}
       - _TeamName: DotNetCore
-      - _PerformanceArgs: /p:PerfIterations=3
+      - _PerformanceArgs: ''
       - _OfficialBuildIdArgs: ''
       - _PublishArgs: ''
       - _SignArgs: ''
@@ -64,7 +64,7 @@ jobs:
           PublishType: $(_PublishType)
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
-      - script: eng\common\CIBuild.cmd 
+      - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
@@ -77,7 +77,7 @@ jobs:
           TestFullMSBuild: 'true'
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
-      - script: eng\common\CIBuild.cmd 
+      - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
@@ -90,12 +90,13 @@ jobs:
           PublishType: $(_PublishType)
 
     - ${{ if eq(parameters.agentOs, 'Windows_Perf') }}:
-      - script: build.cmd 
-                  -configuration $(_BuildConfig) 
-                  -ci -msbuildEngine dotnet 
-                  -performanceTest 
-                  $(_PerformanceArgs) 
+      - script: build.cmd
+                  -configuration $(_BuildConfig)
+                  -ci -msbuildEngine dotnet
+                  -performanceTest
+                  $(_PerformanceArgs)
         displayName: Build
+        timeoutInMinutes: 240
         env:
           BuildConfig: $(_BuildConfig)
     - ${{ if and(eq(parameters.agentOs, 'Windows_Perf'), ne(variables['System.TeamProject'], 'public')) }}:
@@ -105,15 +106,17 @@ jobs:
           perfWorkingDirectory: artifacts\TestResults\$(_BuildConfig)\Performance
           configuration: $(_BuildConfig)
           runType: "rolling"
+          architecture: x64
           GIT_COMMIT: variables['Build.SourceVersion']
           GIT_BRANCH: variables['Build.SourceBranchName']
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf') }}:
-      - script: ./build.sh 
+      - script: ./build.sh
                   --configuration $(_BuildConfig)
                   --ci --performancetest
-                  $(_PerformanceArgs) 
+                  $(_PerformanceArgs)
         displayName: Build
+        timeoutInMinutes: 240
         env:
           BuildConfig: $(_BuildConfig)
     - ${{ if and(eq(parameters.agentOs, 'Linux_Perf'), ne(variables['System.TeamProject'], 'public')) }}:
@@ -123,11 +126,12 @@ jobs:
           perfWorkingDirectory: artifacts/TestResults/$(_BuildConfig)/Performance
           configuration: $(_BuildConfig)
           runType: "rolling"
+          architecture: x64
           GIT_COMMIT: variables['Build.SourceVersion']
           GIT_BRANCH: variables['Build.SourceBranchName']
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf', 'Linux_Perf') }}:
-      - script: eng/common/cibuild.sh 
+      - script: eng/common/cibuild.sh
                   --configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
