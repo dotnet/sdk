@@ -65,7 +65,7 @@ Default Value: All output kinds
 Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary`
 
 ### Async void methods
-Option Name: `skip_async_void_methods`
+Option Name: `exclude_async_void_methods`
 
 Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca2007-do-not-directly-await-a-task)
 
@@ -73,10 +73,10 @@ Option Values: `true` or `false`
 
 Default Value: `false`
 
-Example: `dotnet_code_quality.CA2007.skip_async_void_methods = true`
+Example: `dotnet_code_quality.CA2007.exclude_async_void_methods = true`
 
 ### Single letter type parameters
-Option Name: `allow_single_letter_type_parameters`
+Option Name: `exclude_single_letter_type_parameters`
 
 Configurable Rules: [CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix)
 
@@ -84,7 +84,7 @@ Option Values: `true` or `false`
 
 Default Value: `false`
 
-Example: `dotnet_code_quality.CA1715.allow_single_letter_type_parameters = true`
+Example: `dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true`
 
 ### Dataflow analysis
 
@@ -140,6 +140,40 @@ Option Values:
 Default Value: `NonExceptionPaths`.
 
 Example: `dotnet_code_quality.dispose_analysis_kind = AllPaths`
+
+#### Configure dispose ownership transfer for arguments passed to constructor invocation
+Option Name: `dispose_ownership_transfer_at_constructor`
+
+Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
+
+Option Values: `true` or `false`
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.dispose_ownership_transfer_at_constructor = true`
+
+For example, consider the below code:
+```csharp
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    DisposableOwnerType M1()
+    {
+        // Dispose ownership for allocation 'new A()' is assumed to be transferred to the returned 'DisposableOwnerType' instance
+        // only if 'dotnet_code_quality.dispose_ownership_transfer_at_constructor = true'.
+        // Otherwise, current method 'M1' has the dispose ownership for 'new A()', and it fires a CA2000 as a dispose leak for the below code.
+        return new DisposableOwnerType(new A());
+    }
+}
+```
 
 #### Configure execution of Copy analysis (tracks value and reference copies)
 Option Name: `copy_analysis`
