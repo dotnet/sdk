@@ -98,15 +98,33 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
+    - ${{ if and(eq(parameters.agentOs, 'Windows_Perf'), ne(variables['System.TeamProject'], 'public')) }}:
+      - script: build\uploadperftobenchview.cmd
+        displayName: Upload to BenchView
+        env: 
+          perfWorkingDirectory: artifacts\TestResults\$(_BuildConfig)\Performance
+          configuration: $(_BuildConfig)
+          runType: "rolling"
+          GIT_COMMIT: variables['Build.SourceVersion']
+          GIT_BRANCH: variables['Build.SourceBranchName']
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf') }}:
       - script: ./build.sh 
-                  --configuration $(_BuildConfig) 
-                  --ci --performancetest 
+                  --configuration $(_BuildConfig)
+                  --ci --performancetest
                   $(_PerformanceArgs) 
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
+    - ${{ if and(eq(parameters.agentOs, 'Linux_Perf'), ne(variables['System.TeamProject'], 'public')) }}:
+      - script: build/uploadperftobenchview.sh
+        displayName: Upload to BenchView
+        env: 
+          perfWorkingDirectory: artifacts/TestResults/$(_BuildConfig)/Performance
+          configuration: $(_BuildConfig)
+          runType: "rolling"
+          GIT_COMMIT: variables['Build.SourceVersion']
+          GIT_BRANCH: variables['Build.SourceBranchName']
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf', 'Linux_Perf') }}:
       - script: eng/common/cibuild.sh 
