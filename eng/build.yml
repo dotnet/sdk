@@ -100,9 +100,9 @@ jobs:
           BuildConfig: $(_BuildConfig)
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf') }}:
-      - script: build.sh 
-                  --configuration $(_BuildConfig)
-                  --ci --performancetest
+      - script: ./build.sh 
+                  --configuration $(_BuildConfig) 
+                  --ci --performancetest 
                   $(_PerformanceArgs) 
         displayName: Build
         env:
