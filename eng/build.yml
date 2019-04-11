@@ -89,63 +89,26 @@ jobs:
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
 
-    - ${{ if eq(parameters.agentOs, 'Windows_Performance_CI') }}:
-      - script: eng\common\CIBuild.cmd 
-                  -configuration $(_BuildConfig)
-                  -performanceTest
-                  -msbuildEngine dotnet 
-                  $(_PerformanceArgs)
-        displayName: Build
-        env:
-          BuildConfig: $(_BuildConfig)
-
-    - ${{ if eq(parameters.agentOs, 'Linux_Performance_CI') }}:
-      - script: eng/common/cibuild.sh 
-                  --configuration $(_BuildConfig)
-                  --performancetest
-                  $(_PerformanceArgs)
-        displayName: Build
-        env:
-          BuildConfig: $(_BuildConfig)
-
-    - ${{ if eq(parameters.agentOs, 'Windows_Performance') }}:
-      - script: eng\common\CIBuild.cmd 
-                  -configuration $(_BuildConfig)
-                  -performanceTest
-                  -msbuildEngine dotnet 
+    - ${{ if eq(parameters.agentOs, 'Windows_Perf') }}:
+      - script: build.cmd 
+                  -configuration $(_BuildConfig) 
+                  -ci -msbuildEngine dotnet 
+                  -performanceTest 
                   $(_PerformanceArgs) 
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
 
-      - script: build\uploadperftobenchview.cmd
-        displayName: Upload to BenchView
-        env: 
-          perfWorkingDirectory: artifacts\TestResults\$(_BuildConfig)\Performance
-          configuration: $(_BuildConfig)
-          runType: "rolling"
-          GIT_COMMIT: variables['Build.SourceVersion']
-          GIT_BRANCH: variables['Build.SourceBranchName']
-
-    - ${{ if eq(parameters.agentOs, 'Linux_Performance') }}:
-      - script: eng/common/cibuild.sh 
+    - ${{ if eq(parameters.agentOs, 'Linux_Perf') }}:
+      - script: build.sh 
                   --configuration $(_BuildConfig)
-                  --performancetest
+                  --ci --performancetest
                   $(_PerformanceArgs) 
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
 
-      - script: build/uploadperftobenchview.sh
-        displayName: Upload to BenchView
-        env: 
-          perfWorkingDirectory: artifacts/TestResults/$(_BuildConfig)/Performance
-          configuration: $(_BuildConfig)
-          runType: "rolling"
-          GIT_COMMIT: variables['Build.SourceVersion']
-          GIT_BRANCH: variables['Build.SourceBranchName']
-
-    - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Performance', 'Linux_Performance', 'Windows_Performance_CI', 'Linux_Performance_CI') }}:
+    - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf', 'Linux_Perf') }}:
       - script: eng/common/cibuild.sh 
                   --configuration $(_BuildConfig)
                   $(_PublishArgs)
