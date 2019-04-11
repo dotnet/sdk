@@ -121,7 +121,7 @@ jobs:
       - script: build\uploadperftobenchview.cmd
           displayName: Upload to BenchView
           env: 
-            perfWorkingDirectory: "artifacts\TestResults\$(_BuildConfig)\Performance"
+            perfWorkingDirectory: artifacts\TestResults\$(_BuildConfig)\Performance
             configuration: $(_BuildConfig)
             runType: "rolling"
             GIT_COMMIT: variables['Build.SourceVersion']
@@ -139,7 +139,7 @@ jobs:
       - script: build/uploadperftobenchview.sh
           displayName: Upload to BenchView
           env: 
-            perfWorkingDirectory: "artifacts/TestResults/$(_BuildConfig)/Performance"
+            perfWorkingDirectory: artifacts/TestResults/$(_BuildConfig)/Performance
             configuration: $(_BuildConfig)
             runType: "rolling"
             GIT_COMMIT: variables['Build.SourceVersion']
