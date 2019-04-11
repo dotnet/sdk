@@ -43,37 +43,37 @@ jobs:
             _SignType: real
 
 - template: /eng/build.yml
-    parameters:
-      agentOs: Windows_Perf
-      pool:
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: NetCorePublic-Int-Pool
-          queue: buildpool.windows.10.amd64.vs2017.open
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: Hosted VS2017
-          queue: Windows.10.Amd64.ClientRS1.Perf # using a dedicated private Helix queue (perfsnakes)
-      strategy:
-        matrix:
-          Build_Release:
-            _BuildConfig: Release
-            _PublishType: none
-            _SignType: test
+  parameters:
+    agentOs: Windows_Perf
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: NetCorePublic-Int-Pool
+        queue: buildpool.windows.10.amd64.vs2017.open
+      ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        name: Hosted VS2017
+        queue: Windows.10.Amd64.ClientRS1.Perf # using a dedicated private Helix queue (perfsnakes)
+    strategy:
+      matrix:
+        Build_Release:
+          _BuildConfig: Release
+          _PublishType: none
+          _SignType: test
 
-  - template: /eng/build.yml
-    parameters:
-      agentOs: Linux_Perf
-      pool:
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: Hosted Ubuntu 1604
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: Hosted Ubuntu 1604
-          queue: Ubuntu.1604.Amd64.Perf # using a dedicated private Helix queue (perfsnakes)
-      strategy:
-        matrix:
-          Build_Release:
-            _BuildConfig: Release
-            _PublishType: none
-            _SignType: test
+- template: /eng/build.yml
+  parameters:
+    agentOs: Linux_Perf
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: Hosted Ubuntu 1604
+      ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        name: Hosted Ubuntu 1604
+        queue: Ubuntu.1604.Amd64.Perf # using a dedicated private Helix queue (perfsnakes)
+    strategy:
+      matrix:
+        Build_Release:
+          _BuildConfig: Release
+          _PublishType: none
+          _SignType: test
 
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - template: /eng/build.yml
