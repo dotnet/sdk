@@ -48,7 +48,7 @@ jobs:
                     /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                     /p:PB_PublishType=$(_PublishType)
         - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        - _PerformanceArgs: /p:PerfIterations=25
+        - _PerformanceArgs: /p:PerfIterations=10
 
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
@@ -103,12 +103,12 @@ jobs:
       - script: build\uploadperftobenchview.cmd
         displayName: Upload to BenchView
         env: 
-          perfWorkingDirectory: artifacts\TestResults\$(_BuildConfig)\Performance
+          perfWorkingDirectory: $(Build.SourcesDirectory)\artifacts\TestResults\$(_BuildConfig)\Performance
           configuration: $(_BuildConfig)
           runType: "rolling"
           architecture: x64
-          GIT_COMMIT: variables['Build.SourceVersion']
-          GIT_BRANCH: variables['Build.SourceBranchName']
+          GIT_COMMIT: $(Build.SourceVersion)
+          GIT_BRANCH: $(Build.SourceBranchName)
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf') }}:
       - script: ./build.sh
@@ -123,12 +123,12 @@ jobs:
       - script: build/uploadperftobenchview.sh
         displayName: Upload to BenchView
         env: 
-          perfWorkingDirectory: artifacts/TestResults/$(_BuildConfig)/Performance
+          perfWorkingDirectory: $(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Performance
           configuration: $(_BuildConfig)
           runType: "rolling"
           architecture: x64
-          GIT_COMMIT: variables['Build.SourceVersion']
-          GIT_BRANCH: variables['Build.SourceBranchName']
+          GIT_COMMIT: $(Build.SourceVersion)
+          GIT_BRANCH: $(Build.SourceBranchName)
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf', 'Linux_Perf') }}:
       - script: eng/common/cibuild.sh
