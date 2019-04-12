@@ -86,7 +86,7 @@ echo Creating: "%perfWorkingDirectory%\submission.json"
                     -o "%perfWorkingDirectory%\submission.json"
 
 echo Uploading: "%perfWorkingDirectory%\submission.json"
-echo %pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr --sas-token-env %BV_UPLOAD_SAS_TOKEN%
-%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr --sas-token-env %BV_UPLOAD_SAS_TOKEN%
+echo %pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr --sas-token-env "%BV_UPLOAD_SAS_TOKEN%"
+%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr --sas-token-env "%BV_UPLOAD_SAS_TOKEN%"
 
 exit /b %ErrorLevel%
