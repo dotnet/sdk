@@ -180,7 +180,7 @@ jobs:
       continueOnError: true
       condition: always()
 
-  - ${{ if and(eq(parameters.enablePublishTestResults, 'true'), ne(parameters.publishTestResults.enable, 'false')) }}:
+  - ${{ if or(eq(parameters.enablePublishTestResults, 'true'), ne(parameters.publishTestResults.enable, 'false')) }}:
     - task: PublishTestResults@2
       displayName: Publish Test Results
       inputs:
