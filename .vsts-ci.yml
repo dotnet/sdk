@@ -39,8 +39,8 @@ jobs:
             _PublishType: none
             _SignType: test
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
-            _PublishType: blob
-            _SignType: real
+            _PublishType: none
+            _SignType: test
 
 - template: /eng/build.yml
   parameters:

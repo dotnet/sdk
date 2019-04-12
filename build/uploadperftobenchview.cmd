@@ -28,6 +28,9 @@ if /I "%runType%" == "rolling" if "%GIT_COMMIT%" == "" (
 if "%GIT_BRANCH%" == "" (
     echo EnvVar GIT_BRANCH should be set; exiting...
     exit /b 1)
+ if "%BV_UPLOAD_SAS_TOKEN%" == "" (
+    echo EnvVar BV_UPLOAD_SAS_TOKEN should be set; exiting...
+    exit /b 1)
 if not exist %perfWorkingDirectory%\nul ( 
     echo $perfWorkingDirectory does not exist; exiting...
     exit 1)
@@ -83,6 +86,7 @@ echo Creating: "%perfWorkingDirectory%\submission.json"
                     -o "%perfWorkingDirectory%\submission.json"
 
 echo Uploading: "%perfWorkingDirectory%\submission.json"
-%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr
+echo %pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr --sas-token-env %BV_UPLOAD_SAS_TOKEN%
+%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr --sas-token-env %BV_UPLOAD_SAS_TOKEN%
 
 exit /b %ErrorLevel%

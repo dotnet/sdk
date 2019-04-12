@@ -39,6 +39,10 @@ if [ -z "$GIT_BRANCH" ]; then
     echo EnvVar GIT_BRANCH should be set; exiting...
     exit 1
 fi
+if [ -z "$BV_UPLOAD_SAS_TOKEN" ]; then
+    echo EnvVar BV_UPLOAD_SAS_TOKEN should be set; exiting...
+    exit 1
+fi
 if [ ! -d "$perfWorkingDirectory" ]; then
     echo "$perfWorkingDirectory" does not exist; exiting...
     exit 1
@@ -53,7 +57,7 @@ if [ ! -d "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat" ]; then
     curl -o "$perfWorkingDirectory/benchview.zip" http://benchviewtestfeed.azurewebsites.net/api/v2/package/microsoft.benchview.jsonformat/0.1.0-pre024
     unzip -q -o "$perfWorkingDirectory/benchview.zip" -d "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat"
 fi
-# nuget install Microsoft.BenchView.JSONFormat -Source http://benchviewtestfeed.azurewebsites.net/nuget -OutputDirectory $perfWorkingDirectory -Prerelease -ExcludeVersion || { echo Failed to install Microsoft.BenchView.JSONFormat NuPkg && exit 1 ; }
+# nuget install Microsoft.BenchView.JSONFormat -Source http://benchviewtestfeed.azurewebsites.net/nuget -OutputDirectory "$perfWorkingDirectory" -Prerelease -ExcludeVersion || { echo Failed to install Microsoft.BenchView.JSONFormat NuPkg && exit 1 ; }
 
 # Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
 if [[ "$GIT_BRANCH" == "origin/"* ]]
@@ -108,6 +112,7 @@ python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/submission
                     -o "$perfWorkingDirectory/submission.json" || { echo Failed to create: "$perfWorkingDirectory/submission.json" && exit 1 ; }
 
 echo Uploading: "$perfWorkingDirectory/submission.json"
-python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr || { echo Failed to upload: "$perfWorkingDirectory/submission.json" && exit 1 ; }
+echo python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr --sas-token-env $BV_UPLOAD_SAS_TOKEN
+python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr --sas-token-env $BV_UPLOAD_SAS_TOKEN || { echo Failed to upload: "$perfWorkingDirectory/submission.json" && exit 1 ; }
 
 exit 0
