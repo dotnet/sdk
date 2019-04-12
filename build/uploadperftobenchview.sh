@@ -112,7 +112,6 @@ python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/submission
                     -o "$perfWorkingDirectory/submission.json" || { echo Failed to create: "$perfWorkingDirectory/submission.json" && exit 1 ; }
 
 echo Uploading: "$perfWorkingDirectory/submission.json"
-echo python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr --sas-token-env "$BV_UPLOAD_SAS_TOKEN"
-python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr --sas-token-env "$BV_UPLOAD_SAS_TOKEN" || { echo Failed to upload: "$perfWorkingDirectory/submission.json" && exit 1 ; }
+python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr --sas-token-env BV_UPLOAD_SAS_TOKEN || { echo Failed to upload: "$perfWorkingDirectory/submission.json" && exit 1 ; }
 
 exit 0
