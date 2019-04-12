@@ -188,7 +188,7 @@ jobs:
         testResultsFiles: '*.xml' 
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
         ${{ if ne(parameters.publishTestResults.testRunTitle, '') }}:
-          testRunTitle: ${{ paramters.publishTestResults.testRunTitle }}
+          testRunTitle: ${{ parameters.publishTestResults.testRunTitle }}
       continueOnError: true
       condition: always()
     
