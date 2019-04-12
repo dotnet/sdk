@@ -38,7 +38,18 @@ parameters:
   enablePublishBuildAssets: false
 
   # Optional: Include PublishTestResults task
+  # Note: the publishTestResults parameter (below) can be used to provide more control over publishing test results.
+  #  You should use either "enablePublishTestResults" or "publishTestResults", not both.  If both are present and
+  #  either parameter is set to "enable=false", then publishing test results will be disabled
   enablePublishTestResults: false
+
+  # Optional:
+  #  publishTestResults:
+  #    enable: true
+  #    testRunTitle: XUnit Test Run
+  # Note: You should use either "enablePublishTestResults" or "publishTestResults", not both.  If both are present and
+  #  either parameter is set to "enable=false", then publishing test results will be disabled
+  publishTestResults: {}
 
   # Optional: enable sending telemetry
   enableTelemetry: false
@@ -169,13 +180,15 @@ jobs:
       continueOnError: true
       condition: always()
 
-  - ${{ if eq(parameters.enablePublishTestResults, 'true') }}:
+  - ${{ if and(eq(parameters.enablePublishTestResults, 'true'), ne(parameters.publishTestResults.enable, 'false') }}:
     - task: PublishTestResults@2
       displayName: Publish Test Results
       inputs:
         testResultsFormat: 'xUnit'
         testResultsFiles: '*.xml' 
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        ${{ if ne(parameters.publishTestResults.testRunTitle, '') }}:
+          testRunTitle: ${{ paramters.publishTestResults.testRunTitle }}
       continueOnError: true
       condition: always()
     

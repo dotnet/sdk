@@ -21,7 +21,9 @@ jobs:
     enableMicrobuild: true
     enablePublishBuildArtifacts: true
     enablePublishBuildAssets: true
-    enablePublishTestResults: true
+    publishTestResults:
+      enable: true
+      testResultTitle: chcosta_testing
     enableTelemetry: true
     helixRepo: dotnet/sdk
     pool: ${{ parameters.pool }}
