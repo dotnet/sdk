@@ -23,7 +23,7 @@ jobs:
     enablePublishBuildAssets: true
     publishTestResults:
       enable: true
-      testResultTitle: chcosta_testing
+      testRunTitle: chcosta_testing
     enableTelemetry: true
     helixRepo: dotnet/sdk
     pool: ${{ parameters.pool }}
