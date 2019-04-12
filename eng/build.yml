@@ -48,7 +48,7 @@ jobs:
                     /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                     /p:PB_PublishType=$(_PublishType)
         - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        - _PerformanceArgs: /p:PerfIterations=50
+        - _PerformanceArgs: /p:PerfIterations=5
 
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
@@ -110,6 +110,8 @@ jobs:
           GIT_COMMIT: $(Build.SourceVersion)
           GIT_BRANCH: $(Build.SourceBranchName)
           BV_UPLOAD_SAS_TOKEN: $(BenchViewUploadToken)
+        variables: 
+          - group: dotnet-benchview
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf') }}:
       - script: ./build.sh
@@ -131,6 +133,8 @@ jobs:
           GIT_COMMIT: $(Build.SourceVersion)
           GIT_BRANCH: $(Build.SourceBranchName)
           BV_UPLOAD_SAS_TOKEN: $(BenchViewUploadTokenLinux)
+        variables: 
+          - group: dotnet-benchview
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf', 'Linux_Perf') }}:
       - script: eng/common/cibuild.sh
