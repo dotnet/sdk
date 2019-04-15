@@ -85,7 +85,8 @@
 
     <Exec Command="dotnet tool run $(ToolCommandName) -- $(TestArgs)"
           WorkingDirectory="$(TestLocalToolFolder)"
-          IgnoreStandardErrorWarningFormat="true" />
+          IgnoreStandardErrorWarningFormat="true"
+          EnvironmentVariables="DOTNET_HOST_PATH=;DOTNET_INSTALLDIR="/>
   </Target>
   
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
