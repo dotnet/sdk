@@ -44,9 +44,13 @@ parameters:
   enablePublishTestResults: false
 
   # Optional:
+  # Schema:
   #  publishTestResults:
-  #    enable: true
-  #    testRunTitle: XUnit Test Run
+  #    enable: [bool] (optional: default 'true')
+  #    testResultsFormat: [string] (optional: default value defined below)
+  #    testResultsFiles: [string] (optional: default value defined below)
+  #    searchFolder: [string] (optional: default value defined below)
+  #    testRunTitle: [string] (optional: default Azure DevOps defined value)
   # Note: You should use either "enablePublishTestResults" or "publishTestResults", not both.  If both are present and
   #  either parameter is set to "enable=false", then publishing test results will be disabled
   publishTestResults: {}
@@ -184,9 +188,18 @@ jobs:
     - task: PublishTestResults@2
       displayName: Publish Test Results
       inputs:
-        testResultsFormat: 'xUnit'
-        testResultsFiles: '*.xml' 
-        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        ${{ if eq(parameters.publishTestResults.testResultsFormat, '') }}:
+          testResultsFormat: 'xUnit'
+        ${{ if ne(parameters.publishTestResults.testResultsFormat, '') }}:
+          testResultsFormat: ${{ parameters.publishTestResults.testResultsFormat }}
+        ${{ if eq(parameters.publishTestResults.testResultsFiles, '') }}:
+          testResultsFiles: '*.xml' 
+        ${{ if ne(parameters.publishTestResults.testResultsFiles, '') }}:
+          testResultsFiles: ${{ parameters.publishTestResults.testResultsFiles }}
+        ${{ if eq(parameters.publishTestResults.searchFolder, '') }}:
+          searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        ${{ if ne(parameters.publishTestResults.searchFolder, '') }}:
+          searchFolder: ${{ parameters.publishTestResults.searchFolder }}
         ${{ if ne(parameters.publishTestResults.testRunTitle, '') }}:
           testRunTitle: ${{ parameters.publishTestResults.testRunTitle }}
       continueOnError: true
