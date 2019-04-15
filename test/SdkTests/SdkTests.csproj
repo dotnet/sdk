@@ -38,6 +38,14 @@
   </ItemGroup>
 
   <Target Name="RunSdkTests">
+
+    <!-- SDK tests use the $(TEMP)\dotnetSdkTests as the working directory, isolate that from any higher-level
+         Directory.Build files (TEMP is set to a folder in the repo when running in CI) -->
+    <Copy SourceFiles="$(RepoRoot)TestAssets\Directory.Build.props;$(RepoRoot)TestAssets\Directory.Build.targets"
+          DestinationFolder="$(TEMP)\dotnetSdkTests"
+          SkipUnchangedFiles="true"
+          />
+    
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="RunTestsAsTool"
              Properties="ToolCommandName=testSdk%(SdkTest.Identity);TestProjectName=Microsoft.NET.%(SdkTest.Identity).Tests"
