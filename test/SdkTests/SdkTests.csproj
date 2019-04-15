@@ -1,0 +1,115 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <OutputType>Library</OutputType>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ResolvePackageDependenciesForBuild>false</ResolvePackageDependenciesForBuild>
+    <NonShipping>true</NonShipping>
+    <NoStdLib>true</NoStdLib>
+    <ProducesNoOutput>true</ProducesNoOutput>
+  </PropertyGroup>
+  
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <LanguageTargets>$(MSBuildToolsPath)\Microsoft.CSharp.targets</LanguageTargets>
+
+    <IsPackable>false</IsPackable>
+
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SdkTest Include="Build" />
+    <SdkTest Include="Clean" />
+    <SdkTest Include="Pack" />
+    <SdkTest Include="Publish" />
+    <SdkTest Include="Rebuild" />
+    <SdkTest Include="Restore" />
+    <SdkTest Include="ToolPack" />
+  </ItemGroup>
+
+  <Target Name="RunSdkTests">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="RunTestsAsTool"
+             Properties="ToolCommandName=testSdk%(SdkTest.Identity);TestProjectName=Microsoft.NET.%(SdkTest.Identity).Tests"
+             BuildInParallel="true"/>
+  </Target>
+  
+  <Target Name="RunTestsAsTool">
+    <PropertyGroup>
+      <TestLocalToolFolder>$(ArtifactsTmpDir)$(ToolCommandName)\</TestLocalToolFolder>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(TestLocalToolFolder)" />
+    <MakeDir Directories="$(TestLocalToolFolder)" />
+
+    <MakeDir Directories="$(ArtifactsTestResultsDir)" />
+
+    <Exec Command="dotnet new tool-manifest"
+      WorkingDirectory="$(TestLocalToolFolder)"/>
+
+    <Exec Command="dotnet tool install --local $(ToolCommandName) --version $(MicrosoftNETSdkPackageVersion) --add-source https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"
+      WorkingDirectory="$(TestLocalToolFolder)"/>
+
+    <Exec Command="dotnet tool restore"
+      WorkingDirectory="$(TestLocalToolFolder)"/>
+
+    <PropertyGroup>
+      <ResultsXmlPath>$(ArtifactsTestResultsDir)$(TestProjectName).xml</ResultsXmlPath>
+      <ResultsHtmlPath>$(ArtifactsTestResultsDir)$(TestProjectName).html</ResultsHtmlPath>
+      <ResultsStdOutPath>$(ArtifactsLogDir)$(TestProjectName).log</ResultsStdOutPath>
+
+      <TestArgs>-noautoreporters -noRepoInference</TestArgs>
+      <TestArgs>$(TestArgs) -dotnetPath $(RedistLayoutPath)\dotnet</TestArgs>
+      <TestArgs>$(TestArgs) -xml "$(ResultsXmlPath)"</TestArgs>
+      <TestArgs>$(TestArgs) -html "$(ResultsHtmlPath)" $(TestRunnerAdditionalArguments)</TestArgs>
+      <TestArgs>$(TestArgs) &gt; $(ResultsStdOutPath)</TestArgs>
+    </PropertyGroup>
+
+    <Exec Command="dotnet tool run $(ToolCommandName) -- $(TestArgs)"
+          WorkingDirectory="$(TestLocalToolFolder)"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+  
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Remove items which light up build logic which could generate warnings / errors -->
+  <ItemGroup>
+    <EmbeddedResource Remove="@(EmbeddedResource)" />
+    <Reference Remove="@(Reference)" />
+    <PackageReference Remove="@(PackageReference)" />
+    <ProjectReference Remove="@(ProjectReference)" />
+    <SwrFile Remove="@(SwrFile)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetPath></TargetPath>
+    <!-- Prevent projects referencing this from trying to pass us to the compiler -->
+  </PropertyGroup>
+
+  <Target Name="CoreCompile" />
+  <!-- Prevent Csc from being called -->
+  <Target Name="GenerateTargetFrameworkMonikerAttribute" />
+  <!-- Don't generate TFM attribute -->
+  <Target Name="RuntimeImplementationProjectOutputGroup" />
+  <!-- Group always attempts resolve runtime, regardless of <CopyNuGetImplementations>-->
+  <Target Name="GetReferenceAssemblyPaths" />
+  <!-- Don't go looking for framewoek reference assemblies-->
+  <Target Name="GetFrameworkPaths"  />
+  <!-- ^ -->
+
+  <Target Name="GetBuildVersion" />
+  <!-- For Packages projects, which use GetNuGetPackageVersionEx which depends on GetBuildVersion -->
+  <Target Name="Pack" />
+
+  <Target Name="Test" DependsOnTargets="RunSdkTests" />
+</Project>
