@@ -224,7 +224,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- TODO: Temp error to limit R2R compilation to self-contained mode only. Delete this when fixing #3109 and #3110 -->
-    <NETSdkError Condition="$(SelfContained) == False" ResourceName="ReadyToRunNoValidRuntimePackageError" />
+    <NETSdkError Condition="'$(SelfContained)' != 'true'" ResourceName="ReadyToRunTargetNotSuppotedError" />
 
     <MakeDir Directories="$(_ReadyToRunOutputPath)" />
 
