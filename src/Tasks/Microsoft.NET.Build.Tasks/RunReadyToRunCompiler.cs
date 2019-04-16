@@ -84,7 +84,8 @@ namespace Microsoft.NET.Build.Tasks
             return true;
         }
 
-        #region TEMP LOGIC - SDK Should provide correct list - Delete this when fixing https://github.com/dotnet/sdk/issues/3110
+        // TEMP LOGIC - SDK Should provide correct list - When fixing https://github.com/dotnet/sdk/issues/3110, delete
+        // both IsManagedAssemblyToUseAsCrossgenReference and IsReferenceAssembly
         bool IsManagedAssemblyToUseAsCrossgenReference(ITaskItem file)
         {
             // Reference only managed assemblies that will be published to the root directory.
@@ -159,7 +160,6 @@ namespace Microsoft.NET.Build.Tasks
 
             return false;
         }
-        #endregion
 
         private string GetAssemblyReferencesCommands()
         {
@@ -220,25 +220,5 @@ namespace Microsoft.NET.Build.Tasks
 
             return base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
         }
-
-        #region TEMP - DELETE BEFORE MERGE (used for repros now)
-        protected override string GetResponseFileSwitch(string responseFilePath)
-        {
-            var rspExtension = Path.GetExtension(responseFilePath);
-            var responseFileCopy = Path.ChangeExtension(_outputR2RImage, rspExtension);
-            if (IsPdbCompilation)
-            {
-                responseFileCopy = Path.ChangeExtension(responseFileCopy, ".symbols" + rspExtension);
-            }
-            File.Copy(responseFilePath, responseFileCopy, true);
-
-            var responseFileSwitch = base.GetResponseFileSwitch(responseFileCopy);
-            Log.LogMessage(MessageImportance.Normal, $"{ToolExe} {responseFileSwitch}");
-            
-            return responseFileSwitch;
-        }
-
-        protected override void LogToolCommand(string message) { /* Do not log the full command line because it's long */ }
-        #endregion
     }
 }
