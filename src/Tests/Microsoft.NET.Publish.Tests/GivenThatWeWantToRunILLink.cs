@@ -25,7 +25,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_only_runs_when_switch_is_enabled(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLib";
+            var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
@@ -43,10 +43,16 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
             var unusedDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
+            var unusedFrameworkDll = Path.Combine(publishDirectory, $"{unusedFrameworkAssembly}.dll");
 
             // Linker inputs are kept, including unused assemblies
             File.Exists(publishedDll).Should().BeTrue();
             File.Exists(unusedDll).Should().BeTrue();
+            File.Exists(unusedFrameworkDll).Should().BeTrue();
+
+            var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
+            DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeTrue();
+            DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeTrue();
         }
 
         [Theory]
@@ -54,7 +60,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_runs_and_creates_linked_app(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLib";
+            var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
@@ -73,14 +79,18 @@ namespace Microsoft.NET.Publish.Tests
             var linkedDll = Path.Combine(linkedDirectory, $"{projectName}.dll");
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
             var unusedDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
+            var unusedFrameworkDll = Path.Combine(publishDirectory, $"{unusedFrameworkAssembly}.dll");
 
             // Intermediate assembly is kept by linker and published, but not unused assemblies
             File.Exists(linkedDll).Should().BeTrue();
             File.Exists(publishedDll).Should().BeTrue();
             File.Exists(unusedDll).Should().BeFalse();
+            File.Exists(unusedFrameworkDll).Should().BeFalse();
 
             var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
+            DoesDepsFileHaveAssembly(depsFile, projectName).Should().BeTrue();
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
+            DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
         }
 
         [Theory]
@@ -88,7 +98,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_accepts_root_descriptor(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLib";
+            var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
@@ -115,7 +125,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_runs_incrementally(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLib";
+            var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
@@ -146,7 +156,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_does_not_include_leftover_artifacts_on_second_run(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLib";
+            var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
@@ -190,7 +200,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_runs_on_portable_app(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLib";
+            var referenceProjectName = "ClassLibForILLink";
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
@@ -214,6 +224,7 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(unusedDll).Should().BeFalse();
 
             var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
+            DoesDepsFileHaveAssembly(depsFile, projectName).Should().BeTrue();
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
         }
 
@@ -242,9 +253,21 @@ namespace Microsoft.NET.Publish.Tests
                 dependencyContext = new DependencyContextJsonReader().Read(fs);
             }
 
-            var runtimeLibrary = dependencyContext.RuntimeLibraries.Single(l => l.Name == assemblyName);
-            var runtimeFiles = runtimeLibrary.RuntimeAssemblyGroups.SelectMany(rag => rag.RuntimeFiles).ToList();
-            return runtimeFiles.Any();
+            return dependencyContext.RuntimeLibraries.Any(l =>
+                l.RuntimeAssemblyGroups.Any(rag =>
+                    rag.AssetPaths.Any(f =>
+                        Path.GetFileName(f) == $"{assemblyName}.dll")));
+        }
+
+        static string unusedFrameworkAssembly = "System.IO";
+
+        private TestPackageReference GetPackageReference(TestProject project)
+        {
+            var asset = _testAssetsManager.CreateTestProject(project, project.Name).Restore(Log, project.Name);
+            var pack = new PackCommand(Log, Path.Combine(asset.TestRoot, project.Name));
+            pack.Execute().Should().Pass();
+
+            return new TestPackageReference(project.Name, "1.0.0", pack.GetNuGetPackage(project.Name));
         }
 
         private TestProject CreateTestProjectForILLinkTesting(string targetFramework, string mainProjectName, string referenceProjectName)
@@ -269,13 +292,18 @@ public class ClassLib
 }
 ";
 
+            var packageReference = GetPackageReference(referenceProject);
+
             var testProject = new TestProject()
             {
                 Name = mainProjectName,
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true,
-                ReferencedProjects = { referenceProject }
+                PackageReferences = { packageReference }
             };
+
+            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(packageReference.NupkgPath));
+
             testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
 using System;
 public class Program

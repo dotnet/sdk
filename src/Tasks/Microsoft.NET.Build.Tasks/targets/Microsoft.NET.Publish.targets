@@ -744,11 +744,12 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="_ComputeExcludeFromPublishPackageReferences;
                             _ParseTargetManifestFiles">
 
-    <!-- If there are no excluded packages or runtime store packages, then we can reuse the deps file from the build, -->
+    <!-- If there are no excluded packages or runtime store packages, and we are not linking, then we can reuse the deps file from the build, -->
     <PropertyGroup>
       <_UseBuildDependencyFile Condition="'@(_ExcludeFromPublishPackageReference)' == '' and
                                           '@(RuntimeStorePackages)' == '' and
-                                          '$(PreserveStoreLayout)' != 'true'">true</_UseBuildDependencyFile>
+                                          '$(PreserveStoreLayout)' != 'true' and
+                                          '$(LinkDuringPublish)' != 'true'">true</_UseBuildDependencyFile>
     </PropertyGroup>
 
   </Target>

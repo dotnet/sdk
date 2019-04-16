@@ -46,12 +46,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Include="@(_LinkedResolvedFileToPublish)" />
     </ItemGroup>
 
-    <!-- Use _PublishConflictPackageFiles to remove assemblies from
-         the deps file. This will change with the fix to
-         https://github.com/dotnet/sdk/issues/3010. -->
+    <!-- Remove assemblies from inputs to GenerateDepsFile. See
+         https://github.com/dotnet/sdk/pull/3086. -->
     <ItemGroup>
       <_RemovedManagedAssemblies Include="@(_ManagedAssembliesToLink)" Condition="!Exists('$(IntermediateLinkDir)/%(Filename)%(Extension)')" />
-      <_PublishConflictPackageFiles Include="@(_RemovedManagedAssemblies)" />
+
+      <ResolvedCompileFileDefinitions Remove="@(_RemovedManagedAssemblies)" />
+      <NativeCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
+      <ResourceCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
+      <RuntimeCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
+      <RuntimeTargetsCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
+      <RuntimePackAsset Remove="@(_RemovedManagedAssemblies)" />
     </ItemGroup>
 
   </Target>
@@ -72,8 +77,8 @@ Copyright (c) .NET Foundation. All rights reserved.
            Outputs="$(_LinkSemaphore)">
 
      <Delete Files="@(_LinkedResolvedFileToPublishCandidates)" />
-     <!-- TODO: add ReferenceAssemblyPaths="@(ReferencePath)" -->
      <ILLink AssemblyPaths="@(_ManagedAssembliesToLink)"
+             ReferenceAssemblyPaths="@(ReferencePath)"
              RootAssemblyNames="@(IntermediateAssembly->'%(Filename)')"
              RootDescriptorFiles="@(LinkerRootDescriptors)"
              OutputDirectory="$(IntermediateLinkDir)"
