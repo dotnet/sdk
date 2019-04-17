@@ -107,7 +107,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Target Name="ComputeAndCopyFilesToPublishDirectory"
           DependsOnTargets="ComputeFilesToPublish;
-                            ILTransform;
+                            ILTransformForPublish;
                             CreateReadyToRunImages;
                             CopyFilesToPublishDirectory" />
 
@@ -199,14 +199,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        ILTransform
+                                        ILTransformForPublish
 
-    Extension point for IL transformations.
+    Extension point for IL transformations that happen on publish.
     ============================================================
     -->
-  <Target Name="ILTransform"
-          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
-          DependsOnTargets="$(ILTransformDependsOn)" />
+  <Target Name="ILTransformForPublish"
+          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And ( '$(TargetFrameworkIdentifier)' == '.NETCoreApp' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' )"
+          DependsOnTargets="$(ILTransformForPublishDependsOn)" />
 
   <!--
     ============================================================
@@ -749,7 +749,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_UseBuildDependencyFile Condition="'@(_ExcludeFromPublishPackageReference)' == '' and
                                           '@(RuntimeStorePackages)' == '' and
                                           '$(PreserveStoreLayout)' != 'true' and
-                                          '$(LinkDuringPublish)' != 'true'">true</_UseBuildDependencyFile>
+                                          '$(PublishTrimmed)' != 'true'">true</_UseBuildDependencyFile>
     </PropertyGroup>
 
   </Target>

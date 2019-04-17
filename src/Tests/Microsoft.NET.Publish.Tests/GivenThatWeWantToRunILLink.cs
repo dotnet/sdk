@@ -68,7 +68,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Restore(Log, testProject.Name, args: $"/p:RuntimeIdentifier={rid}");
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:LinkDuringPublish=true").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
@@ -106,8 +106,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Restore(Log, testProject.Name, args: $"/p:RuntimeIdentifier={rid}");
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:LinkDuringPublish=true",
-                                   $"/p:LinkerRootDescriptors={referenceProjectName}.xml").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
+                                   $"/p:TrimmerRootDescriptors={referenceProjectName}.xml").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
@@ -140,12 +140,12 @@ namespace Microsoft.NET.Publish.Tests
 
             var linkSemaphore = Path.Combine(intermediateDirectory, "Link.semaphore");
 
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:LinkDuringPublish=true").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true").Should().Pass();
             DateTime semaphoreFirstModifiedTime = File.GetLastWriteTimeUtc(linkSemaphore);
 
             WaitForUtcNowToAdvance();
 
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:LinkDuringPublish=true").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true").Should().Pass();
             DateTime semaphoreSecondModifiedTime = File.GetLastWriteTimeUtc(linkSemaphore);
 
             semaphoreFirstModifiedTime.Should().Be(semaphoreSecondModifiedTime);
@@ -172,8 +172,8 @@ namespace Microsoft.NET.Publish.Tests
             var linkSemaphore = Path.Combine(intermediateDirectory, "Link.semaphore");
 
             // Link, keeping classlib
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:LinkDuringPublish=true",
-                                   $"/p:LinkerRootDescriptors={referenceProjectName}.xml").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
+                                   $"/p:TrimmerRootDescriptors={referenceProjectName}.xml").Should().Pass();
             var publishedDllKeptFirstTimeOnly = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
             var linkedDllKeptFirstTimeOnly = Path.Combine(linkedDirectory, $"{referenceProjectName}.dll");
             File.Exists(linkedDllKeptFirstTimeOnly).Should().BeTrue();
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Publish.Tests
             File.SetLastWriteTimeUtc(Path.Combine(testAsset.TestRoot, testProject.Name, $"{projectName}.cs"), DateTime.UtcNow);
 
             // Link, discarding classlib
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:LinkDuringPublish=true").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true").Should().Pass();
             File.Exists(linkedDllKeptFirstTimeOnly).Should().BeFalse();
             File.Exists(publishedDllKeptFirstTimeOnly).Should().BeFalse();
 
@@ -207,7 +207,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Restore(Log, testProject.Name);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute("/p:LinkDuringPublish=true").Should().Pass();
+            publishCommand.Execute("/p:PublishTrimmed=true").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework).FullName;
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework).FullName;
