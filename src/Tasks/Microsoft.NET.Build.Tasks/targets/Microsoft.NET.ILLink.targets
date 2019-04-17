@@ -57,7 +57,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RuntimeCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
       <RuntimeTargetsCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
       <RuntimePackAsset Remove="@(_RemovedManagedAssemblies)" />
+
+      <!-- Also remove them from the old deps file generation logic,
+           until https://github.com/dotnet/sdk/issues/3098 is
+           fixed. -->
+      <_PublishConflictPackageFiles Include="@(_RemovedManagedAssemblies)" />
     </ItemGroup>
+
 
   </Target>
 
