@@ -93,12 +93,14 @@
     
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="RunTestsAsTool"
-             Properties="ToolCommandName=testSdk%(SdkTest.Identity);TestProjectName=Microsoft.NET.%(SdkTest.Identity).Tests"
+             Properties="ToolTestName=%(SdkTest.Identity)"
              BuildInParallel="true"/>
   </Target>
   
   <Target Name="RunTestsAsTool">
     <PropertyGroup>
+      <ToolCommandName>testSdk$(ToolTestName)</ToolCommandName>
+      <TestProjectName>Microsoft.NET.$(ToolTestName).Tests</TestProjectName>
       <TestLocalToolFolder>$(ArtifactsTmpDir)$(ToolCommandName)\</TestLocalToolFolder>
     </PropertyGroup>
 
