@@ -514,7 +514,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1098: "}</comment>
   </data>
   <data name="CannotHaveSingleFileWithoutExecutable" xml:space="preserve">
-    <value>NETSDK1099: Publishing to a single-file is currently only supported for executable applications.</value>
+    <value>NETSDK1099: Publishing to a single-file is only supported for executable applications.</value>
     <comment>{StrBegin="NETSDK1099: "}</comment>
   </data>
 </root>

@@ -118,8 +118,8 @@
         <note>{StrBegin="NETSDK1098: "}</note>
       </trans-unit>
       <trans-unit id="CannotHaveSingleFileWithoutExecutable">
-        <source>NETSDK1099: Publishing to a single-file is currently only supported for executable applications.</source>
-        <target state="new">NETSDK1099: Publishing to a single-file is currently only supported for executable applications.</target>
+        <source>NETSDK1099: Publishing to a single-file is only supported for executable applications.</source>
+        <target state="new">NETSDK1099: Publishing to a single-file is only supported for executable applications.</target>
         <note>{StrBegin="NETSDK1099: "}</note>
       </trans-unit>
       <trans-unit id="CannotInferTargetFrameworkIdentifierAndVersion">
