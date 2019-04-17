@@ -31,6 +31,10 @@
             "package_version": "%SHARED_FRAMEWORK_RPM_PACKAGE_VERSION%"
         },
         {
+            "package_name": "%NETCORE_APPHOST_PACK_RPM_PACKAGE_NAME%",
+            "package_version": "%SHARED_FRAMEWORK_RPM_PACKAGE_VERSION%"
+        },
+        {
             "package_name": "%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_NAME%",
             "package_version": "%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_VERSION%"
         },

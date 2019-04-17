@@ -140,6 +140,7 @@
                       '$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^

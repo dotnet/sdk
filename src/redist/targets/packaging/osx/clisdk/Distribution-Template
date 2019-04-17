@@ -13,6 +13,7 @@
     <choices-outline>
         <line choice="{NetCoreAppTargetingPackComponentId}.pkg" />
         <line choice="{NetStandardTargetingPackComponentId}.pkg" />
+        <line choice="{NetCoreAppHostPackComponentId}.pkg" />
         <line choice="{SharedFxComponentId}.pkg" />
         <line choice="{HostFxrComponentId}.pkg" />
         <line choice="{SharedHostComponentId}.pkg" />
@@ -23,6 +24,9 @@
     </choice>
     <choice id="{NetStandardTargetingPackComponentId}.pkg" visible="true" title="{NetStandardTargetingPackBrandName} (x64)" description="The .NET Standard 2.1 Targeting Pack">
         <pkg-ref id="{NetStandardTargetingPackComponentId}.pkg" />
+    </choice>
+    <choice id="{NetCoreAppHostPackComponentId}.pkg" visible="true" title="{NetCoreAppHostPackBrandName} (x64)" description="The .NET App Host Pack">
+        <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg" />
     </choice>
     <choice id="{SharedFxComponentId}.pkg" visible="true" title="{SharedFxBrandName} (x64)" description="The .NET Core Shared Framework">
         <pkg-ref id="{SharedFxComponentId}.pkg" />
@@ -38,6 +42,7 @@
     </choice>
     <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg">{NetCoreAppTargetingPackComponentId}.pkg</pkg-ref>
     <pkg-ref id="{NetStandardTargetingPackComponentId}.pkg">{NetStandardTargetingPackComponentId}.pkg</pkg-ref>
+    <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg">{NetCoreAppHostPackComponentId}.pkg</pkg-ref>
     <pkg-ref id="{SharedFxComponentId}.pkg">{SharedFxComponentId}.pkg</pkg-ref>
     <pkg-ref id="{HostFxrComponentId}.pkg">{HostFxrComponentId}.pkg</pkg-ref>
     <pkg-ref id="{SharedHostComponentId}.pkg">{SharedHostComponentId}.pkg</pkg-ref>

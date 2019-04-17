@@ -29,6 +29,7 @@
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(NetCoreAppTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
+      <DownloadedNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(NetCoreAppHostPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppHostPackInstallerFileName>
       <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-targeting-pack-$(WindowsDesktopTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
       <DownloadedNetStandardTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
       <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
@@ -71,7 +72,7 @@
       <AlternateAppHostRid Condition="'$(Architecture)' == 'x86'">win-x64</AlternateAppHostRid>
       <AlternateAppHostRid Condition="'$(Architecture)' == 'x64'">win-x86</AlternateAppHostRid>
     </PropertyGroup>
-    
+
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
         <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
@@ -109,15 +110,15 @@
       </BundledLayoutPackage>
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
-        <PackageName>runtime.$(SharedFrameworkRid).Microsoft.NETCore.DotNetAppHost</PackageName>
-        <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
+        <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
+        <PackageVersion>$(NetCoreAppHostPackVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Altnernate" Condition="'$(AlternateAppHostRid)' != ''">
-        <PackageName>runtime.$(AlternateAppHostRid).Microsoft.NETCore.DotNetAppHost</PackageName>
-        <PackageVersion>$(NetCoreAppTargetingPackVersion)</PackageVersion>
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Alternate" Condition="'$(AlternateAppHostRid)' != ''">
+        <PackageName>Microsoft.NETCore.App.Host.$(AlternateAppHostRid)</PackageName>
+        <PackageVersion>$(NetCoreAppHostPackVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
@@ -161,6 +162,13 @@
                            Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedNetCoreAppHostPackInstallerFile"
+                     Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedNetCoreAppHostPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
       
