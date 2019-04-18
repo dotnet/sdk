@@ -25,7 +25,7 @@ namespace Microsoft.NET.Publish.Tests
         private const string IncludePdb = "/p:IncludeSymbolsInSingleFile=true";
         private const string ExcludeContent = "/p:ExcludeContent=true";
         private const string DontUseAppHost = "/p:UseAppHost=false";
-        private const string ReadyToRun = "/p:ReadyToRun=true";
+        private const string ReadyToRun = "/p:PublishReadyToRun=true";
 
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeEnvironment.GetRuntimeIdentifier()}";
         private readonly string SingleFile = $"{TestProjectName}{Constants.ExeSuffix}";
