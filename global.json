@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "3.0.100-preview5-011367",
+    "dotnet": "3.0.100-preview5-011377",
     "vs-opt": {
       "version": "15.9"
     }
