@@ -26,10 +26,11 @@ namespace Microsoft.NET.Build.Tasks
             var bundler = new Bundler(AppHostName, OutputDir, IncludeSymbols, ShowDisgnosticOutput);
             var fileSpec = new List<FileSpec>(FilesToBundle.Length);
 
-            Array.ForEach(FilesToBundle, 
-                          item => fileSpec.Add(
-                              new FileSpec(sourcePath: item.ItemSpec,
-                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath))));
+            foreach (var item in FilesToBundle)
+            {
+                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec, 
+                                          bundleRelativePath:item.GetMetadata(MetadataKeys.RelativePath)));
+            }
 
             bundler.GenerateBundle(fileSpec);
         }
