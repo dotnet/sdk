@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.NET.HostModel.Bundle;
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.NET.Build.Tasks
@@ -14,7 +15,7 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string AppHostName { get; set; }
         [Required]
-        public bool EmbedPDBs { get; set; }
+        public bool IncludeSymbols { get; set; }
         [Required]
         public string OutputDir { get; set; }
         [Required]
@@ -22,14 +23,13 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            Bundler bundler = new Bundler(AppHostName, OutputDir, EmbedPDBs, ShowDisgnosticOutput);
+            var bundler = new Bundler(AppHostName, OutputDir, IncludeSymbols, ShowDisgnosticOutput);
             var fileSpec = new List<FileSpec>(FilesToBundle.Length);
 
-            foreach(var item in FilesToBundle)
-            {
-                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec,
-                                          bundleRelativePath: item.GetMetadata("RelativePath")));
-            }
+            Array.ForEach(FilesToBundle, 
+                          item => fileSpec.Add(
+                              new FileSpec(sourcePath: item.ItemSpec,
+                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath))));
 
             bundler.GenerateBundle(fileSpec);
         }

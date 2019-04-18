@@ -137,7 +137,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Outputs="@(_ResolvedFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')">
 
     <ItemGroup>
-      <_ResolvedUnBundledFileToPublishPreserveNewest 
+      <_ResolvedUnbundledFileToPublishPreserveNewest 
                     Include="@(_ResolvedFileToPublishPreserveNewest)" 
                     Condition="'$(PublishSingleFile)' != 'true' or 
                                '%(_ResolvedFileToPublishPreserveNewest.ExcludeFromSingleFile)'=='true'" />
@@ -147,8 +147,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         Not using SkipUnchangedFiles="true" because the application may want to change
         one of these files and not have an incremental build replace it.
         -->
-    <Copy SourceFiles = "@(_ResolvedUnBundledFileToPublishPreserveNewest)"
-          DestinationFiles="@(_ResolvedUnBundledFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')"
+    <Copy SourceFiles = "@(_ResolvedUnbundledFileToPublishPreserveNewest)"
+          DestinationFiles="@(_ResolvedUnbundledFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')"
           OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -173,7 +173,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="_ComputeResolvedFilesToPublishTypes">
 
     <ItemGroup>
-      <_ResolvedUnBundledFileToPublishAlways
+      <_ResolvedUnbundledFileToPublishAlways
                     Include="@(_ResolvedFileToPublishAlways)"
                     Condition="'$(PublishSingleFile)' != 'true' or 
                                '%(_ResolvedFileToPublishAlways.ExcludeFromSingleFile)'=='true'" />
@@ -183,8 +183,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         Not using SkipUnchangedFiles="true" because the application may want to change
         one of these files and not have an incremental build replace it.
         -->
-    <Copy SourceFiles = "@(_ResolvedUnBundledFileToPublishAlways)"
-          DestinationFiles="@(_ResolvedUnBundledFileToPublishAlways->'$(PublishDir)%(RelativePath)')"
+    <Copy SourceFiles = "@(_ResolvedUnbundledFileToPublishAlways)"
+          DestinationFiles="@(_ResolvedUnbundledFileToPublishAlways->'$(PublishDir)%(RelativePath)')"
           OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -766,17 +766,15 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(PublishSingleFile)' == 'true'"
           DependsOnTargets="_ComputeFilesToBundle" 
           Inputs="@(_FilesToBundle)"
-          Outputs="$(PublishDir)\$(AssemblyName)$(_NativeExecutableExtension)">
+          Outputs="$(PublishDir)$(AssemblyName)$(_NativeExecutableExtension)">
 
     <PropertyGroup>
-      <!-- Handle the case where IncludeSymbolsInSingleFile may not be defined -->
-      <EmbedPDBs Condition="'$(IncludeSymbolsInSingleFile)' == 'true'">true</EmbedPDBs>
-      <EmbedPDBs Condition="'$(IncludeSymbolsInSingleFile)' != 'true'">false</EmbedPDBs>
+      <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
     </PropertyGroup>
 
     <GenerateBundle FilesToBundle="@(_FilesToBundle)"
                     AppHostName="$(AssemblyName)$(_NativeExecutableExtension)"
-                    EmbedPDBs="$(EmbedPDBs)"
+                    IncludeSymbols="$(IncludeSymbolsInSingleFile)"
                     OutputDir="$(PublishDir)"
                     ShowDisgnosticOutput="false"/>
     
