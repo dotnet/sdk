@@ -15,9 +15,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ILTransformForPublishDependsOn>$(ILTransformForPublishDependsOn);_ILLink</ILTransformForPublishDependsOn>
-    <IntermediateLinkDir Condition=" '$(IntermediateLinkDir)' == '' ">$(IntermediateOutputPath)linked</IntermediateLinkDir>
+    <IntermediateLinkDir Condition=" '$(IntermediateLinkDir)' == '' ">$(IntermediateOutputPath)linked\</IntermediateLinkDir>
+    <IntermediateLinkDir Condition=" !HasTrailingSlash('$(IntermediateLinkDir)') ">$(IntermediateLinkDir)\</IntermediateLinkDir>
     <!-- Used to enable incremental build for the linker target. -->
     <_LinkSemaphore>$(IntermediateOutputPath)Link.semaphore</_LinkSemaphore>
+    <!-- Disable old deps file generation logic until
+         https://github.com/dotnet/sdk/issues/3098 is fixed. -->
+    <DepsFileGenerationMode>new</DepsFileGenerationMode>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,7 +38,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ILLink"
-          Condition=" '$(PublishTrimmed)' == 'true' "
+          Condition=" '$(PublishTrimmed)' == 'true' And
+                      '$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' "
           DependsOnTargets="_RunILLink">
 
     <!-- For now, use ResolvedFileToPublish as input/output. This
@@ -49,7 +54,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Remove assemblies from inputs to GenerateDepsFile. See
          https://github.com/dotnet/sdk/pull/3086. -->
     <ItemGroup>
-      <_RemovedManagedAssemblies Include="@(_ManagedAssembliesToLink)" Condition="!Exists('$(IntermediateLinkDir)/%(Filename)%(Extension)')" />
+      <_RemovedManagedAssemblies Include="@(_ManagedAssembliesToLink)" Condition="!Exists('$(IntermediateLinkDir)%(Filename)%(Extension)')" />
 
       <ResolvedCompileFileDefinitions Remove="@(_RemovedManagedAssemblies)" />
       <NativeCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
@@ -57,13 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RuntimeCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
       <RuntimeTargetsCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
       <RuntimePackAsset Remove="@(_RemovedManagedAssemblies)" />
-
-      <!-- Also remove them from the old deps file generation logic,
-           until https://github.com/dotnet/sdk/issues/3098 is
-           fixed. -->
-      <_PublishConflictPackageFiles Include="@(_RemovedManagedAssemblies)" />
     </ItemGroup>
-
 
   </Target>
 
@@ -88,7 +87,7 @@ Copyright (c) .NET Foundation. All rights reserved.
              RootAssemblyNames="@(IntermediateAssembly->'%(Filename)')"
              RootDescriptorFiles="@(TrimmerRootDescriptors)"
              OutputDirectory="$(IntermediateLinkDir)"
-             ExtraArgs="$(ExtraLinkerArgs) --skip-unresolved true" />
+             ExtraArgs="$(_ExtraTrimmerArgs) --skip-unresolved true" />
 
      <Touch Files="$(_LinkSemaphore)" AlwaysCreate="true" />
 
@@ -100,8 +99,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     Compute the set of inputs to the linker. Currently this uses a
     heuristic to get the relevant input from ResolvedFileToPublish,
-    but in the future this should be replaced with the exact set of
-    runtime assemblies that will be in the deps file.
+    but with https://github.com/dotnet/sdk/issues/3109, this should be
+    replaced with the exact set of runtime assemblies that will be in
+    the deps file.
     ============================================================
     -->
   <UsingTask TaskName="ComputeManagedAssemblies" AssemblyFile="$(ILLinkTasksAssembly)" />
@@ -112,7 +112,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_ManagedAssembliesToLink Remove="@(_ManagedResolvedFileToPublish->WithMetadataValue('AssetType', 'resources'))" />
-      <_LinkedResolvedFileToPublishCandidates Include="@(_ManagedAssembliesToLink->'$(IntermediateLinkDir)/%(Filename)%(Extension)')" />
+      <_LinkedResolvedFileToPublishCandidates Include="@(_ManagedAssembliesToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
   </Target>

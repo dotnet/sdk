@@ -107,7 +107,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Target Name="ComputeAndCopyFilesToPublishDirectory"
           DependsOnTargets="ComputeFilesToPublish;
-                            ILTransformForPublish;
+                            _ILLink;
                             CreateReadyToRunImages;
                             CopyFilesToPublishDirectory" />
 
@@ -196,17 +196,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </Copy>
   </Target>
-
-  <!--
-    ============================================================
-                                        ILTransformForPublish
-
-    Extension point for IL transformations that happen on publish.
-    ============================================================
-    -->
-  <Target Name="ILTransformForPublish"
-          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And ( '$(TargetFrameworkIdentifier)' == '.NETCoreApp' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' )"
-          DependsOnTargets="$(ILTransformForPublishDependsOn)" />
 
   <!--
     ============================================================
