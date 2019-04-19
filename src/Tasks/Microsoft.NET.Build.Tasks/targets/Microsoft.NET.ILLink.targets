@@ -29,31 +29,57 @@ Copyright (c) .NET Foundation. All rights reserved.
     included in the generated deps.json.
     ============================================================
     -->
+  <UsingTask TaskName="FindNativeDeps" AssemblyFile="$(ILLinkTasksAssembly)" />
   <Target Name="_ILLink"
           Condition=" '$(PublishTrimmed)' == 'true' And
                       '$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' "
           DependsOnTargets="_RunILLink">
 
+    <ItemGroup>
+      <_LinkedManagedAssemblies Include="@(_LinkedManagedAssembliesCandidates)" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+
+    <!-- Filter out native assets no longer needed after linking. -->
+    <ItemGroup Condition=" '$(TrimmerKeepNativeAssets)' != 'true' ">
+      <_NativeAssetsToAlwaysKeep Include="coreclr.dll;libcoreclr.dylib;libcoreclr.so" />
+      <_NativeAssetsToAlwaysKeep Include="clrjit.dll;libclrjit.dylib;libclrjit.so" />
+      <_NativeAssetsToAlwaysKeep Include="hostfxr.dll;libhostfxr.dylib;libhostfxr.so" />
+      <_NativeAssetsToAlwaysKeep Include="hostpolicy.dll;libhostpolicy.dylib;libhostpolicy.so" />
+      <!-- The full publish deps file path is generated after this target, so just depend on the filename. -->
+      <_NativeAssetsToAlwaysKeep Include="$(ProjectDepsFileName)" />
+      <_NativeAssetsToAlwaysKeep Include="$(ProjectRuntimeConfigFilePath)" />
+      <_NativeAssetsToAlwaysKeep Include="$(AppHostIntermediatePath)" />
+    </ItemGroup>
+    <FindNativeDeps ManagedAssemblyPaths="@(_LinkedManagedAssemblies)"
+                    NativeDepsPaths="@(_NativeAssetsToFilter)"
+                    NativeDepsToKeep="@(_NativeAssetsToAlwaysKeep)"
+                    Condition=" '$(TrimmerKeepNativeAssets)' != 'true' ">
+      <Output TaskParameter="KeptNativeDepsPaths" ItemName="_FilteredNativeAssets" />
+    </FindNativeDeps>
+
     <!-- For now, use ResolvedFileToPublish as input/output. This
          should go away in favor of a well-defined set of runtime
          assemblies with https://github.com/dotnet/sdk/issues/3109. -->
     <ItemGroup>
-      <_LinkedResolvedFileToPublish Include="@(_LinkedResolvedFileToPublishCandidates)" Condition="Exists('%(Identity)')" />
-      <ResolvedFileToPublish Remove="@(_ManagedAssembliesToLink)" />
-      <ResolvedFileToPublish Include="@(_LinkedResolvedFileToPublish)" />
+      <ResolvedFileToPublish Remove="@(_ManagedAssembliesToLink);@(_NativeAssetsToFilter)" />
+      <ResolvedFileToPublish Include="@(_LinkedManagedAssemblies);@(_FilteredNativeAssets)" />
     </ItemGroup>
 
     <!-- Remove assemblies from inputs to GenerateDepsFile. See
          https://github.com/dotnet/sdk/pull/3086. -->
     <ItemGroup>
       <_RemovedManagedAssemblies Include="@(_ManagedAssembliesToLink)" Condition="!Exists('$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+      <_RemovedNativeAssets Include="@(_NativeAssetsToFilter)" />
+      <_RemovedNativeAssets Remove="@(_FilteredNativeAssets)" />
 
-      <ResolvedCompileFileDefinitions Remove="@(_RemovedManagedAssemblies)" />
-      <NativeCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
-      <ResourceCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
-      <RuntimeCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
-      <RuntimeTargetsCopyLocalItems Remove="@(_RemovedManagedAssemblies)" />
-      <RuntimePackAsset Remove="@(_RemovedManagedAssemblies)" />
+      <_AssetsToExcludeFromDepsFile Include="@(_RemovedManagedAssemblies);@(_RemovedNativeAssets)" />
+
+      <ResolvedCompileFileDefinitions Remove="@(_AssetsToExcludeFromDepsFile)" />
+      <NativeCopyLocalItems Remove="@(_AssetsToExcludeFromDepsFile)" />
+      <ResourceCopyLocalItems Remove="@(_AssetsToExcludeFromDepsFile)" />
+      <RuntimeCopyLocalItems Remove="@(_AssetsToExcludeFromDepsFile)" />
+      <RuntimeTargetsCopyLocalItems Remove="@(_AssetsToExcludeFromDepsFile)" />
+      <RuntimePackAsset Remove="@(_AssetsToExcludeFromDepsFile)" />
     </ItemGroup>
 
   </Target>
@@ -69,11 +95,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
    <UsingTask TaskName="ILLink" AssemblyFile="$(ILLinkTasksAssembly)" />
    <Target Name="_RunILLink"
-           DependsOnTargets="_ComputeManagedAssembliesToLink"
+           DependsOnTargets="_ComputeLinkerInputs"
            Inputs="$(MSBuildAllProjects);@(_ManagedAssembliesToLink);@(TrimmerRootDescriptor);@(ReferencePath)"
            Outputs="$(_LinkSemaphore)">
 
-     <Delete Files="@(_LinkedResolvedFileToPublishCandidates)" />
+     <Delete Files="@(_LinkedManagedAssembliesCandidates)" />
      <ILLink AssemblyPaths="@(_ManagedAssembliesToLink)"
              ReferenceAssemblyPaths="@(ReferencePath)"
              RootAssemblyNames="@(IntermediateAssembly->'%(Filename)')"
@@ -87,7 +113,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                     _ComputeManagedAssembliesToLink
+                     _ComputeLinkerInputs
 
     Compute the set of inputs to the linker. Currently this uses a
     heuristic to get the relevant input from ResolvedFileToPublish,
@@ -97,14 +123,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <UsingTask TaskName="ComputeManagedAssemblies" AssemblyFile="$(ILLinkTasksAssembly)" />
-  <Target Name="_ComputeManagedAssembliesToLink">
+  <Target Name="_ComputeLinkerInputs">
     <ComputeManagedAssemblies Assemblies="@(ResolvedFileToPublish)">
       <Output TaskParameter="ManagedAssemblies" ItemName="_ManagedAssembliesToLink" />
     </ComputeManagedAssemblies>
 
+    <ItemGroup Condition=" '$(TrimmerKeepNativeAssets)' != 'true' ">
+      <_NativeAssetsToFilter Include="@(ResolvedFileToPublish)" />
+      <_NativeAssetsToFilter Remove="@(_ManagedAssembliesToLink)" />
+    </ItemGroup>
+
     <ItemGroup>
       <_ManagedAssembliesToLink Remove="@(_ManagedResolvedFileToPublish->WithMetadataValue('AssetType', 'resources'))" />
-      <_LinkedResolvedFileToPublishCandidates Include="@(_ManagedAssembliesToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+      <_LinkedManagedAssembliesCandidates Include="@(_ManagedAssembliesToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
   </Target>
