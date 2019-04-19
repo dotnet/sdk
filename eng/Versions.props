@@ -4,12 +4,10 @@
     <VersionPrefix>3.0.5</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
   </PropertyGroup>
-
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNETCoreCompilersPackageVersion>3.1.0-beta3-19217-05</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNETCoreCompilersPackageVersion>3.1.0-beta3-19219-04</MicrosoftNETCoreCompilersPackageVersion>
   </PropertyGroup>
-
   <!--
     Other Dependency versions
   -->
