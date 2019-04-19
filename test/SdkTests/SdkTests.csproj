@@ -80,7 +80,9 @@
     </PropertyGroup>
 
     <Exec Command="$(InstallRuntimeCommand)"
-          Condition="!Exists($(RuntimeTargetDirectory))"/>
+          Condition="!Exists($(RuntimeTargetDirectory))"
+          IgnoreStandardErrorWarningFormat="true"
+          />
   </Target>
 
   <Target Name="RunSdkTests" DependsOnTargets="SetupLayoutWithPreviousRuntimes">
