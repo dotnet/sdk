@@ -10,8 +10,7 @@ jobs:
 
 - job: Windows
   pool:
-    name: NetCorePublic-Int-Pool
-    queue: buildpool.windows.10.amd64.vs2017.open
+    vmImage: 'vs2017-win2016'
   variables:
     _os: Windows
   strategy:
@@ -42,8 +41,7 @@ jobs:
 
 - job: Linux
   pool: 
-   name: NetCorePublic-Int-Pool
-   queue: buildpool.ubuntu.1604.amd64.open
+   vmImage: 'ubuntu-16.04'
   variables:
     _os: Linux
   strategy:
