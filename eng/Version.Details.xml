@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
+    <Dependency Name="Microsoft.NETCore.Compilers" Version="3.1.0-beta3-19217-05">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>79b8271f65609b23e0c0ee1babed6862b7c5ed56</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19218.4">

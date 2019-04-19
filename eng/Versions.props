@@ -4,8 +4,14 @@
     <VersionPrefix>3.0.5</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Dependencies from https://github.com/dotnet/roslyn -->
+    <MicrosoftNETCoreCompilersPackageVersion>3.1.0-beta3-19217-05</MicrosoftNETCoreCompilersPackageVersion>
+  </PropertyGroup>
+
   <!--
-    Dependency versions
+    Other Dependency versions
   -->
   <PropertyGroup>
     <SystemCommandLineExperimentalVersion>0.1.0-alpha-63729-01</SystemCommandLineExperimentalVersion>
@@ -14,7 +20,7 @@
     <MicrosoftExtensionsDependencyInjectionVersion>2.1.1</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsLoggingVersion>2.1.1</MicrosoftExtensionsLoggingVersion>
     <MicrosoftVisualStudioCodingConventionsVersion>1.1.20180503.2</MicrosoftVisualStudioCodingConventionsVersion>
-    <MicrosoftCodeAnalysisVersion>3.0.0-beta3-final</MicrosoftCodeAnalysisVersion>
+    <MicrosoftCodeAnalysisVersion>$(MicrosoftNETCoreCompilersPackageVersion)</MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
   <PropertyGroup>
     <RestoreSources>
