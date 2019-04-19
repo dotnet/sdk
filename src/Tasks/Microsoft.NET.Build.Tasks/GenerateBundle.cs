@@ -19,11 +19,11 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string OutputDir { get; set; }
         [Required]
-        public bool ShowDisgnosticOutput { get; set; }
+        public bool ShowDiagnosticOutput { get; set; }
 
         protected override void ExecuteCore()
         {
-            var bundler = new Bundler(AppHostName, OutputDir, IncludeSymbols, ShowDisgnosticOutput);
+            var bundler = new Bundler(AppHostName, OutputDir, IncludeSymbols, ShowDiagnosticOutput);
             var fileSpec = new List<FileSpec>(FilesToBundle.Length);
 
             foreach (var item in FilesToBundle)

@@ -776,7 +776,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                     AppHostName="$(AssemblyName)$(_NativeExecutableExtension)"
                     IncludeSymbols="$(IncludeSymbolsInSingleFile)"
                     OutputDir="$(PublishDir)"
-                    ShowDisgnosticOutput="false"/>
+                    ShowDiagnosticOutput="false"/>
     
   </Target>
 
