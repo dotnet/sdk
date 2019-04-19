@@ -32,6 +32,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             string[] restoreArgs = { $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true" };
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => AddCopyNativeAsset(project))
                 .Restore(Log, testProject.Name, restoreArgs);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -46,11 +47,13 @@ namespace Microsoft.NET.Publish.Tests
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
             var unusedDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
             var unusedFrameworkDll = Path.Combine(publishDirectory, $"{unusedFrameworkAssembly}.dll");
+            var unusedNativeAsset = Path.Combine(publishDirectory, unusedNativeAssetFileName);
 
             // Linker inputs are kept, including unused assemblies
             File.Exists(publishedDll).Should().BeTrue();
             File.Exists(unusedDll).Should().BeTrue();
             File.Exists(unusedFrameworkDll).Should().BeTrue();
+            File.Exists(unusedNativeAsset).Should().BeTrue();
 
             var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeTrue();
@@ -68,6 +71,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             string[] restoreArgs = { $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true" };
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => AddCopyNativeAsset(project))
                 .Restore(Log, testProject.Name, restoreArgs);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -83,14 +87,19 @@ namespace Microsoft.NET.Publish.Tests
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
             var unusedDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
             var unusedFrameworkDll = Path.Combine(publishDirectory, $"{unusedFrameworkAssembly}.dll");
+            var unusedNativeAsset = Path.Combine(publishDirectory, unusedNativeAssetFileName);
+            var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
+            var runtimeConfigFile = Path.Combine(publishDirectory, $"{projectName}.runtimeconfig.json");
 
             // Intermediate assembly is kept by linker and published, but not unused assemblies
             File.Exists(linkedDll).Should().BeTrue();
             File.Exists(publishedDll).Should().BeTrue();
             File.Exists(unusedDll).Should().BeFalse();
             File.Exists(unusedFrameworkDll).Should().BeFalse();
+            File.Exists(unusedNativeAsset).Should().BeFalse();
+            File.Exists(depsFile).Should().BeTrue();
+            File.Exists(runtimeConfigFile).Should().BeTrue();
 
-            var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
             DoesDepsFileHaveAssembly(depsFile, projectName).Should().BeTrue();
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
@@ -250,6 +259,46 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
         }
 
+        [Theory]
+        [InlineData("netcoreapp3.0")]
+        public void ILLink_keeps_native_assets_if_specified(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var referenceProjectName = "ClassLibForILLink";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => AddCopyNativeAsset(project))
+                .Restore(Log, testProject.Name, args: $"/p:RuntimeIdentifier={rid}");
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, projectName));
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
+                                   "/p:TrimmerKeepNativeAssets=true", "/v:n").Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var linkedDirectory = Path.Combine(intermediateDirectory, "linked");
+
+            Directory.Exists(linkedDirectory).Should().BeTrue();
+
+            var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
+            var unusedDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
+            var unusedNativeAsset = Path.Combine(publishDirectory, unusedNativeAssetFileName);
+            var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
+            var runtimeConfigFile = Path.Combine(publishDirectory, $"{projectName}.runtimeconfig.json");
+
+            // Intermediate assembly is kept by linker and published, but not unused assemblies
+            File.Exists(publishedDll).Should().BeTrue();
+            File.Exists(unusedDll).Should().BeFalse();
+            File.Exists(unusedNativeAsset).Should().BeTrue();
+            File.Exists(depsFile).Should().BeTrue();
+            File.Exists(runtimeConfigFile).Should().BeTrue();
+
+            DoesDepsFileHaveAssembly(depsFile, projectName).Should().BeTrue();
+            DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
+        }
+
         private static bool DoesImageHaveMethod(string path, string methodNameToCheck)
         {
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
@@ -282,6 +331,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         static string unusedFrameworkAssembly = "System.IO";
+        static string unusedNativeAssetFileName = "unusedNativeAsset.so";
 
         private TestPackageReference GetPackageReference(TestProject project)
         {
@@ -309,6 +359,20 @@ namespace Microsoft.NET.Publish.Tests
             project.Root.Elements(ns + "ItemGroup")
                 .Where(ig => ig.Elements(ns + "TrimmerRootDescriptor").Any())
                 .First().Remove();
+        }
+
+        private void AddCopyNativeAsset(XDocument project)
+        {
+            var ns = project.Root.Name.Namespace;
+
+            var itemGroup = new XElement(ns + "ItemGroup");
+            project.Root.Add(itemGroup);
+
+            var content = new XElement(ns + "Content",
+                               new XAttribute("Include", unusedNativeAssetFileName));
+            itemGroup.Add(content);
+
+            content.Add(new XElement("CopyToOutputDirectory", "Always"));
         }
 
         private TestProject CreateTestProjectForILLinkTesting(string targetFramework, string mainProjectName, string referenceProjectName)
@@ -340,6 +404,7 @@ public class ClassLib
                 Name = mainProjectName,
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true,
+                IsExe = true,
                 PackageReferences = { packageReference }
             };
 
@@ -365,6 +430,9 @@ public class Program
     </type>
   </assembly>
 </linker>
+";
+            testProject.SourceFiles[unusedNativeAssetFileName] = $@"
+This is a fake native asset used for testing.
 ";
 
             return testProject;
