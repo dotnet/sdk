@@ -7,7 +7,9 @@
       <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.x64</SharedHostComponentId>
       <HostFxrComponentId>com.microsoft.dotnet.hostfxr.$(HostFxrVersion).component.osx.x64</HostFxrComponentId>
       <SharedFrameworkComponentId>com.microsoft.dotnet.sharedframework.$(SharedFrameworkNugetName).$(MicrosoftNETCoreAppPackageVersion).component.osx.x64</SharedFrameworkComponentId>
-      <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(MicrosoftNETCoreAppPackageVersion).component.osx.x64</NetCoreAppTargetingPackComponentId>
+      <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(NetCoreAppTargetingPackVersion).component.osx.x64</NetCoreAppTargetingPackComponentId>
+      <NetCoreAppHostPackComponentId>com.microsoft.dotnet.pack.apphost.$(NetCoreAppHostPackVersion).component.osx.x64</NetCoreAppHostPackComponentId>
+      <NetStandardTargetingPackComponentId>com.microsoft.standard.pack.targeting.$(NETStandardLibraryRefPackageVersion).component.osx.x64</NetStandardTargetingPackComponentId>
       <SdkComponentId>com.microsoft.dotnet.dev.$(SdkVersion).component.osx.x64</SdkComponentId>
       <SdkProductArchiveId>com.microsoft.dotnet.dev.$(SdkVersion).osx.x64</SdkProductArchiveId>
 
@@ -26,6 +28,8 @@
       <SdkPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SdkComponentId).pkg</SdkPkgIntermediatePath>
       <SharedFrameworkPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SharedFrameworkComponentId).pkg</SharedFrameworkPkgIntermediatePath>
       <NetCoreAppTargetingPackPkgIntermediatePath>$(PkgIntermediateDirectory)/$(NetCoreAppTargetingPackComponentId).pkg</NetCoreAppTargetingPackPkgIntermediatePath>
+      <NetCoreAppHostPackPkgIntermediatePath>$(PkgIntermediateDirectory)/$(NetCoreAppHostPackComponentId).pkg</NetCoreAppHostPackPkgIntermediatePath>
+      <NetStandardTargetingPackPkgIntermediatePath>$(PkgIntermediateDirectory)/$(NetStandardTargetingPackComponentId).pkg</NetStandardTargetingPackPkgIntermediatePath>
       <SharedHostPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SharedHostComponentId).pkg</SharedHostPkgIntermediatePath>
       <HostFxrPkgIntermediatePath>$(PkgIntermediateDirectory)/$(HostFxrComponentId).pkg</HostFxrPkgIntermediatePath>
 
@@ -41,6 +45,12 @@
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{NetCoreAppTargetingPackComponentId}">
           <ReplacementString>$(NetCoreAppTargetingPackComponentId)</ReplacementString>
+        </DistributionTemplateReplacement>
+        <DistributionTemplateReplacement Include="{NetStandardTargetingPackComponentId}">
+          <ReplacementString>$(NetStandardTargetingPackComponentId)</ReplacementString>
+        </DistributionTemplateReplacement>
+        <DistributionTemplateReplacement Include="{NetCoreAppHostPackComponentId}">
+          <ReplacementString>$(NetCoreAppHostPackComponentId)</ReplacementString>
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{SharedHostComponentId}">
           <ReplacementString>$(SharedHostComponentId)</ReplacementString>
@@ -62,6 +72,12 @@
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{NetCoreAppTargetingPackBrandName}">
           <ReplacementString>$(NetCoreAppTargetingPackBrandName)</ReplacementString>
+        </DistributionTemplateReplacement>
+        <DistributionTemplateReplacement Include="{NetCoreAppHostPackBrandName}">
+          <ReplacementString>$(NetCoreAppHostPackBrandName)</ReplacementString>
+        </DistributionTemplateReplacement>
+        <DistributionTemplateReplacement Include="{NetStandardTargetingPackBrandName}">
+          <ReplacementString>$(NetStandardTargetingPackBrandName)</ReplacementString>
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{SharedHostBrandName}">
           <ReplacementString>$(SharedHostBrandName)</ReplacementString>
@@ -99,6 +115,8 @@
         <GenerateSdkProductArchiveInputs Include="$(SdkPKGInstallerFile)" />
         <GenerateSdkProductArchiveInputs Include="$(DownloadedSharedFrameworkInstallerFile)" />
         <GenerateSdkProductArchiveInputs Include="$(DownloadedNetCoreAppTargetingPackInstallerFile)" />
+        <GenerateSdkProductArchiveInputs Include="$(DownloadedNetCoreAppHostPackInstallerFile)" />
+        <GenerateSdkProductArchiveInputs Include="$(DownloadedNetStandardTargetingPackInstallerFile)" />
         <GenerateSdkProductArchiveInputs Include="$(DownloadedHostFxrInstallerFile)" />
         <GenerateSdkProductArchiveInputs Include="$(DownloadedSharedHostInstallerFile)" />
         <GenerateSdkProductArchiveInputs Include="$(SdkProductArchiveDistributionTemplateFile)" />
@@ -152,11 +170,15 @@
         <PkgComponentsSourceFiles Include="$(SdkPKGInstallerFile);
                                 $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
                                 $(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName);
+                                $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName);
+                                $(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName);
                                 $(DownloadsFolder)$(DownloadedHostFxrInstallerFileName);
                                 $(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)" />
         <PkgComponentsDestinationFiles Include="$(SdkPkgIntermediatePath);
                                                 $(SharedFrameworkPkgIntermediatePath);
                                                 $(NetCoreAppTargetingPackPkgIntermediatePath);
+                                                $(NetCoreAppHostPackPkgIntermediatePath);
+                                                $(NetStandardTargetingPackPkgIntermediatePath);
                                                 $(HostFxrPkgIntermediatePath);
                                                 $(SharedHostPkgIntermediatePath)" />
       </ItemGroup>

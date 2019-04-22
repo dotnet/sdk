@@ -9,6 +9,8 @@ param(
     [Parameter(Mandatory=$true)][string]$SharedHostMSIFile,
     [Parameter(Mandatory=$true)][string]$WinFormsAndWpfMSIFile,
     [Parameter(Mandatory=$true)][string]$NetCoreAppTargetingPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$NetCoreAppHostPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$NetStandardTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AspNetTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$DotnetBundleOutput,
@@ -30,10 +32,10 @@ function RunCandleForBundle
     $result = $true
     pushd "$WixRoot"
 
-    Write-Output Running candle for bundle..
+    Write-Information "Running candle for bundle.."
     $AuthWsxRoot =  $PSScriptRoot
 
-    .\candle.exe -nologo `
+    $candleOutput = .\candle.exe -nologo `
         -dDotnetSrc="$inputDir" `
         -dMicrosoftEula="$PSScriptRoot\dummyeula.rtf" `
         -dProductMoniker="$ProductMoniker" `
@@ -48,6 +50,8 @@ function RunCandleForBundle
         -dSharedHostMsiSourcePath="$SharedHostMSIFile" `
         -dWinFormsAndWpfMsiSourcePath="$WinFormsAndWpfMSIFile" `
         -dNetCoreAppTargetingPackMsiSourcePath="$NetCoreAppTargetingPackMSIFile" `
+        -dNetCoreAppHostPackMsiSourcePath="$NetCoreAppHostPackMSIFile" `
+        -dNetStandardTargetingPackMsiSourcePath="$NetStandardTargetingPackMSIFile" `
         -dAspNetTargetingPackMsiSourcePath="$AspNetTargetingPackMSIFile" `
         -dWindowsDesktopTargetingPackMsiSourcePath="$WindowsDesktopTargetingPackMSIFile" `
         -dWinFormsAndWpfVersion="$WindowsDesktopVersion" `
@@ -60,12 +64,14 @@ function RunCandleForBundle
         -ext WixBalExtension.dll `
         -ext WixUtilExtension.dll `
         -ext WixTagExtension.dll `
-        "$AuthWsxRoot\bundle.wxs" | Out-Host
+        "$AuthWsxRoot\bundle.wxs"
+
+    Write-Information "Candle output: $candleOutput"
 
     if($LastExitCode -ne 0)
     {
         $result = $false
-        Write-Output "Candle failed with exit code $LastExitCode."
+        Write-Information "Candle failed with exit code $LastExitCode."
     }
 
     popd
@@ -77,10 +83,10 @@ function RunLightForBundle
     $result = $true
     pushd "$WixRoot"
 
-    Write-Output Running light for bundle..
+    Write-Information "Running light for bundle.."
     $AuthWsxRoot =  $PSScriptRoot
 
-    .\light.exe -nologo `
+    $lightOutput = .\light.exe -nologo `
         -cultures:en-us `
         bundle.wixobj `
         $ASPNETRuntimeWixlibFile `
@@ -88,12 +94,14 @@ function RunLightForBundle
         -ext WixUtilExtension.dll `
         -ext WixTagExtension.dll `
         -b "$AuthWsxRoot" `
-        -out $DotnetBundleOutput | Out-Host
+        -out $DotnetBundleOutput
+
+    Write-Information "Light output: $lightOutput"
 
     if($LastExitCode -ne 0)
     {
         $result = $false
-        Write-Output "Light failed with exit code $LastExitCode."
+        Write-Information "Light failed with exit code $LastExitCode."
     }
 
     popd
@@ -111,7 +119,7 @@ if(!(Test-Path $ASPNETRuntimeWixLibFile))
     throw "$ASPNETRuntimeWixLibFile not found"
 }
 
-Write-Output "Creating dotnet Bundle at $DotnetBundleOutput"
+Write-Information "Creating dotnet Bundle at $DotnetBundleOutput"
 
 if([string]::IsNullOrEmpty($WixRoot))
 {
@@ -134,6 +142,6 @@ if(!(Test-Path $DotnetBundleOutput))
     Exit -1
 }
 
-Write-Output "Successfully created dotnet bundle - $DotnetBundleOutput"
+Write-Information "Successfully created dotnet bundle - $DotnetBundleOutput"
 
 exit $LastExitCode

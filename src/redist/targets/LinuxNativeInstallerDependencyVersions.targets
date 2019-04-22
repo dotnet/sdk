@@ -14,6 +14,14 @@
       <MicrosoftNETCoreAppPackageVersionWithTilda>$(MicrosoftNETCoreAppMajorMinorPatchVersion)</MicrosoftNETCoreAppPackageVersionWithTilda>
       <MicrosoftNETCoreAppPackageVersionWithTilda Condition=" '$(MicrosoftNETCoreAppVersionPreReleaseSeparator)' != -1 ">$(MicrosoftNETCoreAppMajorMinorPatchVersion)~$(MicrosoftNETCoreVersionSuffix)</MicrosoftNETCoreAppPackageVersionWithTilda>
 
+      <NetStandardTargetingPackVersionPreReleaseSeparator>$(NETStandardLibraryRefPackageVersion.IndexOf('-'))</NetStandardTargetingPackVersionPreReleaseSeparator>
+      <NetStandardTargetingPackMajorMinorPatchVersion>$(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackMajorMinorPatchVersion>
+      <NetStandardTargetingPackMajorMinorPatchVersion Condition=" '$(NetStandardTargetingPackVersionPreReleaseSeparator)' != -1 ">$(NETStandardLibraryRefPackageVersion.Substring(0, $(NetStandardTargetingPackVersionPreReleaseSeparator)))</NetStandardTargetingPackMajorMinorPatchVersion>
+      <NetStandardTargetingPackVersionPreReleaseSeparatorStartIndex>$([MSBuild]::Add($(NetStandardTargetingPackVersionPreReleaseSeparator), 1))</NetStandardTargetingPackVersionPreReleaseSeparatorStartIndex>
+      <NetStandardTargetingPackVersionSuffix Condition=" '$(NetStandardTargetingPackVersionPreReleaseSeparator)' != -1 ">$(NETStandardLibraryRefPackageVersion.Substring($(NetStandardTargetingPackVersionPreReleaseSeparatorStartIndex)))</NetStandardTargetingPackVersionSuffix>
+      <NetStandardTargetingPackPackageVersionWithTilda>$(NetStandardTargetingPackMajorMinorPatchVersion)</NetStandardTargetingPackPackageVersionWithTilda>
+      <NetStandardTargetingPackPackageVersionWithTilda Condition=" '$(NetStandardTargetingPackVersionPreReleaseSeparator)' != -1 ">$(NetStandardTargetingPackMajorMinorPatchVersion)~$(NetStandardTargetingPackVersionSuffix)</NetStandardTargetingPackPackageVersionWithTilda>
+
       <AspNetCoreVersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCoreVersion.IndexOf('.')), 1))</AspNetCoreVersionPatchSeparatorIndex>
       <AspNetCoreVersionPatchSeparatorIndex>$(AspNetCoreVersion.IndexOf('.', $(AspNetCoreVersionPatchSeparatorIndex)))</AspNetCoreVersionPatchSeparatorIndex>
       <AspNetCoreMajorMinorVersion>$(AspNetCoreVersion.Substring(0, $(AspNetCoreVersionPatchSeparatorIndex)))</AspNetCoreMajorMinorVersion>

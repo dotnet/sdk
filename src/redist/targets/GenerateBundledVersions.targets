@@ -202,7 +202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
                       TargetFramework="netcoreapp3.0"
-                      AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
+                      AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NETCoreAppPackageVersion)"
                       AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                       />
@@ -231,9 +231,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                               
      <KnownFrameworkReference Include="NETStandard.Library"
                               TargetFramework="netstandard2.1"
-                              TargetingPackName="NETStandard.Library"
-                              TargetingPackVersion="$(NETSTandardTargetingPackVersion)"
-                              TargetingPackFormat="NETStandardLegacy"
+                              TargetingPackName="NETStandard.Library.Ref"
+                              TargetingPackVersion="$(NETStandardLibraryRefPackageVersion)"
                               />
 
   </ItemGroup>
