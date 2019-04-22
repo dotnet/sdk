@@ -4,8 +4,15 @@ namespace Microsoft.CodeAnalysis.Tools
 {
     internal class WorkspaceFormatResult
     {
-        public int ExitCode { get; set; }
-        public int FilesFormatted { get; set; }
-        public int FileCount { get; set; }
+        public int ExitCode { get; }
+        public int FilesFormatted { get; }
+        public int FileCount { get; }
+
+        public WorkspaceFormatResult(int filesFormatted, int fileCount, int exitCode)
+        {
+            FilesFormatted = filesFormatted;
+            FileCount = fileCount;
+            ExitCode = exitCode;
+        }
     }
 }

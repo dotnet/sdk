@@ -148,7 +148,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var filesToFormat = files.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
 
             var logger = new TestLogger();
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(workspacePath, isSolution, logAllWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat, logger, CancellationToken.None);
+            var formatResult = await CodeFormatter.FormatWorkspaceAsync(workspacePath, isSolution, logWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat, logger, CancellationToken.None);
 
             Assert.Equal(expectedExitCode, formatResult.ExitCode);
             Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);

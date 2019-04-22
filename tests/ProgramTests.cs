@@ -10,10 +10,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public void ExitCodeIsOneWithCheckAndAnyFilesFormatted()
         {
-            var formatResult = new WorkspaceFormatResult()
-            {
-                FilesFormatted = 1
-            };
+            var formatResult = new WorkspaceFormatResult(filesFormatted: 1, fileCount: 0, exitCode: 0);
             var exitCode = Program.GetExitCode(formatResult, check: true);
 
             Assert.Equal(1, exitCode);
@@ -22,11 +19,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public void ExitCodeIsZeroWithCheckAndNoFilesFormatted()
         {
-            var formatResult = new WorkspaceFormatResult()
-            {
-                ExitCode = 42,
-                FilesFormatted = 0
-            };
+            var formatResult = new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 42);
             var exitCode = Program.GetExitCode(formatResult, check: true);
 
             Assert.Equal(0, exitCode);
@@ -35,10 +28,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public void ExitCodeIsSameWithoutCheck()
         {
-            var formatResult = new WorkspaceFormatResult()
-            {
-                ExitCode = 42
-            };
+            var formatResult = new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 42);
             var exitCode = Program.GetExitCode(formatResult, check: false);
 
             Assert.Equal(formatResult.ExitCode, exitCode);

@@ -81,6 +81,15 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Complete in {0}ms..
+        /// </summary>
+        internal static string Complete_in_0_ms {
+            get {
+                return ResourceManager.GetString("Complete_in_0_ms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find a MSBuild project file or solution file in &apos;{0}&apos;. Specify which to use with the --workspace option..
         /// </summary>
         internal static string Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_option {
@@ -101,6 +110,15 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Determining formattable files..
+        /// </summary>
+        internal static string Determining_formattable_files {
+            get {
+                return ResourceManager.GetString("Determining_formattable_files", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to save formatting changes..
         /// </summary>
         internal static string Failed_to_save_formatting_changes {
@@ -110,11 +128,11 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Format complete..
+        ///   Looks up a localized string similar to Format complete in {0}ms..
         /// </summary>
-        internal static string Format_complete {
+        internal static string Format_complete_in_0_ms {
             get {
-                return ResourceManager.GetString("Format_complete", resourceCulture);
+                return ResourceManager.GetString("Format_complete_in_0_ms", resourceCulture);
             }
         }
         
@@ -128,11 +146,11 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Formatted {0} of {1} files in {2}ms..
+        ///   Looks up a localized string similar to Formatted {0} of {1} files..
         /// </summary>
-        internal static string Formatted_0_of_1_files_in_2_ms {
+        internal static string Formatted_0_of_1_files {
             get {
-                return ResourceManager.GetString("Formatted_0_of_1_files_in_2_ms", resourceCulture);
+                return ResourceManager.GetString("Formatted_0_of_1_files", resourceCulture);
             }
         }
         
@@ -155,15 +173,6 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Formatting code files in project &apos;{0}&apos;..
-        /// </summary>
-        internal static string Formatting_code_files_in_project_0 {
-            get {
-                return ResourceManager.GetString("Formatting_code_files_in_project_0", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Formatting code files in workspace &apos;{0}&apos;..
         /// </summary>
         internal static string Formatting_code_files_in_workspace_0 {
@@ -178,16 +187,6 @@ namespace Microsoft.CodeAnalysis.Tools {
         internal static string Loading_workspace {
             get {
                 return ResourceManager.GetString("Loading_workspace", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Maximum number of workspace warnings to log has been reached. Set the --verbosity option to the &apos;diagnostic&apos; level to see all warnings..
-        /// </summary>
-        internal static string Maximum_number_of_workspace_warnings_to_log_has_been_reached_Set_the_verbosity_option_to_the_diagnostic_level_to_see_all_warnings {
-            get {
-                return ResourceManager.GetString("Maximum_number_of_workspace_warnings_to_log_has_been_reached_Set_the_verbosity_op" +
-                        "tion_to_the_diagnostic_level_to_see_all_warnings", resourceCulture);
             }
         }
         
@@ -208,6 +207,15 @@ namespace Microsoft.CodeAnalysis.Tools {
             get {
                 return ResourceManager.GetString("Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspac" +
                         "e_option", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running formatters..
+        /// </summary>
+        internal static string Running_formatters {
+            get {
+                return ResourceManager.GetString("Running_formatters", resourceCulture);
             }
         }
         
@@ -277,20 +285,12 @@ namespace Microsoft.CodeAnalysis.Tools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to load workspace..
+        ///   Looks up a localized string similar to Warnings were encountered while loading the workspace. Set the verbosity option to the &apos;diagnostic&apos; level to log warnings..
         /// </summary>
-        internal static string Unable_to_load_workspace {
+        internal static string Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings {
             get {
-                return ResourceManager.GetString("Unable_to_load_workspace", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Workspace loaded in {0}ms..
-        /// </summary>
-        internal static string Workspace_loaded_in_0_ms {
-            get {
-                return ResourceManager.GetString("Workspace_loaded_in_0_ms", resourceCulture);
+                return ResourceManager.GetString("Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to" +
+                        "_the_diagnostic_level_to_log_warnings", resourceCulture);
             }
         }
     }

@@ -71,7 +71,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
         }
 
         /// <remarks>
-        /// Assumes we have a lock on _guard
+        /// Assumes we have a lock on _guard.
         /// </remarks>
         private static Assembly LoadAndCache(AssemblyLoadContext context, string fullPath)
         {

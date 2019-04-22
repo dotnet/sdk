@@ -141,14 +141,11 @@
   <data name="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_option" xml:space="preserve">
     <value>Multiple MSBuild solution files found in '{0}'. Specify which to use with the --workspace option.</value>
   </data>
-  <data name="Format_complete" xml:space="preserve">
-    <value>Format complete.</value>
+  <data name="Format_complete_in_0_ms" xml:space="preserve">
+    <value>Format complete in {0}ms.</value>
   </data>
   <data name="Formatting_code_file_0" xml:space="preserve">
     <value>Formatting code file '{0}'.</value>
-  </data>
-  <data name="Formatting_code_files_in_project_0" xml:space="preserve">
-    <value>Formatting code files in project '{0}'.</value>
   </data>
   <data name="Formatting_code_files_in_workspace_0" xml:space="preserve">
     <value>Formatting code files in workspace '{0}'.</value>
@@ -156,8 +153,8 @@
   <data name="Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects" xml:space="preserve">
     <value>Could not format '{0}'. Format currently supports only C# and Visual Basic projects.</value>
   </data>
-  <data name="Formatted_0_of_1_files_in_2_ms" xml:space="preserve">
-    <value>Formatted {0} of {1} files in {2}ms.</value>
+  <data name="Formatted_0_of_1_files" xml:space="preserve">
+    <value>Formatted {0} of {1} files.</value>
   </data>
   <data name="Loading_workspace" xml:space="preserve">
     <value>Loading workspace.</value>
@@ -165,20 +162,11 @@
   <data name="Skipping_referenced_project_0" xml:space="preserve">
     <value>Skipping referenced project '{0}'.</value>
   </data>
-  <data name="Unable_to_load_workspace" xml:space="preserve">
-    <value>Unable to load workspace.</value>
-  </data>
-  <data name="Workspace_loaded_in_0_ms" xml:space="preserve">
-    <value>Workspace loaded in {0}ms.</value>
-  </data>
   <data name="Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic" xml:space="preserve">
     <value>Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]</value>
   </data>
   <data name="The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one" xml:space="preserve">
     <value>The solution or project file to operate on. If a file is not specified, the command will search the current directory for one.</value>
-  </data>
-  <data name="Maximum_number_of_workspace_warnings_to_log_has_been_reached_Set_the_verbosity_option_to_the_diagnostic_level_to_see_all_warnings" xml:space="preserve">
-    <value>Maximum number of workspace warnings to log has been reached. Set the --verbosity option to the 'diagnostic' level to see all warnings.</value>
   </data>
   <data name="Format_files_but_do_not_save_changes_to_disk" xml:space="preserve">
     <value>Format files, but do not save changes to disk.</value>
@@ -191,5 +179,17 @@
   </data>
   <data name="Formatted_code_file_0" xml:space="preserve">
     <value>Formatted code file '{0}'.</value>
+  </data>
+  <data name="Determining_formattable_files" xml:space="preserve">
+    <value>Determining formattable files.</value>
+  </data>
+  <data name="Complete_in_0_ms" xml:space="preserve">
+    <value>Complete in {0}ms.</value>
+  </data>
+  <data name="Running_formatters" xml:space="preserve">
+    <value>Running formatters.</value>
+  </data>
+  <data name="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings" xml:space="preserve">
+    <value>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</value>
   </data>
 </root>

@@ -12,6 +12,8 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
 {
     internal class SimpleConsoleLogger : ILogger
     {
+        private readonly object _gate = new object();
+
         private readonly IConsole _console;
         private readonly ITerminal _terminal;
         private readonly LogLevel _logLevel;
@@ -41,14 +43,17 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
                 return;
             }
 
-            var message = formatter(state, exception);
-            if (_terminal is null)
+            lock (_gate)
             {
-                LogToConsole(message);
-            }
-            else
-            {
-                LogToTerminal(message, logLevel);
+                var message = formatter(state, exception);
+                if (_terminal is null)
+                {
+                    LogToConsole(message);
+                }
+                else
+                {
+                    LogToTerminal(message, logLevel);
+                }
             }
         }
 

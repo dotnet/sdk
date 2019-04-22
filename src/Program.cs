@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static async Task<int> Run(string workspace, string verbosity, bool dryRun, bool check, string files, IConsole console = null)
         {
-            // Setup logging
+            // Setup logging.
             var serviceCollection = new ServiceCollection();
             var logLevel = GetLogLevel(verbosity);
             ConfigureServices(serviceCollection, console, logLevel);
@@ -51,7 +51,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var logger = serviceProvider.GetService<ILogger<Program>>();
 
-            // Hook so we can process ctrl+c key presses
+            // Hook so we can cancel and exit when ctrl+c is pressed.
             var cancellationTokenSource = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, e) =>
             {
@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 cancellationTokenSource.Cancel();
             };
 
-            string currentDirectory = string.Empty;
+            var currentDirectory = string.Empty;
 
             try
             {
@@ -91,7 +91,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                     workspacePath,
                     isSolution,
-                    logAllWorkspaceWarnings: logLevel == LogLevel.Trace,
+                    logWorkspaceWarnings: logLevel == LogLevel.Trace,
                     saveFormattedFiles: !dryRun,
                     filesToFormat,
                     logger,

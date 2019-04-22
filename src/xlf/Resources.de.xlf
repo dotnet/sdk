@@ -12,6 +12,11 @@
         <target state="translated">In "{0}" wurden eine MSBuild-Projektdatei und eine Projektmappe gefunden. Geben Sie mit der Option "--workspace" an, welche verwendet werden soll.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Complete_in_0_ms">
+        <source>Complete in {0}ms.</source>
+        <target state="new">Complete in {0}ms.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_option">
         <source>Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the --workspace option.</source>
         <target state="translated">Kein MSBuild-Projektdatei oder Projektmappendatei in "{0}" gefunden. Geben Sie die zu verwendende Datei mit der Option "--workspace" an.</target>
@@ -22,14 +27,19 @@
         <target state="translated">"{0}" konnte nicht formatiert werden. Derzeit wird die Formatierung nur für C#- und Visual Basic-Projekte unterstützt.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Determining_formattable_files">
+        <source>Determining formattable files.</source>
+        <target state="new">Determining formattable files.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Failed_to_save_formatting_changes">
         <source>Failed to save formatting changes.</source>
         <target state="translated">Fehler beim Speichern von Formatierungsänderungen.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Format_complete">
-        <source>Format complete.</source>
-        <target state="translated">Formatierung abgeschlossen.</target>
+      <trans-unit id="Format_complete_in_0_ms">
+        <source>Format complete in {0}ms.</source>
+        <target state="new">Format complete in {0}ms.</target>
         <note />
       </trans-unit>
       <trans-unit id="Format_files_but_do_not_save_changes_to_disk">
@@ -37,19 +47,14 @@
         <target state="translated">Dateien formatieren, Änderungen aber nicht auf Festplatte speichern.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Formatted_0_of_1_files_in_2_ms">
-        <source>Formatted {0} of {1} files in {2}ms.</source>
-        <target state="translated">{0} von {1} Dateien in {2} ms formatiert.</target>
+      <trans-unit id="Formatted_0_of_1_files">
+        <source>Formatted {0} of {1} files.</source>
+        <target state="new">Formatted {0} of {1} files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatting_code_file_0">
         <source>Formatting code file '{0}'.</source>
         <target state="translated">Codedatei "{0}" wird formatiert.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Formatting_code_files_in_project_0">
-        <source>Formatting code files in project '{0}'.</source>
-        <target state="translated">Codedateien im Projekt "{0}" werden formatiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="Formatting_code_files_in_workspace_0">
@@ -62,11 +67,6 @@
         <target state="translated">Arbeitsbereich wird geladen.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Maximum_number_of_workspace_warnings_to_log_has_been_reached_Set_the_verbosity_option_to_the_diagnostic_level_to_see_all_warnings">
-        <source>Maximum number of workspace warnings to log has been reached. Set the --verbosity option to the 'diagnostic' level to see all warnings.</source>
-        <target state="translated">Die maximale Anzahl der Arbeitsbereichwarnungen wurde erreicht. Legen Sie --verbosity auf "diagnostic" fest, um alle Warnungen anzuzeigen.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_option">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --workspace option.</source>
         <target state="translated">Mehrere MSBuild-Projektdateien in "{0}" gefunden. Geben Sie mit der Option "--workspace" an, welche verwendet werden soll.</target>
@@ -75,6 +75,11 @@
       <trans-unit id="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_option">
         <source>Multiple MSBuild solution files found in '{0}'. Specify which to use with the --workspace option.</source>
         <target state="translated">Mehrere MSBuild Projektmappendateien in "{0}" gefunden. Geben Sie mit der Option "--workspace" an, welche verwendet werden soll.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Running_formatters">
+        <source>Running formatters.</source>
+        <target state="new">Running formatters.</target>
         <note />
       </trans-unit>
       <trans-unit id="Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic">
@@ -112,19 +117,14 @@
         <target state="translated">Die Projektmappe oder Projektdatei, die verwendet werden soll. Wenn keine Datei angegeben ist, durchsucht der Befehl das aktuelle Verzeichnis nach einer Datei.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unable_to_load_workspace">
-        <source>Unable to load workspace.</source>
-        <target state="translated">Arbeitsbereich kann nicht geladen werden.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Workspace_loaded_in_0_ms">
-        <source>Workspace loaded in {0}ms.</source>
-        <target state="translated">Arbeitsbereich in {0} ms geladen.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Formatted_code_file_0">
         <source>Formatted code file '{0}'.</source>
         <target state="new">Formatted code file '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
+        <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
+        <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
         <note />
       </trans-unit>
     </body>
