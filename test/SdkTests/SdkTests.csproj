@@ -36,14 +36,34 @@
     <SdkTest Include="Rebuild" />
     <SdkTest Include="Restore" />
     <SdkTest Include="ToolPack" />
-
-    <RuntimeVersionToInstall Include="1.0.5" />
-    <RuntimeVersionToInstall Include="1.1.2" />
-    <RuntimeVersionToInstall Include="2.1.0" />
-    <RuntimeVersionToInstall Include="2.2.4" />
   </ItemGroup>
 
-  <Target Name="SetupLayoutWithPreviousRuntimes">
+  <Target Name="GetRuntimesToInstall">
+    <PropertyGroup>
+      <Supports1xRuntimes>true</Supports1xRuntimes>
+    </PropertyGroup>
+
+    <ReadLinesFromFile File="/etc/os-release"
+                       Condition="'$(OS)' != 'Windows_NT'">
+      <Output TaskParameter="Lines" PropertyName="OsReleaseContents"/>
+    </ReadLinesFromFile>
+
+    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Ubuntu%22'))">
+      <Supports1xRuntimes Condition="$(OsReleaseContents.Contains('VERSION_ID=%2218.04%22'))">false</Supports1xRuntimes>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(Supports1xRuntimes)' == 'true'">
+      <RuntimeVersionToInstall Include="1.0.5" />
+      <RuntimeVersionToInstall Include="1.1.2" />      
+    </ItemGroup>
+    <ItemGroup>
+      <RuntimeVersionToInstall Include="2.1.0" />
+      <RuntimeVersionToInstall Include="2.2.4" />
+    </ItemGroup>
+    
+  </Target>
+
+  <Target Name="SetupLayoutWithPreviousRuntimes" DependsOnTargets="GetRuntimesToInstall">
     <ItemGroup>
       <LayoutFilesToCopyToDotnetToTest Include="$(RedistLayoutPath)**"/>
       <LayoutFilesToCopyToDotnetToTest>
