@@ -120,7 +120,7 @@ jobs:
             HelixTargetQueues: 'Windows.10.Amd64.ClientRS1.Perf' # using a dedicated private Helix queue (perfsnakes)
             HelixPreCommands: 'set "BV_UPLOAD_SAS_TOKEN=$(BenchViewUploadToken)"'
 
-            WorkItemTimeout: 4:00
+            WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
             WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranch) rolling'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
@@ -136,7 +136,7 @@ jobs:
             HelixTargetQueues: 'Ubuntu.1604.Amd64.Perf' # using a dedicated private Helix queue (perfsnakes)
             HelixPreCommands: 'chmod +x build/RunPerfTestsOnHelix.sh && export BV_UPLOAD_SAS_TOKEN="$(BenchViewUploadTokenLinux)"'
 
-            WorkItemTimeout: 4:00
+            WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)'
             WorkItemCommand: './build/RunPerfTestsOnHelix.sh $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranch) rolling x64 Ubuntu_16.04'
 
