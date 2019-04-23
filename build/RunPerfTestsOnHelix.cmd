@@ -36,6 +36,7 @@ set architecture=%PROCESSOR_ARCHITECTURE%
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (set architecture=x64)
 
 echo "Uploading data to Benchview: uploadperftobenchview.cmd"
+pushd %HELIX_CORRELATION_PAYLOAD%
 %HELIX_CORRELATION_PAYLOAD%\build\uploadperftobenchview.cmd
 IF %ERRORLEVEL% GTR 0 exit %ERRORLEVEL%
 echo "Upload to Benchview completed"
