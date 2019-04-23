@@ -103,7 +103,9 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="RunTestsAsTool"
              Properties="ToolTestName=%(SdkTest.Identity)"
-             BuildInParallel="true"/>
+             BuildInParallel="true"
+             ContinueOnError="true"
+             />
   </Target>
   
   <Target Name="RunTestsAsTool">
