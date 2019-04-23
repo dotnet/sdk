@@ -48,7 +48,7 @@ jobs:
                     /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                     /p:PB_PublishType=$(_PublishType)
         - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        - _PerfIterations: 5
+        - _PerfIterations: 25
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
       - script: eng\common\CIBuild.cmd
@@ -138,7 +138,7 @@ jobs:
 
             WorkItemTimeout: 4:00
             WorkItemDirectory: '$(Build.SourcesDirectory)'
-            WorkItemCommand: './build/RunPerfTestsOnHelix.sh $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranch) rolling Ubuntu_16.04'
+            WorkItemCommand: './build/RunPerfTestsOnHelix.sh $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranch) rolling x64 Ubuntu_16.04'
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf_CI', 'Linux_Perf_CI', 'Windows_Perf_Helix', 'Linux_Perf_Helix') }}:
       - script: eng/common/cibuild.sh 
