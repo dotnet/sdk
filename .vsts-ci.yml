@@ -54,6 +54,7 @@ jobs:
             _BuildConfig: Release
             _PublishType: none
             _SignType: test
+            _DotNetPublishToBlobFeed: false
 
   - template: /eng/build.yml
     parameters:
@@ -66,6 +67,7 @@ jobs:
             _BuildConfig: Release
             _PublishType: none
             _SignType: test
+            _DotNetPublishToBlobFeed: false
 
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - template: /eng/build.yml
