@@ -136,9 +136,11 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
+            //  Work-around for MVC template test until ASP.Net publishes Preview 5 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' to NuGet.org
+            string restoreArgs = string.Equals(templateName, "mvc", StringComparison.OrdinalIgnoreCase) ? "/p:RestoreAdditionalProjectSources=https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json" : "";
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute(restoreArgs)
                 .Should().Pass();
 
             new BuildCommand()

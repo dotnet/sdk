@@ -164,14 +164,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETCoreSdkVersion>$(SdkVersion)</NETCoreSdkVersion>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkIsPreview)</_NETCoreSdkIsPreview>
-
-    <AddDotnetfeedProjectSource Condition="'%24(AddDotnetfeedProjectSource)' == ''">%24(_NETCoreSdkIsPreview)</AddDotnetfeedProjectSource>
-    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/dotnet-core/index.json</RestoreAdditionalProjectSources>
-    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json</RestoreAdditionalProjectSources>
-    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json</RestoreAdditionalProjectSources>
-    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json</RestoreAdditionalProjectSources>
-    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json</RestoreAdditionalProjectSources>
-    <RestoreAdditionalProjectSources Condition="'%24(AddDotnetfeedProjectSource)' == 'true'">%24(RestoreAdditionalProjectSources)%3Bhttps://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json</RestoreAdditionalProjectSources>
  
     <!-- Default patch versions for each minor version of ASP.NET Core -->
     <DefaultPatchVersionForAspNetCoreAll2_1>2.1.1</DefaultPatchVersionForAspNetCoreAll2_1>
