@@ -3,13 +3,19 @@
 using System;
 using System.IO;
 using Microsoft.CodeAnalysis.Tools.MSBuild;
+using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
-    public class MSBuildWorkspaceFinderTests
+    public class MSBuildWorkspaceFinderTests : IClassFixture<SolutionPathFixture>
     {
-        private static string SolutionPath => Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.Parent.FullName;
+        private string SolutionPath => Environment.CurrentDirectory;
+
+        public MSBuildWorkspaceFinderTests(SolutionPathFixture solutionPathFixture)
+        {
+            solutionPathFixture.SetCurrentDirectory();
+        }
 
         [Fact]
         public void ThrowsException_CannotFindMSBuildProjectFile()

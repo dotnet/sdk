@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 
         public void SetCurrentDirectory()
         {
-            if (Interlocked.Exchange(ref _registered, 1) == 0)
+            if (Interlocked.Increment(ref _registered) == 1)
             {
                 _currentDirectory = Environment.CurrentDirectory;
                 var solutionPath = Directory.GetParent(_currentDirectory).Parent.Parent.Parent.Parent.FullName;
@@ -26,8 +26,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 
         public void Dispose()
         {
-            Environment.CurrentDirectory = _currentDirectory;
-            _currentDirectory = null;
+            if (Interlocked.Decrement(ref _registered) == 0)
+            { 
+                Environment.CurrentDirectory = _currentDirectory;
+                _currentDirectory = null;
+            }
         }
     }
 }

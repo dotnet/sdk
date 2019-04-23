@@ -288,6 +288,9 @@ paket-files/
 # FAKE - F# Make
 .fake/
 
+# VS Code
+.vscode/
+
 # JetBrains Rider
 .idea/
 *.sln.iml
