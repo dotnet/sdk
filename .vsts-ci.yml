@@ -52,11 +52,8 @@ jobs:
         matrix:
           Build_Release:
             _BuildConfig: Release
-      variables:
-        - name: PB_PublishBlobFeedUrl
-          value: ''
-        - name: _DotNetPublishToBlobFeed
-          value: false
+            _PublishType: none
+            _SignType: test
 
   - template: /eng/build.yml
     parameters:
@@ -67,11 +64,8 @@ jobs:
         matrix:
           Build_Release:
             _BuildConfig: Release
-      variables:
-        - name: PB_PublishBlobFeedUrl
-          value: ''
-        - name: _DotNetPublishToBlobFeed
-          value: false
+            _PublishType: none
+            _SignType: test
 
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - template: /eng/build.yml
@@ -166,6 +160,8 @@ jobs:
         matrix:
           Build_Release:
             _BuildConfig: Release
+            _PublishType: none
+            _SignType: test
 
   - template: /eng/build.yml
     parameters:
@@ -176,6 +172,8 @@ jobs:
         matrix:
           Build_Release:
             _BuildConfig: Release
+            _PublishType: none
+            _SignType: test
 
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: /eng/common/templates/job/publish-build-assets.yml
