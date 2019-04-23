@@ -87,10 +87,9 @@
 
   <Target Name="RunSdkTests" DependsOnTargets="SetupLayoutWithPreviousRuntimes">
 
-    <!-- SDK tests use the $(TEMP)\dotnetSdkTests as the working directory, isolate that from any higher-level
-         Directory.Build files (TEMP is set to a folder in the repo when running in CI) -->
+    <!-- Isolate test working directory from higher-level Directory.Build files -->
     <Copy SourceFiles="$(RepoRoot)TestAssets\Directory.Build.props;$(RepoRoot)TestAssets\Directory.Build.targets"
-          DestinationFolder="$(TEMP)\dotnetSdkTests"
+          DestinationFolder="$(ArtifactsTmpDir)/dotnetSdkTests"
           SkipUnchangedFiles="true"
           />
 
@@ -148,6 +147,7 @@
 
       <TestArgs>-noautoreporters -noRepoInference</TestArgs>
       <TestArgs>$(TestArgs) -dotnetPath $(DotnetToTestPath)\dotnet</TestArgs>
+      <TestArgs>$(TestArgs) -testExecutionDirectory $(ArtifactsTmpDir)/dotnetSdkTests</TestArgs>
       <TestArgs>$(TestArgs) -xml "$(ResultsXmlPath)"</TestArgs>
       <TestArgs>$(TestArgs) -html "$(ResultsHtmlPath)" $(TestRunnerAdditionalArguments)</TestArgs>
       <TestArgs>$(TestArgs) &gt; $(ResultsStdOutPath)</TestArgs>
