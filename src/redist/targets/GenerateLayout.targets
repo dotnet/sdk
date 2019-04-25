@@ -363,25 +363,12 @@
     
     <RemoveDir Directories="$(AppHostRestorePath)" />
     <MakeDir Directories="$(AppHostRestorePath)" />
-
-    <ItemGroup>
-      <NETCoreDotNetAppHostPackageVersions Include="@(PackageDefinitions->'%(Version)')"
-                                           Condition="%(PackageDefinitions.Name) == $(NETCoreDotNetAppHostPackageName)" />
-    </ItemGroup>
-
-    <Error Condition="@(NETCoreDotNetAppHostPackageVersions->Distinct()->Count()) != 1"
-           Text="Failed to determine the $(NETCoreDotNetAppHostPackageName) version pulled in Microsoft.NETCore.App" />
-
-    <PropertyGroup>
-      <_NETCoreDotNetAppHostPackageVersion>@(NETCoreDotNetAppHostPackageVersions->Distinct())</_NETCoreDotNetAppHostPackageVersion>
-    </PropertyGroup>
-
       
     <ItemGroup>
       <AppHostTemplateDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
         <Properties>
           PackageToRestore=$(NETCoreDotNetAppHostPackageName);
-          PackageVersionToRestore=$(_NETCoreDotNetAppHostPackageVersion);
+          PackageVersionToRestore=$(MicrosoftNETCoreDotNetAppHostPackageVersion);
           TargetFramework=$(TargetFramework);
           RestorePackagesPath=$(AppHostRestorePath);
           RuntimeIdentifier=$(Rid)

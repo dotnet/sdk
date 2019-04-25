@@ -42,8 +42,8 @@
     <ItemGroup>
       <MetaPackageDownload Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
         <Properties>
-          PackageToRestore=Microsoft.NETCore.App;
-          PackageVersionToRestore=$(MicrosoftNETCoreAppPackageVersion);
+          PackageToRestore=Microsoft.NETCore.App.Internal;
+          PackageVersionToRestore=$(MicrosoftNETCoreAppInternalPackageVersion);
           TargetFramework=$(TargetFramework)
         </Properties>
       </MetaPackageDownload>
@@ -61,7 +61,7 @@
       Projects="@(MetaPackageDownload)">
     </MSBuild>
 
-    <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.netcore.app/$(MicrosoftNETCoreAppPackageVersion)">
+    <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.netcore.app.internal/$(MicrosoftNETCoreAppPackageVersion)">
       <Output TaskParameter="AvailableRuntimePackRuntimeIdentifiers" ItemName="NetCoreRuntimePackRids" />
     </GetRuntimePackRids>
     <GetRuntimePackRids MetapackagePath="$(NuGetPackageRoot)/microsoft.windowsdesktop.app/$(MicrosoftWindowsDesktopPackageVersion)">
@@ -188,7 +188,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(NetCoreAppTargetingPackVersion)"
                               AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
                               AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
-                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
+                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App.Internal%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
                               RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               />
 
