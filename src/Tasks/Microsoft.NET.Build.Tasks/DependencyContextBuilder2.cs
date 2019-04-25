@@ -769,9 +769,9 @@ namespace Microsoft.NET.Build.Tasks
                         //  There may not be a library in the assets file if a referenced project has
                         //  PrivateAssets="all" for a package reference, and there is a package in the graph
                         //  that depends on the same packge.
-                        if (_dependencyLibraries.ContainsKey(dependencyName))
+                        if (_dependencyLibraries.TryGetValue(dependencyName, out var dependencyLibrary))
                         {
-                            includedDependencies.Add(dependencyName, _dependencyLibraries[dependencyName]);
+                            includedDependencies.Add(dependencyName, dependencyLibrary);
                             foreach (var newDependency in _libraryDependencies[dependencyName])
                             {
                                 dependenciesToWalk.Push(newDependency.Name);
