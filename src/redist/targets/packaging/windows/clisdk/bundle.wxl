@@ -12,7 +12,7 @@
    no prompts. By default UI and all prompts are displayed.
 
 /norestart - suppress any attempts to restart. By default UI will prompt before restart.
-/log log.txt - logs to a specific file. By default a log file is created in %TEMP%.</String>
+/log [\[]"log.txt"[\]] - logs to a specific file. By default a log file is created in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Close</String>
   <String Id="InstallAcceptCheckbox">I &amp;agree to the license terms and conditions</String>
   <String Id="InstallOptionsButton">&amp;Options</String>
@@ -30,7 +30,7 @@
   <String Id="SuccessUninstallHeader">Uninstall Successfully Completed</String>
   <String Id="SuccessHeader">Setup Successful</String>
   <String Id="SuccessLaunchButton">&amp;Launch</String>
-  <String Id="SuccessRestartText">You must restart your computer before you can use the software.</String>
+  <String Id="SuccessRestartText">You must restart your computer to complete the installation of the software.</String>
   <String Id="SuccessRestartButton">&amp;Restart</String>
   <String Id="SuccessCloseButton">&amp;Close</String>
   <String Id="FailureHeader">Setup Failed</String>
