@@ -188,7 +188,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(NetCoreAppTargetingPackVersion)"
                               AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
                               AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
-                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App.Internal%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
+                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
                               RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               />
 
