@@ -190,6 +190,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
                               RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                              PackagesToReference="Microsoft.NETCore.App/$(NetCoreAppTargetingPackVersion)"
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
