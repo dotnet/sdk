@@ -302,7 +302,8 @@ public class ClassLib
                 PackageReferences = { packageReference }
             };
 
-            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(packageReference.NupkgPath));
+            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", 
+                                                 "$(RestoreAdditionalProjectSources);" + Path.GetDirectoryName(packageReference.NupkgPath));
 
             testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
 using System;
