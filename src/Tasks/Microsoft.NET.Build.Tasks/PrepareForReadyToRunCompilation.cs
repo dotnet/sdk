@@ -186,7 +186,7 @@ namespace Microsoft.NET.Build.Tasks
                         r2rSymbolsFileToPublish.ItemSpec = outputPDBImage;
                         r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.RelativePath, outputPDBImageRelativePath);
                         r2rSymbolsFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
-                        if(!IncludeSymbolsInSingleFile)
+                        if (!IncludeSymbolsInSingleFile)
                         {
                             r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.ExcludeFromSingleFile, "true");
                         }
