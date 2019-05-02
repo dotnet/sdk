@@ -65,7 +65,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 EmptyFilesToFormat,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 4);
+                expectedFileCount: 5);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 EmptyFilesToFormat,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 4);
+                expectedFileCount: 5);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 filesToFormat,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 4);
+                expectedFileCount: 5);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 files,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 4);
+                expectedFileCount: 5);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 files,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 4);
+                expectedFileCount: 5);
 
             var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
