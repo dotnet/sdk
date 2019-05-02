@@ -1,0 +1,140 @@
+variables:
+- name:  Build.Repository.Clean
+  value: true
+
+trigger:
+- release/2.1*
+- release/2.2*
+
+pr:
+- release/2.1*
+- release/2.2*
+
+jobs:
+- job: debug_osx
+  displayName: OSX Debug
+  pool:
+    vmImage: macOS-10.13
+  steps:
+  - script: ./build/cibuild.sh --configuration Debug
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      artifactName: debug_osx
+    condition: failed()
+
+- job: debug_ubuntu1604
+  displayName: Ubuntu16.04 Debug
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - script: ./build/cibuild.sh --configuration Debug
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      artifactName: debug_ubuntu1604
+    condition: failed()
+
+- job: debug_windows_nt
+  displayName: Windows_NT Debug
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - script: .\build\cibuild.cmd -configuration Debug
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      artifactName: debug_windows_nt
+    condition: failed()
+
+- job: debug_windows_nt_fullframework
+  displayName: Windows_NT_FullFramework Debug
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - script: .\build\cibuild.cmd -configuration Debug -fullMSBuild
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      artifactName: debug_windows_nt_fullframework
+    condition: failed()
+
+- job: release_osx
+  displayName: OSX Release
+  pool:
+    vmImage: macOS-10.13
+  steps:
+  - script: ./build/cibuild.sh --configuration Release
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      artifactName: release_osx
+    condition: failed()
+
+- job: release_ubuntu1604
+  displayName: Ubuntu16.04 Release
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - script: ./build/cibuild.sh --configuration Release
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      artifactName: release_ubuntu1604
+    condition: failed()
+
+- job: release_windows_nt
+  displayName: Windows_NT Release
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - script: .\build\cibuild.cmd -configuration Release
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      artifactName: release_windows_nt
+    condition: failed()
+
+- job: release_windows_nt_fullframework
+  displayName: Windows_NT_FullFramework Release
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - script: .\build\cibuild.cmd -configuration Release -fullMSBuild
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      artifactName: release_windows_nt_fullframework
+    condition: failed()
