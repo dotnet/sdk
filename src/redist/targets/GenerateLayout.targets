@@ -18,15 +18,19 @@
       <InstallerStartSuffix Condition="'$(HostOSName)' == 'osx'">-internal</InstallerStartSuffix>
 
       <!-- Downloaded Installers + Archives -->
-      <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(CoreSetupRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
       <SharedFrameworkInstallerFileRid>$(CoreSetupRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">x64</SharedFrameworkInstallerFileRid>
 
+      <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
+      <RuntimeDepsInstallerFileRid>$(CoreSetupRid)</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">x64</RuntimeDepsInstallerFileRid>
+
       <DownloadedSharedHostInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
       <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
+      <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(RuntimeDepsInstallerFileRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(NetCoreAppTargetingPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
       <DownloadedNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(NetCoreAppHostPackVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppHostPackInstallerFileName>
