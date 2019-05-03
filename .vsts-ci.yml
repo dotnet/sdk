@@ -21,9 +21,15 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      pathtoPublish: 'artifacts/Debug/log/*'
+      artifactName: debug_osx
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/TestResults/*'
       artifactName: debug_osx
     condition: failed()
 
@@ -37,9 +43,15 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      pathtoPublish: 'artifacts/Debug/log/*'
+      artifactName: debug_ubuntu1604
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/TestResults/*'
       artifactName: debug_ubuntu1604
     condition: failed()
 
@@ -53,9 +65,15 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      pathtoPublish: 'artifacts/Debug/log/*'
+      artifactName: debug_windows_nt
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/TestResults/*'
       artifactName: debug_windows_nt
     condition: failed()
 
@@ -69,9 +87,15 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*,artifacts/Debug/TestResults/*'
+      pathtoPublish: 'artifacts/Debug/log/*'
+      artifactName: debug_windows_nt_fullframework
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Debug/TestResults/*'
       artifactName: debug_windows_nt_fullframework
     condition: failed()
 
@@ -85,9 +109,15 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      pathtoPublish: 'artifacts/Release/log/*'
+      artifactName: release_osx
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/TestResults/*'
       artifactName: release_osx
     condition: failed()
 
@@ -101,9 +131,15 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      pathtoPublish: 'artifacts/Release/log/*'
+      artifactName: release_ubuntu1604
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/TestResults/*'
       artifactName: release_ubuntu1604
     condition: failed()
 
@@ -117,9 +153,15 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      pathtoPublish: 'artifacts/Release/log/*'
+      artifactName: release_windows_nt
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/TestResults/*'
       artifactName: release_windows_nt
     condition: failed()
 
@@ -133,8 +175,14 @@ jobs:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
+    condition: always()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*,artifacts/Release/TestResults/*'
+      pathtoPublish: 'artifacts/Release/log/*'
+      artifactName: release_windows_nt_fullframework
+    condition: failed()
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'artifacts/Release/TestResults/*'
       artifactName: release_windows_nt_fullframework
     condition: failed()
