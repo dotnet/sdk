@@ -22,16 +22,21 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*'
-      artifactName: debug_osx
+      contents: 'artifacts/Debug/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Debug/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: debug_osx
-    condition: failed()
+
 
 - job: debug_ubuntu1604
   displayName: Ubuntu16.04 Debug
@@ -44,16 +49,20 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*'
-      artifactName: debug_ubuntu1604
+      contents: 'artifacts/Debug/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Debug/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: debug_ubuntu1604
-    condition: failed()
 
 - job: debug_windows_nt
   displayName: Windows_NT Debug
@@ -66,16 +75,20 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*'
-      artifactName: debug_windows_nt
+      contents: 'artifacts/Debug/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Debug/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: debug_windows_nt
-    condition: failed()
 
 - job: debug_windows_nt_fullframework
   displayName: Windows_NT_FullFramework Debug
@@ -88,16 +101,20 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Debug/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Debug/log/*'
-      artifactName: debug_windows_nt_fullframework
+      contents: 'artifacts/Debug/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Debug/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Debug/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: debug_windows_nt_fullframework
-    condition: failed()
 
 - job: release_osx
   displayName: OSX Release
@@ -110,16 +127,20 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*'
-      artifactName: release_osx
+      contents: 'artifacts/Release/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Release/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: release_osx
-    condition: failed()
 
 - job: release_ubuntu1604
   displayName: Ubuntu16.04 Release
@@ -132,16 +153,20 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*'
-      artifactName: release_ubuntu1604
+      contents: 'artifacts/Release/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Release/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: release_ubuntu1604
-    condition: failed()
 
 - job: release_windows_nt
   displayName: Windows_NT Release
@@ -154,16 +179,20 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*'
-      artifactName: release_windows_nt
+      contents: 'artifacts/Release/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Release/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: release_windows_nt
-    condition: failed()
 
 - job: release_windows_nt_fullframework
   displayName: Windows_NT_FullFramework Release
@@ -176,13 +205,17 @@ jobs:
       testResultsFormat: xUnit
       testResultsFiles: 'artifacts/Release/TestResults/*.xml'
     condition: always()
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
     inputs:
-      pathtoPublish: 'artifacts/Release/log/*'
-      artifactName: release_windows_nt_fullframework
+      contents: 'artifacts/Release/log/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+    condition: failed()
+  - task: CopyFiles@2
+    inputs:
+      contents: 'artifacts/Release/TestResults/*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
     condition: failed()
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'artifacts/Release/TestResults/*'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: release_windows_nt_fullframework
-    condition: failed()
