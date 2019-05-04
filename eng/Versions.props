@@ -3,9 +3,8 @@
   <PropertyGroup>
     <MajorVersion>3</MajorVersion>
     <MinorVersion>1</MinorVersion>
-
     <!-- Build release-only package. -->
-    <PreReleaseVersionLabel/>
+    <PreReleaseVersionLabel />
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
