@@ -19,8 +19,8 @@ jobs:
   parameters:
     name: ${{ parameters.agentOs }}
     enableMicrobuild: true
-    enablePublishBuildArtifacts: true
-    enablePublishBuildAssets: true
+    enablePublishBuildArtifacts: false
+    enablePublishBuildAssets: false
     enablePublishTestResults: true
     enableTelemetry: true
     helixRepo: dotnet/sdk
@@ -41,51 +41,35 @@ jobs:
         - group: dotnet-benchview
         - group: DotNet-Blob-Feed
         - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-        - _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-                    /p:DotNetPublishBlobFeedUrl=$(PB_PublishBlobFeedUrl)
-                    /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-                    /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                    /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-                    /p:PB_PublishType=$(_PublishType)
-        - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         - _PerfIterations: 25
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
       - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
-                  $(_PublishArgs)
-                  $(_SignArgs)
                   $(_OfficialBuildIdArgs)
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
-          BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
       - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
-                  $(_PublishArgs)
-                  $(_SignArgs)
                   $(_OfficialBuildIdArgs)
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
-          BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
           TestFullMSBuild: 'true'
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
       - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
-                  $(_PublishArgs)
-                  $(_SignArgs)
                   $(_OfficialBuildIdArgs)
                   /p:RunTestsAsTool=true
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
-          BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
 
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_CI') }}:
@@ -96,6 +80,16 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
+
+    - ${{ if eq(parameters.agentOs, 'Windows_Perf_CI_FullFramework') }}:
+      - script: build.cmd
+                  -configuration $(_BuildConfig)
+                  -ci -msbuildEngine dotnet
+                  -performanceTest
+        displayName: Build
+        env:
+          BuildConfig: $(_BuildConfig)
+          TestFullMSBuild: 'true'
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf_CI') }}:
       - script: ./build.sh
@@ -143,11 +137,8 @@ jobs:
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf_CI', 'Linux_Perf_CI', 'Windows_Perf_Helix', 'Linux_Perf_Helix') }}:
       - script: eng/common/cibuild.sh 
                   --configuration $(_BuildConfig)
-                  $(_PublishArgs)
-                  $(_SignArgs)
                   $(_OfficialBuildIdArgs)
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
-          BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
