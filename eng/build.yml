@@ -84,7 +84,7 @@ jobs:
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_CI_FullFramework') }}:
       - script: build.cmd
                   -configuration $(_BuildConfig)
-                  -ci -msbuildEngine dotnet
+                  -ci
                   -performanceTest
         displayName: Build
         env:
