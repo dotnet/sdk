@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("netcoreapp1.1")]
         [InlineData("netcoreapp2.0")]
         [InlineData("netcoreapp3.0")]
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("netcoreapp1.1")]
         [InlineData("netcoreapp2.0")]
         [InlineData("netcoreapp3.0")]
@@ -121,7 +121,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void Publish_self_contained_app_with_dot_in_the_name()
         {
             var targetFramework = "netcoreapp2.0";
@@ -160,7 +160,7 @@ public static class Program
             publishDirectory.Should().HaveFile($"Hello.World{Constants.ExeSuffix}");
         }
 		
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip = "just test perf")]
         [InlineData("win-arm")]
         [InlineData("win8-arm")]
         [InlineData("win81-arm")]
@@ -229,19 +229,19 @@ public static class Program
             publishDirectory.Should().HaveFiles(filesPublished);
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void Conflicts_are_resolved_when_publishing_a_portable_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: false, ridSpecific: false);
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void Conflicts_are_resolved_when_publishing_a_self_contained_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: true, ridSpecific: true);
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void Conflicts_are_resolved_when_publishing_a_rid_specific_shared_framework_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: false, ridSpecific: true);
@@ -393,7 +393,7 @@ public static class Program
 
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void A_deployment_project_can_reference_the_hello_world_project()
         {
             var rid = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier();
@@ -411,7 +411,7 @@ public static class Program
                 .Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_fails_for_unsupported_rid()
         {
             var helloWorldAsset = _testAssetsManager
@@ -425,7 +425,7 @@ public static class Program
             publishResult.Should().Fail();
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_allows_unsupported_rid_with_override()
         {
             var helloWorldAsset = _testAssetsManager
@@ -439,7 +439,7 @@ public static class Program
             publishResult.Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_preserves_newest_files_on_publish()
         {
             var helloWorldAsset = _testAssetsManager
@@ -464,7 +464,7 @@ public static class Program
                 .NotHaveStdOutContaining("Copying");
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_fails_if_nobuild_was_requested_but_build_was_invoked()
         {
             var testProject = new TestProject()
@@ -495,7 +495,7 @@ public static class Program
                 .HaveStdOutContaining("NETSDK1085");
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_contains_no_duplicates_in_resolved_publish_assets()
         {
             // Use a specific RID to guarantee a consistent set of assets
@@ -540,7 +540,7 @@ public static class Program
                 .NotHaveStdOutContaining("Duplicate filenames are present");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(null, null)]
         [InlineData(false, null)]
         [InlineData(true, null)]

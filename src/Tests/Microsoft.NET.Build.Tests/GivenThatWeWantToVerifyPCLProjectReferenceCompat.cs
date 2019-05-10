@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip = "just test perf")]
         [InlineData("netstandard1.1", "Profile7", "v4.5", true, true)]
         [InlineData("netstandard1.0", "Profile31", "v4.6", true, true)]
         [InlineData("netstandard1.2", "Profile32", "v4.6", true, true)]

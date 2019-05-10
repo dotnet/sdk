@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("netcoreapp1.1")]
         [InlineData("netcoreapp3.0")]
         public void It_has_target_path_and_final_outputput_path_metadata(string targetFramework)

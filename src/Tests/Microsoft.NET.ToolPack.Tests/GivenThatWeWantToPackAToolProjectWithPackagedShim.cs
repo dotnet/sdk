@@ -81,7 +81,7 @@ namespace Microsoft.NET.ToolPack.Tests
                 .Restore(Log);
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -97,7 +97,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -118,7 +118,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -142,7 +142,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -176,7 +176,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -202,7 +202,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -231,7 +231,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeFalse($"Shim {osxShimPath} should not exists");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -262,7 +262,7 @@ namespace Microsoft.NET.ToolPack.Tests
             windowShimPathSecondModifiedTime.Should().Be(windowShimPathFirstModifiedTime);
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -295,7 +295,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -312,7 +312,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -347,7 +347,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -371,7 +371,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "just test perf")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]

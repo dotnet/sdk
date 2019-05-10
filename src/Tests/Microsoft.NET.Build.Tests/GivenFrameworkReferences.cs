@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
 
         //  Tests in this class are currently Core MSBuild only, as they check for PackageDownload items,
         //  which are currently only used in Core MSBuild
-        [CoreMSBuildAndWindowsOnlyFact]
+        [CoreMSBuildAndWindowsOnlyFact(Skip = "just test perf")]
         public void Multiple_frameworks_are_written_to_runtimeconfig_when_there_are_multiple_FrameworkReferences()
         {
             var testProject = new TestProject()
@@ -86,7 +86,7 @@ namespace FrameworkReferenceTest
             runtimeFrameworkNames.Should().BeEquivalentTo("Microsoft.AspNetCore.App", "Microsoft.WindowsDesktop.App");
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void The_build_fails_when_there_is_an_unknown_FrameworkReference()
         {
             var testProject = new TestProject()
@@ -125,7 +125,7 @@ namespace FrameworkReferenceTest
                 ;
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip = "just test perf")]
         [InlineData("netcoreapp2.1", false)]
         [InlineData("netcoreapp3.0", true)]
         public void KnownFrameworkReferencesOnlyApplyToCorrectTargetFramework(string targetFramework, bool shouldPass)
@@ -168,7 +168,7 @@ namespace FrameworkReferenceTest
                     .And.HaveStdOutContaining("Microsoft.AspNetCore.App");
             }
         }
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void TargetingPackDownloadCanBeDisabled()
         {
             var testProject = new TestProject()
@@ -205,7 +205,7 @@ namespace FrameworkReferenceTest
                 .HaveStdOutContaining("NETSDK1073");
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void BuildFailsIfRuntimePackIsNotAvailableForRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -244,7 +244,7 @@ namespace FrameworkReferenceTest
                 .HaveStdOutContaining("1 Error(s)");
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void BuildFailsIfInvalidRuntimeIdentifierIsSpecified()
         {
             var testProject = new TestProject()
@@ -271,7 +271,7 @@ namespace FrameworkReferenceTest
                 .HaveStdOutContaining("1 Error(s)");
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void BuildFailsIfRuntimePackHasNotBeenRestored()
         {
             var testProject = new TestProject()
@@ -312,7 +312,7 @@ namespace FrameworkReferenceTest
 
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void RuntimeFrameworkVersionCanBeSpecifiedOnFrameworkReference()
         {
             var testProject = new TestProject();
@@ -344,7 +344,7 @@ namespace FrameworkReferenceTest
             resolvedVersions.AppHostPack["AppHost"].Should().Be("3.0.0-runtimeframeworkversion-property");
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void RuntimeFrameworkVersionCanBeSpecifiedViaProperty()
         {
             var testProject = new TestProject();
@@ -367,7 +367,7 @@ namespace FrameworkReferenceTest
             resolvedVersions.AppHostPack["AppHost"].Should().Be(runtimeFrameworkVersion);
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip = "just test perf")]
         [InlineData(true)]
         [InlineData(false)]
         public void TargetLatestPatchCanBeSpecifiedOnFrameworkReference(bool attributeValue)
@@ -403,7 +403,7 @@ namespace FrameworkReferenceTest
             resolvedVersions.AppHostPack["AppHost"].Should().Be("3.0.0-apphostversion");
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip = "just test perf")]
         [InlineData(true)]
         [InlineData(false)]
         public void TargetLatestPatchCanBeSpecifiedViaProperty(bool propertyValue)
@@ -429,7 +429,7 @@ namespace FrameworkReferenceTest
             resolvedVersions.AppHostPack["AppHost"].Should().Be("3.0.0-apphostversion");
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "just test perf")]
         public void TargetingPackVersionCanBeSpecifiedOnFrameworkReference()
         {
             var testProject = new TestProject();

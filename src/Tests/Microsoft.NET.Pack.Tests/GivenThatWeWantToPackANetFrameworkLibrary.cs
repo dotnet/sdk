@@ -23,7 +23,7 @@ namespace Microsoft.NET.Pack.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "just test perf")]
         public void ImplicitReferencesAreNotIncludedAsFrameworkReferences()
         {
             TestProject testProject = new TestProject()
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Pack.Tests
             frameworkAssemblies.Should().BeNull();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "just test perf")]
         public void ExplicitReferencesAreIncludedAsFrameworkReferences()
         {
             TestProject testProject = new TestProject()

@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("netcoreapp2.0")]
         [InlineData("netstandard2.0")]
         public void The_same_references_are_used_with_or_without_DisableDefaultPackageConflictOverrides(string targetFramework)
@@ -105,7 +105,7 @@ namespace Microsoft.NET.Build.Tests
             referenceCopyLocalPaths = getReferenceCopyLocalPathsCommand.GetValues();
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void CompileConflictsAreNotRemovedFromRuntimeDepsAssets()
         {
             TestProject testProject = new TestProject()
@@ -144,7 +144,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void AProjectCanReferenceADllInAPackageDirectly()
         {
             TestProject testProject = new TestProject()

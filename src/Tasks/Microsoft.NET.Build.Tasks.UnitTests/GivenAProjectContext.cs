@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAProjectContext
     {
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItComputesExcludeFromPublishList()
         {
             LockFile lockFile = TestLockFiles.GetLockFile("dependencies.withgraphs");

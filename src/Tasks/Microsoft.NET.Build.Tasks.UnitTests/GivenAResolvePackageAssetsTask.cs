@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAResolvePackageAssetsTask
     {
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItHashesAllParameters()
         {
             var inputProperties = typeof(ResolvePackageAssets)

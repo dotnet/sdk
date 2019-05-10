@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenThatWeReportAssetsLogMessages
     {
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItReportsDiagnosticsWithMinimumData()
         {
             string lockFileContent = CreateDefaultLockFileSnippet(
@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.DiagnosticMessages.Should().HaveCount(1);
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(null)]
         [InlineData(new object[] { new string[0] })]
         public void ItReportsZeroDiagnosticsWithNoLogs(string [] logsJson)
@@ -39,7 +39,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.DiagnosticMessages.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItReportsDiagnosticsMetadataWithLogs()
         {
             string lockFileContent = CreateDefaultLockFileSnippet(
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             checkMetadata(MetadataKeys.ParentPackage, "LibA/1.2.3", "LibB/1.2.3");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(null, null, ".NETCoreApp,Version=v1.0", "")]
         [InlineData(new string[] { ".NETCoreApp,Version=v1.0" }, null, ".NETCoreApp,Version=v1.0", "")]
         [InlineData(null, "LibA", ".NETCoreApp,Version=v1.0", "LibA/1.2.3")]
@@ -97,7 +97,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             item.GetMetadata(MetadataKeys.ParentPackage).Should().Be(expectedPackage);
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItHandlesInfoLogLevels()
         {
             string lockFileContent = CreateDefaultLockFileSnippet(
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     .Should().OnlyContain(s => s == "Info");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData(new string[] { ".NETCoreApp,Version=v1.0", ".NETFramework,Version=v4.6.1" }, "LibA")]
         [InlineData(new string[] { ".NETCoreApp,Version=v1.0" }, "LibA")]
         public void ItHandlesMultiTFMScenarios(string[] targetGraphs, string libraryId)
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     .Should().OnlyContain(v => v.StartsWith(libraryId));
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItSkipsInvalidEntries()
         {
             string lockFileContent = CreateDefaultLockFileSnippet(

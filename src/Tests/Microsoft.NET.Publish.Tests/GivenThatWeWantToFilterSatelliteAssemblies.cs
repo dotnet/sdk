@@ -21,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_only_publishes_selected_ResourceLanguages()
         {
             var testProject = new TestProject()
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Publish.Tests
                 $"{testProject.Name}.runtimeconfig.json"
             });
         }
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_publishes_all_satellites_when_not_filtered()
         {
             var testProject = new TestProject()

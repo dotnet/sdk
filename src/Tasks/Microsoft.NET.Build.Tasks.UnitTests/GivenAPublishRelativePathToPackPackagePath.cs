@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAResolveToolPackagePaths
     {
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("tools/myfile.exe", "tools")]
         [InlineData(@"tools\myfile.exe", "tools")]
         [InlineData(@"tools\/myfile.exe", "tools")]

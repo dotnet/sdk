@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "just test perf")]
         public void It_copies_the_comhost_to_the_output_directory()
         {
             var testAsset = _testAssetsManager
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "just test perf")]
         public void It_generates_a_regfree_com_manifest_when_requested()
         {
             var testAsset = _testAssetsManager
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "just test perf")]
         [InlineData("win-x64")]
         [InlineData("win-x86")]
         public void It_embeds_the_clsidmap_in_the_comhost_when_rid_specified(string rid)

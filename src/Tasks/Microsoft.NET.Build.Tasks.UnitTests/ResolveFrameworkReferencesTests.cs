@@ -9,7 +9,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class ResolveFrameworkReferencesTests
     {
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_resolves_FrameworkReferences()
         {
             var task = new ResolveFrameworkReferences();
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_does_not_resolve_FrameworkReferences_if_targetframework_doesnt_match()
         {
             var task = new ResolveFrameworkReferences();

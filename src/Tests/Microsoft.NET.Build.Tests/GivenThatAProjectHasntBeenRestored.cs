@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("TestLibrary", null)]
         [InlineData("TestApp", null)]
         [InlineData("TestApp", "netcoreapp2.1")]
@@ -51,7 +51,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("1 Error(s)");
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("TestLibrary", null)]
         [InlineData("TestApp", null)]
         [InlineData("TestApp", "netcoreapp2.1")]

@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             protected override void LogCore(in Message message) => Messages.Add(message);
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItLogsWarnings()
         {
             var logger = new TestLogger();
@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 new Message(MessageLevel.Warning, "Goodbye, cruel world.", code: "NETSDK4567"));
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItLogsErrors()
         {
             var logger = new TestLogger();
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 new Message(MessageLevel.Error, "Uh oh! :(", code: "NETSDK9898"));
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItLogsMessages()
         {
             var logger = new TestLogger();
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 new Message(MessageLevel.HighImportance, "High importance", "NETSDK3333"));
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItIndicatesIfErrorsWereLogged()
         {
             var logger = new TestLogger();
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             logger.HasLoggedErrors.Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItEnforcesErrorCodesInDebug()
         {
             var logger = new TestLogger();

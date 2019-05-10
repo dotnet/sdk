@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_displays_a_preview_message_when_using_a_preview_Sdk()
         {
             TestAsset testAsset = _testAssetsManager
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining(Strings.UsingPreviewSdkWarning);
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_does_not_display_a_preview_message_when_using_a_release_Sdk()
         {
             TestAsset testAsset = _testAssetsManager

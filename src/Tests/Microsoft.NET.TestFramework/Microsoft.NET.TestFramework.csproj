@@ -38,4 +38,13 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
+  <ItemGroup>
+    <None Update="C:\work\sdk\src\Tests\..\Assets\TestProjects\WpfHelloWorldFullFramework\App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="C:\work\sdk\src\Tests\..\Assets\TestProjects\WpfHelloWorldFullFramework\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+
 </Project>

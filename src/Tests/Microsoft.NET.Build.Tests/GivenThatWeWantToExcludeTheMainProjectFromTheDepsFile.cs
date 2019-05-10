@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_builds_successfully()
         {
             TestProject testProject = new TestProject()

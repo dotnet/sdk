@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("netcoreapp2.0", true, false)]
         [InlineData("net47", false, true)]
         public void It_only_publish_selected_ResourceLanguages(string targetFramework, bool explicitCopyLocalLockFile,
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Build.Tests
 
             outputDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
-        [Theory]
+        [Theory(Skip = "just test perf")]
         [InlineData("netcoreapp2.0", true, false)]
         [InlineData("net47", false, true)]
         public void It_copies_all_satellites_when_not_filtered(string targetFramework, bool explicitCopyLocalLockFile,

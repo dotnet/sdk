@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
             // NOTE the project dependencies: 1->2->3
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World from 5");
         }
         
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_builds_the_project_successfully_when_RAR_does_not_find_all_references()
         {
             // NOTE the project dependencies: 1->2->3

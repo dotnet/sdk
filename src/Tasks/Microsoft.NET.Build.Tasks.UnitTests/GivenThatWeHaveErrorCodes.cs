@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1066,
         };
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ThereAreNoGapsDuplicatesOrIncorrectlyFormattedCodes()
         {
             var codes = new HashSet<int>(_deletedCodes);

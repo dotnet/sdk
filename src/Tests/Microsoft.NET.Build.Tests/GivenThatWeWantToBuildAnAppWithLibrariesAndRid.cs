@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_builds_a_RID_specific_runnable_output()
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void It_builds_a_framework_dependent_RID_specific_runnable_output()
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();

@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void GroupPopulatedWithRid()
         {
             var testProject = this.SetupProject();
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Publish.Tests
             testOutputDir.Should().HaveFiles(FrameworkAssemblies);
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void GroupNotPopulatedWithoutRid()
         {
             var testProject = this.SetupProject();

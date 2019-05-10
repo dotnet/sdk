@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         private const string AppBinaryPathPlaceholder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2";
         private readonly static byte[] AppBinaryPathPlaceholderSearchValue = Encoding.UTF8.GetBytes(AppBinaryPathPlaceholder);
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItEmbedsAppBinaryPath()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItFailsToEmbedAppBinaryIfHashIsWrong()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -71,7 +71,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItFailsToEmbedTooLongAppBinaryPath()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItCanSetWindowsGUISubsystem()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -113,7 +113,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItFailsToSetGUISubsystemOnNonWindowsPEFile()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -139,7 +139,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "just test perf")]
         public void ItFailsToSetGUISubsystemWithWrongDefault()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
