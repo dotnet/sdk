@@ -27,7 +27,7 @@ namespace Microsoft.NET.Perf.Tests
 
         //  These tests are currently disabled for full framework MSBuild because the CI machines don't
         //  have an MSBuild that supports the /restore command-line argument
-        [CoreMSBuildOnlyTheory(Skip = "just test perf")]
+        [CoreMSBuildOnlyTheory()]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCore2App(ProjectPerfOperation operation)
