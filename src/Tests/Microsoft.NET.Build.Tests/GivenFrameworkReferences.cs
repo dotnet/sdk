@@ -511,7 +511,7 @@ namespace FrameworkReferenceTest
                 .Pass();
 
             var nupkgFolder = packCommand.GetOutputDirectory(null);
-                
+
             var testProject = new TestProject()
             {
                 Name = "TransitiveFrameworkReference",
@@ -546,6 +546,42 @@ namespace FrameworkReferenceTest
             runtimeFrameworkNames.Should().BeEquivalentTo("Microsoft.AspNetCore.App");
         }
 
+        [CoreMSBuildOnlyFact]
+        public void IsTrimmableDefaultsComeFromKnownFrameworkReference()
+        {
+            var testProject = new TestProject();
+
+            var runtimePackTrimInfo = GetRuntimePackTrimInfo(testProject);
+
+            string runtimePackName = runtimePackTrimInfo.Keys
+                .Where(k => k.StartsWith("runtime.") && k.EndsWith(".Microsoft.NETCore.App"))
+                .Single();
+
+            runtimePackTrimInfo[runtimePackName].Should().Be("true");
+        }
+
+        [CoreMSBuildOnlyFact]
+        public void IsTrimmableCanBeSpecifiedOnFrameworkReference()
+        {
+            var testProject = new TestProject();
+
+            var runtimePackTrimInfo = GetRuntimePackTrimInfo(testProject,
+                project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    project.Root.Elements(ns + "ItemGroup")
+                        .Elements(ns + "FrameworkReference")
+                        .Single(fr => fr.Attribute("Include").Value.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase))
+                        .SetAttributeValue("IsTrimmable", "false");
+                });
+
+            string runtimePackName = runtimePackTrimInfo.Keys
+                .Where(k => k.StartsWith("runtime.") && k.EndsWith(".Microsoft.NETCore.App"))
+                .Single();
+            runtimePackTrimInfo[runtimePackName].Should().Be("false");
+        }
+
         private List<string> GetRuntimeFrameworks(string runtimeConfigPath)
         {
             string runtimeConfigContents = File.ReadAllText(runtimeConfigPath);
@@ -566,6 +602,32 @@ namespace FrameworkReferenceTest
             }
         }
 
+        private void AddMockedKnownReferences(XDocument project)
+        {
+            var ns = project.Root.Name.Namespace;
+
+            var itemGroup = new XElement(ns + "ItemGroup");
+            project.Root.Add(itemGroup);
+
+            var frameworkReference = new XElement(ns + "FrameworkReference",
+                                       new XAttribute("Include", "Microsoft.NETCore.APP"));
+            itemGroup.Add(frameworkReference);
+
+            var knownFrameworkReferenceUpdate = new XElement(ns + "KnownFrameworkReference",
+                                                             new XAttribute("Update", "Microsoft.NETCore.App"),
+                                                             new XAttribute("DefaultRuntimeFrameworkVersion", "3.0.0-defaultversion"),
+                                                             new XAttribute("LatestRuntimeFrameworkVersion", "3.0.0-latestversion"),
+                                                             new XAttribute("TargetingPackVersion", "3.0.0-targetingpackversion"),
+                                                             new XAttribute("IsTrimmable", "true"));
+            itemGroup.Add(knownFrameworkReferenceUpdate);
+
+            var knownAppHostPackUpdate = new XElement(ns + "KnownAppHostPack",
+                                                    new XAttribute("Update", "Microsoft.NETCore.App"),
+                                                    new XAttribute("AppHostPackVersion", "3.0.0-apphostversion"));
+
+            itemGroup.Add(knownAppHostPackUpdate);
+        }
+
         private ResolvedVersionInfo GetResolvedVersions(TestProject testProject,
             Action<XDocument> projectChanges = null,
             [CallerMemberName] string callingMethod = null,
@@ -581,27 +643,7 @@ namespace FrameworkReferenceTest
             var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
                 .WithProjectChanges(project =>
                 {
-                    var ns = project.Root.Name.Namespace;
-
-                    var itemGroup = new XElement(ns + "ItemGroup");
-                    project.Root.Add(itemGroup);
-
-                    var frameworkReference = new XElement(ns + "FrameworkReference",
-                                               new XAttribute("Include", "Microsoft.NETCore.APP"));
-                    itemGroup.Add(frameworkReference);
-
-                    var knownFrameworkReferenceUpdate = new XElement(ns + "KnownFrameworkReference",
-                                                                     new XAttribute("Update", "Microsoft.NETCore.App"),
-                                                                     new XAttribute("DefaultRuntimeFrameworkVersion", "3.0.0-defaultversion"),
-                                                                     new XAttribute("LatestRuntimeFrameworkVersion", "3.0.0-latestversion"),
-                                                                     new XAttribute("TargetingPackVersion", "3.0.0-targetingpackversion"));
-                    itemGroup.Add(knownFrameworkReferenceUpdate);
-
-                    var knownAppHostPackUpdate = new XElement(ns + "KnownAppHostPack",
-                                                            new XAttribute("Update", "Microsoft.NETCore.App"),
-                                                            new XAttribute("AppHostPackVersion", "3.0.0-apphostversion"));
-
-                    itemGroup.Add(knownAppHostPackUpdate);
+                    AddMockedKnownReferences(project);
 
                     string writeResolvedVersionsTarget = @"
 <Target Name=`WriteResolvedVersions` DependsOnTargets=`PrepareForBuild;ResolveFrameworkReferences`>
@@ -616,7 +658,7 @@ namespace FrameworkReferenceTest
                       Lines=`@(LinesToWrite)`
                       Overwrite=`true`
                       Encoding=`Unicode`/>
-    
+
   </Target>";
                     writeResolvedVersionsTarget = writeResolvedVersionsTarget.Replace('`', '"');
 
@@ -638,6 +680,71 @@ namespace FrameworkReferenceTest
             var resolvedVersions = ResolvedVersionInfo.ParseFrom(Path.Combine(outputDirectory.FullName, "resolvedversions.txt"));
 
             return resolvedVersions;
+        }
+
+        private Dictionary<string, string> GetRuntimePackTrimInfo(TestProject testProject,
+            Action<XDocument> projectChanges = null,
+            [CallerMemberName] string callingMethod = null,
+            string identifier = null)
+        {
+            testProject.Name = "TrimInfoTest";
+            testProject.TargetFrameworks = "netcoreapp3.0";
+            testProject.IsSdkProject = true;
+            testProject.IsExe = true;
+            testProject.AdditionalProperties["DisableImplicitFrameworkReferences"] = "true";
+            testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
+                .WithProjectChanges(project =>
+                {
+                    AddMockedKnownReferences(project);
+
+                    string writeRuntimePackIsTrimmableInfoTarget = @"
+<Target Name=`WriteRuntimePackIsTrimmableInfo` DependsOnTargets=`PrepareForBuild;ResolveFrameworkReferences`>
+    <ItemGroup>
+        <LinesToWrite Include=`%(RuntimePack.Identity)%09%(RuntimePack.IsTrimmable)` />
+    </ItemGroup>
+    <WriteLinesToFile File=`$(OutputPath)runtimepackistrimmableinfo.txt`
+                      Lines=`@(LinesToWrite)`
+                      Overwrite=`true`
+                      Encoding=`Unicode` />
+</Target>";
+                    writeRuntimePackIsTrimmableInfoTarget = writeRuntimePackIsTrimmableInfoTarget.Replace('`', '"');
+
+                    project.Root.Add(XElement.Parse(writeRuntimePackIsTrimmableInfoTarget));
+                });
+
+            if (projectChanges != null)
+            {
+                testAsset = testAsset.WithProjectChanges(projectChanges);
+            }
+
+            var command = new MSBuildCommand(Log, "WriteRuntimePackIsTrimmableInfo", Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            command.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = command.GetOutputDirectory(testProject.TargetFrameworks, runtimeIdentifier: testProject.RuntimeIdentifier);
+            var runtimePackTrimInfo = ParseRuntimePackTrimInfoFrom(Path.Combine(outputDirectory.FullName, "runtimepackistrimmableinfo.txt"));
+
+            return runtimePackTrimInfo;
+        }
+
+        private Dictionary<string, string> ParseRuntimePackTrimInfoFrom(string path)
+        {
+            Dictionary<string, string> trimInfo = new Dictionary<string, string>();
+            foreach (var line in File.ReadAllLines(path))
+            {
+                var fields = line.Split('\t');
+                if (fields.Length >= 2)
+                {
+                    string runtimePack = fields[0];
+                    string isTrimmable = fields[1];
+                    trimInfo[runtimePack] = isTrimmable;
+                }
+            }
+            return trimInfo;
         }
 
         private class ResolvedVersionInfo
