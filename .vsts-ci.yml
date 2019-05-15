@@ -68,7 +68,8 @@ jobs:
 - job: debug_windows_nt
   displayName: Windows_NT Debug
   pool:
-    vmImage: vs2017-win2016
+    name: NetCorePublic-Pool
+    queue: BuildPool.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
@@ -96,7 +97,8 @@ jobs:
 - job: debug_windows_nt_fullframework
   displayName: Windows_NT_FullFramework Debug
   pool:
-    vmImage: vs2017-win2016
+    name: NetCorePublic-Pool
+    queue: BuildPool.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
@@ -125,6 +127,8 @@ jobs:
   displayName: OSX Release
   pool:
     vmImage: macOS-10.13
+  variables:
+    DOTNET_RUNTIME_ID: osx.10.12-x64
   steps:
   - checkout: self
     clean: true
@@ -180,7 +184,8 @@ jobs:
 - job: release_windows_nt
   displayName: Windows_NT Release
   pool:
-    vmImage: vs2017-win2016
+    name: NetCorePublic-Pool
+    queue: BuildPool.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
@@ -208,7 +213,8 @@ jobs:
 - job: release_windows_nt_fullframework
   displayName: Windows_NT_FullFramework Release
   pool:
-    vmImage: vs2017-win2016
+    name: NetCorePublic-Pool
+    queue: BuildPool.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
