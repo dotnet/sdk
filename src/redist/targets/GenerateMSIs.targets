@@ -12,7 +12,7 @@
 
     <!-- Generate MSI/Bundle Properties -->
     <PropertyGroup>
-      <CombinedFrameworkSdkHostBundleEngineName>$(ArtifactsShippingPackagesDir)/$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)-engine.exe</CombinedFrameworkSdkHostBundleEngineName>
+      <CombinedFrameworkSdkHostBundleEngineName>$(ArtifactsTmpDir)/$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)-engine.exe</CombinedFrameworkSdkHostBundleEngineName>
 
       <SdkGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatemsi.ps1</SdkGenerateMsiPowershellScript>
       <SdkStableFileIdForApphostTransform>$(MSBuildThisFileDirectory)packaging/windows/clisdk/stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
@@ -21,11 +21,11 @@
 
       <SdkInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.$(Architecture).nuspec</SdkInstallerNuspecFile>
       <SdkInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</SdkInstallerNupkgFile>
-      <VSToolsNuspecFile>$(MSBuildThisFileDirectory)/packaging/windows/clisdk/VS.Tools.Net.Core.SDK.$(Architecture).nuspec</VSToolsNuspecFile>
+      <VSToolsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.$(Architecture).nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
       <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
-      <VSToolsResolverNuspecFile>$(MSBuildThisFileDirectory)/packaging/windows/clisdk/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
+      <VSToolsResolverNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
       <VSToolsResolverNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.Resolver.nupkg</VSToolsResolverNupkgFile>
 
       <!--<SdkMSBuildExtensionsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>

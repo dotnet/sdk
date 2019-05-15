@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">Instalador de [WixBundleName]</String>
+  <String Id="Title">[BUNDLEMONIKER]</String>
+  <String Id="ConfirmCancelMessage">¿Está seguro de que desea cancelar?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">Versión anterior</String>
+  <String Id="HelpHeader">Ayuda de configuración</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]]: instala, repara, desinstala
+   o crea una copia local completa del paquete en el directorio. "/install" es el valor predeterminado.
+
+/passive | /quiet muestra la interfaz de usuario mínima sin mensajes o no muestra ninguna interfaz de usuario
+   ni mensajes. De forma predeterminada, se muestra la interfaz de usuario y todos los mensajes.
+
+/norestart suprime los intentos de reinicio. De forma predeterminada, la interfaz de usuario avisará antes de un reinicio.
+/log [\[]"log.txt"[\]]: registra en un archivo específico. De forma predeterminada, se crea un archivo de registro en %TEMP%.</String>
+  <String Id="HelpCloseButton">&amp;Cerrar</String>
+  <String Id="InstallAcceptCheckbox">&amp;Acepto los términos y condiciones de licencia</String>
+  <String Id="InstallOptionsButton">&amp;Opciones</String>
+  <String Id="InstallInstallButton">&amp;Instalar</String>
+  <String Id="InstallCloseButton">&amp;Cerrar</String>
+  <String Id="ProgressHeader">Progreso de la instalación</String>
+  <String Id="ProgressLabel">Procesando:</String>
+  <String Id="OverallProgressPackageText">Inicializando...</String>
+  <String Id="ProgressCancelButton">&amp;Cancelar</String>
+  <String Id="ModifyHeader">Modificar instalación</String>
+  <String Id="ModifyRepairButton">&amp;Reparar</String>
+  <String Id="ModifyUninstallButton">&amp;Desinstalar</String>
+  <String Id="ModifyCloseButton">&amp;Cerrar</String>
+  <String Id="SuccessRepairHeader">La reparación se completó correctamente</String>
+  <String Id="SuccessUninstallHeader">La desinstalación se completó correctamente</String>
+  <String Id="SuccessHeader">La instalación o desinstalación se realizó correctamente</String>
+  <String Id="SuccessLaunchButton">&amp;Iniciar</String>
+  <String Id="SuccessRestartText">Debe reiniciar el equipo para finalizar la instalación del software.</String>
+  <String Id="SuccessRestartButton">&amp;Reiniciar</String>
+  <String Id="SuccessCloseButton">&amp;Cerrar</String>
+  <String Id="FailureHeader">Error de instalación</String>
+  <String Id="FailureInstallHeader">No se pudo instalar</String>
+  <String Id="FailureUninstallHeader">No se pudo desinstalar</String>
+  <String Id="FailureRepairHeader">No se pudo reparar</String>
+  <String Id="FailureHyperlinkLogText">Error de instalación debido a uno o varios problemas. Corrija los problemas e intente de nuevo la instalación. Para obtener más información, consulte el &lt;a href="#"&gt;archivo de registro&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Debe reiniciar el equipo para completar la reversión del software.</String>
+  <String Id="FailureRestartButton">&amp;Reiniciar</String>
+  <String Id="FailureCloseButton">&amp;Cerrar</String>
+  <String Id="FilesInUseHeader">Archivos en uso</String>
+  <String Id="FilesInUseLabel">Las siguientes aplicaciones usan archivos que se deben actualizar:</String>
+  <String Id="FilesInUseCloseRadioButton">Cerrar las &amp;aplicaciones e intentar reiniciarlas.</String>
+  <String Id="FilesInUseDontCloseRadioButton">&amp;No cerrar las aplicaciones. Será necesario un reinicio.</String>
+  <String Id="FilesInUseOkButton">&amp;Aceptar</String>
+  <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
+  <String Id="FirstTimeWelcomeMessage">La instalación se realizó correctamente.
+
+Se instaló lo siguiente en: '[DOTNETHOME]'
+    • SDK de .NET Core [DOTNETSDKVERSION]
+    • .NET Core Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Core Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+
+Este producto recopila datos de uso
+    • Para más información y declinar la participación, visite https://aka.ms/dotnet-cli-telemetry
+
+Recursos
+    • Documentación principal https://aka.ms/dotnet-docs
+    • Documentación del SDK https://aka.ms/dotnet-cli-docs
+    • Notas de la versión https://aka.ms/netcore3releasenotes
+    • Tutoriales https://aka.ms/dotnet-tutorials</String>
+  <String Id="WelcomeHeaderMessage">SDK de .NET Core</String>
+  <String Id="WelcomeDescription">
+    .NET Core es una plataforma de desarrollo que se puede usar para compilar aplicaciones de la línea de comandos, microservicios y sitios web modernos. Es de código abierto, multiplataforma y se admite en Microsoft. Esperamos que la disfrute.</String>
+  <String Id="LearnMoreTitle">Más información sobre .NET Core</String>
+  <String Id="ResourcesHeader">Recursos</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentación principal&lt;/A&gt;</String>
+  <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentación del SDK&lt;/A&gt;</String>
+  <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Declaración de privacidad&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;CLUF de la biblioteca .NET&lt;/A&gt;</String>
+  <String Id="InstallationNoteTitle">Nota de instalación</String>
+  <String Id="InstallationNote">Se ejecutará un comando durante el proceso de instalación que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. La operación tardará hasta un minuto en completarse.
+  </String>
+  <String Id="VisualStudioWarning">Si planea usar .NET Core 3.0 con Visual Studio, se requiere Visual Studio 2019 o una versión más reciente. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Más información&lt;/A&gt;.
+  </String>
+</WixLocalization>
