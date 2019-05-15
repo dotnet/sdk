@@ -551,13 +551,16 @@ namespace FrameworkReferenceTest
         {
             var testProject = new TestProject();
 
-            var runtimePackTrimInfo = GetRuntimePackTrimInfo(testProject);
+            var runtimeAssetTrimInfo = GetRuntimeAssetTrimInfo(testProject);
 
-            string runtimePackName = runtimePackTrimInfo.Keys
+            string runtimePackName = runtimeAssetTrimInfo.Keys
                 .Where(k => k.StartsWith("runtime.") && k.EndsWith(".Microsoft.NETCore.App"))
                 .Single();
 
-            runtimePackTrimInfo[runtimePackName].Should().Be("true");
+            foreach (var runtimeAsset in runtimeAssetTrimInfo[runtimePackName])
+            {
+                runtimeAsset.isTrimmable.Should().Be("true");
+            }
         }
 
         [CoreMSBuildOnlyFact]
@@ -565,21 +568,27 @@ namespace FrameworkReferenceTest
         {
             var testProject = new TestProject();
 
-            var runtimePackTrimInfo = GetRuntimePackTrimInfo(testProject,
+            var runtimeAssetTrimInfo = GetRuntimeAssetTrimInfo(testProject,
                 project =>
                 {
                     var ns = project.Root.Name.Namespace;
 
-                    project.Root.Elements(ns + "ItemGroup")
-                        .Elements(ns + "FrameworkReference")
-                        .Single(fr => fr.Attribute("Include").Value.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase))
-                        .SetAttributeValue("IsTrimmable", "false");
+                    var itemGroup = new XElement(ns + "ItemGroup");
+                    project.Root.Add(itemGroup);
+
+                    itemGroup.Add(new XElement(ns + "FrameworkReference",
+                                               new XAttribute("Include", "Microsoft.NETCore.App"),
+                                               new XAttribute("IsTrimmable", "false")));
                 });
 
-            string runtimePackName = runtimePackTrimInfo.Keys
+            string runtimePackName = runtimeAssetTrimInfo.Keys
                 .Where(k => k.StartsWith("runtime.") && k.EndsWith(".Microsoft.NETCore.App"))
                 .Single();
-            runtimePackTrimInfo[runtimePackName].Should().Be("false");
+
+            foreach (var runtimeAsset in runtimeAssetTrimInfo[runtimePackName])
+            {
+                runtimeAsset.isTrimmable.Should().Be("false");
+            }
         }
 
         private List<string> GetRuntimeFrameworks(string runtimeConfigPath)
@@ -602,32 +611,6 @@ namespace FrameworkReferenceTest
             }
         }
 
-        private void AddMockedKnownReferences(XDocument project)
-        {
-            var ns = project.Root.Name.Namespace;
-
-            var itemGroup = new XElement(ns + "ItemGroup");
-            project.Root.Add(itemGroup);
-
-            var frameworkReference = new XElement(ns + "FrameworkReference",
-                                       new XAttribute("Include", "Microsoft.NETCore.APP"));
-            itemGroup.Add(frameworkReference);
-
-            var knownFrameworkReferenceUpdate = new XElement(ns + "KnownFrameworkReference",
-                                                             new XAttribute("Update", "Microsoft.NETCore.App"),
-                                                             new XAttribute("DefaultRuntimeFrameworkVersion", "3.0.0-defaultversion"),
-                                                             new XAttribute("LatestRuntimeFrameworkVersion", "3.0.0-latestversion"),
-                                                             new XAttribute("TargetingPackVersion", "3.0.0-targetingpackversion"),
-                                                             new XAttribute("IsTrimmable", "true"));
-            itemGroup.Add(knownFrameworkReferenceUpdate);
-
-            var knownAppHostPackUpdate = new XElement(ns + "KnownAppHostPack",
-                                                    new XAttribute("Update", "Microsoft.NETCore.App"),
-                                                    new XAttribute("AppHostPackVersion", "3.0.0-apphostversion"));
-
-            itemGroup.Add(knownAppHostPackUpdate);
-        }
-
         private ResolvedVersionInfo GetResolvedVersions(TestProject testProject,
             Action<XDocument> projectChanges = null,
             [CallerMemberName] string callingMethod = null,
@@ -643,7 +626,27 @@ namespace FrameworkReferenceTest
             var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
                 .WithProjectChanges(project =>
                 {
-                    AddMockedKnownReferences(project);
+                    var ns = project.Root.Name.Namespace;
+
+                    var itemGroup = new XElement(ns + "ItemGroup");
+                    project.Root.Add(itemGroup);
+
+                    var frameworkReference = new XElement(ns + "FrameworkReference",
+                                               new XAttribute("Include", "Microsoft.NETCore.APP"));
+                    itemGroup.Add(frameworkReference);
+
+                    var knownFrameworkReferenceUpdate = new XElement(ns + "KnownFrameworkReference",
+                                                                     new XAttribute("Update", "Microsoft.NETCore.App"),
+                                                                     new XAttribute("DefaultRuntimeFrameworkVersion", "3.0.0-defaultversion"),
+                                                                     new XAttribute("LatestRuntimeFrameworkVersion", "3.0.0-latestversion"),
+                                                                     new XAttribute("TargetingPackVersion", "3.0.0-targetingpackversion"));
+                    itemGroup.Add(knownFrameworkReferenceUpdate);
+
+                    var knownAppHostPackUpdate = new XElement(ns + "KnownAppHostPack",
+                                                            new XAttribute("Update", "Microsoft.NETCore.App"),
+                                                            new XAttribute("AppHostPackVersion", "3.0.0-apphostversion"));
+
+                    itemGroup.Add(knownAppHostPackUpdate);
 
                     string writeResolvedVersionsTarget = @"
 <Target Name=`WriteResolvedVersions` DependsOnTargets=`PrepareForBuild;ResolveFrameworkReferences`>
@@ -682,7 +685,7 @@ namespace FrameworkReferenceTest
             return resolvedVersions;
         }
 
-        private Dictionary<string, string> GetRuntimePackTrimInfo(TestProject testProject,
+        private Dictionary<string, List<(string asset, string isTrimmable)>> GetRuntimeAssetTrimInfo(TestProject testProject,
             Action<XDocument> projectChanges = null,
             [CallerMemberName] string callingMethod = null,
             string identifier = null)
@@ -691,27 +694,24 @@ namespace FrameworkReferenceTest
             testProject.TargetFrameworks = "netcoreapp3.0";
             testProject.IsSdkProject = true;
             testProject.IsExe = true;
-            testProject.AdditionalProperties["DisableImplicitFrameworkReferences"] = "true";
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
                 .WithProjectChanges(project =>
                 {
-                    AddMockedKnownReferences(project);
-
-                    string writeRuntimePackIsTrimmableInfoTarget = @"
-<Target Name=`WriteRuntimePackIsTrimmableInfo` DependsOnTargets=`PrepareForBuild;ResolveFrameworkReferences`>
+                    string writeRuntimeAssetTrimInfoTarget = @"
+<Target Name=`WriteRuntimeAssetTrimInfo` DependsOnTargets=`ComputeFilesToPublish`>
     <ItemGroup>
-        <LinesToWrite Include=`%(RuntimePack.Identity)%09%(RuntimePack.IsTrimmable)` />
+        <LinesToWrite Include=`%(ResolvedFileToPublish.Identity)%09%(ResolvedFileToPublish.PackageName)%09%(ResolvedFileToPublish.IsTrimmable)` />
     </ItemGroup>
-    <WriteLinesToFile File=`$(OutputPath)runtimepackistrimmableinfo.txt`
+    <WriteLinesToFile File=`$(OutputPath)runtimeassettriminfo.txt`
                       Lines=`@(LinesToWrite)`
                       Overwrite=`true`
                       Encoding=`Unicode` />
 </Target>";
-                    writeRuntimePackIsTrimmableInfoTarget = writeRuntimePackIsTrimmableInfoTarget.Replace('`', '"');
+                    writeRuntimeAssetTrimInfoTarget = writeRuntimeAssetTrimInfoTarget.Replace('`', '"');
 
-                    project.Root.Add(XElement.Parse(writeRuntimePackIsTrimmableInfoTarget));
+                    project.Root.Add(XElement.Parse(writeRuntimeAssetTrimInfoTarget));
                 });
 
             if (projectChanges != null)
@@ -719,29 +719,39 @@ namespace FrameworkReferenceTest
                 testAsset = testAsset.WithProjectChanges(projectChanges);
             }
 
-            var command = new MSBuildCommand(Log, "WriteRuntimePackIsTrimmableInfo", Path.Combine(testAsset.TestRoot, testProject.Name));
+            new RestoreCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name)).Execute().Should().Pass();
+
+            var command = new MSBuildCommand(Log, "WriteRuntimeAssetTrimInfo", Path.Combine(testAsset.TestRoot, testProject.Name));
 
             command.Execute()
                 .Should()
                 .Pass();
 
             var outputDirectory = command.GetOutputDirectory(testProject.TargetFrameworks, runtimeIdentifier: testProject.RuntimeIdentifier);
-            var runtimePackTrimInfo = ParseRuntimePackTrimInfoFrom(Path.Combine(outputDirectory.FullName, "runtimepackistrimmableinfo.txt"));
+            var runtimeAssetTrimInfo = ParseRuntimeAssetTrimInfoFrom(Path.Combine(outputDirectory.FullName, "runtimeassettriminfo.txt"));
 
-            return runtimePackTrimInfo;
+            return runtimeAssetTrimInfo;
         }
 
-        private Dictionary<string, string> ParseRuntimePackTrimInfoFrom(string path)
+
+        private Dictionary<string, List<(string asset, string isTrimmable)>> ParseRuntimeAssetTrimInfoFrom(string path)
         {
-            Dictionary<string, string> trimInfo = new Dictionary<string, string>();
+            var trimInfo = new Dictionary<string, List<(string asset, string isTrimmable)>> ();
+            var lines = File.ReadAllLines(path);
             foreach (var line in File.ReadAllLines(path))
             {
                 var fields = line.Split('\t');
-                if (fields.Length >= 2)
+                if (fields.Length >= 3)
                 {
-                    string runtimePack = fields[0];
-                    string isTrimmable = fields[1];
-                    trimInfo[runtimePack] = isTrimmable;
+                    string runtimePackAsset = fields[0];
+                    string packageName = fields[1];
+                    string isTrimmable = fields[2];
+                    List<(string asset, string isTrimmable)> assets;
+                    if (!trimInfo.TryGetValue(packageName, out assets))
+                    {
+                        assets = trimInfo[packageName] = new List<(string asset, string isTrimmable)> (3);
+                    }
+                    assets.Add((runtimePackAsset, isTrimmable));
                 }
             }
             return trimInfo;
