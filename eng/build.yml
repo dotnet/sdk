@@ -41,7 +41,7 @@ jobs:
         - group: dotnet-benchview
         - group: DotNet-Blob-Feed
         - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-        - _PerfIterations: 25
+        - _PerfIterations: 3
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
       - script: eng\common\CIBuild.cmd
