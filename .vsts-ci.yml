@@ -11,6 +11,8 @@ jobs:
   displayName: OSX Debug
   pool:
     vmImage: macOS-10.13
+  variables:
+    DOTNET_RUNTIME_ID: osx.10.12-x64
   steps:
   - checkout: self
     clean: true
