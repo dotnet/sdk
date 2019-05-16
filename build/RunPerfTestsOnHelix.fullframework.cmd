@@ -13,6 +13,7 @@ set PerfIterations=%2
 set GIT_COMMIT=%3
 set GIT_BRANCH=%4
 set runType=%5
+set TestFullMSBuild=true
 
 REM  Since dotnet.exe was locked; we exclude it from the helix-payload.
 REM    Run a restore to re-install the SDK.
@@ -25,8 +26,9 @@ echo "Building:'Microsoft.NET.PerformanceTests.dll'"
 %HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe msbuild %HELIX_CORRELATION_PAYLOAD%\src\Tests\Microsoft.NET.PerformanceTests\Microsoft.NET.PerformanceTests.csproj /t:build /p:configuration=%configuration% /p:NUGET_PACKAGES=%HELIX_CORRELATION_PAYLOAD%\.packages
 
 REM  Run the performance tests and collect performance data.
+REM -restore is required to make TestFullMSBuild to take effect
 echo "Running the performance tests and collecting data"
-powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -Command "& """%HELIX_CORRELATION_PAYLOAD%\eng\common\build.ps1""" -msbuildEngine vs -configuration %configuration% -ci -performanceTest /p:PerfIterations=%PerfIterations%"
+powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -Command "& """%HELIX_CORRELATION_PAYLOAD%\eng\common\build.ps1""" -restore -configuration %configuration% -ci -performanceTest /p:PerfIterations=%PerfIterations%"
 IF %ERRORLEVEL% GTR 0 exit %ERRORLEVEL%
 echo "Performance tests completed"
 
