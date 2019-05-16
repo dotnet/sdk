@@ -4,14 +4,18 @@
   <Product Id="*" Name="$(var.ProductName)" Language="$(var.ProductLanguage)" Version="$(var.ProductVersion)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">
     <Package Compressed="yes" InstallScope="perMachine" InstallerVersion="200" />
 
-    <Condition Message="$(var.ProductName) must be installed as part of an SDK bundle installation.">
-        Installed OR ALLOWCLISDKMSIINSTALL
+    <Condition Message="$(var.ProductName) must be installed as part of a coordinated SDK installation.">
+      Installed OR ALLOWMSIINSTALL
     </Condition>
 
     <MajorUpgrade DowngradeErrorMessage="$(var.DowngradeErrorMessage)" Schedule="afterInstallInitialize"/>
 
-    <MediaTemplate CabinetTemplate="dnet-{0}.cab" CompressionLevel="high" />
-
+    <?if $(var.Platform)=x86?>
+      <MediaTemplate CabinetTemplate="dnetx86-{0}.cab" CompressionLevel="high" />
+    <?elseif $(var.Platform)=x64?>
+      <MediaTemplate CabinetTemplate="dnetx64-{0}.cab" CompressionLevel="high" />
+    <?endif?>
+      
     <Feature Id="MainFeature" Title="Main Feature" Level="1">
       <ComponentGroupRef Id="InstallFiles" />
       <ComponentGroupRef Id="AuthoredRegistryKeys_x86node"/>

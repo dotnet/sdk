@@ -147,7 +147,7 @@
         <MsiProperty Name="DOTNETHOME_X86" Value="[DOTNETHOME_X86]" />
         <MsiProperty Name="DOTNETHOME_X64" Value="[DOTNETHOME_X64]" />
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />
-        <MsiProperty Name="ALLOWCLISDKMSIINSTALL" Value="True" />
+        <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
       <?if $(var.Platform)=x86?>
         <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
