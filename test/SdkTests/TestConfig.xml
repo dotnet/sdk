@@ -1,0 +1,78 @@
+<Tests>
+    <Method Name="Microsoft.NET.Build.Tests.GivenFrameworkReferences.RuntimeFrameworkVersionCanBeSpecifiedOnFrameworkReference"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3221"
+            Reason="Code flow needed"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenFrameworkReferences.TargetingPackVersionCanBeSpecifiedOnFrameworkReference"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3221"
+            Reason="Code flow needed"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenFrameworkReferences.TargetLatestPatchCanBeSpecifiedOnFrameworkReference"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3221"
+            Reason="Code flow needed"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenFrameworkReferences.TransitiveFrameworkReferenceFromPackageReference"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3221"
+            Reason="Code flow needed"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenFrameworkReferences.TransitiveFrameworkReferenceFromProjectReference"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3221"
+            Reason="Code flow needed"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToResolveConflicts.AProjectCanReferenceADllInAPackageDirectly"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3214"
+            Reason="Code flow needed"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_targets_the_right_framework_depending_on_output_type"
+            Skip="true"
+            Issue=""
+            Reason="Test needs to be updated with new patches (along with SDK stage 0 update)"/>
+
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_RID_specific_runnable_output"
+            Skip="true"
+            Issue=""
+            Reason="Test doesn't work with newer RIDs"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_framework_dependent_RID_specific_runnable_output"
+            Skip="true"
+            Issue=""
+            Reason="Test doesn't work with newer RIDs"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_handles_mismatched_implicit_package_versions"
+            Skip="true"
+            Issue=""
+            Reason="Test doesn't work with newer RIDs"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 1.1"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrary.It_builds_the_project_successfully"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 1.1"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrary.It_builds_the_project_successfully_twice"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 1.1"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 1.1"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThereAreDefaultItems.Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 1.1"/>
+
+</Tests>

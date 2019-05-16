@@ -26,6 +26,7 @@
   <PropertyGroup>
     <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
     <DotnetToTestPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet-with-previous-runtimes\</DotnetToTestPath>
+    <TestExecutionDirectory>$([MSBuild]::NormalizePath($(ArtifactsTmpDir), 'dotnetSdkTests'))</TestExecutionDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -109,9 +110,32 @@
 
     <!-- Isolate test working directory from higher-level Directory.Build files -->
     <Copy SourceFiles="$(RepoRoot)TestAssets\Directory.Build.props;$(RepoRoot)TestAssets\Directory.Build.targets"
-          DestinationFolder="$(ArtifactsTmpDir)/dotnetSdkTests"
+          DestinationFolder="$(TestExecutionDirectory)"
           SkipUnchangedFiles="true"
           />
+
+    <!-- Set up NuGet feeds -->
+    <PropertyGroup>
+      <GeneratedNuGetConfig>$(TestExecutionDirectory)\NuGet.config</GeneratedNuGetConfig>
+      <NugetConfigContents>
+        <![CDATA[
+<configuration>
+  <packageSources>
+    <add key="dotnet-core" value="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json" />
+    <add key="dotnet-windowsdesktop" value="https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json" />
+    <add key="aspnet-aspnetcore" value="https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json" />
+    <add key="aspnet-aspnetcore-tooling" value="https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json" />
+    <add key="aspnet-entityframeworkcore" value="https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json" />
+    <add key="aspnet-extensions" value="https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json" />
+  </packageSources>
+</configuration>
+        ]]>
+      </NugetConfigContents>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(GeneratedNuGetConfig)"
+                  Lines="$(NugetConfigContents)"
+                  Overwrite="true" />
 
     <!-- Allow test list to be overridden with ToolTestName property -->
     <ItemGroup Condition="'$(ToolTestName)' != ''">
@@ -167,7 +191,8 @@
 
       <TestArgs>-noautoreporters -noRepoInference</TestArgs>
       <TestArgs>$(TestArgs) -dotnetPath $(DotnetToTestPath)\dotnet</TestArgs>
-      <TestArgs>$(TestArgs) -testExecutionDirectory $(ArtifactsTmpDir)/dotnetSdkTests</TestArgs>
+      <TestArgs>$(TestArgs) -testExecutionDirectory $(TestExecutionDirectory)</TestArgs>
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestConfig.xml"</TestArgs>
       <TestArgs>$(TestArgs) -xml "$(ResultsXmlPath)"</TestArgs>
       <TestArgs>$(TestArgs) -html "$(ResultsHtmlPath)" $(TestRunnerAdditionalArguments)</TestArgs>
       <TestArgs>$(TestArgs) &gt; $(ResultsStdOutPath)</TestArgs>
