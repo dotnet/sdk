@@ -26,7 +26,7 @@ echo "Building:'Microsoft.NET.PerformanceTests.dll'"
 
 REM  Run the performance tests and collect performance data.
 echo "Running the performance tests and collecting data"
-powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -Command "& """%HELIX_CORRELATION_PAYLOAD%\eng\common\build.ps1""" -configuration %configuration% -ci -msbuildEngine vs -performanceTest /p:PerfIterations=%PerfIterations%"
+powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -Command "& """%HELIX_CORRELATION_PAYLOAD%\eng\common\build.ps1""" -msbuildEngine vs -configuration %configuration% -ci -performanceTest /p:PerfIterations=%PerfIterations%"
 IF %ERRORLEVEL% GTR 0 exit %ERRORLEVEL%
 echo "Performance tests completed"
 
