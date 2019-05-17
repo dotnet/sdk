@@ -104,9 +104,6 @@ jobs:
           clean: true
         - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci -msbuildEngine dotnet
           displayName: Pre-Build
-          env:
-            HelixConfiguration: 'CoreMSBuild'
-            TestRunNameSuffix: 'CoreMSBuildTestRunNameSuffix'
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
           displayName: Selection of sources
         - template: /eng/common/templates/steps/send-to-helix.yml
@@ -121,16 +118,14 @@ jobs:
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
             WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
+            TestRunNameSuffix: 'CoreMSBuildTestRunNameSuffix'
+            HelixConfiguration: 'CoreMSBuild'
 
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_Helix_Fullframework') }}:
         - checkout: self
           clean: true
         - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci
           displayName: Pre-Build
-          env:
-            TestFullMSBuild: 'true'
-            HelixConfiguration: 'FullMSBuild'
-            TestRunNameSuffix: 'FullMSBuildTestRunNameSuffix'
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
           displayName: Selection of sources
         - template: /eng/common/templates/steps/send-to-helix.yml
@@ -145,6 +140,8 @@ jobs:
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
             WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.fullframework.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
+            HelixConfiguration: 'FullMSBuild'
+            TestRunNameSuffix: 'FullMSBuildTestRunNameSuffix'
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf_Helix') }}:
         - checkout: self
