@@ -53,6 +53,23 @@
       <Supports1xRuntimes Condition="$(OsReleaseContents.Contains('VERSION_ID=%2218.04%22'))">false</Supports1xRuntimes>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=Fedora'))">
+      <Supports1xRuntimes>false</Supports1xRuntimes>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22openSUSE Leap%22'))">
+      <Supports1xRuntimes>false</Supports1xRuntimes>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Alpine Linux%22'))">
+      <Supports1xRuntimes>false</Supports1xRuntimes>
+    </PropertyGroup>
+
+    <!-- RHEL 6 does not appear to have the os-release file -->
+    <PropertyGroup Condition="'$(OsReleaseContents)' == ''">
+      <Supports1xRuntimes>false</Supports1xRuntimes>
+    </PropertyGroup>
+
     <ItemGroup Condition="'$(Supports1xRuntimes)' == 'true'">
       <RuntimeVersionToInstall Include="1.0.5" />
       <RuntimeVersionToInstall Include="1.1.2" />      
