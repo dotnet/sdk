@@ -16,6 +16,9 @@ if "%architecture%" == "" (
 if "%OS%" == "" (
     echo EnvVar OS should be set; exiting...
     exit /b 1)
+if "%TestFullMSBuild%" == "" (
+    set TestFullMSBuild=false
+    )
 if /I not "%runType%" == "private" if /I not "%runType%" == "rolling" (
     echo EnvVar runType should be set; exiting...
     exit /b 1)
@@ -77,6 +80,7 @@ echo Creating: "%perfWorkingDirectory%\submission.json"
                     --type "%runType%" ^
                     --config-name "%configuration%" ^
                     --config Configuration "%configuration%" ^
+                    --config TestFullMSBuild "%TestFullMSBuild%" ^
                     --config OS "%OS%" ^
                     --architecture "%architecture%" ^
                     --machinepool "perfsnake" ^

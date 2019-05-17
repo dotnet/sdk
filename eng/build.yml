@@ -104,6 +104,8 @@ jobs:
           clean: true
         - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci -msbuildEngine dotnet
           displayName: Pre-Build
+          env:
+            HelixConfiguration: 'CoreMSBuild'
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
           displayName: Selection of sources
         - template: /eng/common/templates/steps/send-to-helix.yml
@@ -126,6 +128,7 @@ jobs:
           displayName: Pre-Build
           env:
             TestFullMSBuild: 'true'
+            HelixConfiguration: 'FullMSBuild'
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
           displayName: Selection of sources
         - template: /eng/common/templates/steps/send-to-helix.yml
