@@ -55,7 +55,7 @@
             Issue=""
             Reason="Test doesn't work with newer RIDs"/>
 
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs"
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs.It_builds_the_project_successfully"
             Skip="true"
             Issue=""
             Reason="Needs .NET Core 1.1"/>
@@ -70,14 +70,24 @@
             Issue=""
             Reason="Needs .NET Core 1.1"/>
 
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
+  <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources"
+          Skip="true"
+          Issue=""
+          Reason="Needs .NET Core 1.1"/>
 
-    <Method Name="Microsoft.NET.Build.Tests.GivenThereAreDefaultItems.Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
+  <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantAllResourcesInSatellite.It_retrieves_strings_successfully"
+          Skip="true"
+          Issue=""
+          Reason="Needs .NET Core 1.1"/>
+
+  <Method Name="Microsoft.NET.Build.Tests.GivenThereAreDefaultItems.Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used"
+          Skip="true"
+          Issue=""
+          Reason="Needs .NET Core 1.1"/>
+
+  <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildASelfContainedApp.It_succeeds_when_RuntimeIdentifier_and_PlatformTarget_mismatch_but_PT_is_AnyCPU"
+          Skip="true"
+          Issue=""
+          Reason="Needs .NET Core 1.1"/>
 
 </Tests>
