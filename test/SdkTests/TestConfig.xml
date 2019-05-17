@@ -29,6 +29,11 @@
             Issue="https://github.com/dotnet/sdk/pull/3214"
             Reason="Code flow needed"/>
 
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPreserveCompilationContext.It_publishes_the_project_with_a_refs_folder_and_correct_deps_file"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3237"
+            Reason="Code flow needed"/>
+
     <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_targets_the_right_framework_depending_on_output_type"
             Skip="true"
             Issue=""

@@ -59,7 +59,7 @@
     </ItemGroup>
     <ItemGroup>
       <RuntimeVersionToInstall Include="2.1.0" />
-      <RuntimeVersionToInstall Include="2.2.4" />
+      <RuntimeVersionToInstall Include="2.2.5" />
     </ItemGroup>
     
   </Target>
