@@ -690,70 +690,49 @@ namespace FrameworkReferenceTest
             [CallerMemberName] string callingMethod = null,
             string identifier = null)
         {
+            string targetFramework = "netcoreapp3.0";
+
             testProject.Name = "TrimInfoTest";
-            testProject.TargetFrameworks = "netcoreapp3.0";
+            testProject.TargetFrameworks = targetFramework;;
             testProject.IsSdkProject = true;
             testProject.IsExe = true;
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
-                .WithProjectChanges(project =>
-                {
-                    string writeRuntimeAssetTrimInfoTarget = @"
-<Target Name=`WriteRuntimeAssetTrimInfo` DependsOnTargets=`ComputeFilesToPublish`>
-    <ItemGroup>
-        <LinesToWrite Include=`%(ResolvedFileToPublish.Identity)%09%(ResolvedFileToPublish.PackageName)%09%(ResolvedFileToPublish.IsTrimmable)` />
-    </ItemGroup>
-    <WriteLinesToFile File=`$(OutputPath)runtimeassettriminfo.txt`
-                      Lines=`@(LinesToWrite)`
-                      Overwrite=`true`
-                      Encoding=`Unicode` />
-</Target>";
-                    writeRuntimeAssetTrimInfoTarget = writeRuntimeAssetTrimInfoTarget.Replace('`', '"');
-
-                    project.Root.Add(XElement.Parse(writeRuntimeAssetTrimInfoTarget));
-                });
-
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
             if (projectChanges != null)
             {
                 testAsset = testAsset.WithProjectChanges(projectChanges);
             }
 
-            new RestoreCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name)).Execute().Should().Pass();
+            testAsset.Restore(Log, testProject.Name);
 
-            var command = new MSBuildCommand(Log, "WriteRuntimeAssetTrimInfo", Path.Combine(testAsset.TestRoot, testProject.Name));
-
-            command.Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = command.GetOutputDirectory(testProject.TargetFrameworks, runtimeIdentifier: testProject.RuntimeIdentifier);
-            var runtimeAssetTrimInfo = ParseRuntimeAssetTrimInfoFrom(Path.Combine(outputDirectory.FullName, "runtimeassettriminfo.txt"));
-
-            return runtimeAssetTrimInfo;
-        }
-
-
-        private Dictionary<string, List<(string asset, string isTrimmable)>> ParseRuntimeAssetTrimInfoFrom(string path)
-        {
-            var trimInfo = new Dictionary<string, List<(string asset, string isTrimmable)>> ();
-            var lines = File.ReadAllLines(path);
-            foreach (var line in File.ReadAllLines(path))
+            var command = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProject.Name), targetFramework,
+                                                        "ResolvedFileToPublish", GetValuesCommand.ValueType.Item)
             {
-                var fields = line.Split('\t');
-                if (fields.Length >= 3)
+                DependsOnTargets = "ComputeFilesToPublish",
+                MetadataNames = { "PackageName", "IsTrimmable" },
+            };
+
+            command.Execute().Should().Pass();
+            var items = from item in command.GetValuesWithMetadata()
+                        select new
+                        {
+                            Identity = item.value,
+                            PackageName = item.metadata["PackageName"],
+                            IsTrimmable = item.metadata["IsTrimmable"]
+                        };
+
+            var trimInfo = new Dictionary<string, List<(string asset, string isTrimmable)>> ();
+            foreach (var item in items)
+            {
+                List<(string asset, string isTrimmable)> assets;
+                if (!trimInfo.TryGetValue(item.PackageName, out assets))
                 {
-                    string runtimePackAsset = fields[0];
-                    string packageName = fields[1];
-                    string isTrimmable = fields[2];
-                    List<(string asset, string isTrimmable)> assets;
-                    if (!trimInfo.TryGetValue(packageName, out assets))
-                    {
-                        assets = trimInfo[packageName] = new List<(string asset, string isTrimmable)> (3);
-                    }
-                    assets.Add((runtimePackAsset, isTrimmable));
+                    assets = trimInfo[item.PackageName] = new List<(string asset, string isTrimmable)> (3);
                 }
+                assets.Add((item.Identity, item.IsTrimmable));
             }
+
             return trimInfo;
         }
 
