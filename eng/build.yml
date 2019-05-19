@@ -120,6 +120,10 @@ jobs:
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             TestRunNameSuffix: 'CoreMSBuildTestRunNameSuffix'
             HelixConfiguration: 'CoreMSBuild'
+        - task: PublishBuildArtifacts@1
+          inputs:
+            pathtoPublish: $(Build.SourcesDirectory)\artifacts\log
+            artifactName: logs
 
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_Helix_Fullframework') }}:
         - checkout: self
@@ -142,6 +146,10 @@ jobs:
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             HelixConfiguration: 'FullMSBuild'
             TestRunNameSuffix: 'FullMSBuildTestRunNameSuffix'
+        - task: PublishBuildArtifacts@1
+          inputs:
+            pathtoPublish: $(Build.SourcesDirectory)\artifacts\log
+            artifactName: logs
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf_Helix') }}:
         - checkout: self
