@@ -49,7 +49,7 @@ if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:o
 
 for /f %%x in ('powershell -NoProfile -NoLogo -Command "Get-Date -Date (Get-Date).ToUniversalTime() -UFormat '%%Y-%%m-%%dT%%H:%%M:%%SZ'"') do (set timeStamp=%%x)
 
-set benchViewName=SDK perf %OS% %architecture% %configuration% %runType% %GIT_BRANCH_WITHOUT_ORIGIN% %TestFullMSBuild%
+set benchViewName=SDK perf %OS% %architecture% %configuration%-%TestFullMSBuild% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
 if /I "%runType%" == "private" (set benchViewName=%benchViewName% %BenchviewCommitName%)
 if /I "%runType%" == "rolling" (set benchViewName=%benchViewName% %GIT_COMMIT%)
 echo BenchViewName: "%benchViewName%"
