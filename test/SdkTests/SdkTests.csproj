@@ -159,12 +159,16 @@
       <SdkTest Remove="@(SdkTest)" />
       <SdkTest Include="$(ToolTestName)" />
     </ItemGroup>
+
+    <ItemGroup>
+      <TestProjectToRun Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>ToolTestName=%(SdkTest.Identity)</AdditionalProperties>
+      </TestProjectToRun>
+    </ItemGroup>
     
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
+    <MSBuild Projects="@(TestProjectToRun)"
              Targets="RunTestsAsTool"
-             Properties="ToolTestName=%(SdkTest.Identity)"
              BuildInParallel="true"
-             ContinueOnError="true"
              />
   </Target>
   
