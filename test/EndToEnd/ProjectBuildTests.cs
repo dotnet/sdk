@@ -111,8 +111,7 @@ namespace EndToEnd.Tests
         [InlineData("mstest")]
         [InlineData("nunit")]
         [InlineData("web")]
-        //  Disable mvc template due to https://github.com/aspnet/AspNetCore/issues/10218
-        // [InlineData("mvc")]
+        [InlineData("mvc")]
         public void ItCanBuildTemplates(string templateName)
         {
             TestTemplateBuild(templateName);
