@@ -212,7 +212,7 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestConfig.xml"</TestArgs>
       <TestArgs>$(TestArgs) -xml "$(ResultsXmlPath)"</TestArgs>
       <TestArgs>$(TestArgs) -html "$(ResultsHtmlPath)" $(TestRunnerAdditionalArguments)</TestArgs>
-      <TestArgs>$(TestArgs) &gt; $(ResultsStdOutPath)</TestArgs>
+      <TestArgs>$(TestArgs) &gt; $(ResultsStdOutPath) 2&gt;&amp;1</TestArgs>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -227,8 +227,7 @@
     </PropertyGroup>
 
     <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
-          WorkingDirectory="$(TestLocalToolFolder)"
-          IgnoreStandardErrorWarningFormat="true" />
+          WorkingDirectory="$(TestLocalToolFolder)" />
   </Target>
   
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
