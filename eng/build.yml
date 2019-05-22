@@ -116,7 +116,7 @@ jobs:
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
-            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling'
+            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling false'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             HelixConfiguration: 'CoreMSBuild'
         - task: PublishBuildArtifacts@1
@@ -141,7 +141,7 @@ jobs:
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
-            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.fullframework.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling'
+            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling true'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             HelixConfiguration: 'FullMSBuild'
         - task: PublishBuildArtifacts@1
