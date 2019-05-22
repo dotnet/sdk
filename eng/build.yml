@@ -118,7 +118,6 @@ jobs:
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
             WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
-            TestRunNameSuffix: 'CoreMSBuildTestRunNameSuffix'
             HelixConfiguration: 'CoreMSBuild'
         - task: PublishBuildArtifacts@1
           inputs:
@@ -145,7 +144,6 @@ jobs:
             WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.fullframework.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             HelixConfiguration: 'FullMSBuild'
-            TestRunNameSuffix: 'FullMSBuildTestRunNameSuffix'
         - task: PublishBuildArtifacts@1
           inputs:
             pathtoPublish: $(Build.SourcesDirectory)\artifacts\log

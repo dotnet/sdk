@@ -54,7 +54,6 @@ steps:
       DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
       EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
       WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
-      TestRunNameSuffix:  ${{ parameters.TestRunNameSuffix }}
       HelixConfiguration:  ${{ parameters.HelixConfiguration }}
       Creator: ${{ parameters.Creator }}
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -85,7 +84,6 @@ steps:
       DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
       EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
       WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
-      TestRunNameSuffix:  ${{ parameters.TestRunNameSuffix }}
       HelixConfiguration:  ${{ parameters.HelixConfiguration }}
       Creator: ${{ parameters.Creator }}
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
