@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
-    internal sealed class EndOfFileNewLineFormatter : DocumentFormatter
+    internal sealed class FinalNewlineFormatter : DocumentFormatter
     {
         protected override async Task<SourceText> FormatFileAsync(
             Document document,
@@ -32,26 +32,26 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             var sourceText = await document.GetTextAsync(cancellationToken);
             var lastLine = sourceText.Lines.Last();
 
-            var hasFinalNewLine = lastLine.Span.IsEmpty;
+            var hasFinalNewline = lastLine.Span.IsEmpty;
 
-            if (insertFinalNewline && !hasFinalNewLine)
+            if (insertFinalNewline && !hasFinalNewline)
             {
-                var finalNewLineSpan = new TextSpan(lastLine.End, 0);
-                var addNewLineChange = new TextChange(finalNewLineSpan, endOfLine);
-                sourceText = sourceText.WithChanges(addNewLineChange);
+                var finalNewlineSpan = new TextSpan(lastLine.End, 0);
+                var addNewlineChange = new TextChange(finalNewlineSpan, endOfLine);
+                sourceText = sourceText.WithChanges(addNewlineChange);
             }
-            else if (!insertFinalNewline && hasFinalNewLine)
+            else if (!insertFinalNewline && hasFinalNewline)
             {
                 // In the case of empty files where there is a single empty line, there is nothing to remove.
-                while (sourceText.Lines.Count > 1 && hasFinalNewLine)
+                while (sourceText.Lines.Count > 1 && hasFinalNewline)
                 {
                     var lineBeforeLast = sourceText.Lines[sourceText.Lines.Count - 2];
-                    var finalNewLineSpan = new TextSpan(lineBeforeLast.End, lineBeforeLast.EndIncludingLineBreak - lineBeforeLast.End);
-                    var removeNewLineChange = new TextChange(finalNewLineSpan, string.Empty);
-                    sourceText = sourceText.WithChanges(removeNewLineChange);
+                    var finalNewlineSpan = new TextSpan(lineBeforeLast.End, lineBeforeLast.EndIncludingLineBreak - lineBeforeLast.End);
+                    var removeNewlineChange = new TextChange(finalNewlineSpan, string.Empty);
+                    sourceText = sourceText.WithChanges(removeNewlineChange);
 
                     lastLine = sourceText.Lines.Last();
-                    hasFinalNewLine = lastLine.Span.IsEmpty;
+                    hasFinalNewline = lastLine.Span.IsEmpty;
                 }
             }
 

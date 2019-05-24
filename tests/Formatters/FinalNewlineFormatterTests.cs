@@ -7,12 +7,12 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
-    public class EOFNewLineFormatterTests : CSharpFormatterTests
+    public class FinalNewlineFormatterTests : CSharpFormatterTests
     {
-        private protected override ICodeFormatter Formatter => new EndOfFileNewLineFormatter();
+        private protected override ICodeFormatter Formatter => new FinalNewlineFormatter();
 
         [Fact]
-        public async Task WhenFinalNewLineUnspecified_AndFinalNewLineMissing_NoChange()
+        public async Task WhenFinalNewlineUnspecified_AndFinalNewlineMissing_NoChange()
         {
             var testCode = @"
 class C
@@ -33,7 +33,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineUnspecified_AndFinalNewLineExits_NoChange()
+        public async Task WhenFinalNewlineUnspecified_AndFinalNewlineExits_NoChange()
         {
             var testCode = @"
 class C
@@ -56,7 +56,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineRequired_AndEndOfLineIsLineFeed_LineFeedAdded()
+        public async Task WhenFinalNewlineRequired_AndEndOfLineIsLineFeed_LineFeedAdded()
         {
             var testCode = "class C\n{\n}";
 
@@ -72,7 +72,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineRequired_AndEndOfLineIsCarriageReturnLineFeed_CarriageReturnLineFeedAdded()
+        public async Task WhenFinalNewlineRequired_AndEndOfLineIsCarriageReturnLineFeed_CarriageReturnLineFeedAdded()
         {
             var testCode = "class C\r\n{\r\n}";
 
@@ -88,7 +88,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineRequired_AndEndOfLineIsCarriageReturn_CarriageReturnAdded()
+        public async Task WhenFinalNewlineRequired_AndEndOfLineIsCarriageReturn_CarriageReturnAdded()
         {
             var testCode = "class C\r{\r}";
 
@@ -103,7 +103,7 @@ class C
             await TestAsync(testCode, expectedCode, Formatter, editorConfig);
         }
         [Fact]
-        public async Task WhenFinalNewLineRequired_AndFinalNewLineExits_NoChange()
+        public async Task WhenFinalNewlineRequired_AndFinalNewlineExits_NoChange()
         {
             var testCode = @"
 class C
@@ -127,7 +127,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineUnwanted_AndFinalNewLineExists_CarriageReturnLineFeedRemoved()
+        public async Task WhenFinalNewlineUnwanted_AndFinalNewlineExists_CarriageReturnLineFeedRemoved()
         {
             var testCode = "class C\r\n{\r\n}\r\n\r\n\r\n";
 
@@ -143,7 +143,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineUnwanted_AndFinalNewLineExists_LineFeedRemoved()
+        public async Task WhenFinalNewlineUnwanted_AndFinalNewlineExists_LineFeedRemoved()
         {
             var testCode = "class C\n{\n}\n\n\n";
 
@@ -159,7 +159,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineUnwanted_AndFinalNewLineExists_CarriageReturnRemoved()
+        public async Task WhenFinalNewlineUnwanted_AndFinalNewlineExists_CarriageReturnRemoved()
         {
             var testCode = "class C\r{\r}\r\r\r";
 
@@ -175,7 +175,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineUnwanted_AndFinalNewLineMissing_NoChange()
+        public async Task WhenFinalNewlineUnwanted_AndFinalNewlineMissing_NoChange()
         {
             var testCode = @"
 class C
@@ -197,7 +197,7 @@ class C
         }
 
         [Fact]
-        public async Task WhenFinalNewLineUnwanted_AndFileIsEmpty_NoChange()
+        public async Task WhenFinalNewlineUnwanted_AndFileIsEmpty_NoChange()
         {
             var testCode = @"";
 

@@ -74,8 +74,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             }
         }
 
-        private ILogger Logger => new TestLogger();
-        private EditorConfigOptionsApplier OptionsApplier = new EditorConfigOptionsApplier();
+        private static ILogger Logger => new TestLogger();
+        private static EditorConfigOptionsApplier OptionsApplier => new EditorConfigOptionsApplier();
 
         public SolutionState TestState { get; }
 
@@ -98,7 +98,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             Assert.Equal(expectedCode, formattedText.ToString());
         }
-
 
         /// <summary>
         /// Gets the collection of inputs to provide to the XML documentation resolver.
@@ -168,9 +167,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// strings.</returns>
         protected virtual Project CreateProjectImpl((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language)
         {
-            var fileNamePrefix = DefaultFilePathPrefix;
-            var fileExt = DefaultFileExt;
-
             var projectId = ProjectId.CreateNewId(debugName: DefaultTestProjectName);
             var solution = CreateSolution(projectId, language);
 

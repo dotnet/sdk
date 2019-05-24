@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static readonly ImmutableArray<ICodeFormatter> s_codeFormatters = new ICodeFormatter[]
         {
             new WhitespaceFormatter(),
-            new EndOfFileNewLineFormatter()
+            new FinalNewlineFormatter(),
         }.ToImmutableArray();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
