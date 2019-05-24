@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -15,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         Task<Solution> FormatAsync(
             Solution solution,
-            ImmutableArray<(Document, OptionSet)> formattableDocuments,
+            ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             ILogger logger,
             CancellationToken cancellationToken);
     }

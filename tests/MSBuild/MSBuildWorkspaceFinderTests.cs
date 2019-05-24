@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Tools.MSBuild;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Xunit;
 
-namespace Microsoft.CodeAnalysis.Tools.Tests
+namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {
     public class MSBuildWorkspaceFinderTests : IClassFixture<SolutionPathFixture>
     {

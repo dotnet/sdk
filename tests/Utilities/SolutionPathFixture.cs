@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
         public void Dispose()
         {
             if (Interlocked.Decrement(ref _registered) == 0)
-            { 
+            {
                 Environment.CurrentDirectory = _currentDirectory;
                 _currentDirectory = null;
             }

@@ -21,7 +21,8 @@ namespace Microsoft.CodeAnalysis.Tools
     {
         private static readonly ImmutableArray<ICodeFormatter> s_codeFormatters = new ICodeFormatter[]
         {
-            new WhitespaceFormatter()
+            new WhitespaceFormatter(),
+            new EndOfFileNewLineFormatter()
         }.ToImmutableArray();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
@@ -163,7 +164,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static async Task<Solution> RunCodeFormattersAsync(
             Solution solution,
-            ImmutableArray<(Document, OptionSet)> formattableDocuments,
+            ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -177,7 +178,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return formattedSolution;
         }
 
-        internal static async Task<(int, ImmutableArray<(Document, OptionSet)>)> DetermineFormattableFiles(
+        internal static async Task<(int, ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)>)> DetermineFormattableFiles(
             Solution solution,
             string projectPath,
             ImmutableHashSet<string> filesToFormat,
@@ -188,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var optionsApplier = new EditorConfigOptionsApplier();
 
             var fileCount = 0;
-            var getDocumentsAndOptions = new List<Task<(Document, OptionSet, bool)>>(solution.Projects.Sum(project => project.DocumentIds.Count));
+            var getDocumentsAndOptions = new List<Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)>>(solution.Projects.Sum(project => project.DocumentIds.Count));
 
             foreach (var project in solution.Projects)
             {
@@ -215,11 +216,11 @@ namespace Microsoft.CodeAnalysis.Tools
             }
 
             var documentsAndOptions = await Task.WhenAll(getDocumentsAndOptions).ConfigureAwait(false);
-            var foundEditorConfig = documentsAndOptions.Any(documentAndOptions => documentAndOptions.Item3);
+            var foundEditorConfig = documentsAndOptions.Any(documentAndOptions => documentAndOptions.Item4);
 
             var addedFilePaths = new HashSet<string>(documentsAndOptions.Length);
-            var formattableFiles = ImmutableArray.CreateBuilder<(Document, OptionSet)>(documentsAndOptions.Length);
-            foreach (var (document, options, hasEditorConfig) in documentsAndOptions)
+            var formattableFiles = ImmutableArray.CreateBuilder<(Document, OptionSet, ICodingConventionsSnapshot)>(documentsAndOptions.Length);
+            foreach (var (document, options, codingConventions, hasEditorConfig) in documentsAndOptions)
             {
                 if (document is null)
                 {
@@ -239,13 +240,13 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
 
                 addedFilePaths.Add(document.FilePath);
-                formattableFiles.Add((document, options));
+                formattableFiles.Add((document, options, codingConventions));
             }
 
             return (fileCount, formattableFiles.ToImmutableArray());
         }
 
-        private static async Task<(Document, OptionSet, bool)> GetDocumentAndOptions(
+        private static async Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)> GetDocumentAndOptions(
             Project project,
             DocumentId documentId,
             ImmutableHashSet<string> filesToFormat,
@@ -258,18 +259,18 @@ namespace Microsoft.CodeAnalysis.Tools
             // If a files list was passed in, then ignore files not present in the list.
             if (!filesToFormat.IsEmpty && !filesToFormat.Contains(document.FilePath))
             {
-                return (null, null, false);
+                return (null, null, null, false);
             }
 
             if (!document.SupportsSyntaxTree)
             {
-                return (null, null, false);
+                return (null, null, null, false);
             }
 
             // Ignore generated code files.
             if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(document, cancellationToken).ConfigureAwait(false))
             {
-                return (null, null, false);
+                return (null, null, null, false);
             }
 
             var context = await codingConventionsManager.GetConventionContextAsync(
@@ -280,11 +281,11 @@ namespace Microsoft.CodeAnalysis.Tools
             // Check whether an .editorconfig was found for this document.
             if (context?.CurrentConventions is null)
             {
-                return (document, options, false);
+                return (document, options, null, false);
             }
 
             options = optionsApplier.ApplyConventions(options, context.CurrentConventions, project.Language);
-            return (document, options, true);
+            return (document, options, context.CurrentConventions, true);
         }
     }
 }

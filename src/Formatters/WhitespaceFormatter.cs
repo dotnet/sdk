@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -17,6 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected override async Task<SourceText> FormatFileAsync(
             Document document,
             OptionSet options,
+            ICodingConventionsSnapshot codingConventions,
             ILogger logger,
             CancellationToken cancellationToken)
         {

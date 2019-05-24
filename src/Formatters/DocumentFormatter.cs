@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -20,7 +21,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         public async Task<Solution> FormatAsync(
             Solution solution,
-            ImmutableArray<(Document, OptionSet)> formattableDocuments,
+            ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -34,6 +35,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected abstract Task<SourceText> FormatFileAsync(
             Document document,
             OptionSet options,
+            ICodingConventionsSnapshot codingConventions,
             ILogger logger,
             CancellationToken cancellationToken);
 
@@ -41,15 +43,15 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// Applies formatting and returns the changed <see cref="SourceText"/> for each <see cref="Document"/>.
         /// </summary>
         private ImmutableArray<(Document, Task<SourceText>)> FormatFiles(
-            ImmutableArray<(Document, OptionSet)> formattableDocuments,
+            ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<SourceText>)>(formattableDocuments.Length);
 
-            foreach (var (document, options) in formattableDocuments)
+            foreach (var (document, options, codingConventions) in formattableDocuments)
             {
-                var formatTask = Task.Run(async () => await GetFormattedSourceTextAsync(document, options, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
+                var formatTask = Task.Run(async () => await GetFormattedSourceTextAsync(document, options, codingConventions, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
 
                 formattedDocuments.Add((document, formatTask));
             }
@@ -63,13 +65,14 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         private async Task<SourceText> GetFormattedSourceTextAsync(
             Document document,
             OptionSet options,
+            ICodingConventionsSnapshot codingConventions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             logger.LogTrace(Resources.Formatting_code_file_0, Path.GetFileName(document.FilePath));
 
             var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
-            var formattedSourceText = await FormatFileAsync(document, options, logger, cancellationToken).ConfigureAwait(false);
+            var formattedSourceText = await FormatFileAsync(document, options, codingConventions, logger, cancellationToken).ConfigureAwait(false);
 
             return !formattedSourceText.ContentEquals(originalSourceText)
                 ? formattedSourceText
