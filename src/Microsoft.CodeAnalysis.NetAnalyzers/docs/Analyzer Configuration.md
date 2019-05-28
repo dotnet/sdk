@@ -183,3 +183,12 @@ Option Values: `true` or `false`
 Default Value: Specific to each configurable rule ('true' by default for most rules)
 
 Example: `dotnet_code_quality.copy_analysis = true`
+
+#### Configure sufficient IterationCount when using weak KDF algorithm
+Option Name: `sufficient_IterationCount_for_weak_KDF_algorithm`
+
+Option Values: integral values
+
+Default Value: Specific to each configurable rule ('100000' by default for most rules)
+
+Example: `dotnet_net_core.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
