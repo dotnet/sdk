@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -511,7 +513,7 @@ namespace FrameworkReferenceTest
                 .Pass();
 
             var nupkgFolder = packCommand.GetOutputDirectory(null);
-                
+
             var testProject = new TestProject()
             {
                 Name = "TransitiveFrameworkReference",
@@ -544,6 +546,161 @@ namespace FrameworkReferenceTest
             //  When we remove the workaround for https://github.com/dotnet/core-setup/issues/4947 in GenerateRuntimeConfigurationFiles,
             //  Microsoft.NETCore.App will need to be added to this list
             runtimeFrameworkNames.Should().BeEquivalentTo("Microsoft.AspNetCore.App");
+        }
+
+        [CoreMSBuildOnlyFact]
+        public void IsTrimmableDefaultsComeFromKnownFrameworkReference()
+        {
+            var testProject = new TestProject();
+
+            var runtimeAssetTrimInfo = GetRuntimeAssetTrimInfo(testProject);
+
+            string runtimePackName = runtimeAssetTrimInfo.Keys
+                .Where(k => k.StartsWith("runtime.") && k.EndsWith(".Microsoft.NETCore.App"))
+                .Single();
+
+            foreach (var runtimeAsset in runtimeAssetTrimInfo[runtimePackName])
+            {
+                runtimeAsset.isTrimmable.Should().Be("true");
+            }
+        }
+
+        [CoreMSBuildOnlyFact]
+        public void IsTrimmableCanBeSpecifiedOnFrameworkReference()
+        {
+            var testProject = new TestProject();
+
+            var runtimeAssetTrimInfo = GetRuntimeAssetTrimInfo(testProject,
+                project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    var itemGroup = new XElement(ns + "ItemGroup");
+                    project.Root.Add(itemGroup);
+
+                    itemGroup.Add(new XElement(ns + "FrameworkReference",
+                                               new XAttribute("Include", "Microsoft.NETCore.App"),
+                                               new XAttribute("IsTrimmable", "false")));
+                });
+
+            string runtimePackName = runtimeAssetTrimInfo.Keys
+                .Where(k => k.StartsWith("runtime.") && k.EndsWith(".Microsoft.NETCore.App"))
+                .Single();
+
+            foreach (var runtimeAsset in runtimeAssetTrimInfo[runtimePackName])
+            {
+                runtimeAsset.isTrimmable.Should().Be("false");
+            }
+        }
+
+        //  TODO: convert to Theory with self-contained or not
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WindowsFormsFrameworkReference(bool selfContained)
+        {
+            TestFrameworkReferenceProfiles(
+                frameworkReferences: new [] { "Microsoft.WindowsDesktop.App.WindowsForms" },
+                expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms" },
+                notExpectedReferenceNames: new[] { "System.Windows.Presentation", "WindowsFormsIntegration" },
+                selfContained);
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WPFFrameworkReference(bool selfContained)
+        {
+            TestFrameworkReferenceProfiles(
+                frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WPF" },
+                expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Presentation" },
+                notExpectedReferenceNames: new[] { "System.Windows.Forms", "WindowsFormsIntegration" },
+                selfContained);
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WindowsFormAndWPFFrameworkReference(bool selfContained)
+        {
+            TestFrameworkReferenceProfiles(
+                frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms", "Microsoft.WindowsDesktop.App.WPF" },
+                expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms", "System.Windows.Presentation" },
+                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                selfContained);
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WindowsDesktopFrameworkReference(bool selfContained)
+        {
+            TestFrameworkReferenceProfiles(
+                frameworkReferences: new[] { "Microsoft.WindowsDesktop.App" },
+                expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms",
+                                                "System.Windows.Presentation", "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
+                selfContained);
+        }
+
+        private void TestFrameworkReferenceProfiles(
+            IEnumerable<string> frameworkReferences,
+            IEnumerable<string> expectedReferenceNames,
+            IEnumerable<string> notExpectedReferenceNames,
+            bool selfContained,
+            [CallerMemberName] string callingMethod = "")
+        {
+            var testProject = new TestProject()
+            {
+                Name = "WindowsFormsFrameworkReference",
+                TargetFrameworks = "netcoreapp3.0",
+                IsSdkProject = true,
+                IsExe = true
+            };
+            testProject.FrameworkReferences.AddRange(frameworkReferences);
+
+            if (selfContained)
+            {
+                testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
+            }
+
+            string identifier = selfContained ? "_selfcontained" : string.Empty;
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
+                .Restore(Log, testProject.Name);
+
+            string projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
+
+            var buildCommand = new BuildCommand(Log, projectFolder);
+
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var getValuesCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks, "Reference", GetValuesCommand.ValueType.Item);
+
+            getValuesCommand.Execute().Should().Pass();
+
+            var references = getValuesCommand.GetValues();
+            var referenceNames = references.Select(Path.GetFileNameWithoutExtension);
+
+            referenceNames.Should().Contain(expectedReferenceNames);
+
+            if (notExpectedReferenceNames.Any())
+            {
+                referenceNames.Should().NotContain(notExpectedReferenceNames);
+            }
+
+            if (selfContained)
+            {
+                var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks, runtimeIdentifier: testProject.RuntimeIdentifier);
+
+                //  The output directory should have the DLLs which are not referenced at compile time but are
+                //  still part of the shared framework.
+                outputDirectory.Should().HaveFiles(expectedReferenceNames.Concat(notExpectedReferenceNames)
+                    .Select(n => n + ".dll"));
+            }
         }
 
         private List<string> GetRuntimeFrameworks(string runtimeConfigPath)
@@ -616,7 +773,7 @@ namespace FrameworkReferenceTest
                       Lines=`@(LinesToWrite)`
                       Overwrite=`true`
                       Encoding=`Unicode`/>
-    
+
   </Target>";
                     writeResolvedVersionsTarget = writeResolvedVersionsTarget.Replace('`', '"');
 
@@ -638,6 +795,57 @@ namespace FrameworkReferenceTest
             var resolvedVersions = ResolvedVersionInfo.ParseFrom(Path.Combine(outputDirectory.FullName, "resolvedversions.txt"));
 
             return resolvedVersions;
+        }
+
+        private Dictionary<string, List<(string asset, string isTrimmable)>> GetRuntimeAssetTrimInfo(TestProject testProject,
+            Action<XDocument> projectChanges = null,
+            [CallerMemberName] string callingMethod = null,
+            string identifier = null)
+        {
+            string targetFramework = "netcoreapp3.0";
+
+            testProject.Name = "TrimInfoTest";
+            testProject.TargetFrameworks = targetFramework;;
+            testProject.IsSdkProject = true;
+            testProject.IsExe = true;
+            testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
+            if (projectChanges != null)
+            {
+                testAsset = testAsset.WithProjectChanges(projectChanges);
+            }
+
+            testAsset.Restore(Log, testProject.Name);
+
+            var command = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProject.Name), targetFramework,
+                                                        "ResolvedFileToPublish", GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "ComputeFilesToPublish",
+                MetadataNames = { "PackageName", "IsTrimmable" },
+            };
+
+            command.Execute().Should().Pass();
+            var items = from item in command.GetValuesWithMetadata()
+                        select new
+                        {
+                            Identity = item.value,
+                            PackageName = item.metadata["PackageName"],
+                            IsTrimmable = item.metadata["IsTrimmable"]
+                        };
+
+            var trimInfo = new Dictionary<string, List<(string asset, string isTrimmable)>> ();
+            foreach (var item in items)
+            {
+                List<(string asset, string isTrimmable)> assets;
+                if (!trimInfo.TryGetValue(item.PackageName, out assets))
+                {
+                    assets = trimInfo[item.PackageName] = new List<(string asset, string isTrimmable)> (3);
+                }
+                assets.Add((item.Identity, item.IsTrimmable));
+            }
+
+            return trimInfo;
         }
 
         private class ResolvedVersionInfo

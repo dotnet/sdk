@@ -30,6 +30,11 @@ namespace Microsoft.NET.Build.Tests
             string referencerTarget,
             string dependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
             TestProject dependencyProject = new TestProject()
@@ -63,8 +68,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.References.Add(dependencyAssemblyPath);
@@ -97,6 +100,11 @@ public static class Program
             string referencerTarget,
             string dependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
             TestProject dependencyProject = new TestProject()
@@ -184,8 +192,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.References.Add(dependencyAssemblyPath);
@@ -219,6 +225,11 @@ public static class Program
             string referencerTarget,
             string dllDependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
             TestProject dllDependencyProjectDependency = new TestProject()
@@ -270,8 +281,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.References.Add(dllDependencyAssemblyPath);
@@ -304,6 +313,11 @@ public static class Program
             string referencerTarget,
             string dllDependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
             TestProject dllDependencyProjectDependency = new TestProject()
@@ -409,8 +423,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.References.Add(dllDependencyAssemblyPath);
@@ -445,6 +457,11 @@ public static class Program
             string dependencyTarget,
             string dllDependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
             TestProject dllDependencyProject = new TestProject()
@@ -496,8 +513,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.ReferencedProjects.Add(dependencyProject);
@@ -531,6 +546,11 @@ public static class Program
             string dependencyTarget,
             string dllDependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
             TestProject dllDependencyProject = new TestProject()
@@ -636,8 +656,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.ReferencedProjects.Add(dependencyProject);
@@ -672,6 +690,11 @@ public static class Program
             string dependencyTarget,
             string dllDependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
             TestProject dllDependencyProjectDependency = new TestProject()
@@ -741,8 +764,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.ReferencedProjects.Add(dependencyProject);
@@ -776,6 +797,11 @@ public static class Program
             string dependencyTarget,
             string dllDependencyTarget)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(referencerTarget))
+            {
+                return;
+            }
+
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
             TestProject dllDependencyProjectDependency = new TestProject()
@@ -899,8 +925,6 @@ public class Class1
                 Name = "Referencer",
                 IsSdkProject = true,
                 TargetFrameworks = referencerTarget,
-                // Need to use a self-contained app for now because we don't use a CLI that has a "2.0" shared framework
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(referencerTarget),
                 IsExe = true,
             };
             referencerProject.ReferencedProjects.Add(dependencyProject);
