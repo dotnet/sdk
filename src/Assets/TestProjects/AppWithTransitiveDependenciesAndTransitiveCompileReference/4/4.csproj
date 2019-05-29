@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.4</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard1.6;net461</TargetFrameworks>
     <RootNamespace>_4</RootNamespace>
   </PropertyGroup>
 
