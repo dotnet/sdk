@@ -160,7 +160,8 @@
   <Fragment>
     <PayloadGroup Id="DotnetCoreBAPayloads">
       <Payload Name="thm.xml" Compressed="yes" SourceFile="bundle.thm" />
-      <Payload Name="thm.wxl" Compressed="yes" SourceFile="bundle.wxl" />
+      <!-- Default/Neutral localized content is US English -->
+      <Payload Name="thm.wxl" Compressed="yes" SourceFile="LCID\1033\bundle.wxl" />
       <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\osx\clisdk\resources\dotnetbackground.png" />
       <?foreach LCID in $(var.LocalizedContentDirs)?>
         <Payload Id="thm-$(var.LCID)" Compressed="yes" Name="$(var.LCID)\thm.wxl" SourceFile="LCID\$(var.LCID)\bundle.wxl" />

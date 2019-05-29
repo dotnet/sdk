@@ -51,9 +51,9 @@
 
 Do [DOTNETHOME] se nainstalovaly následující položky.
     • Sada .NET Core SDK [DOTNETSDKVERSION]
-    • Modul .NET Core Runtime [DOTNETRUNTIMEVERSION]
-    • Modul ASP.NET Core Runtime [ASPNETCOREVERSION]
-    • Modul .NET Core Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+    • Modul runtime .NET Core [DOTNETRUNTIMEVERSION]
+    • Modul runtime ASP.NET Core [ASPNETCOREVERSION]
+    • Modul runtime .NET Core Windows Desktop [WINFORMSANDWPFVERSION]
 
 Tento produkt shromažďuje data o využití.
     • Další informace a vyjádření výslovného nesouhlasu: https://aka.ms/dotnet-cli-telemetry

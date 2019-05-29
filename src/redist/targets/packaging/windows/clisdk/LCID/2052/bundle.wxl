@@ -51,9 +51,9 @@
 
 下列项安装于: "[DOTNETHOME]"
     • .NET Core SDK [DOTNETSDKVERSION]
-    • .NET Core 运行时 [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core 运行时 [ASPNETCOREVERSION]
-    • .NET Core Windows 桌面运行时 [WINFORMSANDWPFVERSION]
+    • .NET Core Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Core Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 此产品会收集用法数据
     • 详细信息和选择退出选项 https://aka.ms/dotnet-cli-telemetry
