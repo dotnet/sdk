@@ -697,7 +697,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     int id = guidCount++;
                     string replacementId = "guid" + id;
-                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, "string", null));
+                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, "string", null, null));
                     _guidToGuidPrefixMap[guid] = replacementId;
                 }
             }

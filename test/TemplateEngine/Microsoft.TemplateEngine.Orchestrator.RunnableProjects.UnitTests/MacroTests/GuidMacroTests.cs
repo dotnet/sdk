@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestGuidConfig()
         {
             string paramName = "TestGuid";
-            IMacroConfig macroConfig = new GuidMacroConfig(paramName, "string", string.Empty);
+            IMacroConfig macroConfig = new GuidMacroConfig(paramName, "string", string.Empty, null);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = new SimpleConfigModel();

@@ -10,16 +10,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; private set; }
 
+        public string DefaultFormat { get; private set; }
+
         public string Format { get; private set; }
 
         public static readonly string DefaultFormats = "ndbpxNDPBX";
 
-        public GuidMacroConfig(string variableName, string dataType, string format)
+        public GuidMacroConfig(string variableName, string dataType, string format, string defaultFormat)
         {
             DataType = dataType;
             VariableName = variableName;
             Type = "guid";
             Format = format;
+            DefaultFormat = string.IsNullOrWhiteSpace(defaultFormat) ? "D" : defaultFormat;
         }
     }
 }
