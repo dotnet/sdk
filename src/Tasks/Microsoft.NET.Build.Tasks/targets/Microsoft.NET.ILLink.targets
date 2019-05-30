@@ -13,7 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Sdk.props" Sdk="ILLink.Tasks" />
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
     <IntermediateLinkDir Condition=" '$(IntermediateLinkDir)' == '' ">$(IntermediateOutputPath)linked\</IntermediateLinkDir>
     <IntermediateLinkDir Condition=" !HasTrailingSlash('$(IntermediateLinkDir)') ">$(IntermediateLinkDir)\</IntermediateLinkDir>
     <!-- Used to enable incremental build for the linker target. -->
@@ -69,7 +69,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <UsingTask TaskName="ILLink" AssemblyFile="$(ILLinkTasksAssembly)" />
   <Target Name="_RunILLink"
-         DependsOnTargets="_ComputeManagedAssembliesToLink"
+          DependsOnTargets="_ComputeManagedAssembliesToLink;_SetILLinkDefaults"
           Inputs="$(MSBuildAllProjects);@(_ManagedAssembliesToLink);@(TrimmerRootDescriptor);@(ReferencePath)"
           Outputs="$(_LinkSemaphore)">
 
@@ -84,16 +84,38 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Delete Files="@(_LinkedResolvedFileToPublishCandidates)" />
     <ILLink AssemblyPaths="@(_ManagedAssembliesToLink)"
             ReferenceAssemblyPaths="@(ReferencePath)"
-            RootAssemblyNames="@(IntermediateAssembly->'%(Filename)')"
+            RootAssemblyNames="@(TrimmerRootAssembly)"
             RootDescriptorFiles="@(TrimmerRootDescriptor)"
             OutputDirectory="$(IntermediateLinkDir)"
-            ExtraArgs="-u copyused -c copyused -l none --skip-unresolved true $(_ExtraTrimmerArgs)"
+            ExtraArgs="$(_ExtraTrimmerArgs)"
             ToolExe="$(_DotNetHostFileName)"
             ToolPath="$(_DotNetHostDirectory)" />
 
      <Touch Files="$(_LinkSemaphore)" AlwaysCreate="true" />
 
   </Target>
+
+  <!--
+    ============================================================
+                     _SetILLinkDefaults
+
+    Set up the default options and inputs to ILLink.
+   -->
+   <Target Name="_SetILLinkDefaults"
+           DependsOnTargets="_ComputeManagedAssembliesToLink">
+
+    <PropertyGroup>
+      <_ExtraTrimmerArgs>-l none --skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
+      <_ExtraTrimmerArgs>-c copyused -u copyused $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
+    </PropertyGroup>
+    <ItemGroup>
+      <TrimmerRootAssembly Include="@(_ManagedAssembliesToLink)" Condition=" '%(_ManagedAssembliesToLink.IsTrimmable)' != 'true' " />
+      <_ManagedAssembliesToLink Update="@(_ManagedAssembliesToLink)" Condition=" '%(_ManagedAssembliesToLink.IsTrimmable)' != 'true' ">
+        <action>copy</action>
+      </_ManagedAssembliesToLink>
+    </ItemGroup>
+
+   </Target>
 
   <!--
     ============================================================

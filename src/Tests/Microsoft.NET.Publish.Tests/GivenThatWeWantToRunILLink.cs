@@ -68,6 +68,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             string[] restoreArgs = { $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true" };
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .Restore(Log, testProject.Name, restoreArgs);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -107,6 +108,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             string[] restoreArgs = { $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true" };
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"))
                 .Restore(Log, testProject.Name, restoreArgs);
 
@@ -166,6 +168,44 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData("netcoreapp3.0")]
+        public void ILLink_defaults_keep_nonframework(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var referenceProjectName = "ClassLibForILLink";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
+            string[] restoreArgs = { $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true" };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .Restore(Log, testProject.Name, restoreArgs);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute("/v:n", $"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true").Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var linkedDirectory = Path.Combine(intermediateDirectory, "linked");
+
+            Directory.Exists(linkedDirectory).Should().BeTrue();
+
+            var linkedDll = Path.Combine(linkedDirectory, $"{projectName}.dll");
+            var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
+            var unusedDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
+            var unusedFrameworkDll = Path.Combine(publishDirectory, $"{unusedFrameworkAssembly}.dll");
+
+            File.Exists(linkedDll).Should().BeTrue();
+            File.Exists(publishedDll).Should().BeTrue();
+            File.Exists(unusedDll).Should().BeTrue();
+            File.Exists(unusedFrameworkDll).Should().BeFalse();
+
+            var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
+            DoesDepsFileHaveAssembly(depsFile, projectName).Should().BeTrue();
+            DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeTrue();
+            DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
+        }
+
+        [Theory]
+        [InlineData("netcoreapp3.0")]
         public void ILLink_does_not_include_leftover_artifacts_on_second_run(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -175,6 +215,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             string[] restoreArgs = { $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true" };
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"))
                 .Restore(Log, testProject.Name, restoreArgs);
 
@@ -226,6 +267,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .Restore(Log, testProject.Name);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -309,6 +351,26 @@ namespace Microsoft.NET.Publish.Tests
             project.Root.Elements(ns + "ItemGroup")
                 .Where(ig => ig.Elements(ns + "TrimmerRootDescriptor").Any())
                 .First().Remove();
+        }
+
+        private void EnableNonFrameworkTrimming(XDocument project)
+        {
+            var ns = project.Root.Name.Namespace;
+
+            var target = new XElement(ns + "Target",
+                                      new XAttribute("AfterTargets", "_SetILLinkDefaults"),
+                                      new XAttribute("Name", "_EnableNonFrameworkTrimming"));
+            project.Root.Add(target);
+            target.Add(new XElement(ns + "PropertyGroup",
+                                     new XElement("_ExtraTrimmerArgs", "-c link -u link")));
+            target.Add(new XElement(ns + "ItemGroup",
+                                    new XElement("TrimmerRootAssembly",
+                                                 new XAttribute("Remove", "@(TrimmerRootAssembly)")),
+                                    new XElement("TrimmerRootAssembly",
+                                                 new XAttribute("Include", "@(IntermediateAssembly->'%(FileName)')")),
+                                    new XElement("_ManagedAssembliesToLink",
+                                                 new XAttribute("Update", "@(_ManagedAssembliesToLink)"),
+                                                 new XElement("action"))));
         }
 
         private TestProject CreateTestProjectForILLinkTesting(string targetFramework, string mainProjectName, string referenceProjectName)
