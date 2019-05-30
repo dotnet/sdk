@@ -113,6 +113,7 @@
       <InstallRuntimeCommand>$(InstallRuntimeCommand) -Version $(RuntimeVersionToInstall)</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) -InstallDir $(DotnetToTestPath)</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) -Runtime "dotnet"</InstallRuntimeCommand>
+      <InstallRuntimeCommand Condition="'$(Architecture)' != ''">$(InstallRuntimeCommand) -Architecture "$(Architecture)"</InstallRuntimeCommand>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
       <InstallRuntimeCommand>/bin/bash</InstallRuntimeCommand>
@@ -120,6 +121,7 @@
       <InstallRuntimeCommand>$(InstallRuntimeCommand) --version $(RuntimeVersionToInstall)</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) --install-dir "$(DotnetToTestPath)"</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) --runtime "dotnet"</InstallRuntimeCommand>
+      <InstallRuntimeCommand Condition="'$(Architecture)' != ''">$(InstallRuntimeCommand) --architecture "$(Architecture)"</InstallRuntimeCommand>
     </PropertyGroup>
 
     <Exec Command="$(InstallRuntimeCommand)"
