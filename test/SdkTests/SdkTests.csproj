@@ -49,6 +49,11 @@
       <Output TaskParameter="Lines" PropertyName="OsReleaseContents"/>
     </ReadLinesFromFile>
 
+    <!-- Set OsReleaseContents to Windows to make later comparisons easier -->
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+      <OsReleaseContents>Windows</OsReleaseContents>
+    </PropertyGroup>
+
     <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Ubuntu%22'))">
       <Supports1xRuntimes Condition="$(OsReleaseContents.Contains('VERSION_ID=%2218.04%22'))">false</Supports1xRuntimes>
     </PropertyGroup>
