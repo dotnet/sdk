@@ -52,10 +52,8 @@
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND '$(HostOSName)' != 'osx' ">aspnetcore-runtime-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
       <!-- Note: we use the "-internal" archives and installers that contain only the aspnetcore shared framework, and shouldn't overlap with Microsoft.NETCore.App. -->
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxInstallerFileName>
-      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
-      <!-- AspNet targeting pack assets have unexpected asset names for DEB and tar.gz types:
-           https://github.com/aspnet/AspNetCore/issues/8835 -->
-      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(IsDebianBaseDistro)' == 'true' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
       <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(AspNetCoreVersion)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
       <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
