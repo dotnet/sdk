@@ -34,6 +34,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                       '$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' "
           DependsOnTargets="_RunILLink">
 
+    <NETSdkWarning ResourceName="ILLinkWarning" />
+
     <!-- For now, use ResolvedFileToPublish as input/output. This
          should go away in favor of a well-defined set of runtime
          assemblies with https://github.com/dotnet/sdk/issues/3109. -->
@@ -104,6 +106,8 @@ Copyright (c) .NET Foundation. All rights reserved.
    <Target Name="_SetILLinkDefaults"
            DependsOnTargets="_ComputeManagedAssembliesToLink">
 
+    <NETSdkError Condition="'$(SelfContained)' != 'true'" ResourceName="ILLinkNotSupportedError" />
+
     <PropertyGroup>
       <_ExtraTrimmerArgs>-l none --skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <_ExtraTrimmerArgs>-c copyused -u copyused $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
@@ -130,6 +134,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <UsingTask TaskName="ComputeManagedAssemblies" AssemblyFile="$(ILLinkTasksAssembly)" />
   <Target Name="_ComputeManagedAssembliesToLink">
+
     <ComputeManagedAssemblies Assemblies="@(ResolvedFileToPublish)">
       <Output TaskParameter="ManagedAssemblies" ItemName="_ManagedAssembliesToLink" />
     </ComputeManagedAssemblies>

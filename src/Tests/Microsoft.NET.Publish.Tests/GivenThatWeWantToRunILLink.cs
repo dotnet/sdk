@@ -260,36 +260,37 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData("netcoreapp3.0")]
-        public void ILLink_runs_on_portable_app(string targetFramework)
+        public void ILLink_error_on_portable_app(string targetFramework)
         {
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .Restore(Log, testProject.Name);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute("/p:PublishTrimmed=true").Should().Pass();
+            publishCommand.Execute("/p:PublishTrimmed=true")
+                .Should().Fail()
+                .And.HaveStdOutContainingIgnoreCase("NETSDK1102");
+        }
 
-            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework).FullName;
-            var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework).FullName;
-            var linkedDirectory = Path.Combine(intermediateDirectory, "linked");
+        [Theory]
+        [InlineData("netcoreapp3.0")]
+        public void ILLink_displays_informational_warning(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var referenceProjectName = "ClassLibForILLink";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            Directory.Exists(linkedDirectory).Should().BeTrue();
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
+            string[] restoreArgs = { $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true" };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .Restore(Log, testProject.Name);
 
-            var linkedDll = Path.Combine(linkedDirectory, $"{projectName}.dll");
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
-            var unusedDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
-
-            File.Exists(linkedDll).Should().BeTrue();
-            File.Exists(publishedDll).Should().BeTrue();
-            File.Exists(unusedDll).Should().BeFalse();
-
-            var depsFile = Path.Combine(publishDirectory, $"{projectName}.deps.json");
-            DoesDepsFileHaveAssembly(depsFile, projectName).Should().BeTrue();
-            DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute("/p:PublishTrimmed=true", $"/p:SelfContained=true", "/p:PublishTrimmed=true")
+                .Should().Pass().And.HaveStdOutContaining("NETSDK1101");
         }
 
         private static bool DoesImageHaveMethod(string path, string methodNameToCheck)
