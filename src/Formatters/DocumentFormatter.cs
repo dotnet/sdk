@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
             var formattedSourceText = await FormatFileAsync(document, originalSourceText, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
 
-            return !formattedSourceText.ContentEquals(originalSourceText)
+            return !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding.Equals(originalSourceText.Encoding)
                 ? (originalSourceText, formattedSourceText)
                 : (originalSourceText, null);
         }
@@ -117,7 +117,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     LogFormattingChanges(formatOptions.WorkspaceFilePath, document.FilePath, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
                 }
 
-                formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText);
+                formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
             }
 
             return formattedSolution;

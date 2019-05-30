@@ -201,4 +201,7 @@
   <data name="Fix_whitespace_formatting" xml:space="preserve">
     <value>Fix whitespace formatting.</value>
   </data>
+  <data name="Fix_file_encoding" xml:space="preserve">
+    <value>Fix file encoding.</value>
+  </data>
 </root>
