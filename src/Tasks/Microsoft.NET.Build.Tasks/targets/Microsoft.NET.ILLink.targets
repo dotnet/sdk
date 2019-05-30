@@ -22,14 +22,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                     _ILLink
+                     ILLink
 
     Replace the files to be published with versions that have been
     passed through the linker. Also prevent removed files from being
     included in the generated deps.json.
     ============================================================
     -->
-  <Target Name="_ILLink"
+  <Target Name="ILLink"
           Condition=" '$(PublishTrimmed)' == 'true' And
                       '$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' "
           DependsOnTargets="_RunILLink">
