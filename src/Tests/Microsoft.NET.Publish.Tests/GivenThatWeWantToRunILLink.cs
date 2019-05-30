@@ -290,7 +290,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute("/p:PublishTrimmed=true", $"/p:SelfContained=true", "/p:PublishTrimmed=true")
-                .Should().Pass().And.HaveStdOutContaining("NETSDK1101");
+                .Should().Pass().And.HaveStdOutContainingIgnoreCase("NETSDK1101");
         }
 
         private static bool DoesImageHaveMethod(string path, string methodNameToCheck)
