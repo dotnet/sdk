@@ -34,7 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       '$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' "
           DependsOnTargets="_RunILLink">
 
-    <NETSdkWarning ResourceName="ILLinkWarning" />
+    <NETSdkInformation ResourceName="ILLinkInformation" />
 
     <!-- For now, use ResolvedFileToPublish as input/output. This
          should go away in favor of a well-defined set of runtime
