@@ -106,6 +106,10 @@ Copyright (c) .NET Foundation. All rights reserved.
    <Target Name="_SetILLinkDefaults"
            DependsOnTargets="_ComputeManagedAssembliesToLink">
 
+    <!-- The defaults currently root non-framework assemblies, which
+         is a no-op for portable apps. If we later support more ways
+         to customize the behavior we can allow linking portable apps
+         in some cases. -->
     <NETSdkError Condition="'$(SelfContained)' != 'true'" ResourceName="ILLinkNotSupportedError" />
 
     <PropertyGroup>
