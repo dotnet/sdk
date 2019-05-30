@@ -355,6 +355,12 @@ namespace Microsoft.NET.Publish.Tests
 
         private void EnableNonFrameworkTrimming(XDocument project)
         {
+            // Used to override the default linker options for testing
+            // purposes. The default roots non-framework assemblies,
+            // but we want to ensure that the linker is running
+            // end-to-end by checking that it strips code from our
+            // test projects.
+
             var ns = project.Root.Name.Namespace;
 
             var target = new XElement(ns + "Target",
