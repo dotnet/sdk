@@ -1,4 +1,4 @@
-There are 3 sections of editorconfig configuration options: Formatting, Code Style, and Naming. For the most part the Formatting options are covered by the Roslyn Formatter, which leaves the Code Style and Naming options to be implemented. Below is a *mostly* complete list of Code Style options. Naming options will be handled separately.
+There are 3 sections of editorconfig configuration options: Formatting, Code Style, and Naming. For the most part the Formatting options are covered by the Roslyn Formatter, which leaves the Code Style and Naming options to be implemented. Below is a list of Code Style options. Naming options will be handled separately.
 
 # .NET code style settings
 
@@ -6,7 +6,7 @@ There are 3 sections of editorconfig configuration options: Formatting, Code Sty
 Name | Base Class | Option | Diagnostic 
 -|-|-|-
 dotnet_style_qualification_for_field | AbstractQualifyMemberAccessDiagnosticAnalyzer | CodeStyleOptions.QualifyFieldAccess | AddQualificationDiagnosticId = "IDE0009"
-dotnet_style_qualification_for_property |  AbstractQualifyMemberAccessDiagnosticAnalyzer | CodeStyleOptions.QualifyPropertyAccess | AddQualificationDiagnosticId = "IDE0009"
+dotnet_style_qualification_for_property | AbstractQualifyMemberAccessDiagnosticAnalyzer | CodeStyleOptions.QualifyPropertyAccess | AddQualificationDiagnosticId = "IDE0009"
 dotnet_style_qualification_for_method | AbstractQualifyMemberAccessDiagnosticAnalyzer | CodeStyleOptions.QualifyMethodAccess | AddQualificationDiagnosticId = "IDE0009"
 dotnet_style_qualification_for_event | AbstractQualifyMemberAccessDiagnosticAnalyzer | CodeStyleOptions.QualifyEventAccess | AddQualificationDiagnosticId = "IDE0009"
 
@@ -44,6 +44,7 @@ dotnet_style_prefer_auto_properties | AbstractUseAutoPropertyAnalyzer | CodeStyl
 dotnet_style_prefer_is_null_check_over_reference_equality_method | AbstractUseIsNullCheckForReferenceEqualsDiagnosticAnalyzer | CodeStyleOptions.PreferIsNullCheckOverReferenceEqualityMethod | UseIsNullCheckDiagnosticId = "IDE0041"
 dotnet_style_prefer_conditional_expression_over_assignment | AbstractUseConditionalExpressionForAssignmentDiagnosticAnalyzer | CodeStyleOptions.PreferConditionalExpressionOverAssignment | UseConditionalExpressionForAssignmentDiagnosticId = "IDE0045"
 dotnet_style_prefer_conditional_expression_over_return | AbstractUseConditionalExpressionForReturnDiagnosticAnalyzer | CodeStyleOptions.PreferConditionalExpressionOverReturn | UseConditionalExpressionForReturnDiagnosticId = "IDE0046"
+dotnet_style_prefer_compound_assignment | AbstractUseCompoundAssignmentDiagnosticAnalyzer | CodeStyleOptions.PreferCompoundAssignment | UseCompoundAssignmentDiagnosticId = "IDE0054"
 
 ## "Null" checking preferences
 Name | Base Class | Option | Diagnostic 
@@ -69,12 +70,15 @@ csharp_style_expression_bodied_operators | UseExpressionBodyForOperatorsHelper |
 csharp_style_expression_bodied_properties | UseExpressionBodyForPropertiesHelper | CSharpCodeStyleOptions.PreferExpressionBodiedProperties | UseExpressionBodyForPropertiesDiagnosticId = "IDE0025"
 csharp_style_expression_bodied_indexers | UseExpressionBodyForIndexersHelper | CSharpCodeStyleOptions.PreferExpressionBodiedIndexers | UseExpressionBodyForIndexersDiagnosticId = "IDE0026"
 csharp_style_expression_bodied_accessors | UseExpressionBodyForAccessorsHelper | CSharpCodeStyleOptions.PreferExpressionBodiedAccessors | UseExpressionBodyForAccessorsDiagnosticId = "IDE0027"
+csharp_style_expression_bodied_lambdas | UseExpressionBodyForLambdaDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferExpressionBodiedLambdas | UseExpressionBodyForLambdaExpressionsDiagnosticId = "IDE0053"
+csharp_style_expression_bodied_local_functions | UseExpressionBodyForLocalFunctionHelper | CSharpCodeStyleOptions.PreferExpressionBodiedLocalFunctions | UseExpressionBodyForLocalFunctionsDiagnosticId = "IDE0061"
 
 ## Pattern matching
 Name | Base Class | Option | Diagnostic 
 -|-|-|-
 csharp_style_pattern_matching_over_is_with_cast_check | CSharpIsAndCastCheckDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferPatternMatchingOverIsWithCastCheck | InlineIsTypeCheckId = "IDE0020"
 csharp_style_pattern_matching_over_as_with_null_check | CSharpAsAndNullCheckDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferPatternMatchingOverAsWithNullCheck | InlineAsTypeCheckId = "IDE0019"
+csharp_style_prefer_switch_expression | ConvertSwitchStatementToExpressionDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferSwitchExpression | ConvertSwitchStatementToExpressionDiagnosticId = "IDE0066"
 
 ## Inlined variable declarations
 Name | Base Class | Option | Diagnostic 
@@ -87,6 +91,10 @@ Name | Base Class | Option | Diagnostic
 csharp_prefer_simple_default_expression | CSharpUseDefaultLiteralDiagnosticAnalyzer | CSharpCodeStyleOptions.UseDefaultLiteralDiagnosticId | UseDefaultLiteralDiagnosticId = "IDE0034"
 csharp_style_deconstructed_variable_declaration | CSharpUseDeconstructionDiagnosticAnalyzer | CodeStyleOptions.PreferDeconstructedVariableDeclaration | UseDeconstructionDiagnosticId = "IDE0042"
 csharp_style_pattern_local_over_anonymous_function | CSharpUseLocalFunctionDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferLocalOverAnonymousFunction | UseLocalFunctionDiagnosticId = "IDE0039"
+csharp_style_prefer_index_operator | CSharpUseIndexOperatorDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferIndexOperator | UseIndexOperatorDiagnosticId = "IDE0056"
+csharp_style_prefer_range_operator | CSharpUseRangeOperatorDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferRangeOperator | UseRangeOperatorDiagnosticId = "IDE0057"
+csharp_prefer_static_local_function | MakeLocalFunctionStaticDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferStaticLocalFunction | MakeLocalFunctionStaticDiagnosticId = "IDE0062"
+csharp_prefer_simple_using_statement | UseSimpleUsingStatementDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferSimpleUsingStatement | UseSimpleUsingStatementDiagnosticId = "IDE0063"
 
 ## "Null" checking preferences
 Name | Base Class | Option | Diagnostic 
