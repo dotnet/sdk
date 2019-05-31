@@ -211,6 +211,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
                               RuntimePackNamePatterns="runtime.**RID**.Microsoft.WindowsDesktop.App"
                               RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
                               />
 
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
