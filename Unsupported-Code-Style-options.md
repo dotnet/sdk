@@ -20,8 +20,8 @@ dotnet_style_predefined_type_for_member_access | PreferFrameworkTypeDiagnosticAn
 Name | Base Class | Option | Diagnostic 
 -|-|-|-
 dotnet_style_require_accessibility_modifiers | AbstractAddAccessibilityModifiersDiagnosticAnalyzer | CodeStyleOptions.RequireAccessibilityModifiers | AddAccessibilityModifiersDiagnosticId = "IDE0040"
-csharp_preferred_modifier_order | AbstractOrderModifiersDiagnosticAnalyzer | OrderModifiersDiagnosticId = "IDE0036"
-visual_basic_preferred_modifier_order | AbstractOrderModifiersDiagnosticAnalyzer | OrderModifiersDiagnosticId = "IDE0036"
+csharp_preferred_modifier_order | AbstractOrderModifiersDiagnosticAnalyzer | CSharpCodeStyleOptions.PreferredModifierOrder | OrderModifiersDiagnosticId = "IDE0036"
+visual_basic_preferred_modifier_order | AbstractOrderModifiersDiagnosticAnalyzer | VisualBasicCodeStyleOptions.PreferredModifierOrder | OrderModifiersDiagnosticId = "IDE0036"
 dotnet_style_readonly_field | MakeFieldReadonlyDiagnosticAnalyzer | CodeStyleOption.PreferReadonly | MakeFieldReadonlyDiagnosticId = "IDE0044"
 
 ## Parentheses preferences
