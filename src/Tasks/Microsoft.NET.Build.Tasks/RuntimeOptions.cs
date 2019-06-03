@@ -9,7 +9,7 @@ namespace Microsoft.NET.Build.Tasks
 {
     internal class RuntimeOptions
     {
-        public string tfm { get; set; }
+        public string TFM { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string RollForward { get; set; }
