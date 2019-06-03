@@ -26,6 +26,11 @@
   </ItemGroup>
 
   <Target Name="LayoutTemplates" DependsOnTargets="SetupBundledComponents">
+    <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
+      <BundledTemplate Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
+      <BundledTemplate Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
+    </ItemGroup>
+
     <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
           DestinationFolder="$(SdkOutputDirectory)Templates/"/>
   </Target>

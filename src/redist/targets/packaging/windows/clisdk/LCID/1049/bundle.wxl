@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">Установщик [WixBundleName]</String>
+  <String Id="Title">[BUNDLEMONIKER]</String>
+  <String Id="ConfirmCancelMessage">Вы действительно хотите отменить?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">Предыдущая версия</String>
+  <String Id="HelpHeader">Справка по установке</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"каталог"[\]] — установка, восстановление, удаление или
+ создание полной локальной копии пакета в каталоге. По умолчанию —  "/install".
+
+/passive | /quiet — отображение минимального пользовательского интерфейса без запросов или работа без пользовательского интерфейса и
+   без запросов. По умолчанию отображаются пользовательский интерфейс и все запросы.
+
+/norestart — подавление всех попыток перезагрузки. По умолчанию в пользовательском интерфейсе перед перезагрузкой отображается запрос.
+/log [\[]"log.txt"[\]] — запись журнала в указанный файл. По умолчанию файл журнала создается в папке %TEMP%.</String>
+  <String Id="HelpCloseButton">&amp;Закрыть</String>
+  <String Id="InstallAcceptCheckbox">Я &amp;принимаю условия лицензии</String>
+  <String Id="InstallOptionsButton">&amp;Параметры</String>
+  <String Id="InstallInstallButton">&amp;Установить</String>
+  <String Id="InstallCloseButton">&amp;Закрыть</String>
+  <String Id="ProgressHeader">Ход установки</String>
+  <String Id="ProgressLabel">Обработка:</String>
+  <String Id="OverallProgressPackageText">Идет инициализация...</String>
+  <String Id="ProgressCancelButton">Отм&amp;ена</String>
+  <String Id="ModifyHeader">Изменение установки</String>
+  <String Id="ModifyRepairButton">&amp;Исправить</String>
+  <String Id="ModifyUninstallButton">&amp;Удалить</String>
+  <String Id="ModifyCloseButton">&amp;Закрыть</String>
+  <String Id="SuccessRepairHeader">Восстановление успешно завершено</String>
+  <String Id="SuccessUninstallHeader">Удаление успешно завершено</String>
+  <String Id="SuccessHeader">Установка успешно завершена</String>
+  <String Id="SuccessLaunchButton">&amp;Запустить</String>
+  <String Id="SuccessRestartText">Для завершения установки программного обеспечения нужно перезагрузить компьютер.</String>
+  <String Id="SuccessRestartButton">&amp;Перезапустить</String>
+  <String Id="SuccessCloseButton">&amp;Закрыть</String>
+  <String Id="FailureHeader">Настройка не завершена</String>
+  <String Id="FailureInstallHeader">Сбой установки</String>
+  <String Id="FailureUninstallHeader">Сбой удаления</String>
+  <String Id="FailureRepairHeader">Сбой восстановления</String>
+  <String Id="FailureHyperlinkLogText">Одна или несколько проблем вызывали сбой программы установки. Исправьте эти проблемы и попробуйте повторить установку. Дополнительные сведения см. в &lt;a href="#"&gt;файле журнала&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Необходимо перезагрузить компьютер, чтобы завершить откат программного обеспечения.</String>
+  <String Id="FailureRestartButton">&amp;Перезапустить</String>
+  <String Id="FailureCloseButton">З&amp;акрыть</String>
+  <String Id="FilesInUseHeader">Используемые файлы</String>
+  <String Id="FilesInUseLabel">Следующие приложения используют файлы, которые следует обновить:</String>
+  <String Id="FilesInUseCloseRadioButton">Закрыть &amp;приложения и попытаться перезапустить их.</String>
+  <String Id="FilesInUseDontCloseRadioButton">&amp;Не закрывать приложения. Потребуется перезагрузка.</String>
+  <String Id="FilesInUseOkButton">&amp;ОК</String>
+  <String Id="FilesInUseCancelButton">Отм&amp;ена</String>
+  <String Id="FirstTimeWelcomeMessage">Установка успешно выполнена.
+
+Следующее было установлено в: "[DOTNETHOME]"
+    • Пакет SDK для .NET Core [DOTNETSDKVERSION]
+    • Среда выполнения .NET Core [DOTNETRUNTIMEVERSION]
+    • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
+    • Среда выполнения Windows Desktop для .NET Core [WINFORMSANDWPFVERSION]
+
+Этот продукт собирает данные об использовании
+    • Дополнительные сведения и отказ https://aka.ms/dotnet-cli-telemetry
+
+Resources
+    • Документация по продукту Core https://aka.ms/dotnet-docs
+    • Документация по пакету SDK https://aka.ms/dotnet-cli-docs
+    • Заметки о выпуске https://aka.ms/netcore3releasenotes
+    • Руководства https://aka.ms/dotnet-tutorials</String>
+  <String Id="WelcomeHeaderMessage">Пакет SDK для .NET Core</String>
+  <String Id="WelcomeDescription">
+    .NET Core — это платформа разработки, которую можно использовать для создания приложений командной строки, микрослужб и современных веб-сайтов. Это кроссплатформенная система с открытым исходным кодом, которая поддерживается корпорацией Майкрософт. Надеемся, что она вам понравится!</String>
+  <String Id="LearnMoreTitle">Дополнительные сведения о .NET Core</String>
+  <String Id="ResourcesHeader">Ресурсы</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Документация по продукту Core&lt;/A&gt;</String>
+  <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Документация по пакету SDK&lt;/A&gt;</String>
+  <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Заявление о конфиденциальности&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Лицензионное соглашение для библиотеки .NET&lt;/A&gt;</String>
+  <String Id="InstallationNoteTitle">Примечание по установке</String>
+  <String Id="InstallationNote">В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты.
+  </String>
+  <String Id="VisualStudioWarning">Если вы планируете использовать .NET Core 3.0 с Visual Studio, требуется Visual Studio 2019 или более поздней версии. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Подробнее&lt;/A&gt;.
+  </String>
+</WixLocalization>

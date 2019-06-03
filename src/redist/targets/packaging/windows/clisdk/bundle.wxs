@@ -147,7 +147,7 @@
         <MsiProperty Name="DOTNETHOME_X86" Value="[DOTNETHOME_X86]" />
         <MsiProperty Name="DOTNETHOME_X64" Value="[DOTNETHOME_X64]" />
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />
-        <MsiProperty Name="ALLOWCLISDKMSIINSTALL" Value="True" />
+        <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
       <?if $(var.Platform)=x86?>
         <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
@@ -160,9 +160,12 @@
   <Fragment>
     <PayloadGroup Id="DotnetCoreBAPayloads">
       <Payload Name="thm.xml" Compressed="yes" SourceFile="bundle.thm" />
-      <Payload Name="thm.wxl" Compressed="yes" SourceFile="bundle.wxl" />
+      <!-- Default/Neutral localized content is US English -->
+      <Payload Name="thm.wxl" Compressed="yes" SourceFile="LCID\1033\bundle.wxl" />
       <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\osx\clisdk\resources\dotnetbackground.png" />
-
+      <?foreach LCID in $(var.LocalizedContentDirs)?>
+        <Payload Id="thm-$(var.LCID)" Compressed="yes" Name="$(var.LCID)\thm.wxl" SourceFile="LCID\$(var.LCID)\bundle.wxl" />
+      <?endforeach?>
       <Payload Name='eula.rtf' Compressed='yes' SourceFile='!(wix.WixStdbaLicenseRtf)' />
     </PayloadGroup>
 

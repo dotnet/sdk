@@ -33,7 +33,6 @@ function RunCandleForBundle
     pushd "$WixRoot"
 
     Write-Information "Running candle for bundle.."
-    $AuthWsxRoot =  $PSScriptRoot
 
     $candleOutput = .\candle.exe -nologo `
         -dDotnetSrc="$inputDir" `
@@ -60,6 +59,7 @@ function RunCandleForBundle
         -dAdditionalSharedHostMsiSourcePath="$AdditionalSharedHostMSIFile" `
         -dDotNetRuntimeVersion="$DotNetRuntimeVersion" `
         -dAspNetCoreVersion="$AspNetCoreVersion" `
+        -dLocalizedContentDirs="$LocalizedContentDirs" `
         -arch "$Architecture" `
         -ext WixBalExtension.dll `
         -ext WixUtilExtension.dll `
@@ -84,7 +84,6 @@ function RunLightForBundle
     pushd "$WixRoot"
 
     Write-Information "Running light for bundle.."
-    $AuthWsxRoot =  $PSScriptRoot
 
     $lightOutput = .\light.exe -nologo `
         -cultures:en-us `
@@ -119,12 +118,15 @@ if(!(Test-Path $ASPNETRuntimeWixLibFile))
     throw "$ASPNETRuntimeWixLibFile not found"
 }
 
-Write-Information "Creating dotnet Bundle at $DotnetBundleOutput"
-
 if([string]::IsNullOrEmpty($WixRoot))
 {
     Exit -1
 }
+
+Write-Information "Creating dotnet Bundle at $DotnetBundleOutput"
+
+$AuthWsxRoot = $PSScriptRoot
+$LocalizedContentDirs = (Get-ChildItem "$AuthWsxRoot\LCID\*\bundle.wxl").Directory.Name -join ';'
 
 if(-Not (RunCandleForBundle))
 {

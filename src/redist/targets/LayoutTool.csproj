@@ -16,6 +16,7 @@
     </PropertyGroup>
     <ItemGroup>
       <BundledToolFiles Include="$(RestoredToolRoot)\**\*.*" />
+      <BundledToolFiles Remove="$(RestoredToolRoot)\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(BundledToolFiles)"
