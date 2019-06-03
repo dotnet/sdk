@@ -113,7 +113,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             if (projectContext.IsFrameworkDependent)
             {
-                runtimeOptions.TFM = TargetFramework;
+                runtimeOptions.Tfm = TargetFramework;
                 runtimeOptions.RollForward = RollForward;
 
                 if (projectContext.RuntimeFrameworks == null || projectContext.RuntimeFrameworks.Length == 0)
