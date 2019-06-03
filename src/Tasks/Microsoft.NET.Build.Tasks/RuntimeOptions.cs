@@ -11,6 +11,9 @@ namespace Microsoft.NET.Build.Tasks
     {
         public string tfm { get; set; }
 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string rollForward { get; set; }
+
         public RuntimeConfigFramework Framework { get; set; }
 
         public List<RuntimeConfigFramework> Frameworks { get; set; }

@@ -10,7 +10,6 @@ using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
@@ -39,6 +38,8 @@ namespace Microsoft.NET.Build.Tasks
         public string PlatformLibraryName { get; set; }
 
         public ITaskItem[] RuntimeFrameworks { get; set; }
+
+        public string RollForward { get; set; }
 
         public string UserRuntimeConfig { get; set; }
 
@@ -113,6 +114,7 @@ namespace Microsoft.NET.Build.Tasks
             if (projectContext.IsFrameworkDependent)
             {
                 runtimeOptions.tfm = TargetFramework;
+                runtimeOptions.rollForward = RollForward;
 
                 if (projectContext.RuntimeFrameworks == null || projectContext.RuntimeFrameworks.Length == 0)
                 {
