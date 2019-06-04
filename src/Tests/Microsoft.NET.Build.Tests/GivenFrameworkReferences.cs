@@ -193,7 +193,7 @@ namespace FrameworkReferenceTest
                 .HaveStdOutContaining("NETSDK1073");
         }
 
-        [CoreMSBuildOnlyTheory]
+        [Theory]
         [InlineData("Major", true)]
         [InlineData("latestMinor", true)]
         [InlineData("Invalid", false)]
@@ -239,7 +239,7 @@ namespace FrameworkReferenceTest
             }
         }
 
-        [CoreMSBuildOnlyFact]
+        [Fact]
         public void RollForwardIsNotSupportedOn22()
         {
             var testProject = new TestProject()
