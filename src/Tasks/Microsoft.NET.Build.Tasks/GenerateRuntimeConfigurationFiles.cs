@@ -53,6 +53,16 @@ namespace Microsoft.NET.Build.Tasks
 
         List<ITaskItem> _filesWritten = new List<ITaskItem>();
 
+        private static readonly string[] RollForwardValues = new string[]
+        {
+            "Disable",
+            "LatestPatch",
+            "Minor",
+            "LatestMinor",
+            "Major",
+            "LatestMajor"
+        };
+
         [Output]
         public ITaskItem[] FilesWritten
         {
@@ -68,6 +78,15 @@ namespace Microsoft.NET.Build.Tasks
                 if (AdditionalProbingPaths?.Any() == true && !writeDevRuntimeConfig)
                 {
                     Log.LogWarning(Strings.SkippingAdditionalProbingPaths);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(RollForward))
+            {
+                if (!RollForwardValues.Any(v => string.Equals(RollForward, v, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Log.LogError(Strings.InvalidRollForwardValue, RollForward, string.Join(", ", RollForwardValues));
+                    return;
                 }
             }
 

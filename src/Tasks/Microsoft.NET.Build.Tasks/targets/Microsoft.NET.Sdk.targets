@@ -191,6 +191,9 @@ Copyright (c) .NET Foundation. All rights reserved.
           Inputs="@(GenerateRuntimeConfigurationFilesInputs)"
           Outputs="$(ProjectRuntimeConfigFilePath);$(ProjectRuntimeConfigDevFilePath)">
 
+    <NETSdkError Condition="'$(RollForward)' != '' and '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'"
+                 ResourceName="RollForwardRequiresVersion30"/>
+
     <GenerateRuntimeConfigurationFiles AssetsFilePath="$(ProjectAssetsFile)"
                                        TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
                                        TargetFramework="$(TargetFramework)"
