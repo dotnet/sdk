@@ -1,18 +1,18 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
-using FluentAssertions;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
@@ -23,19 +23,19 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/p:DisableTransitiveProjectReferences=true"});
         }
         
-        [WindowsOnlyFact]
+        [Fact]
         public void It_builds_the_project_successfully_with_static_graph_and_isolation()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/graph", "/isolate"});
         }
         
-        [WindowsOnlyFact]
+        [Fact]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
             var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/graph", "/isolate"});
@@ -61,13 +61,10 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        private (TestAsset TestAsset, IReadOnlyDictionary<string, DirectoryInfo> OutputDirectories) BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(string[] msbuildArguments)
+        private (TestAsset TestAsset, IReadOnlyDictionary<string, DirectoryInfo> OutputDirectories)
+            BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(string[] msbuildArguments, [CallerMemberName] string callingMethod = "")
         {
-            // NOTE the project dependencies: 1->2->4->5; 1->3->4->5 
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithTransitiveDependenciesAndTransitiveCompileReference")
-                .WithSource();
+            var testAsset = _testAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
 
             testAsset.Restore(Log, "1");
 
@@ -113,13 +110,13 @@ namespace Microsoft.NET.Build.Tests
                                 "4.dll",
                                 "4.pdb",
                                 "5.dll",
-                                "5.pdb",
+                                "5.pdb"
                             }));
 
                 DotnetCommand runCommand = new DotnetCommand(
                     Log,
                     "run",
-                    $"--framework",
+                    "--framework",
                     targetFramework,
                     "--project",
                     Path.Combine(testAsset.TestRoot, "1", "1.csproj"));
@@ -150,11 +147,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully_when_RAR_does_not_find_all_references()
         {
-            // NOTE the project dependencies: 1->2->3
-
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithTransitiveDependenciesButNoTransitiveCompileReference")
-                .WithSource();
+            var testAsset = _testAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
 
             testAsset.Restore(Log, "1");
 
@@ -173,7 +166,7 @@ namespace Microsoft.NET.Build.Tests
                 "1.runtimeconfig.json",
                 "1.runtimeconfig.dev.json",
                 "2.dll",
-                "2.pdb",
+                "2.pdb"
             });
 
             new DotnetCommand(Log, Path.Combine(outputDirectory.FullName, "1.dll"))
@@ -198,6 +191,145 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectories = targetFrameworks.ToImmutableDictionary(tf => tf, tf => buildCommand.GetOutputDirectory(tf));
 
             return (buildResult, outputDirectories);
+        }
+
+        private const string SourceFile = @"
+using System;
+
+namespace _{0}
+{{
+    public class Class1
+    {{
+        static void Main(string[] args)
+        {{
+            Message();
+        }}
+
+        public static void Message()
+        {{
+            Console.WriteLine(""Hello World from {0}"");
+            {1}
+        }}
+    }}
+}}
+";
+
+        private TestProject GraphWithoutRuntimeDependencies()
+        {
+            var project4 = new TestProject
+            {
+                Name = "4",
+                IsSdkProject = true,
+                TargetFrameworks = "netstandard1.3",
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "4", string.Empty)
+                }
+            };
+            
+            var project3 = new TestProject
+            {
+                Name = "3",
+                IsSdkProject = true,
+                TargetFrameworks = "netstandard1.6",
+                ReferencedProjects = { project4 },
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "3", string.Empty)
+                }
+            };
+            
+            var project2 = new TestProject
+            {
+                Name = "2",
+                IsSdkProject = true,
+                TargetFrameworks = "netstandard2.0",
+                ReferencedProjects = { project3 },
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "2", string.Empty)
+                }
+            };
+            
+            var project1 = new TestProject
+            {
+                Name = "1",
+                IsExe = true,
+                IsSdkProject = true,
+                TargetFrameworks = "netcoreapp2.1",
+                ReferencedProjects = { project2 },
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "1", string.Empty)
+                }
+            };
+
+            return project1;
+        }
+
+        private TestProject DiamondShapeGraphWithRuntimeDependencies()
+        {
+            var project5 = new TestProject
+            {
+                Name = "5",
+                IsSdkProject = true,
+                TargetFrameworks = "netstandard1.3",
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "5", string.Empty)
+                }
+            };
+            
+            var project4 = new TestProject
+            {
+                Name = "4",
+                IsSdkProject = true,
+                TargetFrameworks = "netstandard1.3;netstandard1.6;net461",
+                ReferencedProjects = { project5 },
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "4", "_5.Class1.Message();")
+                }
+            };
+            
+            var project3 = new TestProject
+            {
+                Name = "3",
+                IsSdkProject = true,
+                TargetFrameworks = "netstandard2.0;net462",
+                ReferencedProjects = { project4 },
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "3", "_4.Class1.Message();")
+                }
+            };
+            
+            var project2 = new TestProject
+            {
+                Name = "2",
+                IsSdkProject = true,
+                TargetFrameworks = "netstandard1.5",
+                ReferencedProjects = { project4 },
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "2", "_4.Class1.Message();")
+                }
+            };
+            
+            var project1 = new TestProject
+            {
+                Name = "1",
+                IsExe = true,
+                IsSdkProject = true,
+                TargetFrameworks = "netcoreapp2.1;net472",
+                ReferencedProjects = { project2, project3 },
+                SourceFiles = new Dictionary<string, string>
+                {
+                    ["Program.cs"] = string.Format(SourceFile, "1", " _2.Class1.Message(); _3.Class1.Message();")
+                }
+            };
+
+            return project1;
         }
     }
 }
