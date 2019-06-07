@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks
         private Dictionary<string, List<ReferenceInfo>> _compileReferences;
         private Dictionary<string, List<ResolvedFile>> _resolvedNuGetFiles;
         private Dictionary<string, SingleProjectInfo> _referenceProjectInfos;
-        private IEnumerable<string> _excludeFromPublishPackageIds;
+        private IEnumerable<string> _excludeFromOutputPackageIds;
         private Dictionary<string, List<RuntimePackAssetInfo>> _runtimePackAssets;
         private CompilationOptions _compilationOptions;
         private string _referenceAssembliesPath;
@@ -160,9 +160,9 @@ namespace Microsoft.NET.Build.Tasks
             return this;
         }
 
-        public DependencyContextBuilder2 WithExcludeFromPublishAssets(IEnumerable<string> excludeFromPublishPackageIds)
+        public DependencyContextBuilder2 WithExcludeFromOutput(IEnumerable<string> excludeFromOutputPackageIds)
         {
-            _excludeFromPublishPackageIds = excludeFromPublishPackageIds;
+            _excludeFromOutputPackageIds = excludeFromOutputPackageIds;
             return this;
         }
 
@@ -749,17 +749,17 @@ namespace Microsoft.NET.Build.Tasks
                 _dependencyLibraries[packageToExcludeFromRuntime].ExcludeFromRuntime = true;
             }
 
-            if (_excludeFromPublishPackageIds != null && _excludeFromPublishPackageIds.Any())
+            if (_excludeFromOutputPackageIds != null && _excludeFromOutputPackageIds.Any())
             {
                 //  Include transitive dependencies of all top-level dependencies which are not
                 //  excluded from publish
 
                 Dictionary<string, DependencyLibrary> includedDependencies = new Dictionary<string, DependencyLibrary>(StringComparer.OrdinalIgnoreCase);
 
-                HashSet<string> excludeFromPublishPackageIds = new HashSet<string>(_excludeFromPublishPackageIds);
+                HashSet<string> excludeFromOutputPackageIds = new HashSet<string>(_excludeFromOutputPackageIds);
 
                 Stack<string> dependenciesToWalk = new Stack<string>(
-                    _mainProjectDependencies.Except(_excludeFromPublishPackageIds, StringComparer.OrdinalIgnoreCase));
+                    _mainProjectDependencies.Except(_excludeFromOutputPackageIds, StringComparer.OrdinalIgnoreCase));
 
                 while (dependenciesToWalk.Any())
                 {
@@ -785,7 +785,7 @@ namespace Microsoft.NET.Build.Tasks
                     //  Libraries explicitly marked as exclude from publish should be excluded from
                     //  publish even if there are other transitive dependencies to them
                     if (!includedDependencies.ContainsKey(dependencyLibrary.Name) ||
-                        excludeFromPublishPackageIds.Contains(dependencyLibrary.Name))
+                        excludeFromOutputPackageIds.Contains(dependencyLibrary.Name))
                     {
                         dependencyLibrary.ExcludeFromCompilation = true;
                         dependencyLibrary.ExcludeFromRuntime = true;
