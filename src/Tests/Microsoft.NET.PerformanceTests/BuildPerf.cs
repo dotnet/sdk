@@ -230,6 +230,30 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, "Full Windows Forms hello world", operation);
         }
 
+        [WindowsOnlyTheory]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
+        [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
+        public void BuildNetCoreWindowsFormsLarge(ProjectPerfOperation operation)
+        {
+            var testAsset = _testAssetsManager
+               .CopyTestAsset("WinformsNetCorePerfApp1", identifier: operation.ToString())
+               .WithSource();
+
+            TestProject(testAsset.Path, "Windows Forms Large", operation);
+        }
+
+        [FullMSBuildOnlyTheory]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
+        [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
+        public void BuildNetFullFrameworkWindowsFormsLarge(ProjectPerfOperation operation)
+        {
+            var testAsset = _testAssetsManager
+               .CopyTestAsset("WinformsNetFrameworkPerfApp1", identifier: operation.ToString())
+               .WithSource();
+
+            TestProject(testAsset.Path, "Full Windows Forms large", operation);
+        }
+
         public enum ProjectPerfOperation
         {
             CleanBuild,
