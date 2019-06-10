@@ -2,17 +2,22 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 param(
-    [Parameter(Mandatory=$true)][string]$SdkBundlePath,
+    [Parameter(Mandatory=$true)][string]$ContentPath,
     [Parameter(Mandatory=$true)][string]$NugetVersion,
     [Parameter(Mandatory=$true)][string]$NuspecFile,
-    [Parameter(Mandatory=$true)][string]$NupkgFile
+    [Parameter(Mandatory=$true)][string]$NupkgFile,
+    [Parameter(Mandatory=$false)][string]$Architecture,
+    [Parameter(Mandatory=$false)][string]$CabPath
 )
 
 $RepoRoot = Convert-Path "$PSScriptRoot\..\..\..\..\..\.."
 $NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget"
 $NuGetExe = Join-Path $NuGetDir "nuget.exe"
 $OutputDirectory = [System.IO.Path]::GetDirectoryName($NupkgFile)
-$SdkBundlePath = [System.IO.Path]::GetFullPath($SdkBundlePath)
+$ContentPath = [System.IO.Path]::GetFullPath($ContentPath)
+if ($CabPath) {
+    $CabPath = [System.IO.Path]::GetFullPath($CabPath)
+}
 
 if (-not (Test-Path $NuGetDir)) {
     New-Item -ItemType Directory -Force -Path $NuGetDir | Out-Null
@@ -28,5 +33,5 @@ if (Test-Path $NupkgFile) {
     Remove-Item -Force $NupkgFile
 }
 
-& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties DOTNET_BUNDLE=$SdkBundlePath
+& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties PAYLOAD_FILES=$ContentPath`;DOTNET_CAB_FILE=$CabPath`;ARCH=$Architecture
 Exit $LastExitCode
