@@ -501,8 +501,11 @@ public static class Program
                 .HaveStdOutContaining("NETSDK1085");
         }
 
+        [WindowsOnlyFact]
+        public void It_contains_no_duplicates_in_resolved_publish_assets_on_windows()
+            => It_contains_no_duplicates_in_resolved_publish_assets("windows");
+
         [Theory]
-        [InlineData("windows")]
         [InlineData("console")]
         [InlineData("web")]
         public void It_contains_no_duplicates_in_resolved_publish_assets(string type)
@@ -520,10 +523,6 @@ public static class Program
             switch (type)
             {
                 case "windows":
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        return; // Cannot build for windows on non-Windows
-                    }
                     testProject.ProjectSdk = "Microsoft.NET.Sdk.WindowsDesktop";
                     testProject.AdditionalProperties.Add("UseWpf", "true");
                     testProject.AdditionalProperties.Add("UseWindowsForms", "true");
