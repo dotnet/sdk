@@ -1,0 +1,45 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
+using Microsoft.TemplateEngine.Edge;
+
+namespace Microsoft.TemplateSearch.Common
+{
+    public class NuGetMetadataSearchSource : FileMetadataSearchSource
+    {
+        protected static readonly string _templateDiscoveryMetadataFile = "nugetTemplateSearchInfo.json";
+
+        private readonly ISearchInfoFileProvider _searchInfoFileProvider;
+
+        public NuGetMetadataSearchSource()
+        {
+            _searchInfoFileProvider = new BlobStoreSourceFileProvider();
+        }
+
+        public override string DisplayName => "NuGet";
+
+        public async override Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IInstallUnitDescriptor> existingInstallDescriptors)
+        {
+            Paths paths = new Paths(environmentSettings);
+            string searchMetadataFileLocation = Path.Combine(paths.User.BaseDir, _templateDiscoveryMetadataFile);
+
+            if (!await _searchInfoFileProvider.TryEnsureSearchFileAsync(paths, searchMetadataFileLocation))
+            {
+                return false;
+            }
+
+            IFileMetadataTemplateSearchCache searchCache = CreateSearchCache(environmentSettings);
+            NupkgHigherVersionInstalledPackFilter packFilter = new NupkgHigherVersionInstalledPackFilter(existingInstallDescriptors);
+            Configure(searchCache, packFilter);
+
+            return true;
+        }
+
+        protected virtual IFileMetadataTemplateSearchCache CreateSearchCache(IEngineEnvironmentSettings environmentSettings)
+        {
+            return new FileMetadataTemplateSearchCache(environmentSettings, _templateDiscoveryMetadataFile);
+        }
+    }
+}
