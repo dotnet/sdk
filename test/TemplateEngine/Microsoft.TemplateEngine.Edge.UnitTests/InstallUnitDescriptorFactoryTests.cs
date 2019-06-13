@@ -31,7 +31,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             JObject descriptorObject = JObject.Parse(serializedDescriptor);
             JProperty descriptorProperty = descriptorObject.Properties().First();
 
-            //JObject descriptorJObject = JObject.Parse(serializedDescriptor);
             Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
 
@@ -45,7 +44,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 }";
             JObject descriptorObject = JObject.Parse(serializedDescriptor);
             JProperty descriptorProperty = descriptorObject.Properties().First();
-            //JObject descriptorJObject = JObject.Parse(serializedDescriptor);
             Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
 
@@ -59,7 +57,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             JObject descriptorObject = JObject.Parse(serializedDescriptor);
             JProperty descriptorProperty = descriptorObject.Properties().First();
-            //JObject descriptorJObject = JObject.Parse(serializedDescriptor);
             Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
 
@@ -77,7 +74,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 }";
             JObject descriptorObject = JObject.Parse(serializedDescriptor);
             JProperty descriptorProperty = descriptorObject.Properties().First();
-            //JObject descriptorJObject = JObject.Parse(serializedDescriptor);
             Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
     }

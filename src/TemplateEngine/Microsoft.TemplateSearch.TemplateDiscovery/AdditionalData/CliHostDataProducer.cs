@@ -27,7 +27,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             {
                 HostSpecificTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
 
-                // store the host data if it has any info that could affectsearching for this template.
+                // store the host data if it has any info that could affect searching for this template.
                 if (hostData.IsHidden || hostData.SymbolInfo.Count > 0)
                 {
                     _hostDataForPackByTemplate[template.Identity] = hostData;

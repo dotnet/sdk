@@ -17,7 +17,7 @@ namespace Microsoft.TemplateSearch.Common
                 foreach (TemplateIdentificationEntry templateIdentityInfo in entry.Value.TemplateIdentificationEntry)
                 {
                     // Empty entries for the identity or group identity are authoring errors.
-                    // Here, they're just filtered to prevent them from being matched as enmpty string.
+                    // Here, they're just filtered to prevent them from being matched as empty string.
 
                     if (!string.IsNullOrEmpty(templateIdentityInfo.Identity))
                     {
