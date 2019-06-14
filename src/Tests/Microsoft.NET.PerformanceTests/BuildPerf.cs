@@ -254,6 +254,18 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, "Full Windows Forms large", operation);
         }
 
+        [WindowsOnlyTheory]
+        [InlineData(ProjectPerfOperation.CleanBuild)]
+        [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
+        public void BuildNetCoreWpfLarge(ProjectPerfOperation operation)
+        {
+            var testAsset = _testAssetsManager
+               .CopyTestAsset("WpfLarge", identifier: operation.ToString())
+               .WithSource();
+
+            TestProject(Path.Combine(testAsset.Path, "WpfLarge"), "WPF large", operation);
+        }
+
         [FullMSBuildOnlyTheory]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
@@ -263,7 +275,7 @@ namespace Microsoft.NET.Perf.Tests
                .CopyTestAsset("WpfLargeFullframework", identifier: operation.ToString())
                .WithSource();
 
-            TestProject(Path.Combine(testAsset.Path, "WpfLargeFullframework"), "Full WPF large", operation);
+            TestProject(Path.Combine(testAsset.Path, "WpfLargeFullframework"), "Full framework WPF large", operation);
         }
 
         public enum ProjectPerfOperation
