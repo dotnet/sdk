@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 using Microsoft.TemplateEngine.Edge.TemplateUpdates;
-using Microsoft.TemplateSearch.Common;
 
-namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
+namespace Microsoft.TemplateSearch.Common.TemplateUpdate
 {
-    internal class NupkgUpdater : IUpdater
+    public class NupkgUpdater : IUpdater
     {
-        public Guid Id { get; } = new Guid("DB5BF8D8-6181-496A-97DA-58616E135701");
+        public Guid Id => new Guid("DB5BF8D8-6181-496A-97DA-58616E135701");
 
-        public Guid DescriptorFactoryId { get; } = NupkgInstallUnitDescriptorFactory.FactoryId;
+        public Guid DescriptorFactoryId => NupkgInstallUnitDescriptorFactory.FactoryId;
 
-        public string DisplayIdentifier { get; } = "Nupkg";
+        public string DisplayIdentifier => "Nupkg";
+
         private IEngineEnvironmentSettings _environmentSettings;
         private IReadOnlyList<IInstallUnitDescriptor> _existingInstallDescriptors;
 
@@ -42,16 +42,9 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
 
             foreach (ITemplateSearchSource searchSource in _environmentSettings.SettingsLoader.Components.OfType<ITemplateSearchSource>())
             {
-                try
+                if (await searchSource.TryConfigure(_environmentSettings, _existingInstallDescriptors))
                 {
-                    if (await searchSource.TryConfigure(_environmentSettings, _existingInstallDescriptors))
-                    {
-                        searchSourceList.Add(searchSource);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Reporter.Error.WriteLine($"Error configuring search source: {searchSource.DisplayName}.\r\nError = {ex.Message}");
+                    searchSourceList.Add(searchSource);
                 }
             }
 
@@ -79,8 +72,8 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
                     if (installedPackToInstallDescriptorMap.TryGetValue(packName, out IInstallUnitDescriptor installDescriptor)
                             && (installDescriptor is NupkgInstallUnitDescriptor nupkgInstallDescriptor))
                     {
-                        string installString = $"{packName}::{candidateUpdatePackMatch.Value.Version}";
-                        string displayString = string.Format(LocalizableStrings.NuGetPackUpdateDisplayInfo, packName, nupkgInstallDescriptor.Version);
+                        string installString = $"{packName}::{candidateUpdatePackMatch.Value.Version}"; // the package::version that will be installed
+                        string displayString = $"{packName}::{nupkgInstallDescriptor.Version}";         // the package::version currently installed
                         IUpdateUnitDescriptor updateDescriptor = new UpdateUnitDescriptor(installDescriptor, installString, displayString);
                         updateList.Add(updateDescriptor);
                     }
@@ -90,7 +83,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
             return updateList;
         }
 
-        public void ApplyUpdates(IInstaller installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply)
+        public void ApplyUpdates(IInstallerBase installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply)
         {
             IReadOnlyList<IUpdateUnitDescriptor> filteredUpdateToApply = updatesToApply.Where(x => x.InstallUnitDescriptor.FactoryId == DescriptorFactoryId).ToList();
             installer.InstallPackages(filteredUpdateToApply.Select(x => x.InstallString));

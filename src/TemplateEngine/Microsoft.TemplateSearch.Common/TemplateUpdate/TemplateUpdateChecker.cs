@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 using Microsoft.TemplateEngine.Edge.Settings;
 
-namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
+namespace Microsoft.TemplateSearch.Common.TemplateUpdate
 {
     public class TemplateUpdateChecker
     {
@@ -22,15 +22,16 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
         // Maps the install unit descriptor factory ids to the corresponding updaters.
         private Dictionary<Guid, IUpdater> _factoryIdToUpdaterMap;
 
-        public async Task<IReadOnlyList<IUpdateUnitDescriptor>> CheckForUpdatesAsync(IReadOnlyList<IInstallUnitDescriptor> installUnitsToCheck)
+        public async Task<IUpdateCheckResult> CheckForUpdatesAsync(IReadOnlyList<IInstallUnitDescriptor> installUnitsToCheck)
         {
             EnsureFactoryToUpdaterMapping();
 
-            IReadOnlyDictionary<Guid, List<IInstallUnitDescriptor>> installUnitsToCheckForUpdates = GetInstallUnitsToCheckForUpdates(installUnitsToCheck);
+            InstallUnitsForUpdateChecks descriptorUpdateCheckInfo = GetInstallUnitsToCheckForUpdates(installUnitsToCheck);
             List<IUpdateUnitDescriptor> updateDescriptors = new List<IUpdateUnitDescriptor>();
+            List<string> failedUpdateCheckers = new List<string>();
 
             // check for updates
-            foreach (KeyValuePair<Guid, List<IInstallUnitDescriptor>> descriptorsForType in installUnitsToCheckForUpdates)
+            foreach (KeyValuePair<Guid, List<IInstallUnitDescriptor>> descriptorsForType in descriptorUpdateCheckInfo.DescriptorsByFactory)
             {
                 if (_factoryIdToUpdaterMap.TryGetValue(descriptorsForType.Key, out IUpdater updater))
                 {
@@ -42,7 +43,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
                     }
                     catch
                     {
-                        Reporter.Error.WriteLine(string.Format(LocalizableStrings.UpdateCheckError.Bold().Red(), updater.DisplayIdentifier));
+                        failedUpdateCheckers.Add(updater.DisplayIdentifier);
                     }
 
                     if (updatesForType != null && updatesForType.Count > 0)
@@ -52,10 +53,23 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
                 }
             }
 
-            return updateDescriptors;
+            return new UpdateCheckResult(updateDescriptors, failedUpdateCheckers, descriptorUpdateCheckInfo.DescriptorsWithoutFactories);
         }
 
-        private IReadOnlyDictionary<Guid, List<IInstallUnitDescriptor>> GetInstallUnitsToCheckForUpdates(IReadOnlyList<IInstallUnitDescriptor> installUnitsToCheck)
+        private class InstallUnitsForUpdateChecks
+        {
+            public InstallUnitsForUpdateChecks(IReadOnlyDictionary<Guid, List<IInstallUnitDescriptor>> descriptorsByFactory, IReadOnlyList<IInstallUnitDescriptor> descriptorsWithoutFactories)
+            {
+                DescriptorsByFactory = descriptorsByFactory;
+                DescriptorsWithoutFactories = descriptorsWithoutFactories;
+            }
+
+            public IReadOnlyDictionary<Guid, List<IInstallUnitDescriptor>> DescriptorsByFactory { get; }
+
+            public IReadOnlyList<IInstallUnitDescriptor> DescriptorsWithoutFactories { get; }
+        }
+
+        private InstallUnitsForUpdateChecks GetInstallUnitsToCheckForUpdates(IReadOnlyList<IInstallUnitDescriptor> installUnitsToCheck)
         {
             Dictionary<Guid, List<IInstallUnitDescriptor>> installUnitsToCheckForUpdates = new Dictionary<Guid, List<IInstallUnitDescriptor>>();
             List<IInstallUnitDescriptor> descriptorsWithoutUpdaters = new List<IInstallUnitDescriptor>();
@@ -79,18 +93,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
                 }
             }
 
-            if (descriptorsWithoutUpdaters.Count > 0)
-            {
-                Reporter.Output.WriteLine(LocalizableStrings.UpdateCheckerNotAvailable.Bold().Red());
-                foreach (IInstallUnitDescriptor descriptor in descriptorsWithoutUpdaters)
-                {
-                    Reporter.Output.WriteLine($"  {descriptor.UninstallString}".Bold().Red());
-                }
-
-                Reporter.Output.WriteLine();
-            }
-
-            return installUnitsToCheckForUpdates;
+            return new InstallUnitsForUpdateChecks(installUnitsToCheckForUpdates, descriptorsWithoutUpdaters);
         }
 
         public bool TryGetUpdaterForDescriptorFactoryId(Guid factoryId, out IUpdater updater)

@@ -7,6 +7,8 @@ using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 
 namespace Microsoft.TemplateSearch.Common
 {
+    // Always inherit from this, don't make it non-abstract.
+    // Making this be not abstract will cause problems with the registered components.
     public abstract class FileMetadataSearchSource : ITemplateSearchSource
     {
         protected IFileMetadataTemplateSearchCache _searchCache;
@@ -22,7 +24,7 @@ namespace Microsoft.TemplateSearch.Common
 
         public abstract string DisplayName { get; }
 
-        public Guid Id => new Guid("6EA368C4-8A56-444C-91D1-55150B296BF2");
+        public abstract Guid Id { get; }
 
         public Task<IReadOnlyList<ITemplateNameSearchResult>> CheckForTemplateNameMatchesAsync(string searchName)
         {

@@ -7,7 +7,9 @@ using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    public class NuGetMetadataSearchSource : FileMetadataSearchSource
+    // Always inherit from this, don't make it non-abstract.
+    // Making this be not abstract will cause problems with the registered components.
+    public abstract class NuGetMetadataSearchSource : FileMetadataSearchSource
     {
         protected static readonly string _templateDiscoveryMetadataFile = "nugetTemplateSearchInfo.json";
 

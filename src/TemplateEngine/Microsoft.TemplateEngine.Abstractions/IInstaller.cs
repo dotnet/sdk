@@ -3,16 +3,12 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.TemplateEngine.Cli
+namespace Microsoft.TemplateEngine.Abstractions
 {
-    public interface IInstaller
+    public interface IInstaller : IInstallerBase
     {
-        void InstallPackages(IEnumerable<string> installationRequests);
-
         void InstallPackages(IEnumerable<string> installationRequests, IList<string> nuGetSources);
 
         void InstallPackages(IEnumerable<string> installationRequests, IList<string> nuGetSources, bool debugAllowDevInstall);
-
-        IEnumerable<string> Uninstall(IEnumerable<string> uninstallRequests);
     }
 }

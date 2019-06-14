@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -12,7 +12,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.IDE
 {
-    internal class Installer : IInstaller
+    internal class Installer : IInstallerBase
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;

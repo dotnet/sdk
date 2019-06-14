@@ -4,12 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 
-namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
+namespace Microsoft.TemplateEngine.Abstractions.TemplateUpdates
 {
-    // This interface has to stay in the CLI because of its reference to IInstaller
     public interface IUpdater : IIdentifiedComponent
     {
         Guid DescriptorFactoryId { get; }
@@ -20,6 +17,6 @@ namespace Microsoft.TemplateEngine.Cli.TemplateUpdater
 
         Task<IReadOnlyList<IUpdateUnitDescriptor>> CheckForUpdatesAsync(IReadOnlyList<IInstallUnitDescriptor> installDescriptorsToCheck);
 
-        void ApplyUpdates(IInstaller installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply);
+        void ApplyUpdates(IInstallerBase installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply);
     }
 }

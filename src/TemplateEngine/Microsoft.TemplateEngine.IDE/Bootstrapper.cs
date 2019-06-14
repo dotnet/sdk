@@ -16,15 +16,15 @@ namespace Microsoft.TemplateEngine.IDE
     public class Bootstrapper
     {
         private readonly ITemplateEngineHost _host;
-        private readonly Action<IEngineEnvironmentSettings, IInstaller> _onFirstRun;
+        private readonly Action<IEngineEnvironmentSettings, IInstallerBase> _onFirstRun;
         private readonly Paths _paths;
         private readonly TemplateCreator _templateCreator;
 
         private EngineEnvironmentSettings EnvironmentSettings { get; }
 
-        private IInstaller Installer { get; }
+        private IInstallerBase Installer { get; }
 
-        public Bootstrapper(ITemplateEngineHost host, Action<IEngineEnvironmentSettings, IInstaller> onFirstRun, bool virtualizeConfiguration)
+        public Bootstrapper(ITemplateEngineHost host, Action<IEngineEnvironmentSettings, IInstallerBase> onFirstRun, bool virtualizeConfiguration)
         {
             _host = host;
             EnvironmentSettings = new EngineEnvironmentSettings(host, x => new SettingsLoader(x));
@@ -94,19 +94,19 @@ namespace Microsoft.TemplateEngine.IDE
             return instantiateResult.CreationEffects;
         }
 
-        public IEnumerable<string>  Uninstall(string path)
+        public IEnumerable<string> Uninstall(string path)
         {
             EnsureInitialized();
             return Installer.Uninstall(new[] { path });
         }
 
-        public IEnumerable<string>  Uninstall(params string[] paths)
+        public IEnumerable<string> Uninstall(params string[] paths)
         {
             EnsureInitialized();
             return Installer.Uninstall(paths);
         }
 
-        public IEnumerable<string>  Uninstall(IEnumerable<string> paths)
+        public IEnumerable<string> Uninstall(IEnumerable<string> paths)
         {
             EnsureInitialized();
             return Installer.Uninstall(paths);
