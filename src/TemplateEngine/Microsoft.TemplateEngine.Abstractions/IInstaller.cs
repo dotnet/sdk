@@ -1,14 +1,13 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
-    public interface IInstaller : IInstallerBase
+    public interface IInstaller
     {
-        void InstallPackages(IEnumerable<string> installationRequests, IList<string> nuGetSources);
+        void InstallPackages(IEnumerable<string> installationRequests);
 
-        void InstallPackages(IEnumerable<string> installationRequests, IList<string> nuGetSources, bool debugAllowDevInstall);
+        IEnumerable<string> Uninstall(IEnumerable<string> uninstallRequests);
     }
 }

@@ -85,7 +85,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
 
         // this is mostly a copy of FirstRun() from dotnet_new3.Program.cs
-        public static void FirstRun(IEngineEnvironmentSettings environmentSettings, IInstaller installer)
+        public static void FirstRun(IEngineEnvironmentSettings environmentSettings, IInstallerExtended installer)
         {
             string baseDir = Environment.ExpandEnvironmentVariables("%DN3%");
 

@@ -83,7 +83,7 @@ namespace Microsoft.TemplateSearch.Common.TemplateUpdate
             return updateList;
         }
 
-        public void ApplyUpdates(IInstallerBase installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply)
+        public void ApplyUpdates(IInstaller installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply)
         {
             IReadOnlyList<IUpdateUnitDescriptor> filteredUpdateToApply = updatesToApply.Where(x => x.InstallUnitDescriptor.FactoryId == DescriptorFactoryId).ToList();
             installer.InstallPackages(filteredUpdateToApply.Select(x => x.InstallString));

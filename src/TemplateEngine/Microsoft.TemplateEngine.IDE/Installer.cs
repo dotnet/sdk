@@ -12,7 +12,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.IDE
 {
-    internal class Installer : IInstallerBase
+    internal class Installer : IInstaller
     {
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly Paths _paths;
