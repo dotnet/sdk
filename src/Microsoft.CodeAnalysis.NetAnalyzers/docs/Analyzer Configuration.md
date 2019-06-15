@@ -106,7 +106,7 @@ Examples:
 |`dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation
 |`dotnet_code_quality.null_check_validation_methods = Validate1~Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType),NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)~NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
  
 ### Dataflow analysis
 
