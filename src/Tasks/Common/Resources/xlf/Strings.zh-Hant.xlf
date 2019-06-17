@@ -297,15 +297,15 @@
         <target state="translated">NETSDK1049: 解析的檔案含有毀損的映像、沒有中繼資料，或有其他無法存取的情況。{0} {1}</target>
         <note>{StrBegin="NETSDK1049: "}</note>
       </trans-unit>
-      <trans-unit id="ILLinkInformation">
-        <source>NETSDK1101: Optimizing assemblies for size, which may change the behavior of the app. Be sure to test after publishing. See: https://aka.ms/dotnet-illink</source>
-        <target state="needs-review-translation">NETSDK1101: 最佳化組件的大小可能會變更應用程式的行為。發佈後請務必加以測試。請參閱: https://aka.ms/illink</target>
-        <note>{StrBegin="NETSDK1101: "}</note>
-      </trans-unit>
       <trans-unit id="ILLinkNotSupportedError">
         <source>NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. Please ensure that you are publishing a self-contained app.</source>
         <target state="translated">NETSDK1102: 選取的發佈設定不支援最佳化組件的大小。請確定您發佈的是獨立式應用程式。</target>
         <note>{StrBegin="NETSDK1102: "}</note>
+      </trans-unit>
+      <trans-unit id="ILLink_Info">
+        <source>Optimizing assemblies for size, which may change the behavior of the app. Be sure to test after publishing. See: https://aka.ms/dotnet-illink</source>
+        <target state="new">Optimizing assemblies for size, which may change the behavior of the app. Be sure to test after publishing. See: https://aka.ms/dotnet-illink</target>
+        <note />
       </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
         <source>NETSDK1020: Package Root {0} was incorrectly given for Resolved library {1}</source>
@@ -313,8 +313,8 @@
         <note>{StrBegin="NETSDK1020: "}</note>
       </trans-unit>
       <trans-unit id="IncorrectTargetFormat">
-        <source>NETSDK1025: WRThe target manifest {0} provided is of not the correct format</source>
-        <target state="translated">NETSDK1025: 提供的目標資訊清單 {0} 格式不正確</target>
+        <source>NETSDK1025: The target manifest {0} provided is of not the correct format</source>
+        <target state="needs-review-translation">NETSDK1025: 提供的目標資訊清單 {0} 格式不正確</target>
         <note>{StrBegin="NETSDK1025: "}</note>
       </trans-unit>
       <trans-unit id="InvalidFrameworkName">
@@ -391,11 +391,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1053: 封裝為工具不支援包含本身。</target>
         <note>{StrBegin="NETSDK1053: "}</note>
       </trans-unit>
-      <trans-unit id="PackageInfoLog">
-        <source>NETSDK1027: Package Name='{0}', Version='{1}' was parsed</source>
-        <target state="translated">NETSDK1027: 已剖析套件名稱='{0}'，版本='{1}'</target>
-        <note>{StrBegin="NETSDK1027: "}</note>
-      </trans-unit>
       <trans-unit id="PackageNotFound">
         <source>NETSDK1064: Package {0}, version {1} was not found. It might have been deleted since NuGet restore. Otherwise, NuGet restore might have only partially completed, which might have been due to maximum path length restrictions.</source>
         <target state="translated">NETSDK1064: 找不到套件 {0}，版本 {1}。該套件可能因 NuGet restore 還原而刪除，或是可能因為路徑長度上限的限制，而讓 NuGet restore 可能只有部分完成所致。</target>
@@ -410,11 +405,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1071: A PackageReference to '{0}' specified a Version of `{1}`. Specifying the version of this package is not recommended. For more information, see https://aka.ms/sdkimplicitrefs</source>
         <target state="translated">NETSDK1071: '{0}' 的 PackageReference 指定了 `{1}` 版本。不建議指定這個套件版本。如需詳細資訊，請參閱 https://aka.ms/sdkimplicitrefs</target>
         <note>{StrBegin="NETSDK1071: "}</note>
-      </trans-unit>
-      <trans-unit id="ParsingFiles">
-        <source>NETSDK1026: Parsing the Files : '{0}'</source>
-        <target state="translated">NETSDK1026: 正在剖析檔案: '{0}'</target>
-        <note>{StrBegin="NETSDK1026: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

@@ -21,6 +21,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private static readonly IReadOnlyList<int> _deletedCodes = new int[]
         {
+            1026,
+            1027,
             1033,
             1034,
             1035,
@@ -32,6 +34,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1041,
             1057,
             1066,
+            1101,
         };
 
         [Fact]
@@ -41,8 +44,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             foreach (var (key, message) in GetMessages())
             {
-                // NB: if we ever need strings that don't have error codes (say because they are not sent to MSBuild),
-                //     we should use a separate .resx file so that we can preserve this enforcement.
                 var match = Regex.Match(message, "^NETSDK([0-9]{4}): ");
 
                 if (key.EndsWith("_Info"))
