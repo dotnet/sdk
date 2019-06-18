@@ -318,9 +318,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           Inputs="@(_ReadyToRunSymbolsCompileList)"
           Outputs="%(_ReadyToRunSymbolsCompileList.OutputPDBImage)">
 
-    <!-- TODO: BUG - FIX ImplementationAssemblies to take managed implementation assemblies to use as crossgen references -->
     <RunReadyToRunCompiler CrossgenTool="@(_CrossgenTool)"
-                           ImplementationAssemblies="@(ResolvedFileToPublish)"
+                           ImplementationAssemblies="@(_ReadyToRunImplementationAssemblies)"
                            CompilationEntry="@(_ReadyToRunSymbolsCompileList)"
                            ContinueOnError="ErrorAndContinue">
       <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />

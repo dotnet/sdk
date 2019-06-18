@@ -143,6 +143,7 @@ namespace Microsoft.NET.Publish.Tests
                 "ClassLib");
 
             testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunEmitSymbols"] = "True";
             testProject.AdditionalProperties["SelfContained"] = "False";
 
             var testProjectInstance = _testAssetsManager.CreateTestProject(testProject)
@@ -158,6 +159,14 @@ namespace Microsoft.NET.Publish.Tests
 
             var mainProjectDll = Path.Combine(publishDirectory.FullName, $"{projectName}.dll");
             var classLibDll = Path.Combine(publishDirectory.FullName, $"ClassLib.dll");
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                publishDirectory.Should().HaveFiles(new[] {
+                    GetPDBFileName(mainProjectDll),
+                    GetPDBFileName(classLibDll),
+                });
+            }
 
             DoesImageHaveR2RInfo(mainProjectDll).Should().BeTrue();
             DoesImageHaveR2RInfo(classLibDll).Should().BeTrue();
