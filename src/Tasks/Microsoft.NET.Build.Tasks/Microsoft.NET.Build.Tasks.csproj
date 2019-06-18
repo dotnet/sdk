@@ -55,7 +55,7 @@
     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
   </ItemGroup>
 
-  <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duplicate them on disk -->
+  <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duicate them on disk -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <PackageReference Update="Microsoft.Extensions.DependencyModel" ExcludeAssets="Runtime" />
     <PackageReference Update="NuGet.ProjectModel" ExcludeAssets="Runtime" />

@@ -1,0 +1,91 @@
+{
+    "build": {
+        "repo": "",
+        "branch": "",
+        "architecture": "",
+        "locale": "",
+        "gitHash": "",
+        "buildName": "",
+        "timeStamp": ""
+    },
+    "os": {
+        "locale": "",
+        "name": "",
+        "architecture": ""
+    },
+    "run": {
+        "hidden": false,
+        "correlationId": "",
+        "perfRepoHash": "",
+        "name": "",
+        "queue": "",
+        "configurations": {
+            "config1": "value",
+            "config2": "value"
+        }
+    },
+    "tests": [
+        {
+            "categories": [
+                "category1",
+                "category2"
+            ],
+            "name": "",
+            "counters": [
+                {
+                    "name": "",
+                    "topCounter": false,
+                    "defaultCounter": false,
+                    "higherIsbetter": true,
+                    "metricName": "",
+                    "results": [
+                        123.456,
+                        789.120
+                    ]
+                },
+                {
+                    "name": "",
+                    "topCounter": false,
+                    "defaultCounter": false,
+                    "higherIsbetter": true,
+                    "metricName": "",
+                    "results": [
+                        123.456,
+                        789.120
+                    ]
+                }
+            ]
+        },
+        {
+            "categories": [
+                "category1",
+                "category2"
+            ],
+            "name": "",
+            "counters": [
+                {
+                    "name": "",
+                    "topCounter": false,
+                    "defaultCounter": false,
+                    "higherIsbetter": true,
+                    "metricName": "",
+                    "results": [
+                        123.456,
+                        789.120
+                    ]
+                },
+                {
+                    "name": "",
+                    "topCounter": false,
+                    "defaultCounter": false,
+                    "higherIsbetter": true,
+                    "metricName": "",
+                    "results": [
+                        123.456,
+                        789.120
+                    ]
+                }
+            ]
+        }
+    ]
+}
