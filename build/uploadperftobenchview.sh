@@ -110,4 +110,7 @@ python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/submission
 echo Uploading: "$perfWorkingDirectory/submission.json"
 python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr || { echo Failed to upload: "$perfWorkingDirectory/submission.json" && exit 1 ; }
 
+"$HELIX_WORKITEM_ROOT/.dotnet/dotnet" build %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj --configuration $configuration
+"$HELIX_WORKITEM_ROOT/.dotnet/dotnet" run --no-build --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj -- --file-option "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/measurement.py"
+
 exit 0

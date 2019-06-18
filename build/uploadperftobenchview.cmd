@@ -89,4 +89,7 @@ echo Creating: "%perfWorkingDirectory%\submission.json"
 echo Uploading: "%perfWorkingDirectory%\submission.json"
 %pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr
 
+%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe build %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj /p:configuration=%configuration% /p:NUGET_PACKAGES=%HELIX_CORRELATION_PAYLOAD%\.packages
+%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe run --no-build --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj -- --file-option "%perfWorkingDirectory%\machinedata.json"
+
 exit /b %ErrorLevel%
