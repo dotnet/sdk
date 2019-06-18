@@ -1,5 +1,4 @@
-﻿<?xm
-l version="1.0" encoding="utf-8"?>
+﻿<?xm l version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
   <PropertyGroup>
@@ -26,6 +25,7 @@ l version="1.0" encoding="utf-8"?>
 
   <ItemGroup>
     <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
+    <Content Include="PerformanceResultSample\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +33,15 @@ l version="1.0" encoding="utf-8"?>
 
     <!-- Use string resources from tasks in order to validate test output. -->
     <EmbeddedResource Include="..\..\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="PerformanceResultSample\20190618003138-WPF hello world.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="PerformanceResultSample\20190618003138-WPF large.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

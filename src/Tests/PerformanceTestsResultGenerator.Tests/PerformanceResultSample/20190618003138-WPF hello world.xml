@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScenarioBenchmark Name="WPF hello world" Namespace="">
+  <Tests>
+    <Test Name="Build" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="3471.2765" />
+          <iteration index="1" ExecutionTime="3294.5028" />
+          <iteration index="2" ExecutionTime="3418.5609" />
+          <iteration index="3" ExecutionTime="3356.999" />
+          <iteration index="4" ExecutionTime="3286.7159" />
+        </iterations>
+      </Performance>
+    </Test>
+    <Test Name="Build (no changes)" Namespace="">
+      <Separator>/</Separator>
+      <Performance>
+        <metrics>
+          <ExecutionTime displayName="Execution Time" unit="ms" />
+        </metrics>
+        <iterations>
+          <iteration index="0" ExecutionTime="3022.219" />
+          <iteration index="1" ExecutionTime="3052.6428" />
+          <iteration index="2" ExecutionTime="3071.7542" />
+          <iteration index="3" ExecutionTime="3065.6958" />
+          <iteration index="4" ExecutionTime="3165.6311" />
+        </iterations>
+      </Performance>
+    </Test>
+  </Tests>
+</ScenarioBenchmark>
