@@ -15,6 +15,7 @@ set GIT_BRANCH=%4
 set runType=%5
 set TestFullMSBuild=%6
 set HelixTargetQueues=%7
+set BuildNumber=%8
 
 REM  Since dotnet.exe was locked; we exclude it from the helix-payload.
 REM    Run a restore to re-install the SDK.

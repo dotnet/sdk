@@ -58,17 +58,9 @@ namespace Reporting
                 Name = null, // no use for now.
                 Queue = environment.GetEnvironmentVariable("HelixTargetQueues"),
             };
-            Boolean.TryParse(environment.GetEnvironmentVariable("PERFLAB_HIDDEN"), out bool hidden);
-            run.Hidden = hidden;
-            var configs = environment.GetEnvironmentVariable("PERFLAB_CONFIGS");
-            if (!String.IsNullOrEmpty(configs)) // configs should be optional.
-            {
-                foreach (var kvp in configs.Split(';'))
-                {
-                    var split = kvp.Split('=');
-                    run.Configurations.Add(split[0], split[1]);
-                } 
-            }
+            run.Hidden = false;
+            run.Configurations.Add("Configuration", environment.GetEnvironmentVariable("configuration"));
+            run.Configurations.Add("TestFullMSBuild", environment.GetEnvironmentVariableAsBool("TestFullMSBuild", false).ToString());
 
             os = new Os()
             {
@@ -79,12 +71,12 @@ namespace Reporting
 
             build = new Build
             {
-                Repo = environment.GetEnvironmentVariable("PERFLAB_REPO"),
-                Branch = environment.GetEnvironmentVariable("PERFLAB_BRANCH"),
-                Architecture = environment.GetEnvironmentVariable("PERFLAB_BUILDARCH"),
-                Locale = environment.GetEnvironmentVariable("PERFLAB_LOCALE"),
-                GitHash = environment.GetEnvironmentVariable("PERFLAB_HASH"),
-                BuildName = environment.GetEnvironmentVariable("PERFLAB_BUILDNUM"),
+                Repo = "dotnet/sdk",
+                Branch = environment.GetEnvironmentVariable("GIT_BRANCH"),
+                Architecture = environment.GetEnvironmentVariable("architecture"),
+                Locale = "en-us",
+                GitHash = environment.GetEnvironmentVariable("GIT_COMMIT"),
+                BuildName = environment.GetEnvironmentVariable("BuildNumber"),
                 TimeStamp = DateTime.Parse(environment.GetEnvironmentVariable("PERFLAB_BUILDTIMESTAMP")),
             };
         }
