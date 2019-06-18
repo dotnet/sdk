@@ -39,7 +39,7 @@ namespace Microsoft.NET.Publish.Tests
             DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
                 targetFramework,
                 "Debug",
-                EnvironmentInfo.GetCompatibleRid(targetFramework));
+                testProject.RuntimeIdentifier);
 
             DoesImageHaveR2RInfo(Path.Combine(publishDirectory.FullName, $"{projectName}.dll")).Should().BeFalse();
             DoesImageHaveR2RInfo(Path.Combine(publishDirectory.FullName, "ClassLib.dll")).Should().BeFalse();
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
             DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
                 targetFramework, 
                 "Debug",
-                EnvironmentInfo.GetCompatibleRid(targetFramework));
+                testProject.RuntimeIdentifier);
 
             var mainProjectDll = Path.Combine(publishDirectory.FullName, $"{projectName}.dll");
             var classLibDll = Path.Combine(publishDirectory.FullName, $"ClassLib.dll");
@@ -155,7 +155,7 @@ namespace Microsoft.NET.Publish.Tests
             DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
                 targetFramework,
                 "Debug",
-                EnvironmentInfo.GetCompatibleRid(targetFramework));
+                testProject.RuntimeIdentifier);
 
             var mainProjectDll = Path.Combine(publishDirectory.FullName, $"{projectName}.dll");
             var classLibDll = Path.Combine(publishDirectory.FullName, $"ClassLib.dll");
