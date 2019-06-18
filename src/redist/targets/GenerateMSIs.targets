@@ -17,11 +17,11 @@
       <SdkGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatemsi.ps1</SdkGenerateMsiPowershellScript>
       <SdkStableFileIdForApphostTransform>$(MSBuildThisFileDirectory)packaging/windows/clisdk/stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
       <SdkGenerateBundlePowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatebundle.ps1</SdkGenerateBundlePowershellScript>
-      <SdkGenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatenupkg.ps1</SdkGenerateNupkgPowershellScript>
+      <GenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatenupkg.ps1</GenerateNupkgPowershellScript>
 
-      <SdkInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.$(Architecture).nuspec</SdkInstallerNuspecFile>
-      <SdkInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</SdkInstallerNupkgFile>
-      <VSToolsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.$(Architecture).nuspec</VSToolsNuspecFile>
+      <ToolsetInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.Toolset.nuspec</ToolsetInstallerNuspecFile>
+      <ToolsetInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Toolset.$(Architecture).$(FullNugetVersion).nupkg</ToolsetInstallerNupkgFile>
+      <VSToolsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
       <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
@@ -35,6 +35,7 @@
 
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
+      <SdkMSICabFile>$(ArtifactsShippingPackagesDir)d$(Architecture)-1.cab</SdkMSICabFile>
       <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
       <SdkBundleInstallerOutputGuidString>$(ProductBandCombinedHostHostFxrFrameworkSdkName)</SdkBundleInstallerOutputGuidString>
 
@@ -158,45 +159,48 @@
                       -InformationAction Continue " />
   </Target>
 
-  <Target Name="GenerateSdkNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkBundle"
+  <Target Name="GenerateToolsetNupkg"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi"
           Condition=" '$(OS)' == 'Windows_NT'"
-          Inputs="$(CombinedFrameworkSdkHostMSIInstallerFile);
-                    $(SdkInstallerNuspecFile);
-                    $(SdkGenerateNupkgPowershellScript)"
-          Outputs="$(SdkInstallerNupkgFile)">
+          Inputs="$(SdkMSIInstallerFile);
+                    $(ToolsetInstallerNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
+          Outputs="$(ToolsetInstallerNupkgFile)">
 
-    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateNupkgPowershellScript) ^
-                      '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(SdkMSIInstallerFile)' ^
                       '$(FullNugetVersion)' ^
-                      '$(SdkInstallerNuspecFile)' ^
-                      '$(SdkInstallerNupkgFile)'" />
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ToolsetInstallerNupkgFile)' ^
+                      '$(Architecture)' ^
+                      '$(SdkMSICabFile)'" />
   </Target>
 
   <Target Name="GenerateVSToolsNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkBundle"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
           Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86'"
           Inputs="$(RedistLayoutPath)/**/*;
                   $(VSToolsNuspecFile);
-                  $(SdkGenerateNupkgPowershellScript)"
+                  $(GenerateNupkgPowershellScript)"
           Outputs="$(VSToolsNupkgFile)">
 
-    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateNupkgPowershellScript) ^
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                     '$(RedistLayoutPath.TrimEnd('\'))' ^
                     '$(FullNugetVersion)' ^
                     '$(VSToolsNuspecFile)' ^
-                    '$(VSToolsNupkgFile)'" />
+                    '$(VSToolsNupkgFile)' ^
+                    '$(Architecture)'" />
   </Target>
 
   <Target Name="GenerateVSToolsResolverNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkBundle"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
           Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86'"
           Inputs="$(SdkResolverLayoutPath)/**/*;
                   $(VSToolsResolverNuspecFile);
-                  $(SdkGenerateNupkgPowershellScript)"
+                  $(GenerateNupkgPowershellScript)"
           Outputs="$(VSToolsResolverNupkgFile)">
 
-    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateNupkgPowershellScript) ^
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                     '$(SdkResolverLayoutPath.TrimEnd('\'))' ^
                     '$(FullNugetVersion)' ^
                     '$(VSToolsResolverNuspecFile)' ^
@@ -204,17 +208,17 @@
   </Target>
 
   <Target Name="GenerateSdkMSBuildExtensionsNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkBundle"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
           Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
           Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
-                    $(SdkInstallerNuspecFile);
-                    $(SdkGenerateNupkgPowershellScript)"
+                    $(SdkMSBuildExtensionsNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
           Outputs="$(SdkMSBuildExtensionsNupkgFile);$(SdkMSBuildExtensionsSwrFile)">
 
     <!-- Disabling this for now because we don't have the MSBuildExtensions available.
          https://github.com/dotnet/cli/issues/10260 -->
 
-    <!-- <Exec Command="powershell -NoProfile -NoLogo -InformationAction Continue $(SdkGenerateNupkgPowershellScript) ^
+    <!-- <Exec Command="powershell -NoProfile -NoLogo -InformationAction Continue $(GenerateNupkgPowershellScript) ^
                       '$(MSBuildExtensionsLayoutDirectory)' ^
                       '$(FullNugetVersion)' ^
                       '$(SdkMSBuildExtensionsNuspecFile)' ^
@@ -233,7 +237,7 @@
                             SignSdkMsi;
                             GenerateSdkBundle;
                             SignSdkBundle;
-                            GenerateSdkNupkg;
+                            GenerateToolsetNupkg;
                             GenerateVSToolsNupkg;
                             GenerateVSToolsResolverNupkg;
                             GenerateSdkMSBuildExtensionsNupkg"
