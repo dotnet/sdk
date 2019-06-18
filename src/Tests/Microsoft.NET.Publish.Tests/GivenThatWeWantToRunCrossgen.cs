@@ -69,8 +69,8 @@ namespace Microsoft.NET.Publish.Tests
 
             DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
                 targetFramework, 
-                "Debug", 
-                EnvironmentInfo.GetCompatibleRid(targetFramework));
+                "Debug",
+                testProject.RuntimeIdentifier);
 
             var mainProjectDll = Path.Combine(publishDirectory.FullName, $"{projectName}.dll");
             var classLibDll = Path.Combine(publishDirectory.FullName, $"ClassLib.dll");
