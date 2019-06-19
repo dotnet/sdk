@@ -7,7 +7,7 @@ namespace Microsoft.TemplateSearch.Common.TemplateUpdate
 {
     public class TemplateUpdateCoordinator
     {
-        public TemplateUpdateCoordinator(IEngineEnvironmentSettings environmentSettings, IInstaller installer)
+        public TemplateUpdateCoordinator(IEngineEnvironmentSettings environmentSettings, IInstallerBase installer)
         {
             _environmentSettings = environmentSettings;
             _installer = installer;
@@ -15,7 +15,7 @@ namespace Microsoft.TemplateSearch.Common.TemplateUpdate
         }
 
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly IInstaller _installer;
+        private readonly IInstallerBase _installer;
         private readonly TemplateUpdateChecker _updateChecker;
 
         public virtual async Task<IUpdateCheckResult> CheckForUpdatesAsync(IReadOnlyList<IInstallUnitDescriptor> installUnitsToCheck)

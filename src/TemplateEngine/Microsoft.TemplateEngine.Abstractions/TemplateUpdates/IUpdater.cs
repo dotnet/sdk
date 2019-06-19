@@ -17,6 +17,6 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateUpdates
 
         Task<IReadOnlyList<IUpdateUnitDescriptor>> CheckForUpdatesAsync(IReadOnlyList<IInstallUnitDescriptor> installDescriptorsToCheck);
 
-        void ApplyUpdates(IInstaller installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply);
+        void ApplyUpdates(IInstallerBase installer, IReadOnlyList<IUpdateUnitDescriptor> updatesToApply);
     }
 }

@@ -73,7 +73,7 @@ namespace Microsoft.TemplateSearch.Common
 
 
         // this is mostly a copy of FirstRun() from dotnet_new3.Program.cs
-        public static void FirstRun(IEngineEnvironmentSettings environmentSettings, IInstallerExtended installer)
+        public static void FirstRun(IEngineEnvironmentSettings environmentSettings, IInstallerBase installer)
         {
             List<string> toInstallList = new List<string>();
             Paths paths = new Paths(environmentSettings);

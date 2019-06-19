@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
-    public interface IInstaller
+    public interface IInstallerBase
     {
         void InstallPackages(IEnumerable<string> installationRequests);
 
