@@ -13,5 +13,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         public bool IncludePreviewPacks { get; set; }
 
         public string PreviousRunBasePath { get; set; }
+
+        public bool DontFilterOnTemplateJson { get; set; }
     }
 }

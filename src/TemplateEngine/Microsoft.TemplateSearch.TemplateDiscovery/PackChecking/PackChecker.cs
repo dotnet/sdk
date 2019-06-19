@@ -5,6 +5,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;

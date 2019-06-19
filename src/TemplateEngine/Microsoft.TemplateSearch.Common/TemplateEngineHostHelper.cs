@@ -4,13 +4,12 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.TemplateUpdates;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
 using Microsoft.TemplateEngine.Utils;
 
-namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
+namespace Microsoft.TemplateSearch.Common
 {
     public static class TemplateEngineHostHelper
     {
@@ -37,17 +36,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             {
                 preferences = DefaultPreferences;
             }
-
-            try
-            {
-                string versionString = Dotnet.Version().CaptureStdOut().Execute().StdOut;
-                if (!string.IsNullOrWhiteSpace(versionString))
-                {
-                    preferences["dotnet-cli-version"] = versionString.Trim();
-                }
-            }
-            catch
-            { }
 
             var builtIns = new AssemblyComponentCatalog(new[]
             {
@@ -87,16 +75,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         // this is mostly a copy of FirstRun() from dotnet_new3.Program.cs
         public static void FirstRun(IEngineEnvironmentSettings environmentSettings, IInstallerExtended installer)
         {
-            string baseDir = Environment.ExpandEnvironmentVariables("%DN3%");
-
-            if (baseDir.Contains("%"))
-            {
-                Assembly a = typeof(Program).GetTypeInfo().Assembly;
-                string path = new Uri(a.CodeBase, UriKind.Absolute).LocalPath;
-                path = Path.GetDirectoryName(path);
-                Environment.SetEnvironmentVariable("DN3", path);
-            }
-
             List<string> toInstallList = new List<string>();
             Paths paths = new Paths(environmentSettings);
 

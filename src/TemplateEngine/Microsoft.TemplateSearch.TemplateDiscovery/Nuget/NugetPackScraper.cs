@@ -18,17 +18,24 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         {
             NugetPackProvider packProvider = new NugetPackProvider(config.BasePath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks);
 
+            List<Func<IInstalledPackInfo, PreFilterResult>> preFilterList = new List<Func<IInstalledPackInfo, PreFilterResult>>();
+
             if (!TryGetPreviouslySkippedPacks(config.PreviousRunBasePath, out HashSet<string> nonTemplatePacks))
             {
                 Console.WriteLine("Unable to read results from the previous run.");
                 packSourceChecker = null;
                 return false;
             }
-
-            IReadOnlyList<Func<IInstalledPackInfo, PreFilterResult>> preFilterList = new List<Func<IInstalledPackInfo, PreFilterResult>>()
+            else
             {
-                SetupPreviouslyRejectedPackFilter(nonTemplatePacks)
-            };
+                preFilterList.Add(SetupPreviouslyRejectedPackFilter(nonTemplatePacks));
+            }
+
+            if (!config.DontFilterOnTemplateJson)
+            {
+                preFilterList.Add(TemplateJsonExistencePackFilter.SetupPackFilter());
+            }
+
             PackPreFilterer preFilterer = new PackPreFilterer(preFilterList);
 
             IReadOnlyList<IAdditionalDataProducer> additionalDataProducers = new List<IAdditionalDataProducer>()

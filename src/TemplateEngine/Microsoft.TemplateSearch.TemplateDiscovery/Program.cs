@@ -19,6 +19,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         private static readonly string _saveDownloadedPacksFlag = "--savePacks";
         private static readonly string _runOnlyOnePageFlag = "--onePage";
         private static readonly string _previousOutputBasePathFlag = "--previousOutput";
+        private static readonly string _noTemplateJsonFilterFlag = "--noTemplateJsonFilter";
 
         static void Main(string[] args)
         {
@@ -69,6 +70,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Console.WriteLine($"{_pageSizeFlag} - (debugging) The chunk size for interactions with the source.");
             Console.WriteLine($"{_runOnlyOnePageFlag} - (debugging) Only process one page of template packs.");
             Console.WriteLine($"{_saveDownloadedPacksFlag} - Don't delete downloaded candidate packs (by default, they're deleted at the end of a run).");
+            Console.WriteLine($"{_noTemplateJsonFilterFlag} - Don't prefilter packs that don't contain any template.json files (this filter is applied by default).");
         }
 
         private static bool TryParseArgs(string[] args, ScraperConfig config)
@@ -126,6 +128,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 else if (string.Equals(args[index], _includePreviewPacksFlag, StringComparison.Ordinal))
                 {
                     config.IncludePreviewPacks = true;
+                    ++index;
+                }
+                else if (string.Equals(args[index], _noTemplateJsonFilterFlag, StringComparison.Ordinal))
+                {
+                    config.DontFilterOnTemplateJson = true;
                     ++index;
                 }
                 else
