@@ -15,6 +15,8 @@ using Microsoft.NET.TestFramework.Assertions;
 using System;
 using Reporting;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
@@ -27,18 +29,45 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void It_can_convert_xmls()
         {
+            var settings = new JsonSerializerSettings();
+            var resolver = new DefaultContractResolver();
+            resolver.NamingStrategy = new CamelCaseNamingStrategy() { ProcessDictionaryKeys = false };
+            settings.ContractResolver = resolver;
+            JsonConvert.SerializeObject(GenerateTestsFromXml(), Formatting.Indented, settings).Should().Be("3");
+
+        }
+
+        public static List<Test> GenerateTestsFromXml()
+        {
             XmlSerializer serializer = new XmlSerializer(typeof(ScenarioBenchmark));
 
             StreamReader reader = new StreamReader(Path.Combine("PerformanceResultSample", "20190618003138-WPF hello world.xml"));
             var scenarioBenchmark = (ScenarioBenchmark)serializer.Deserialize(reader);
             Console.WriteLine(scenarioBenchmark.Name);
+            var tests = new List<Test>();
+            foreach (ScenarioBenchmarkTest scenarioBenchmarkTest in scenarioBenchmark.Tests)
+            {
+                var test = new Test();
+                test.Categories.Add("DotnetCoreSdk");
+                test.Name = scenarioBenchmark.Name + "." + scenarioBenchmarkTest.Name;
+                test.Counters.Add(new Counter() {
+                    Name = scenarioBenchmarkTest.Performance.metrics.ExecutionTime.displayName,
+                    TopCounter = true,
+                    DefaultCounter = true,
+                    HigherIsBetter = false,
+                    MetricName = scenarioBenchmarkTest.Performance.metrics.ExecutionTime.unit,
+                    Results = scenarioBenchmarkTest
+                        .Performance
+                        .iterations
+                        .Select(i => decimal.ToDouble(i.ExecutionTime))
+                        .ToList()
+                });
+
+                tests.Add(test);
+            }
+
+            return tests;
         }
-
-        //public static Counter GenerateTestsFromXml()
-        //{
-
-
-        //}
 
 
         [Fact]
