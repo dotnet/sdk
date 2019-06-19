@@ -90,9 +90,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <GenerateResourceUsePreserializedResources
       Condition="'$(GenerateResourceUsePreserializedResources)' == '' and
-                 ( ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' > '3.0') or
-                   ('$(TargetFrameworkIdentifier)' == '.NETStandard' and '$(_TargetFrameworkVersionWithoutV)' > '2.1') )">true</GenerateResourceUsePreserializedResources>
-    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+                 ( ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' >= '3.0') or
+                   ('$(TargetFrameworkIdentifier)' == '.NETStandard' and '$(_TargetFrameworkVersionWithoutV)' >= '2.1') )">true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
   <PropertyGroup>
