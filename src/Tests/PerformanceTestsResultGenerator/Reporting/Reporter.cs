@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -40,11 +41,7 @@ namespace Reporting
         {
             var ret = new Reporter();
             ret.environment = environment == null ? new EnvironmentProvider() : environment;
-            if (!ret.CheckEnvironment())
-            {
-                return null;
-            }
-                        
+           
             ret.Init();
             return ret;
         }
@@ -69,17 +66,48 @@ namespace Reporting
                 Locale = CultureInfo.CurrentUICulture.ToString()
             };
 
+            string gitHash = environment.GetEnvironmentVariable("GIT_COMMIT");
             build = new Build
             {
                 Repo = "dotnet/sdk",
                 Branch = environment.GetEnvironmentVariable("GIT_BRANCH"),
                 Architecture = environment.GetEnvironmentVariable("architecture"),
                 Locale = "en-us",
-                GitHash = environment.GetEnvironmentVariable("GIT_COMMIT"),
+                GitHash = gitHash,
                 BuildName = environment.GetEnvironmentVariable("BuildNumber"),
-                TimeStamp = DateTime.Parse(environment.GetEnvironmentVariable("PERFLAB_BUILDTIMESTAMP")),
+                TimeStamp = GetCommitTimestamp(gitHash, environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")),
             };
         }
+
+        public static DateTime GetCommitTimestamp(string gitHash, string directoryUnderGit)
+        {
+            ProcessStartInfo gitInfo = new ProcessStartInfo();
+            gitInfo.RedirectStandardError = true;
+            gitInfo.RedirectStandardOutput = true;
+            gitInfo.FileName = "git";
+            gitInfo.Arguments = $"show -s --format=%cI {gitHash}"; // such as "fetch orign"
+            gitInfo.WorkingDirectory = directoryUnderGit;
+
+            using (Process process = Process.Start(gitInfo))
+            {
+                string stderr_str = process.StandardError.ReadToEnd();  // pick up STDERR
+                string stdout_str = process.StandardOutput.ReadToEnd(); // pick up STDOUT
+
+                process.Start();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    throw new PerformanceTestsResultGeneratorException(
+                        $"Cannot get commit time stamp from git exitcode {process.ExitCode}, " +
+                        $"StandardOutput {stdout_str}, " +
+                        $"StandardError {stderr_str}.");
+                }
+
+                return DateTime.Parse(stdout_str.Trim());
+            }
+        }
+
         public string GetJson()
         {
             var jsonobj = new
@@ -94,11 +122,6 @@ namespace Reporting
             resolver.NamingStrategy = new CamelCaseNamingStrategy() { ProcessDictionaryKeys = false };
             settings.ContractResolver = resolver;
             return JsonConvert.SerializeObject(jsonobj, Formatting.Indented, settings);
-        }
-
-        private bool CheckEnvironment()
-        {
-            return environment.GetEnvironmentVariable("PERFLAB_INLAB")?.Equals("1") ?? false;
         }
     }
 }

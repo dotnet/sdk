@@ -11,5 +11,6 @@ namespace Reporting
     public interface IEnvironment
     {
         string GetEnvironmentVariable(string variable);
+        bool GetEnvironmentVariableAsBool(string name, bool defaultValue);
     }
 }

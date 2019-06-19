@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reporting;
+using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
@@ -23,6 +24,8 @@ namespace PerformanceTestsResultGenerator
             rootCommand.Handler = CommandHandler.Create<int, bool, FileInfo>((intOption, boolOption, fileOption) =>
             {
                 Console.WriteLine($"The value for --file-option is: {fileOption?.FullName ?? "null"}");
+                Reporter reporter = Reporter.CreateReporter();
+                Console.WriteLine(reporter.GetJson());
             });
 
             // Parse the incoming args and invoke the handler
