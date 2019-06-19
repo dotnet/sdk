@@ -13,6 +13,8 @@ using Xunit;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.Assertions;
 using System;
+using Reporting;
+using System.Xml.Serialization;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
@@ -25,8 +27,19 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void It_can_convert_xmls()
         {
+            XmlSerializer serializer = new XmlSerializer(typeof(ScenarioBenchmark));
 
+            StreamReader reader = new StreamReader(Path.Combine("PerformanceResultSample", "20190618003138-WPF hello world.xml"));
+            var scenarioBenchmark = (ScenarioBenchmark)serializer.Deserialize(reader);
+            Console.WriteLine(scenarioBenchmark.Name);
         }
+
+        //public static Counter GenerateTestsFromXml()
+        //{
+
+
+        //}
+
 
         [Fact]
         public void It_can_get_commit_timestamp()
