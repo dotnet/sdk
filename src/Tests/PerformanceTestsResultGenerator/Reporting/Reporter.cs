@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using PerformanceTestsResultGenerator;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using PerformanceTestsResultGenerator;
 using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 
 namespace Reporting
@@ -28,15 +26,14 @@ namespace Reporting
         private Reporter() { }
 
         /// <summary>
-        /// Get a Reporter. Relies on environment variables.
+        ///     Get a Reporter. Relies on environment variables.
         /// </summary>
         /// <param name="environment">Optional environment variable provider</param>
         /// <returns>A Reporter instance or null if the environment is incorrect.</returns>
         public static Reporter CreateReporter(IEnvironment environment = null)
         {
-            var ret = new Reporter();
-            ret.environment = environment == null ? new EnvironmentProvider() : environment;
-           
+            Reporter ret = new Reporter {environment = environment ?? new EnvironmentProvider()};
+
             ret.Init();
             return ret;
         }
@@ -48,13 +45,14 @@ namespace Reporting
                 CorrelationId = environment.GetEnvironmentVariable("HELIX_CORRELATION_ID"),
                 PerfRepoHash = "place holder", // sdk does not use perf repo
                 Name = null, // no use for now.
-                Queue = environment.GetEnvironmentVariable("HelixTargetQueues"),
+                Queue = environment.GetEnvironmentVariable("HelixTargetQueues")
             };
             run.Hidden = false;
             run.Configurations.Add("Configuration", environment.GetEnvironmentVariable("configuration"));
-            run.Configurations.Add("TestFullMSBuild", environment.GetEnvironmentVariableAsBool("TestFullMSBuild", false).ToString());
+            run.Configurations.Add("TestFullMSBuild",
+                environment.GetEnvironmentVariableAsBool("TestFullMSBuild", false).ToString());
 
-            os = new Os()
+            os = new Os
             {
                 Name = $"{RuntimeEnvironment.OperatingSystem} {RuntimeEnvironment.OperatingSystemVersion}",
                 Architecture = RuntimeInformation.OSArchitecture.ToString(),
@@ -70,25 +68,30 @@ namespace Reporting
                 Locale = "en-us",
                 GitHash = gitHash,
                 BuildName = environment.GetEnvironmentVariable("BuildNumber"),
-                TimeStamp = GetCommitTimestamp(gitHash, environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")),
+                TimeStamp = GetCommitTimestamp(gitHash,
+                    environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD"))
             };
 
-            tests = XunitPerformanceResultConverter.BatchGenerateTests(new DirectoryInfo(environment.GetEnvironmentVariable("perfWorkingDirectory")));
+            tests = XunitPerformanceResultConverter.BatchGenerateTests(
+                new DirectoryInfo(environment.GetEnvironmentVariable("perfWorkingDirectory")));
         }
 
         public static DateTime GetCommitTimestamp(string gitHash, string directoryUnderGit)
         {
-            ProcessStartInfo gitInfo = new ProcessStartInfo();
-            gitInfo.RedirectStandardError = true;
-            gitInfo.RedirectStandardOutput = true;
-            gitInfo.FileName = "git";
-            gitInfo.Arguments = $"show -s --format=%cI {gitHash}"; // such as "fetch orign"
-            gitInfo.WorkingDirectory = directoryUnderGit;
+            ProcessStartInfo gitInfo =
+                new ProcessStartInfo
+                {
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    FileName = "git",
+                    Arguments = $"show -s --format=%cI {gitHash}",
+                    WorkingDirectory = directoryUnderGit
+                };
 
             using (Process process = Process.Start(gitInfo))
             {
-                string stderr_str = process.StandardError.ReadToEnd();  // pick up STDERR
-                string stdout_str = process.StandardOutput.ReadToEnd(); // pick up STDOUT
+                string stderrStr = process.StandardError.ReadToEnd();
+                string stdoutStr = process.StandardOutput.ReadToEnd();
 
                 process.Start();
                 process.WaitForExit();
@@ -97,28 +100,22 @@ namespace Reporting
                 {
                     throw new PerformanceTestsResultGeneratorException(
                         $"Cannot get commit time stamp from git exitcode {process.ExitCode}, " +
-                        $"StandardOutput {stdout_str}, " +
-                        $"StandardError {stderr_str}.");
+                        $"StandardOutput {stdoutStr}, " +
+                        $"StandardError {stderrStr}.");
                 }
 
-                return DateTime.Parse(stdout_str.Trim());
+                return DateTime.Parse(stdoutStr.Trim());
             }
         }
 
         public string GetJson()
         {
-            var jsonobj = new
-            {
-                build,
-                os,
-                run,
-                tests
-            };
-            var settings = new JsonSerializerSettings();
-            var resolver = new DefaultContractResolver();
-            resolver.NamingStrategy = new CamelCaseNamingStrategy() { ProcessDictionaryKeys = false };
+            var jsonObject = new {build, os, run, tests};
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            DefaultContractResolver resolver = new DefaultContractResolver();
+            resolver.NamingStrategy = new CamelCaseNamingStrategy {ProcessDictionaryKeys = false};
             settings.ContractResolver = resolver;
-            return JsonConvert.SerializeObject(jsonobj, Formatting.Indented, settings);
+            return JsonConvert.SerializeObject(jsonObject, Formatting.Indented, settings);
         }
     }
 }

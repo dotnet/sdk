@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Reporting;
-using System.Xml.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
+using Reporting;
 
 namespace PerformanceTestsResultGenerator
 {
@@ -17,15 +13,15 @@ namespace PerformanceTestsResultGenerator
         {
             XmlSerializer serializer = new XmlSerializer(typeof(ScenarioBenchmark));
 
-            var scenarioBenchmark = (ScenarioBenchmark)serializer.Deserialize(stream);
+            ScenarioBenchmark scenarioBenchmark = (ScenarioBenchmark)serializer.Deserialize(stream);
             Console.WriteLine(scenarioBenchmark.Name);
-            var tests = new List<Test>();
+            List<Test> tests = new List<Test>();
             foreach (ScenarioBenchmarkTest scenarioBenchmarkTest in scenarioBenchmark.Tests)
             {
-                var test = new Test();
+                Test test = new Test();
                 test.Categories.Add("DotnetCoreSdk");
                 test.Name = scenarioBenchmark.Name + "." + scenarioBenchmarkTest.Name;
-                test.Counters.Add(new Counter()
+                test.Counters.Add(new Counter
                 {
                     Name = scenarioBenchmarkTest.Performance.metrics.ExecutionTime.displayName,
                     TopCounter = true,

@@ -3,18 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Reporting
 {
     public class EnvironmentProvider : IEnvironment
     {
-        public string GetEnvironmentVariable(string variable) => Environment.GetEnvironmentVariable(variable);
+        public string GetEnvironmentVariable(string variable)
+        {
+            return Environment.GetEnvironmentVariable(variable);
+        }
 
         public bool GetEnvironmentVariableAsBool(string name, bool defaultValue)
         {
-            var str = Environment.GetEnvironmentVariable(name);
+            string str = Environment.GetEnvironmentVariable(name);
             if (string.IsNullOrEmpty(str))
             {
                 return defaultValue;

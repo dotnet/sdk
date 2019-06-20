@@ -18,11 +18,13 @@ namespace Reporting
         {
         }
 
-        public PerformanceTestsResultGeneratorException(string message, Exception innerException) : base(message, innerException)
+        public PerformanceTestsResultGeneratorException(string message, Exception innerException) : base(message,
+            innerException)
         {
         }
 
-        protected PerformanceTestsResultGeneratorException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected PerformanceTestsResultGeneratorException(SerializationInfo info, StreamingContext context) : base(
+            info, context)
         {
         }
     }

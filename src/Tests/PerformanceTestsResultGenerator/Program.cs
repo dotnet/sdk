@@ -1,31 +1,36 @@
-﻿using Reporting;
-using System;
+﻿using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Threading.Tasks;
+using Reporting;
 
 namespace PerformanceTestsResultGenerator
 {
-    class Program
+    internal class Program
     {
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
-            Option optionThatTakesFileInfo = new Option(
+            Option outputPath = new Option(
                 "--output",
                 "path of output file",
                 new Argument<FileInfo>());
 
             // Add them to the root command
-            var rootCommand = new RootCommand();
+            RootCommand rootCommand = new RootCommand();
             rootCommand.Description = "Performance tests result generator";
-            rootCommand.AddOption(optionThatTakesFileInfo);
+            rootCommand.AddOption(outputPath);
 
             rootCommand.Handler = CommandHandler.Create<int, bool, FileInfo>((intOption, boolOption, fileOption) =>
             {
-                Console.WriteLine($"The value for --file-option is: {fileOption?.FullName ?? "null"}");
+                if (fileOption == null)
+                {
+                    throw new PerformanceTestsResultGeneratorException("--output option is required.");
+                }
+
                 Reporter reporter = Reporter.CreateReporter();
-                Console.WriteLine(reporter.GetJson());
+                string generatedJson = reporter.GetJson();
+                Console.WriteLine(generatedJson);
+                File.WriteAllText(fileOption.FullName, generatedJson);
             });
 
             // Parse the incoming args and invoke the handler

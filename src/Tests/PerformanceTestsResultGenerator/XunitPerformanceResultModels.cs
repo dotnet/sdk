@@ -1,69 +1,53 @@
-﻿
-// NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
-/// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-[System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
-public partial class ScenarioBenchmark
-{
+﻿// NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
 
+using System;
+using System.ComponentModel;
+using System.Xml.Serialization;
+
+/// <remarks />
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+[XmlRoot(Namespace = "", IsNullable = false)]
+public class ScenarioBenchmark
+{
     private ScenarioBenchmarkTest[] testsField;
 
     private string nameField;
 
     private string namespaceField;
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlArrayItemAttribute("Test", IsNullable = false)]
+    /// <remarks />
+    [XmlArrayItem("Test", IsNullable = false)]
     public ScenarioBenchmarkTest[] Tests
     {
-        get
-        {
-            return this.testsField;
-        }
-        set
-        {
-            this.testsField = value;
-        }
+        get => testsField;
+        set => testsField = value;
     }
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public string Name
     {
-        get
-        {
-            return this.nameField;
-        }
-        set
-        {
-            this.nameField = value;
-        }
+        get => nameField;
+        set => nameField = value;
     }
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public string Namespace
     {
-        get
-        {
-            return this.namespaceField;
-        }
-        set
-        {
-            this.namespaceField = value;
-        }
+        get => namespaceField;
+        set => namespaceField = value;
     }
 }
 
-/// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-public partial class ScenarioBenchmarkTest
+/// <remarks />
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class ScenarioBenchmarkTest
 {
-
     private string separatorField;
 
     private ScenarioBenchmarkTestPerformance performanceField;
@@ -72,200 +56,129 @@ public partial class ScenarioBenchmarkTest
 
     private string namespaceField;
 
-    /// <remarks/>
+    /// <remarks />
     public string Separator
     {
-        get
-        {
-            return this.separatorField;
-        }
-        set
-        {
-            this.separatorField = value;
-        }
+        get => separatorField;
+        set => separatorField = value;
     }
 
-    /// <remarks/>
+    /// <remarks />
     public ScenarioBenchmarkTestPerformance Performance
     {
-        get
-        {
-            return this.performanceField;
-        }
-        set
-        {
-            this.performanceField = value;
-        }
+        get => performanceField;
+        set => performanceField = value;
     }
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public string Name
     {
-        get
-        {
-            return this.nameField;
-        }
-        set
-        {
-            this.nameField = value;
-        }
+        get => nameField;
+        set => nameField = value;
     }
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public string Namespace
     {
-        get
-        {
-            return this.namespaceField;
-        }
-        set
-        {
-            this.namespaceField = value;
-        }
+        get => namespaceField;
+        set => namespaceField = value;
     }
 }
 
-/// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-public partial class ScenarioBenchmarkTestPerformance
+/// <remarks />
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class ScenarioBenchmarkTestPerformance
 {
-
     private ScenarioBenchmarkTestPerformanceMetrics metricsField;
 
     private ScenarioBenchmarkTestPerformanceIteration[] iterationsField;
 
-    /// <remarks/>
+    /// <remarks />
     public ScenarioBenchmarkTestPerformanceMetrics metrics
     {
-        get
-        {
-            return this.metricsField;
-        }
-        set
-        {
-            this.metricsField = value;
-        }
+        get => metricsField;
+        set => metricsField = value;
     }
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlArrayItemAttribute("iteration", IsNullable = false)]
+    /// <remarks />
+    [XmlArrayItem("iteration", IsNullable = false)]
     public ScenarioBenchmarkTestPerformanceIteration[] iterations
     {
-        get
-        {
-            return this.iterationsField;
-        }
-        set
-        {
-            this.iterationsField = value;
-        }
+        get => iterationsField;
+        set => iterationsField = value;
     }
 }
 
-/// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-public partial class ScenarioBenchmarkTestPerformanceMetrics
+/// <remarks />
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class ScenarioBenchmarkTestPerformanceMetrics
 {
-
     private ScenarioBenchmarkTestPerformanceMetricsExecutionTime executionTimeField;
 
-    /// <remarks/>
+    /// <remarks />
     public ScenarioBenchmarkTestPerformanceMetricsExecutionTime ExecutionTime
     {
-        get
-        {
-            return this.executionTimeField;
-        }
-        set
-        {
-            this.executionTimeField = value;
-        }
+        get => executionTimeField;
+        set => executionTimeField = value;
     }
 }
 
-/// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-public partial class ScenarioBenchmarkTestPerformanceMetricsExecutionTime
+/// <remarks />
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class ScenarioBenchmarkTestPerformanceMetricsExecutionTime
 {
-
     private string displayNameField;
 
     private string unitField;
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public string displayName
     {
-        get
-        {
-            return this.displayNameField;
-        }
-        set
-        {
-            this.displayNameField = value;
-        }
+        get => displayNameField;
+        set => displayNameField = value;
     }
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public string unit
     {
-        get
-        {
-            return this.unitField;
-        }
-        set
-        {
-            this.unitField = value;
-        }
+        get => unitField;
+        set => unitField = value;
     }
 }
 
-/// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-public partial class ScenarioBenchmarkTestPerformanceIteration
+/// <remarks />
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class ScenarioBenchmarkTestPerformanceIteration
 {
-
     private byte indexField;
 
     private decimal executionTimeField;
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public byte index
     {
-        get
-        {
-            return this.indexField;
-        }
-        set
-        {
-            this.indexField = value;
-        }
+        get => indexField;
+        set => indexField = value;
     }
 
-    /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    /// <remarks />
+    [XmlAttribute]
     public decimal ExecutionTime
     {
-        get
-        {
-            return this.executionTimeField;
-        }
-        set
-        {
-            this.executionTimeField = value;
-        }
+        get => executionTimeField;
+        set => executionTimeField = value;
     }
 }
-
