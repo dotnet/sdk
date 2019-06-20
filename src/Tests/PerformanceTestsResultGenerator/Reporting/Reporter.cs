@@ -4,10 +4,12 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using PerformanceTestsResultGenerator;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -24,13 +26,6 @@ namespace Reporting
         protected IEnvironment environment;
 
         private Reporter() { }
-
-        public void AddTest(Test test)
-        {
-            if (tests.Any(t => t.Name.Equals(test.Name)))
-                throw new Exception($"Duplicate test name, {test.Name}");
-            tests.Add(test);
-        }
 
         /// <summary>
         /// Get a Reporter. Relies on environment variables.
@@ -77,6 +72,8 @@ namespace Reporting
                 BuildName = environment.GetEnvironmentVariable("BuildNumber"),
                 TimeStamp = GetCommitTimestamp(gitHash, environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")),
             };
+
+            tests = XunitPerformanceResultConverter.BatchGenerateTests(new DirectoryInfo(environment.GetEnvironmentVariable("perfWorkingDirectory")));
         }
 
         public static DateTime GetCommitTimestamp(string gitHash, string directoryUnderGit)

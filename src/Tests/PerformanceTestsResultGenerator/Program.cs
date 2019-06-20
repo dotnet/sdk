@@ -12,8 +12,8 @@ namespace PerformanceTestsResultGenerator
         static int Main(string[] args)
         {
             Option optionThatTakesFileInfo = new Option(
-                "--file-option",
-                "An option whose argument is parsed as a FileInfo",
+                "--output",
+                "path of output file",
                 new Argument<FileInfo>());
 
             // Add them to the root command
