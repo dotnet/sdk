@@ -63,10 +63,12 @@ then
 fi
 echo BenchViewName: "$benchViewName"
 
-echo Uploading: "$perfWorkingDirectory/submission.json"
-python3.5 "$perfWorkingDirectory/Microsoft.BenchView.JSONFormat/tools/upload.py" "$perfWorkingDirectory/submission.json" --container coreclr || { echo Failed to upload: "$perfWorkingDirectory/submission.json" && exit 1 ; }
-
+echo Creating: "$perfWorkingDirectory/submission.json"
 "$HELIX_WORKITEM_ROOT/.dotnet/dotnet" build $HELIX_WORKITEM_ROOT\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj --configuration $configuration
 "$HELIX_WORKITEM_ROOT/.dotnet/dotnet" run --no-build --project $HELIX_WORKITEM_ROOT\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj -- --output "$perfWorkingDirectory/submission.json"
+
+echo Uploading: "$perfWorkingDirectory/submission.json"
+
+# TODO wul upload with Azdo
 
 exit 0
