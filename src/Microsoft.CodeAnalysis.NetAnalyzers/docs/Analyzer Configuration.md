@@ -197,6 +197,33 @@ class Test
 }
 ```
 
+#### Configure dispose ownership transfer for disposable objects passed as arguments to method calls
+Option Name: `dispose_ownership_transfer_at_method_call`
+
+Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
+
+Option Values: `true` or `false`
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.dispose_ownership_transfer_at_method_call = false`
+
+For example, consider the below code:
+```csharp
+using System;
+
+class Test
+{
+    void M1()
+    {
+        // Dispose ownership for allocation 'new A()' is assumed to be transferred to 'TransferDisposeOwnership' method
+        // if 'dotnet_code_quality.dispose_ownership_transfer_at_method_call = true'.
+        // Otherwise, current method 'M1' has the dispose ownership for 'new A()', and it fires a CA2000 as a dispose leak for the below code.
+        TransferDisposeOwnership(new A());
+    }
+}
+```
+
 #### Configure execution of Copy analysis (tracks value and reference copies)
 Option Name: `copy_analysis`
 
