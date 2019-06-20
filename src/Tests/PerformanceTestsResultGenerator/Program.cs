@@ -29,7 +29,7 @@ namespace PerformanceTestsResultGenerator
 
                 Reporter reporter = Reporter.CreateReporter();
                 string generatedJson = reporter.GetJson();
-                Console.WriteLine(generatedJson);
+                Console.WriteLine("Generated json:" + Environment.NewLine + generatedJson);
                 File.WriteAllText(fileOption.FullName, generatedJson);
             });
 
