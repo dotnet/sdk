@@ -35,61 +35,22 @@ if not exist %perfWorkingDirectory%\nul (
     echo $perfWorkingDirectory does not exist; exiting...
     exit 1)
 
-
 set pythonCmd=py
 if exist "C:\Python35\python.exe" set pythonCmd=C:\Python35\python.exe
 
-powershell -NoProfile -NoLogo wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile "%perfWorkingDirectory%\nuget.exe"
-
-if exist "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat" rmdir /s /q "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat"
-"%perfWorkingDirectory%\nuget.exe" install Microsoft.BenchView.JSONFormat -Source http://benchviewtestfeed.azurewebsites.net/nuget -OutputDirectory "%perfWorkingDirectory%" -Prerelease -ExcludeVersion
-
 REM Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
 if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:origin/=%) else (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH%)
-
-for /f %%x in ('powershell -NoProfile -NoLogo -Command "Get-Date -Date (Get-Date).ToUniversalTime() -UFormat '%%Y-%%m-%%dT%%H:%%M:%%SZ'"') do (set timeStamp=%%x)
 
 set benchViewName=SDK perf %OS% %architecture% %configuration% TestFullMSBuild-%TestFullMSBuild% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
 if /I "%runType%" == "private" (set benchViewName=%benchViewName% %BenchviewCommitName%)
 if /I "%runType%" == "rolling" (set benchViewName=%benchViewName% %GIT_COMMIT%)
 echo BenchViewName: "%benchViewName%"
 
-echo Creating: "%perfWorkingDirectory%\submission-metadata.json"
-%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\submission-metadata.py" --name "%benchViewName%" --user-email "dotnet-bot@microsoft.com" -o "%perfWorkingDirectory%\submission-metadata.json"
-
-echo Creating: "%perfWorkingDirectory%\build.json"
-%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\build.py" git --branch "%GIT_BRANCH_WITHOUT_ORIGIN%" --type "%runType%" --repository "https://github.com/dotnet/sdk" --source-timestamp "%timeStamp%" -o "%perfWorkingDirectory%\build.json"
-
-echo Creating: "%perfWorkingDirectory%\machinedata.json"
-%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\machinedata.py" -o "%perfWorkingDirectory%\machinedata.json"
-
-echo Creating: "%perfWorkingDirectory%\measurement.json"
-pushd "%perfWorkingDirectory%"
-for /f "tokens=*" %%a in ('dir /b/a-d *.xml') do (
-    echo Processing: "%%a"
-    %pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\measurement.py" xunitscenario "%%a" --better desc --drop-first-value --append -o "%perfWorkingDirectory%\measurement.json"
-)
-popd
-
 echo Creating: "%perfWorkingDirectory%\submission.json"
-%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\submission.py" "%perfWorkingDirectory%\measurement.json" ^
-                    --build "%perfWorkingDirectory%\build.json" ^
-                    --machine-data "%perfWorkingDirectory%\machinedata.json" ^
-                    --metadata "%perfWorkingDirectory%\submission-metadata.json" ^
-                    --group "SDK Perf Tests" ^
-                    --type "%runType%" ^
-                    --config-name "%configuration%" ^
-                    --config Configuration "%configuration%" ^
-                    --config TestFullMSBuild "%TestFullMSBuild%" ^
-                    --config OS "%OS%" ^
-                    --architecture "%architecture%" ^
-                    --machinepool "perfsnake" ^
-                    -o "%perfWorkingDirectory%\submission.json"
+%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe build %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj /p:configuration=%configuration% /p:NUGET_PACKAGES=%HELIX_CORRELATION_PAYLOAD%\.packages
+%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe run --no-build --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj -- --output "%perfWorkingDirectory%\submission.json"
 
 echo Uploading: "%perfWorkingDirectory%\submission.json"
-%pythonCmd% "%perfWorkingDirectory%\Microsoft.BenchView.JSONFormat\tools\upload.py" "%perfWorkingDirectory%\submission.json" --container coreclr
-
-%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe build %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj /p:configuration=%configuration% /p:NUGET_PACKAGES=%HELIX_CORRELATION_PAYLOAD%\.packages
-%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe run --no-build --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj -- --file-option "%perfWorkingDirectory%\machinedata.json"
+REM TODO upload it use Azcopy
 
 exit /b %ErrorLevel%
