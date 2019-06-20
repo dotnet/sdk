@@ -17,7 +17,7 @@ runType=$5
 architecture=$6
 OS=$7
 HelixTargetQueues=$8
-BuildNumber=%9
+BuildNumber=$9
 
 #  Since the transfer of the payload to the helix machine renders all scripts non-executable,
 #    Add the executable bit to the appropriate scripts.
