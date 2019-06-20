@@ -20,21 +20,20 @@ namespace PerformanceTestsResultGenerator
             rootCommand.Description = "Performance tests result generator";
             rootCommand.AddOption(outputPath);
 
-            rootCommand.Handler = CommandHandler.Create<int, bool, FileInfo>((intOption, boolOption, fileOption) =>
+            var result = rootCommand.Parse(args);
+            var outputPathValue = result.ValueForOption<FileInfo>("output");
+
+            if (outputPathValue == null)
             {
-                if (fileOption == null)
-                {
-                    throw new PerformanceTestsResultGeneratorException("--output option is required.");
-                }
+                throw new PerformanceTestsResultGeneratorException("--output option is required." + outputPathValue);
+            }
 
-                Reporter reporter = Reporter.CreateReporter();
-                string generatedJson = reporter.GetJson();
-                Console.WriteLine("Generated json:" + Environment.NewLine + generatedJson);
-                File.WriteAllText(fileOption.FullName, generatedJson);
-            });
+            Reporter reporter = Reporter.CreateReporter();
+            string generatedJson = reporter.GetJson();
+            Console.WriteLine("Generated json:" + Environment.NewLine + generatedJson);
+            File.WriteAllText(outputPathValue.FullName, generatedJson);
 
-            // Parse the incoming args and invoke the handler
-            return rootCommand.InvokeAsync(args).Result;
+            return 0;
         }
     }
 }
