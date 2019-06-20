@@ -15,10 +15,16 @@ namespace PerformanceTestsResultGenerator
                 "path of output file",
                 new Argument<FileInfo>());
 
+            Option repositoryRoot = new Option(
+                "--repository-root",
+                "repository root that contain .git directory",
+                new Argument<DirectoryInfo>());
+
             // Add them to the root command
             RootCommand rootCommand = new RootCommand();
             rootCommand.Description = "Performance tests result generator";
             rootCommand.AddOption(outputPath);
+            rootCommand.AddOption(repositoryRoot);
 
             var result = rootCommand.Parse(args);
             var outputPathValue = result.ValueForOption<FileInfo>("output");
@@ -28,7 +34,14 @@ namespace PerformanceTestsResultGenerator
                 throw new PerformanceTestsResultGeneratorException("--output option is required." + outputPathValue);
             }
 
-            Reporter reporter = Reporter.CreateReporter();
+            var repositoryRootValue = result.ValueForOption<DirectoryInfo>("repository-root");
+
+            if (repositoryRootValue == null)
+            {
+                throw new PerformanceTestsResultGeneratorException("--repository-root is required." + repositoryRootValue);
+            }
+
+            Reporter reporter = Reporter.CreateReporter(repositoryRootValue);
             string generatedJson = reporter.GetJson();
             Console.WriteLine("Generated json:" + Environment.NewLine + generatedJson);
             File.WriteAllText(outputPathValue.FullName, generatedJson);

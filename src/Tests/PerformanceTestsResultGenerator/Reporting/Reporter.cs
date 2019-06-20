@@ -30,15 +30,15 @@ namespace Reporting
         /// </summary>
         /// <param name="environment">Optional environment variable provider</param>
         /// <returns>A Reporter instance or null if the environment is incorrect.</returns>
-        public static Reporter CreateReporter(IEnvironment environment = null)
+        public static Reporter CreateReporter(DirectoryInfo repositoryRoot, IEnvironment environment = null)
         {
             Reporter ret = new Reporter {environment = environment ?? new EnvironmentProvider()};
 
-            ret.Init();
+            ret.Init(repositoryRoot);
             return ret;
         }
 
-        private void Init()
+        private void Init(DirectoryInfo repositoryRoot)
         {
             run = new Run
             {
@@ -68,8 +68,7 @@ namespace Reporting
                 Locale = "en-us",
                 GitHash = gitHash,
                 BuildName = environment.GetEnvironmentVariable("BuildNumber"),
-                TimeStamp = GetCommitTimestamp(gitHash,
-                    environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD"))
+                TimeStamp = GetCommitTimestamp(gitHash, repositoryRoot.FullName)
             };
 
             tests = XunitPerformanceResultConverter.BatchGenerateTests(
