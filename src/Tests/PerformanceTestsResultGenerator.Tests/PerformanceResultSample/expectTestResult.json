@@ -1,0 +1,46 @@
+[
+    {
+        "categories": [
+            "DotnetCoreSdk"
+        ],
+        "name": "WPF hello world.Build",
+        "counters": [
+            {
+                "name": "Execution Time",
+                "topCounter": true,
+                "defaultCounter": true,
+                "higherIsBetter": false,
+                "metricName": "ms",
+                "results": [
+                    3471.2765,
+                    3294.5028,
+                    3418.5609,
+                    3356.999,
+                    3286.7159
+                ]
+            }
+        ]
+    },
+    {
+        "categories": [
+            "DotnetCoreSdk"
+        ],
+        "name": "WPF hello world.Build (no changes)",
+        "counters": [
+            {
+                "name": "Execution Time",
+                "topCounter": true,
+                "defaultCounter": true,
+                "higherIsBetter": false,
+                "metricName": "ms",
+                "results": [
+                    3022.219,
+                    3052.6428,
+                    3071.7542,
+                    3065.6958,
+                    3165.6311
+                ]
+            }
+        ]
+    }
+]

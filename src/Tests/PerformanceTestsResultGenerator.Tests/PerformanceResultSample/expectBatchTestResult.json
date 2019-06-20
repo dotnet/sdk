@@ -1,0 +1,90 @@
+[
+    {
+        "categories": [
+            "DotnetCoreSdk"
+        ],
+        "name": "WPF hello world.Build",
+        "counters": [
+            {
+                "name": "Execution Time",
+                "topCounter": true,
+                "defaultCounter": true,
+                "higherIsBetter": false,
+                "metricName": "ms",
+                "results": [
+                    3471.2765,
+                    3294.5028,
+                    3418.5609,
+                    3356.999,
+                    3286.7159
+                ]
+            }
+        ]
+    },
+    {
+        "categories": [
+            "DotnetCoreSdk"
+        ],
+        "name": "WPF hello world.Build (no changes)",
+        "counters": [
+            {
+                "name": "Execution Time",
+                "topCounter": true,
+                "defaultCounter": true,
+                "higherIsBetter": false,
+                "metricName": "ms",
+                "results": [
+                    3022.219,
+                    3052.6428,
+                    3071.7542,
+                    3065.6958,
+                    3165.6311
+                ]
+            }
+        ]
+    },
+    {
+        "categories": [
+            "DotnetCoreSdk"
+        ],
+        "name": "WPF large.Build",
+        "counters": [
+            {
+                "name": "Execution Time",
+                "topCounter": true,
+                "defaultCounter": true,
+                "higherIsBetter": false,
+                "metricName": "ms",
+                "results": [
+                    10584.6059,
+                    7057.8663,
+                    6646.7388,
+                    6704.3211,
+                    6952.0204
+                ]
+            }
+        ]
+    },
+    {
+        "categories": [
+            "DotnetCoreSdk"
+        ],
+        "name": "WPF large.Build (no changes)",
+        "counters": [
+            {
+                "name": "Execution Time",
+                "topCounter": true,
+                "defaultCounter": true,
+                "higherIsBetter": false,
+                "metricName": "ms",
+                "results": [
+                    5688.4444,
+                    5860.3425,
+                    5841.8585,
+                    5885.1702,
+                    5814.544
+                ]
+            }
+        ]
+    }
+]
