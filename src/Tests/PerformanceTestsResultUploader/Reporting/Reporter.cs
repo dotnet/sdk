@@ -55,7 +55,8 @@ namespace Reporting
             os = new Os
             {
                 Name = $"{RuntimeEnvironment.OperatingSystem} {RuntimeEnvironment.OperatingSystemVersion}",
-                Architecture = RuntimeInformation.OSArchitecture.ToString(),
+                // ToLower to match the existing record casing
+                Architecture = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant(),
                 Locale = CultureInfo.CurrentUICulture.ToString()
             };
 
