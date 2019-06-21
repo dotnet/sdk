@@ -8,22 +8,22 @@ using System.Runtime.Serialization;
 namespace Reporting
 {
     [Serializable]
-    internal class PerformanceTestsResultGeneratorException : Exception
+    internal class PerformanceTestsResultUploaderException : Exception
     {
-        public PerformanceTestsResultGeneratorException()
+        public PerformanceTestsResultUploaderException()
         {
         }
 
-        public PerformanceTestsResultGeneratorException(string message) : base(message)
+        public PerformanceTestsResultUploaderException(string message) : base(message)
         {
         }
 
-        public PerformanceTestsResultGeneratorException(string message, Exception innerException) : base(message,
+        public PerformanceTestsResultUploaderException(string message, Exception innerException) : base(message,
             innerException)
         {
         }
 
-        protected PerformanceTestsResultGeneratorException(SerializationInfo info, StreamingContext context) : base(
+        protected PerformanceTestsResultUploaderException(SerializationInfo info, StreamingContext context) : base(
             info, context)
         {
         }

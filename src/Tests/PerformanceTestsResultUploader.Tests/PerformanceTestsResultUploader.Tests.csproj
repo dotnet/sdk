@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
-    <ProjectReference Include="..\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj" />
+    <ProjectReference Include="..\PerformanceTestsResultUploader\PerformanceTestsResultUploader.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 

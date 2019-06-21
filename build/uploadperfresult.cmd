@@ -46,16 +46,13 @@ if /I "%runType%" == "private" (set TestRunName=%TestRunName% %TestRunCommitName
 if /I "%runType%" == "rolling" (set TestRunName=%TestRunName% %GIT_COMMIT%)
 echo TestRunName: "%TestRunName%"
 
-echo Creating: "%perfWorkingDirectory%\submission.json"
+echo Creating and Uploading: "%perfWorkingDirectory%\submission.json"
 %HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe run^
- --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj^
+ --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultUploader\PerformanceTestsResultUploader.csproj^
  /p:configuration=%configuration%^
  /p:NUGET_PACKAGES=%HELIX_CORRELATION_PAYLOAD%\.packages --^
  --output "%perfWorkingDirectory%\submission.json"^
  --repository-root "%HELIX_CORRELATION_PAYLOAD%"^
  --sas "%PERF_COMMAND_UPLOAD_TOKEN%"
-
-echo Uploading: "%perfWorkingDirectory%\submission.json"
-REM TODO upload it use Azcopy
 
 exit /b %ErrorLevel%

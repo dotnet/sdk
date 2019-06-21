@@ -4,7 +4,7 @@ using System.CommandLine.Invocation;
 using System.IO;
 using Reporting;
 
-namespace PerformanceTestsResultGenerator
+namespace PerformanceTestsResultUploader
 {
     internal class Program
     {
@@ -37,21 +37,21 @@ namespace PerformanceTestsResultGenerator
 
             if (outputPathValue == null)
             {
-                throw new PerformanceTestsResultGeneratorException("--output option is required.");
+                throw new PerformanceTestsResultUploaderException("--output option is required.");
             }
 
             var repositoryRootValue = result.ValueForOption<DirectoryInfo>("repository-root");
 
             if (repositoryRootValue == null)
             {
-                throw new PerformanceTestsResultGeneratorException("--repository-root is required.");
+                throw new PerformanceTestsResultUploaderException("--repository-root is required.");
             }
 
             var sasValue = result.ValueForOption<string>("sas");
 
             if (sasValue == null)
             {
-                throw new PerformanceTestsResultGeneratorException("--sas is required.");
+                throw new PerformanceTestsResultUploaderException("--sas is required.");
             }
 
             Reporter reporter = Reporter.CreateReporter(repositoryRootValue);

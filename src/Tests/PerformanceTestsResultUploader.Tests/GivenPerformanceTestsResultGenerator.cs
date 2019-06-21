@@ -9,16 +9,16 @@ using Microsoft.NET.TestFramework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using PerformanceTestsResultGenerator;
+using PerformanceTestsResultUploader;
 using Reporting;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    public class GivenPerformanceTestsResultGenerator : SdkTest
+    public class GivenPerformanceTestsResultUploader : SdkTest
     {
-        public GivenPerformanceTestsResultGenerator(ITestOutputHelper log) : base(log)
+        public GivenPerformanceTestsResultUploader(ITestOutputHelper log) : base(log)
         {
         }
 

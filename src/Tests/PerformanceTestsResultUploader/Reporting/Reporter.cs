@@ -10,7 +10,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using PerformanceTestsResultGenerator;
+using PerformanceTestsResultUploader;
 using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 
 namespace Reporting
@@ -97,7 +97,7 @@ namespace Reporting
 
                 if (process.ExitCode != 0)
                 {
-                    throw new PerformanceTestsResultGeneratorException(
+                    throw new PerformanceTestsResultUploaderException(
                         $"Cannot get commit time stamp from git exitcode {process.ExitCode}, " +
                         $"StandardOutput {stdoutStr}, " +
                         $"StandardError {stderrStr}.");

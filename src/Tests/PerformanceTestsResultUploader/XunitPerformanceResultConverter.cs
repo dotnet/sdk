@@ -5,7 +5,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using Reporting;
 
-namespace PerformanceTestsResultGenerator
+namespace PerformanceTestsResultUploader
 {
     public static class XunitPerformanceResultConverter
     {

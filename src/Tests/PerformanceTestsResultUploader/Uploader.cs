@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Azure.Storage.Blob;
 
-namespace PerformanceTestsResultGenerator
+namespace PerformanceTestsResultUploader
 {
     public static class Uploader
     {
