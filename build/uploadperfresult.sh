@@ -71,10 +71,8 @@ echo Creating: "$perfWorkingDirectory/submission.json"
     --configuration $configuration -- \
     --output "$perfWorkingDirectory/submission.json" \
     --repository-root "$HELIX_WORKITEM_ROOT" \
-    --sas "$PERF_COMMAND_UPLOAD_TOKEN"
+    --sas "$PERF_COMMAND_UPLOAD_TOKEN" || { echo 'Generate and upload failed...' ; exit 1; }
 
 echo Uploading: "$perfWorkingDirectory/submission.json"
-
-# TODO wul upload with Azdo
 
 exit 0
