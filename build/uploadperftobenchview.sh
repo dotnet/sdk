@@ -61,7 +61,8 @@ if [[ "$runType" == "rolling" ]]
 then
     benchViewName="$benchViewName $GIT_COMMIT"
 fi
-export BenchViewName=$BenchViewName
+export benchViewName=$benchViewName
+
 echo BenchViewName: "$benchViewName"
 
 echo Creating: "$perfWorkingDirectory/submission.json"
