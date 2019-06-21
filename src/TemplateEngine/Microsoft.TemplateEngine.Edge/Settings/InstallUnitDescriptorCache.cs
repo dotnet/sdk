@@ -12,16 +12,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     public class InstallUnitDescriptorCache
     {
-        private readonly Dictionary<Guid, string> _installedItems;
-        private readonly Dictionary<string, IInstallUnitDescriptor> _cache = new Dictionary<string, IInstallUnitDescriptor>();
+        private readonly Dictionary<Guid, IInstallUnitDescriptor> _cache = new Dictionary<Guid, IInstallUnitDescriptor>();
         private readonly IEngineEnvironmentSettings _environmentSettings;
 
         public InstallUnitDescriptorCache(IEngineEnvironmentSettings environmentSettings)
-            : this(environmentSettings, new List<IInstallUnitDescriptor>(), new Dictionary<Guid, string>())
+            : this(environmentSettings, new List<IInstallUnitDescriptor>())
         {
         }
 
-        protected InstallUnitDescriptorCache(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IInstallUnitDescriptor> descriptorList, IReadOnlyDictionary<Guid, string> installedItems)
+        protected InstallUnitDescriptorCache(IEngineEnvironmentSettings environmentSettings,
+            IReadOnlyList<IInstallUnitDescriptor> descriptorList)
         {
             _environmentSettings = environmentSettings;
 
@@ -29,17 +29,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 AddOrReplaceDescriptor(descriptor);
             }
+        }
 
-            _installedItems = installedItems.ToDictionary(x => x.Key, x => x.Value);
+        public bool TryGetDescriptorForTemplate(ITemplateInfo templateInfo, out IInstallUnitDescriptor descriptor)
+        {
+            descriptor = _cache.FirstOrDefault(entry => entry.Value.MountPointId == templateInfo.ConfigMountPointId).Value;
+
+            return descriptor != null;
         }
 
         [JsonProperty]
-        public IReadOnlyDictionary<Guid, string> InstalledItems => _installedItems;
+        public IReadOnlyDictionary<Guid, IInstallUnitDescriptor> Descriptors => _cache;
 
-        [JsonProperty]
-        public IReadOnlyDictionary<string, IInstallUnitDescriptor> Descriptors => _cache;
-
-        public bool TryAddDescriptorForLocation(Guid mountPointId)
+        public bool TryAddDescriptorForLocation(Guid mountPointId, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
         {
             IMountPoint mountPoint = null;
 
@@ -47,50 +49,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 if (!((SettingsLoader)(_environmentSettings.SettingsLoader)).TryGetMountPointFromId(mountPointId, out mountPoint))
                 {
+                    descriptorList = null;
                     return false;
                 }
 
-                string uninstallString = mountPoint.Info.Place;
-
-                //Adjust the uninstall string for NuGet packages if needed
-                if (uninstallString.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                if (InstallUnitDescriptorFactory.TryCreateFromMountPoint(_environmentSettings, mountPoint, out descriptorList))
                 {
-                    bool isFile = false;
-                    if (mountPoint.Info.ParentMountPointId == Guid.Empty)
+                    foreach (IInstallUnitDescriptor descriptor in descriptorList)
                     {
-                        isFile = _environmentSettings.Host.FileSystem.FileExists(mountPoint.Info.Place);
-                    }
-                    else if (((SettingsLoader)(_environmentSettings.SettingsLoader)).TryGetMountPointFromId(mountPoint.Info.ParentMountPointId, out IMountPoint parentMountPoint))
-                    {
-                        try
-                        {
-                            isFile = parentMountPoint.FileInfo(mountPoint.Info.Place)?.Exists ?? false;
-                        }
-                        finally
-                        {
-                            _environmentSettings.SettingsLoader.ReleaseMountPoint(parentMountPoint);
-                        }
-                    }
-
-                    if (isFile)
-                    {
-                        if (NupkgInstallUnitDescriptorFactory.TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string _))
-                        {
-                            uninstallString = packageName;
-                        }
+                        AddOrReplaceDescriptor(descriptor);
                     }
                 }
-
-                _installedItems[mountPointId] = uninstallString;
-
-                if (!InstallUnitDescriptorFactory.TryCreateFromMountPoint(_environmentSettings, mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptorList))
+                else
                 {
                     return false;
-                }
-
-                foreach (IInstallUnitDescriptor descriptor in descriptorList)
-                {
-                    AddOrReplaceDescriptor(descriptor);
                 }
             }
             finally
@@ -106,7 +78,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void AddOrReplaceDescriptor(IInstallUnitDescriptor descriptor)
         {
-            _cache[descriptor.Identifier] = descriptor;
+            _cache[descriptor.DescriptorId] = descriptor;
         }
 
         public void RemoveDescriptorsForLocationList(IEnumerable<Guid> mountPointIdList)
@@ -119,7 +91,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void RemoveDescriptorsForLocation(Guid mountPointId)
         {
-            _installedItems.Remove(mountPointId);
             IList<IInstallUnitDescriptor> descriptorsToRemove = new List<IInstallUnitDescriptor>();
 
             foreach (IInstallUnitDescriptor descriptor in _cache.Where(x => x.Value.MountPointId == mountPointId).Select(x => x.Value))
@@ -135,31 +106,22 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public void RemoveDescriptor(IInstallUnitDescriptor descriptor)
         {
-            _cache.Remove(descriptor.Identifier);
+            _cache.Remove(descriptor.DescriptorId);
         }
 
         public static InstallUnitDescriptorCache FromJObject(IEngineEnvironmentSettings environmentSettings, JObject cacheObj)
         {
             List<IInstallUnitDescriptor> allDescriptors = new List<IInstallUnitDescriptor>();
 
-            foreach (JProperty prop in cacheObj.PropertiesOf(nameof(Descriptors)))
+            foreach (JProperty descriptorProperty in cacheObj.PropertiesOf(nameof(Descriptors)))
             {
-                JObject descriptorObj = prop.Value as JObject;
-
-                if (InstallUnitDescriptorFactory.TryParse(environmentSettings, descriptorObj, out IInstallUnitDescriptor parsedDescriptor))
+                if (InstallUnitDescriptorFactory.TryParse(environmentSettings, descriptorProperty, out IInstallUnitDescriptor parsedDescriptor))
                 {
                     allDescriptors.Add(parsedDescriptor);
                 }
             }
 
-            Dictionary<Guid, string> installedItems = new Dictionary<Guid, string>();
-
-            foreach (KeyValuePair<string, string> item in cacheObj.ToStringDictionary(propertyName: nameof(InstalledItems)))
-            {
-                installedItems[Guid.Parse(item.Key)] = item.Value;
-            }
-
-            return new InstallUnitDescriptorCache(environmentSettings, allDescriptors, installedItems);
+            return new InstallUnitDescriptorCache(environmentSettings, allDescriptors);
         }
     }
 }

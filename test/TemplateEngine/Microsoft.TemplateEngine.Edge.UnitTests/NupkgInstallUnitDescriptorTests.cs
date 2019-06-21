@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 using Microsoft.TemplateEngine.Edge.TemplateUpdates;
 using Microsoft.TemplateEngine.TestHelper;
@@ -10,53 +11,49 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class NupkgInstallUnitDescriptorTests : TestBase
     {
-        private static readonly string MountPointIdKey = nameof(NupkgInstallUnitDescriptor.MountPointId);
-        private static readonly string PackageNameKey = nameof(NupkgInstallUnitDescriptor.PackageName);
         private static readonly string VersionKey = nameof(NupkgInstallUnitDescriptor.Version);
 
         [Fact(DisplayName = nameof(NupkgDescriptorConstructorCreatesFromValuesTest))]
         public void NupkgDescriptorConstructorCreatesFromValuesTest()
         {
+            Guid descriptorId = Guid.NewGuid();
             Guid mountPointId = new Guid("E0DE1C04-FD83-4BC5-BC4B-A675703F2266");
             string packageName = "TestPackage";
             string version = "1.2.3";
+            string author = "TestAuthor";
 
-            IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(mountPointId, packageName, version);
+            IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPointId, packageName, version, author);
+            Assert.Equal(descriptorId, descriptor.DescriptorId);
             Assert.Equal(packageName, descriptor.Identifier);
             Assert.Equal(NupkgInstallUnitDescriptorFactory.FactoryId, descriptor.FactoryId);
             Assert.Equal(mountPointId, descriptor.MountPointId);
-
-            Assert.True(Guid.TryParse(descriptor.Details[MountPointIdKey], out Guid detailsMountPointId));
-            Assert.Equal(mountPointId, detailsMountPointId);
-
-            Assert.Equal(packageName, descriptor.Details[PackageNameKey]);
             Assert.Equal(version, descriptor.Details[VersionKey]);
+            Assert.Equal(author, descriptor.Details[nameof(NupkgInstallUnitDescriptor.Author)]);
         }
 
         [Fact(DisplayName = nameof(NupkgDescriptorFactoryCreatesFromDetailsTest))]
         public void NupkgDescriptorFactoryCreatesFromDetailsTest()
         {
+            Guid descriptorId = Guid.NewGuid();
             Guid mountPointId = new Guid("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9");
             string packageName = "TestPackage";
             string version = "1.2.3";
+            string author = "Microsoft";
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
-                { MountPointIdKey, mountPointId.ToString() },
-                { PackageNameKey, packageName },
-                { VersionKey, version }
+                { VersionKey, version },
+                { nameof(NupkgInstallUnitDescriptor.Author), author }
             };
 
-            Assert.True(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(details, out IInstallUnitDescriptor descriptor));
+            Assert.True(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(descriptorId, packageName, mountPointId, details, out IInstallUnitDescriptor descriptor));
+            Assert.Equal(descriptorId, descriptor.DescriptorId);
             Assert.Equal(packageName, descriptor.Identifier);
             Assert.Equal(NupkgInstallUnitDescriptorFactory.FactoryId, descriptor.FactoryId);
             Assert.Equal(mountPointId, descriptor.MountPointId);
 
-            Assert.True(Guid.TryParse(descriptor.Details[MountPointIdKey], out Guid detailsMountPointId));
-            Assert.Equal(mountPointId, detailsMountPointId);
-
-            Assert.Equal(packageName, descriptor.Details[PackageNameKey]);
             Assert.Equal(version, descriptor.Details[VersionKey]);
+            Assert.Equal(author, descriptor.Details[nameof(NupkgInstallUnitDescriptor.Author)]);
         }
 
         [Fact(DisplayName = nameof(InstallUnitDescriptorFactoryDispatchesToNupkgDescriptorFactoryAndCreatesDescriptorTest))]
@@ -66,27 +63,30 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             string serializedDescriptor = @"
 {
-    ""FactoryId"": """  + NupkgInstallUnitDescriptorFactory.FactoryId.ToString() + @""",
-    ""Details"": {
+    ""3A06B18C-224E-46E3-95EB-8E411DB61B0B"":
+    {
+        ""FactoryId"": """ + NupkgInstallUnitDescriptorFactory.FactoryId.ToString() + @""",
         ""MountPointId"": ""D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9"",
-        ""PackageName"": ""TestPackage"",
-        ""Version"": ""1.2.3""
+        ""Identifier"": ""TestPackage"",
+        ""Details"": {
+            ""Version"": ""1.2.3"",
+            ""Author"": ""Microsoft"",
+        }
     }
 }";
             JObject descriptorJObject = JObject.Parse(serializedDescriptor);
-            Assert.True(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorJObject, out IInstallUnitDescriptor parsedDescriptor));
+            JProperty descriptorProperty = descriptorJObject.Properties().First();
+
+            Assert.True(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor parsedDescriptor));
 
             NupkgInstallUnitDescriptor nupkgDescriptor = parsedDescriptor as NupkgInstallUnitDescriptor;
             Assert.NotNull(nupkgDescriptor);
 
             Assert.Equal(NupkgInstallUnitDescriptorFactory.FactoryId, nupkgDescriptor.FactoryId);
             Assert.Equal("TestPackage", nupkgDescriptor.Identifier);
-            Assert.Equal("TestPackage", nupkgDescriptor.PackageName);
             Assert.Equal("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9", nupkgDescriptor.MountPointId.ToString(), ignoreCase: true);
             Assert.Equal("1.2.3", nupkgDescriptor.Version);
 
-            Assert.Equal("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9", nupkgDescriptor.Details["MountPointId"], ignoreCase: true);
-            Assert.Equal("TestPackage", nupkgDescriptor.Details["PackageName"]);
             Assert.Equal("1.2.3", nupkgDescriptor.Details["Version"]);
         }
 
@@ -98,11 +98,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
-                { PackageNameKey, packageName },
                 { VersionKey, version }
             };
 
-            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(details, out IInstallUnitDescriptor descriptor));
+            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.NewGuid(), packageName, Guid.Empty, details, out IInstallUnitDescriptor descriptor));
         }
 
         [Fact(DisplayName = nameof(NupkgDescriptorFactoryFailsOnMissingPackageNameTest))]
@@ -113,11 +112,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
-                { MountPointIdKey, mountPointId.ToString() },
                 { VersionKey, version }
             };
 
-            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(details, out IInstallUnitDescriptor descriptor));
+            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.Empty, null, mountPointId, details, out IInstallUnitDescriptor descriptor));
         }
 
         [Fact(DisplayName = nameof(NupkgDescriptorFactoryFailsOnMissingVersionTest))]
@@ -128,11 +126,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
-                { MountPointIdKey, mountPointId.ToString() },
-                { PackageNameKey, packageName },
             };
 
-            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(details, out IInstallUnitDescriptor descriptor));
+            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.NewGuid(), packageName, mountPointId, details, out IInstallUnitDescriptor descriptor));
         }
     }
 }
