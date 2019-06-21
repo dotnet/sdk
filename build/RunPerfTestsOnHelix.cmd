@@ -1,8 +1,8 @@
 @echo on
 setlocal EnableDelayedExpansion
 
-if "%BV_UPLOAD_SAS_TOKEN%" == "" (
-    echo EnvVar BV_UPLOAD_SAS_TOKEN should be set; exiting...
+if "%PERF_COMMAND_UPLOAD_TOKEN%" == "" (
+    echo EnvVar PERF_COMMAND_UPLOAD_TOKEN should be set; exiting...
     exit /b 1)
 if "%HELIX_CORRELATION_PAYLOAD%" == "" (
     echo EnvVar HELIX_CORRELATION_PAYLOAD should be set; exiting...
@@ -47,10 +47,9 @@ set perfWorkingDirectory=%HELIX_CORRELATION_PAYLOAD%\artifacts\TestResults\%conf
 set architecture=%PROCESSOR_ARCHITECTURE%
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (set architecture=x64)
 
-echo "Uploading data to Benchview: uploadperftobenchview.cmd"
+echo "Uploading data: uploadperftobenchview.cmd"
 pushd %HELIX_CORRELATION_PAYLOAD%
 %HELIX_CORRELATION_PAYLOAD%\build\uploadperftobenchview.cmd
 IF %ERRORLEVEL% GTR 0 exit %ERRORLEVEL%
-echo "Upload to Benchview completed"
 
 exit /b %ErrorLevel%

@@ -66,7 +66,12 @@ export benchViewName=$benchViewName
 echo BenchViewName: "$benchViewName"
 
 echo Creating: "$perfWorkingDirectory/submission.json"
-"$HELIX_WORKITEM_ROOT/.dotnet/dotnet" run --project $HELIX_WORKITEM_ROOT/src/Tests/PerformanceTestsResultGenerator/PerformanceTestsResultGenerator.csproj --configuration $configuration -- --output "$perfWorkingDirectory/submission.json" --repository-root "$HELIX_WORKITEM_ROOT"
+"$HELIX_WORKITEM_ROOT/.dotnet/dotnet" run \
+    --project $HELIX_WORKITEM_ROOT/src/Tests/PerformanceTestsResultGenerator/PerformanceTestsResultGenerator.csproj \
+    --configuration $configuration -- \
+    --output "$perfWorkingDirectory/submission.json" \
+    --repository-root "$HELIX_WORKITEM_ROOT" \
+    --sas "$PERF_COMMAND_UPLOAD_TOKEN"
 
 echo Uploading: "$perfWorkingDirectory/submission.json"
 

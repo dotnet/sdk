@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ -z "$BV_UPLOAD_SAS_TOKEN" ]; then
-    echo EnvVar BV_UPLOAD_SAS_TOKEN should be set; exiting...
+if [ -z "$PERF_COMMAND_UPLOAD_TOKEN" ]; then
+    echo EnvVar PERF_COMMAND_UPLOAD_TOKEN should be set; exiting...
     exit 1
 fi
 if [ -z "$HELIX_WORKITEM_ROOT" ]; then
@@ -41,8 +41,7 @@ export OS=$OS
 export HelixTargetQueues=$HelixTargetQueues
 export BuildNumber=$BuildNumber
 
-echo "Uploading data to Benchview: uploadperftobenchview.sh"
+echo "Uploading data to: uploadperftobenchview.sh"
 "$HELIX_WORKITEM_ROOT/build/uploadperftobenchview.sh" || { echo 'uploadperftobenchview.sh failed...' ; exit 1; }
-echo "Upload to Benchview completed"
 
 exit 0

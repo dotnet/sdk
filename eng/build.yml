@@ -112,7 +112,7 @@ jobs:
             HelixType: 'test/sdk_$(_BuildConfig)/'
             HelixAccessToken: $(HelixApiAccessToken)
             HelixTargetQueues: 'Windows.10.Amd64.ClientRS1.Perf' # using a dedicated private Helix queue (perfsnakes)
-            HelixPreCommands: 'set "BV_UPLOAD_SAS_TOKEN=$(BenchViewUploadToken)"'
+            HelixPreCommands: 'set "PERF_COMMAND_UPLOAD_TOKEN=$(PerfCommandUploadToken)"'
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
@@ -137,7 +137,7 @@ jobs:
             HelixType: 'test/sdk_$(_BuildConfig)/'
             HelixAccessToken: $(HelixApiAccessToken)
             HelixTargetQueues: 'Windows.10.Amd64.ClientRS1.Perf' # using a dedicated private Helix queue (perfsnakes)
-            HelixPreCommands: 'set "BV_UPLOAD_SAS_TOKEN=$(BenchViewUploadToken)"'
+            HelixPreCommands: 'set "PERF_COMMAND_UPLOAD_TOKEN=$(PerfCommandUploadToken)"'
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
@@ -158,7 +158,7 @@ jobs:
             HelixType: 'test/sdk_$(_BuildConfig)/'
             HelixAccessToken: $(HelixApiAccessToken)
             HelixTargetQueues: 'Ubuntu.1604.Amd64.Perf' # using a dedicated private Helix queue (perfsnakes)
-            HelixPreCommands: 'chmod +x build/RunPerfTestsOnHelix.sh && export BV_UPLOAD_SAS_TOKEN="$(BenchViewUploadTokenLinux)"'
+            HelixPreCommands: 'chmod +x build/RunPerfTestsOnHelix.sh && export PERF_COMMAND_UPLOAD_TOKEN="$(PerfCommandUploadTokenLinux)"'
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)'

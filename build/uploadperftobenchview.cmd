@@ -47,7 +47,13 @@ if /I "%runType%" == "rolling" (set benchViewName=%benchViewName% %GIT_COMMIT%)
 echo BenchViewName: "%benchViewName%"
 
 echo Creating: "%perfWorkingDirectory%\submission.json"
-%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe run --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj /p:configuration=%configuration% /p:NUGET_PACKAGES=%HELIX_CORRELATION_PAYLOAD%\.packages -- --output "%perfWorkingDirectory%\submission.json" --repository-root "%HELIX_CORRELATION_PAYLOAD%"
+%HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe run^
+ --project %HELIX_CORRELATION_PAYLOAD%\src\Tests\PerformanceTestsResultGenerator\PerformanceTestsResultGenerator.csproj^
+ /p:configuration=%configuration%^
+ /p:NUGET_PACKAGES=%HELIX_CORRELATION_PAYLOAD%\.packages --^
+ --output "%perfWorkingDirectory%\submission.json"^
+ --repository-root "%HELIX_CORRELATION_PAYLOAD%"^
+ --sas "%PERF_COMMAND_UPLOAD_TOKEN%"
 
 echo Uploading: "%perfWorkingDirectory%\submission.json"
 REM TODO upload it use Azcopy
