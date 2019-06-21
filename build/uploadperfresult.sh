@@ -20,8 +20,8 @@ if [ -z "$OS" ]; then
     exit 1
 fi
 if [ "$runType" = "private" ]; then
-    if [ -z "$BenchviewCommitName" ]; then
-        echo EnvVar BenchviewCommitName should be set; exiting...
+    if [ -z "$TestRunCommitName" ]; then
+        echo EnvVar TestRunCommitName should be set; exiting...
         exit 1
     fi
 else
@@ -44,7 +44,7 @@ if [ ! -d "$perfWorkingDirectory" ]; then
     exit 1
 fi
 
-# Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
+# Do this here to remove the origin but at the front of the branch name
 if [[ "$GIT_BRANCH" == "origin/"* ]]
 then
     GIT_BRANCH_WITHOUT_ORIGIN=${GIT_BRANCH:7}
@@ -52,18 +52,18 @@ else
     GIT_BRANCH_WITHOUT_ORIGIN=$GIT_BRANCH
 fi
 
-benchViewName="SDK perf $OS $architecture $configuration $runType $GIT_BRANCH_WITHOUT_ORIGIN"
+TestRunName="SDK perf $OS $architecture $configuration $runType $GIT_BRANCH_WITHOUT_ORIGIN"
 if [[ "$runType" == "private" ]]
 then
-    benchViewName="$benchViewName $BenchviewCommitName"
+    TestRunName="$TestRunName $TestRunCommitName"
 fi
 if [[ "$runType" == "rolling" ]]
 then
-    benchViewName="$benchViewName $GIT_COMMIT"
+    TestRunName="$TestRunName $GIT_COMMIT"
 fi
-export benchViewName=$benchViewName
+export TestRunName=$TestRunName
 
-echo BenchViewName: "$benchViewName"
+echo TestRunName: "$TestRunName"
 
 echo Creating: "$perfWorkingDirectory/submission.json"
 "$HELIX_WORKITEM_ROOT/.dotnet/dotnet" run \

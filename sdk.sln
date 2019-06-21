@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{50A89C27
 		build\NuGet.props = build\NuGet.props
 		build\SignToolData.json = build\SignToolData.json
 		build\Toolset.proj = build\Toolset.proj
-		build\uploadperftobenchview.cmd = build\uploadperftobenchview.cmd
+		build\uploadperfresult.cmd = build\uploadperfresult.cmd
 		build\Versions.props = build\Versions.props
 	EndProjectSection
 EndProject

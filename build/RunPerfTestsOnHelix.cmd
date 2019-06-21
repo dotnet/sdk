@@ -42,14 +42,14 @@ IF %ERRORLEVEL% GTR 0 exit %ERRORLEVEL%
 ENDLOCAL
 echo "Performance tests completed"
 
-REM  Upload the performance data to BenchView.
+REM  Upload the performance data
 set perfWorkingDirectory=%HELIX_CORRELATION_PAYLOAD%\artifacts\TestResults\%configuration%\Performance
 set architecture=%PROCESSOR_ARCHITECTURE%
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (set architecture=x64)
 
-echo "Uploading data: uploadperftobenchview.cmd"
+echo "Uploading data: uploadperfresult.cmd"
 pushd %HELIX_CORRELATION_PAYLOAD%
-%HELIX_CORRELATION_PAYLOAD%\build\uploadperftobenchview.cmd
+%HELIX_CORRELATION_PAYLOAD%\build\uploadperfresult.cmd
 IF %ERRORLEVEL% GTR 0 exit %ERRORLEVEL%
 
 exit /b %ErrorLevel%

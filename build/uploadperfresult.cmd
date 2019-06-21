@@ -22,8 +22,8 @@ if "%TestFullMSBuild%" == "" (
 if /I not "%runType%" == "private" if /I not "%runType%" == "rolling" (
     echo EnvVar runType should be set; exiting...
     exit /b 1)
-if /I "%runType%" == "private" if "%BenchviewCommitName%" == "" (
-    echo EnvVar BenchviewCommitName should be set; exiting...
+if /I "%runType%" == "private" if "%TestRunCommitName%" == "" (
+    echo EnvVar TestRunCommitName should be set; exiting...
     exit /b 1)
 if /I "%runType%" == "rolling" if "%GIT_COMMIT%" == "" (
     echo EnvVar GIT_COMMIT should be set; exiting...
@@ -38,13 +38,13 @@ if not exist %perfWorkingDirectory%\nul (
 set pythonCmd=py
 if exist "C:\Python35\python.exe" set pythonCmd=C:\Python35\python.exe
 
-REM Do this here to remove the origin but at the front of the branch name as this is a problem for BenchView
+REM Do this here to remove the origin but at the front of the branch name
 if "%GIT_BRANCH:~0,7%" == "origin/" (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH:origin/=%) else (set GIT_BRANCH_WITHOUT_ORIGIN=%GIT_BRANCH%)
 
-set benchViewName=SDK perf %OS% %architecture% %configuration% TestFullMSBuild-%TestFullMSBuild% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
-if /I "%runType%" == "private" (set benchViewName=%benchViewName% %BenchviewCommitName%)
-if /I "%runType%" == "rolling" (set benchViewName=%benchViewName% %GIT_COMMIT%)
-echo BenchViewName: "%benchViewName%"
+set TestRunName=SDK perf %OS% %architecture% %configuration% TestFullMSBuild-%TestFullMSBuild% %runType% %GIT_BRANCH_WITHOUT_ORIGIN%
+if /I "%runType%" == "private" (set TestRunName=%TestRunName% %TestRunCommitName%)
+if /I "%runType%" == "rolling" (set TestRunName=%TestRunName% %GIT_COMMIT%)
+echo TestRunName: "%TestRunName%"
 
 echo Creating: "%perfWorkingDirectory%\submission.json"
 %HELIX_CORRELATION_PAYLOAD%\.dotnet\dotnet.exe run^
