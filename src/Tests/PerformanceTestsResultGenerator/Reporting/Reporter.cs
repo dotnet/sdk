@@ -43,7 +43,7 @@ namespace Reporting
             run = new Run
             {
                 CorrelationId = environment.GetEnvironmentVariable("HELIX_CORRELATION_ID"),
-                PerfRepoHash = environment.GetEnvironmentVariable("HELIX_CORRELATION_ID"), // sdk does not use perf repo
+                PerfRepoHash = "place holder", // sdk does not use perf repo
                 Name = environment.GetEnvironmentVariable("benchViewName"), // no use for now.
                 Queue = environment.GetEnvironmentVariable("HelixTargetQueues")
             };

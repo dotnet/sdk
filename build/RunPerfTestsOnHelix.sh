@@ -38,6 +38,8 @@ export configuration=$configuration
 export runType=$runType
 export architecture=$architecture
 export OS=$OS
+export HelixTargetQueues=$HelixTargetQueues
+export BuildNumber=$BuildNumber
 
 echo "Uploading data to Benchview: uploadperftobenchview.sh"
 "$HELIX_WORKITEM_ROOT/build/uploadperftobenchview.sh" || { echo 'uploadperftobenchview.sh failed...' ; exit 1; }
