@@ -73,10 +73,10 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
             // EditorConfigStorageLocation no longer accepts a IReadOnlyDictionary<string, object>. All values should
             // be string so we can convert it into a Dictionary<string, string>
             var adjustedConventions = codingConventions.AllRawConventions.ToDictionary(kvp => kvp.Key, kvp => (string)kvp.Value);
-            var args = new object[] { option, adjustedConventions, option.Type, value };
+            var args = new object[] { adjustedConventions, option.Type, value };
 
             var isOptionPresent = (bool)tryGetOptionMethod.Invoke(editorConfigStorage, args);
-            value = args[3];
+            value = args[2];
 
             return isOptionPresent;
         }
