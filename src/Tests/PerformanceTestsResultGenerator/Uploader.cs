@@ -13,12 +13,12 @@ namespace PerformanceTestsResultGenerator
         {
             var newNameForUpload = CreateCopyWithNewName(generatedResult);
             Console.WriteLine($"Rename the file to {newNameForUpload.FullName}");
-            string uploadUrl = string.Format("{0}{1}", "https://pvscmdupload.blob.core.windows.net/results", sas);
+            string uploadUrl = string.Format("{0}{1}", "https://pvscmdupload.blob.core.windows.net/results/", sas);
 
             var cloudBlockBlob = new CloudBlockBlob(new Uri(uploadUrl));
-
+            Console.WriteLine($"uploadUrl is {uploadUrl}");
             Console.WriteLine($"Start to upload");
-            cloudBlockBlob.UploadFromFileAsync(newNameForUpload.FullName).GetAwaiter().GetResult();
+            cloudBlockBlob.UploadFromFile(newNameForUpload.FullName);
 
             Console.WriteLine($"Done uploading");
         }
