@@ -42,6 +42,30 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [Fact]
+        public void Given_perfWorkingDirectory_it_can_combine_xml_results_debug()
+        {
+            var expectedJson = File.ReadAllText(Path.Combine("PerformanceResultSample", "expectBatchTestResult.json"));
+            List<Test> tests =
+                XunitPerformanceResultConverter.BatchGenerateTests(new DirectoryInfo("PerformanceResultSample"));
+            AssertTestsObjectEqualToExpectedJson(tests, expectedJson
+                );
+
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            DefaultContractResolver resolver = new DefaultContractResolver();
+            resolver.NamingStrategy = new CamelCaseNamingStrategy {ProcessDictionaryKeys = false};
+            settings.ContractResolver = resolver;
+
+            string generatedJson = JsonConvert.SerializeObject(tests, Formatting.Indented, settings);
+            JArray generatedJObject = JsonConvert.DeserializeObject<JArray>(generatedJson);
+            JArray expectedJObject = JsonConvert.DeserializeObject<JArray>(expectedJson);
+
+            if (3.ToString() != "1")
+            {
+                throw new ArgumentException(generatedJson + "xxxxxxxxxxxxxx" + expectedJson);
+            }
+        }
+
+        [Fact]
         public void It_can_get_commit_timestamp()
         {
             Reporter.GetCommitTimestamp("29bf0a82d9d9e20b6da067b3bf2cb05bf0504e47", TestContext.GetRepoRoot()).Should()
