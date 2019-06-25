@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
@@ -112,6 +113,12 @@ namespace Microsoft.NET.Build.Tests
                                 "5.dll",
                                 "5.pdb"
                             }));
+
+                if (targetFramework.StartsWith("net4") && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // only windows can build full framework tfms
+                    break;
+                }
 
                 DotnetCommand runCommand = new DotnetCommand(
                     Log,
