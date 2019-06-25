@@ -221,7 +221,7 @@ namespace _{0}
                 Name = "4",
                 IsSdkProject = true,
                 TargetFrameworks = "netstandard1.3",
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "4", string.Empty)
                 }
@@ -233,7 +233,7 @@ namespace _{0}
                 IsSdkProject = true,
                 TargetFrameworks = "netstandard1.6",
                 ReferencedProjects = { project4 },
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "3", string.Empty)
                 }
@@ -245,7 +245,7 @@ namespace _{0}
                 IsSdkProject = true,
                 TargetFrameworks = "netstandard2.0",
                 ReferencedProjects = { project3 },
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "2", string.Empty)
                 }
@@ -258,7 +258,7 @@ namespace _{0}
                 IsSdkProject = true,
                 TargetFrameworks = "netcoreapp2.1",
                 ReferencedProjects = { project2 },
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "1", string.Empty)
                 }
@@ -274,7 +274,7 @@ namespace _{0}
                 Name = "5",
                 IsSdkProject = true,
                 TargetFrameworks = "netstandard1.3",
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "5", string.Empty)
                 }
@@ -286,7 +286,7 @@ namespace _{0}
                 IsSdkProject = true,
                 TargetFrameworks = "netstandard1.3;netstandard1.6;net461",
                 ReferencedProjects = { project5 },
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "4", "_5.Class1.Message();")
                 }
@@ -298,7 +298,7 @@ namespace _{0}
                 IsSdkProject = true,
                 TargetFrameworks = "netstandard2.0;net462",
                 ReferencedProjects = { project4 },
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "3", "_4.Class1.Message();")
                 }
@@ -310,7 +310,7 @@ namespace _{0}
                 IsSdkProject = true,
                 TargetFrameworks = "netstandard1.5",
                 ReferencedProjects = { project4 },
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "2", "_4.Class1.Message();")
                 }
@@ -323,7 +323,7 @@ namespace _{0}
                 IsSdkProject = true,
                 TargetFrameworks = "netcoreapp2.1;net472",
                 ReferencedProjects = { project2, project3 },
-                SourceFiles = new Dictionary<string, string>
+                SourceFiles =
                 {
                     ["Program.cs"] = string.Format(SourceFile, "1", " _2.Class1.Message(); _3.Class1.Message();")
                 }

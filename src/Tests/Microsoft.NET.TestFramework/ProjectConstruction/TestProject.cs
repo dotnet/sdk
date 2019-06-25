@@ -45,7 +45,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         
         public List<CopyFilesTarget> CopyFilesTargets { get; } = new List<CopyFilesTarget>();
 
-        public Dictionary<string, string> SourceFiles { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> SourceFiles { get; } = new Dictionary<string, string>();
 
         public Dictionary<string, string> EmbeddedResources { get; } = new Dictionary<string, string>();
 
