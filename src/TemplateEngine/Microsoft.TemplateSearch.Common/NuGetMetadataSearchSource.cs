@@ -27,7 +27,7 @@ namespace Microsoft.TemplateSearch.Common
             Paths paths = new Paths(environmentSettings);
             string searchMetadataFileLocation = Path.Combine(paths.User.BaseDir, _templateDiscoveryMetadataFile);
 
-            if (!await _searchInfoFileProvider.TryEnsureSearchFileAsync(paths, searchMetadataFileLocation))
+            if (!await _searchInfoFileProvider.TryEnsureSearchFileAsync(environmentSettings, paths, searchMetadataFileLocation))
             {
                 return false;
             }

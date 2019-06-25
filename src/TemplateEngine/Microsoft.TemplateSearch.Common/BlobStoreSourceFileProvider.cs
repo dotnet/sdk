@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.Common
@@ -8,13 +9,26 @@ namespace Microsoft.TemplateSearch.Common
     internal class BlobStoreSourceFileProvider : ISearchInfoFileProvider
     {
         private static readonly Uri _searchMetadataUri = new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409");
+        private static readonly string _localSourceSearchFileOVerrideEnvVar = "DOTNET_NEW_SEARCH_FILE_OVERRIDE";
 
         public BlobStoreSourceFileProvider()
         {
         }
 
-        public async Task<bool> TryEnsureSearchFileAsync(Paths paths, string metadataFileTargetLocation)
+        public async Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, Paths paths, string metadataFileTargetLocation)
         {
+            string localOverridePath = environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOVerrideEnvVar);
+            if (!string.IsNullOrEmpty(localOverridePath))
+            {
+                if (paths.FileExists(localOverridePath))
+                {
+                    paths.Copy(localOverridePath, metadataFileTargetLocation);
+                    return true;
+                }
+
+                return false;
+            }
+
             bool cloudResult = await TryAcquireFileFromCloudAsync(paths, metadataFileTargetLocation);
 
             if (cloudResult)
