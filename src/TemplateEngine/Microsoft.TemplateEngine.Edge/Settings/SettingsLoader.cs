@@ -212,6 +212,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             _isLoaded = false;
             EnsureLoaded();
+            ReloadTemplates();
         }
 
         private void UpdateTemplateListFromCache(TemplateCache cache, ISet<ITemplateInfo> templates)
