@@ -9,7 +9,8 @@ namespace Microsoft.TemplateSearch.Common
     internal class BlobStoreSourceFileProvider : ISearchInfoFileProvider
     {
         private static readonly Uri _searchMetadataUri = new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409");
-        private static readonly string _localSourceSearchFileOVerrideEnvVar = "DOTNET_NEW_SEARCH_FILE_OVERRIDE";
+        private static readonly string _localSourceSearchFileOverrideEnvVar = "DOTNET_NEW_SEARCH_FILE_OVERRIDE";
+        private static readonly string _useLocalSearchFileIfPresentEnvVar = "DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY";
 
         public BlobStoreSourceFileProvider()
         {
@@ -17,7 +18,7 @@ namespace Microsoft.TemplateSearch.Common
 
         public async Task<bool> TryEnsureSearchFileAsync(IEngineEnvironmentSettings environmentSettings, Paths paths, string metadataFileTargetLocation)
         {
-            string localOverridePath = environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOVerrideEnvVar);
+            string localOverridePath = environmentSettings.Environment.GetEnvironmentVariable(_localSourceSearchFileOverrideEnvVar);
             if (!string.IsNullOrEmpty(localOverridePath))
             {
                 if (paths.FileExists(localOverridePath))
@@ -29,13 +30,29 @@ namespace Microsoft.TemplateSearch.Common
                 return false;
             }
 
-            bool cloudResult = await TryAcquireFileFromCloudAsync(paths, metadataFileTargetLocation);
-
-            if (cloudResult)
+            string useLocalSearchFile = environmentSettings.Environment.GetEnvironmentVariable(_useLocalSearchFileIfPresentEnvVar);
+            if (!string.IsNullOrEmpty(useLocalSearchFile))
             {
-                return true;
+                // evn var is set, only use a local copy of the search file. Don't try to acquire one from blob storage.
+                return TryUseLocalSearchFile(paths, metadataFileTargetLocation);
             }
+            else
+            {
+                // prefer a search file from cloud storage.
+                bool cloudResult = await TryAcquireFileFromCloudAsync(paths, metadataFileTargetLocation);
 
+                if (cloudResult)
+                {
+                    return true;
+                }
+
+                // no cloud store file was available. Use a local file if possible.
+                return TryUseLocalSearchFile(paths, metadataFileTargetLocation);
+            }
+        }
+
+        private bool TryUseLocalSearchFile(Paths paths, string metadataFileTargetLocation)
+        {
             // A previously acquired file may already be setup.
             // It could either be from online storage, or shipped in-box.
             // If so, fallback to using it.
