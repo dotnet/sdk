@@ -86,6 +86,28 @@ Default Value: `false`
 
 Example: `dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true`
 
+### Null check validation methods
+Option Name: `null_check_validation_methods`
+
+Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods)
+
+Option Values: Names of null check validation methods (separated by '~') that validate arguments passed to the method are non-null for CA1062 (https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods).
+Allowed method name formats:
+  1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format
+     with an optional "M:" prefix.
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation
+|`dotnet_code_quality.null_check_validation_methods = Validate1~Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
+|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)~NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+ 
 ### Dataflow analysis
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code), [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
@@ -175,6 +197,33 @@ class Test
 }
 ```
 
+#### Configure dispose ownership transfer for disposable objects passed as arguments to method calls
+Option Name: `dispose_ownership_transfer_at_method_call`
+
+Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
+
+Option Values: `true` or `false`
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.dispose_ownership_transfer_at_method_call = false`
+
+For example, consider the below code:
+```csharp
+using System;
+
+class Test
+{
+    void M1()
+    {
+        // Dispose ownership for allocation 'new A()' is assumed to be transferred to 'TransferDisposeOwnership' method
+        // if 'dotnet_code_quality.dispose_ownership_transfer_at_method_call = true'.
+        // Otherwise, current method 'M1' has the dispose ownership for 'new A()', and it fires a CA2000 as a dispose leak for the below code.
+        TransferDisposeOwnership(new A());
+    }
+}
+```
+
 #### Configure execution of Copy analysis (tracks value and reference copies)
 Option Name: `copy_analysis`
 
@@ -183,3 +232,12 @@ Option Values: `true` or `false`
 Default Value: Specific to each configurable rule ('true' by default for most rules)
 
 Example: `dotnet_code_quality.copy_analysis = true`
+
+#### Configure sufficient IterationCount when using weak KDF algorithm
+Option Name: `sufficient_IterationCount_for_weak_KDF_algorithm`
+
+Option Values: integral values
+
+Default Value: Specific to each configurable rule ('100000' by default for most rules)
+
+Example: `dotnet_net_core.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
