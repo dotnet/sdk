@@ -118,7 +118,7 @@ Allowed symbol name formats:
   1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace)
   2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format.
      Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
-  3. `.ctor` for constructors and ".cctor" for static constructors
+  3. `.ctor` for constructors and `.cctor` for static constructors
 
 Default Value: None
 
