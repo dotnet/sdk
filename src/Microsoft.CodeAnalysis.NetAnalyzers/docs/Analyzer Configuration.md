@@ -131,6 +131,27 @@ Examples:
 |`dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
 |`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
  
+### Excluded type names with derived types
+Option Name: `excluded_type_names_with_derived_types`
+
+Configurable Rules: [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters)
+
+Option Values: Names of types (separated by '|'), such that the type and all its derived types are excluded for analysis.
+Allowed symbol name formats:
+  1. Type name only (includes all types with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix.
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named 'MyType' and all of its derived types in the compilation
+|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
+|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
+|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
+ 
 ### Dataflow analysis
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code), [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
