@@ -157,6 +157,8 @@ namespace Microsoft.NET.Publish.Tests
             GetPublishDirectory(publishCommand)
                 .Should()
                 .HaveFiles(expectedFiles);
+            // Once coreclr/#25522 is fixed, the above test can be changed
+            // to .OnlyHaveFiles(expectedFiles)
         }
 
         [WindowsOnlyFact]
