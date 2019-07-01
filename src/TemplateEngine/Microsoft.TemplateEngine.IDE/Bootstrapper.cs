@@ -94,19 +94,19 @@ namespace Microsoft.TemplateEngine.IDE
             return instantiateResult.CreationEffects;
         }
 
-        public IEnumerable<string>  Uninstall(string path)
+        public IEnumerable<string> Uninstall(string path)
         {
             EnsureInitialized();
             return Installer.Uninstall(new[] { path });
         }
 
-        public IEnumerable<string>  Uninstall(params string[] paths)
+        public IEnumerable<string> Uninstall(params string[] paths)
         {
             EnsureInitialized();
             return Installer.Uninstall(paths);
         }
 
-        public IEnumerable<string>  Uninstall(IEnumerable<string> paths)
+        public IEnumerable<string> Uninstall(IEnumerable<string> paths)
         {
             EnsureInitialized();
             return Installer.Uninstall(paths);

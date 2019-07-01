@@ -87,20 +87,20 @@ namespace BaselineComparer
             string output = uninstallListCommand.Output;
 
             string[] outputLineList = output.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
-            bool foundHeader = false;
             List<string> toUninstallList = new List<string>();
+
+            string previousLine = null;
 
             foreach (string outputLine in outputLineList)
             {
-                if (string.Equals(outputLine.Trim(), UninstallListHeader, StringComparison.Ordinal))
+                if (string.Equals(outputLine.Trim(), "Templates:", StringComparison.Ordinal)
+                    && !string.IsNullOrEmpty(previousLine))
                 {
-                    foundHeader = true;
+                    toUninstallList.Add(previousLine);
+                    Console.WriteLine($"adding to uninstall list: {previousLine}");
                 }
-                else if (foundHeader && !string.IsNullOrWhiteSpace(outputLine))
-                {
-                    toUninstallList.Add(outputLine);
-                    Console.WriteLine($"adding to uninstall list: {outputLine}");
-                }
+
+                previousLine = outputLine;
             }
 
             Console.WriteLine("Uninstalling everything.");

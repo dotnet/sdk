@@ -14,18 +14,9 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 
         public Guid Id => FactoryId;
 
-        public bool TryCreateFromDetails(IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor)
+        public bool TryCreateFromDetails(Guid descriptorId, string identifier, Guid mountPointId, IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor)
         {
-            if (!details.TryGetValue(nameof(NupkgInstallUnitDescriptor.MountPointId), out string mountPointValue)
-                || string.IsNullOrEmpty(mountPointValue)
-                || !Guid.TryParse(mountPointValue, out Guid mountPointId))
-            {
-                descriptor = null;
-                return false;
-            }
-
-            if (!details.TryGetValue(nameof(NupkgInstallUnitDescriptor.PackageName), out string packageName)
-                || string.IsNullOrEmpty(packageName))
+            if (string.IsNullOrEmpty(identifier) || mountPointId == Guid.Empty)
             {
                 descriptor = null;
                 return false;
@@ -38,7 +29,14 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 return false;
             }
 
-            descriptor = new NupkgInstallUnitDescriptor(mountPointId, packageName, version);
+            if (!details.TryGetValue(nameof(NupkgInstallUnitDescriptor.Author), out string author)
+                || string.IsNullOrEmpty(author))
+            {
+                descriptor = null;
+                return false;
+            }
+
+            descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPointId, identifier, version, author);
             return true;
         }
 
@@ -49,9 +47,10 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 
             if (mountPoint.Info.Place != null
                 && mountPoint.EnvironmentSettings.Host.FileSystem.FileExists(mountPoint.Info.Place)
-                && TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string version))
+                && TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string version, out string author))
             {
-                IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(mountPoint.Info.MountPointId, packageName, version);
+                Guid descriptorId = Guid.NewGuid();
+                IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPoint.Info.MountPointId, packageName, version, author);
                 allDescriptors.Add(descriptor);
                 return true;
             }
@@ -59,7 +58,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
             return false;
         }
 
-        internal static bool TryGetPackageInfoFromNuspec(IMountPoint mountPoint, out string packageName, out string version)
+        internal static bool TryGetPackageInfoFromNuspec(IMountPoint mountPoint, out string packageName, out string version, out string author)
         {
             IList<IFile> nuspecFiles = mountPoint.Root.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly).ToList();
 
@@ -67,6 +66,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
             {
                 packageName = null;
                 version = null;
+                author = null;
                 return false;
             }
 
@@ -79,16 +79,19 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 {
                     packageName = null;
                     version = null;
+                    author = null;
                     return false;
                 }
 
                 packageName = metadata.Elements().FirstOrDefault(x => x.Name.LocalName == "id")?.Value;
                 version = metadata.Elements().FirstOrDefault(x => x.Name.LocalName == "version")?.Value;
+                author = metadata.Elements().FirstOrDefault(x => x.Name.LocalName == "authors")?.Value;
 
                 if (string.IsNullOrEmpty(packageName) || string.IsNullOrEmpty(version))
                 {
                     packageName = null;
                     version = null;
+                    author = null;
                     return false;
                 }
             }

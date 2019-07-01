@@ -2,6 +2,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplateUpdates;
 using Microsoft.TemplateEngine.Edge.TemplateUpdates;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
@@ -20,12 +21,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             // guid was randomly generated, doesn't match any descriptor factory
             string serializedDescriptor = @"
 {
-    ""FactoryId"": ""25AB3648-DC67-4A95-A658-5EEE8ADC2695"",
-    ""Details"": {
+  ""2DB9FBE1-5DFA-4A56-A9B7-8291236D7580"": 
+    {
+        ""FactoryId"": ""25AB3648-DC67-4A95-A658-5EEE8ADC2695"",
+        ""Details"": {
+        }
     }
 }";
-            JObject descriptorJObject = JObject.Parse(serializedDescriptor);
-            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorJObject, out IInstallUnitDescriptor descriptor));
+            JObject descriptorObject = JObject.Parse(serializedDescriptor);
+            JProperty descriptorProperty = descriptorObject.Properties().First();
+
+            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
 
         [Fact(DisplayName = nameof(InstallUnitDescriptorFactoryFailsGracefullyOnMissingFactoryIdTest))]
@@ -36,8 +42,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
     ""Details"": {
     }
 }";
-            JObject descriptorJObject = JObject.Parse(serializedDescriptor);
-            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorJObject, out IInstallUnitDescriptor descriptor));
+            JObject descriptorObject = JObject.Parse(serializedDescriptor);
+            JProperty descriptorProperty = descriptorObject.Properties().First();
+            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
 
         [Fact(DisplayName = nameof(InstallUnitDescriptorFactoryFailsGracefullyOnMissingDetailsTest))]
@@ -47,8 +54,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     ""FactoryId"": ""25AB3648-DC67-4A95-A658-5EEE8ADC2695"",
 }";
-            JObject descriptorJObject = JObject.Parse(serializedDescriptor);
-            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorJObject, out IInstallUnitDescriptor descriptor));
+
+            JObject descriptorObject = JObject.Parse(serializedDescriptor);
+            JProperty descriptorProperty = descriptorObject.Properties().First();
+            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
 
         [Fact(DisplayName = nameof(InstallUnitDescriptorFactoryFailsGracefullyOnStructuredDetailsDataTest))]
@@ -63,8 +72,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
     }
 }";
-            JObject descriptorJObject = JObject.Parse(serializedDescriptor);
-            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorJObject, out IInstallUnitDescriptor descriptor));
+            JObject descriptorObject = JObject.Parse(serializedDescriptor);
+            JProperty descriptorProperty = descriptorObject.Properties().First();
+            Assert.False(InstallUnitDescriptorFactory.TryParse(EngineEnvironmentSettings, descriptorProperty, out IInstallUnitDescriptor descriptor));
         }
     }
 }

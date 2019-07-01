@@ -4,11 +4,16 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockTemplate : ITemplateInfo, IShortNameList
+    public class MockTemplateInfo : ITemplateInfo, IShortNameList
     {
-        public MockTemplate()
+        public MockTemplateInfo()
         {
             ShortNameList = new List<string>();
+            Classifications = new List<string>();
+            Tags = new Dictionary<string, ICacheTag>(StringComparer.Ordinal);
+            CacheParameters = new Dictionary<string, ICacheParameter>(StringComparer.Ordinal);
+            Parameters = new List<ITemplateParameter>();
+            BaselineInfo = new Dictionary<string, IBaselineInfo>(StringComparer.Ordinal);
         }
 
         public string Author { get; set; }
