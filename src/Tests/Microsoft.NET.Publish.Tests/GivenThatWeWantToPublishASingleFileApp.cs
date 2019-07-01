@@ -156,7 +156,7 @@ namespace Microsoft.NET.Publish.Tests
             string[] expectedFiles = { SingleFile, PdbFile, NiPdbFile };
             GetPublishDirectory(publishCommand)
                 .Should()
-                .OnlyHaveFiles(expectedFiles);
+                .HaveFiles(expectedFiles);
         }
 
         [WindowsOnlyFact]
