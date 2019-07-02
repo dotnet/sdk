@@ -9,7 +9,7 @@
     <PackageReference Include="$(PackageToRestore)" Version="$(PackageVersionToRestore)" />
   </ItemGroup>
 
-  <Target Name="LayoutTool" DependsOnTargets="Restore">
+  <Target Name="LayoutTool" DependsOnTargets="Restore" Condition="'$(PackageToRestore)' != ''">
 
     <PropertyGroup>
       <RestoredToolRoot>$([System.IO.Path]::GetFullPath('$(NuGetPackageRoot)/$(PackageToRestore)/$(PackageVersionToRestore)'))</RestoredToolRoot>

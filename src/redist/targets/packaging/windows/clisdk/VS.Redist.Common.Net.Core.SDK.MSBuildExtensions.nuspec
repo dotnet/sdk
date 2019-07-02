@@ -9,10 +9,10 @@
         <licenseUrl>https://www.microsoft.com/net/dotnet_library_license.htm</licenseUrl>
         <projectUrl>https://github.com/dotnet/core-sdk</projectUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
-        <description>MSBuild extensions bundled with .NET Core SDK insertions to VS</description>
+        <description>MSBuild extensions bundled with .NET Core SDK for internal Visual Studio build consumption</description>
         <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     </metadata>
     <files>
-        <file src="$DOTNET_BUNDLE$\**\*" />
+        <file src="$PAYLOAD_FILES$\**\*" />
     </files>
 </package>

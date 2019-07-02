@@ -120,27 +120,6 @@
         <CertificateName>%(CertificateName)</CertificateName>
       </LayoutFileSignInfo>
       <DistinctLayoutFileSignInfo Include="@(LayoutFileSignInfo->Distinct())" />
-
-      <!-- Workaround: cert not recognized as for third parties, or assemblies don't have copyright set -->
-      <!--<FilesNotToSign Include="Newtonsoft.Json.dll"/>-->
-      <FilesNotToSign Include="Microsoft.TestPlatform.Extensions.BlameDataCollector.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.TestHostRuntimeProvider.dll"/>
-      <FilesNotToSign Include="Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.Build.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.CommunicationUtilities.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.CoreUtilities.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.CrossPlatEngine.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.PlatformAbstractions.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.Utilities.dll"/>
-      <FilesNotToSign Include="Microsoft.TestPlatform.VsTestConsole.TranslationLayer.dll"/>
-      <FilesNotToSign Include="Microsoft.VisualStudio.TestPlatform.Client.dll"/>
-      <FilesNotToSign Include="Microsoft.VisualStudio.TestPlatform.Common.dll"/>
-      <FilesNotToSign Include="Microsoft.VisualStudio.TestPlatform.ObjectModel.dll"/>
-      <FilesNotToSign Include="datacollector.dll"/>
-      <FilesNotToSign Include="vstest.console.dll"/>
-
-      <DistinctLayoutFileSignInfo Remove="@(FilesNotToSign)" />
-      <DistinctLayoutFileSignInfo Include="@(FilesNotToSign)" CertificateName="None" />
     </ItemGroup>
 
     <Error Condition="'$(AllowEmptySignList)' != 'true' AND '@(LayoutFilesToSign)' == ''"

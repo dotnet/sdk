@@ -75,6 +75,7 @@
         win-arm;
         osx-x64;
         linux-musl-x64;
+        linux-musl-arm64;
         linux-x64;
         linux-arm;
         linux-arm64" />
@@ -187,9 +188,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               LatestRuntimeFrameworkVersion="$(_NETCoreAppPackageVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(NetCoreAppTargetingPackVersion)"
-                              AppHostPackNamePattern="runtime.**RID**.Microsoft.NETCore.DotNetAppHost"
-                              AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
-                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.NETCore.App%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostResolver%3Bruntime.**RID**.Microsoft.NETCore.DotNetHostPolicy"
+                              RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               PackagesToReference="Microsoft.NETCore.App/$(NetCoreAppTargetingPackVersion)"
                               IsTrimmable="true"
@@ -209,9 +208,35 @@ Copyright (c) .NET Foundation. All rights reserved.
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
-                              RuntimePackNamePatterns="runtime.**RID**.Microsoft.WindowsDesktop.App"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
                               IsWindowsOnly="true"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              Profile="WPF"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              Profile="WindowsForms"
                               />
 
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
