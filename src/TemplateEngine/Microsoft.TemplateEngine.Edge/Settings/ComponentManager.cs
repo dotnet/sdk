@@ -8,6 +8,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Mount.Archive;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
+using Microsoft.TemplateEngine.Edge.TemplateUpdates;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -86,6 +87,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 ids.Add(ZipFileMountPointFactory.FactoryId);
                 Cache<IMountPointFactory>.Instance.AddPart(new ZipFileMountPointFactory());
+            }
+
+            if (!ids.Contains(DefaultInstallUnitDescriptorFactory.FactoryId))
+            {
+                if (ids.Add(DefaultInstallUnitDescriptorFactory.FactoryId))
+                {
+                    RegisterType(typeof(DefaultInstallUnitDescriptorFactory));
+                }
             }
 
             foreach (KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
