@@ -91,7 +91,7 @@ Option Name: `null_check_validation_methods`
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods)
 
-Option Values: Names of null check validation methods (separated by '~') that validate arguments passed to the method are non-null for CA1062 (https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods).
+Option Values: Names of null check validation methods (separated by '|') that validate arguments passed to the method are non-null for CA1062 (https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods).
 Allowed method name formats:
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
   2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format
@@ -104,9 +104,53 @@ Examples:
 | Option Value | Summary |
 | --- | --- |
 |`dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation
-|`dotnet_code_quality.null_check_validation_methods = Validate1~Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.null_check_validation_methods = Validate1|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)~NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+ 
+### Excluded symbol names
+Option Name: `excluded_symbol_names`
+
+Configurable Rules: [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters)
+
+Option Values: Names of symbols (separated by '|') that are excluded for analysis.
+Allowed symbol name formats:
+  1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format.
+     Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
+  3. `.ctor` for constructors and `.cctor` for static constructors
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.excluded_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation
+|`dotnet_code_quality.excluded_symbol_names = Validate1|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
+|`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+ 
+### Excluded type names with derived types
+Option Name: `excluded_type_names_with_derived_types`
+
+Configurable Rules: [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters)
+
+Option Values: Names of types (separated by '|'), such that the type and all its derived types are excluded for analysis.
+Allowed symbol name formats:
+  1. Type name only (includes all types with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix.
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named 'MyType' and all of its derived types in the compilation
+|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
+|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
+|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
  
 ### Dataflow analysis
 
