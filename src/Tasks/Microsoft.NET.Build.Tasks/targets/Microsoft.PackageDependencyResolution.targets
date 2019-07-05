@@ -221,6 +221,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <CopyLocalRuntimeTargetAssets>true</CopyLocalRuntimeTargetAssets>
     </PropertyGroup>
 
+    <!-- Continue design time builds if resolving package assets fails -->
+    <PropertyGroup>
+      <_ResolvePackageAssetsContinueOnError Condition="'$(DesignTimeBuild)' == 'true'">ErrorAndContinue</_ResolvePackageAssetsContinueOnError>
+      <_ResolvePackageAssetsContinueOnError Condition="'$(_ResolvePackageAssetsContinueOnError)' == ''">false</_ResolvePackageAssetsContinueOnError>
+    </PropertyGroup>
+
     <ItemGroup>
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
 
@@ -255,6 +261,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ExpectedPlatformPackages="@(ExpectedPlatformPackages)"
       SatelliteResourceLanguages="$(SatelliteResourceLanguages)"
       DesignTimeBuild="$(DesignTimeBuild)"
+      ContinueOnError="$(_ResolvePackageAssetsContinueOnError)"
       PackageReferences="@(PackageReference)">
 
       <!-- NOTE: items names here are inconsistent because they match prior implementation
