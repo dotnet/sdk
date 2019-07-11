@@ -16,11 +16,14 @@
 
       <SdkGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatemsi.ps1</SdkGenerateMsiPowershellScript>
       <SdkStableFileIdForApphostTransform>$(MSBuildThisFileDirectory)packaging/windows/clisdk/stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
+      <TemplatesGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatetemplatesmsi.ps1</TemplatesGenerateMsiPowershellScript>
       <SdkGenerateBundlePowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatebundle.ps1</SdkGenerateBundlePowershellScript>
       <GenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatenupkg.ps1</GenerateNupkgPowershellScript>
 
       <ToolsetInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.Toolset.nuspec</ToolsetInstallerNuspecFile>
       <ToolsetInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Toolset.$(Architecture).$(FullNugetVersion).nupkg</ToolsetInstallerNupkgFile>
+      <TemplatesInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.Templates.nuspec</TemplatesInstallerNuspecFile>
+      <TemplatesInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(Architecture).$(FullNugetVersion).nupkg</TemplatesInstallerNupkgFile>
       <VSToolsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
@@ -36,6 +39,8 @@
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
       <SdkMSICabFile>$(ArtifactsShippingPackagesDir)d$(Architecture)-1.cab</SdkMSICabFile>
+      <TemplatesMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionTemplates)$(InstallerExtension)</TemplatesMSIInstallerFile>
+      <TemplatesMSICabFile>$(ArtifactsShippingPackagesDir)t$(Architecture)-1.cab</TemplatesMSICabFile>
       <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
       <SdkBundleInstallerOutputGuidString>$(ProductBandCombinedHostHostFxrFrameworkSdkName)</SdkBundleInstallerOutputGuidString>
 
@@ -49,15 +54,9 @@
 
   <Target Name="MsiTargetsSetupInputOutputs"
           DependsOnTargets="GenerateLayout;SetupWixProperties;GetCoreSdkGitCommitInfo">
-    <!-- Generate SDK MSI Inputs -->
-    <ItemGroup>
-      <GenerateSdkMsiInputs Include="$(SdkInternalLayoutPath)**/*;
-                                       $(SdkGenerateMsiPowershellScript)" />
-    </ItemGroup>
-
     <!-- Consumed By Publish -->
     <ItemGroup>
-      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile)" />
+      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(TemplatesMSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile)" />
     </ItemGroup>
 
     <GenerateMsiVersion CommitCount="$(GitCommitCount)"
@@ -70,6 +69,11 @@
     <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="SdkInstallerUpgradeCode" />
+    </GenerateGuidFromName>
+
+    <GenerateGuidFromName Name="$(TemplatesMSIInstallerFile)">
+      <Output TaskParameter="OutputGuid"
+          PropertyName="TemplatesInstallerUpgradeCode" />
     </GenerateGuidFromName>
 
     <GenerateGuidFromName Name="$(SdkBundleInstallerOutputGuidString)">
@@ -104,8 +108,9 @@
 
   <Target Name="GenerateSdkMsi"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo"
-          Condition=" '$(OS)' == 'Windows_NT'"
-          Inputs="@(GenerateSdkMsiInputs)"
+          Condition=" '$(OS)' == 'Windows_NT' "
+          Inputs="$(SdkInternalLayoutPath)**/*;
+                    $(SdkGenerateMsiPowershellScript)"
           Outputs="$(SdkMSIInstallerFile)">
 
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
@@ -122,9 +127,29 @@
                       -InformationAction Continue" />
   </Target>
 
+  <Target Name="GenerateTemplatesMsi"
+        DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo"
+        Condition=" '$(OS)' == 'Windows_NT' "
+        Inputs="$(TemplatesLayoutPath)**/*;
+                  $(TemplatesGenerateMsiPowershellScript)"
+        Outputs="$(TemplatesMSIInstallerFile)">
+
+    <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
+                      '$(TemplatesLayoutPath.TrimEnd('\'))' ^
+                      '$(TemplatesMSIInstallerFile)' ^
+                      '$(WixRoot)' ^
+                      '$(SdkBrandName)' ^
+                      '$(MsiVersion)' ^
+                      '$(SDKBundleVersion)' ^
+                      '$(NugetVersion)' ^
+                      '$(TemplatesInstallerUpgradeCode)' ^
+                      '$(Architecture)' ^
+                      -InformationAction Continue" />
+  </Target>
+
   <Target Name="GenerateSdkBundle"
-          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi"
-          Condition=" '$(OS)' == 'Windows_NT'"
+          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi;GenerateTemplatesMsi;SignTemplatesMsi"
+          Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkMSIInstallerFile);
                     $(DownloadedSharedFrameworkInstallerFile);
                     $(DownloadedHostFxrInstallerFile);
@@ -144,6 +169,7 @@
                       '$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
+                      '$(TemplatesMSIInstallerFile)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
@@ -161,7 +187,7 @@
 
   <Target Name="GenerateToolsetNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi"
-          Condition=" '$(OS)' == 'Windows_NT'"
+          Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkMSIInstallerFile);
                     $(ToolsetInstallerNuspecFile);
                     $(GenerateNupkgPowershellScript)"
@@ -176,9 +202,26 @@
                       '$(SdkMSICabFile)'" />
   </Target>
 
+  <Target Name="GenerateTemplatesNupkg"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateTemplatesMsi;SignTemplatesMsi"
+          Condition=" '$(OS)' == 'Windows_NT' "
+          Inputs="$(TemplatesMSIInstallerFile);
+                    $(TemplatesInstallerNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
+          Outputs="$(TemplatesInstallerNupkgFile)">
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(TemplatesMSIInstallerFile)' ^
+                      '$(FullNugetVersion)' ^
+                      '$(TemplatesInstallerNuspecFile)' ^
+                      '$(TemplatesInstallerNupkgFile)' ^
+                      '$(Architecture)' ^
+                      '$(TemplatesMSICabFile)'" />
+  </Target>
+
   <Target Name="GenerateVSToolsNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86'"
+          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86' "
           Inputs="$(RedistLayoutPath)/**/*;
                   $(VSToolsNuspecFile);
                   $(GenerateNupkgPowershellScript)"
@@ -194,7 +237,7 @@
 
   <Target Name="GenerateVSToolsResolverNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86'"
+          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86' "
           Inputs="$(SdkResolverLayoutPath)/**/*;
                   $(VSToolsResolverNuspecFile);
                   $(GenerateNupkgPowershellScript)"
@@ -235,13 +278,16 @@
                             AcquireWix;
                             GenerateSdkMsi;
                             SignSdkMsi;
+                            GenerateTemplatesMsi;
+                            SignTemplatesMsi;
                             GenerateSdkBundle;
                             SignSdkBundle;
                             GenerateToolsetNupkg;
+                            GenerateTemplatesNupkg;
                             GenerateVSToolsNupkg;
                             GenerateVSToolsResolverNupkg;
                             GenerateSdkMSBuildExtensionsNupkg"
-        Condition=" '$(OS)' == 'Windows_NT' and !$(Architecture.StartsWith('arm'))" />
+        Condition=" '$(OS)' == 'Windows_NT' and !$(Architecture.StartsWith('arm')) " />
 
 
 </Project>
