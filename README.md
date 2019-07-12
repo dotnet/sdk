@@ -14,7 +14,13 @@ Please refer to [dotnet/cli](https://github.com/dotnet/cli) for .NET Core CLI so
 
 ## Testing a local build
 
-To test your locally built SDK, run `eng\dogfood.cmd` after a building. That script starts a new Powershell with the environment configured to redirect SDK resolution to your build. Then run `& devenv.exe`.
+To test your locally built SDK, run `eng\dogfood.cmd` after building. That script starts a new Powershell with the environment configured to redirect SDK resolution to your build.
+
+From that shell your SDK will be available in:
+
+- any Visual Studio instance launched (via `& devenv.exe`)
+- `dotnet build`
+- `msbuild`
 
 ## How do I engage and contribute?
 
