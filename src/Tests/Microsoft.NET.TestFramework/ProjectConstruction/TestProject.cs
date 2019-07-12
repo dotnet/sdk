@@ -107,12 +107,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
         }
 
-        internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder)
+        internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder, string targetExtension = ".csproj")
         {
             string targetFolder = Path.Combine(targetTestAsset.Path, this.Name);
             Directory.CreateDirectory(targetFolder);
 
-            string targetProjectPath = Path.Combine(targetFolder, this.Name + ".csproj");
+            string targetProjectPath = Path.Combine(targetFolder, this.Name + targetExtension);
 
             string sourceProject;
             string sourceProjectBase = Path.Combine(testProjectsSourceFolder, "ProjectConstruction");
