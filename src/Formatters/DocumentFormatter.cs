@@ -16,17 +16,20 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     /// </summary>
     internal abstract class DocumentFormatter : ICodeFormatter
     {
+        protected abstract string FormatWarningDescription { get; }
+
         /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>
         /// </summary>
         public async Task<Solution> FormatAsync(
             Solution solution,
             ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedDocuments = FormatFiles(formattableDocuments, logger, cancellationToken);
-            return await ApplyFileChangesAsync(solution, formattedDocuments, cancellationToken).ConfigureAwait(false);
+            var formattedDocuments = FormatFiles(formattableDocuments, formatOptions, logger, cancellationToken);
+            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -36,22 +39,24 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             Document document,
             OptionSet options,
             ICodingConventionsSnapshot codingConventions,
+            FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken);
 
         /// <summary>
         /// Applies formatting and returns the changed <see cref="SourceText"/> for each <see cref="Document"/>.
         /// </summary>
-        private ImmutableArray<(Document, Task<SourceText>)> FormatFiles(
+        private ImmutableArray<(Document, Task<(SourceText originalText, SourceText formattedText)>)> FormatFiles(
             ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<SourceText>)>(formattableDocuments.Length);
+            var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText formattedText)>)>(formattableDocuments.Length);
 
             foreach (var (document, options, codingConventions) in formattableDocuments)
             {
-                var formatTask = Task.Run(async () => await GetFormattedSourceTextAsync(document, options, codingConventions, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
+                var formatTask = Task.Run(async () => await GetFormattedSourceTextAsync(document, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
 
                 formattedDocuments.Add((document, formatTask));
             }
@@ -62,29 +67,32 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Get formatted <see cref="SourceText"/> for a <see cref="Document"/>.
         /// </summary>
-        private async Task<SourceText> GetFormattedSourceTextAsync(
+        private async Task<(SourceText originalText, SourceText formattedText)> GetFormattedSourceTextAsync(
             Document document,
             OptionSet options,
             ICodingConventionsSnapshot codingConventions,
+            FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             logger.LogTrace(Resources.Formatting_code_file_0, Path.GetFileName(document.FilePath));
 
             var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
-            var formattedSourceText = await FormatFileAsync(document, options, codingConventions, logger, cancellationToken).ConfigureAwait(false);
+            var formattedSourceText = await FormatFileAsync(document, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
 
             return !formattedSourceText.ContentEquals(originalSourceText)
-                ? formattedSourceText
-                : null;
+                ? (originalSourceText, formattedSourceText)
+                : (originalSourceText, null);
         }
 
         /// <summary>
         /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="Document"/>.
         /// </summary>
-        private static async Task<Solution> ApplyFileChangesAsync(
+        private async Task<Solution> ApplyFileChangesAsync(
             Solution solution,
-            ImmutableArray<(Document, Task<SourceText>)> formattedDocuments,
+            ImmutableArray<(Document, Task<(SourceText originalText, SourceText formattedText)>)> formattedDocuments,
+            FormatOptions formatOptions,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
             var formattedSolution = solution;
@@ -96,16 +104,44 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     return formattedSolution;
                 }
 
-                var text = await formatTask.ConfigureAwait(false);
-                if (text is null)
+                var (originalText, formattedText) = await formatTask.ConfigureAwait(false);
+                if (formattedText is null)
                 {
                     continue;
                 }
 
-                formattedSolution = formattedSolution.WithDocumentText(document.Id, text);
+                if (!formatOptions.SaveFormattedFiles)
+                {
+                    // Log formatting changes as errors when we are doing a dry-run.
+                    LogFormattingChanges(formatOptions.WorkspaceFilePath, document.FilePath, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
+                }
+
+                formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText);
             }
 
             return formattedSolution;
+        }
+
+        private void LogFormattingChanges(string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
+        {
+            var workspaceFolder = Path.GetDirectoryName(workspacePath);
+            var changes = formattedText.GetChangeRanges(originalText);
+
+            foreach (var change in changes)
+            {
+                // LinePosition is zero based so we need to increment to report numbers people expect.
+                var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
+                var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({changePosition.Line + 1},{changePosition.Character + 1}): {FormatWarningDescription}";
+
+                if (changesAreErrors)
+                {
+                    logger.LogError(formatMessage);
+                }
+                else
+                {
+                    logger.LogWarning(formatMessage);
+                }
+            }
         }
     }
 }

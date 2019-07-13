@@ -88,12 +88,16 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
 
-                var formatResult = await CodeFormatter.FormatWorkspaceAsync(
+                var formatOptions = new FormatOptions(
                     workspacePath,
                     isSolution,
-                    logWorkspaceWarnings: logLevel == LogLevel.Trace,
+                    logLevel,
                     saveFormattedFiles: !dryRun,
-                    filesToFormat,
+                    changesAreErrors: check,
+                    filesToFormat);
+
+                var formatResult = await CodeFormatter.FormatWorkspaceAsync(
+                    formatOptions,
                     logger,
                     cancellationTokenSource.Token).ConfigureAwait(false);
 

@@ -26,22 +26,21 @@ namespace Microsoft.CodeAnalysis.Tools
         }.ToImmutableArray();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
-            string solutionOrProjectPath,
-            bool isSolution,
-            bool logWorkspaceWarnings,
-            bool saveFormattedFiles,
-            ImmutableHashSet<string> filesToFormat,
+            FormatOptions options,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, solutionOrProjectPath));
+            var (workspaceFilePath, isSolution, logLevel, saveFormattedFiles, _, filesToFormat) = options;
+            var logWorkspaceWarnings = logLevel == LogLevel.Trace;
+
+            logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
 
             logger.LogTrace(Resources.Loading_workspace);
 
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using (var workspace = await OpenWorkspaceAsync(
-                solutionOrProjectPath, isSolution, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
+                workspaceFilePath, isSolution, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
             {
                 if (workspace is null)
                 {
@@ -51,7 +50,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var loadWorkspaceMS = workspaceStopwatch.ElapsedMilliseconds;
                 logger.LogTrace(Resources.Complete_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
 
-                var projectPath = isSolution ? string.Empty : solutionOrProjectPath;
+                var projectPath = isSolution ? string.Empty : workspaceFilePath;
                 var solution = workspace.CurrentSolution;
 
                 logger.LogTrace(Resources.Determining_formattable_files);
@@ -65,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 logger.LogTrace(Resources.Running_formatters);
 
                 var formattedSolution = await RunCodeFormattersAsync(
-                    solution, formatableFiles, logger, cancellationToken).ConfigureAwait(false);
+                    solution, formatableFiles, options, logger, cancellationToken).ConfigureAwait(false);
 
                 var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
@@ -165,6 +164,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<Solution> RunCodeFormattersAsync(
             Solution solution,
             ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            FormatOptions options,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -172,7 +172,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             foreach (var codeFormatter in s_codeFormatters)
             {
-                formattedSolution = await codeFormatter.FormatAsync(formattedSolution, formattableDocuments, logger, cancellationToken).ConfigureAwait(false);
+                formattedSolution = await codeFormatter.FormatAsync(formattedSolution, formattableDocuments, options, logger, cancellationToken).ConfigureAwait(false);
             }
 
             return formattedSolution;

@@ -3,12 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
@@ -28,6 +30,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private const string FSharpProjectFilePath = FSharpProjectPath + "/fsharp_project.fsproj";
 
         private static IEnumerable<string> EmptyFilesToFormat => Array.Empty<string>();
+
+        private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
 
         public CodeFormatterTests(MSBuildFixture msBuildFixture, SolutionPathFixture solutionPathFixture)
         {
@@ -141,6 +145,71 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal("Program.cs", match.Groups[1].Value);
         }
 
+        [Fact]
+        public async Task FormatLocationsLoggedInUnformattedProject()
+        {
+            var log = await TestFormatWorkspaceAsync(
+                UnformattedProjectFilePath,
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 2,
+                expectedFileCount: 5);
+
+            var formatLocations = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .Where(line => FindFormattingLogLine.Match(line).Success)
+                .ToArray();
+
+            var expectedFormatLocations = new[]
+            {
+                @"other_items\OtherClass.cs(5,3): Fix whitespace formatting.",
+                @"other_items\OtherClass.cs(6,3): Fix whitespace formatting.",
+                @"other_items\OtherClass.cs(7,5): Fix whitespace formatting.",
+                @"other_items\OtherClass.cs(8,5): Fix whitespace formatting.",
+                @"other_items\OtherClass.cs(9,7): Fix whitespace formatting.",
+                @"other_items\OtherClass.cs(10,5): Fix whitespace formatting.",
+                @"other_items\OtherClass.cs(11,3): Fix whitespace formatting.",
+                @"Program.cs(5,3): Fix whitespace formatting.",
+                @"Program.cs(6,3): Fix whitespace formatting.",
+                @"Program.cs(7,5): Fix whitespace formatting.",
+                @"Program.cs(8,5): Fix whitespace formatting.",
+                @"Program.cs(9,7): Fix whitespace formatting.",
+                @"Program.cs(10,5): Fix whitespace formatting.",
+                @"Program.cs(11,3): Fix whitespace formatting.",
+                @"other_items\OtherClass.cs(12,2): Add final newline.",
+                @"Program.cs(12,2): Add final newline.",
+            }.Select(path => path.Replace('\\', Path.DirectorySeparatorChar)).ToArray();
+
+            // We can't assert the location of the format message because different platform
+            // line endings change the position in the file.
+            Assert.Equal(expectedFormatLocations.Length, formatLocations.Length);
+            for (var index = 0; index < expectedFormatLocations.Length; index++)
+            {
+                var expectedParts = FindFormattingLogLine.Match(expectedFormatLocations[index]);
+                var formatParts = FindFormattingLogLine.Match(formatLocations[index]);
+
+                // Match filename
+                Assert.Equal(expectedParts.Groups[2].Value, formatParts.Groups[2].Value);
+                // Match formatter message
+                Assert.Equal(expectedParts.Groups[3].Value, formatParts.Groups[3].Value);
+            }
+        }
+
+        [Fact]
+        public async Task FormatLocationsNotLoggedInFormattedProject()
+        {
+            var log = await TestFormatWorkspaceAsync(
+                FormattedProjectFilePath,
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 3);
+
+            var formatLocations = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .Where(line => FindFormattingLogLine.Match(line).Success);
+
+            Assert.Empty(formatLocations);
+        }
+
         public async Task<string> TestFormatWorkspaceAsync(string solutionOrProjectPath, IEnumerable<string> files, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
         {
             var workspacePath = Path.GetFullPath(solutionOrProjectPath);
@@ -148,7 +217,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var filesToFormat = files.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
 
             var logger = new TestLogger();
-            var formatResult = await CodeFormatter.FormatWorkspaceAsync(workspacePath, isSolution, logWorkspaceWarnings: false, saveFormattedFiles: false, filesToFormat, logger, CancellationToken.None);
+            var formatOptions = new FormatOptions(
+                workspacePath,
+                isSolution,
+                LogLevel.Trace,
+                saveFormattedFiles: false,
+                changesAreErrors: false,
+                filesToFormat);
+            var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
 
             Assert.Equal(expectedExitCode, formatResult.ExitCode);
             Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);

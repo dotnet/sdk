@@ -7,6 +7,11 @@
         <target state="new">A comma separated list of relative file paths to format. All files are formatted if empty.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Add_final_newline">
+        <source>Add final newline.</source>
+        <target state="new">Add final newline.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option">
         <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the --workspace option.</source>
         <target state="translated">В "{0}" обнаружены как файл проекта, так и файл решения MSBuild. Укажите используемый файл с помощью параметра --workspace.</target>
@@ -35,6 +40,11 @@
       <trans-unit id="Failed_to_save_formatting_changes">
         <source>Failed to save formatting changes.</source>
         <target state="translated">Не удалось сохранить изменения форматирования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Fix_whitespace_formatting">
+        <source>Fix whitespace formatting.</source>
+        <target state="new">Fix whitespace formatting.</target>
         <note />
       </trans-unit>
       <trans-unit id="Format_complete_in_0_ms">

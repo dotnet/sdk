@@ -13,10 +13,13 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal sealed class FinalNewlineFormatter : DocumentFormatter
     {
+        protected override string FormatWarningDescription => Resources.Add_final_newline;
+
         protected override async Task<SourceText> FormatFileAsync(
             Document document,
             OptionSet options,
             ICodingConventionsSnapshot codingConventions,
+            FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {

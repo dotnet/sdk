@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,6 +45,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected virtual string DefaultTestProjectName { get; } = "TestProject";
 
+        protected virtual string DefaultTestProjectPath => "." + Path.DirectorySeparatorChar + DefaultTestProjectName + "." + DefaultFileExt + "proj";
+
         protected virtual string DefaultFilePath => DefaultFilePathPrefix + 0 + "." + DefaultFileExt;
 
         protected abstract string DefaultFileExt { get; }
@@ -84,15 +87,23 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             TestCode = testCode;
 
             var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray());
-            var document = solution.Projects.Single().Documents.Single();
+            var project = solution.Projects.Single();
+            var document = project.Documents.Single();
             var options = (OptionSet)await document.GetOptionsAsync();
+            var formatOptions = new FormatOptions(
+                workspaceFilePath: project.FilePath,
+                isSolution: false,
+                logLevel: LogLevel.Trace,
+                saveFormattedFiles: false,
+                changesAreErrors: false,
+                filesToFormat: ImmutableHashSet.Create<string>(document.FilePath));
 
             ICodingConventionsSnapshot codingConventions = new TestCodingConventionsSnapshot(editorConfig);
             options = OptionsApplier.ApplyConventions(options, codingConventions, Language);
 
             var filesToFormat = new[] { (document, options, codingConventions) }.ToImmutableArray();
 
-            var formattedSolution = await formatter.FormatAsync(solution, filesToFormat, Logger, default);
+            var formattedSolution = await formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default);
             var formattedDocument = formattedSolution.Projects.Single().Documents.Single();
             var formattedText = await formattedDocument.GetTextAsync();
 
@@ -176,7 +187,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             {
                 (var newFileName, var source) = sources[i];
                 var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
-                solution = solution.AddDocument(documentId, newFileName, source);
+                solution = solution.AddDocument(documentId, newFileName, source, filePath: newFileName);
             }
 
             for (var i = 0; i < additionalFiles.Length; i++)
@@ -209,7 +220,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var solution = CreateWorkspace()
                 .CurrentSolution
-                .AddProject(projectId, DefaultTestProjectName, DefaultTestProjectName, language)
+                .AddProject(ProjectInfo.Create(projectId, VersionStamp.Create(), DefaultTestProjectName, DefaultTestProjectName, language, filePath: DefaultTestProjectPath))
                 .WithProjectCompilationOptions(projectId, compilationOptions)
                 .AddMetadataReference(projectId, MetadataReferences.CorlibReference)
                 .AddMetadataReference(projectId, MetadataReferences.SystemReference)
