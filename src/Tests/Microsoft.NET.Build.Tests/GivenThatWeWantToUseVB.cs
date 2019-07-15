@@ -38,6 +38,13 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp3.0")]
         public void It_builds_a_simple_project(string targetFramework)
         {
+            if (targetFramework == "net45" && !TestProject.ReferenceAssembliesAreInstalled("v4.5"))
+            {
+                // skip net45 when we do not have .NET Framework 4.5 reference assemblies
+                // due to https://github.com/dotnet/core-sdk/issues/3228
+                return;
+            }
+
             var (expectedVBRuntime, expectedOutputFiles) = GetExpectedOutputs(targetFramework);
 
             var testProject = new TestProject

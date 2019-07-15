@@ -428,7 +428,7 @@ namespace {this.Name}
             return needsReferenceAssemblyPackages;
         }
 
-        private bool ReferenceAssembliesAreInstalled(string targetFrameworkVersion)
+        public static bool ReferenceAssembliesAreInstalled(string targetFrameworkVersion)
         {
             if (!targetFrameworkVersion.StartsWith('v'))
             {
