@@ -83,10 +83,12 @@
       <ManpagesDirectory>$(RepoRoot)Documentation/manpages</ManpagesDirectory>
       <EndToEndTestProject>$(RepoRoot)test/EndToEnd/EndToEnd.Tests.csproj</EndToEndTestProject>
       <CLISdkRoot>$(RedistLayoutPath)sdk/</CLISdkRoot>
+      <TemplatesRoot>$(RedistLayoutPath)Templates/</TemplatesRoot>
     </PropertyGroup>
 
     <ItemGroup>
-      <CLISdkFiles Include="$(CLISdkRoot)/**/*" />
+      <CLISdkFiles Include="$(CLISdkRoot)**/*" />
+      <TemplatesFiles Include="$(TemplatesRoot)**/*" />
       <SdkDebManPageFiles Include="$(ManpagesDirectory)/**/*" />
     </ItemGroup>
 
@@ -227,7 +229,7 @@
       DependsOnTargets="PrepareDotnetDebDirectories;
                         PrepareDotnetDebTool;
                         GetAspNetSharedFxInstallArgs;"
-      Inputs="@(CLISdkFiles)"
+      Inputs="@(CLISdkFiles);@(TemplatesFiles)"
       Outputs="$(SdkDebInstallerFile)" >
       <!-- Install Shared Framework Packages -->
       <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppHostPackInstallerFile)" />
@@ -244,6 +246,14 @@
       <Copy
         DestinationFiles="@(CLISdkFiles->'$(LayoutPackageRootDir)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
         SourceFiles="@(CLISdkFiles)"
+        OverwriteReadOnlyFiles="True"
+        SkipUnchangedFiles="False"
+        UseHardlinksIfPossible="False" />
+
+      <!-- Create layout: Templates -->
+      <Copy
+        DestinationFiles="@(TemplatesFiles->'$(LayoutPackageRootDir)/Templates/%(RecursiveDir)%(Filename)%(Extension)')"
+        SourceFiles="@(TemplatesFiles)"
         OverwriteReadOnlyFiles="True"
         SkipUnchangedFiles="False"
         UseHardlinksIfPossible="False" />
