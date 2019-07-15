@@ -175,7 +175,7 @@
       <SdkRpmPackageName>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(SdkRpmPackageVersion)</SdkRpmPackageName>
       <RpmPackageVersion>$(SdkVersion)</RpmPackageVersion>
       <InputRoot>$(RedistLayoutPath)sdk/</InputRoot>
-      <DotnetNewTemplatesRoot>$(RedistLayoutPath)Templates/</DotnetNewTemplatesRoot>
+      <DotnetNewTemplatesRoot>$(RedistLayoutPath)templates/</DotnetNewTemplatesRoot>
       <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
       <RpmFile>$(SdkRPMInstallerFile)</RpmFile>
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
@@ -191,7 +191,7 @@
       <RpmLayoutDirectory>$(RpmIntermediatesDir)/RpmLayoutDirectory/</RpmLayoutDirectory>
       <RpmLayoutPackageRoot>$(RpmLayoutDirectory)package_root</RpmLayoutPackageRoot>
       <RpmLayoutSDK>$(RpmLayoutPackageRoot)/sdk</RpmLayoutSDK>
-      <RpmLayoutDotnetNewTemplates>$(RpmLayoutPackageRoot)/Templates</RpmLayoutDotnetNewTemplates>
+      <RpmLayoutDotnetNewTemplates>$(RpmLayoutPackageRoot)/templates</RpmLayoutDotnetNewTemplates>
       <RpmLayoutDocs>$(RpmLayoutDirectory)docs</RpmLayoutDocs>                <!-- Man Pages -->
       <RpmLayoutTemplates>$(RpmLayoutDirectory)templates</RpmLayoutTemplates> <!-- Copyright, Changelog -->
       <RpmLayoutScripts>$(RpmLayoutDirectory)scripts</RpmLayoutScripts>

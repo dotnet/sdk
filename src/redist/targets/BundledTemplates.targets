@@ -42,13 +42,13 @@
       <BundledTemplate Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
     <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
-          DestinationFolder="$(RedistLayoutPath)Templates/$(BundledTemplatesVersion)"/>
+          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplatesVersion)"/>
   </Target>
 
   <Target Name="LayoutTemplatesForMSI"
           DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersion"
           Condition="$(ProductMonikerRid.StartsWith('win'))">
     <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
-          DestinationFolder="$(TemplatesLayoutPath)Templates/$(BundledTemplatesVersion)"/>
+          DestinationFolder="$(TemplatesLayoutPath)templates/$(BundledTemplatesVersion)"/>
   </Target>
 </Project>

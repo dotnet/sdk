@@ -83,7 +83,7 @@
       <ManpagesDirectory>$(RepoRoot)Documentation/manpages</ManpagesDirectory>
       <EndToEndTestProject>$(RepoRoot)test/EndToEnd/EndToEnd.Tests.csproj</EndToEndTestProject>
       <CLISdkRoot>$(RedistLayoutPath)sdk/</CLISdkRoot>
-      <TemplatesRoot>$(RedistLayoutPath)Templates/</TemplatesRoot>
+      <TemplatesRoot>$(RedistLayoutPath)templates/</TemplatesRoot>
     </PropertyGroup>
 
     <ItemGroup>
@@ -252,7 +252,7 @@
 
       <!-- Create layout: Templates -->
       <Copy
-        DestinationFiles="@(TemplatesFiles->'$(LayoutPackageRootDir)/Templates/%(RecursiveDir)%(Filename)%(Extension)')"
+        DestinationFiles="@(TemplatesFiles->'$(LayoutPackageRootDir)/templates/%(RecursiveDir)%(Filename)%(Extension)')"
         SourceFiles="@(TemplatesFiles)"
         OverwriteReadOnlyFiles="True"
         SkipUnchangedFiles="False"
