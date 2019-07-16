@@ -5,7 +5,8 @@
       <MicrosoftNETCoreAppVersionPreReleaseSeparator>$(MicrosoftNETCoreAppPackageVersion.IndexOf('-'))</MicrosoftNETCoreAppVersionPreReleaseSeparator>
       <MicrosoftNETCoreAppMajorMinorPatchVersion>$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreAppMajorMinorPatchVersion>
       <MicrosoftNETCoreAppMajorMinorPatchVersion Condition=" '$(MicrosoftNETCoreAppVersionPreReleaseSeparator)' != -1 ">$(MicrosoftNETCoreAppPackageVersion.Substring(0, $(MicrosoftNETCoreAppVersionPreReleaseSeparator)))</MicrosoftNETCoreAppMajorMinorPatchVersion>
-      <BundledTemplatesVersion>$(MicrosoftNETCoreAppMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplatesVersion>
+      <BundledTemplatesVersion>$(MicrosoftNETCoreAppMajorMinorPatchVersion)</BundledTemplatesVersion>
+      <BundledTemplatesVersion Condition=" '$(DropSuffix)' != 'true' And '$(VersionSuffix)' != '' ">$(BundledTemplatesVersion)-$(VersionSuffix)</BundledTemplatesVersion>
     </PropertyGroup>
   </Target>
 
