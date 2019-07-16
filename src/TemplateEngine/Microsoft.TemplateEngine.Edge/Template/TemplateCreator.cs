@@ -130,7 +130,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     string message = cx.Message;
                     if (cx.InnerException != null)
                     {
-                        message += Environment.NewLine + cx.InnerException.Message;
+                        message += Environment.NewLine + cx.InnerException;
                     }
 
                     return new TemplateCreationResult(message, CreationResultStatus.CreateFailed, template.Name);
@@ -159,7 +159,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return;
             }
 
-            if(template.LocaleConfiguration != null)
+            if (template.LocaleConfiguration != null)
             {
                 _environmentSettings.SettingsLoader.ReleaseMountPoint(template.LocaleConfiguration.MountPoint);
             }
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
         }
 
-        // 
+        //
         // Reads the parameters from the template and the host and setup their values in the return IParameterSet.
         // Host param values override template defaults.
         //
@@ -221,7 +221,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             return templateParams;
         }
 
-        // 
+        //
         // The template params for which there are same-named input parameters have their values set to the corresponding input parameters value.
         // input parameters that do not have corresponding template params are ignored.
         //
