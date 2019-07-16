@@ -130,7 +130,7 @@ namespace Microsoft.NET.Build.Tests
                     {
                         "HelloWorld.dll",
                         "HelloWorld.pdb",
-                        "HelloWorld.exe",
+                        "HelloWorld" + EnvironmentInfo.ExecutableExtension,
                         "HelloWorld.runtimeconfig.json",
                         "HelloWorld.runtimeconfig.dev.json",
                         "HelloWorld.deps.json",
