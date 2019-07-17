@@ -130,18 +130,18 @@
   <Target Name="GenerateTemplatesMsi"
         DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo"
         Condition=" '$(OS)' == 'Windows_NT' "
-        Inputs="$(TemplatesLayoutPath)**/*;
+        Inputs="$(Templates30LayoutPath)**/*;
                   $(TemplatesGenerateMsiPowershellScript)"
         Outputs="$(TemplatesMSIInstallerFile)">
 
     <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
-                      '$(TemplatesLayoutPath.TrimEnd('\'))' ^
+                      '$(Templates30LayoutPath.TrimEnd('\'))' ^
                       '$(TemplatesMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
-                      '$(MsiVersion)' ^
-                      '$(SDKBundleVersion)' ^
-                      '$(NugetVersion)' ^
+                      '$(BundledTemplates30MSIVersion)' ^
+                      '$(BundledTemplates30MSIVersion)' ^
+                      '$(BundledTemplates30Version)' ^
                       '$(TemplatesInstallerUpgradeCode)' ^
                       '$(Architecture)' ^
                       -InformationAction Continue" />
