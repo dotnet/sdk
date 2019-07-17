@@ -97,6 +97,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             }
 
+            if (!ids.Contains(NupkgInstallUnitDescriptorFactory.FactoryId))
+            {
+                if (ids.Add(NupkgInstallUnitDescriptorFactory.FactoryId))
+                {
+                    RegisterType(typeof(NupkgInstallUnitDescriptorFactory));
+                }
+            }
+
             foreach (KeyValuePair<Guid, Func<Type>> components in _loader.EnvironmentSettings.Host.BuiltInComponents)
             {
                 if (ids.Add(components.Key))
