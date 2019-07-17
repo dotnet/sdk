@@ -1,4 +1,15 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="CalculateTemplatesVersion"
+          DependsOnTargets="SetSdkVersionInfo">
+    <PropertyGroup>
+      <MicrosoftNETCoreAppVersionPreReleaseSeparator>$(MicrosoftNETCoreAppPackageVersion.IndexOf('-'))</MicrosoftNETCoreAppVersionPreReleaseSeparator>
+      <MicrosoftNETCoreAppMajorMinorPatchVersion>$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreAppMajorMinorPatchVersion>
+      <MicrosoftNETCoreAppMajorMinorPatchVersion Condition=" '$(MicrosoftNETCoreAppVersionPreReleaseSeparator)' != -1 ">$(MicrosoftNETCoreAppPackageVersion.Substring(0, $(MicrosoftNETCoreAppVersionPreReleaseSeparator)))</MicrosoftNETCoreAppMajorMinorPatchVersion>
+      <BundledTemplatesVersion>$(MicrosoftNETCoreAppMajorMinorPatchVersion)</BundledTemplatesVersion>
+      <BundledTemplatesVersion Condition=" '$(DropSuffix)' != 'true' And '$(VersionSuffix)' != '' ">$(BundledTemplatesVersion)-$(VersionSuffix)</BundledTemplatesVersion>
+    </PropertyGroup>
+  </Target>
+
   <ItemGroup>
     <BundledTemplate Include="Microsoft.DotNet.Common.ItemTemplates" Version="$(MicrosoftDotNetCommonItemTemplatesPackageVersion)" />
     <BundledTemplate Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" Version="$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)" />
@@ -25,13 +36,20 @@
     </BundledTemplate>
   </ItemGroup>
 
-  <Target Name="LayoutTemplates" DependsOnTargets="SetupBundledComponents">
+  <Target Name="LayoutTemplates"
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersion">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
       <BundledTemplate Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <BundledTemplate Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
-
     <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
-          DestinationFolder="$(SdkOutputDirectory)Templates/"/>
+          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplatesVersion)"/>
+  </Target>
+
+  <Target Name="LayoutTemplatesForMSI"
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersion"
+          Condition="$(ProductMonikerRid.StartsWith('win'))">
+    <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
+          DestinationFolder="$(TemplatesLayoutPath)templates/$(BundledTemplatesVersion)"/>
   </Target>
 </Project>

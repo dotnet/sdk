@@ -147,7 +147,7 @@
 
     <ItemGroup>
       <SdkMsiFilesToSign Include="$(SdkMSIInstallerFile)" />
-      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)*.cab" />
+      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)d*.cab" />
 
       <SdkMsiFileSignInfo Include="@(SdkMsiFilesToSign->'%(Filename)%(Extension)')">
         <CertificateName>$(InternalCertificateId)</CertificateName>
@@ -162,6 +162,36 @@
         ItemsToSign="@(SdkMsiFilesToSign)"
         StrongNameSignInfo="@(StrongNameSignInfo)"
         FileSignInfo="@(DistinctSdkMsiFileSignInfo)"
+        FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        TempDir="$(ArtifactsTmpDir)"
+        LogDir="$(ArtifactsLogDir)"
+        MSBuildPath="$(_DesktopMSBuildPath)"
+        SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
+
+  </Target>
+
+  <Target Name="SignTemplatesMsi"
+      Condition="'$(SignCoreSdk)' == 'true'"
+      DependsOnTargets="SetSignProps">
+
+    <ItemGroup>
+      <TemplatesMsiFilesToSign Include="$(TemplatesMSIInstallerFile)" />
+      <TemplatesMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)t*.cab" />
+
+      <TemplatesMsiFileSignInfo Include="@(TemplatesMsiFilesToSign->'%(Filename)%(Extension)')">
+        <CertificateName>$(InternalCertificateId)</CertificateName>
+      </TemplatesMsiFileSignInfo>
+      <DistinctTemplatesMsiFileSignInfo Include="@(TemplatesMsiFileSignInfo->Distinct())" />
+    </ItemGroup>
+
+    <Microsoft.DotNet.SignTool.SignToolTask
+        DryRun="$(_DryRun)"
+        TestSign="$(_TestSign)"
+        CertificatesSignInfo="$(CertificatesSignInfo)"
+        ItemsToSign="@(TemplatesMsiFilesToSign)"
+        StrongNameSignInfo="@(StrongNameSignInfo)"
+        FileSignInfo="@(DistinctTemplatesMsiFileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
         TempDir="$(ArtifactsTmpDir)"
         LogDir="$(ArtifactsLogDir)"

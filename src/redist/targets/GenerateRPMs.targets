@@ -39,6 +39,7 @@
     <!-- Copy files to rpm layout -->
     <ItemGroup>
       <SDKFiles Include="$(InputRoot)/**/*"/>
+      <DotnetNewTemplatesFiles Include="$(DotnetNewTemplatesRoot)**/*" />
       <SDKManpages Include="$(ManPagesDir)/**/*"/>
       <SDKTemplatesFiles Include="$(TemplatesDir)/**/*"/>
       <SDKScriptsFiles Include="$(ScriptsDir)/after_remove_host.sh"/>
@@ -46,6 +47,12 @@
 
     <Copy SourceFiles="@(SDKFiles)"
           DestinationFiles="@(SDKFiles->'$(RpmLayoutSDK)/%(RecursiveDir)%(Filename)%(Extension)')"
+          OverwriteReadOnlyFiles="True"
+          SkipUnchangedFiles="False"
+          UseHardlinksIfPossible="False"/>
+
+    <Copy SourceFiles="@(DotnetNewTemplatesFiles)"
+          DestinationFiles="@(DotnetNewTemplatesFiles->'$(RpmLayoutDotnetNewTemplates)/%(RecursiveDir)%(Filename)%(Extension)')"
           OverwriteReadOnlyFiles="True"
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False"/>
@@ -168,6 +175,7 @@
       <SdkRpmPackageName>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(SdkRpmPackageVersion)</SdkRpmPackageName>
       <RpmPackageVersion>$(SdkVersion)</RpmPackageVersion>
       <InputRoot>$(RedistLayoutPath)sdk/</InputRoot>
+      <DotnetNewTemplatesRoot>$(RedistLayoutPath)templates/</DotnetNewTemplatesRoot>
       <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
       <RpmFile>$(SdkRPMInstallerFile)</RpmFile>
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
@@ -183,6 +191,7 @@
       <RpmLayoutDirectory>$(RpmIntermediatesDir)/RpmLayoutDirectory/</RpmLayoutDirectory>
       <RpmLayoutPackageRoot>$(RpmLayoutDirectory)package_root</RpmLayoutPackageRoot>
       <RpmLayoutSDK>$(RpmLayoutPackageRoot)/sdk</RpmLayoutSDK>
+      <RpmLayoutDotnetNewTemplates>$(RpmLayoutPackageRoot)/templates</RpmLayoutDotnetNewTemplates>
       <RpmLayoutDocs>$(RpmLayoutDirectory)docs</RpmLayoutDocs>                <!-- Man Pages -->
       <RpmLayoutTemplates>$(RpmLayoutDirectory)templates</RpmLayoutTemplates> <!-- Copyright, Changelog -->
       <RpmLayoutScripts>$(RpmLayoutDirectory)scripts</RpmLayoutScripts>

@@ -42,9 +42,11 @@
       <HostMonikerRidForFileName Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(Architecture)</HostMonikerRidForFileName>
 
       <ArtifactNameSdk>dotnet-sdk-internal</ArtifactNameSdk>
+      <ArtifactNameTemplates>dotnet-templates</ArtifactNameTemplates>
       <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk</ArtifactNameCombinedHostHostFxrFrameworkSdk>
 
       <ArtifactNameWithVersionSdk>$(ArtifactNameSdk)-$(SdkVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+      <ArtifactNameWithVersionTemplates>$(ArtifactNameTemplates)-$(SdkVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionTemplates>
       <ArtifactNameWithVersionMSBuildExtensions>dotnet-standard-support-vs2015-$(SdkVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionMSBuildExtensions>
       <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(SdkVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
       <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion], 
