@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.NET.HostModel;
+using Microsoft.NET.HostModel.AppHost;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -20,6 +22,9 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         [Required]
         public ITaskItem[] ApphostsForShimRuntimeIdentifiers { get; private set; }
+
+        [Required]
+        public string IntermediateAssembly { get; set; }
 
         /// <summary>
         /// PackageId of the dotnet tool NuGet Package.
@@ -69,6 +74,8 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] EmbeddedApphostPaths { get; private set; }
 
+        private const ushort WindowsGUISubsystem = 0x2;
+
         protected override void ExecuteCore()
         {
             var embeddedApphostPaths = new List<ITaskItem>();
@@ -102,11 +109,38 @@ namespace Microsoft.NET.Build.Tasks
                         "any",
                         ToolEntryPoint});
 
-                AppHost.Create(
-                    resolvedApphostAssetPath,
-                    appHostDestinationFilePath,
-                    appBinaryFilePath
-                );
+                try
+                {
+                    if (ResourceUpdater.IsSupportedOS() && runtimeIdentifier.StartsWith("win"))
+                    {
+                        // read from IntermediateAssembly to avoid duplicating the logic of checking $(OutputType)
+                        var windowsGraphicalUserInterfaceBit = BinaryUtils.GetWindowsGraphicalUserInterfaceBit(IntermediateAssembly);
+                        HostWriter.CreateAppHost(appHostSourceFilePath: resolvedApphostAssetPath,
+                                                 appHostDestinationFilePath: appHostDestinationFilePath,
+                                                 appBinaryFilePath: appBinaryFilePath,
+                                                 windowsGraphicalUserInterface: (windowsGraphicalUserInterfaceBit == WindowsGUISubsystem),
+                                                 assemblyToCopyResorcesFrom: IntermediateAssembly);
+                    }
+                    else
+                    {
+                        // by passing null to assemblyToCopyResorcesFrom, it will skip coping resorces,
+                        // which is only supported on Windows
+                        Log.LogWarning(Strings.AppHostCustomizationRequiresWindowsHostWarning);
+                        HostWriter.CreateAppHost(appHostSourceFilePath: resolvedApphostAssetPath,
+                                                 appHostDestinationFilePath: appHostDestinationFilePath,
+                                                 appBinaryFilePath: appBinaryFilePath,
+                                                 windowsGraphicalUserInterface: false,
+                                                 assemblyToCopyResorcesFrom: null);
+                    }
+                }
+                catch (AppNameTooLongException ex)
+                {
+                    throw new BuildErrorException(Strings.FileNameIsTooLong, ex.LongName);
+                }
+                catch (PlaceHolderNotFoundInAppHostException ex)
+                {
+                    throw new BuildErrorException(Strings.AppHostHasBeenModified, resolvedApphostAssetPath, BitConverter.ToString(ex.MissingPattern));
+                }
 
                 var item = new TaskItem(appHostDestinationFilePath);
                 item.SetMetadata(MetadataKeys.ShimRuntimeIdentifier, runtimeIdentifier);
