@@ -110,15 +110,15 @@
   </Target>
 
   <Target Name="LayoutTemplatesFor22MSI"
-        DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
-        Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
     <Copy SourceFiles="%(Bundled22Templates.RestoredNupkgPath)"
           DestinationFolder="$(Templates22LayoutPath)templates/$(BundledTemplates22InstallPath)"/>
   </Target>
 
   <Target Name="LayoutTemplatesFor21MSI"
-        DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
-        Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
     <Copy SourceFiles="%(Bundled21Templates.RestoredNupkgPath)"
           DestinationFolder="$(Templates21LayoutPath)templates/$(BundledTemplates21InstallPath)"/>
   </Target>
