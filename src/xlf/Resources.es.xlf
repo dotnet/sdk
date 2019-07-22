@@ -42,6 +42,11 @@
         <target state="translated">Error al guardar cambios de formato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Fix_end_of_line_marker">
+        <source>Fix end of line marker.</source>
+        <target state="new">Fix end of line marker.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
         <target state="new">Fix whitespace formatting.</target>

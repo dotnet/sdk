@@ -21,6 +21,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         protected override async Task<SourceText> FormatFileAsync(
             Document document,
+            SourceText sourceText,
             OptionSet options,
             ICodingConventionsSnapshot codingConventions,
             FormatOptions formatOptions,
@@ -33,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             }
             else
             {
-                return await GetFormattedDocumentWithDetailedChanges(document, options, cancellationToken);
+                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, options, cancellationToken);
             }
         }
 
@@ -49,13 +50,12 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Returns a formatted <see cref="SoureText"/> with multiple <see cref="TextChange"/>s for each formatting change.
         /// </summary>
-        private static async Task<SourceText> GetFormattedDocumentWithDetailedChanges(Document document, OptionSet options, CancellationToken cancellationToken)
+        private static async Task<SourceText> GetFormattedDocumentWithDetailedChanges(Document document, SourceText sourceText, OptionSet options, CancellationToken cancellationToken)
         {
             var root = await document.GetSyntaxRootAsync(cancellationToken);
-            var originalText = await document.GetTextAsync(cancellationToken);
-
             var formattingTextChanges = Formatter.GetFormattedTextChanges(root, document.Project.Solution.Workspace, options, cancellationToken);
-            return originalText.WithChanges(formattingTextChanges);
+
+            return sourceText.WithChanges(formattingTextChanges);
         }
     }
 }

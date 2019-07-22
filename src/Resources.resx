@@ -195,6 +195,9 @@
   <data name="Add_final_newline" xml:space="preserve">
     <value>Add final newline.</value>
   </data>
+  <data name="Fix_end_of_line_marker" xml:space="preserve">
+    <value>Fix end of line marker.</value>
+  </data>
   <data name="Fix_whitespace_formatting" xml:space="preserve">
     <value>Fix whitespace formatting.</value>
   </data>

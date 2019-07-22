@@ -29,7 +29,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -68,7 +68,7 @@ class C
                 ["end_of_line"] = "lf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -100,7 +100,7 @@ class C
                 ["end_of_line"] = "cr",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
         [Fact]
         public async Task WhenFinalNewlineRequired_AndFinalNewlineExits_NoChange()
@@ -123,7 +123,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -171,7 +171,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -193,7 +193,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -209,7 +209,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, Formatter, editorConfig);
+            await TestAsync(testCode, expectedCode, editorConfig);
         }
     }
 }

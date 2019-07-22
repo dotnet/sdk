@@ -37,6 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         protected abstract Task<SourceText> FormatFileAsync(
             Document document,
+            SourceText sourceText,
             OptionSet options,
             ICodingConventionsSnapshot codingConventions,
             FormatOptions formatOptions,
@@ -78,7 +79,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             logger.LogTrace(Resources.Formatting_code_file_0, Path.GetFileName(document.FilePath));
 
             var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
-            var formattedSourceText = await FormatFileAsync(document, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
+            var formattedSourceText = await FormatFileAsync(document, originalSourceText, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
 
             return !formattedSourceText.ContentEquals(originalSourceText)
                 ? (originalSourceText, formattedSourceText)

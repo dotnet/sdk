@@ -17,6 +17,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         protected override async Task<SourceText> FormatFileAsync(
             Document document,
+            SourceText sourceText,
             OptionSet options,
             ICodingConventionsSnapshot codingConventions,
             FormatOptions formatOptions,
@@ -28,13 +29,12 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 return await document.GetTextAsync(cancellationToken);
             }
 
-            var endOfLine = codingConventions.TryGetConventionValue("end_of_line", out string endOfLineOption)
-                ? GetEndOfLine(endOfLineOption)
-                : Environment.NewLine;
+            if (!EndOfLineFormatter.TryGetEndOfLine(codingConventions, out var endOfLine))
+            {
+                endOfLine = Environment.NewLine;
+            }
 
-            var sourceText = await document.GetTextAsync(cancellationToken);
             var lastLine = sourceText.Lines.Last();
-
             var hasFinalNewline = lastLine.Span.IsEmpty;
 
             if (insertFinalNewline && !hasFinalNewline)
@@ -59,21 +59,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             }
 
             return sourceText;
-        }
-
-        private string GetEndOfLine(string endOfLineOption)
-        {
-            switch (endOfLineOption)
-            {
-                case "lf":
-                    return "\n";
-                case "cr":
-                    return "\r";
-                case "crlf":
-                    return "\r\n";
-                default:
-                    return Environment.NewLine;
-            }
         }
     }
 }

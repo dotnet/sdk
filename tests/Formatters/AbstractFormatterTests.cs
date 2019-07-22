@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         public SolutionState TestState { get; }
 
-        private protected async Task TestAsync(string testCode, string expectedCode, ICodeFormatter formatter, IReadOnlyDictionary<string, string> editorConfig)
+        private protected async Task TestAsync(string testCode, string expectedCode, IReadOnlyDictionary<string, string> editorConfig)
         {
             TestCode = testCode;
 
@@ -103,7 +103,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var filesToFormat = new[] { (document, options, codingConventions) }.ToImmutableArray();
 
-            var formattedSolution = await formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default);
+            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default);
             var formattedDocument = formattedSolution.Projects.Single().Documents.Single();
             var formattedText = await formattedDocument.GetTextAsync();
 
