@@ -1,5 +1,5 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="Calculate30TemplatesVersion"
+  <Target Name="CalculateTemplatesVersions"
           DependsOnTargets="SetSdkVersionInfo">
     <PropertyGroup>
       <AspNetCore30VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor30Templates.IndexOf('-'))</AspNetCore30VersionPreReleaseSeparator>
@@ -80,16 +80,20 @@
     </Bundled21Templates>
   </ItemGroup>
 
-  <!-- Restore bundled templates via PackageDownload -->
   <ItemGroup>
-    <PackageDownload Include="@(Bundled30Templates);@(Bundled22Templates);@(Bundled21Templates)" />
+    <PackageDownload Include="@(Bundled22Templates);@(Bundled21Templates)" />
+  </ItemGroup>
+
+  <!-- Restore bundled templates via PackageReference -->
+  <ItemGroup>
+    <PackageReference Include="@(Bundled30Templates)" />
   </ItemGroup>
 
   <Target Name="LayoutTemplates"
         DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesFor30MSI;LayoutTemplatesFor22MSI;LayoutTemplatesFor21MSI" />
     
   <Target Name="LayoutTemplatesForSDK"
-          DependsOnTargets="SetupBundledComponents;Calculate30TemplatesVersion">
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
       <BundledTemplate Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <BundledTemplate Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
@@ -99,23 +103,23 @@
   </Target>
 
   <Target Name="LayoutTemplatesFor30MSI"
-          DependsOnTargets="SetupBundledComponents;Calculate30TemplatesVersion"
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
           Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
     <Copy SourceFiles="%(Bundled30Templates.RestoredNupkgPath)"
           DestinationFolder="$(Templates30LayoutPath)templates/$(BundledTemplates30Version)"/>
   </Target>
 
   <Target Name="LayoutTemplatesFor22MSI"
-        DependsOnTargets="SetupBundledComponents;Calculate22TemplatesVersion"
+        DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
         Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
     <Copy SourceFiles="%(Bundled22Templates.RestoredNupkgPath)"
           DestinationFolder="$(Templates22LayoutPath)templates/$(BundledTemplates22InstallPath)"/>
   </Target>
 
-  <Target Name="LayoutTemplatesFor22MSI"
-        DependsOnTargets="SetupBundledComponents;Calculate22TemplatesVersion"
+  <Target Name="LayoutTemplatesFor21MSI"
+        DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
         Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
-    <Copy SourceFiles="%(Bundled22Templates.RestoredNupkgPath)"
-          DestinationFolder="$(Templates22LayoutPath)templates/$(BundledTemplates22InstallPath)"/>
+    <Copy SourceFiles="%(Bundled21Templates.RestoredNupkgPath)"
+          DestinationFolder="$(Templates21LayoutPath)templates/$(BundledTemplates21InstallPath)"/>
   </Target>
 </Project>
