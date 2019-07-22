@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Tools
             CancellationToken cancellationToken,
             bool createBinaryLog = false)
         {
-            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, fileMatcher, reportPath, includeGeneratedFiles) = options;
+            var (workspaceFilePath, workspaceType, logLevel, _, saveFormattedFiles, _, fileMatcher, reportPath, includeGeneratedFiles) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));

@@ -137,6 +137,11 @@
         <target state="translated">Se encontraron múltiples archivos de solución MSBuild en "{0}". Especifique cuáles se deben utilizar con la opción --workspace.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Run_code_style_analyzer_and_apply_fixes">
+        <source>Run code style analyzers and apply fixes.</source>
+        <target state="new">Run code style analyzers and apply fixes.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Running_formatters">
         <source>Running formatters.</source>
         <target state="new">Running formatters.</target>

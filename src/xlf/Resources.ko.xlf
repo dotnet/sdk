@@ -137,6 +137,11 @@
         <target state="translated">'{0}'에 여러 MSBuild 솔루션 파일이 있습니다. --workspace 옵션에 사용할 파일을 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Run_code_style_analyzer_and_apply_fixes">
+        <source>Run code style analyzers and apply fixes.</source>
+        <target state="new">Run code style analyzers and apply fixes.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Running_formatters">
         <source>Running formatters.</source>
         <target state="new">Running formatters.</target>

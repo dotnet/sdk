@@ -27,6 +27,10 @@ namespace Microsoft.CodeAnalysis.Tools
                     Argument = new Argument<string?>(() => null),
                     IsHidden = true
                 },
+                new Option(new[] { "--fix-style", "-fs" }, Resources.Run_code_style_analyzer_and_apply_fixes)
+                {
+                    Argument = new Argument<bool>()
+                },
                 new Option(new[] { "--include", "--files" }, Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
                 {
                     Argument = new Argument<string[]>(() => Array.Empty<string>())
