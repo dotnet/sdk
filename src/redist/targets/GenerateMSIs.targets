@@ -34,12 +34,12 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <SdkMsiInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMsiInstallerFile>
-      <SdkMsiCabFile>$(ArtifactsShippingPackagesDir)d$(Architecture)-1.cab</SdkMsiCabFile>
-      <Templates30MsiInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates30Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MsiInstallerFile>
-      <Templates22MsiInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates22Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MsiInstallerFile>
-      <Templates21MsiInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates21Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MsiInstallerFile>
-      <CombinedFrameworkSdkHostMsiInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMsiInstallerFile>
+      <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
+      <SdkMSICabFile>$(ArtifactsShippingPackagesDir)d$(Architecture)-1.cab</SdkMSICabFile>
+      <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates30Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
+      <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates22Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
+      <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates21Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
+      <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
       <SdkBundleInstallerOutputGuidString>$(ProductBandCombinedHostHostFxrFrameworkSdkName)</SdkBundleInstallerOutputGuidString>
 
       <!--<SdkDebianIntermediateDirectory>$(IntermediateOutputPath)debian/sdk/</SdkDebianIntermediateDirectory>
@@ -54,7 +54,7 @@
           DependsOnTargets="GenerateLayout;SetupWixProperties;GetCoreSdkGitCommitInfo">
     <!-- Consumed By Publish -->
     <ItemGroup>
-      <GeneratedInstallers Include="$(SdkMsiInstallerFile);$(Templates30MsiInstallerFile);$(Templates22MsiInstallerFile);$(Templates21MsiInstallerFile);$(CombinedFrameworkSdkHostMsiInstallerFile)" />
+      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile)" />
     </ItemGroup>
 
     <GenerateMsiVersion CommitCount="$(GitCommitCount)"
@@ -64,22 +64,22 @@
       <Output TaskParameter="MsiVersion" PropertyName="MsiVersion" />
     </GenerateMsiVersion>
 
-    <GenerateGuidFromName Name="$(SdkMsiInstallerFile)">
+    <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="SdkInstallerUpgradeCode" />
     </GenerateGuidFromName>
 
-    <GenerateGuidFromName Name="$(Templates30MsiInstallerFile)">
+    <GenerateGuidFromName Name="$(Templates30MSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="Templates30InstallerUpgradeCode" />
     </GenerateGuidFromName>
 
-    <GenerateGuidFromName Name="$(Templates22MsiInstallerFile)">
+    <GenerateGuidFromName Name="$(Templates22MSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="Templates22InstallerUpgradeCode" />
     </GenerateGuidFromName>
 
-    <GenerateGuidFromName Name="$(Templates21MsiInstallerFile)">
+    <GenerateGuidFromName Name="$(Templates21MSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="Templates21InstallerUpgradeCode" />
     </GenerateGuidFromName>
@@ -119,11 +119,11 @@
           Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkInternalLayoutPath)**/*;
                     $(SdkGenerateMsiPowershellScript)"
-          Outputs="$(SdkMsiInstallerFile)">
+          Outputs="$(SdkMSIInstallerFile)">
 
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
                       '$(SdkInternalLayoutPath.TrimEnd('\'))' ^
-                      '$(SdkMsiInstallerFile)' ^
+                      '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
@@ -140,11 +140,11 @@
           Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))"
           Inputs="@(TemplatesMsiComponent->'%(LayoutPath)');
                     $(TemplatesGenerateMsiPowershellScript)"
-          Outputs="@(TemplatesMsiComponent->'%(MsiInstallerFile)')">
+          Outputs="@(TemplatesMsiComponent->'%(MSIInstallerFile)')">
 
     <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
                       '@(TemplatesMsiComponent->'%(LayoutPath)')' ^
-                      '%(TemplatesMsiComponent.MsiInstallerFile)' ^
+                      '%(TemplatesMsiComponent.MSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '@(TemplatesMsiComponent->'%(BrandName)')' ^
                       '@(TemplatesMsiComponent->'%(MsiVersion)')' ^
@@ -163,7 +163,7 @@
     <ItemGroup>
       <TemplatesMsiComponent Include="NetCore30TemplatesMsi">
         <LayoutPath>$(Templates30LayoutPath.TrimEnd('\'))</LayoutPath>
-        <MsiInstallerFile>$(Templates30MsiInstallerFile)</MsiInstallerFile>
+        <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
         <BrandName>Microsoft .NET Core 3.0 Templates</BrandName>
         <MsiVersion>$(BundledTemplates30MsiVersion)</MsiVersion>
         <Version>$(BundledTemplates30Version)</Version>
@@ -171,7 +171,7 @@
       </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore22TemplatesMsi">
         <LayoutPath>$(Templates22LayoutPath.TrimEnd('\'))</LayoutPath>
-        <MsiInstallerFile>$(Templates22MsiInstallerFile)</MsiInstallerFile>
+        <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
         <BrandName>Microsoft .NET Core 2.2 Templates</BrandName>
         <MsiVersion>$(BundledTemplates22MsiVersion)</MsiVersion>
         <Version>$(BundledTemplates22Version)</Version>
@@ -179,7 +179,7 @@
       </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore21TemplatesMsi">
         <LayoutPath>$(Templates21LayoutPath.TrimEnd('\'))</LayoutPath>
-        <MsiInstallerFile>$(Templates21MsiInstallerFile)</MsiInstallerFile>
+        <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
         <BrandName>Microsoft .NET Core 2.1 Templates</BrandName>
         <MsiVersion>$(BundledTemplates21MsiVersion)</MsiVersion>
         <Version>$(BundledTemplates21Version)</Version>
@@ -191,15 +191,15 @@
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi;GenerateTemplatesMsis;SignTemplatesMsis"
           Condition=" '$(OS)' == 'Windows_NT' "
-          Inputs="$(SdkMsiInstallerFile);
+          Inputs="$(SdkMSIInstallerFile);
                     $(DownloadedSharedFrameworkInstallerFile);
                     $(DownloadedHostFxrInstallerFile);
                     $(DownloadedSharedHostInstallerFile);
                     $(SdkGenerateBundlePowershellScript)"
-          Outputs="$(CombinedFrameworkSdkHostMsiInstallerFile)">
+          Outputs="$(CombinedFrameworkSdkHostMSIInstallerFile)">
     
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
-                      '$(SdkMsiInstallerFile)' ^
+                      '$(SdkMSIInstallerFile)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
@@ -210,8 +210,8 @@
                       '$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
-                      '$(Templates30MsiInstallerFile)' ^
-                      '$(CombinedFrameworkSdkHostMsiInstallerFile)' ^
+                      '$(Templates30MSIInstallerFile)' ^
+                      '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
@@ -229,32 +229,32 @@
   <Target Name="GenerateToolsetNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi"
           Condition=" '$(OS)' == 'Windows_NT' "
-          Inputs="$(SdkMsiInstallerFile);
+          Inputs="$(SdkMSIInstallerFile);
                     $(ToolsetInstallerNuspecFile);
                     $(GenerateNupkgPowershellScript)"
           Outputs="$(ToolsetInstallerNupkgFile)">
 
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
-                      '$(SdkMsiInstallerFile)' ^
+                      '$(SdkMSIInstallerFile)' ^
                       '$(FullNugetVersion)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ToolsetInstallerNupkgFile)' ^
                       '$(Architecture)' ^
-                      '$(SdkMsiCabFile)'" />
+                      '$(SdkMSICabFile)'" />
   </Target>
 
   <Target Name="GenerateTemplatesNupkgs"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateTemplatesMsis;SignTemplatesMsis;SetupTemplatesNupkgs"
           Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))"
-          Inputs="@(TemplatesNupkgComponent->'%(MsiInstallerFile)');
+          Inputs="@(TemplatesNupkgComponent->'%(MSIInstallerFile)');
                     $(TemplatesInstallerNuspecFile);
                     $(GenerateNupkgPowershellScript)"
           Outputs="@(TemplatesNupkgComponent->'%(NupkgFile)')">
 
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
-                      '%(TemplatesNupkgComponent.MsiInstallerFile)' ^
+                      '%(TemplatesNupkgComponent.MSIInstallerFile)' ^
                       '@(TemplatesNupkgComponent->'%(Version)')' ^
                       '$(TemplatesInstallerNuspecFile)' ^
                       '@(TemplatesNupkgComponent->'%(NupkgFile)')' ^
@@ -268,19 +268,19 @@
 
     <ItemGroup>
       <TemplatesNupkgComponent Include="NetCore30TemplatesNupkg">
-        <MsiInstallerFile>$(Templates30MsiInstallerFile)</MsiInstallerFile>
+        <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(Templates30MajorMinorVersion).$(BundledTemplates30Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates30Version)</Version>
         <IDSuffix>$(Architecture).$(Templates30MajorMinorVersion)</IDSuffix>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore22TemplatesNupkg">
-        <MsiInstallerFile>$(Templates22MsiInstallerFile)</MsiInstallerFile>
+        <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(Templates22MajorMinorVersion).$(BundledTemplates22Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates22Version)</Version>
         <IDSuffix>$(Architecture).$(Templates22MajorMinorVersion)</IDSuffix>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore21TemplatesNupkg">
-        <MsiInstallerFile>$(Templates21MsiInstallerFile)</MsiInstallerFile>
+        <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(Templates21MajorMinorVersion).$(BundledTemplates21Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates21Version)</Version>
         <IDSuffix>$(Architecture).$(Templates21MajorMinorVersion)</IDSuffix>

@@ -418,9 +418,6 @@
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;
                             LayoutTemplates;
-                            LayoutTemplatesFor30MSI;
-                            LayoutTemplatesFor22MSI;
-                            LayoutTemplatesFor21MSI;
                             LayoutBundledTools;
                             RetargetTools;
                             CrossgenLayout;
