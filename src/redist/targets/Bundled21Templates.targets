@@ -1,0 +1,51 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="Calculate21TemplatesVersion"
+          DependsOnTargets="SetSdkVersionInfo">
+    <PropertyGroup>
+      <BundledTemplates21InstallPath>$(AspNetCorePackageVersionFor21Templates)</BundledTemplates21InstallPath>
+      <BundledTemplates21MSIVersion>$(AspNetCorePackageVersionFor21Templates).$(GitCommitCount)</BundledTemplates21MSIVersion>
+      <BundledTemplates21Version>$(AspNetCorePackageVersionFor21Templates)-$(VersionSuffix)</BundledTemplates21Version>
+      <Templates21VersionPatchSeparatorIndex>$([MSBuild]::Add($(BundledTemplates21InstallPath.IndexOf('.')), 1))</Templates21VersionPatchSeparatorIndex>
+      <Templates21VersionPatchSeparatorIndex>$(BundledTemplates21InstallPath.IndexOf('.', $(Templates21VersionPatchSeparatorIndex)))</Templates21VersionPatchSeparatorIndex>
+      <Templates21MajorMinorVersion>$(BundledTemplates21InstallPath.Substring(0, $(Templates21VersionPatchSeparatorIndex)))</Templates21MajorMinorVersion>
+    </PropertyGroup>
+  </Target>
+
+  <ItemGroup>
+    <Bundled21Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates21PackageVersion)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Common.ProjectTemplates.2.1" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates21PackageVersion)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Test.ProjectTemplates.2.1" PackageVersion="$(MicrosoftDotNetTestProjectTemplates21PackageVersion)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
+    <Bundled21Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates21PackageVersion)" />
+  </ItemGroup>
+  
+
+  
+
+  
+  
+  <ItemGroup>
+    <Bundled21Templates Update="@(Bundled21Templates)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+      <Version>[%(PackageVersion)]</Version>
+    </Bundled21Templates>
+  </ItemGroup>
+
+
+  
+  
+  <ItemGroup>
+    <PackageDownload Include="@(Bundled21Templates)" />
+  </ItemGroup>
+  
+  
+  <Target Name="LayoutTemplatesFor21MSI"
+          DependsOnTargets="SetupBundledComponents;Calculate21TemplatesVersion"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+    <Copy SourceFiles="%(Bundled21Templates.RestoredNupkgPath)"
+          DestinationFolder="$(Templates21LayoutPath)templates/$(BundledTemplates21InstallPath)"/>
+  </Target>
+</Project>
