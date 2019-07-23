@@ -10,10 +10,11 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     interface IAnalyzerRunner
     {
-        Task<CodeAnalysisResult> RunCodeAnalysisAsync(
-            Solution solution,
-            ImmutableArray<DiagnosticAnalyzer> analyzers,
-            ImmutableArray<DocumentId> formattableDocuments,
+        Task RunCodeAnalysisAsync(
+            CodeAnalysisResult result,
+            DiagnosticAnalyzer analyzers,
+            Project project,
+            ImmutableArray<string> formattableDocumentPaths,
             ILogger logger,
             CancellationToken cancellationToken);
     }

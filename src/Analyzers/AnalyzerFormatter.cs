@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Formatters;
@@ -38,17 +39,25 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return solution;
             }
 
-            var analyzers = await _finder.FindAllAnalyzersAsync(logger, cancellationToken);
-<<<<<<< HEAD
-            var result = await _runner.RunCodeAnalysisAsync(analyzers, formattableDocuments, logger, cancellationToken);
-||||||| parent of 817ae5b... Added FormatType and--fix - style flag to options
-             var result = await _runner.RunCodeAnalysisAsync(analyzers, formattableDocuments, logger, cancellationToken);
-=======
-            var result = await _runner.RunCodeAnalysisAsync(solution, analyzers, formattableDocuments, logger, cancellationToken);
->>>>>>> 817ae5b... Added FormatType and --fix-style flag to options
-            var codefixes = await _finder.FindAllCodeFixesAsync(logger, cancellationToken);
+            var paths = formattableDocuments.Select(id => solution.GetDocument(id)?.FilePath)
+                .OfType<string>().ToImmutableArray();
 
-            return await _applier.ApplyCodeFixesAsync(solution, result, codefixes, formattableDocuments, logger, cancellationToken);
+            var pairs = _finder.GetAnalyzersAndFixers();
+            foreach (var (analyzer, codefix) in pairs)
+            {
+                var result = new CodeAnalysisResult();
+                await solution.Projects.ForEachAsync(async (project, token) =>
+                {
+                    await _runner.RunCodeAnalysisAsync(result, analyzer, project, paths, logger, token);
+                }, cancellationToken);
+
+                if (codefix is object)
+                {
+                    solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
+                }
+            }
+
+            return solution;
         }
     }
 }

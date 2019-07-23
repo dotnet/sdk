@@ -394,7 +394,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 workspacePath,
                 workspaceType,
                 LogLevel.Trace,
-                FormatType.All,
+                FormatType.Whitespace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,

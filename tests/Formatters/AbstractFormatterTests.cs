@@ -119,7 +119,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 workspaceFilePath: project.FilePath,
                 workspaceType: WorkspaceType.Folder,
                 logLevel: LogLevel.Trace,
-                formatType: FormatType.All,
+                formatType: FormatType.Whitespace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,
