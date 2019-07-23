@@ -10,6 +10,7 @@
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
     <Nullable>Enable</Nullable>
 
+    <NoWarn>$(NoWarn);8002</NoWarn>
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
 
     <!-- Always run on the latest runtime installed. -->
