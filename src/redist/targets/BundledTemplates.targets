@@ -5,9 +5,11 @@
       <AspNetCore30VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor30Templates.IndexOf('-'))</AspNetCore30VersionPreReleaseSeparator>
       <AspNetCore30VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor30Templates)</AspNetCore30VersionMajorMinorPatchVersion>
       <AspNetCore30VersionMajorMinorPatchVersion Condition=" '$(AspNetCore30VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor30Templates.Substring(0, $(AspNetCore30VersionPreReleaseSeparator)))</AspNetCore30VersionMajorMinorPatchVersion>
+      <BundledTemplates30InstallPath>$(AspNetCore30VersionMajorMinorPatchVersion)</BundledTemplates30InstallPath>
+      <!-- When adding '3.1' templates; the below conditional on the installation path will only apply to 3.1 -->
+      <BundledTemplates30InstallPath Condition=" '$(DropSuffix)' != 'true' And '$(VersionSuffix)' != '' ">$(BundledTemplates30InstallPath)-$(VersionSuffix)</BundledTemplates30InstallPath>
       <BundledTemplates30MSIVersion>$(AspNetCore30VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates30MSIVersion>
-      <BundledTemplates30Version>$(AspNetCore30VersionMajorMinorPatchVersion)</BundledTemplates30Version>
-      <BundledTemplates30Version Condition=" '$(DropSuffix)' != 'true' And '$(VersionSuffix)' != '' ">$(BundledTemplates30Version)-$(VersionSuffix)</BundledTemplates30Version>
+      <BundledTemplates30Version>$(AspNetCore30VersionMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplates30Version>
       <Templates30VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore30VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates30VersionPatchSeparatorIndex>
       <Templates30VersionPatchSeparatorIndex>$(AspNetCore30VersionMajorMinorPatchVersion.IndexOf('.', $(Templates30VersionPatchSeparatorIndex)))</Templates30VersionPatchSeparatorIndex>
       <Templates30MajorMinorVersion>$(AspNetCore30VersionMajorMinorPatchVersion.Substring(0, $(Templates30VersionPatchSeparatorIndex)))</Templates30MajorMinorVersion>
@@ -99,14 +101,14 @@
       <BundledTemplate Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
     <Copy SourceFiles="%(Bundled30Templates.RestoredNupkgPath)"
-          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplates30Version)"/>
+          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplates30InstallPath)"/>
   </Target>
 
   <Target Name="LayoutTemplatesFor30MSI"
           DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
           Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
     <Copy SourceFiles="%(Bundled30Templates.RestoredNupkgPath)"
-          DestinationFolder="$(Templates30LayoutPath)templates/$(BundledTemplates30Version)"/>
+          DestinationFolder="$(Templates30LayoutPath)templates/$(BundledTemplates30InstallPath)"/>
   </Target>
 
   <Target Name="LayoutTemplatesFor22MSI"
