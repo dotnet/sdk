@@ -12,32 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    internal sealed class DiagnosticProvider : FixAllContext.DiagnosticProvider
-    {
-        private readonly IReadOnlyDictionary<Project, ImmutableArray<Diagnostic>> _diagnosticsByProject;
-
-        internal DiagnosticProvider(CodeAnalysisResult analysisResult)
-        {
-            _diagnosticsByProject = analysisResult.Diagnostics;
-        }
-
-        public override Task<IEnumerable<Diagnostic>> GetAllDiagnosticsAsync(Project project, CancellationToken cancellationToken)
-        {
-            return Task.FromResult<IEnumerable<Diagnostic>>(_diagnosticsByProject[project]);
-        }
-
-        public override Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(Document document, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)
-        {
-            return Task.FromResult<IEnumerable<Diagnostic>>(_diagnosticsByProject[project]);
-        }
-    }
-
-    internal class PerDocumentCodeFixApplier : ICodeFixApplier
+    internal class SolutionCodeFixApplier : ICodeFixApplier
     {
         public async Task<Solution> ApplyCodeFixesAsync(
             Solution solution,
@@ -71,6 +46,31 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var operations = await (action?.GetOperationsAsync(cancellationToken) ?? Task.FromResult(ImmutableArray<CodeActionOperation>.Empty));
             var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
             return applyChangesOperation?.ChangedSolution ?? solution;
+        }
+
+        private class DiagnosticProvider : FixAllContext.DiagnosticProvider
+        {
+            private readonly IReadOnlyDictionary<Project, ImmutableArray<Diagnostic>> _diagnosticsByProject;
+
+            internal DiagnosticProvider(CodeAnalysisResult analysisResult)
+            {
+                _diagnosticsByProject = analysisResult.Diagnostics;
+            }
+
+            public override Task<IEnumerable<Diagnostic>> GetAllDiagnosticsAsync(Project project, CancellationToken cancellationToken)
+            {
+                return Task.FromResult<IEnumerable<Diagnostic>>(_diagnosticsByProject[project]);
+            }
+
+            public override Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(Document document, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)
+            {
+                return Task.FromResult<IEnumerable<Diagnostic>>(_diagnosticsByProject[project]);
+            }
         }
     }
 }
