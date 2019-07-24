@@ -29,7 +29,7 @@
   </Target>
 
   <ItemGroup>
-    <Bundled30Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplatesPackageVersion)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates30PackageVersion)" />
     <Bundled30Templates Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)" />
     <Bundled30Templates Include="Microsoft.DotNet.Test.ProjectTemplates.3.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates30PackageVersion)" />
     <Bundled30Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
@@ -37,7 +37,7 @@
     <Bundled30Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCoreVersion)" />
     <Bundled30Templates Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" PackageVersion="$(AspNetCoreVersion)" />
     <Bundled30Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" PackageVersion="$(AspNetCoreVersion)" />
-    <Bundled30Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3TemplatesVersion)" />
+    <Bundled30Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates30PackageVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Bundled22Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates22PackageVersion)" />
