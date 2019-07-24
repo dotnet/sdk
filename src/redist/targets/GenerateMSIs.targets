@@ -269,21 +269,21 @@
     <ItemGroup>
       <TemplatesNupkgComponent Include="NetCore30TemplatesNupkg">
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(Templates30MajorMinorVersion).$(BundledTemplates30Version).nupkg</NupkgFile>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates30MajorMinorVersion).$(BundledTemplates30Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates30Version)</Version>
-        <IDSuffix>$(Architecture).$(Templates30MajorMinorVersion)</IDSuffix>
+        <IDSuffix>$(Architecture).$(BundledTemplates30MajorMinorVersion)</IDSuffix>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore22TemplatesNupkg">
         <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(Templates22MajorMinorVersion).$(BundledTemplates22Version).nupkg</NupkgFile>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates22MajorMinorVersion).$(BundledTemplates22Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates22Version)</Version>
-        <IDSuffix>$(Architecture).$(Templates22MajorMinorVersion)</IDSuffix>
+        <IDSuffix>$(Architecture).$(BundledTemplates22MajorMinorVersion)</IDSuffix>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore21TemplatesNupkg">
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(Templates21MajorMinorVersion).$(BundledTemplates21Version).nupkg</NupkgFile>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates21MajorMinorVersion).$(BundledTemplates21Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates21Version)</Version>
-        <IDSuffix>$(Architecture).$(Templates21MajorMinorVersion)</IDSuffix>
+        <IDSuffix>$(Architecture).$(BundledTemplates21MajorMinorVersion)</IDSuffix>
       </TemplatesNupkgComponent>
     </ItemGroup>
   </Target>
