@@ -106,13 +106,6 @@
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
-      <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg">
-        <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
-        <PackageVersion>$(WindowsDesktopTargetingPackVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
         <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
         <PackageVersion>$(NetCoreAppHostPackVersion)</PackageVersion>
@@ -238,6 +231,13 @@
     </PropertyGroup>
     
     <ItemGroup Condition=" '$(IncludeWpfAndWinForms)' != 'false' ">
+      <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg">
+        <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
+        <PackageVersion>$(WindowsDesktopTargetingPackVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftWindowsDesktopPackageVersion)</BaseUrl>
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
