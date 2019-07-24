@@ -285,3 +285,12 @@ Option Values: integral values
 Default Value: Specific to each configurable rule ('100000' by default for most rules)
 
 Example: `dotnet_net_core.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
+
+#### Configure unsafe DllImportSearchPath values when using DefaultDllImportSearchPaths attribute
+Option Name: `unsafe_DllImportSearchPath_values`
+
+Option Values: Enumeration values
+
+Default Value: Specific to each configurable rule ('258' by default for most rules)
+
+Example: `dotnet_net_core.CA5392.unsafe_DllImportSearchPath_values = 2 | 256`
