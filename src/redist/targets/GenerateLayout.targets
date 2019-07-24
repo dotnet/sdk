@@ -2,7 +2,9 @@
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
     <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
-    <TemplatesLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-templates\</TemplatesLayoutPath>
+    <Templates30LayoutPath>$(BaseOutputPath)$(Configuration)\templates-3.0\</Templates30LayoutPath>
+    <Templates22LayoutPath>$(BaseOutputPath)$(Configuration)\templates-2.2\</Templates22LayoutPath>
+    <Templates21LayoutPath>$(BaseOutputPath)$(Configuration)\templates-2.1\</Templates21LayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
   
@@ -416,7 +418,6 @@
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;
                             LayoutTemplates;
-                            LayoutTemplatesForMSI;
                             LayoutBundledTools;
                             RetargetTools;
                             CrossgenLayout;

@@ -1,55 +1,134 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="CalculateTemplatesVersion"
+  <Target Name="CalculateTemplatesVersions"
           DependsOnTargets="SetSdkVersionInfo">
     <PropertyGroup>
-      <MicrosoftNETCoreAppVersionPreReleaseSeparator>$(MicrosoftNETCoreAppPackageVersion.IndexOf('-'))</MicrosoftNETCoreAppVersionPreReleaseSeparator>
-      <MicrosoftNETCoreAppMajorMinorPatchVersion>$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreAppMajorMinorPatchVersion>
-      <MicrosoftNETCoreAppMajorMinorPatchVersion Condition=" '$(MicrosoftNETCoreAppVersionPreReleaseSeparator)' != -1 ">$(MicrosoftNETCoreAppPackageVersion.Substring(0, $(MicrosoftNETCoreAppVersionPreReleaseSeparator)))</MicrosoftNETCoreAppMajorMinorPatchVersion>
-      <BundledTemplatesVersion>$(MicrosoftNETCoreAppMajorMinorPatchVersion)</BundledTemplatesVersion>
-      <BundledTemplatesVersion Condition=" '$(DropSuffix)' != 'true' And '$(VersionSuffix)' != '' ">$(BundledTemplatesVersion)-$(VersionSuffix)</BundledTemplatesVersion>
+      <AspNetCore30VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor30Templates.IndexOf('-'))</AspNetCore30VersionPreReleaseSeparator>
+      <AspNetCore30VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor30Templates)</AspNetCore30VersionMajorMinorPatchVersion>
+      <AspNetCore30VersionMajorMinorPatchVersion Condition=" '$(AspNetCore30VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor30Templates.Substring(0, $(AspNetCore30VersionPreReleaseSeparator)))</AspNetCore30VersionMajorMinorPatchVersion>
+      <BundledTemplates30Version>$(AspNetCore30VersionMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplates30Version>
+      <BundledTemplates30MSIVersion>$(AspNetCore30VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates30MSIVersion>
+      <BundledTemplates30InstallPath>$(AspNetCore30VersionMajorMinorPatchVersion)</BundledTemplates30InstallPath>
+      <BundledTemplates30InstallPath Condition=" '$(AspNetCore30VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates30InstallPath)-$(VersionSuffix)</BundledTemplates30InstallPath>
+      <Templates30VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore30VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates30VersionPatchSeparatorIndex>
+      <Templates30VersionPatchSeparatorIndex>$(AspNetCore30VersionMajorMinorPatchVersion.IndexOf('.', $(Templates30VersionPatchSeparatorIndex)))</Templates30VersionPatchSeparatorIndex>
+      <BundledTemplates30MajorMinorVersion>$(AspNetCore30VersionMajorMinorPatchVersion.Substring(0, $(Templates30VersionPatchSeparatorIndex)))</BundledTemplates30MajorMinorVersion>
+
+      <AspNetCore22VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor22Templates.IndexOf('-'))</AspNetCore22VersionPreReleaseSeparator>
+      <AspNetCore22VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor22Templates)</AspNetCore22VersionMajorMinorPatchVersion>
+      <AspNetCore22VersionMajorMinorPatchVersion Condition=" '$(AspNetCore22VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor22Templates.Substring(0, $(AspNetCore22VersionPreReleaseSeparator)))</AspNetCore22VersionMajorMinorPatchVersion>
+      <BundledTemplates22Version>$(AspNetCore22VersionMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplates22Version>
+      <BundledTemplates22MSIVersion>$(AspNetCore22VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates22MSIVersion>
+      <BundledTemplates22InstallPath>$(AspNetCore22VersionMajorMinorPatchVersion)</BundledTemplates22InstallPath>
+      <BundledTemplates22InstallPath Condition=" '$(AspNetCore22VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates22InstallPath)-$(VersionSuffix)</BundledTemplates22InstallPath>
+      <Templates22VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore22VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates22VersionPatchSeparatorIndex>
+      <Templates22VersionPatchSeparatorIndex>$(AspNetCore22VersionMajorMinorPatchVersion.IndexOf('.', $(Templates22VersionPatchSeparatorIndex)))</Templates22VersionPatchSeparatorIndex>
+      <BundledTemplates22MajorMinorVersion>$(AspNetCore22VersionMajorMinorPatchVersion.Substring(0, $(Templates22VersionPatchSeparatorIndex)))</BundledTemplates22MajorMinorVersion>
+
+      <AspNetCore21VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor21Templates.IndexOf('-'))</AspNetCore21VersionPreReleaseSeparator>
+      <AspNetCore21VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor21Templates)</AspNetCore21VersionMajorMinorPatchVersion>
+      <AspNetCore21VersionMajorMinorPatchVersion Condition=" '$(AspNetCore21VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor21Templates.Substring(0, $(AspNetCore21VersionPreReleaseSeparator)))</AspNetCore21VersionMajorMinorPatchVersion>
+      <BundledTemplates21Version>$(AspNetCore21VersionMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplates21Version>
+      <BundledTemplates21MSIVersion>$(AspNetCore21VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates21MSIVersion>
+      <BundledTemplates21InstallPath>$(AspNetCore21VersionMajorMinorPatchVersion)</BundledTemplates21InstallPath>
+      <BundledTemplates21InstallPath Condition=" '$(AspNetCore21VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates21InstallPath)-$(VersionSuffix)</BundledTemplates21InstallPath>
+      <Templates21VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore21VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates21VersionPatchSeparatorIndex>
+      <Templates21VersionPatchSeparatorIndex>$(AspNetCore21VersionMajorMinorPatchVersion.IndexOf('.', $(Templates21VersionPatchSeparatorIndex)))</Templates21VersionPatchSeparatorIndex>
+      <BundledTemplates21MajorMinorVersion>$(AspNetCore21VersionMajorMinorPatchVersion.Substring(0, $(Templates21VersionPatchSeparatorIndex)))</BundledTemplates21MajorMinorVersion>
     </PropertyGroup>
   </Target>
 
   <ItemGroup>
-    <BundledTemplate Include="Microsoft.DotNet.Common.ItemTemplates" Version="$(MicrosoftDotNetCommonItemTemplatesPackageVersion)" />
-    <BundledTemplate Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" Version="$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)" />
-    <BundledTemplate Include="Microsoft.DotNet.Test.ProjectTemplates.3.0" Version="$(MicrosoftDotNetTestProjectTemplates30PackageVersion)" />
-    <BundledTemplate Include="Microsoft.Dotnet.Wpf.ProjectTemplates" Version="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
-    <BundledTemplate Include="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates30PackageVersion)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Test.ProjectTemplates.3.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates30PackageVersion)" />
+    <Bundled30Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates30PackageVersion)" />
+    <Bundled30Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates30PackageVersion)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
+    <Bundled30Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates30PackageVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Bundled22Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates22PackageVersion)" />
+    <Bundled22Templates Include="Microsoft.DotNet.Common.ProjectTemplates.2.2" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates22PackageVersion)" />
+    <Bundled22Templates Include="Microsoft.DotNet.Test.ProjectTemplates.2.2" PackageVersion="$(MicrosoftDotNetTestProjectTemplates22PackageVersion)" />
+    <Bundled22Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor22Templates)" />
+    <Bundled22Templates Include="Microsoft.DotNet.Web.ProjectTemplates.2.2" PackageVersion="$(AspNetCorePackageVersionFor22Templates)" />
+    <Bundled22Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" PackageVersion="$(AspNetCorePackageVersionFor22Templates)" />
+    <Bundled22Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates22PackageVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Bundled21Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates21PackageVersion)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Common.ProjectTemplates.2.1" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates21PackageVersion)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Test.ProjectTemplates.2.1" PackageVersion="$(MicrosoftDotNetTestProjectTemplates21PackageVersion)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
+    <Bundled21Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates21PackageVersion)" />
+  </ItemGroup>
 
-    <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates" Version="$(AspNetCoreVersion)" />
-    <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Version="$(AspNetCoreVersion)" />
-    <BundledTemplate Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" Version="$(AspNetCoreVersion)" />
+  <ItemGroup>
+    <Bundled30Templates Update="@(Bundled30Templates)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+      <Version>[%(PackageVersion)]</Version>
+    </Bundled30Templates>
+  </ItemGroup>
+  <ItemGroup>
+    <Bundled22Templates Update="@(Bundled22Templates)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+      <Version>[%(PackageVersion)]</Version>
+    </Bundled22Templates>
+  </ItemGroup>
+  <ItemGroup>
+    <Bundled21Templates Update="@(Bundled21Templates)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+      <Version>[%(PackageVersion)]</Version>
+    </Bundled21Templates>
+  </ItemGroup>
 
-    <BundledTemplate Include="NUnit3.DotNetNew.Template" Version="$(NUnit3TemplatesVersion)" />
+  <ItemGroup>
+    <PackageDownload Include="@(Bundled22Templates);@(Bundled21Templates)" />
   </ItemGroup>
 
   <!-- Restore bundled templates via PackageReference -->
   <ItemGroup>
-    <PackageReference Include="@(BundledTemplate)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <BundledTemplate Update="@(BundledTemplate)">
-      <NupkgPathRelativeToPackageRoot>%(Identity)/%(Version)/%(Identity).%(Version).nupkg</NupkgPathRelativeToPackageRoot>
-      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
-    </BundledTemplate>
+    <PackageReference Include="@(Bundled30Templates)" />
   </ItemGroup>
 
   <Target Name="LayoutTemplates"
-          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersion">
+        DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesFor30MSI;LayoutTemplatesFor22MSI;LayoutTemplatesFor21MSI" />
+    
+  <Target Name="LayoutTemplatesForSDK"
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
       <BundledTemplate Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <BundledTemplate Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
-    <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
-          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplatesVersion)"/>
+    <Copy SourceFiles="%(Bundled30Templates.RestoredNupkgPath)"
+          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplates30InstallPath)"/>
   </Target>
 
-  <Target Name="LayoutTemplatesForMSI"
-          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersion"
-          Condition="$(ProductMonikerRid.StartsWith('win'))">
-    <Copy SourceFiles="%(BundledTemplate.RestoredNupkgPath)"
-          DestinationFolder="$(TemplatesLayoutPath)templates/$(BundledTemplatesVersion)"/>
+  <Target Name="LayoutTemplatesFor30MSI"
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+    <Copy SourceFiles="%(Bundled30Templates.RestoredNupkgPath)"
+          DestinationFolder="$(Templates30LayoutPath)templates/$(BundledTemplates30InstallPath)"/>
+  </Target>
+
+  <Target Name="LayoutTemplatesFor22MSI"
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+    <Copy SourceFiles="%(Bundled22Templates.RestoredNupkgPath)"
+          DestinationFolder="$(Templates22LayoutPath)templates/$(BundledTemplates22InstallPath)"/>
+  </Target>
+
+  <Target Name="LayoutTemplatesFor21MSI"
+          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+    <Copy SourceFiles="%(Bundled21Templates.RestoredNupkgPath)"
+          DestinationFolder="$(Templates21LayoutPath)templates/$(BundledTemplates21InstallPath)"/>
   </Target>
 </Project>

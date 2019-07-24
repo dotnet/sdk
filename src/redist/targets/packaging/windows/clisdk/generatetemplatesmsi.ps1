@@ -13,8 +13,8 @@ param(
     [Parameter(Mandatory=$true)][string]$Architecture
 )
 
-$InstallFileswsx = ".\install-files.wxs"
-$InstallFilesWixobj = "install-files.wixobj"
+$InstallFileswsx = ".\template-install-files.wxs"
+$InstallFilesWixobj = "template-install-files.wixobj"
 
 function RunHeat
 {
@@ -29,7 +29,7 @@ function RunHeat
         -cg InstallFiles  `
         -srd  `
         -dr DOTNETHOME  `
-        -out install-files.wxs
+        -out template-install-files.wxs
 
     Write-Information "Heat output: $heatOutput"
 

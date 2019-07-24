@@ -147,7 +147,7 @@
 
     <ItemGroup>
       <SdkMsiFilesToSign Include="$(SdkMSIInstallerFile)" />
-      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)d*.cab" />
+      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)*.cab" />
 
       <SdkMsiFileSignInfo Include="@(SdkMsiFilesToSign->'%(Filename)%(Extension)')">
         <CertificateName>$(InternalCertificateId)</CertificateName>
@@ -171,14 +171,15 @@
 
   </Target>
 
-  <Target Name="SignTemplatesMsi"
+  <Target Name="SignTemplatesMsis"
       Condition="'$(SignCoreSdk)' == 'true'"
       DependsOnTargets="SetSignProps">
 
     <ItemGroup>
-      <TemplatesMsiFilesToSign Include="$(TemplatesMSIInstallerFile)" />
-      <TemplatesMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)t*.cab" />
-
+      <TemplatesMsiFilesToSign Include="$(Templates30MSIInstallerFile)" />
+      <TemplatesMsiFilesToSign Include="$(Templates22MSIInstallerFile)" />
+      <TemplatesMsiFilesToSign Include="$(Templates21MSIInstallerFile)" />
+      
       <TemplatesMsiFileSignInfo Include="@(TemplatesMsiFilesToSign->'%(Filename)%(Extension)')">
         <CertificateName>$(InternalCertificateId)</CertificateName>
       </TemplatesMsiFileSignInfo>

@@ -9,7 +9,7 @@
         <licenseUrl>https://www.microsoft.com/net/dotnet_library_license.htm</licenseUrl>
         <projectUrl>https://github.com/dotnet/core-sdk</projectUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
-        <description>.NET Core SDK Toolset ($ARCH$) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</description>
+        <description>.NET Core $MAJOR_MINOR$ SDK Toolset ($ARCH$) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</description>
         <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     </metadata>
     <files>
