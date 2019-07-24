@@ -17,6 +17,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     /// </summary>
     internal sealed class ImportsFormatter : DocumentFormatter
     {
+        public override FormatType FormatType => FormatType.Whitespace;
         protected override string FormatWarningDescription => Resources.Fix_imports_ordering;
         private readonly DocumentFormatter _endOfLineFormatter = new EndOfLineFormatter();
 

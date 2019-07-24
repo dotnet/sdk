@@ -13,6 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal sealed class FinalNewlineFormatter : DocumentFormatter
     {
+        public override FormatType FormatType => FormatType.Whitespace;
         protected override string FormatWarningDescription => Resources.Fix_final_newline;
 
         internal override async Task<SourceText> FormatFileAsync(

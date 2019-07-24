@@ -9,10 +9,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    internal class InternalRoslynAnalyzerFinder : IAnalyzerFinder
+    internal class RoslynCodeStyleAnalyzerFinder : IAnalyzerFinder
     {
         private readonly static string s_executingPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        public static IAnalyzerFinder Instance { get; } = new InternalRoslynAnalyzerFinder();
 
         private readonly string _featuresCSharpPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.CSharp.Features.dll");
         private readonly string _featuresVisualBasicPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.CSharp.VisualBasic.dll");

@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Tools
             new EndOfLineFormatter(),
             new CharsetFormatter(),
             new ImportsFormatter(),
-            new AnalyzerFormatter(new InternalRoslynAnalyzerFinder(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
+            new AnalyzerFormatter(new RoslynCodeStyleAnalyzerFinder(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
         }.ToImmutableArray();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
@@ -245,6 +245,11 @@ namespace Microsoft.CodeAnalysis.Tools
 
             foreach (var codeFormatter in s_codeFormatters)
             {
+                if (!options.FormatType.HasFlag(codeFormatter.FormatType))
+                {
+                    continue;
+                }
+
                 formattedSolution = await codeFormatter.FormatAsync(formattedSolution, formattableDocuments, options, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
             }
 
