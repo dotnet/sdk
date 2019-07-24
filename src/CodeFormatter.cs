@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Tools
             new EndOfLineFormatter(),
             new CharsetFormatter(),
             new ImportsFormatter(),
-            new AnalyzerFormatter(new InternalRoslynAnalyzerFinder(), new ConcurrentAnalyzerRunner(), new SolutionCodeFixApplier()),
+            new AnalyzerFormatter(new InternalRoslynAnalyzerFinder(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
         }.ToImmutableArray();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(

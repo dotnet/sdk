@@ -10,10 +10,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    internal partial class ConcurrentAnalyzerRunner : IAnalyzerRunner
+    internal partial class AnalyzerRunner : IAnalyzerRunner
     {
-        public static IAnalyzerRunner Instance { get; } = new ConcurrentAnalyzerRunner();
-
         public async Task RunCodeAnalysisAsync(
             CodeAnalysisResult result,
             DiagnosticAnalyzer analyzers,
@@ -32,10 +30,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 ImmutableArray.Create(analyzers),
                 options: project.AnalyzerOptions,
                 cancellationToken);
-            var diagnostics = await analyzerCompilation.GetAllDiagnosticsAsync(cancellationToken);
+            var diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken);
             // filter diagnostics
             var filteredDiagnostics = diagnostics.Where(
-                x => x.Location.IsInSource &&
+                x => !x.IsSuppressed &&
+                     x.Severity >= DiagnosticSeverity.Warning &&
+                     x.Location.IsInSource &&
                      formattableDocumentPaths.Contains(x.Location.SourceTree?.FilePath, StringComparer.OrdinalIgnoreCase));
             result.AddDiagnostic(project, filteredDiagnostics);
         }
