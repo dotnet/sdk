@@ -143,8 +143,8 @@
           Outputs="@(TemplatesMsiComponent->'%(MSIInstallerFile)')">
 
     <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
-                      '@(TemplatesMsiComponent->'%(LayoutPath)')' ^
-                      '%(TemplatesMsiComponent.MSIInstallerFile)' ^
+                      '%(TemplatesMsiComponent.LayoutPath)' ^
+                      '@(TemplatesMsiComponent->'%(MSIInstallerFile)')' ^
                       '$(WixRoot)' ^
                       '@(TemplatesMsiComponent->'%(BrandName)')' ^
                       '@(TemplatesMsiComponent->'%(MsiVersion)')' ^
@@ -164,7 +164,7 @@
       <TemplatesMsiComponent Include="NetCore30TemplatesMsi">
         <LayoutPath>$(Templates30LayoutPath.TrimEnd('\'))</LayoutPath>
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
-        <BrandName>Microsoft .NET Core 3.0 Templates</BrandName>
+        <BrandName>$(BundledTemplates30BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates30MsiVersion)</MsiVersion>
         <Version>$(BundledTemplates30Version)</Version>
         <UpgradeCode>$(Templates30InstallerUpgradeCode)</UpgradeCode>
@@ -172,7 +172,7 @@
       <TemplatesMsiComponent Include="NetCore22TemplatesMsi">
         <LayoutPath>$(Templates22LayoutPath.TrimEnd('\'))</LayoutPath>
         <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
-        <BrandName>Microsoft .NET Core 2.2 Templates</BrandName>
+        <BrandName>$(BundledTemplates22BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates22MsiVersion)</MsiVersion>
         <Version>$(BundledTemplates22Version)</Version>
         <UpgradeCode>$(Templates22InstallerUpgradeCode)</UpgradeCode>
@@ -180,7 +180,7 @@
       <TemplatesMsiComponent Include="NetCore21TemplatesMsi">
         <LayoutPath>$(Templates21LayoutPath.TrimEnd('\'))</LayoutPath>
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
-        <BrandName>Microsoft .NET Core 2.1 Templates</BrandName>
+        <BrandName>$(BundledTemplates21BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates21MsiVersion)</MsiVersion>
         <Version>$(BundledTemplates21Version)</Version>
         <UpgradeCode>$(Templates21InstallerUpgradeCode)</UpgradeCode>
@@ -241,6 +241,7 @@
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ToolsetInstallerNupkgFile)' ^
                       '$(Architecture)' ^
+                      '$(MajorMinorVersion)' ^
                       '$(SdkMSICabFile)'" />
   </Target>
 
@@ -258,7 +259,8 @@
                       '@(TemplatesNupkgComponent->'%(Version)')' ^
                       '$(TemplatesInstallerNuspecFile)' ^
                       '@(TemplatesNupkgComponent->'%(NupkgFile)')' ^
-                      '@(TemplatesNupkgComponent->'%(IDSuffix)')'" />
+                      '$(Architecture)' ^
+                      '@(TemplatesNupkgComponent->'%(MajorMinorVersion)')'" />
   </Target>
 
   <Target Name="SetupTemplatesNupkgs">
@@ -271,19 +273,19 @@
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates30MajorMinorVersion).$(BundledTemplates30Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates30Version)</Version>
-        <IDSuffix>$(Architecture).$(BundledTemplates30MajorMinorVersion)</IDSuffix>
+        <MajorMinorVersion>$(BundledTemplates30MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore22TemplatesNupkg">
         <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates22MajorMinorVersion).$(BundledTemplates22Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates22Version)</Version>
-        <IDSuffix>$(Architecture).$(BundledTemplates22MajorMinorVersion)</IDSuffix>
+        <MajorMinorVersion>$(BundledTemplates22MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore21TemplatesNupkg">
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates21MajorMinorVersion).$(BundledTemplates21Version).nupkg</NupkgFile>
         <Version>$(BundledTemplates21Version)</Version>
-        <IDSuffix>$(Architecture).$(BundledTemplates21MajorMinorVersion)</IDSuffix>
+        <MajorMinorVersion>$(BundledTemplates21MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
     </ItemGroup>
   </Target>

@@ -7,7 +7,8 @@ param(
     [Parameter(Mandatory=$true)][string]$NugetVersion,
     [Parameter(Mandatory=$true)][string]$NuspecFile,
     [Parameter(Mandatory=$true)][string]$NupkgFile,
-    [Parameter(Mandatory=$false)][string]$AdditionalData,
+    [Parameter(Mandatory=$false)][string]$Architecture,
+    [Parameter(Mandatory=$false)][string]$MmVersion,
     [Parameter(Mandatory=$false)][string]$CabPath
 )
 
@@ -33,5 +34,5 @@ if (Test-Path $NupkgFile) {
     Remove-Item -Force $NupkgFile
 }
 
-& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties PAYLOAD_FILES=$ContentPath`;DOTNET_CAB_FILE=$CabPath`;DATA=$AdditionalData
+& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties PAYLOAD_FILES=$ContentPath`;DOTNET_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR_MINOR=$MmVersion
 Exit $LastExitCode
