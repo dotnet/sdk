@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    // by passing null to assemblyToCopyResorcesFrom, it will skip coping resorces,
+                    // by passing null to assemblyToCopyResorcesFrom, it will skip copying resorces,
                     // which is only supported on Windows
                     Log.LogWarning(Strings.AppHostCustomizationRequiresWindowsHostWarning);
                     HostWriter.CreateAppHost(appHostSourceFilePath: AppHostSourcePath,
