@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Build
 
             AddFolder(sb,
                       @"MSBuildSdkResolver",
-                      @"MSBuild\15.0\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver");
+                      @"MSBuild\Current\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver");
 
             AddFolder(sb,
                       @"msbuildExtensions",
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Build
 
             AddFolder(sb,
                       @"msbuildExtensions-ver",
-                      @"MSBuild\15.0");
+                      @"MSBuild\Current");
 
             File.WriteAllText(OutputFile, sb.ToString());
 
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.Build
             var files = Directory.GetFiles(sourceFolder)
                             .Where(f => !Path.GetExtension(f).Equals(".pdb", StringComparison.OrdinalIgnoreCase))
                             .ToList();
-            if (files.Any())
+            if (files.Any(f => !Path.GetFileName(f).Equals("_._")))
             {
                 sb.Append(@"folder ""InstallDir:\");
                 sb.Append(swrInstallDir);
@@ -74,8 +74,7 @@ namespace Microsoft.DotNet.Cli.Build
         readonly string SWR_HEADER = @"use vs
 
 package name=Microsoft.Net.Core.SDK.MSBuildExtensions
-        version=$(Version)
-        vs.package.branch=$(VsSingletonPackageBranch)
+        version=$(ProductsBuildVersion)
         vs.package.internalRevision=$(PackageInternalRevision)
 
 ";
