@@ -26,6 +26,8 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string IntermediateAssembly { get; set; }
 
+        public string OutputType { get; set; }
+
         /// <summary>
         /// PackageId of the dotnet tool NuGet Package.
         /// </summary>
@@ -67,8 +69,6 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         [Required]
         public ITaskItem[] ShimRuntimeIdentifiers { get; set; }
-
-        public bool WindowsGraphicalUserInterface { get; set; }
 
         /// <summary>
         /// Path of generated shims. metadata "ShimRuntimeIdentifier" is used to map back to input ShimRuntimeIdentifiers.
@@ -113,20 +113,20 @@ namespace Microsoft.NET.Build.Tasks
 
                 try
                 {
+                    var windowsGraphicalUserInterface = runtimeIdentifier.StartsWith("win") && "WinExe".Equals(OutputType, StringComparison.OrdinalIgnoreCase);
                     if (ResourceUpdater.IsSupportedOS() && runtimeIdentifier.StartsWith("win"))
                     {
-                        // read from IntermediateAssembly to avoid duplicating the logic of checking $(OutputType)
                         HostWriter.CreateAppHost(appHostSourceFilePath: resolvedApphostAssetPath,
                                                  appHostDestinationFilePath: appHostDestinationFilePath,
                                                  appBinaryFilePath: appBinaryFilePath,
-                                                 windowsGraphicalUserInterface: WindowsGraphicalUserInterface,
+                                                 windowsGraphicalUserInterface: windowsGraphicalUserInterface,
                                                  assemblyToCopyResorcesFrom: IntermediateAssembly);
                     }
                     else
                     {
                         // by passing null to assemblyToCopyResorcesFrom, it will skip coping resorces,
                         // which is only supported on Windows
-                        if (WindowsGraphicalUserInterface)
+                        if (windowsGraphicalUserInterface)
                         {
                             Log.LogWarning(Strings.AppHostCustomizationRequiresWindowsHostWarning);
                         }
