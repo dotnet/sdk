@@ -424,7 +424,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private class HResultException : Exception
+        internal class HResultException : Exception
         {
             public HResultException(int hResult) : base(hResult.ToString("X4"))
             {

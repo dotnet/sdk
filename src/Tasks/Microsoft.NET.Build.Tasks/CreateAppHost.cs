@@ -24,6 +24,10 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string IntermediateAssembly { get; set; }
 
+        public int Retries { get; set; }
+
+        public int RetryDelayMilliseconds { get; set; } = AppHost.DefaultRetryDelayMilliseconds;
+
         public bool WindowsGraphicalUserInterface { get; set; }
 
         protected override void ExecuteCore()
@@ -34,7 +38,9 @@ namespace Microsoft.NET.Build.Tasks
                 AppBinaryName,
                 windowsGraphicalUserInterface : WindowsGraphicalUserInterface,
                 intermediateAssembly: IntermediateAssembly,
-                log: Log);
+                log: Log,
+                retryCount: Retries,
+                retryDelayMilliseconds: RetryDelayMilliseconds);
         }
     }
 }

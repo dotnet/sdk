@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -20,6 +21,8 @@ namespace Microsoft.NET.Build.Tasks
         private const string AppBinaryPathPlaceholder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2";
         private readonly static byte[] AppBinaryPathPlaceholderSearchValue = Encoding.UTF8.GetBytes(AppBinaryPathPlaceholder);
 
+        public const int DefaultRetryDelayMilliseconds = 1000;
+
         /// <summary>
         /// Create an AppHost with embedded configuration of app binary location
         /// </summary>
@@ -29,13 +32,18 @@ namespace Microsoft.NET.Build.Tasks
         /// <param name="windowsGraphicalUserInterface">Specify whether to set the subsystem to GUI. Only valid for PE apphosts.</param>
         /// <param name="intermediateAssembly">Path to the intermediate assembly, used for copying resources to PE apphosts.</param>
         /// <param name="log">Specify the logger used to log warnings and messages. If null, no logging is done.</param>
+        /// <param name="retryCount">The number of times to attempt to create the apphost.</param>
+        /// <param name="retryDelayMilliseconds">The number of milliseconds to wait between retry attempts.</param>
         public static void Create(
             string appHostSourceFilePath,
             string appHostDestinationFilePath,
             string appBinaryFilePath,
             bool windowsGraphicalUserInterface = false,
             string intermediateAssembly = null,
-            Logger log = null)
+            Logger log = null,
+            int retryCount = 0,
+            int retryDelayMilliseconds = DefaultRetryDelayMilliseconds
+            )
         {
             var bytesToWrite = Encoding.UTF8.GetBytes(appBinaryFilePath);
             if (bytesToWrite.Length > 1024)
@@ -54,36 +62,43 @@ namespace Microsoft.NET.Build.Tasks
 
             try
             {
-                // Re-write the destination apphost with the proper contents.
+                int retries = 0;
+
                 bool appHostIsPEImage = false;
-                using (var memoryMappedFile = MemoryMappedFile.CreateFromFile(appHostDestinationFilePath))
-                {
-                    using (MemoryMappedViewAccessor accessor = memoryMappedFile.CreateViewAccessor())
+
+                Retry(log, retryCount, retryDelayMilliseconds, ref retries, () => {
+                    // Re-write the destination apphost with the proper contents.
+                    using (var memoryMappedFile = MemoryMappedFile.CreateFromFile(appHostDestinationFilePath))
                     {
-                        SearchAndReplace(accessor, AppBinaryPathPlaceholderSearchValue, bytesToWrite, appHostSourceFilePath);
-
-                        appHostIsPEImage = IsPEImage(accessor);
-
-                        if (windowsGraphicalUserInterface)
+                        using (MemoryMappedViewAccessor accessor = memoryMappedFile.CreateViewAccessor())
                         {
-                            if (!appHostIsPEImage)
-                            {
-                                throw new BuildErrorException(Strings.AppHostNotWindows, appHostSourceFilePath);
-                            }
+                            SearchAndReplace(accessor, AppBinaryPathPlaceholderSearchValue, bytesToWrite, appHostSourceFilePath);
 
-                            SetWindowsGraphicalUserInterfaceBit(accessor, appHostSourceFilePath);
+                            appHostIsPEImage = IsPEImage(accessor);
+
+                            if (windowsGraphicalUserInterface)
+                            {
+                                if (!appHostIsPEImage)
+                                {
+                                    throw new BuildErrorException(Strings.AppHostNotWindows, appHostSourceFilePath);
+                                }
+
+                                SetWindowsGraphicalUserInterfaceBit(accessor, appHostSourceFilePath);
+                            }
                         }
                     }
-                }
+                });
 
                 if (intermediateAssembly != null && appHostIsPEImage)
                 {
                     if (ResourceUpdater.IsSupportedOS())
                     {
-                        // Copy resources from managed dll to the apphost
-                        new ResourceUpdater(appHostDestinationFilePath)
-                            .AddResourcesFromPEImage(intermediateAssembly)
-                            .Update();
+                        Retry(log, retryCount, retryDelayMilliseconds, ref retries, () => {
+                            // Copy resources from managed dll to the apphost
+                            new ResourceUpdater(appHostDestinationFilePath)
+                                .AddResourcesFromPEImage(intermediateAssembly)
+                                .Update();
+                        });
                     }
                     else if (log != null)
                     {
@@ -107,6 +122,39 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 throw;
             }
+        }
+
+        private static void Retry(Logger log, int retryCount, int retryDelayMilliseconds, ref int retries, Action action)
+        {
+            do
+            {
+                try
+                {
+                    action();
+                    return;
+                }
+                catch (Exception ex) when (ex is IOException ||
+                                           ex is UnauthorizedAccessException ||
+                                           ex is ResourceUpdater.HResultException)
+                {
+                    if (retryCount < 0 || retries == retryCount) {
+                        throw;
+                    }
+
+                    log.LogMessage(
+                        string.Format(Strings.AppHostCreationFailedWithRetry,
+                            retries,
+                            retryCount,
+                            ex.Message));
+
+                    if (retryDelayMilliseconds > 0) {
+                        Thread.Sleep(retryDelayMilliseconds);
+                    }
+
+                    ++retries;
+                }
+            }
+            while (retries < retryCount);
         }
 
         // See: https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
