@@ -68,6 +68,8 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public ITaskItem[] ShimRuntimeIdentifiers { get; set; }
 
+        public bool WindowsGraphicalUserInterface { get; set; }
+
         /// <summary>
         /// Path of generated shims. metadata "ShimRuntimeIdentifier" is used to map back to input ShimRuntimeIdentifiers.
         /// </summary>
@@ -114,18 +116,21 @@ namespace Microsoft.NET.Build.Tasks
                     if (ResourceUpdater.IsSupportedOS() && runtimeIdentifier.StartsWith("win"))
                     {
                         // read from IntermediateAssembly to avoid duplicating the logic of checking $(OutputType)
-                        var windowsGraphicalUserInterfaceBit = BinaryUtils.GetWindowsGraphicalUserInterfaceBit(IntermediateAssembly);
                         HostWriter.CreateAppHost(appHostSourceFilePath: resolvedApphostAssetPath,
                                                  appHostDestinationFilePath: appHostDestinationFilePath,
                                                  appBinaryFilePath: appBinaryFilePath,
-                                                 windowsGraphicalUserInterface: (windowsGraphicalUserInterfaceBit == WindowsGUISubsystem),
+                                                 windowsGraphicalUserInterface: WindowsGraphicalUserInterface,
                                                  assemblyToCopyResorcesFrom: IntermediateAssembly);
                     }
                     else
                     {
                         // by passing null to assemblyToCopyResorcesFrom, it will skip coping resorces,
                         // which is only supported on Windows
-                        Log.LogWarning(Strings.AppHostCustomizationRequiresWindowsHostWarning);
+                        if (WindowsGraphicalUserInterface)
+                        {
+                            Log.LogWarning(Strings.AppHostCustomizationRequiresWindowsHostWarning);
+                        }
+
                         HostWriter.CreateAppHost(appHostSourceFilePath: resolvedApphostAssetPath,
                                                  appHostDestinationFilePath: appHostDestinationFilePath,
                                                  appBinaryFilePath: appBinaryFilePath,

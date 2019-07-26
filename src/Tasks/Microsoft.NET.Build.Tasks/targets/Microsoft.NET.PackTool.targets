@@ -96,7 +96,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="GenerateShimsAssets"
           BeforeTargets="CopyFilesToOutputDirectory"
-          DependsOnTargets="ResolvePackageAssets;_PackToolValidation;_GenerateShimInputCache;_ComputeExpectedEmbeddedApphostPaths"
+          DependsOnTargets="ResolvePackageAssets;_PackToolValidation;_GenerateShimInputCache;_ComputeExpectedEmbeddedApphostPaths;_GetUseWindowsGraphicalUserInterface"
           Condition="'$(PackAsTool)' == 'true' and $(PackAsToolShimRuntimeIdentifiers) != '' "
           Inputs="@(_GenerateShimsAssetsInput)"
           Outputs="$(_ShimCreatedSentinelFile)">
@@ -110,7 +110,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       TargetFrameworkMoniker="$(NuGetTargetMoniker)"
       ToolCommandName="$(ToolCommandName)"
-      ToolEntryPoint="$(ToolEntryPoint)">
+      ToolEntryPoint="$(ToolEntryPoint)"
+      WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)">
 
       <Output TaskParameter="EmbeddedApphostPaths" ItemName="_EmbeddedApphostPaths" />
     </GenerateShims>

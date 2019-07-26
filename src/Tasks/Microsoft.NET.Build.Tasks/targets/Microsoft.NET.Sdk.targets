@@ -345,17 +345,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
      -->
   <UsingTask TaskName="CreateAppHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
   <Target Name="_CreateAppHost"
           Inputs="@(IntermediateAssembly);$(AppHostSourcePath)"
           Outputs="$(AppHostIntermediatePath)"
-          DependsOnTargets="_GetAppHostPaths;CoreCompile"
+          DependsOnTargets="_GetUseWindowsGraphicalUserInterface;_GetAppHostPaths;CoreCompile"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and
                      '$(AppHostSourcePath)' != '' and
                      Exists('@(IntermediateAssembly)') and
                      Exists('$(AppHostSourcePath)')">
-    <PropertyGroup>
-      <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-    </PropertyGroup>
+
     <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)"
                    AppHostDestinationPath="$(AppHostIntermediatePath)"
                    AppBinaryName="$(AssemblyName)$(TargetExt)"
@@ -393,6 +392,20 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ClsidMap Include="$(IntermediateOutputPath)$(AssemblyName).clsidmap" />
     <RegFreeComManifest Include="$(IntermediateOutputPath)$(AssemblyName).X.manifest" />
   </ItemGroup>
+
+  <!--
+    ============================================================
+                                        _GetUseWindowsGraphicalUserInterface
+
+    Calcuate if WindowsGraphicalUserInterface is used
+    ============================================================
+     -->
+
+  <Target Name="_GetUseWindowsGraphicalUserInterface">
+    <PropertyGroup>
+      <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
+    </PropertyGroup>
+  </Target>
   
   <!--
       ============================================================
