@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    public static class ParallelAsync
+    public static class Extensions
     {
         public static Task ForEachAsync<T>(this IEnumerable<T> enumerable,
                                            Func<T, CancellationToken, Task> action,
@@ -18,5 +18,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
                 .WithCancellation(cancellationToken)
                 .Select(x => action(x, cancellationToken)));
+
+        public static bool Any(this SolutionChanges solutionChanges)
+            => solutionChanges.GetProjectChanges().Any(x => x.GetChangedDocuments().Any());
     }
 }

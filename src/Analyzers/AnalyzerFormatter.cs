@@ -59,6 +59,11 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     {
                         logger.LogTrace($"Applying fixes for {codefix.GetType().Name}");
                         solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
+                        var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
+                        if (changedSolution.GetChanges(solution).Any())
+                        {
+                            solution = changedSolution;
+                        }
                     }
                     else
                     {
