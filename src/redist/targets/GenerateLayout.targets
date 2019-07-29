@@ -2,6 +2,9 @@
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
     <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
+    <Templates30LayoutPath>$(BaseOutputPath)$(Configuration)\templates-3.0\</Templates30LayoutPath>
+    <Templates22LayoutPath>$(BaseOutputPath)$(Configuration)\templates-2.2\</Templates22LayoutPath>
+    <Templates21LayoutPath>$(BaseOutputPath)$(Configuration)\templates-2.1\</Templates21LayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
   
@@ -101,13 +104,6 @@
       <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
         <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
         <PackageVersion>$(AspNetTargetingPackVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg">
-        <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
-        <PackageVersion>$(WindowsDesktopTargetingPackVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
@@ -237,6 +233,13 @@
     </PropertyGroup>
     
     <ItemGroup Condition=" '$(IncludeWpfAndWinForms)' != 'false' ">
+      <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg">
+        <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
+        <PackageVersion>$(WindowsDesktopTargetingPackVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(MicrosoftWindowsDesktopPackageVersion)</BaseUrl>
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>

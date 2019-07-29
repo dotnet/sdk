@@ -129,12 +129,19 @@
             Outputs="$(SdkPKGInstallerFile)"
             DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs"
             Condition=" '$(OSName)' == 'osx' ">
+
+      <ItemGroup>
+        <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
+      </ItemGroup>
       
       <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
       <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetCoreSharedFxArchiveFileName)"
                                  DestinationDirectory="$(SdkInternalLayoutPath)" />
       <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetTargetingPackArchiveFileName)"
                                  DestinationDirectory="$(SdkInternalLayoutPath)" />
+
+      <Copy SourceFiles="@(TemplateFiles)"
+            DestinationFiles="@(TemplateFiles->'$(SdkInternalLayoutPath)/templates/%(RecursiveDir)%(Filename)%(Extension)')" />
 
       <ReplaceFileContents
         InputFiles="$(SdkPkgScriptTemplateFile)"

@@ -37,5 +37,6 @@
   <UsingTask TaskName="CopyBlobsToLatest" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GenerateChecksums" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(CoreSdkTaskDll)"/>
 
 </Project>

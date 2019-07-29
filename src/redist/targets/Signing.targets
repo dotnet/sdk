@@ -171,6 +171,37 @@
 
   </Target>
 
+  <Target Name="SignTemplatesMsis"
+      Condition="'$(SignCoreSdk)' == 'true'"
+      DependsOnTargets="SetSignProps">
+
+    <ItemGroup>
+      <TemplatesMsiFilesToSign Include="$(Templates30MSIInstallerFile)" />
+      <TemplatesMsiFilesToSign Include="$(Templates22MSIInstallerFile)" />
+      <TemplatesMsiFilesToSign Include="$(Templates21MSIInstallerFile)" />
+      
+      <TemplatesMsiFileSignInfo Include="@(TemplatesMsiFilesToSign->'%(Filename)%(Extension)')">
+        <CertificateName>$(InternalCertificateId)</CertificateName>
+      </TemplatesMsiFileSignInfo>
+      <DistinctTemplatesMsiFileSignInfo Include="@(TemplatesMsiFileSignInfo->Distinct())" />
+    </ItemGroup>
+
+    <Microsoft.DotNet.SignTool.SignToolTask
+        DryRun="$(_DryRun)"
+        TestSign="$(_TestSign)"
+        CertificatesSignInfo="$(CertificatesSignInfo)"
+        ItemsToSign="@(TemplatesMsiFilesToSign)"
+        StrongNameSignInfo="@(StrongNameSignInfo)"
+        FileSignInfo="@(DistinctTemplatesMsiFileSignInfo)"
+        FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        TempDir="$(ArtifactsTmpDir)"
+        LogDir="$(ArtifactsLogDir)"
+        MSBuildPath="$(_DesktopMSBuildPath)"
+        SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
+
+  </Target>
+
   <Target Name="SignSdkBundle"
       Condition="'$(SignCoreSdk)' == 'true'"
       DependsOnTargets="SetSignProps">
