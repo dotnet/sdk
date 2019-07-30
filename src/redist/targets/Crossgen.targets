@@ -140,7 +140,7 @@
 
     <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
     <Move SourceFiles="@(PdbsToMove)"
-          DestinationFiles="@(PdbsToMove->'$(ArtifactsShippingSymbolsDir)/sdk/$(SdkVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(SdkVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="ChmodLayout"
