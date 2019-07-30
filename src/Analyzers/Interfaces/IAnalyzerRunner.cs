@@ -17,5 +17,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableArray<string> formattableDocumentPaths,
             ILogger logger,
             CancellationToken cancellationToken);
+
+        Task RunCodeAnalysisAsync(
+            CodeAnalysisResult result,
+            ImmutableArray<DiagnosticAnalyzer> analyzers,
+            Project project,
+            ImmutableArray<string> formattableDocumentPaths,
+            ILogger logger,
+            CancellationToken cancellationToken);
     }
 }

@@ -50,6 +50,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         private class DiagnosticProvider : FixAllContext.DiagnosticProvider
         {
+            private static readonly Task<IEnumerable<Diagnostic>> EmptyDignosticResult = Task.FromResult(Enumerable.Empty<Diagnostic>());
             private readonly IReadOnlyDictionary<Project, ImmutableArray<Diagnostic>> _diagnosticsByProject;
 
             internal DiagnosticProvider(CodeAnalysisResult analysisResult)
@@ -59,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             public override Task<IEnumerable<Diagnostic>> GetAllDiagnosticsAsync(Project project, CancellationToken cancellationToken)
             {
-                return Task.FromResult<IEnumerable<Diagnostic>>(_diagnosticsByProject[project]);
+                return GetProjectDiagnosticsAsync(project, cancellationToken);
             }
 
             public override Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(Document document, CancellationToken cancellationToken)
@@ -69,7 +70,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             public override Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)
             {
-                return Task.FromResult<IEnumerable<Diagnostic>>(_diagnosticsByProject[project]);
+                return _diagnosticsByProject.ContainsKey(project)
+                    ? Task.FromResult<IEnumerable<Diagnostic>>(_diagnosticsByProject[project])
+                    : EmptyDignosticResult;
             }
         }
     }

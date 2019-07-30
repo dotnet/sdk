@@ -44,18 +44,32 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 .OfType<string>().ToImmutableArray();
 
             var pairs = _finder.GetAnalyzersAndFixers();
-            foreach (var (analyzer, codefix) in pairs)
+
+            if (!options.SaveFormattedFiles)
             {
+                // no need to run codefixes as we won't persist the changes
+                var analyzers = pairs.Select(x => x.Analyzer).ToImmutableArray();
                 var result = new CodeAnalysisResult();
                 await solution.Projects.ForEachAsync(async (project, token) =>
                 {
-                    await _runner.RunCodeAnalysisAsync(result, analyzer, project, paths, logger, token);
+                    await _runner.RunCodeAnalysisAsync(result, analyzers, project, paths, logger, token);
                 }, cancellationToken);
 
-                var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Length > 0);
-                if (hasDiagnostics)
+                LogDiagnosticLocations(result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger);
+            }
+            else
+            {
+                // we need to run each codefix iteratively so ensure that all diagnostics are found and fixed
+                foreach (var (analyzer, codefix) in pairs)
                 {
-                    if (options.SaveFormattedFiles)
+                    var result = new CodeAnalysisResult();
+                    await solution.Projects.ForEachAsync(async (project, token) =>
+                    {
+                        await _runner.RunCodeAnalysisAsync(result, analyzer, project, paths, logger, token);
+                    }, cancellationToken);
+
+                    var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Length > 0);
+                    if (hasDiagnostics && codefix is object)
                     {
                         logger.LogTrace($"Applying fixes for {codefix.GetType().Name}");
                         solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
@@ -64,10 +78,6 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         {
                             solution = changedSolution;
                         }
-                    }
-                    else
-                    {
-                        LogDiagnosticLocations(result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger);
                     }
                 }
             }
@@ -84,7 +94,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             foreach (var diagnostic in diagnostics)
             {
                 var message = diagnostic.GetMessage();
-                var filePath = diagnostic.Location.SourceTree.FilePath;
+                var filePath = diagnostic.Location.SourceTree?.FilePath;
 
                 var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
                 var changePosition = mappedLineSpan.StartLinePosition;
