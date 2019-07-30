@@ -36,9 +36,9 @@
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
       <SdkMSICabFile>$(ArtifactsShippingPackagesDir)d$(Architecture)-1.cab</SdkMSICabFile>
-      <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates30Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
-      <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates22Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
-      <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameTemplates)-$(BundledTemplates21Version)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
+      <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
+      <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-22templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
+      <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-21templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
       <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
       <SdkBundleInstallerOutputGuidString>$(ProductBandCombinedHostHostFxrFrameworkSdkName)</SdkBundleInstallerOutputGuidString>
 
@@ -149,7 +149,7 @@
                       '@(TemplatesMsiComponent->'%(BrandName)')' ^
                       '@(TemplatesMsiComponent->'%(MsiVersion)')' ^
                       '@(TemplatesMsiComponent->'%(MsiVersion)')' ^
-                      '@(TemplatesMsiComponent->'%(Version)')' ^
+                      '$(FullNugetVersion)' ^
                       '@(TemplatesMsiComponent->'%(UpgradeCode)')' ^
                       '$(Architecture)' ^
                       -InformationAction Continue" />
@@ -166,7 +166,6 @@
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
         <BrandName>$(BundledTemplates30BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates30MsiVersion)</MsiVersion>
-        <Version>$(BundledTemplates30Version)</Version>
         <UpgradeCode>$(Templates30InstallerUpgradeCode)</UpgradeCode>
       </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore22TemplatesMsi">
@@ -174,7 +173,6 @@
         <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
         <BrandName>$(BundledTemplates22BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates22MsiVersion)</MsiVersion>
-        <Version>$(BundledTemplates22Version)</Version>
         <UpgradeCode>$(Templates22InstallerUpgradeCode)</UpgradeCode>
       </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore21TemplatesMsi">
@@ -182,7 +180,6 @@
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
         <BrandName>$(BundledTemplates21BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates21MsiVersion)</MsiVersion>
-        <Version>$(BundledTemplates21Version)</Version>
         <UpgradeCode>$(Templates21InstallerUpgradeCode)</UpgradeCode>
       </TemplatesMsiComponent>
     </ItemGroup>
@@ -256,7 +253,7 @@
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '%(TemplatesNupkgComponent.MSIInstallerFile)' ^
-                      '@(TemplatesNupkgComponent->'%(Version)')' ^
+                      '$(FullNugetVersion)' ^
                       '$(TemplatesInstallerNuspecFile)' ^
                       '@(TemplatesNupkgComponent->'%(NupkgFile)')' ^
                       '$(Architecture)' ^
@@ -271,20 +268,17 @@
     <ItemGroup>
       <TemplatesNupkgComponent Include="NetCore30TemplatesNupkg">
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates30MajorMinorVersion).$(BundledTemplates30Version).nupkg</NupkgFile>
-        <Version>$(BundledTemplates30Version)</Version>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates30MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
         <MajorMinorVersion>$(BundledTemplates30MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore22TemplatesNupkg">
         <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates22MajorMinorVersion).$(BundledTemplates22Version).nupkg</NupkgFile>
-        <Version>$(BundledTemplates22Version)</Version>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates22MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
         <MajorMinorVersion>$(BundledTemplates22MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore21TemplatesNupkg">
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates21MajorMinorVersion).$(BundledTemplates21Version).nupkg</NupkgFile>
-        <Version>$(BundledTemplates21Version)</Version>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates21MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
         <MajorMinorVersion>$(BundledTemplates21MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
     </ItemGroup>
