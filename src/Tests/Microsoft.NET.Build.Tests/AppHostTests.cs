@@ -268,7 +268,12 @@ namespace Microsoft.NET.Build.Tests
                     .And
                     .HaveStdOutContaining("System.IO.IOException");
 
-                Regex.Matches(result.StdOut, "NETSDK1113", RegexOptions.None).Count.Should().Be(2);
+                // On the full framework MSBuild, the summary repeats the warnings
+                int expectedCount =
+                    TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild ?
+                    4 : 2;
+
+                Regex.Matches(result.StdOut, "NETSDK1113", RegexOptions.None).Count.Should().Be(expectedCount);
             }
         }
 
