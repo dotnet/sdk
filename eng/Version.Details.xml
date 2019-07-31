@@ -11,9 +11,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>a8e982d3bac01d8f4f91a4c57191147570079448</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.HostModel" Version="5.0.0-alpha1.19379.19">
+    <Dependency Name="Microsoft.NET.HostModel" Version="5.0.0-alpha1.19380.13">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>2128ad006b493c4fa35dacd7d5b7bca65630413d</Sha>
+      <Sha>6862502118e8989cae198d3e27f99616be3498db</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
