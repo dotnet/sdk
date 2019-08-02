@@ -14,12 +14,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         private readonly static string s_executingPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         private readonly string _featuresCSharpPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.CSharp.Features.dll");
-        private readonly string _featuresVisualBasicPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.CSharp.VisualBasic.dll");
+        private readonly string _featuresVisualBasicPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.VisualBasic.Features.dll");
 
         public ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> GetAnalyzersAndFixers()
         {
             var analyzers = FindAllAnalyzers();
 
+            // TODO: Match CodeFixes to the analyzers that produce the diagnostic ids they fix.
             return analyzers.Select(analyzer => (analyzer, (CodeFixProvider?)null)).ToImmutableArray();
         }
 
@@ -37,6 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         private ImmutableArray<CodeFixProvider> FindAllCodeFixesAsync()
         {
+            // TODO: Discover CodeFixes
             return ImmutableArray<CodeFixProvider>.Empty;
         }
 

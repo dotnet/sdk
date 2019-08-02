@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             public override bool TryGetExport(CompositionContract contract, out object export)
             {
                 var importMany = contract.MetadataConstraints.Contains(new KeyValuePair<string, object>("IsImportMany", true));
-                var (contractType, metadataType) = GetContractType(contract.ContractType, importMany);
+                var (contractType, metadataType, isArray) = GetContractType(contract.ContractType, importMany);
 
                 if (metadataType != null)
                 {
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                     var parameterizedMethod = methodInfo.MakeGenericMethod(contractType, metadataType);
                     export = parameterizedMethod.Invoke(_exportProvider, new[] { contract.ContractName });
                 }
-                else
+                else if (!isArray)
                 {
                     var methodInfo = (from method in _exportProvider.GetType().GetTypeInfo().GetMethods()
                                       where method.Name == nameof(ExportProvider.GetExports)
@@ -51,12 +51,27 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                     var parameterizedMethod = methodInfo.MakeGenericMethod(contractType);
                     export = parameterizedMethod.Invoke(_exportProvider, new[] { contract.ContractName });
                 }
+                else
+                {
+                    var methodInfo = (from method in _exportProvider.GetType().GetTypeInfo().GetMethods()
+                                      where method.Name == nameof(ExportProvider.GetExportedValues)
+                                      where method.IsGenericMethod && method.GetGenericArguments().Length == 1
+                                      where method.GetParameters().Length == 0
+                                      select method).Single();
+                    var parameterizedMethod = methodInfo.MakeGenericMethod(contractType);
+                    export = parameterizedMethod.Invoke(_exportProvider, null);
+                }
 
                 return true;
             }
 
-            private (Type exportType, Type metadataType) GetContractType(Type contractType, bool importMany)
+            private (Type exportType, Type metadataType, bool isArray) GetContractType(Type contractType, bool importMany)
             {
+                if (importMany && contractType.BaseType == typeof(Array))
+                {
+                    return (contractType.GetElementType(), null, true);
+                }
+
                 if (importMany && contractType.IsConstructedGenericType)
                 {
                     if (contractType.GetGenericTypeDefinition() == typeof(IList<>)
@@ -71,11 +86,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 {
                     if (contractType.GetGenericTypeDefinition() == typeof(Lazy<>))
                     {
-                        return (contractType.GenericTypeArguments[0], null);
+                        return (contractType.GenericTypeArguments[0], null, false);
                     }
                     else if (contractType.GetGenericTypeDefinition() == typeof(Lazy<,>))
                     {
-                        return (contractType.GenericTypeArguments[0], contractType.GenericTypeArguments[1]);
+                        return (contractType.GenericTypeArguments[0], contractType.GenericTypeArguments[1], false);
                     }
                     else
                     {

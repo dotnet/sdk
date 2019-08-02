@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 
 using NonBlocking;
 
@@ -13,23 +11,18 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         private readonly ConcurrentDictionary<Project, List<Diagnostic>> _dictionary
             = new ConcurrentDictionary<Project, List<Diagnostic>>();
 
-        internal void AddDiagnostic(Project project, IEnumerable<Diagnostic> diagnostics)
+        internal void AddDiagnostic(Project project, Diagnostic diagnostic)
         {
             _ = _dictionary.AddOrUpdate(project,
-                addValueFactory: (key) => diagnostics.ToList(),
+                addValueFactory: (key) => new List<Diagnostic>() { diagnostic },
                 updateValueFactory: (key, list) =>
                 {
-                    list.AddRange(diagnostics);
+                    list.Add(diagnostic);
                     return list;
                 });
         }
 
-        public IReadOnlyDictionary<Project, ImmutableArray<Diagnostic>> Diagnostics
-            => new Dictionary<Project, ImmutableArray<Diagnostic>>(
-                _dictionary.Select(
-                    x => KeyValuePair.Create(
-                        x.Key,
-                        x.Value.ToImmutableArray())));
-
+        public IReadOnlyDictionary<Project, List<Diagnostic>> Diagnostics
+            => _dictionary;
     }
 }

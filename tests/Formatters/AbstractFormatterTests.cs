@@ -69,15 +69,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected AbstractFormatterTest()
         {
-            TestState = new SolutionState(DefaultFolderPath + DefaultFilePathPrefix, DefaultFileExt);
+            TestState = new SolutionState(DefaultFilePathPrefix, DefaultFileExt);
         }
 
         /// <summary>
         /// Gets the language name used for the test.
         /// </summary>
-        /// <value>
-        /// The language name used for the test.
-        /// </value>
         public abstract string Language { get; }
 
         private static ILogger Logger => new TestLogger();
@@ -238,7 +235,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             {
                 (var newFileName, var source) = sources[i];
                 var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
-                solution = solution.AddDocument(documentId, newFileName, source, filePath: newFileName);
+                solution = solution.AddDocument(documentId, newFileName, source, filePath: Path.Combine(DefaultTestProjectPath, newFileName));
             }
 
             for (var i = 0; i < additionalFiles.Length; i++)

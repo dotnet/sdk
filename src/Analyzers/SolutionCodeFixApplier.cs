@@ -51,7 +51,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         private class DiagnosticProvider : FixAllContext.DiagnosticProvider
         {
             private static readonly Task<IEnumerable<Diagnostic>> EmptyDignosticResult = Task.FromResult(Enumerable.Empty<Diagnostic>());
-            private readonly IReadOnlyDictionary<Project, ImmutableArray<Diagnostic>> _diagnosticsByProject;
+            private readonly IReadOnlyDictionary<Project, List<Diagnostic>> _diagnosticsByProject;
 
             internal DiagnosticProvider(CodeAnalysisResult analysisResult)
             {
