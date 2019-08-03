@@ -16,7 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     Common targets require that $(TargetFrameworkIdentifier) and $(TargetFrameworkVersion) are set by static evaluation
     before they are imported. In common cases (currently netstandard, netcoreapp, or net), we infer them from the short
-    names given via TargetFramework to allow for terseness and lack of duplication in project files./fne
+    names given via TargetFramework to allow for terseness and lack of duplication in project files.
 
     For other cases, the user must supply them manually.
 
