@@ -295,6 +295,6 @@ Option Name: `unsafe_DllImportSearchPath_bits`
 
 Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
 
-Default Value: Specific to each configurable rule ('258', which is AssemblyDirectory | UseDllDirectoryForDependencies, by default for most rules)
+Default Value: Specific to each configurable rule ('770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory, by default for most rules)
 
-Example: `dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 258`
+Example: `dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 770`
