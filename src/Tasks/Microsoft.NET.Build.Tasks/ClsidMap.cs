@@ -203,7 +203,6 @@ namespace Microsoft.NET.Build.Tasks
 
         private static string GetProgId(MetadataReader reader, TypeDefinition type)
         {
-            Debugger.Launch();
             foreach (CustomAttributeHandle attr in type.GetCustomAttributes())
             {
                 CustomAttribute attribute = reader.GetCustomAttribute(attr);
