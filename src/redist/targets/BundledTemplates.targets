@@ -44,8 +44,8 @@
     <Bundled30Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates30PackageVersion)" />
     <Bundled30Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates30PackageVersion)" />
     <Bundled30Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
-    <Bundled30Templates Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
-    <Bundled30Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Web.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
+    <Bundled30Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
     <Bundled30Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates30PackageVersion)" />
   </ItemGroup>
   <ItemGroup>
