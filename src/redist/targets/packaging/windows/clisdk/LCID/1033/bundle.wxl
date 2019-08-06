@@ -59,8 +59,8 @@ This product collects usage data
     • More information and opt-out https://aka.ms/dotnet-cli-telemetry
 
 Resources
-    • Core Documentation https://aka.ms/dotnet-docs
-    • SDK Documentation https://aka.ms/dotnet-cli-docs
+    • .NET Core Documentation https://aka.ms/dotnet-docs
+    • SDK Documentation https://aka.ms/dotnet-sdk-docs
     • Release Notes https://aka.ms/netcore3releasenotes
     • Tutorials https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
