@@ -106,9 +106,9 @@ Examples:
 | Option Value | Summary |
 | --- | --- |
 |`dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation
-|`dotnet_code_quality.null_check_validation_methods = Validate1|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.null_check_validation_methods = Validate1\|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)\|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
  
 ### Excluded symbol names
 Option Name: `excluded_symbol_names`
@@ -129,9 +129,9 @@ Examples:
 | Option Value | Summary |
 | --- | --- |
 |`dotnet_code_quality.excluded_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation
-|`dotnet_code_quality.excluded_symbol_names = Validate1|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.excluded_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+|`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
 
 Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
 
@@ -152,9 +152,9 @@ Examples:
 | Option Value | Summary |
 | --- | --- |
 |`dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named 'MyType' and all of its derived types in the compilation
-|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
+|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
-|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
+|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
  
 ### Dataflow analysis
 
@@ -288,4 +288,13 @@ Option Values: integral values
 
 Default Value: Specific to each configurable rule ('100000' by default for most rules)
 
-Example: `dotnet_net_core.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
+Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
+
+#### Configure unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
+Option Name: `unsafe_DllImportSearchPath_bits`
+
+Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
+
+Default Value: Specific to each configurable rule ('770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory, by default for most rules)
+
+Example: `dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 770`
