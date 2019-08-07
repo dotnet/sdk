@@ -3,6 +3,8 @@ The dotnet-format global tool supports the following core set of EditorConfig pr
 - indent_style
 - indent_size
 - tab_width
+- end_of_line
+- insert_final_newline
 - trim_trailing_whitespace
 - root
 
