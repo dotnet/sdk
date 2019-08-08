@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             buildCommand
-                .Execute(@"/bl:d:\temp\vb.binlog")
+                .Execute()
                 .Should()
                 .Pass();
 
