@@ -74,6 +74,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <_NativeExecutableExtension Condition="'$(_NativeExecutableExtension)' == '' and ($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win')))">.exe</_NativeExecutableExtension>
     <_ComHostLibraryExtension Condition="'$(_ComHostLibraryExtension)' == '' and ($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win')))">.dll</_ComHostLibraryExtension>
+    <_IjwHostLibraryExtension Condition="'$(_IjwHostLibraryExtension)' == '' and ($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win')))">.dll</_IjwHostLibraryExtension>
 
     <_DotNetHostExecutableName>dotnet$(_NativeExecutableExtension)</_DotNetHostExecutableName>
     <_DotNetAppHostExecutableNameWithoutExtension>apphost</_DotNetAppHostExecutableNameWithoutExtension>
@@ -81,6 +82,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <_DotNetComHostLibraryNameWithoutExtension>comhost</_DotNetComHostLibraryNameWithoutExtension>
     <_DotNetComHostLibraryName>$(_DotNetComHostLibraryNameWithoutExtension)$(_ComHostLibraryExtension)</_DotNetComHostLibraryName>
+    <_DotNetIjwHostLibraryNameWithoutExtension>Ijwhost</_DotNetIjwHostLibraryNameWithoutExtension>
+    <_DotNetIjwHostLibraryName>$(_DotNetIjwHostLibraryNameWithoutExtension)$(_IjwHostLibraryExtension)</_DotNetIjwHostLibraryName>
     <_DotNetHostPolicyLibraryName>$(_NativeLibraryPrefix)hostpolicy$(_NativeLibraryExtension)</_DotNetHostPolicyLibraryName>
     <_DotNetHostFxrLibraryName>$(_NativeLibraryPrefix)hostfxr$(_NativeLibraryExtension)</_DotNetHostFxrLibraryName>
   </PropertyGroup>
@@ -345,6 +348,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(CompileDependsOn);
       _CreateAppHost;
       _CreateComHost;
+      _GetIjwHostPaths;
     </CompileDependsOn>
   </PropertyGroup>
 
@@ -493,6 +497,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(ComHostSourcePath)' == '' or !Exists('$(ComHostSourcePath)')"
              ResourceName="CannotFindComhost" />
   </Target>
+
+  <!--
+    ============================================================
+                                        _GetIjwHostPaths
+
+    Gets the path to the restored Ijwhost, and if the restored Ijwhost
+    was present, Computes the path for the destination Ijwhost.
+    ============================================================
+     -->
+  <Target Name="_GetIjwHostPaths"
+          DependsOnTargets="ResolvePackageAssets"
+          Condition="'$(UseIJWHost)' == 'true'">
+
+    <NETSdkError Condition="'$(IjwHostSourcePath)' == '' or !Exists('$(IjwHostSourcePath)')"
+             ResourceName="CannotFindIjwhost" />
+  </Target>
   
   <!--
     ============================================================
@@ -502,7 +522,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ComputeNETCoreBuildOutputFiles"
-          DependsOnTargets="_GetAppHostPaths;_GetComHostPaths"
+          DependsOnTargets="_GetAppHostPaths;_GetComHostPaths;_GetIjwHostPaths"
           BeforeTargets="AssignTargetPaths"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true'">
 
@@ -559,6 +579,14 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
 
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(IjwHostSourcePath)' != '' and '$(UseIJWHost)' == 'true'">
+      <None Include="$(IjwHostSourcePath)">
+        <Link>$(_DotNetIjwHostLibraryName)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
     </ItemGroup>
   </Target>
 

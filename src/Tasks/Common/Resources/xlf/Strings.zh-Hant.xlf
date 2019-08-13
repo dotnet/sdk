@@ -102,6 +102,11 @@
         <target state="translated">NETSDK1091: 找不到 .NET Core COM 主機。目標為 Windows 時，只有在 .NET Core 3.0 或更高的版本上才可使用 .NET Core COM 主機。</target>
         <note>{StrBegin="NETSDK1091: "}</note>
       </trans-unit>
+      <trans-unit id="CannotFindIjwhost">
+        <source>NETSDK1114: Unable to find a .NET Core IJW host. The .NET Core IJW host is only available on .NET Core 3.0 or higher when targeting Windows.</source>
+        <target state="new">NETSDK1114: Unable to find a .NET Core IJW host. The .NET Core IJW host is only available on .NET Core 3.0 or higher when targeting Windows.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotFindProjectInfo">
         <source>NETSDK1007: Cannot find project info for '{0}'. This can indicate a missing project reference.</source>
         <target state="translated">NETSDK1007: 找不到 '{0}' 的專案資訊。這可能表示遺漏專案參考。</target>

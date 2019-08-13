@@ -102,6 +102,11 @@
         <target state="translated">NETSDK1091: Es wurde kein .NET Core-COM-Host gefunden. Der .NET Core-COM-Host ist nur unter .NET Core 3.0 oder höher verfügbar, wenn Windows als Ziel verwendet wird.</target>
         <note>{StrBegin="NETSDK1091: "}</note>
       </trans-unit>
+      <trans-unit id="CannotFindIjwhost">
+        <source>NETSDK1114: Unable to find a .NET Core IJW host. The .NET Core IJW host is only available on .NET Core 3.0 or higher when targeting Windows.</source>
+        <target state="new">NETSDK1114: Unable to find a .NET Core IJW host. The .NET Core IJW host is only available on .NET Core 3.0 or higher when targeting Windows.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotFindProjectInfo">
         <source>NETSDK1007: Cannot find project info for '{0}'. This can indicate a missing project reference.</source>
         <target state="translated">NETSDK1007: Die Projektinformationen für "{0}" wurden nicht gefunden. Dies ist möglicherweise auf einen fehlenden Projektverweis zurückzuführen.</target>
