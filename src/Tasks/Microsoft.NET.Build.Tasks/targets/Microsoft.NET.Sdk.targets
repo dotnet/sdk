@@ -96,6 +96,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
+    <EmbeddedResourceUseDependentUponConvention Condition="'$(EmbeddedResourceUseDependentUponConvention)' == ''">true</EmbeddedResourceUseDependentUponConvention>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <CoreBuildDependsOn>
       _CheckForBuildWithNoBuild;
       $(CoreBuildDependsOn);
