@@ -507,7 +507,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
      -->
   <Target Name="_GetIjwHostPaths"
-          DependsOnTargets="ResolvePackageAssets"
+          DependsOnTargets="ResolvePackageAssets;ResolveFrameworkReferences"
           Condition="'$(UseIJWHost)' == 'true'">
 
     <NETSdkError Condition="'$(IjwHostSourcePath)' == '' or !Exists('$(IjwHostSourcePath)')"
