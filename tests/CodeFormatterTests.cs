@@ -83,6 +83,31 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 5);
         }
 
+
+        [Fact]
+        public async Task FilesFormattedInUnformattedProjectFolder()
+        {
+            // Since the code files are beneath the project folder, files are found and formatted.
+            await TestFormatWorkspaceAsync(
+                Path.GetDirectoryName(UnformattedProjectFilePath),
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 2,
+                expectedFileCount: 3);
+        }
+
+        [Fact]
+        public async Task NoFilesFormattedInUnformattedSolutionFolder()
+        {
+            // Since the code files are outside the solution folder, no files are found or formatted.
+            await TestFormatWorkspaceAsync(
+                Path.GetDirectoryName(UnformattedSolutionFilePath),
+                EmptyFilesToFormat,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 0);
+        }
+
         [Fact]
         public async Task FSharpProjectsDoNotCreateException()
         {
@@ -210,16 +235,28 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Empty(formatLocations);
         }
 
-        public async Task<string> TestFormatWorkspaceAsync(string solutionOrProjectPath, IEnumerable<string> files, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
+        public async Task<string> TestFormatWorkspaceAsync(string workspaceFilePath, IEnumerable<string> files, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
         {
-            var workspacePath = Path.GetFullPath(solutionOrProjectPath);
-            var isSolution = workspacePath.EndsWith(".sln");
+            var workspacePath = Path.GetFullPath(workspaceFilePath);
+
+            WorkspaceType workspaceType;
+            if (Directory.Exists(workspacePath))
+            {
+                workspaceType = WorkspaceType.Folder;
+            }
+            else
+            {
+                workspaceType = workspacePath.EndsWith(".sln")
+                    ? WorkspaceType.Solution
+                    : WorkspaceType.Project;
+            }
+
             var filesToFormat = files.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
 
             var logger = new TestLogger();
             var formatOptions = new FormatOptions(
                 workspacePath,
-                isSolution,
+                workspaceType,
                 LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,

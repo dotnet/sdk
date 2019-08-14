@@ -1,4 +1,6 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
+using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools
@@ -6,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Tools
     internal class FormatOptions
     {
         public string WorkspaceFilePath { get; }
-        public bool IsSolution { get; }
+        public WorkspaceType WorkspaceType { get; }
         public LogLevel LogLevel { get; }
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
@@ -14,14 +16,14 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public FormatOptions(
             string workspaceFilePath,
-            bool isSolution,
+            WorkspaceType workspaceType,
             LogLevel logLevel,
             bool saveFormattedFiles,
             bool changesAreErrors,
             ImmutableHashSet<string> filesToFormat)
         {
             WorkspaceFilePath = workspaceFilePath;
-            IsSolution = isSolution;
+            WorkspaceType = workspaceType;
             LogLevel = logLevel;
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
@@ -30,14 +32,14 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public void Deconstruct(
             out string workspaceFilePath,
-            out bool isSolution,
+            out WorkspaceType workspaceType,
             out LogLevel logLevel,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
             out ImmutableHashSet<string> filesToFormat)
         {
             workspaceFilePath = WorkspaceFilePath;
-            isSolution = IsSolution;
+            workspaceType = WorkspaceType;
             logLevel = LogLevel;
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;

@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Formatters;
+using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.CodingConventions;
 
@@ -32,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var (workspaceFilePath, isSolution, logLevel, saveFormattedFiles, _, filesToFormat) = options;
+            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
@@ -42,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using (var workspace = await OpenWorkspaceAsync(
-                workspaceFilePath, isSolution, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
+                workspaceFilePath, workspaceType, filesToFormat, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
             {
                 if (workspace is null)
                 {
@@ -52,7 +53,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var loadWorkspaceMS = workspaceStopwatch.ElapsedMilliseconds;
                 logger.LogTrace(Resources.Complete_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
 
-                var projectPath = isSolution ? string.Empty : workspaceFilePath;
+                var projectPath = workspaceType == WorkspaceType.Project ? workspaceFilePath : string.Empty;
                 var solution = workspace.CurrentSolution;
 
                 logger.LogTrace(Resources.Determining_formattable_files);
@@ -101,8 +102,26 @@ namespace Microsoft.CodeAnalysis.Tools
         }
 
         private static async Task<Workspace> OpenWorkspaceAsync(
+            string workspacePath,
+            WorkspaceType workspaceType,
+            ImmutableHashSet<string> filesToFormat,
+            bool logWorkspaceWarnings,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            if (workspaceType == WorkspaceType.Folder)
+            {
+                var folderWorkspace = FolderWorkspace.Create();
+                await folderWorkspace.OpenFolder(workspacePath, filesToFormat, cancellationToken);
+                return folderWorkspace;
+            }
+
+            return await OpenMSBuildWorkspaceAsync(workspacePath, workspaceType, logWorkspaceWarnings, logger, cancellationToken);
+        }
+
+        private static async Task<Workspace> OpenMSBuildWorkspaceAsync(
             string solutionOrProjectPath,
-            bool isSolution,
+            WorkspaceType workspaceType,
             bool logWorkspaceWarnings,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -119,10 +138,8 @@ namespace Microsoft.CodeAnalysis.Tools
             };
 
             var workspace = MSBuildWorkspace.Create(properties);
-            workspace.WorkspaceFailed += LogWorkspaceWarnings;
 
-            var projectPath = string.Empty;
-            if (isSolution)
+            if (workspaceType == WorkspaceType.Solution)
             {
                 await workspace.OpenSolutionAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
@@ -131,7 +148,6 @@ namespace Microsoft.CodeAnalysis.Tools
                 try
                 {
                     await workspace.OpenProjectAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
-                    projectPath = solutionOrProjectPath;
                 }
                 catch (InvalidOperationException)
                 {
@@ -141,25 +157,33 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
             }
 
-            workspace.WorkspaceFailed -= LogWorkspaceWarnings;
+            LogWorkspaceDiagnostics(logger, logWorkspaceWarnings, workspace.Diagnostics);
 
             return workspace;
+        }
 
-            void LogWorkspaceWarnings(object sender, WorkspaceDiagnosticEventArgs args)
+        private static void LogWorkspaceDiagnostics(ILogger logger, bool logWorkspaceWarnings, ImmutableList<WorkspaceDiagnostic> diagnostics)
+        {
+            if (!logWorkspaceWarnings)
             {
-                if (args.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
-                {
-                    return;
-                }
-
-                if (!logWorkspaceWarnings)
+                if (diagnostics.Count > 0)
                 {
                     logger.LogWarning(Resources.Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings);
-                    ((MSBuildWorkspace)sender).WorkspaceFailed -= LogWorkspaceWarnings;
-                    return;
                 }
 
-                logger.LogWarning(args.Diagnostic.Message);
+                return;
+            }
+
+            foreach (var diagnostic in diagnostics)
+            {
+                if (diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
+                {
+                    logger.LogError(diagnostic.Message);
+                }
+                else
+                {
+                    logger.LogWarning(diagnostic.Message);
+                }
             }
         }
 
@@ -212,8 +236,8 @@ namespace Microsoft.CodeAnalysis.Tools
                 fileCount += project.DocumentIds.Count;
 
                 // Get project documents and options with .editorconfig settings applied.
-                var getProjectDocuments = project.DocumentIds.Select(documentId => Task.Run(async () => await GetDocumentAndOptions(
-                    project, documentId, filesToFormat, codingConventionsManager, optionsApplier, cancellationToken).ConfigureAwait(false), cancellationToken));
+                var getProjectDocuments = project.DocumentIds.Select(documentId => GetDocumentAndOptions(
+                    project, documentId, filesToFormat, codingConventionsManager, optionsApplier, cancellationToken));
                 getDocumentsAndOptions.AddRange(getProjectDocuments);
             }
 
@@ -248,7 +272,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return (fileCount, formattableFiles.ToImmutableArray());
         }
 
-        private static async Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)> GetDocumentAndOptions(
+        private static async    Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)> GetDocumentAndOptions(
             Project project,
             DocumentId documentId,
             ImmutableHashSet<string> filesToFormat,

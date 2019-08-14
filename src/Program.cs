@@ -30,6 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 .RegisterWithDotnetSuggest()
                 .UseParseErrorReporting()
                 .UseExceptionHandler()
+                .AddOption(new Option(new[] { "-f", "--folder" }, Resources.The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option, new Argument<string>(() => null)))
                 .AddOption(new Option(new[] { "-w", "--workspace" }, Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one, new Argument<string>(() => null)))
                 .AddOption(new Option(new[] { "-v", "--verbosity" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic, new Argument<string>() { Arity = ArgumentArity.ExactlyOne }.FromAmong(_verbosityLevels)))
                 .AddOption(new Option(new[] { "--dry-run" }, Resources.Format_files_but_do_not_save_changes_to_disk, new Argument<bool>()))
@@ -41,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return await parser.InvokeAsync(args).ConfigureAwait(false);
         }
 
-        public static async Task<int> Run(string workspace, string verbosity, bool dryRun, bool check, string files, IConsole console = null)
+        public static async Task<int> Run(string folder, string workspace, string verbosity, bool dryRun, bool check, string files, IConsole console = null)
         {
             // Setup logging.
             var serviceCollection = new ServiceCollection();
@@ -65,16 +66,41 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 currentDirectory = Environment.CurrentDirectory;
 
-                var workingDirectory = Directory.GetCurrentDirectory();
-                var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(workingDirectory, workspace);
+                string workspaceDirectory;
+                string workspacePath;
+                WorkspaceType workspaceType;
 
-                // To ensure we get the version of MSBuild packaged with the dotnet SDK used by the
-                // workspace, use its directory as our working directory which will take into account
-                // a global.json if present.
-                var workspaceDirectory = Path.GetDirectoryName(workspacePath);
-                Environment.CurrentDirectory = workingDirectory;
+                if (!string.IsNullOrEmpty(folder) && !string.IsNullOrEmpty(workspace))
+                {
+                    logger.LogWarning(Resources.Cannot_specify_both_folder_and_workspace_options);
+                    return 1;
+                }
 
-                var filesToFormat = GetFilesToFormat(files);
+                if (!string.IsNullOrEmpty(folder))
+                {
+                    folder = Path.GetFullPath(folder, Environment.CurrentDirectory);
+                    workspacePath = folder;
+                    workspaceDirectory = workspacePath;
+                    workspaceType = WorkspaceType.Folder;
+                }
+                else
+                {
+                    var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, workspace);
+
+                    workspacePath = workspaceFilePath;
+                    workspaceType = isSolution
+                        ? WorkspaceType.Solution
+                        : WorkspaceType.Project;
+
+                    // To ensure we get the version of MSBuild packaged with the dotnet SDK used by the
+                    // workspace, use its directory as our working directory which will take into account
+                    // a global.json if present.
+                    workspaceDirectory = Path.GetDirectoryName(workspacePath);
+                }
+
+                Environment.CurrentDirectory = workspaceDirectory;
+
+                var filesToFormat = GetFilesToFormat(files, folder);
 
                 // Since we are running as a dotnet tool we should be able to find an instance of
                 // MSBuild in a .NET Core SDK.
@@ -90,7 +116,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 var formatOptions = new FormatOptions(
                     workspacePath,
-                    isSolution,
+                    workspaceType,
                     logLevel,
                     saveFormattedFiles: !dryRun,
                     changesAreErrors: check,
@@ -164,16 +190,26 @@ namespace Microsoft.CodeAnalysis.Tools
         /// <summary>
         /// Converts a comma-separated list of relative file paths to a hashmap of full file paths.
         /// </summary>
-        internal static ImmutableHashSet<string> GetFilesToFormat(string files)
+        internal static ImmutableHashSet<string> GetFilesToFormat(string files, string folder)
         {
             if (string.IsNullOrEmpty(files))
             {
                 return ImmutableHashSet.Create<string>();
             }
 
-            return files.Split(',')
-                .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
-                .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(folder))
+            {
+                return files.Split(',')
+                    .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
+                    .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                return files.Split(',')
+                    .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
+                    .Where(path => path.StartsWith(folder))
+                    .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+            }
         }
     }
 }

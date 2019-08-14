@@ -87,7 +87,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var document = project.Documents.Single();
             var formatOptions = new FormatOptions(
                 workspaceFilePath: project.FilePath,
-                isSolution: false,
+                workspaceType: WorkspaceType.Folder,
                 logLevel: LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
