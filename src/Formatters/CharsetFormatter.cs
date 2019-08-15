@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     return sourceText;
                 }
 
-                return SourceText.From(sourceText.ToString(), encoding);
+                return SourceText.From(sourceText.ToString(), encoding, sourceText.ChecksumAlgorithm);
             });
         }
 

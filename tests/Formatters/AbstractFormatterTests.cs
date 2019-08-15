@@ -110,7 +110,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="solution">A Solution containing a single Project containing a single Document.</param>
         /// <param name="editorConfig">The editorconfig to apply to the documents options set.</param>
         /// <returns>The document contained within along with option set and coding conventions.</returns>
-        protected async Task<ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)>> GetOnlyFileToFormatAsync(Solution solution, IReadOnlyDictionary<string, string> editorConfig)
+        protected async Task<ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)>> GetOnlyFileToFormatAsync(Solution solution, IReadOnlyDictionary<string, string> editorConfig)
         {
             var document = GetOnlyDocument(solution);
             var options = (OptionSet)await document.GetOptionsAsync();
@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             ICodingConventionsSnapshot codingConventions = new TestCodingConventionsSnapshot(editorConfig);
             options = OptionsApplier.ApplyConventions(options, codingConventions, Language);
 
-            return ImmutableArray.Create((document, options, codingConventions));
+            return ImmutableArray.Create((document.Id, options, codingConventions));
         }
 
         /// <summary>

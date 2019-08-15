@@ -165,7 +165,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static async Task<Solution> RunCodeFormattersAsync(
             Solution solution,
-            ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions options,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -180,7 +180,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return formattedSolution;
         }
 
-        internal static async Task<(int, ImmutableArray<(Document, OptionSet, ICodingConventionsSnapshot)>)> DetermineFormattableFiles(
+        internal static async Task<(int, ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)>)> DetermineFormattableFiles(
             Solution solution,
             string projectPath,
             ImmutableHashSet<string> filesToFormat,
@@ -221,7 +221,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var foundEditorConfig = documentsAndOptions.Any(documentAndOptions => documentAndOptions.Item4);
 
             var addedFilePaths = new HashSet<string>(documentsAndOptions.Length);
-            var formattableFiles = ImmutableArray.CreateBuilder<(Document, OptionSet, ICodingConventionsSnapshot)>(documentsAndOptions.Length);
+            var formattableFiles = ImmutableArray.CreateBuilder<(DocumentId, OptionSet, ICodingConventionsSnapshot)>(documentsAndOptions.Length);
             foreach (var (document, options, codingConventions, hasEditorConfig) in documentsAndOptions)
             {
                 if (document is null)
@@ -242,7 +242,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
 
                 addedFilePaths.Add(document.FilePath);
-                formattableFiles.Add((document, options, codingConventions));
+                formattableFiles.Add((document.Id, options, codingConventions));
             }
 
             return (fileCount, formattableFiles.ToImmutableArray());

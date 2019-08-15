@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Text;
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         public async Task TestCharsetNotSpecified_NoChange()
         {
             // This encoding is not supported by .editorconfig
-            var codeEncoding = Encoding.UTF32; 
+            var codeEncoding = Encoding.UTF32;
 
             var testCode = "class C { }";
 
