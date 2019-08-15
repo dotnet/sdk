@@ -47,25 +47,25 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;Не закрывать приложения. Потребуется перезагрузка.</String>
   <String Id="FilesInUseOkButton">&amp;ОК</String>
   <String Id="FilesInUseCancelButton">Отм&amp;ена</String>
-  <String Id="FirstTimeWelcomeMessage">Установка успешно выполнена.
+  <String Id="FirstTimeWelcomeMessage">Установка выполнена.
 
-Следующее было установлено в: "[DOTNETHOME]"
-    • Пакет SDK для .NET Core [DOTNETSDKVERSION]
-    • Среда выполнения .NET Core [DOTNETRUNTIMEVERSION]
-    • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
-    • Среда выполнения Windows Desktop для .NET Core [WINFORMSANDWPFVERSION]
+В "[DOTNETHOME]" установлены следующие компоненты.
+    • Пакет SDK для .NET Core [DOTNETSDKVERSION]
+    • Среда выполнения .NET Core [DOTNETRUNTIMEVERSION]
+    • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
+    • Среда выполнения .NET Core для Windows Desktop [WINFORMSANDWPFVERSION]
 
-Этот продукт собирает данные об использовании
-    • Дополнительные сведения и отказ https://aka.ms/dotnet-cli-telemetry
+Этот продукт собирает данные об использовании.
+    • Дополнительные сведения и отказ: https://aka.ms/dotnet-cli-telemetry
 
-Resources
-    • Документация по продукту Core https://aka.ms/dotnet-docs
-    • Документация по пакету SDK https://aka.ms/dotnet-cli-docs
-    • Заметки о выпуске https://aka.ms/netcore3releasenotes
-    • Руководства https://aka.ms/dotnet-tutorials</String>
+Ресурсы
+    • Документация по .NET Core: https://aka.ms/dotnet-docs
+    • Документация по SDK: https://aka.ms/dotnet-sdk-docs
+    • Заметки о выпуске: https://aka.ms/netcore3releasenotes
+    • Учебники: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">Пакет SDK для .NET Core</String>
   <String Id="WelcomeDescription">
-    .NET Core — это платформа разработки, которую можно использовать для создания приложений командной строки, микрослужб и современных веб-сайтов. Это кроссплатформенная система с открытым исходным кодом, которая поддерживается корпорацией Майкрософт. Надеемся, что она вам понравится!</String>
+    .NET Core — это кроссплатформенное решение с открытым кодом, поддерживаемое корпорацией Майкрософт. Создавайте с его помощью приложения на C#, F# и Visual Basic. Надеемся, оно вам понравится!</String>
   <String Id="LearnMoreTitle">Дополнительные сведения о .NET Core</String>
   <String Id="ResourcesHeader">Ресурсы</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Документация по продукту Core&lt;/A&gt;</String>

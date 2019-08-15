@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
   <String Id="FirstTimeWelcomeMessage">La instalación se realizó correctamente.
 
-Se instaló lo siguiente en: '[DOTNETHOME]'
+Se instaló lo siguiente en: "[DOTNETHOME]"
     • SDK de .NET Core [DOTNETSDKVERSION]
     • .NET Core Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
@@ -59,13 +59,13 @@ Este producto recopila datos de uso
     • Para más información y declinar la participación, visite https://aka.ms/dotnet-cli-telemetry
 
 Recursos
-    • Documentación principal https://aka.ms/dotnet-docs
-    • Documentación del SDK https://aka.ms/dotnet-cli-docs
+    • Documentación de .NET Core https://aka.ms/dotnet-docs
+    • Documentación del SDK https://aka.ms/dotnet-sdk-docs
     • Notas de la versión https://aka.ms/netcore3releasenotes
     • Tutoriales https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK de .NET Core</String>
   <String Id="WelcomeDescription">
-    .NET Core es una plataforma de desarrollo que se puede usar para compilar aplicaciones de la línea de comandos, microservicios y sitios web modernos. Es de código abierto, multiplataforma y se admite en Microsoft. Esperamos que la disfrute.</String>
+    .NET Core es una multiplataforma de código abierto admitida por Microsoft. Puede usarla para compilar su próxima aplicación con C#, F# o VB. Esperamos que la disfrute.</String>
   <String Id="LearnMoreTitle">Más información sobre .NET Core</String>
   <String Id="ResourcesHeader">Recursos</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentación principal&lt;/A&gt;</String>

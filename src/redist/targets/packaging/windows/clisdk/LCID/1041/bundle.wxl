@@ -59,13 +59,13 @@
     • 詳細およびオプトアウト https://aka.ms/dotnet-cli-telemetry
 
 リソース
-    • コア ドキュメント https://aka.ms/dotnet-docs
-    • SDK ドキュメント https://aka.ms/dotnet-cli-docs
+    • .NET Core ドキュメント https://aka.ms/dotnet-docs
+    • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
     • リリース ノート https://aka.ms/netcore3releasenotes
     • チュートリアル https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
   <String Id="WelcomeDescription">
-    .Net Core は、コマンドライン アプリケーション、マイクロサービス、および最新の Web サイトをビルドするために使用できる開発プラットフォームです。オープンソースのクロス プラットフォームで、Microsoft によってサポートされています。お楽しみいただければ幸いです。</String>
+    .NET Core は、オープンソースまたはクロスプラットフォームで、Microsoft によってサポートされています。これを使用して、C#、F # または VB で次のアプリをビルドできます。お楽しみいただければ幸いです。</String>
   <String Id="LearnMoreTitle">.Net Core の詳細</String>
   <String Id="ResourcesHeader">リソース</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;コア ドキュメント&lt;/A&gt;</String>

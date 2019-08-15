@@ -59,13 +59,13 @@ Bu ürün, kullanım verilerini toplar
     • Daha fazla bilgi ve katılmamayı seçmek için bkz. https://aka.ms/dotnet-cli-telemetry
 
 Kaynaklar
-    • Core Belgeleri https://aka.ms/dotnet-docs
-    • SDK Belgeleri https://aka.ms/dotnet-cli-docs
+    • .NET Core Belgeleri https://aka.ms/dotnet-docs
+    • SDK Belgeleri https://aka.ms/dotnet-sdk-docs
     • Sürüm Notları https://aka.ms/netcore3releasenotes
     • Öğreticiler https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK'sı</String>
   <String Id="WelcomeDescription">
-    .NET Core, komut satırı uygulamaları, mikro hizmetler ve modern web siteleri oluşturmak için kullanabileceğiniz bir geliştirme platformudur. Açık kaynaktır, platformlar arası kullanılabilir ve Microsoft tarafından desteklenmektedir. Keyfini çıkarmanızı umuyoruz!</String>
+    .NET Core açık kaynaktır, platformlar arası çalışır ve Microsoft tarafından desteklenir. C#, F# veya VB kullanarak sonraki uygulamanızı geliştirmek için .NET Core'u kullanabilirsiniz. Keyifle kullanmanızı dileriz!</String>
   <String Id="LearnMoreTitle">.NET Core hakkında daha fazla bilgi edinin</String>
   <String Id="ResourcesHeader">Kaynaklar</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Çekirdek Belgeler&lt;/A&gt;</String>
