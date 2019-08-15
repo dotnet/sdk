@@ -24,6 +24,7 @@ namespace Microsoft.CodeAnalysis.Tools
             new WhitespaceFormatter(),
             new FinalNewlineFormatter(),
             new EndOfLineFormatter(),
+            new CharsetFormatter(),
         }.ToImmutableArray();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(

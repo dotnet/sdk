@@ -47,6 +47,11 @@
         <target state="new">Fix end of line marker.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Fix_file_encoding">
+        <source>Fix file encoding.</source>
+        <target state="new">Fix file encoding.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
         <target state="new">Fix whitespace formatting.</target>
