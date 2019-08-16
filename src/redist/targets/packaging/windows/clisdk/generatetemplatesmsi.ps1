@@ -10,6 +10,7 @@ param(
     [Parameter(Mandatory=$true)][string]$SDKBundleVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
+    [Parameter(Mandatory=$true)][string]$DependencyKeyPrefix,
     [Parameter(Mandatory=$true)][string]$Architecture
 )
 
@@ -59,6 +60,7 @@ function RunCandle
         -dSDKBundleVersion="$SDKBundleVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
         -dUpgradeCode="$UpgradeCode" `
+        -dDependencyKeyPrefix="$DependencyKeyPrefix" `
         -arch "$Architecture" `
         -ext WixDependencyExtension.dll `
         "$PSScriptRoot\templates.wxs" `

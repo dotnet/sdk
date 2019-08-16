@@ -2,7 +2,6 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 param(
-    [Parameter(Mandatory=$true)][string]$inputDir,
     [Parameter(Mandatory=$true)][string]$DotnetMSIOutput,
     [Parameter(Mandatory=$true)][string]$WixRoot,
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
@@ -11,46 +10,8 @@ param(
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
     [Parameter(Mandatory=$true)][string]$DependencyKeyPrefix,
-    [Parameter(Mandatory=$true)][string]$Architecture,
-    [Parameter(Mandatory=$true)][string]$StableFileIdForApphostTransform
+    [Parameter(Mandatory=$true)][string]$Architecture
 )
-
-$InstallFileswsx = ".\install-files.wxs"
-$InstallFilesWixobj = "install-files.wixobj"
-
-function RunHeat
-{
-    $result = $true
-    pushd "$WixRoot"
-
-    Write-Information "Running heat.."
-
-    # -t $StableFileIdForApphostTransform to avoid sign check baseline apphost.exe name changes every build. Sign check uses File Id in MSI as whitelist name.
-    # Template apphost.exe get a new "File Id" in msi different every time (since File Id is generated according to file
-    # path, and file path has version number)
-    # use XSLT tranform to match the file path contains "AppHostTemplate\apphost.exe" and give it the same ID all the time.
-
-    $heatOutput = .\heat.exe dir `"$inputDir`" -template fragment  `
-        -sreg -gg  `
-        -var var.DotnetSrc  `
-        -cg InstallFiles  `
-        -srd  `
-        -dr DOTNETHOME  `
-        -t $StableFileIdForApphostTransform  `
-        -out install-files.wxs
-
-    Write-Information "Heat output: $heatOutput"
-
-    if($LastExitCode -ne 0)
-    {
-        $result = $false
-        Write-Information "Heat failed with exit code $LastExitCode."
-    }
-
-    popd
-    Write-Information "RunHeat result: $result"
-    return $result
-}
 
 function RunCandle
 {
@@ -70,10 +31,8 @@ function RunCandle
         -dDependencyKeyPrefix="$DependencyKeyPrefix" `
         -arch "$Architecture" `
         -ext WixDependencyExtension.dll `
-        "$PSScriptRoot\dotnet.wxs" `
-        "$PSScriptRoot\provider.wxs" `
-        "$PSScriptRoot\registrykeys.wxs" `
-        $InstallFileswsx
+        "$PSScriptRoot\sdkplaceholder.wxs" `
+        "$PSScriptRoot\provider.wxs"
 
     Write-Information "Candle output: $candleOutput"
 
@@ -97,11 +56,8 @@ function RunLight
 
     $lightOutput = .\light.exe -nologo -ext WixUIExtension -ext WixDependencyExtension -ext WixUtilExtension `
         -cultures:en-us `
-        dotnet.wixobj `
+        sdkplaceholder.wixobj `
         provider.wixobj `
-        registrykeys.wixobj `
-        $InstallFilesWixobj `
-        -b "$inputDir" `
         -b "$PSScriptRoot" `
         -reusecab `
         -cc "$CabCache" `
@@ -119,21 +75,10 @@ function RunLight
     return $result
 }
 
-if(!(Test-Path $inputDir))
-{
-    throw "$inputDir not found"
-}
-
-Write-Information "Creating dotnet MSI at $DotnetMSIOutput"
+Write-Information "Creating SdkPlaceholder MSI at $DotnetMSIOutput"
 
 if([string]::IsNullOrEmpty($WixRoot))
 {
-    Exit -1
-}
-
-if(-Not (RunHeat))
-{
-    Write-Information "Heat failed"
     Exit -1
 }
 
@@ -151,10 +96,10 @@ if(-Not (RunLight))
 
 if(!(Test-Path $DotnetMSIOutput))
 {
-    throw "Unable to create the dotnet msi."
+    throw "Unable to create the SdkPlaceholder MSI."
     Exit -1
 }
 
-Write-Information "Successfully created dotnet MSI - $DotnetMSIOutput"
+Write-Information "Successfully created SdkPlaceholder MSI - $DotnetMSIOutput"
 
 exit $LastExitCode

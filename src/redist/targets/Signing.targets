@@ -254,4 +254,34 @@
         MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
 
   </Target>
+
+  <Target Name="SignSdkPlaceholderMsi"
+      Condition="'$(SignCoreSdk)' == 'true'"
+      DependsOnTargets="SetSignProps">
+
+    <ItemGroup>
+      <SdkPlaceholderMsiFilesToSign Include="$(SdkPlaceholderMSIInstallerFile)" />
+
+      <SdkPlaceholderMsiFileSignInfo Include="@(SdkPlaceholderMsiFilesToSign->'%(Filename)%(Extension)')">
+        <CertificateName>$(InternalCertificateId)</CertificateName>
+      </SdkPlaceholderMsiFileSignInfo>
+      <DistinctSdkPlaceholderMsiFileSignInfo Include="@(SdkPlaceholderMsiFileSignInfo->Distinct())" />
+    </ItemGroup>
+
+    <Microsoft.DotNet.SignTool.SignToolTask
+        DryRun="$(_DryRun)"
+        TestSign="$(_TestSign)"
+        CertificatesSignInfo="$(CertificatesSignInfo)"
+        ItemsToSign="@(SdkPlaceholderMsiFilesToSign)"
+        StrongNameSignInfo="@(StrongNameSignInfo)"
+        FileSignInfo="@(DistinctSdkPlaceholderMsiFileSignInfo)"
+        FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        TempDir="$(ArtifactsTmpDir)"
+        LogDir="$(ArtifactsLogDir)"
+        MSBuildPath="$(_DesktopMSBuildPath)"
+        SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
+
+  </Target>
+
 </Project>
