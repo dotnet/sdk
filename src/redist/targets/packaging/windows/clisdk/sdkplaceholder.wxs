@@ -19,6 +19,7 @@
     </Feature>
 
     <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPNOREPAIR" Value="1" />
     <Property Id="ProductFamily" Value="$(var.ProductFamily)" />
     <Property Id="ProductEdition" Value="$(var.ProductEdition)" />
     <Property Id="ProductCPU" Value="$(var.Platform)" />
