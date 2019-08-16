@@ -42,17 +42,19 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            // There is a bug in MSVC in CI's old VS image.
-            // Once https://github.com/dotnet/core-eng/issues/7409/ is done
-            // we should directly run the app to test.
-            var expectedIjwhost = Path.Combine(
-                //find the platform directory
+            var exe = Path.Combine( //find the platform directory
                 new DirectoryInfo(Path.Combine(testAsset.TestRoot, "CSConsoleApp", "bin")).GetDirectories().Single().FullName,
                 "Debug",
                 "netcoreapp3.0",
-                "Ijwhost.dll");
+                "CSConsoleApp.exe");
 
-            File.Exists(expectedIjwhost).Should().BeTrue();
+            var runCommand = new RunExeCommand(Log, exe);
+            runCommand
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello, World!");
         }
 
         private static void WorkaroundSDKBlockOnAssetsJsonExistence(TestAsset testAsset)

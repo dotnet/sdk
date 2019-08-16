@@ -568,4 +568,12 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1115: The current .NET SDK does not support .NET Framework below 5 without using .NET SDK Defaults. It is likely due to a mismatch between C++/CLI project CLRSupport property and TargetFramework.</value>
     <comment>{StrBegin="NETSDK1115: "}</comment>
   </data>
+  <data name="NoSupportCppExeDotnetCore" xml:space="preserve">
+    <value>NETSDK1116: Does not support build of C++/CLI Application project targeting dotnet core.</value>
+    <comment>{StrBegin="NETSDK1116: "}</comment>
+  </data>
+  <data name="NoSupportCppPublishDotnetCore" xml:space="preserve">
+    <value>NETSDK1117: Does not support publish of C++/CLI project targeting dotnet core.</value>
+    <comment>{StrBegin="NETSDK1117: "}</comment>
+  </data>
 </root>

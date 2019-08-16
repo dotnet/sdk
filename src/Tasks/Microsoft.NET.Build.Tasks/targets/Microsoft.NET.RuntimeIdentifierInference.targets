@@ -152,6 +152,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="_CheckForLanguageAndFeatureCombinationSupport"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;ProcessFrameworkReferences">
+
+    <NETSdkError Condition="'$(Language)' == 'C++' and $(OutputType) == 'Exe' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
+                 ResourceName="NoSupportCppExeDotnetCore" />
+
+  </Target>
+
   <Target Name="_CheckForNETCoreSdkIsPreview"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
           Condition=" '$(_NETCoreSdkIsPreview)' == 'true' AND '$(SuppressNETCoreSdkPreviewMessage)' != 'true' ">
