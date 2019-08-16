@@ -564,4 +564,12 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1114: Unable to find a .NET Core IJW host. The .NET Core IJW host is only available on .NET Core 3.0 or higher when targeting Windows.</value>
     <comment>{StrBegin="NETSDK1114: "}</comment>
   </data>
+  <data name="NoSupportCppExeDotnetCore" xml:space="preserve">
+    <value>NETSDK1115: Does not support build of C++/CLI Application project targeting dotnet core.</value>
+    <comment>{StrBegin="NETSDK1115: "}</comment>
+  </data>
+  <data name="NoSupportCppPublishDotnetCore" xml:space="preserve">
+    <value>NETSDK1116: Does not support publish of C++/CLI project targeting dotnet core.</value>
+    <comment>{StrBegin="NETSDK1116: "}</comment>
+  </data>
 </root>

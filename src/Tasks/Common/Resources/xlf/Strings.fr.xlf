@@ -411,6 +411,16 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1082: aucun pack d'exécution lié à {0} n'est disponible pour le RuntimeIdentifier spécifié '{1}'.</target>
         <note>{StrBegin="NETSDK1082: "}</note>
       </trans-unit>
+      <trans-unit id="NoSupportCppExeDotnetCore">
+        <source>NETSDK1115: Does not support build of C++/CLI Application project targeting dotnet core.</source>
+        <target state="new">NETSDK1115: Does not support build of C++/CLI Application project targeting dotnet core.</target>
+        <note>{StrBegin="NETSDK1115: "}</note>
+      </trans-unit>
+      <trans-unit id="NoSupportCppPublishDotnetCore">
+        <source>NETSDK1116: Does not support publish of C++/CLI project targeting dotnet core.</source>
+        <target state="new">NETSDK1116: Does not support publish of C++/CLI project targeting dotnet core.</target>
+        <note>{StrBegin="NETSDK1116: "}</note>
+      </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
         <source>NETSDK1053: Pack as tool does not support self contained.</source>
         <target state="translated">NETSDK1053: L'outil de compression ne prend pas en charge l'autonomie.</target>
