@@ -22,7 +22,7 @@ param(
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
-    [Parameter(Mandatory=$true)][string]$DependencyKeyPrefix,
+    [Parameter(Mandatory=$true)][string]$DependencyKeyName,
     [Parameter(Mandatory=$true)][string]$Architecture,
     [Parameter(Mandatory=$true)][string]$DotNetRuntimeVersion,
     [Parameter(Mandatory=$true)][string]$AspNetCoreVersion,
@@ -45,7 +45,7 @@ function RunCandleForBundle
         -dSDKProductBandVersion="$SDKProductBandVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
         -dCLISDKMsiSourcePath="$CLISDKMSIFile" `
-        -dDependencyKeyPrefix="$DependencyKeyPrefix" `
+        -dDependencyKeyName="$DependencyKeyName" `
         -dUpgradeCode="$UpgradeCode" `
         -dSharedFXMsiSourcePath="$SharedFxMSIFile" `
         -dHostFXRMsiSourcePath="$HostFxrMSIFile" `

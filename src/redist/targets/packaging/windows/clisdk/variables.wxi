@@ -30,6 +30,6 @@
   <?error Invalid Platform ($(var.Platform))?>
   <?endif?>
 
-  <?define DependencyKey   = "$(var.DependencyKeyPrefix)_$(var.SDKBundleVersion)_$(var.Platform)"?>
+  <?define DependencyKey   = "$(var.DependencyKeyName)_$(var.SDKBundleVersion)_$(var.Platform)"?>
   <?define DependencyKeyId = "$(var.DependencyKey)" ?>
 </Include>

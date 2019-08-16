@@ -39,12 +39,12 @@
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
       <SdkMSICabFile>$(ArtifactsShippingPackagesDir)d$(Architecture)-1.cab</SdkMSICabFile>
-      <SdkDependencyKeyPrefix>Dotnet_CLI</SdkDependencyKeyPrefix>
+      <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
       <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
       <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-22templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
       <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-21templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
       <SdkPlaceholderMSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
-      <SdkPlaceholderDependencyKeyPrefix>NetCore_SdkPlaceholder</SdkPlaceholderDependencyKeyPrefix>
+      <SdkPlaceholderDependencyKeyName>NetCore_SdkPlaceholder</SdkPlaceholderDependencyKeyName>
       <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
       <SdkBundleInstallerOutputGuidString>$(ProductBandCombinedHostHostFxrFrameworkSdkName)</SdkBundleInstallerOutputGuidString>
 
@@ -141,7 +141,7 @@
                       '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
                       '$(SdkInstallerUpgradeCode)' ^
-                      '$(SdkDependencyKeyPrefix)' ^
+                      '$(SdkDependencyKeyName)' ^
                       '$(Architecture)' ^
                       '$(SdkStableFileIdForApphostTransform)' ^
                       -InformationAction Continue" />
@@ -161,7 +161,7 @@
                       '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
                       '$(SdkPlaceholderInstallerUpgradeCode)' ^
-                      '$(SdkPlaceholderDependencyKeyPrefix)' ^
+                      '$(SdkPlaceholderDependencyKeyName)' ^
                       '$(Architecture)' ^
                       -InformationAction Continue" />
   </Target>
@@ -182,7 +182,7 @@
                       '@(TemplatesMsiComponent->'%(MsiVersion)')' ^
                       '$(FullNugetVersion)' ^
                       '@(TemplatesMsiComponent->'%(UpgradeCode)')' ^
-                      '@(TemplatesMsiComponent->'%(DependencyKeyPrefix)')' ^
+                      '@(TemplatesMsiComponent->'%(DependencyKeyName)')' ^
                       '$(Architecture)' ^
                       -InformationAction Continue" />
   </Target>
@@ -199,7 +199,7 @@
         <BrandName>$(BundledTemplates30BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates30MsiVersion)</MsiVersion>
         <UpgradeCode>$(Templates30InstallerUpgradeCode)</UpgradeCode>
-        <DependencyKeyPrefix>NetCore_Templates_3.0</DependencyKeyPrefix>
+        <DependencyKeyName>NetCore_Templates_3.0</DependencyKeyName>
       </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore22TemplatesMsi">
         <LayoutPath>$(Templates22LayoutPath.TrimEnd('\'))</LayoutPath>
@@ -207,7 +207,7 @@
         <BrandName>$(BundledTemplates22BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates22MsiVersion)</MsiVersion>
         <UpgradeCode>$(Templates22InstallerUpgradeCode)</UpgradeCode>
-        <DependencyKeyPrefix>NetCore_Templates_2.2</DependencyKeyPrefix>
+        <DependencyKeyName>NetCore_Templates_2.2</DependencyKeyName>
       </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore21TemplatesMsi">
         <LayoutPath>$(Templates21LayoutPath.TrimEnd('\'))</LayoutPath>
@@ -215,7 +215,7 @@
         <BrandName>$(BundledTemplates21BrandName)</BrandName>
         <MsiVersion>$(BundledTemplates21MsiVersion)</MsiVersion>
         <UpgradeCode>$(Templates21InstallerUpgradeCode)</UpgradeCode>
-        <DependencyKeyPrefix>NetCore_Templates_2.1</DependencyKeyPrefix>
+        <DependencyKeyName>NetCore_Templates_2.1</DependencyKeyName>
       </TemplatesMsiComponent>
     </ItemGroup>
   </Target>
@@ -251,7 +251,7 @@
                       '$(NugetVersion)' ^
                       '$(MicrosoftWindowsDesktopPackageVersion)' ^
                       '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
-                      '$(SdkDependencyKeyPrefix)' ^
+                      '$(SdkDependencyKeyName)' ^
                       '$(Architecture)' ^
                       '$(MicrosoftNETCoreAppPackageVersion)' ^
                       '$(AspNetCoreVersion)' ^
