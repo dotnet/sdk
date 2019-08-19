@@ -248,6 +248,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(RollForward)' != '' and '$(RollForward)' != 'Major' and '$(RollForward)' != 'LatestMajor' and '$(_IsRollForwardSupported)' != 'true'"
                  ResourceName="RollForwardRequiresVersion30"/>
 
+    <PropertyGroup>
+      <!-- TODO: Once ported to 3.1 branches, this should be changed to 3.1 - we only want the new property to be written for 3.1 and above. -->
+      <_WriteIncludedFrameworks Condition="'$(SelfContained)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0'">true</_WriteIncludedFrameworks>
+    </PropertyGroup>
+    
     <GenerateRuntimeConfigurationFiles AssetsFilePath="$(ProjectAssetsFile)"
                                        TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
                                        TargetFramework="$(TargetFramework)"
@@ -260,7 +265,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                        UserRuntimeConfig="$(UserRuntimeConfig)"
                                        HostConfigurationOptions="@(RuntimeHostConfigurationOption)"
                                        AdditionalProbingPaths="@(AdditionalProbingPath)"
-                                       IsSelfContained="$(SelfContained)">
+                                       IsSelfContained="$(SelfContained)"
+                                       WriteIncludedFrameworks="$(_WriteIncludedFrameworks)">
 
     </GenerateRuntimeConfigurationFiles>
 
