@@ -67,7 +67,7 @@ namespace Microsoft.NET.Build.Tests
                 Path.Combine(testAsset.TestRoot, testProject.Name));
 
             buildCommand
-                .Execute("-bl")
+                .Execute()
                 .Should()
                 .Pass();
 
