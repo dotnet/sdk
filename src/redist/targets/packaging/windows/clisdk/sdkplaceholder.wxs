@@ -8,7 +8,7 @@
       Installed OR ALLOWMSIINSTALL
     </Condition>
 
-    <Condition Message="$(var.ProductName) was installed with Visual Studio. If you wish to uninstall, use the Visual Studio Installer and select: &apos;Modify&apos;">
+    <Condition Message="$(var.ProductName) was installed with Visual Studio. If you wish to uninstall it, use the Visual Studio Installer and select &apos;Modify&apos;">
       NOT Installed OR ALLOWMSIUNINSTALL
     </Condition>
 
