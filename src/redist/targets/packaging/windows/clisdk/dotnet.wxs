@@ -23,6 +23,8 @@
     <Feature Id="Provider" Absent="disallow" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" Level="1" InstallDefault="local" Title="RefCounting" TypicalDefault="install">
       <ComponentRef Id="$(var.DependencyKeyId)" />
     </Feature>
+
+    <Property Id="ARPNOMODIFY" Value="1" />
     <Property Id="ProductFamily" Value="$(var.ProductFamily)" />
     <Property Id="ProductEdition" Value="$(var.ProductEdition)" />
     <Property Id="ProductCPU" Value="$(var.Platform)" />

@@ -2,7 +2,6 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 param(
-    [Parameter(Mandatory=$true)][string]$inputDir,
     [Parameter(Mandatory=$true)][string]$DotnetMSIOutput,
     [Parameter(Mandatory=$true)][string]$WixRoot,
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
@@ -13,37 +12,6 @@ param(
     [Parameter(Mandatory=$true)][string]$DependencyKeyName,
     [Parameter(Mandatory=$true)][string]$Architecture
 )
-
-$InstallFileswsx = ".\template-install-files.wxs"
-$InstallFilesWixobj = "template-install-files.wixobj"
-
-function RunHeat
-{
-    $result = $true
-    pushd "$WixRoot"
-
-    Write-Information "Running heat.."
-
-    $heatOutput = .\heat.exe dir `"$inputDir`" -template fragment  `
-        -sreg -gg  `
-        -var var.DotnetSrc  `
-        -cg InstallFiles  `
-        -srd  `
-        -dr DOTNETHOME  `
-        -out template-install-files.wxs
-
-    Write-Information "Heat output: $heatOutput"
-
-    if($LastExitCode -ne 0)
-    {
-        $result = $false
-        Write-Information "Heat failed with exit code $LastExitCode."
-    }
-
-    popd
-    Write-Information "RunHeat result: $result"
-    return $result
-}
 
 function RunCandle
 {
@@ -63,9 +31,8 @@ function RunCandle
         -dDependencyKeyName="$DependencyKeyName" `
         -arch "$Architecture" `
         -ext WixDependencyExtension.dll `
-        "$PSScriptRoot\templates.wxs" `
-        "$PSScriptRoot\provider.wxs" `
-        $InstallFileswsx
+        "$PSScriptRoot\sdkplaceholder.wxs" `
+        "$PSScriptRoot\provider.wxs"
 
     Write-Information "Candle output: $candleOutput"
 
@@ -89,10 +56,8 @@ function RunLight
 
     $lightOutput = .\light.exe -nologo -ext WixUIExtension -ext WixDependencyExtension -ext WixUtilExtension `
         -cultures:en-us `
-        templates.wixobj `
+        sdkplaceholder.wixobj `
         provider.wixobj `
-        $InstallFilesWixobj `
-        -b "$inputDir" `
         -b "$PSScriptRoot" `
         -reusecab `
         -cc "$CabCache" `
@@ -110,21 +75,10 @@ function RunLight
     return $result
 }
 
-if(!(Test-Path $inputDir))
-{
-    throw "$inputDir not found"
-}
-
-Write-Information "Creating templates MSI at $DotnetMSIOutput"
+Write-Information "Creating SdkPlaceholder MSI at $DotnetMSIOutput"
 
 if([string]::IsNullOrEmpty($WixRoot))
 {
-    Exit -1
-}
-
-if(-Not (RunHeat))
-{
-    Write-Information "Heat failed"
     Exit -1
 }
 
@@ -142,10 +96,10 @@ if(-Not (RunLight))
 
 if(!(Test-Path $DotnetMSIOutput))
 {
-    throw "Unable to create the templates MSI."
+    throw "Unable to create the SdkPlaceholder MSI."
     Exit -1
 }
 
-Write-Information "Successfully created templates MSI - $DotnetMSIOutput"
+Write-Information "Successfully created SdkPlaceholder MSI - $DotnetMSIOutput"
 
 exit $LastExitCode
