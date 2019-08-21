@@ -40,8 +40,9 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" ExcludeAssets="Runtime" />
+    <!-- These use reference packages that do not need to be picked up from ProdCon/source-build version flow -->
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.7.179" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.7.179" ExcludeAssets="Runtime" />
     <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" ExcludeAssets="All" NoWarn="NU1701" />
   </ItemGroup>
 
