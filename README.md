@@ -41,6 +41,7 @@ Usage:
   dotnet-format [options]
 
 Options:
+  -f, --folder       The folder to operate on. Cannot be used with the `--workspace` option.
   -w, --workspace    The solution or project file to operate on. If a file is not specified, the command will search
                      the current directory for one.
   -v, --verbosity    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
@@ -56,6 +57,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | Examples                                                 | Description                                                                                   |
 | -------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
 | dotnet **format**                                        | Formats the project or solution in the current directory.                                     |
+| dotnet **format** -f &lt;folder&gt;                      | Formats a particular folder and subfolders.
 | dotnet **format** -w &lt;workspace&gt;                   | Formats a specific project or solution.                                                       | 
 | dotnet **format** -v diag                                | Formats with very verbose logging.                                                            |
 | dotnet **format** --files Programs.cs,Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
