@@ -3,12 +3,13 @@
 Starting with version `2.6.3`, all the analyzer NuGet packages produced in this repo, including the FxCop Analyzers NuGet package, support _.editorconfig based analyzer configuration_. End users can configure the behavior of specific CA rule(s) OR all configurable CA rules by specifying supported key-value pair options in an `.editorconfig` file. You can read more about `.editorconfig` format [here](https://editorconfig.org/).
 
 ## .editorconfig format
-Analyzer configuration options from an .editorconfig file are parsed into _general_ and _specific_ configuration options. General configuration enables configuring the behavior of all CA rules for which the provided option is valid. Specific configuration enables configuring each CA rule ID or CA rules belonging to each rule category, such as 'Naming', 'Design', 'Performance', etc. Our options are _case-insensitive_. Below are the supported formats:
+Analyzer configuration options from an .editorconfig file are parsed into _general_ and _specific_ configuration options. General configuration enables configuring the behavior of all CA rules for which the provided option is valid. Specific configuration enables configuring each CA rule ID or CA rules belonging to each rule category, such as 'Naming', 'Design', 'Performance', etc. or CA rules with a specific custom tag, such as 'Dataflow'. Our options are _case-insensitive_. Below are the supported formats:
    1. General configuration option:
       1. `dotnet_code_quality.OptionName = OptionValue`
    2. Specific configuration option:
       1. `dotnet_code_quality.RuleId.OptionName = OptionValue`
       2. `dotnet_code_quality.RuleCategory.OptionName = OptionValue`
+      2. `dotnet_code_quality.RuleCustomTag.OptionName = OptionValue`
 
 For example, end users can configure the analyzed API surface for analyzers using the below `api_surface` option specification:
    1. General configuration option:
@@ -16,6 +17,7 @@ For example, end users can configure the analyzed API surface for analyzers usin
    2. Specific configuration option:
       1. `dotnet_code_quality.CA1040.api_surface = public`
       2. `dotnet_code_quality.Naming.api_surface = public`
+      3. `dotnet_code_quality.Dataflow.api_surface = public`
 
 ## Enabling .editorconfig based configuration for a project
 1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory. In future, we plan to support hierarchical directory based configuration with an .editorconfig file at the solution directory, repo root directory or even individual document directories.
@@ -104,14 +106,14 @@ Examples:
 | Option Value | Summary |
 | --- | --- |
 |`dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation
-|`dotnet_code_quality.null_check_validation_methods = Validate1|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.null_check_validation_methods = Validate1\|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)\|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
  
 ### Excluded symbol names
 Option Name: `excluded_symbol_names`
 
-Configurable Rules: [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters)
+Configurable Rules: [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), CA1508, [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2301](https://docs.microsoft.com/visualstudio/code-quality/ca2301-do-not-call-binaryformatter-deserialize-without-first-setting-binaryformatter-binder), [CA2302](https://docs.microsoft.com/visualstudio/code-quality/ca2302-ensure-binaryformatter-binder-is-set-before-calling-binaryformatter-deserialize), [CA2311](https://docs.microsoft.com/visualstudio/code-quality/ca2311-do-not-deserialize-without-first-setting-netdatacontractserializer-binder), [CA2312](https://docs.microsoft.com/visualstudio/code-quality/ca2312-ensure-netdatacontractserializer-binder-is-set-before-deserializing), [CA2321](https://docs.microsoft.com/visualstudio/code-quality/ca2321), [CA2322](https://docs.microsoft.com/visualstudio/code-quality/ca2322), CA2327, CA2328, CA2329, CA2330, [CA3001](https://docs.microsoft.com/visualstudio/code-quality/ca3001-review-code-for-sql-injection-vulnerabilities), [CA3002](https://docs.microsoft.com/visualstudio/code-quality/ca3002-review-code-for-xss-vulnerabilities), [CA3003](https://docs.microsoft.com/visualstudio/code-quality/ca3003-review-code-for-file-path-injection-vulnerabilities), [CA3004](https://docs.microsoft.com/visualstudio/code-quality/ca3004-review-code-for-information-disclosure-vulnerabilities), [CA3005](https://docs.microsoft.com/visualstudio/code-quality/ca3005-review-code-for-ldap-injection-vulnerabilities), [CA3006](https://docs.microsoft.com/visualstudio/code-quality/ca3006-review-code-for-process-command-injection-vulnerabilities), [CA3007](https://docs.microsoft.com/visualstudio/code-quality/ca3007-review-code-for-open-redirect-vulnerabilities), [CA3008](https://docs.microsoft.com/visualstudio/code-quality/ca3008-review-code-for-xpath-injection-vulnerabilities), [CA3009](https://docs.microsoft.com/visualstudio/code-quality/ca3009-review-code-for-xml-injection-vulnerabilities), [CA3010](https://docs.microsoft.com/visualstudio/code-quality/ca3010-review-code-for-xaml-injection-vulnerabilities), [CA3011](https://docs.microsoft.com/visualstudio/code-quality/ca3011-review-code-for-dll-injection-vulnerabilities), [CA3012](https://docs.microsoft.com/visualstudio/code-quality/ca3012-review-code-for-regex-injection-vulnerabilities), CA5361, CA5376, CA5377, CA5378, CA5380, CA5381, CA5382, CA5383, CA5384, CA5387, CA5388, CA5389, CA5390
 
 Option Values: Names of symbols (separated by '|') that are excluded for analysis.
 Allowed symbol name formats:
@@ -127,10 +129,12 @@ Examples:
 | Option Value | Summary |
 | --- | --- |
 |`dotnet_code_quality.excluded_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation
-|`dotnet_code_quality.excluded_symbol_names = Validate1|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.excluded_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
- 
+|`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+
+Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
+
 ### Excluded type names with derived types
 Option Name: `excluded_type_names_with_derived_types`
 
@@ -148,9 +152,9 @@ Examples:
 | Option Value | Summary |
 | --- | --- |
 |`dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named 'MyType' and all of its derived types in the compilation
-|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
+|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
-|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
+|`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
  
 ### Dataflow analysis
 
@@ -284,4 +288,13 @@ Option Values: integral values
 
 Default Value: Specific to each configurable rule ('100000' by default for most rules)
 
-Example: `dotnet_net_core.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
+Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
+
+#### Configure unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
+Option Name: `unsafe_DllImportSearchPath_bits`
+
+Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
+
+Default Value: Specific to each configurable rule ('770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory, by default for most rules)
+
+Example: `dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 770`
