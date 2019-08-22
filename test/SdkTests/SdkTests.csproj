@@ -224,6 +224,7 @@
       <TestArgs>$(TestArgs) -xml "$(ResultsXmlPath)"</TestArgs>
       <TestArgs>$(TestArgs) -html "$(ResultsHtmlPath)" $(TestRunnerAdditionalArguments)</TestArgs>
       <TestArgs>$(TestArgs) &gt; $(ResultsStdOutPath) 2&gt;&amp;1</TestArgs>
+      <TestArgs>$(TestArgs) -testList SdkIntegrationTests</TestArgs>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
