@@ -227,6 +227,12 @@
       <TestArgs>$(TestArgs) -testList SdkIntegrationTests</TestArgs>
     </PropertyGroup>
 
+
+    <PropertyGroup Condition="('$(OS)' == 'Windows_NT') And ('$(Architecture)' == 'x86')">
+      <!-- Add list of tests to skip on x86 -->
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipx86.xml"</TestArgs>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
       <ToolRunPrefix>$(ToolRunPrefix)set MSBuildSDKsPath= &amp;&amp; </ToolRunPrefix>
       <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_HOST_PATH= &amp;&amp; </ToolRunPrefix>

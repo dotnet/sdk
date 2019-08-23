@@ -45,6 +45,11 @@
   </TestList>
   
   <SkippedTests>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAHelloWorldProject.It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3574"
+            Reason="Test update needed (in PR)"/>
+
     <Method Name="Microsoft.NET.Build.Tests.GivenFrameworkReferences.RuntimeFrameworkVersionCanBeSpecifiedOnFrameworkReference"
             Skip="true"
             Issue="https://github.com/dotnet/sdk/pull/3221"
