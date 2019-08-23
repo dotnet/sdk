@@ -2,5 +2,7 @@
 
 ;; Localization assemblies for Cli.Utils, which is referenced only by tests
 Microsoft.DotNet.Cli.Utils.resources*.dll
+Microsoft.Net.Build.Extensions.Tasks.Resources*.dll
+Microsoft.Net.Build.Tasks.Resources*.dll
 kerneltracecontrol*.dll
 msdia140*.dll
