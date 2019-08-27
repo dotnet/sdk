@@ -19,35 +19,35 @@ jobs:
       format:
         _repo: "https://github.com/dotnet/format"
         _repoName: "dotnet/format"
-        _sha: "b6db94c361b1ecd0558fc7429335ec01133773ed"
+        _sha: "4ff73616469a2aaa5ff07d11b7f6951eca83d76e"
       roslyn:
         _repo: "https://github.com/dotnet/roslyn"
         _repoName: "dotnet/roslyn"
-        _sha: "665dc224dcfefb66dce215ca0204363172b611ad"
+        _sha: "1bd191ea896b19e3b06a152f815f3a998e87049a"
       cli:
         _repo: "https://github.com/dotnet/cli"
         _repoName: "dotnet/cli"
-        _sha: "8d0f2a593ec98ccc1ef2141452d7dccadc34ac40"
+        _sha: "45f1c5f7f3275ff483c804e7c90bf61731a83e97"
       project-system:
         _repo: "https://github.com/dotnet/project-system"
         _repoName: "dotnet/project-system"
-        _sha: "80580ad27c5544f00f4abb9db930e698ce305285"
+        _sha: "fc3b12e47adaad6e4813dc600acf190156fecc24"
       msbuild:
         _repo: "https://github.com/Microsoft/msbuild"
         _repoName: "Microsoft/msbuild"
-        _sha: "d54d2e0180b99b7773f0fef2cdb03168f134d9aa"
+        _sha: "e92633a735b0e23e2cbf818d02ba89dd7a426f89"
       Blazor:
         _repo: "https://github.com/aspnet/Blazor"
         _repoName: "aspnet/Blazor"
-        _sha: "3addb6169afcae1b5c6a64de4a7cd02bd270ffed"
+        _sha: "7eeab316fa122b69a9bd777c93dcc78bc6a68905"
       EntityFrameworkCore:
         _repo: "https://github.com/aspnet/EntityFrameworkCore"
         _repoName: "aspnet/EntityFrameworkCore"
-        _sha: "090f385ffe4f2cd1a3e6b794523bdf574862c298"
+        _sha: "94f5bdf081f9a774f5d7f01bfa279bac26dab303"
       EntityFramework6:
         _repo: "https://github.com/aspnet/EntityFramework6"
         _repoName: "aspnet/EntityFramework6"
-        _sha: "936befcd88a4b58be6f35038248cd5337aca4967"
+        _sha: "9099ad2f6e5936ecdf549f88394b5a59fa75c869"
   timeoutInMinutes: 20
   steps:
     - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp'

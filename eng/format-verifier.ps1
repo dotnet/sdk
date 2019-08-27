@@ -5,17 +5,7 @@ Param(
     [string]$testPath
 )
 
-function Clone-Repo([string]$repo, [string]$sha, [string]$repoPath) {
-    $currentLocation = Get-Location
-
-    git.exe clone $repo $repoPath
-
-    Set-Location $repoPath
-
-    git.exe checkout $sha
-
-    Set-Location $currentLocation
-}
+$currentLocation = Get-Location
 
 if (!(Test-Path $testPath)) {
     New-Item -ItemType Directory -Force -Path $testPath | Out-Null
@@ -27,19 +17,37 @@ try {
     $repoPath = Join-Path $testPath $folderName
 
     Write-Output "$(Get-Date) - Cloning $repoName."
-    Clone-Repo $repo $sha $repoPath
+    git.exe clone $repo $repoPath
+
+    Set-Location $repoPath
+
+    git.exe checkout $sha
 
     Write-Output "$(Get-Date) - Finding solutions."
-    $solutions = Get-ChildItem -Path $repoPath -Filter *.sln -Recurse -Depth 2 | Select-Object -ExpandProperty FullName | Where-Object { $_ -match '.sln$' }
+    $solutions = Get-ChildItem -Filter *.sln -Recurse -Depth 2 | Select-Object -ExpandProperty FullName | Where-Object { $_ -match '.sln$' }
+
+    # We invoke build.ps1 ourselves because running `restore.cmd` invokes the build.ps1
+    # in a child process which means added .NET Core SDKs aren't visible to this process.
+    if (Test-Path '.\eng\Build.ps1') {
+        Write-Output "$(Get-Date) - Running Build.ps1 -restore"
+        .\eng\Build.ps1 -restore
+    }
+    elseif (Test-Path '.\eng\common\Build.ps1') {
+        Write-Output "$(Get-Date) - Running Build.ps1 -restore"
+        .\eng\common\Build.ps1 -restore
+    }
 
     foreach ($solution in $solutions) {
+        $solutionPath = Split-Path $solution
         $solutionFile = Split-Path $solution -leaf
+
+        Set-Location $solutionPath
 
         Write-Output "$(Get-Date) - $solutionFile - Restoring"
         dotnet.exe restore $solution
 
         Write-Output "$(Get-Date) - $solutionFile - Formatting"
-        $output = dotnet.exe run -p .\src\dotnet-format.csproj -c Release -- -w $solution -v d --dry-run | Out-String
+        $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -w $solution -v d --dry-run | Out-String
         Write-Output $output.TrimEnd()
         
         if ($LastExitCode -ne 0) {
@@ -59,6 +67,8 @@ catch {
     exit -1
 }
 finally {
+    Set-Location $currentLocation
+
     Remove-Item $repoPath -Force -Recurse
     Write-Output "$(Get-Date) - Deleted $repoName."
 }
