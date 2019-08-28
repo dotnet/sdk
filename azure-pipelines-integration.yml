@@ -50,5 +50,11 @@ jobs:
         _sha: "9099ad2f6e5936ecdf549f88394b5a59fa75c869"
   timeoutInMinutes: 20
   steps:
-    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp'
-      displayName: Run dotnet-format on $(_repoName)
+    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
+      displayName: Prepare $(_repoName) for formatting
+
+    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-workspace'
+      displayName: Run dotnet-format on $(_repoName) solution files
+
+    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-folder'
+      displayName: Run dotnet-format on $(_repoName) repo folder
