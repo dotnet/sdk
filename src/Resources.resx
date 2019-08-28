@@ -204,4 +204,10 @@
   <data name="Fix_file_encoding" xml:space="preserve">
     <value>Fix file encoding.</value>
   </data>
+  <data name="The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option" xml:space="preserve">
+    <value>The folder to operate on. Cannot be used with the `--workspace` option.</value>
+  </data>
+  <data name="Cannot_specify_both_folder_and_workspace_options" xml:space="preserve">
+    <value>Cannot specify both folder and workspace options.</value>
+  </data>
 </root>

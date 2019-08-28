@@ -17,6 +17,11 @@
         <target state="translated">Se encontró un archivo de proyecto y un archivo de solución MSBuild en "{0}". Especifique cuál debe usarse con la opción --workspace.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_both_folder_and_workspace_options">
+        <source>Cannot specify both folder and workspace options.</source>
+        <target state="new">Cannot specify both folder and workspace options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
         <target state="new">Complete in {0}ms.</target>
@@ -120,6 +125,11 @@
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
         <source>The file '{0}' does not appear to be a valid project or solution file.</source>
         <target state="translated">El archivo "{0}" no parece ser un proyecto o archivo de solución válido.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option">
+        <source>The folder to operate on. Cannot be used with the `--workspace` option.</source>
+        <target state="new">The folder to operate on. Cannot be used with the `--workspace` option.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
