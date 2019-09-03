@@ -110,6 +110,28 @@ Examples:
 |`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
 |`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)\|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
  
+### Additional string formatting methods
+Option Name: `additional_string_formatting_methods`
+
+Configurable Rules: [CA2241](https://docs.microsoft.com/visualstudio/code-quality/ca2241-provide-correct-arguments-to-formatting-methods)
+
+Option Values: Names of additional string formatting methods (separated by '|') for CA2241.
+Allowed method name formats:
+  1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format
+     with an optional "M:" prefix.
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.additional_string_formatting_methods = MyFormat` | Matches all methods named 'MyFormat' in the compilation
+|`dotnet_code_quality.additional_string_formatting_methods = MyFormat1\|MyFormat2` | Matches all methods named either 'MyFormat1' or 'MyFormat2' in the compilation
+|`dotnet_code_quality.additional_string_formatting_methods = NS.MyType.MyFormat(ParamType)` | Matches specific method 'MyFormat' with given fully qualified signature
+|`dotnet_code_quality.additional_string_formatting_methods = NS1.MyType1.MyFormat1(ParamType)\|NS2.MyType2.MyFormat2(ParamType)` | Matches specific methods 'MyFormat1' and 'MyFormat2' with respective fully qualified signature
+ 
 ### Excluded symbol names
 Option Name: `excluded_symbol_names`
 
