@@ -156,6 +156,29 @@ Examples:
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
  
+### Disallowed symbol names
+Option Name: `disallowed_symbol_names`
+
+Configurable Rules: [CA1031](https://docs.microsoft.com/visualstudio/code-quality/ca1031-do-not-catch-general-exception-types)
+
+Option Values: Names of symbols (separated by '|') that are disallowed in the context of the analysis.
+Allowed symbol name formats:
+  1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format.
+     Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
+  3. `.ctor` for constructors and `.cctor` for static constructors
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.disallowed_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation
+|`dotnet_code_quality.disallowed_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
+|`dotnet_code_quality.disallowed_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
+|`dotnet_code_quality.disallowed_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+
 ### Dataflow analysis
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code), [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
