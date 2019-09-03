@@ -147,7 +147,6 @@
 
     <ItemGroup>
       <SdkMsiFilesToSign Include="$(SdkMSIInstallerFile)" />
-      <SdkMsiFilesToSign Include="$(ArtifactsShippingPackagesDir)*.cab" />
 
       <SdkMsiFileSignInfo Include="@(SdkMsiFilesToSign->'%(Filename)%(Extension)')">
         <CertificateName>$(InternalCertificateId)</CertificateName>

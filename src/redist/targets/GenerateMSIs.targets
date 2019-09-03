@@ -38,7 +38,6 @@
 
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
-      <SdkMSICabFile>$(ArtifactsShippingPackagesDir)d$(Architecture)-1.cab</SdkMSICabFile>
       <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
       <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
       <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-22templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
@@ -136,7 +135,7 @@
                       '$(SdkInternalLayoutPath.TrimEnd('\'))' ^
                       '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
-                      '$(SdkBrandName)' ^
+                      '$(ToolsetBrandName)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
@@ -274,8 +273,7 @@
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ToolsetInstallerNupkgFile)' ^
                       '$(Architecture)' ^
-                      '$(MajorMinorVersion)' ^
-                      '$(SdkMSICabFile)'" />
+                      '$(MajorMinorVersion)'" />
   </Target>
 
   <Target Name="GenerateSdkPlaceholderNupkg"
