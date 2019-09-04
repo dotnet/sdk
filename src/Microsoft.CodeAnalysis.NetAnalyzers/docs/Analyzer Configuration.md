@@ -113,6 +113,17 @@ Default Value: `false`
 
 Example: `dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true`
 
+### Exclude extension method 'this' parameter
+Option Name: `exclude_extension_method_this_parameter`
+
+Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods)
+
+Option Values: `true` or `false`
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = true`
+
 ### Null check validation methods
 Option Name: `null_check_validation_methods`
 
