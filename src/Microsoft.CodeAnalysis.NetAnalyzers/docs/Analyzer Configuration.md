@@ -66,6 +66,31 @@ Default Value: All output kinds
 
 Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary`
 
+### Required modifiers for analyzed APIs
+Option Name: `required_modifiers`
+
+Configurable Rules: [CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802-use-literals-where-appropriate)
+
+Option Values: Comma separated listed of one or more modifier values from the below table. Note that not all values are applicable for every configurable rule.
+
+| Option Value | Summary |
+| --- | --- |
+| `none` | No modifier requirement. |
+| `static` or `Shared` | Must be declared as 'static' ('Shared' in Visual Basic). |
+| `const` | Must be declared as 'const'. |
+| `readonly` | Must be declared as 'readonly'. |
+| `abstract` | Must be declared as 'abstract'. |
+| `virtual` | Must be declared as 'virtual'. |
+| `override` | Must be declared as 'override'. |
+| `sealed` | Must be declared as 'sealed'. |
+| `extern` | Must be declared as 'extern'. |
+| `async` | Must be declared as 'async'. |
+
+Default Value: Depends on each configurable rule:
+   1. CA1802: default value is 'static'. Set the value to 'none' to allow flagging instance fields.
+
+Example: `dotnet_code_quality.CA1802.required_modifiers = none`.
+
 ### Async void methods
 Option Name: `exclude_async_void_methods`
 
