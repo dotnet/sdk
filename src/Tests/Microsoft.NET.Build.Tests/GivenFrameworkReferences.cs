@@ -750,7 +750,7 @@ namespace FrameworkReferenceTest
 
             var getValuesCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks,
                 "ResolvedFrameworkReference", GetValuesCommand.ValueType.Item);
-            getValuesCommand.DependsOnTargets = "ResolveFrameworkReferences";
+            getValuesCommand.DependsOnTargets = "ResolvePackageAssets;ResolveFrameworkReferences";
             getValuesCommand.MetadataNames.AddRange(expectedMetadata);
 
             getValuesCommand.Execute().Should().Pass();

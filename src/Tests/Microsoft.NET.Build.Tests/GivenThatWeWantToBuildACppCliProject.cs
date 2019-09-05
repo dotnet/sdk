@@ -48,5 +48,19 @@ namespace Microsoft.NET.Build.Tests
 
             File.Exists(expectedIjwhost).Should().BeTrue();
         }
+
+        [FullMSBuildOnlyFact]
+        public void Given_no_restore_It_builds_cpp_project()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
+                .WithSource();
+
+            // build projects separately with BuildProjectReferences=false to simulate VS build behavior
+            new BuildCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest"))
+                .Execute("-p:Platform=x64")
+                .Should()
+                .Pass();
+        }
     }
 }
