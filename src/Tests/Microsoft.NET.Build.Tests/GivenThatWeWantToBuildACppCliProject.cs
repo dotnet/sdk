@@ -7,6 +7,8 @@ using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
@@ -24,6 +26,8 @@ namespace Microsoft.NET.Build.Tests
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .Restore(Log, "NETCoreCppCliTest.sln");
+
+            WorkaroundSDKBlockOnAssetsJsonExistence(testAsset);
 
             // build projects separately with BuildProjectReferences=false to simulate VS build behavior
             new BuildCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest"))
@@ -47,6 +51,15 @@ namespace Microsoft.NET.Build.Tests
                 "Ijwhost.dll");
 
             File.Exists(expectedIjwhost).Should().BeTrue();
+        }
+
+        private static void WorkaroundSDKBlockOnAssetsJsonExistence(TestAsset testAsset)
+        {
+            var lockFile = new LockFile();
+            lockFile.Targets.Add(new LockFileTarget { TargetFramework = NuGetFramework.Parse(".NETCoreApp,Version=v3.0") });
+
+            var objDirectory = Directory.CreateDirectory(Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest", "obj"));
+            new LockFileFormat().Write(objDirectory.File("project.assets.json").FullName, lockFile);
         }
     }
 }
