@@ -168,7 +168,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Set a dummy Version if it hasn't been set by DefaultAssemblyInfo.targets -->
     <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
-      <Version>1.0.0</Version>
+      <Version Condition="'$(Version)' == ''">1.0.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -391,7 +391,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
      -->
   <Target Name="_GetAppHostPaths"
-          DependsOnTargets="ResolvePackageAssets"
+          DependsOnTargets="ResolvePackageAssets;ResolveFrameworkReferences"
           Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
 
     <NETSdkError Condition="'@(_NativeRestoredAppHostNETCore->Count())' > 1"
@@ -487,7 +487,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
      -->
   <Target Name="_GetComHostPaths"
-          DependsOnTargets="ResolvePackageAssets"
+          DependsOnTargets="ResolvePackageAssets;ResolveFrameworkReferences"
           Condition="'$(EnableComHosting)' == 'true' and '$(_IsExecutable)' != 'true'">
     <PropertyGroup>
       <ComHostFileName>$(AssemblyName).comhost$(_ComHostLibraryExtension)</ComHostFileName>
