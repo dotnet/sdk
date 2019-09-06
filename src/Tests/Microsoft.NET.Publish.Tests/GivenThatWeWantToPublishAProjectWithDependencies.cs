@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_publishes_projects_with_simple_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(expectedOutput);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_publishes_the_app_config_if_necessary()
         {
             var testAsset = _testAssetsManager
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_publishes_projects_targeting_netcoreapp11_with_p2p_targeting_netcoreapp11()
         {
             // Microsoft.NETCore.App 1.1.0 added a dependency on Microsoft.DiaSymReader.Native.
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_publishes_projects_with_simple_dependencies_with_filter_profile()
         {
             string project = "SimpleDependencies";
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Publish.Tests
             // See https://github.com/dotnet/cli/blob/358568b07f16749108dd33e7fea2f2c84ccf4563/test/dotnet-store.Tests/GivenDotnetStoresAndPublishesProjects.cs
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_publishes_projects_with_filter_and_rid()
         {
             string project = "SimpleDependencies";
@@ -208,7 +208,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("GenerateDocumentationFile=true", true, true)]
         [InlineData("GenerateDocumentationFile=true;PublishDocumentationFile=false", false, true)]
         [InlineData("GenerateDocumentationFile=true;PublishReferencesDocumentationFiles=false", true, false)]
@@ -247,7 +247,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("PublishReferencesDocumentationFiles=false", false)]
         [InlineData("PublishReferencesDocumentationFiles=true", true)]
         public void It_publishes_referenced_assembly_documentation(string property, bool expectAssemblyDocumentationFilePublished)

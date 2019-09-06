@@ -19,7 +19,7 @@ namespace Microsoft.NET.Pack.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_packs_successfully()
         {
             var testAsset = _testAssetsManager

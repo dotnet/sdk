@@ -25,7 +25,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_finds_the_entry_point_dll_and_put_in_setting_file()
         {
             const string explicitEntryPoint = "explicit_entry_point.dll";
@@ -62,7 +62,7 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_finds_commandName_and_put_in_setting_file()
         {
             const string explicitCommandName = "explicit_command_name";

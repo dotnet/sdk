@@ -19,7 +19,7 @@ namespace Microsoft.NET.Perf.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ShowToolsetPaths()
         {
             var testProject = new TestProject()

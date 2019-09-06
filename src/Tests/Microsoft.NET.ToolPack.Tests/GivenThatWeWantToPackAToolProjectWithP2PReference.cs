@@ -36,7 +36,7 @@ namespace Microsoft.NET.ToolPack.Tests
             return packCommand.GetNuGetPackage();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_packs_successfully()
         {
             var nugetPackage = SetupNuGetPackage();
@@ -48,7 +48,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_contains_dependencies_dll()
         {
             var nugetPackage = SetupNuGetPackage();
@@ -65,7 +65,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_does_not_add_p2p_references_as_package_references_to_nuspec()
         {
             var nugetPackage = SetupNuGetPackage();
@@ -77,7 +77,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_contains_folder_structure_tfm_any()
         {
             var nugetPackage = SetupNuGetPackage();

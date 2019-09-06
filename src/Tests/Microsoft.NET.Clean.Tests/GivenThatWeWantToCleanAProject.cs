@@ -24,7 +24,7 @@ namespace Microsoft.NET.Clean.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_cleans_without_logging_assets_message()
         {
             var testAsset = _testAssetsManager
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Clean.Tests
                 .NotHaveStdOutContaining("warning");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_cleans_without_assets_file_present()
         {
             var testAsset = _testAssetsManager
@@ -74,7 +74,7 @@ namespace Microsoft.NET.Clean.Tests
 
         // Related to https://github.com/dotnet/sdk/issues/2233
         // This test will fail if the naive fix for not reading assets file during clean is attempted
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_can_clean_and_build_without_using_rebuild()
         {
             var testAsset = _testAssetsManager

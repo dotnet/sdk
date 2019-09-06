@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1101,
         };
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ThereAreNoGapsDuplicatesOrIncorrectlyFormattedCodes()
         {
             var codes = new HashSet<int>(_deletedCodes);
@@ -75,7 +75,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ResxIsCommentedWithCorrectStrBegin()
         {
             var doc = XDocument.Load("Strings.resx");

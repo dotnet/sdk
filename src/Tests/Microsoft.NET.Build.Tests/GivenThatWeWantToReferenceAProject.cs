@@ -47,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
             FailsBuild
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netstandard1.2", true, "netstandard1.5", true, false, false)]
         [InlineData("netcoreapp1.1", true, "net45;netstandard1.5", true, true, true)]
         [InlineData("netcoreapp1.1", true, "net45;net46", true, false, false)]

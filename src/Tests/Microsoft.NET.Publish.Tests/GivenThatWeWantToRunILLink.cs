@@ -21,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_only_runs_when_switch_is_enabled(string targetFramework)
         {
@@ -57,7 +57,7 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeTrue();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_runs_and_creates_linked_app(string targetFramework)
         {
@@ -97,7 +97,7 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_accepts_root_descriptor(string targetFramework)
         {
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Publish.Tests
             DoesImageHaveMethod(unusedDll, "UnusedMethodToRoot").Should().BeTrue();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_runs_incrementally(string targetFramework)
         {
@@ -166,7 +166,7 @@ namespace Microsoft.NET.Publish.Tests
             semaphoreFirstModifiedTime.Should().Be(semaphoreSecondModifiedTime);
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_defaults_keep_nonframework(string targetFramework)
         {
@@ -204,7 +204,7 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_does_not_include_leftover_artifacts_on_second_run(string targetFramework)
         {
@@ -258,7 +258,7 @@ namespace Microsoft.NET.Publish.Tests
             Directory.Exists(Path.Combine(publishDirectory, "linked")).Should().BeFalse();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_error_on_portable_app(string targetFramework)
         {
@@ -275,7 +275,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContainingIgnoreCase("NETSDK1102");
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void ILLink_displays_informational_warning(string targetFramework)
         {

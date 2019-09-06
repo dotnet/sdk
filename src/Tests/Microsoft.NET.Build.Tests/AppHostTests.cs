@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp2.1")]
         [InlineData("netcoreapp2.2")]
         public void It_does_not_build_with_an_apphost_by_default_before_netcoreapp_3(string targetFramework)
@@ -92,7 +92,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData("x86")]
         [InlineData("x64")]
         [InlineData("AnyCPU")]
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void AppHost_contains_resources_from_the_managed_dll()
         {
             var targetFramework = "netcoreapp2.0";
@@ -165,7 +165,7 @@ namespace Microsoft.NET.Build.Tests
             apphostVersion.Should().Be(version);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void FSharp_app_can_customize_the_apphost()
         {
             var targetFramework = "netcoreapp3.0";
@@ -198,7 +198,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void If_UseAppHost_is_false_it_does_not_try_to_find_an_AppHost()
         {
             var testProject = new TestProject()
@@ -224,7 +224,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_retries_on_failure_to_create_apphost()
         {
             const string TFM = "netcoreapp3.0";

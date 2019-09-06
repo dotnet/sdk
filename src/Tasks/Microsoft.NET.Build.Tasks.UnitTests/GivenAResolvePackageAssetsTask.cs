@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAResolvePackageAssetsTask
     {
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItHashesAllParameters()
         {
             IEnumerable<PropertyInfo> inputProperties;
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItDoesNotHashDesignTimeBuild()
         {
             var task = InitializeTask(out _);

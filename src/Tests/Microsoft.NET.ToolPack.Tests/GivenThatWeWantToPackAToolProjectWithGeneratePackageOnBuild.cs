@@ -46,7 +46,7 @@ namespace Microsoft.NET.ToolPack.Tests
             return testAsset;
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_builds_successfully()
         {
             TestAsset testAsset = SetupAndRestoreTestAsset();
@@ -61,7 +61,7 @@ namespace Microsoft.NET.ToolPack.Tests
                   .NotHaveStdOutContaining("There is a circular dependency");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_builds_and_result_contains_dependencies_dll()
         {
             TestAsset testAsset = SetupAndRestoreTestAsset();

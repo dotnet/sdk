@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp2.0", false)]
         [InlineData("netcoreapp3.0", true)]
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_errors_out_when_RuntimeIdentifier_architecture_and_PlatformTarget_do_not_match()
         {
             const string RuntimeIdentifier = "win10-x64";
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
                     PlatformTarget));
         }
 
-		[Fact]
+		[Fact(Skip="only few tests")]
 		public void It_succeeds_when_RuntimeIdentifier_and_PlatformTarget_mismatch_but_PT_is_AnyCPU()
 		{
 			var targetFramework = "netcoreapp2.1";

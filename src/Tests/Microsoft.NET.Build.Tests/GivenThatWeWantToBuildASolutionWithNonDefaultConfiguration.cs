@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("Release With Spaces", "RELEASE_WITH_SPACES")]
         [InlineData("Release-With-Hyphens", "RELEASE_WITH_HYPHENS")]
         [InlineData("Release.With.Dots", "RELEASE_WITH_DOTS")]

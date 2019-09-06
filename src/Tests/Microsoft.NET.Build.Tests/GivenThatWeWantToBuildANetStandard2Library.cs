@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netstandard2.0")]
         [InlineData("netstandard2.1")]
         public void It_builds_a_netstandard2_library_successfully(string targetFramework)
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_resolves_assembly_conflicts()
         {
             TestProject project = new TestProject()

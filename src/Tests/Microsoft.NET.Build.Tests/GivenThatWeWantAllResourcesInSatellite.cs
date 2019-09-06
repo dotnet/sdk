@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
 
         //  Disable this test on full framework, as generating strong named satellite assemblies with AL.exe requires Admin permissions
         //  See https://github.com/dotnet/sdk/issues/732
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void It_retrieves_strings_successfully()
         {
             TestSatelliteResources(Log, _testAssetsManager);

@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp2.0", true, false)]
         [InlineData("netcoreapp3.0", false, false)]
         [InlineData("net47", false, true)]
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
 
             outputDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp2.0", true, false)]
         [InlineData("net47", false, true)]
         public void It_copies_all_satellites_when_not_filtered(string targetFramework, bool explicitCopyLocalLockFile,

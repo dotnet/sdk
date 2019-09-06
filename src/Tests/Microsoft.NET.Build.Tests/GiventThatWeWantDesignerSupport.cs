@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("net46")]
         [InlineData("netcoreapp3.0")]
         public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework)

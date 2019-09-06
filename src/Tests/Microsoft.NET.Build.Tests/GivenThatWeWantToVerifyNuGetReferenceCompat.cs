@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
         [InlineData("net451", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 net45 net451", true, true)]
         [InlineData("net46", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 net45 net451 net46", true, true)]
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData("netstandard2.0")]
         [InlineData("netcoreapp2.0")]
         public void Netfx_is_implicit_for_Netstandard_and_Netcore_20(string targetFramework)
@@ -156,7 +156,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData("netstandard1.6")]
         [InlineData("netcoreapp1.1")]
         public void Netfx_is_not_implicit_for_Netstandard_and_Netcore_less_than_20(string targetFramework)
@@ -170,7 +170,7 @@ namespace Microsoft.NET.Build.Tests
             restoreCommand.Execute().Should().Fail();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_is_possible_to_disable_netfx_implicit_asset_target_fallback()
         {
             const string testProjectName = "netstandard20_disabled_atf";
@@ -186,7 +186,7 @@ namespace Microsoft.NET.Build.Tests
             restoreCommand.Execute().Should().Fail();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_chooses_lowest_netfx_in_default_atf()
         {
             var testProjectName = "netcoreapp30_multiple_atf";

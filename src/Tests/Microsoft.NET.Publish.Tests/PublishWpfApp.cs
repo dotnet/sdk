@@ -22,7 +22,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_publishes_and_runs_self_contained_wpf_app()
         {
             var testDir = _testAssetsManager.CreateTestDirectory();

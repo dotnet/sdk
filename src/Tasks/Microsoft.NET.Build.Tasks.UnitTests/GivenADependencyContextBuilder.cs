@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         /// <summary>
         /// Tests that DependencyContextBuilder generates DependencyContexts correctly.
         /// </summary>
-        [Theory]
+        [Theory(Skip="only few tests")]
         [MemberData(nameof(ProjectData))]
         public void ItBuildsDependencyContextsFromProjectLockFiles(
             string mainProjectName,
@@ -172,7 +172,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItDoesntCreateReferenceAssembliesWhenNoCompilationOptions()
         {
             DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: false);
@@ -193,7 +193,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .NotContain(d => d.Name == "System.Collections.NonGeneric.Reference");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItHandlesReferenceAndPackageReferenceNameCollisions()
         {
             DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: true);

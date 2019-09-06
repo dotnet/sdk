@@ -82,7 +82,7 @@ namespace Microsoft.NET.ToolPack.Tests
                 .Restore(Log);
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -98,7 +98,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -119,7 +119,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -143,7 +143,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -177,7 +177,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -203,7 +203,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -232,7 +232,7 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeFalse($"Shim {osxShimPath} should not exists");
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -263,7 +263,7 @@ namespace Microsoft.NET.ToolPack.Tests
             windowShimPathSecondModifiedTime.Should().Be(windowShimPathFirstModifiedTime);
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -296,7 +296,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -313,7 +313,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -348,7 +348,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -372,7 +372,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true, "netcoreapp2.1")]
         [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, "netcoreapp3.0")]
@@ -397,7 +397,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void Given_wpf_project_It_contains_shim_with_WindowsGraphicalUserInterfaceBit()
         {
             ushort windowsGUISubsystem = 0x2;

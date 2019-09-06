@@ -54,7 +54,7 @@ namespace Microsoft.NET.Publish.Tests
                                                      runtimeIdentifier: RuntimeEnvironment.GetRuntimeIdentifier());
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_errors_when_publishing_single_file_app_without_rid()
         {
             GetPublishCommand()
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutRuntimeIdentifier);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_errors_when_publishing_single_file_without_apphost()
         {
             GetPublishCommand()
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutAppHost);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_errors_when_publishing_single_file_lib()
         {
             var testProject = new TestProject()
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutExecutable);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_generates_a_single_file_for_framework_dependent_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_generates_a_single_file_for_self_contained_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -129,7 +129,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_generates_a_single_file_including_pdbs()
         {
             var publishCommand = GetPublishCommand();
@@ -144,7 +144,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_excludes_ni_pdbs_from_single_file()
         {
             var publishCommand = GetPublishCommand();
@@ -160,7 +160,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveFiles(expectedFiles);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_can_include_ni_pdbs_in_single_file()
         {
             var publishCommand = GetPublishCommand();
@@ -175,7 +175,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_generates_a_single_file_excluding_content()
         {
             var publishCommand = GetPublishCommand();
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_generates_a_single_file_for_R2R_compiled_Apps()
         {
             var publishCommand = GetPublishCommand();
@@ -205,7 +205,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_does_not_rewrite_the_single_file_unnecessarily()
         {
             var publishCommand = GetPublishCommand();
@@ -228,7 +228,7 @@ namespace Microsoft.NET.Publish.Tests
             fileWriteTimeAfterSecondRun.Should().Be(fileWriteTimeAfterFirstRun);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_rewrites_the_apphost_for_single_file_publish()
         {
             var publishCommand = GetPublishCommand();
@@ -252,7 +252,7 @@ namespace Microsoft.NET.Publish.Tests
             singleFileSize.Should().BeGreaterThan(appHostSize);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_rewrites_the_apphost_for_non_single_file_publish()
         {
             var publishCommand = GetPublishCommand();

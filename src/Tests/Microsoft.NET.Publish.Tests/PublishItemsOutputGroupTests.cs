@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void GroupPopulatedWithRid()
         {
             var testProject = this.SetupProject();
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Publish.Tests
             testKeyOutputDir.Should().OnlyHaveFiles(new List<string>() { $"{testProject.Name}.exe" });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void GroupNotPopulatedWithoutRid()
         {
             var testProject = this.SetupProject();

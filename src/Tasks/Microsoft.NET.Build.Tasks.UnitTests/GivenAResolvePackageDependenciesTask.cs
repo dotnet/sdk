@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         private static readonly string _packageRoot = "\\root\\packages".Replace('\\', Path.DirectorySeparatorChar);
         private static readonly string _projectPath = "\\root\\anypath\\solutiondirectory\\myprojectdir\\myproject.csproj".Replace('\\', Path.DirectorySeparatorChar);
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [MemberData(nameof(ItemCounts))]
         public void ItRaisesLockFileToMSBuildItems(string projectName, int [] counts)
         {
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("dotnet.new")]
         [InlineData("simple.dependencies")]
         public void ItAssignsTypeMetaDataToEachDefinition(string projectName)
@@ -64,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             allTyped(task.TargetDefinitions).Should().BeTrue();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("dotnet.new")]
         [InlineData("simple.dependencies")]
         public void ItAssignsValidParentTargetsAndPackages(string projectName)
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             allValidParentPackage(task.FileDependencies).Should().BeTrue();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("dotnet.new")]
         [InlineData("simple.dependencies")]
         public void ItAssignsValidTopLevelDependencies(string projectName)
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().OnlyContain(p => allProjectDeps.Any(dep => dep.IndexOf(p) != -1));
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAssignsExpectedTopLevelDependencies()
         {
             string lockFileContent = CreateLockFileSnippet(
@@ -142,7 +142,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAssignsExpectedTopLevelDependenciesFromAllTargets()
         {
             string targetLibD = CreateTargetLibrary("LibD/1.2.3", "package",
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAssignsTargetDefinitionMetadata()
         {
             string lockFileContent = CreateLockFileSnippet(
@@ -218,7 +218,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             target.GetMetadata(MetadataKeys.Type).Should().Be("target");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAssignsPackageDefinitionMetadata()
         {
             // project lib
@@ -268,7 +268,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAssignsPackageDependenciesMetadata()
         {
             // project lib
@@ -310,7 +310,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().OnlyContain(s => s == ".NETCoreApp,Version=v1.0");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAssignsFileDefinitionMetadata()
         {
             var expectedTypes = new Dictionary<string, string>()
@@ -357,7 +357,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAssignsFileDependenciesMetadata()
         {
             var expectedFileGroups = new Dictionary<string, string>()
@@ -413,7 +413,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItRaisesAssetPropertiesToFileDependenciesMetadata()
         {
             string lockFileContent = CreateLockFileSnippet(
@@ -453,7 +453,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             fileDeps.First().GetMetadata("copyToOutput").Should().Be("false");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItExcludesPlaceholderFiles()
         {
             string targetLibC = CreateTargetLibrary("LibC/1.2.3", "package",
@@ -493,7 +493,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItAddsAnalyzerMetadataAndFileDependencies()
         {
             string projectLanguage = "VB";
@@ -562,7 +562,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItFiltersAnalyzersByProjectLanguage()
         {
             string projectLanguage = "C#";
@@ -653,7 +653,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItUsesResolvedPackageVersionFromSameTarget()
         {
             string targetLibC = CreateTargetLibrary("LibC/1.2.3", "package",
@@ -696,7 +696,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .First().Should().Be("Dep.Lib.Chi/4.1.0");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItMarksTransitiveProjectReferences()
         {
             // --------------------------------------------------------------------------

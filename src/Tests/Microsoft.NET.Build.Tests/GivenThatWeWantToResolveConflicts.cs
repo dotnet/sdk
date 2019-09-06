@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp2.0")]
         [InlineData("netstandard2.0")]
         public void The_same_references_are_used_with_or_without_DisableDefaultPackageConflictOverrides(string targetFramework)
@@ -105,7 +105,7 @@ namespace Microsoft.NET.Build.Tests
             referenceCopyLocalPaths = getReferenceCopyLocalPathsCommand.GetValues();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void CompileConflictsAreNotRemovedFromRuntimeDepsAssets()
         {
             TestProject testProject = new TestProject()
@@ -144,7 +144,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void AProjectCanReferenceADllInAPackageDirectly()
         {
             TestProject testProject = new TestProject()
@@ -179,7 +179,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void DuplicateFrameworkAssembly()
         {
             TestProject testProject = new TestProject()
@@ -206,7 +206,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void FilesFromAspNetCoreSharedFrameworkAreNotIncluded()
         {
             var testProject = new TestProject()

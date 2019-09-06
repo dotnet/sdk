@@ -88,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
             return Path.GetFileNameWithoutExtension(projectPath).Equals(LibraryName, StringComparison.OrdinalIgnoreCase);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true, ReferenceScenario.ProjectReference)]
         [InlineData(true, ReferenceScenario.RawFileName)]
         [InlineData(true, ReferenceScenario.HintPath)]
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip="only few tests")]
         public void It_includes_netstandard_in_design_time_builds()
         {
             //  Verify that a P2P reference to a .NET Standard 2.0 project is correctly detected
@@ -185,7 +185,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should().Contain("netstandard.dll");
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true, false)]
         [InlineData(false, false)]
         [InlineData(false, true)]
@@ -271,7 +271,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_does_not_include_netstandard_when_inbox(bool isSdk)
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_does_not_include_netstandard_when_library_targets_netstandard14(bool isSdk)
@@ -380,7 +380,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_includes_netstandard_when_library_targets_netstandard15(bool isSdk)

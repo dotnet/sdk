@@ -20,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  Run on core MSBuild only as using a local packages folder hits long path issues on full MSBuild
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void BuildWithRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  Run on core MSBuild only as using a local packages folder hits long path issues on full MSBuild
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(false)]
         //  "No build" scenario doesn't currently work: https://github.com/dotnet/sdk/issues/2956
         //[InlineData(true)]
@@ -150,7 +150,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void DuplicateRuntimeIdentifiers()
         {
             var testProject = new TestProject()

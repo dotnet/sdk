@@ -19,7 +19,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_only_runs_readytorun_compiler_when_switch_is_enabled(string targetFramework)
         {
@@ -47,7 +47,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().HaveFile("System.Private.CoreLib.dll"); // self-contained
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_creates_readytorun_images_for_all_assemblies_except_excluded_ones(string targetFramework)
         {
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().HaveFile("System.Private.CoreLib.dll"); // self-contained
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_creates_readytorun_symbols_when_switch_is_used(string targetFramework)
         {
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().HaveFile("System.Private.CoreLib.dll"); // self-contained
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_supports_framework_dependent_publishing(string targetFramework)
         {
@@ -174,7 +174,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().NotHaveFile("System.Private.CoreLib.dll"); // framework-dependent
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_does_not_support_cross_platform_readytorun_compilation(string targetFramework)
         {

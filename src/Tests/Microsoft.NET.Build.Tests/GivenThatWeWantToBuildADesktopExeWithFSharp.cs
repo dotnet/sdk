@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_builds_a_simple_desktop_app()
         {
             var targetFramework = "net45";

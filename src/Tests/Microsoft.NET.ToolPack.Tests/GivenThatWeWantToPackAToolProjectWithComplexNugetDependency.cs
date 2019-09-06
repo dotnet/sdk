@@ -24,7 +24,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_has_native_and_transitive_dependencies_dll(bool multiTarget)

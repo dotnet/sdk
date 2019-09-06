@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_gets_implicit_designtime_facades_when_package_reference_uses_system_runtime()
         {
             // The repro here is very sensitive to the target framework and packages used. This specific case
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_can_use_HttpClient_and_exchange_the_type_with_a_NETStandard_library()
         {
             var netStandardLibrary = new TestProject()
@@ -124,7 +124,7 @@ public class NETFramework
 
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_can_reference_a_netstandard2_library_and_exchange_types()
         {
 
@@ -172,7 +172,7 @@ public class NETFramework
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_can_use_ValueTuple_and_exchange_the_type_with_a_NETStandard_library()
         {
             var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version47);
@@ -231,7 +231,7 @@ public class NETFramework
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_can_preserve_compilation_context_and_reference_netstandard_library()
         {
             var testAsset = _testAssetsManager
@@ -251,7 +251,7 @@ public class NETFramework
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_resolves_assembly_conflicts_with_a_NETFramework_library()
         {
             TestProject project = new TestProject()
@@ -304,7 +304,7 @@ public static class {project.Name}
                 .NotHaveStdOutContaining("MSB3243");
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_uses_hintpath_when_replacing_simple_name_references(bool useFacades)
@@ -387,7 +387,7 @@ public static class {project.Name}
                 .Should().Be(correctHttpReference);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_tolerates_newline_in_hint_path()
         {
             string hintPath = BuildReferencedBuildAndReturnOutputDllPath();
@@ -444,7 +444,7 @@ public static class {project.Name}
         }
 
         //  Regression test for https://github.com/dotnet/sdk/issues/1730
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void A_target_can_depend_on_RunResolvePublishAssemblies()
         {
             TestProject testProject = new TestProject()

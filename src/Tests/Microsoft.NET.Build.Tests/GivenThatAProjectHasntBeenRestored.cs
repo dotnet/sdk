@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("TestLibrary", null)]
         [InlineData("TestApp", null)]
         [InlineData("TestApp", "netcoreapp2.1")]
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("1 Error(s)");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ReadingCacheDoesNotFail()
         {
             var testProject = new TestProject()

@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             Referenced
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("net45", true)]
         [InlineData("netstandard2.0", false)]
         [InlineData("netcoreapp2.1", true)]
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_builds_a_vb_wpf_app()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;

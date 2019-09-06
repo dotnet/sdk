@@ -61,7 +61,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void compose_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void compose_dependencies_noopt()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void store_nativeonlyassets()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -217,7 +217,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void It_uses_star_versions_correctly()
         {
             TestAsset targetManifestsAsset = _testAssetsManager
@@ -251,7 +251,7 @@ namespace Microsoft.NET.Publish.Tests
             nugetPackage.Version.Should().BeGreaterThan(NuGetVersion.Parse("4.0.0-rc2"));
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void It_creates_profiling_symbols()
         {
             TestAsset targetManifestsAsset = _testAssetsManager
@@ -300,7 +300,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_stores_when_targeting_netcoreapp3(bool isExe)

@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void It_collects_TargetFramework_version()
         {
             string targetFramework = "netcoreapp1.0";
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tests
                 .Contain("{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v1.0\"}");
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void It_collects_multi_TargetFramework_version()
         {
             string targetFramework = "net46;netcoreapp1.1";

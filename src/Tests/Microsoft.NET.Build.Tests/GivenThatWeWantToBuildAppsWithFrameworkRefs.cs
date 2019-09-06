@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_builds_the_projects_successfully()
         {
             var testAsset = _testAssetsManager
@@ -35,7 +35,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyProjectsBuild(testAsset);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_builds_with_disable_implicit_frameworkRefs()
         {
             var testAsset = _testAssetsManager
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().HaveFiles(expectedFiles);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
             var testAsset = _testAssetsManager

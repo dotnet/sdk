@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("TestLibrary", null)]
         [InlineData("TestApp", null)]
         [InlineData("TestApp", "netcoreapp2.1")]
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Build.Tests
             result.Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void DesignTimeBuildSucceedsAfterTargetFrameworkIsChanged()
         {
             TestDesignTimeBuildAfterChange(project =>
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void DesignTimeBuildSucceedsAfterRuntimeIdentifierIsChanged()
         {
             TestDesignTimeBuildAfterChange(project =>

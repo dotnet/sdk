@@ -22,7 +22,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp2.0", false)]
         [InlineData("netcoreapp3.0", true)]
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp2.0", false)]
         [InlineData("netcoreapp3.0", true)]
@@ -115,7 +115,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp2.0", false)]
         [InlineData("netcoreapp3.0", true)]
@@ -168,7 +168,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void TransitiveNetStandardPackageReferenceAndPublishFalse()
         {
             var testLibraryProject = new TestProject()

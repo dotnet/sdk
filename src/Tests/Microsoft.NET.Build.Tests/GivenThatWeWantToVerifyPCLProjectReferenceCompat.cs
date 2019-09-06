@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData("netstandard1.1", "Profile7", "v4.5", true, true)]
         [InlineData("netstandard1.0", "Profile31", "v4.6", true, true)]
         //  Profile32 test disabled because building it depends on MakePri.exe in the Windows SDK,

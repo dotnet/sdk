@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_builds_the_project_successfully()
         {
             var testAsset = _testAssetsManager
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyAppBuilds(testAsset);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_builds_the_project_successfully_twice()
         {
             var testAsset = _testAssetsManager
@@ -100,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
             libInfo.ProductVersion.Should().Be("42.43.44.45-alpha");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_generates_satellite_assemblies()
         {
             var testAsset = _testAssetsManager
@@ -150,7 +150,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
             var testAsset = _testAssetsManager
@@ -189,7 +189,7 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().OnlyHaveFiles(Array.Empty<string>());
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void An_appx_app_can_reference_a_cross_targeted_library()
         {
             var asset = _testAssetsManager

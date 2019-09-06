@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_builds_the_library_successfully()
         {
             var testAsset = _testAssetsManager
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_builds_the_library_twice_in_a_row()
         {
             var testAsset = _testAssetsManager
@@ -120,7 +120,7 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void The_build_fails_if_nuget_restore_has_not_occurred()
         {
             var testAsset = _testAssetsManager
@@ -136,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
                 .Fail();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
             var testAsset = _testAssetsManager
@@ -158,7 +158,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("Debug", "DEBUG")]
         [InlineData("Release", "RELEASE")]
         [InlineData("CustomConfiguration", "CUSTOMCONFIGURATION")]
@@ -188,7 +188,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD1_6" });
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6" }, false)]
         [InlineData("net45", new[] { "NETFRAMEWORK", "NET45" }, true)]
         [InlineData("net461", new[] { "NETFRAMEWORK", "NET461" }, true)]

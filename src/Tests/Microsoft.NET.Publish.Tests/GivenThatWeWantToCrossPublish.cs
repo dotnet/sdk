@@ -18,7 +18,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void There_should_be_no_unresolved_conflicts()
         {
             var testProject = new TestProject()

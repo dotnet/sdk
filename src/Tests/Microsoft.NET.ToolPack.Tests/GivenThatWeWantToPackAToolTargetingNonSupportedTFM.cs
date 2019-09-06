@@ -24,7 +24,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         // lower than netcoreapp2.0
         [InlineData("TargetFramework", "netcoreapp2.0", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
         [InlineData("TargetFramework", "netcoreapp1.1", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
@@ -60,7 +60,7 @@ namespace Microsoft.NET.ToolPack.Tests
             result.StdOut.Should().Contain(expectedErrorMessage);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_should_fail_with_error_message_on_fullframework()
         {
             It_should_fail_with_error_message("TargetFramework", "net46", "DotnetToolOnlySupportNetcoreapp");

@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenWriteAppConfigWithSupportedRuntimeTask
     {
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_creates_startup_and_supportedRuntime_node_when_there_is_not_any()
         {
             var doc =
@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().Contain(e => e.Name.LocalName == "supportedRuntime");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_creates_supportedRuntime_node_when_there_is_startup()
         {
             var doc =
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().Contain(e => e.Name.LocalName == "supportedRuntime");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_does_not_change_supportedRuntime_node_when_there_is_supportedRuntime()
         {
             var doc =
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         // intersection of https://docs.microsoft.com/en-us/nuget/reference/target-frameworks
         // and https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/startup/supportedruntime-element#version
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(".NETFramework", "v1.1", "v1.1.4322")]
         [InlineData(".NETFramework", "v2.0", "v2.0.50727")]
         [InlineData(".NETFramework", "v3.5", "v2.0.50727")]
@@ -93,7 +93,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             supportedRuntime.Attribute("sku").Should().BeNull();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(".NETFramework", "v4.5", "v4.0", ".NETFramework,Version=v4.5")]
         [InlineData(".NETFramework", "v4.5.1", "v4.0", ".NETFramework,Version=v4.5.1")]
         [InlineData(".NETFramework", "v4.5.2", "v4.0", ".NETFramework,Version=v4.5.2")]
@@ -125,7 +125,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             supportedRuntime.Should().HaveAttribute("sku", expectedSku);
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(".NETFramework", "v4.0", "Client", "v4.0", ".NETFramework,Version=v4.0,Profile=Client")]
         public void It_generate_correct_version_and_sku_and_profile(
             string targetFrameworkIdentifier,
@@ -153,7 +153,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             supportedRuntime.Should().HaveAttribute("sku", expectedSku);
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData("net999")]
         [InlineData("netstandard20")]
         public void It_does_not_generate_version_and_sku_for_non_supported(string targetframework)

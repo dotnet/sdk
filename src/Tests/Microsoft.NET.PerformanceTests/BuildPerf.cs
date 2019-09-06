@@ -27,7 +27,7 @@ namespace Microsoft.NET.Perf.Tests
 
         //  These tests are currently disabled for full framework MSBuild because the CI machines don't
         //  have an MSBuild that supports the /restore command-line argument
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCore2App(ProjectPerfOperation operation)
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, ".NET Core 2 Console App", operation);
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetStandard2Library(ProjectPerfOperation operation)
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, ".NET Standard 2.0 Library", operation);
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildWebLarge(ProjectPerfOperation operation)
@@ -74,7 +74,7 @@ namespace Microsoft.NET.Perf.Tests
                 projectDirectoryName: "mvc");
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildWebLarge30(ProjectPerfOperation operation)
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Perf.Tests
                 projectDirectoryName: "mvc");
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildMVCApp(ProjectPerfOperation operation)
@@ -166,7 +166,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(Path.Combine(testDir.Path, "Compilers.sln"), "Roslyn", operation);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCoreWPFHelloWorld(ProjectPerfOperation operation)
@@ -183,7 +183,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testDir.Path, "WPF hello world", operation);
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetFullFrameworkWPFHelloWorld(ProjectPerfOperation operation)
@@ -195,7 +195,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, "Full framework WPF hello world", operation);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCoreWindowsFormsHelloWorld(ProjectPerfOperation operation)
@@ -212,7 +212,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testDir.Path, "Windows Forms hello world", operation);
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetFullFrameworkWindowsFormsHelloWorld(ProjectPerfOperation operation)
@@ -224,7 +224,7 @@ namespace Microsoft.NET.Perf.Tests
             TestProject(testAsset.Path, "Full Windows Forms hello world", operation);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCoreWindowsFormsLarge(ProjectPerfOperation operation)
@@ -235,7 +235,7 @@ namespace Microsoft.NET.Perf.Tests
                 solutionDirectoryNameInPerfTestRepo: "WinformsNetCorePerfApp1");
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetFullFrameworkWindowsFormsLarge(ProjectPerfOperation operation)
@@ -246,7 +246,7 @@ namespace Microsoft.NET.Perf.Tests
                 solutionDirectoryNameInPerfTestRepo: "WinformsNetFrameworkPerfApp1");
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetCoreWpfLarge(ProjectPerfOperation operation)
@@ -258,7 +258,7 @@ namespace Microsoft.NET.Perf.Tests
                 projectDirectoryName: "WpfLarge");
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip="only few tests")]
         [InlineData(ProjectPerfOperation.CleanBuild)]
         [InlineData(ProjectPerfOperation.BuildWithNoChanges)]
         public void BuildNetFullFrameworkWpfLarge(ProjectPerfOperation operation)

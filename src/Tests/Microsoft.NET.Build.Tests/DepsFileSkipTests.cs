@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void RuntimeAssemblyFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "runtime");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void RuntimeAssemblyFromRuntimePackCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Core MSBuild only because CI machines don't have updated VS (with support for RuntimeIdentifierGraphPath)
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only few tests")]
         public void NativeAssetFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "native");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void RuntimeTargetFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -100,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "runtimeTargets");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void NativeAssetFromRuntimePackCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "native");
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ResourceAssetFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()

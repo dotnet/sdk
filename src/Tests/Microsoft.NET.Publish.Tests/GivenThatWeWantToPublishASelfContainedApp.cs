@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_errors_when_publishing_self_contained_app_without_rid()
         {
              var testAsset = _testAssetsManager
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSelfContainedWithoutRuntimeIdentifier);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_errors_when_publishing_self_contained_without_apphost()
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         // repro https://github.com/dotnet/sdk/issues/2466
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_does_not_fail_publishing_a_self_twice()
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();
@@ -95,7 +95,7 @@ namespace Microsoft.NET.Publish.Tests
         private const int PEHeaderPointerOffset = 0x3C;
         private const int SubsystemOffset = 0x5C;
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_can_make_a_Windows_GUI_exe()
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid("netcoreapp2.0");
@@ -130,7 +130,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Be(2);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void It_publishes_an_app_with_a_netcoreapp_lib_reference()
         {
             var testAsset = _testAssetsManager
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_publishes_runtime_pack_resources()
         {
             const string tfm = "netcoreapp3.0";
@@ -199,7 +199,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only few tests")]
         public void It_publishes_runtime_pack_resources_for_specific_languages()
         {
             const string tfm = "netcoreapp3.0";

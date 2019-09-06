@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [CoreMSBuildAndWindowsOnlyFact]
+        [CoreMSBuildAndWindowsOnlyFact(Skip="only few tests")]
         public void It_collects_Exception()
         {
             Type loggerType = typeof(LogTelemetryToStdOutForTest);

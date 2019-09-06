@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAConflictResolver
     {
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItemsWithDifferentKeysDontConflict()
         {
             var item1 = new MockConflictItem("System.Ben");
@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenOnlyOneItemExistsAWinnerCannotBeDetermined()
         {
             var item1 = new MockConflictItem() { Exists = false };
@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().Equal(item1, item2);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenNeitherItemExistsAWinnerCannotBeDetermined()
         {
             var item1 = new MockConflictItem() { Exists = false, AssemblyVersion = new Version("1.0.0.0") };
@@ -51,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenAnItemDoesntExistButDoesNotConflictWithAnythingItIsNotReported()
         {
             var result = GetConflicts(
@@ -64,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndDontHaveAssemblyVersionsTheFileVersionIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { AssemblyVersion = null, FileVersion = new Version("1.0.0.0") };
@@ -77,7 +77,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndOnlyOneHasAnAssemblyVersionAWinnerCannotBeDetermined()
         {
             var item1 = new MockConflictItem() { AssemblyVersion = new Version("1.0.0.0") };
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().Equal(item1, item2);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndAssemblyVersionsMatchTheFileVersionIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { FileVersion = new Version("3.0.0.0") };
@@ -102,7 +102,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictTheAssemblyVersionIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { AssemblyVersion = new Version("1.0.0.0") };
@@ -115,7 +115,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndDontHaveFileVersionsThePackageRankIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { FileVersion = null, PackageId = "Package3" };
@@ -128,7 +128,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndOnlyOneHasAFileVersionAWinnerCannotBeDetermined()
         {
             var item1 = new MockConflictItem() { FileVersion = null };
@@ -140,7 +140,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().Equal(item1, item2);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndFileVersionsMatchThePackageRankIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { PackageId = "Package2" };
@@ -153,7 +153,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictTheFileVersionIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { FileVersion = new Version("2.0.0.0") };
@@ -166,7 +166,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndDontHaveAPackageRankTheItemTypeIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { PackageId = "Unranked1", ItemType = ConflictItemType.Platform };
@@ -178,7 +178,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndOnlyOneHasAPackageRankItWins()
         {
             var item1 = new MockConflictItem() { PackageId = "Unranked1" };
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndPackageRanksMatchTheItemTypeIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { PackageId = "Package1", ItemType = ConflictItemType.Reference };
@@ -203,7 +203,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictThePackageRankIsUsedToResolveTheConflict()
         {
             var item1 = new MockConflictItem() { PackageId = "Package1" };
@@ -216,7 +216,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Theory]
+        [Theory(Skip="only few tests")]
         [InlineData(new[] { 1, 1, 2}, 2)]
         [InlineData(new[] { 1, 2, 1}, 1)]
         [InlineData(new[] { 2, 1, 1}, 0)]
@@ -234,7 +234,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void ItemsWithNoWinnerWillBeUnresolvedIfAnotherItemLoses()
         {
             int[] versions = new[]
@@ -253,7 +253,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEquivalentTo(new[] { items[0], items[1] });
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndBothArePlatformItemsTheConflictCannotBeResolved()
         {
             var item1 = new MockConflictItem() { ItemType = ConflictItemType.Platform };
@@ -265,7 +265,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().Equal(item1, item2);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAndNeitherArePlatformItemsTheConflictCannotBeResolved()
         {
             var item1 = new MockConflictItem() { ItemType = ConflictItemType.Reference };
@@ -277,7 +277,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().Equal(item1, item2);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenItemsConflictAPlatformItemWins()
         {
             var item1 = new MockConflictItem() { ItemType = ConflictItemType.Reference };
@@ -289,7 +289,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenCommitWinnerIsFalseOnlyTheFirstResolvedConflictIsReported()
         {
             var committedItem = new MockConflictItem() { AssemblyVersion = new Version("2.0.0.0") } ;
@@ -304,7 +304,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenCommitWinnerIsFalseAndThereIsNoWinnerEachUnresolvedConflictIsReported()
         {
             var committedItem = new MockConflictItem();
@@ -319,7 +319,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().Equal(committedItem, uncommittedItem1, uncommittedItem2, uncommittedItem3);
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenCommitWinnerIsFalseMultipleConflictsAreReportedIfTheCommittedItemWins()
         {
             var committedItem = new MockConflictItem() { AssemblyVersion = new Version("4.0.0.0") };
@@ -334,7 +334,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenCommitWinnerIsFalseConflictsWithDifferentKeysAreReported()
         {
             var committedItem1 = new MockConflictItem("System.Ben") { AssemblyVersion = new Version("2.0.0.0") };
@@ -351,7 +351,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenPackageOverridesAreSpecifiedTheyAreUsed()
         {
             var systemItem1 = new MockConflictItem("System.Ben") { PackageId = "System.Ben", PackageVersion = new Version("4.3.0") };
@@ -376,7 +376,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only few tests")]
         public void WhenAHigherPackageIsUsedPackageOverrideLoses()
         {
             var platformItem1 = new MockConflictItem("System.Ben") { PackageId = "Platform", PackageVersion = new Version("2.0.0") };
