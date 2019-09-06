@@ -17,14 +17,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Import Project="Microsoft.NET.Sdk.DefaultItems.props" />
     <Import Project="Microsoft.NET.SupportedTargetFrameworks.props" />
   </ImportGroup>
-
-  <!-- RestoreProjectStyle is usually set in Microsoft.NET.Sdk.props, but that's not imported for projects that
-       don't use Microsoft.NET.Sdk, since it has a lot of defaults that they may not expect.  So set it here.
-       This does mean that setting a TargetFramework in your project will opt you in to PackageReference restore
-       style. -->
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-  </PropertyGroup>
   
   <PropertyGroup>
     <_IsExecutable Condition="'$(OutputType)' == 'Exe' or '$(OutputType)'=='WinExe'">true</_IsExecutable>
