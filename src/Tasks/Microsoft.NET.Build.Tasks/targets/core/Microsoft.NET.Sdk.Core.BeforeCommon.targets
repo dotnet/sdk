@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Sdk.AfterCommon.targets
+Sdk.BeforeCommon.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -10,5 +10,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
-  <Import Project="..\targets\Microsoft.NET.Sdk.targets" />
+  <Import Project="..\Microsoft.NET.Sdk.BeforeCommon.targets" />
 </Project>
