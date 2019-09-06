@@ -155,7 +155,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     need to have the path set here.
     ============================================================
     -->
-  <Target Name="ResolveFrameworkReferences" DependsOnTargets="ProcessFrameworkReferences" AfterTargets="ResolvePackageAssets"
+  <Target Name="ResolveFrameworkReferences" DependsOnTargets="ProcessFrameworkReferences;ResolvePackageAssets"
           Condition="'@(FrameworkReference)' != ''"
           Returns="@(ResolvedFrameworkReference)">
 
