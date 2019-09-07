@@ -2,7 +2,7 @@
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">[WixBundleName] 安装程序</String>
   <String Id="Title">[BUNDLEMONIKER]</String>
-  <String Id="ConfirmCancelMessage">是否确实要取消?</String>
+  <String Id="ConfirmCancelMessage">您确定要取消吗?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">上一版本</String>
   <String Id="HelpHeader">安装程序帮助</String>
   <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 安装、修复、卸载
@@ -56,16 +56,16 @@
     • .NET Core Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 此产品会收集用法数据
-    •详细信息和选择退出选项: https://aka.ms/dotnet-cli-telemetry
+    • 详细信息和选择退出选项: https://aka.ms/dotnet-cli-telemetry
 
 资源
     • .NET Core 文档: https://aka.ms/dotnet-docs
     • SDK 文档: https://aka.ms/dotnet-sdk-docs
-    •发行说明: https://aka.ms/netcore3releasenotes
+    • 发行说明: https://aka.ms/netcore3releasenotes
     • 教程: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
   <String Id="WelcomeDescription">
-    .NET Core 是开源、跨平台的，且由 Microsoft 提供支持。通过它，可使用 C#、F# 或 VB 构建你的下一个应用。喜欢你喜欢它!</String>
+    .NET Core 是开源、跨平台的，且由 Microsoft 提供支持。通过它，可使用 C#、F# 或 VB 构建你的下一个应用。希望你喜欢它!</String>
   <String Id="LearnMoreTitle">了解有关 .NET Core 的详细信息</String>
   <String Id="ResourcesHeader">资源</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Core 文档&lt;/A&gt;</String>
