@@ -107,17 +107,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     on the TargetFramework.
   -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.NuGetOfflineCache.targets" />
-
-  <!-- Disable some implicit behaviors for C++/CLI projects which don't use SDK style defaults-->
-  <PropertyGroup Condition="'$(UsingNETSdkDefaults)' != 'true'">
-    <!-- Don't disable implicit framework references for .NET Core or .NET Standard, in that case it controls the reference to the
-         "targeting pack" package.  Do disable them for .NET Framework, because in that case it disables the Reference items which
-         will be in the project file for "classic" projects. -->
-    <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == '' And '$(_IsNETCoreOrNETStandard)' != 'true'">true</DisableImplicitFrameworkReferences>
-
-    <DisableImplicitFrameworkDefines Condition="'$(DisableImplicitFrameworkDefines)' == ''">true</DisableImplicitFrameworkDefines>
-    <DisableImplicitConfigurationDefines Condition="'$(DisableImplicitConfigurationDefines)' == ''">true</DisableImplicitConfigurationDefines>
-  </PropertyGroup>
   
   <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
 
