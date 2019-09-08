@@ -11,7 +11,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
+  <PropertyGroup Condition="'$(UsingNETSdkDefaults)' != 'true'">
     <!-- Skip import of Microsoft.NuGet.props and Microsoft.NuGet.targets -->
     <SkipImportNuGetProps>true</SkipImportNuGetProps>
     <SkipImportNuGetBuildTargets>true</SkipImportNuGetBuildTargets>
@@ -167,7 +167,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Outputs="$(ProjectDepsFilePath)">
 
     <!-- Set a dummy Version if it hasn't been set by DefaultAssemblyInfo.targets -->
-    <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
+    <PropertyGroup Condition="'$(UsingNETSdkDefaults)' != 'true'">
       <Version Condition="'$(Version)' == ''">1.0.0</Version>
     </PropertyGroup>
 
@@ -822,9 +822,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DisableStandardFrameworkResolution.targets" Condition="'$(DisableStandardFrameworkResolution)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DesignerSupport.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateAssemblyInfo.targets" Condition="'$(UsingMicrosoftNETSdk)' == 'true'"/>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateAssemblyInfo.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateSupportedRuntime.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ComposeStore.targets" Condition="'$(UsingMicrosoftNETSdk)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ComposeStore.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.CrossGen.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ObsoleteReferences.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Publish.targets" />
