@@ -3,7 +3,9 @@
 
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using FluentAssertions;
+using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -60,6 +62,33 @@ namespace Microsoft.NET.Build.Tests
 
             var objDirectory = Directory.CreateDirectory(Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest", "obj"));
             new LockFileFormat().Write(objDirectory.File("project.assets.json").FullName, lockFile);
+        }
+
+        [FullMSBuildOnlyFact]
+        public void It_fails_with_error_message_on_fullframework()
+        {
+          //  Debugger.Launch();
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
+                .WithSource()
+                .WithProjectChanges((projectPath, project) =>
+                {
+                    if (Path.GetExtension(projectPath) == ".vcxproj")
+                    {
+                        XNamespace ns = project.Root.Name.Namespace;
+
+                        project.Root.Descendants(ns + "PropertyGroup")
+                                    .Descendants(ns + "TargetFramework")
+                                    .Single().Value = "net472";
+                    }
+                });
+
+            new BuildCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest"))
+                .Execute("-p:Platform=x64")
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining(Strings.NETFrameworkWithoutUsingNETSdkDefaults);
         }
     }
 }
