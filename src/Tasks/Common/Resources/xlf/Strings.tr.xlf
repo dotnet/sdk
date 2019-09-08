@@ -391,6 +391,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1069: Bu proje, .NET Standard 1.5 veya üzerini hedefleyen bir kitaplık kullanıyor ve proje .NET Framework’ün bu .NET Standard sürümü için yerleşik destek sunmayan bir sürümünü hedefliyor. Bilinen sorunları görmek için https://aka.ms/net-standard-known-issues adresini ziyaret edin. Hedeflenen sürümü .NET Framework 4.7.2 olarak değiştirmeyi göz önünde bulundurun.</target>
         <note>{StrBegin="NETSDK1069: "}</note>
       </trans-unit>
+      <trans-unit id="NETFrameworkWithoutUsingNETSdkDefaults">
+        <source>NETSDK1115: The current .NET SDK does not support .NET Framework below 5 without using .NET SDK Defaults. It is likely due to a mismatch between C++/CLI project CLRSupport property and TargetFramework.</source>
+        <target state="new">NETSDK1115: The current .NET SDK does not support .NET Framework below 5 without using .NET SDK Defaults. It is likely due to a mismatch between C++/CLI project CLRSupport property and TargetFramework.</target>
+        <note>{StrBegin="NETSDK1115: "}</note>
+      </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
         <target state="translated">NETSDK1084: Belirtilen RuntimeIdentifier '{0}' için kullanılabilecek bir uygulama konağı yok.</target>

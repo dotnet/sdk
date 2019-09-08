@@ -391,6 +391,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1069: Dieses Projekt verwendet eine Bibliothek, die auf .NET Standard 1.5 oder höher ausgerichtet ist, und das Projekt ist auf eine Version von .NET Framework ausgerichtet, die keine integrierte Unterstützung für diese .NET Standard-Version bietet. Besuchen Sie https://aka.ms/net-standard-known-issues for a set of known issues. Ziehen Sie eine neue Ausrichtung auf .NET Framework 4.7.2 in Betracht.</target>
         <note>{StrBegin="NETSDK1069: "}</note>
       </trans-unit>
+      <trans-unit id="NETFrameworkWithoutUsingNETSdkDefaults">
+        <source>NETSDK1115: The current .NET SDK does not support .NET Framework below 5 without using .NET SDK Defaults. It is likely due to a mismatch between C++/CLI project CLRSupport property and TargetFramework.</source>
+        <target state="new">NETSDK1115: The current .NET SDK does not support .NET Framework below 5 without using .NET SDK Defaults. It is likely due to a mismatch between C++/CLI project CLRSupport property and TargetFramework.</target>
+        <note>{StrBegin="NETSDK1115: "}</note>
+      </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
         <target state="translated">NETSDK1084: Für den angegebenen RuntimeIdentifier "{0}" ist kein Anwendungshost verfügbar.</target>
