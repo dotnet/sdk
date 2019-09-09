@@ -27,7 +27,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ImportGroup>
     <Import Project="$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolution.targets" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolution.targets') and '$(Language)' != 'C++'" />
-    <Import Project="$(MSBuildThisFileDirectory)Microsoft.NoOpPackageDependencyResolution.targets" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.NoOpPackageDependencyResolution.targets') and '$(Language)' == 'C++'" />
+    <Import Project="$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolutionStubs.targets" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.NoOpPackageDependencyResolution.targets') and '$(Language)' == 'C++'" />
   </ImportGroup>
 
   <Import Project="Microsoft.NET.Sdk.DefaultItems.targets" />
