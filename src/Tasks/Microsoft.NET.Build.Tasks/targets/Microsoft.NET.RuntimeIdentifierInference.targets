@@ -158,6 +158,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(Language)' == 'C++' and $(OutputType) == 'Exe' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
                  ResourceName="NoSupportCppExeDotnetCore" />
 
+    <NETSdkError Condition="'$(Language)' == 'C++' and $(EnableComHosting) == 'true'"
+                 ResourceName="NoSupportCppEnableComHosting" />
+
   </Target>
 
   <Target Name="_CheckForNETCoreSdkIsPreview"

@@ -92,5 +92,36 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining(Strings.NETFrameworkWithoutUsingNETSdkDefaults);
         }
+
+        [FullMSBuildOnlyFact]
+        public void It_fails_with_error_message_on_EnableComHosting()
+        {
+            //  Debugger.Launch();
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
+                .WithSource()
+                .WithProjectChanges((projectPath, project) =>
+                {
+                    if (Path.GetExtension(projectPath) == ".vcxproj")
+                    {
+                        XNamespace ns = project.Root.Name.Namespace;
+
+                        var globalPropertyGroup = project.Root
+                            .Descendants(ns + "PropertyGroup")
+                            .Where(e => e.Attribute("Label")?.Value == "Globals")
+                            .Single();
+                        globalPropertyGroup.Add(new XElement(ns + "EnableComHosting", "true"));
+                    }
+                });
+
+            WorkaroundSDKBlockOnAssetsJsonExistence(testAsset);
+
+            new BuildCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest"))
+                .Execute("-p:Platform=x64")
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining(Strings.NoSupportCppEnableComHosting);
+        }
     }
 }

@@ -416,6 +416,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1082: aucun pack d'exécution lié à {0} n'est disponible pour le RuntimeIdentifier spécifié '{1}'.</target>
         <note>{StrBegin="NETSDK1082: "}</note>
       </trans-unit>
+      <trans-unit id="NoSupportCppEnableComHosting">
+        <source>NETSDK1119: Does not support EnableComHosting of C++/CLI project targeting dotnet core.</source>
+        <target state="new">NETSDK1119: Does not support EnableComHosting of C++/CLI project targeting dotnet core.</target>
+        <note>{StrBegin="NETSDK1119: "}</note>
+      </trans-unit>
       <trans-unit id="NoSupportCppExeDotnetCore">
         <source>NETSDK1116: Does not support build of C++/CLI Application project targeting dotnet core.</source>
         <target state="new">NETSDK1116: Does not support build of C++/CLI Application project targeting dotnet core.</target>

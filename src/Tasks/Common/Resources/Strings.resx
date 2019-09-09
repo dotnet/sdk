@@ -580,4 +580,8 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1118: Does not support Pack of C++/CLI project targeting dotnet core.</value>
     <comment>{StrBegin="NETSDK1118: "}</comment>
   </data>
+  <data name="NoSupportCppEnableComHosting" xml:space="preserve">
+    <value>NETSDK1119: Does not support EnableComHosting of C++/CLI project targeting dotnet core.</value>
+    <comment>{StrBegin="NETSDK1119: "}</comment>
+  </data>
 </root>
