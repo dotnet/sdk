@@ -4,6 +4,7 @@
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -28,7 +29,9 @@ namespace Microsoft.NET.Build.Tests
             new PackCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest", "NETCoreCppCliTest.vcxproj"))
                 .Execute("/restore", "-p:Platform=x64")
                 .Should()
-                .Fail();
+                .Fail()
+                .And
+                .HaveStdOutContaining(Strings.NoSupportCppPackDotnetCore);
         }
     }
 }
