@@ -27,7 +27,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ImportGroup>
     <Import Project="$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolution.targets" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolution.targets') and '$(Language)' != 'C++'" />
-    <Import Project="$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolutionStubs.targets" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.NoOpPackageDependencyResolution.targets') and '$(Language)' == 'C++'" />
+    <Import Project="$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolutionStubs.targets" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.PackageDependencyResolutionStubs.targets') and '$(Language)' == 'C++'" />
   </ImportGroup>
 
   <Import Project="Microsoft.NET.Sdk.DefaultItems.targets" />
@@ -163,7 +163,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             ResolveRuntimePackAssets;
                             _ComputePackageReferencePublish"
           BeforeTargets="CopyFilesToOutputDirectory"
-          Condition="'$(GenerateDependencyFile)' == 'true' and ('$(TargetExt)' == 'exe' or '$(Language)' != 'C++')"
+          Condition="'$(GenerateDependencyFile)' == 'true' and '$(Language)' != 'C++'"
           Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects)"
           Outputs="$(ProjectDepsFilePath)">
 
