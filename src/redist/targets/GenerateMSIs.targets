@@ -231,7 +231,7 @@
     
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
                       '$(SdkMSIInstallerFile)' ^
-                      '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)' ^
                       '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^

@@ -46,8 +46,9 @@
       <SharedFrameworkRid>$(CoreSetupRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition=" '$(ProductMonikerRid)' == 'linux-musl-x64' ">$(ProductMonikerRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
-      <CombinedFrameworkHostCompressedFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostCompressedFileName>
-
+      <CombinedFrameworkHostArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
+      <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
+      
       <AspNetCoreSharedFxInstallerRid>$(SharedFrameworkRid)</AspNetCoreSharedFxInstallerRid>
       <AspNetCoreSharedFxInstallerRid Condition="'$(SharedFrameworkRid)' == 'rhel.6-x64'">linux-x64</AspNetCoreSharedFxInstallerRid>
       <AspNetCoreSharedFxArchiveRid>$(AspNetCoreSharedFxInstallerRid)</AspNetCoreSharedFxArchiveRid>
@@ -55,16 +56,15 @@
 
       <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND '$(HostOSName)' != 'osx' ">aspnetcore-runtime-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
       <!-- Note: we use the "-internal" archives and installers that contain only the aspnetcore shared framework, and shouldn't overlap with Microsoft.NETCore.App. -->
-      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxInstallerFileName>
+      <DownloadedAspNetCoreSharedFxWixLibFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxWixLibFileName>
       <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
       <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-targeting-pack-$(AspNetTargetingPackVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetCoreV2ModuleInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcoremodule_$(Architecture)_en_v2$(InstallerExtension)</DownloadedAspNetCoreV2ModuleInstallerFileName>
       <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(AspNetCoreVersion)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
       <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(AspNetCoreVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
-      <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopPackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
-
       <!-- Used to detect if ASP.NET Core is built against the same version of Microsoft.NETCore.App. -->
       <AspNetCoreSharedFxBaseRuntimeVersionFileName>aspnetcore_base_runtime.version</AspNetCoreSharedFxBaseRuntimeVersionFileName>
-    </PropertyGroup>
+  </PropertyGroup>
 
     <PropertyGroup>
       <CoreSetupRootUrl>$(CoreSetupBlobRootUrl)Runtime/</CoreSetupRootUrl>
@@ -82,7 +82,7 @@
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
         <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
-        <DownloadFileName>$(CombinedFrameworkHostCompressedFileName)</DownloadFileName>
+        <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
@@ -212,9 +212,23 @@
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxWixLibFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi'">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetCoreSharedFxWixLibFileName)</DownloadFileName>
+        <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedAspNetCoreV2ModuleInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi'">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetCoreV2ModuleInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
 
