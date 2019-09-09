@@ -191,7 +191,18 @@
 
     <MakeDir Directories="$(ArtifactsTestResultsDir)" />
 
-    <Exec Command="dotnet new tool-manifest"
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+      <ToolRunPrefix>$(ToolRunPrefix)set MSBuildSDKsPath= &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_HOST_PATH= &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR= &amp;&amp; </ToolRunPrefix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_HOST_PATH &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
+    </PropertyGroup>
+    
+    <Exec Command="$(ToolRunPrefix)dotnet new tool-manifest"
       WorkingDirectory="$(TestLocalToolFolder)"/>
 
     <PropertyGroup>
@@ -202,14 +213,12 @@
       
       <InstallToolCommand>$(InstallToolCommand) --version $(SdkTestPackageVersion)</InstallToolCommand>
       <InstallToolCommand>$(InstallToolCommand) --add-source $(SdkTestPackageFeed)</InstallToolCommand>
-
-
     </PropertyGroup>
     
-    <Exec Command="$(InstallToolCommand)"
+    <Exec Command="$(ToolRunPrefix)$(InstallToolCommand)"
       WorkingDirectory="$(TestLocalToolFolder)"/>
 
-    <Exec Command="dotnet tool restore"
+    <Exec Command="$(ToolRunPrefix)dotnet tool restore"
       WorkingDirectory="$(TestLocalToolFolder)"/>
 
     <PropertyGroup>
@@ -231,17 +240,6 @@
     <PropertyGroup Condition="('$(OS)' == 'Windows_NT') And ('$(Architecture)' == 'x86')">
       <!-- Add list of tests to skip on x86 -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipx86.xml"</TestArgs>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-      <ToolRunPrefix>$(ToolRunPrefix)set MSBuildSDKsPath= &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_HOST_PATH= &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR= &amp;&amp; </ToolRunPrefix>      
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_HOST_PATH &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
 
     <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
