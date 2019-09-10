@@ -246,6 +246,11 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipx86.xml"</TestArgs>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(IslinuxPortable)' == 'true' ">
+      <!-- Add list of tests to skip on Linux Portable -->
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
+    </PropertyGroup>
+
     <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
           WorkingDirectory="$(TestLocalToolFolder)"
           EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
