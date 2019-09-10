@@ -61,7 +61,7 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [Fact]
+        [Fact(Skip = "Need support for ASP.NET on .NET Core 3.1")]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
             var directory = TestAssets.CreateTestDirectory();
