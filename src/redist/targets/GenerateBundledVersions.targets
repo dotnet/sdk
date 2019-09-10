@@ -30,6 +30,11 @@
       <_NETStandardLibraryPackageVersion>@(_NETStandardLibraryPackageVersions->Distinct())</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>@(_NETCorePlatformsPackageVersions->Distinct())</_NETCorePlatformsPackageVersion>
 
+      <_NETCoreApp30PackageVersion>3.0.0-rc1-19456-20</_NETCoreApp30PackageVersion>
+      <_NETCoreApp30TargetingPackVersion>$(_NETCoreApp30PackageVersion)</_NETCoreApp30TargetingPackVersion>
+      <_MicrosoftWindowsDesktop30PackageVersion>$(_NETCoreApp30PackageVersion)</_MicrosoftWindowsDesktop30PackageVersion>
+      <_MicrosoftWindowsDesktop30TargetingPackVersion>$(_NETCoreApp30TargetingPackVersion)</_MicrosoftWindowsDesktop30TargetingPackVersion>
+
       <!-- Use only major and minor in target framework version -->
       <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
       <_NETStandardTargetFrameworkVersion>$(_NETStandardLibraryPackageVersion.Split('.')[0]).$(_NETStandardLibraryPackageVersion.Split('.')[1])</_NETStandardTargetFrameworkVersion>
@@ -79,6 +84,10 @@
         linux-x64;
         linux-arm;
         linux-arm64" />
+
+      <NetCore30RuntimePackRids Include="linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;rhel.6-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm;win-arm64;win-x64;win-x86"/>
+      <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
+      
     </ItemGroup>
 
     <!--
@@ -107,11 +116,11 @@
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.0"
-                               LatestVersion="2.1.12" />
+                               LatestVersion="2.1.13" />
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
-                               LatestVersion="2.2.6" />
+                               LatestVersion="2.2.7" />
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="3.0"
                                DefaultVersion="$(_NETCoreAppPackageVersion)"
@@ -120,20 +129,20 @@
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.12"/>
+                               LatestVersion="2.1.13"/>
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.12"/>
+                               LatestVersion="2.1.13"/>
 
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
-                               LatestVersion="2.2.6"/>
+                               LatestVersion="2.2.7"/>
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
-                               LatestVersion="2.2.6"/>
+                               LatestVersion="2.2.7"/>
     </ItemGroup>
 
     <PropertyGroup>
@@ -171,8 +180,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     @(ImplicitPackageVariable->'<ImplicitPackageReferenceVersion Include="%(Identity)" TargetFrameworkVersion="%(TargetFrameworkVersion)" DefaultVersion="%(DefaultVersion)" LatestVersion="%(LatestVersion)"/>', '
     ')
 
+    <!-- .NET Core 3.1 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
-                              TargetFramework="netcoreapp3.0"
+                              TargetFramework="netcoreapp3.1"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
                               DefaultRuntimeFrameworkVersion="$(_NETCoreAppPackageVersion)"
                               LatestRuntimeFrameworkVersion="$(_NETCoreAppPackageVersion)"
@@ -184,14 +194,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
-                      TargetFramework="netcoreapp3.0"
+                      TargetFramework="netcoreapp3.1"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NETCoreAppPackageVersion)"
                       AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                       />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
-                              TargetFramework="netcoreapp3.0"
+                              TargetFramework="netcoreapp3.1"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
@@ -203,7 +213,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
-                              TargetFramework="netcoreapp3.0"
+                              TargetFramework="netcoreapp3.1"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
@@ -216,7 +226,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
-                              TargetFramework="netcoreapp3.0"
+                              TargetFramework="netcoreapp3.1"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
@@ -224,6 +234,65 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              Profile="WindowsForms"
+                              />
+
+    <!-- .NET Core 3.0 -->
+
+    <KnownFrameworkReference Include="Microsoft.NETCore.App"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.NETCore.App"
+                              DefaultRuntimeFrameworkVersion="$(_NETCoreApp30PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(_NETCoreApp30PackageVersion)"
+                              TargetingPackName="Microsoft.NETCore.App.Ref"
+                              TargetingPackVersion="$(_NETCoreApp30TargetingPackVersion)"
+                              RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(NetCore30RuntimePackRids, '%3B')"
+                              IsTrimmable="true"
+                              />
+
+    <KnownAppHostPack Include="Microsoft.NETCore.App"
+                      TargetFramework="netcoreapp3.0"
+                      AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
+                      AppHostPackVersion="$(_NETCoreApp30PackageVersion)"
+                      AppHostRuntimeIdentifiers="@(NetCore30RuntimePackRids, '%3B')"
+                      />
+    
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(_MicrosoftWindowsDesktop30PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(_MicrosoftWindowsDesktop30PackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(_MicrosoftWindowsDesktop30TargetingPackVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktop30RuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(_MicrosoftWindowsDesktop30PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(_MicrosoftWindowsDesktop30PackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(_MicrosoftWindowsDesktop30TargetingPackVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktop30RuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              Profile="WPF"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
+                              TargetFramework="netcoreapp3.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(_MicrosoftWindowsDesktop30PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(_MicrosoftWindowsDesktop30PackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(_MicrosoftWindowsDesktop30TargetingPackVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktop30RuntimePackRids, '%3B')"
                               IsWindowsOnly="true"
                               Profile="WindowsForms"
                               />
