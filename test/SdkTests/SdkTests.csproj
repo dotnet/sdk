@@ -192,9 +192,9 @@
     <MakeDir Directories="$(ArtifactsTestResultsDir)" />
 
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-      <ToolRunPrefix>$(ToolRunPrefix)set MSBuildSDKsPath= &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_HOST_PATH= &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR= &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)set MSBuildSDKsPath=&amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_HOST_PATH=&amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR=&amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
       <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath &amp;&amp; </ToolRunPrefix>
