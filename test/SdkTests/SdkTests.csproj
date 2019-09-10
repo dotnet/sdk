@@ -27,6 +27,7 @@
     <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
     <DotnetToTestPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet-with-previous-runtimes\</DotnetToTestPath>
     <TestExecutionDirectory>$([MSBuild]::NormalizePath($(ArtifactsTmpDir), 'dotnetSdkTests'))</TestExecutionDirectory>
+    <DOTNET_CLI_HOME>$(ArtifactsTmpDir)DOTNET_CLI_HOME\</DOTNET_CLI_HOME>
   </PropertyGroup>
 
   <ItemGroup>
@@ -203,7 +204,8 @@
     </PropertyGroup>
     
     <Exec Command="$(ToolRunPrefix)dotnet new tool-manifest"
-      WorkingDirectory="$(TestLocalToolFolder)"/>
+      WorkingDirectory="$(TestLocalToolFolder)"
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
 
     <PropertyGroup>
       <SdkTestPackageVersion>$(MicrosoftNETSdkPackageVersion)</SdkTestPackageVersion>
@@ -216,10 +218,12 @@
     </PropertyGroup>
     
     <Exec Command="$(ToolRunPrefix)$(InstallToolCommand)"
-      WorkingDirectory="$(TestLocalToolFolder)"/>
+      WorkingDirectory="$(TestLocalToolFolder)"
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
 
-    <Exec Command="$(ToolRunPrefix)dotnet tool restore"
-      WorkingDirectory="$(TestLocalToolFolder)"/>
+    <!--<Exec Command="$(ToolRunPrefix)dotnet tool restore"
+      WorkingDirectory="$(TestLocalToolFolder)"
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>-->
 
     <PropertyGroup>
       <ResultsXmlPath>$(ArtifactsTestResultsDir)$(TestProjectName).xml</ResultsXmlPath>
@@ -243,7 +247,8 @@
     </PropertyGroup>
 
     <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
-          WorkingDirectory="$(TestLocalToolFolder)" />
+          WorkingDirectory="$(TestLocalToolFolder)"
+          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
   </Target>
   
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
