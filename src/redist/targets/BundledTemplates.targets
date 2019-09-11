@@ -5,7 +5,6 @@
       <AspNetCore30VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor30Templates.IndexOf('-'))</AspNetCore30VersionPreReleaseSeparator>
       <AspNetCore30VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor30Templates)</AspNetCore30VersionMajorMinorPatchVersion>
       <AspNetCore30VersionMajorMinorPatchVersion Condition=" '$(AspNetCore30VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor30Templates.Substring(0, $(AspNetCore30VersionPreReleaseSeparator)))</AspNetCore30VersionMajorMinorPatchVersion>
-      <BundledTemplates30Version>$(AspNetCore30VersionMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplates30Version>
       <BundledTemplates30MSIVersion>$(AspNetCore30VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates30MSIVersion>
       <BundledTemplates30InstallPath>$(AspNetCore30VersionMajorMinorPatchVersion)</BundledTemplates30InstallPath>
       <BundledTemplates30InstallPath Condition=" '$(AspNetCore30VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates30InstallPath)-$(VersionSuffix)</BundledTemplates30InstallPath>
@@ -16,7 +15,6 @@
       <AspNetCore22VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor22Templates.IndexOf('-'))</AspNetCore22VersionPreReleaseSeparator>
       <AspNetCore22VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor22Templates)</AspNetCore22VersionMajorMinorPatchVersion>
       <AspNetCore22VersionMajorMinorPatchVersion Condition=" '$(AspNetCore22VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor22Templates.Substring(0, $(AspNetCore22VersionPreReleaseSeparator)))</AspNetCore22VersionMajorMinorPatchVersion>
-      <BundledTemplates22Version>$(AspNetCore22VersionMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplates22Version>
       <BundledTemplates22MSIVersion>$(AspNetCore22VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates22MSIVersion>
       <BundledTemplates22InstallPath>$(AspNetCore22VersionMajorMinorPatchVersion)</BundledTemplates22InstallPath>
       <BundledTemplates22InstallPath Condition=" '$(AspNetCore22VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates22InstallPath)-$(VersionSuffix)</BundledTemplates22InstallPath>
@@ -27,7 +25,6 @@
       <AspNetCore21VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor21Templates.IndexOf('-'))</AspNetCore21VersionPreReleaseSeparator>
       <AspNetCore21VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor21Templates)</AspNetCore21VersionMajorMinorPatchVersion>
       <AspNetCore21VersionMajorMinorPatchVersion Condition=" '$(AspNetCore21VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor21Templates.Substring(0, $(AspNetCore21VersionPreReleaseSeparator)))</AspNetCore21VersionMajorMinorPatchVersion>
-      <BundledTemplates21Version>$(AspNetCore21VersionMajorMinorPatchVersion)-$(VersionSuffix)</BundledTemplates21Version>
       <BundledTemplates21MSIVersion>$(AspNetCore21VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates21MSIVersion>
       <BundledTemplates21InstallPath>$(AspNetCore21VersionMajorMinorPatchVersion)</BundledTemplates21InstallPath>
       <BundledTemplates21InstallPath Condition=" '$(AspNetCore21VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates21InstallPath)-$(VersionSuffix)</BundledTemplates21InstallPath>

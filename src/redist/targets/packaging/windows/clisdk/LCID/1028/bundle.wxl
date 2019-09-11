@@ -56,16 +56,16 @@
     • .NET Core Windows Desktop 執行階段 [WINFORMSANDWPFVERSION]
 
 此產品會收集使用方式資料
-    • 如需詳細資訊或退出 https://aka.ms/dotnet-cli-telemetry
+    • 如需詳細資訊或退出，請前往 https://aka.ms/dotnet-cli-telemetry
 
 資源
-    • 核心文件 https://aka.ms/dotnet-docs
-    • SDK 文件 https://aka.ms/dotnet-cli-docs
-    • 版本資訊 https://aka.ms/netcore3releasenotes
-    • 教學課程 https://aka.ms/dotnet-tutorials</String>
+    • 如需 .NET Core 文件，請前往 https://aka.ms/dotnet-docs
+    • 如需 SDK 文件，請前往 https://aka.ms/dotnet-sdk-docs
+    • 如需版本資訊，請前往 https://aka.ms/netcore3releasenotes
+    • 如需教學課程，請前往 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
   <String Id="WelcomeDescription">
-    .NET Core 是開發平台，可用來建置命令列應用程式、微服務和新式網站。其為開放原始碼、跨平台且由 Microsoft 支援。希望您喜歡!</String>
+    .NET Core 是 Microsoft 支援的跨平台開放原始碼。您可以用它以 C#、F# 或 VB 建置下一個應用程式。希望您會喜歡!</String>
   <String Id="LearnMoreTitle">深入了解 .NET Core</String>
   <String Id="ResourcesHeader">資源</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;核心文件&lt;/A&gt;</String>

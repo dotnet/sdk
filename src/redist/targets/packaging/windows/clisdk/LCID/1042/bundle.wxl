@@ -47,7 +47,7 @@
   <String Id="FilesInUseDontCloseRadioButton">애플리케이션을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
   <String Id="FilesInUseOkButton">확인(&amp;O)</String>
   <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
-  <String Id="FirstTimeWelcomeMessage">설치 완료되었습니다.
+  <String Id="FirstTimeWelcomeMessage">설치가 완료되었습니다.
 
 다음이 '[DOTNETHOME]'에 설치되었습니다.
     • .NET Core SDK [DOTNETSDKVERSION]
@@ -59,13 +59,13 @@
     • 추가 정보 및 옵트아웃 https://aka.ms/dotnet-cli-telemetry
 
 리소스
-    • Core 설명서 https://aka.ms/dotnet-docs
-    • SDK 설명서 https://aka.ms/dotnet-cli-docs
+    • .NET Core 설명서 https://aka.ms/dotnet-docs
+    • SDK 설명서 https://aka.ms/dotnet-sdk-docs
     • 릴리스 정보 https://aka.ms/netcore3releasenotes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
   <String Id="WelcomeDescription">
-    .NET Core는 명령줄 애플리케이션, 마이크로 서비스 및 최신 웹 사이트를 빌드하는 데 사용할 수 있는 개발 플랫폼입니다. Microsoft가 지원하는 플랫폼 간 오픈 소스입니다. 즐기시기 바랍니다!</String>
+    Microsoft가 지원하는 플랫폼 간 오픈 소스인 .NET Core를 사용하여 C#, F# 또는 VB로 다음 앱을 빌드할 수 있습니다. .NET Core를 유용하게 사용하시길 바랍니다.</String>
   <String Id="LearnMoreTitle">.NET Core에 대한 자세한 정보</String>
   <String Id="ResourcesHeader">리소스</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Core 설명서&lt;/A&gt;</String>

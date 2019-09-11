@@ -60,12 +60,12 @@ Questo prodotto consente di raccogliere i dati sull'utilizzo
 
 Resources
     • Documentazione di .NET Core https://aka.ms/dotnet-docs
-    • Documentazione dell'SDK https://aka.ms/dotnet-cli-docs
+    • Documentazione dell'SDK https://aka.ms/dotnet-sdk-docs
     • Note sulla versione https://aka.ms/netcore3releasenotes
     • Esercitazioni https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
   <String Id="WelcomeDescription">
-    NET Core è una piattaforma di sviluppo che è possibile usare per creare microservizi, siti Web moderni e applicazioni dalla riga di comando. È open source, multipiattaforma e supportata da Microsoft.</String>
+    .NET Core è open source, multipiattaforma e supportata da Microsoft. È possibile usarla per compilare la prossima app con C#, F# o VB.</String>
   <String Id="LearnMoreTitle">Altre informazioni su .NET Core</String>
   <String Id="ResourcesHeader">Risorse</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentazione di .NET Core&lt;/A&gt;</String>

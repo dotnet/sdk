@@ -46,7 +46,7 @@
       <RemainingFiles Remove="$(SdkOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\netcoreapp2.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\netcoreapp*\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\**\*" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
@@ -140,7 +140,7 @@
 
     <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
     <Move SourceFiles="@(PdbsToMove)"
-          DestinationFiles="@(PdbsToMove->'$(ArtifactsShippingSymbolsDir)/sdk/$(SdkVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(SdkVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="ChmodLayout"

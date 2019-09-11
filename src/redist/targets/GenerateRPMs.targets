@@ -287,12 +287,9 @@
     <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppHostPackInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedNetStandardTargetingPackInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedAspNetTargetingPackInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedSharedHostInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedHostFxrInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedSharedFrameworkInstallerFile)" />
-    <!-- Ignore dependencies, which may have an incoherent dependency on dotnet-runtime -->
-    <Exec Command="sudo rpm -iv --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
 
     <Exec Command="sudo rpm -iv $(SdkRPMInstallerFile)" />
 
@@ -305,11 +302,9 @@
     
     <!-- Clean up Packages -->
     <Exec Command="sudo rpm -ev --nodeps $(SdkRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(AspNetCoreSharedFxRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(SharedFxRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(HostFxrRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(SharedHostRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(AspNetTargetingPackRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(NetStandardTargetingPackRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(NetCoreAppTargetingPackRpmPackageName)" />
     <Exec Command="sudo rpm -ev --nodeps $(NetCoreAppHostPackRpmPackageName)" />
