@@ -45,6 +45,11 @@
   </TestList>
   
   <SkippedTests>
+	<Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToUseVB.It_builds_a_vb_wpf_app"
+            Skip="true"
+            Issue="https://github.com/dotnet/wpf/issues/1734"
+            Reason="VB templates removed from wpf"/>
+
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAHelloWorldProject.It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run"
             Skip="true"
             Issue="https://github.com/dotnet/sdk/pull/3574"
