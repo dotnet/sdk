@@ -27,6 +27,7 @@
     <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
     <DotnetToTestPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet-with-previous-runtimes\</DotnetToTestPath>
     <TestExecutionDirectory>$([MSBuild]::NormalizePath($(ArtifactsTmpDir), 'dotnetSdkTests'))</TestExecutionDirectory>
+    <DOTNET_CLI_HOME>$(ArtifactsTmpDir)DOTNET_CLI_HOME\</DOTNET_CLI_HOME>
   </PropertyGroup>
 
   <ItemGroup>
@@ -191,8 +192,20 @@
 
     <MakeDir Directories="$(ArtifactsTestResultsDir)" />
 
-    <Exec Command="dotnet new tool-manifest"
-      WorkingDirectory="$(TestLocalToolFolder)"/>
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+      <ToolRunPrefix>$(ToolRunPrefix)set MSBuildSDKsPath=&amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_HOST_PATH=&amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR=&amp;&amp; </ToolRunPrefix>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_HOST_PATH &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
+    </PropertyGroup>
+    
+    <Exec Command="$(ToolRunPrefix)dotnet new tool-manifest"
+      WorkingDirectory="$(TestLocalToolFolder)"
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
 
     <PropertyGroup>
       <SdkTestPackageVersion>$(MicrosoftNETSdkPackageVersion)</SdkTestPackageVersion>
@@ -202,15 +215,15 @@
       
       <InstallToolCommand>$(InstallToolCommand) --version $(SdkTestPackageVersion)</InstallToolCommand>
       <InstallToolCommand>$(InstallToolCommand) --add-source $(SdkTestPackageFeed)</InstallToolCommand>
-
-
     </PropertyGroup>
     
-    <Exec Command="$(InstallToolCommand)"
-      WorkingDirectory="$(TestLocalToolFolder)"/>
+    <Exec Command="$(ToolRunPrefix)$(InstallToolCommand)"
+      WorkingDirectory="$(TestLocalToolFolder)"
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
 
-    <Exec Command="dotnet tool restore"
-      WorkingDirectory="$(TestLocalToolFolder)"/>
+    <!--<Exec Command="$(ToolRunPrefix)dotnet tool restore"
+      WorkingDirectory="$(TestLocalToolFolder)"
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>-->
 
     <PropertyGroup>
       <ResultsXmlPath>$(ArtifactsTestResultsDir)$(TestProjectName).xml</ResultsXmlPath>
@@ -233,19 +246,14 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipx86.xml"</TestArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-      <ToolRunPrefix>$(ToolRunPrefix)set MSBuildSDKsPath= &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_HOST_PATH= &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR= &amp;&amp; </ToolRunPrefix>      
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_HOST_PATH &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
+    <PropertyGroup Condition=" '$(IslinuxPortable)' == 'true' ">
+      <!-- Add list of tests to skip on Linux Portable -->
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
     </PropertyGroup>
 
     <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
-          WorkingDirectory="$(TestLocalToolFolder)" />
+          WorkingDirectory="$(TestLocalToolFolder)"
+          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
   </Target>
   
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
