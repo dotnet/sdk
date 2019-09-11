@@ -8,8 +8,7 @@ param(
     [Parameter(Mandatory=$true)][string]$NuspecFile,
     [Parameter(Mandatory=$true)][string]$NupkgFile,
     [Parameter(Mandatory=$false)][string]$Architecture,
-    [Parameter(Mandatory=$false)][string]$MmVersion,
-    [Parameter(Mandatory=$false)][string]$CabPath
+    [Parameter(Mandatory=$false)][string]$MmVersion
 )
 
 $NuGetDir = Join-Path $BinDir  "nuget"
@@ -34,5 +33,5 @@ if (Test-Path $NupkgFile) {
     Remove-Item -Force $NupkgFile
 }
 
-& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties PAYLOAD_FILES=$ContentPath`;DOTNET_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR_MINOR=$MmVersion
+& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties PAYLOAD_FILES=$ContentPath`;ARCH=$Architecture`;MAJOR_MINOR=$MmVersion
 Exit $LastExitCode
