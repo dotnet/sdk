@@ -417,18 +417,18 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1082: "}</note>
       </trans-unit>
       <trans-unit id="NoSupportCppEnableComHosting">
-        <source>NETSDK1119: Does not support EnableComHosting of C++/CLI project targeting dotnet core.</source>
-        <target state="new">NETSDK1119: Does not support EnableComHosting of C++/CLI project targeting dotnet core.</target>
+        <source>NETSDK1119: C++/CLI projects targeting .NET Core cannot use EnableComHosting=true.</source>
+        <target state="new">NETSDK1119: C++/CLI projects targeting .NET Core cannot use EnableComHosting=true.</target>
         <note>{StrBegin="NETSDK1119: "}</note>
       </trans-unit>
       <trans-unit id="NoSupportCppExeDotnetCore">
-        <source>NETSDK1116: Does not support build of C++/CLI Application project targeting dotnet core.</source>
-        <target state="new">NETSDK1116: Does not support build of C++/CLI Application project targeting dotnet core.</target>
+        <source>NETSDK1116: C++/CLI projects targeting .NET Core must be libraries and cannot be applications.</source>
+        <target state="new">NETSDK1116: C++/CLI projects targeting .NET Core must be libraries and cannot be applications.</target>
         <note>{StrBegin="NETSDK1116: "}</note>
       </trans-unit>
       <trans-unit id="NoSupportCppPackDotnetCore">
-        <source>NETSDK1118: Does not support Pack of C++/CLI project targeting dotnet core.</source>
-        <target state="new">NETSDK1118: Does not support Pack of C++/CLI project targeting dotnet core.</target>
+        <source>NETSDK1118: C++/CLI projects targeting .NET Core cannot be packed.</source>
+        <target state="new">NETSDK1118: C++/CLI projects targeting .NET Core cannot be packed.</target>
         <note>{StrBegin="NETSDK1118: "}</note>
       </trans-unit>
       <trans-unit id="NoSupportCppPublishDotnetCore">
