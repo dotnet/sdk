@@ -163,7 +163,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             ResolveRuntimePackAssets;
                             _ComputePackageReferencePublish"
           BeforeTargets="CopyFilesToOutputDirectory"
-          Condition="'$(GenerateDependencyFile)' == 'true' and '$(Language)' != 'C++'"
+          Condition="'$(GenerateDependencyFile)' == 'true'"
           Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects)"
           Outputs="$(ProjectDepsFilePath)">
 
