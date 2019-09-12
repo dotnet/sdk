@@ -577,7 +577,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1117: "}</comment>
   </data>
   <data name="NoSupportCppPackDotnetCore" xml:space="preserve">
-    <value>NETSDK1118: Does not support Pack of C++/CLI project targeting dotnet core.</value>
+    <value>NETSDK1118: C++/CLI projects targeting .NET Core cannot be packed.</value>
     <comment>{StrBegin="NETSDK1118: "}</comment>
   </data>
   <data name="NoSupportCppEnableComHosting" xml:space="preserve">
