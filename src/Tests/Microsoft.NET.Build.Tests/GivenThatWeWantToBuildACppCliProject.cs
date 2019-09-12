@@ -9,8 +9,6 @@ using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using NuGet.Frameworks;
-using NuGet.ProjectModel;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
@@ -56,32 +54,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [FullMSBuildOnlyFact]
-        public void It_fails_with_error_message_on_fullframework()
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
-                .WithSource()
-                .WithProjectChanges((projectPath, project) =>
-                {
-                    if (Path.GetExtension(projectPath) == ".vcxproj")
-                    {
-                        XNamespace ns = project.Root.Name.Namespace;
-
-                        project.Root.Descendants(ns + "PropertyGroup")
-                                    .Descendants(ns + "TargetFramework")
-                                    .Single().Value = "net472";
-                    }
-                });
-
-            new BuildCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest"))
-                .Execute("-p:Platform=x64")
-                .Should()
-                .Fail()
-                .And
-                .HaveStdOutContaining(Strings.NETFrameworkWithoutUsingNETSdkDefaults);
-        }
-
-        [FullMSBuildOnlyFact]
         public void Given_no_restore_It_builds_cpp_project()
         {
             var testAsset = _testAssetsManager
@@ -94,9 +66,9 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
+        [FullMSBuildOnlyFact]
         public void It_fails_with_error_message_on_EnableComHosting()
         {
-            //  Debugger.Launch();
             var testAsset = _testAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
@@ -120,6 +92,32 @@ namespace Microsoft.NET.Build.Tests
                 .Fail()
                 .And
                 .HaveStdOutContaining(Strings.NoSupportCppEnableComHosting);
+        }
+
+        [FullMSBuildOnlyFact]
+        public void It_fails_with_error_message_on_fullframework()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
+                .WithSource()
+                .WithProjectChanges((projectPath, project) =>
+                {
+                    if (Path.GetExtension(projectPath) == ".vcxproj")
+                    {
+                        XNamespace ns = project.Root.Name.Namespace;
+
+                        project.Root.Descendants(ns + "PropertyGroup")
+                                    .Descendants(ns + "TargetFramework")
+                                    .Single().Value = "net472";
+                    }
+                });
+
+            new BuildCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest"))
+                .Execute("-p:Platform=x64")
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining(Strings.NETFrameworkWithoutUsingNETSdkDefaults);
         }
     }
 }
