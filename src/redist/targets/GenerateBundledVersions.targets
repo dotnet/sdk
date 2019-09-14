@@ -26,7 +26,7 @@
            Text="Failed to determine the Microsoft.NETCore.Platforms version pulled in Microsoft.NETCore.App" />
 
     <PropertyGroup>
-      <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppPackageVersion)</_NETCoreAppPackageVersion>
+      <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</_NETCoreAppPackageVersion>
       <_NETStandardLibraryPackageVersion>@(_NETStandardLibraryPackageVersions->Distinct())</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>@(_NETCorePlatformsPackageVersions->Distinct())</_NETCorePlatformsPackageVersion>
 
@@ -193,8 +193,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
@@ -205,8 +205,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
@@ -218,8 +218,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopPackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(WindowsDesktopTargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
