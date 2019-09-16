@@ -7,6 +7,13 @@
     <Templates21LayoutPath>$(BaseOutputPath)$(Configuration)\templates-2.1\</Templates21LayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- The aspnetcore blobs will get uploaded to a directory that is not 
+         stabilized. There is not a great package that can be used to identify this version at
+         the moment. For a workaround, use Microsoft.AspNetCore.DeveloperCertificates.XPlat's version. -->
+    <AspNetCoreBlobDirectory>$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)</AspNetCoreBlobDirectory>
+  </PropertyGroup>
   
   <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo;SetBuildDefaults">
     <PropertyGroup>
@@ -188,7 +195,7 @@
 
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
       <BundledLayoutComponent Include="DownloadedAspNetCoreSharedFxArchiveFile">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobDirectory)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath></RelativeLayoutPath>
@@ -198,7 +205,7 @@
            https://github.com/aspnet/AspNetCore/issues/8806 -->
       <BundledLayoutComponent Include="DownloadedAspNetTargetingPackArchiveFile"
                               Condition="'$(InstallerExtension)' == '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobDirectory)</BaseUrl>
         <DownloadFileName>$(AspNetTargetingPackArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath></RelativeLayoutPath>
@@ -206,21 +213,21 @@
       
       <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetTargetingPackVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobDirectory)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' AND '$(DownloadedAspNetCoreSharedFxInstallerFileName)' != '' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobDirectory)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="AspNetCoreSharedFxBaseRuntimeVersionFile"
                                  Condition="!$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobDirectory)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxBaseRuntimeVersionFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
