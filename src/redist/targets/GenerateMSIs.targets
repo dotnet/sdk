@@ -249,11 +249,11 @@
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
                       '$(NugetVersion)' ^
-                      '$(MicrosoftWindowsDesktopPackageVersion)' ^
+                      '$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)' ^
                       '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       '$(SdkDependencyKeyName)' ^
                       '$(Architecture)' ^
-                      '$(MicrosoftNETCoreAppPackageVersion)' ^
+                      '$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)' ^
                       '$(AspNetCoreVersion)' ^
                       '$(CliProductBandVersion)' ^
                       -InformationAction Continue " />
