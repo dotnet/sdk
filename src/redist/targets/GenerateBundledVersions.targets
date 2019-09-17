@@ -34,6 +34,8 @@
       <_NETCoreApp30TargetingPackVersion>$(_NETCoreApp30PackageVersion)</_NETCoreApp30TargetingPackVersion>
       <_MicrosoftWindowsDesktop30PackageVersion>$(_NETCoreApp30PackageVersion)</_MicrosoftWindowsDesktop30PackageVersion>
       <_MicrosoftWindowsDesktop30TargetingPackVersion>$(_NETCoreApp30TargetingPackVersion)</_MicrosoftWindowsDesktop30TargetingPackVersion>
+      <_AspNet30PackageVersion>3.0.0-rc1.19457.4</_AspNet30PackageVersion>
+      <_AspNet30TargetingPackVersion>$(_AspNet30PackageVersion)</_AspNet30TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
       <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
@@ -87,6 +89,17 @@
 
       <NetCore30RuntimePackRids Include="linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;rhel.6-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm;win-arm64;win-x64;win-x86"/>
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
+
+      <AspNetCore30RuntimePackRids Include="
+        win-x64;
+        win-x86;
+        win-arm;
+        osx-x64;
+        linux-musl-x64;
+        linux-musl-arm64;
+        linux-x64;
+        linux-arm;
+        linux-arm64" />
       
     </ItemGroup>
 
@@ -234,8 +247,18 @@ Copyright (c) .NET Foundation. All rights reserved.
                               Profile="WindowsForms"
                               />
 
-    <!-- .NET Core 3.0 -->
+    <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
+                              TargetFramework="netcoreapp5.0"
+                              RuntimeFrameworkName="Microsoft.AspNetCore.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimeWinX64PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimeWinX64PackageVersion)"
+                              TargetingPackName="Microsoft.AspNetCore.App.Ref"
+                              TargetingPackVersion="$(AspNetTargetingPackVersion)"
+                              RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              />
 
+    <!-- .NET Core 3.0 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
@@ -296,12 +319,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimeWinX64PackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimeWinX64PackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(_AspNet30PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(_AspNet30PackageVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
-                              TargetingPackVersion="$(AspNetTargetingPackVersion)"
+                              TargetingPackVersion="$(_AspNet30TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCore30RuntimePackRids, '%3B')"
                               />
                               
     <KnownFrameworkReference Include="NETStandard.Library"
@@ -309,7 +332,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="NETStandard.Library.Ref"
                               TargetingPackVersion="$(NETStandardLibraryRefPackageVersion)"
                               />
-
   </ItemGroup>
 </Project>
 ]]>

@@ -23,7 +23,7 @@ namespace EndToEnd
         [ClassData(typeof(SupportedNetCoreAppVersions))]
         public void ItRollsForwardToTheLatestNetCoreVersion(string minorVersion)
         {
-            if (minorVersion == "3.0")
+            if (minorVersion == "3.0" || minorVersion == "5.0")
             {
                 //  https://github.com/dotnet/core-sdk/issues/621
                 return;
@@ -35,7 +35,7 @@ namespace EndToEnd
         [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItRollsForwardToTheLatestAspNetCoreAppVersion(string minorVersion)
         {
-            if (minorVersion == "3.0")
+            if (minorVersion == "3.0" || minorVersion == "5.0")
             {
                 //  https://github.com/dotnet/core-sdk/issues/621
                 return;
