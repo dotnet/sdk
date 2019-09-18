@@ -298,3 +298,12 @@ Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchP
 Default Value: Specific to each configurable rule ('770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory, by default for most rules)
 
 Example: `dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 770`
+
+#### Configure if only look at Controller-derived classes when considering CSRF
+Option Name: `only_look_at_derived_classes_of_Controller`
+
+Option Values: Boolean values
+
+Default Value: Specific to each configurable rule ('true' by default for most rules)
+
+Example: `dotnet_code_quality.CA5391.only_look_at_derived_classes_of_Controller = false`
