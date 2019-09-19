@@ -155,7 +155,29 @@ Examples:
 |`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
- 
+
+### Configure unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
+Option Name: `unsafe_DllImportSearchPath_bits`
+
+Configurable Rules: CA5393
+
+Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
+
+Default Value: '770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory
+
+Example: `dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770`
+
+### Configure if exclude aspnet core mvc ControllerBase when considering CSRF
+Option Name: `exclude_aspnet_core_mvc_controller_base`
+
+Configurable Rules: CA5391
+
+Option Values: Boolean values
+
+Default Value: `true`
+
+Example: `dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controller_base = false`
+
 ### Dataflow analysis
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code), [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
@@ -289,21 +311,3 @@ Option Values: integral values
 Default Value: Specific to each configurable rule ('100000' by default for most rules)
 
 Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
-
-#### Configure unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
-Option Name: `unsafe_DllImportSearchPath_bits`
-
-Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
-
-Default Value: Specific to each configurable rule ('770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory, by default for most rules)
-
-Example: `dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 770`
-
-#### Configure if only look at Controller-derived classes when considering CSRF
-Option Name: `only_look_at_derived_classes_of_Controller`
-
-Option Values: Boolean values
-
-Default Value: Specific to each configurable rule ('true' by default for most rules)
-
-Example: `dotnet_code_quality.CA5391.only_look_at_derived_classes_of_Controller = false`
