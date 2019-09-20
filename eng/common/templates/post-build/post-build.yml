@@ -17,7 +17,7 @@ parameters:
 
   # Which stages should finish execution before post-build stages start
   validateDependsOn:
-  - Build
+  - build
   publishDependsOn: 
   - Validate
 
