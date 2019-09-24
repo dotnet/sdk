@@ -30,12 +30,12 @@
       <_NETStandardLibraryPackageVersion>@(_NETStandardLibraryPackageVersions->Distinct())</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>@(_NETCorePlatformsPackageVersions->Distinct())</_NETCorePlatformsPackageVersion>
 
-      <_NETCoreApp30PackageVersion>3.0.0-rc1-19456-20</_NETCoreApp30PackageVersion>
+      <_NETCoreApp30PackageVersion>3.0.0</_NETCoreApp30PackageVersion>
       <_NETCoreApp30TargetingPackVersion>$(_NETCoreApp30PackageVersion)</_NETCoreApp30TargetingPackVersion>
       <_MicrosoftWindowsDesktop30PackageVersion>$(_NETCoreApp30PackageVersion)</_MicrosoftWindowsDesktop30PackageVersion>
       <_MicrosoftWindowsDesktop30TargetingPackVersion>$(_NETCoreApp30TargetingPackVersion)</_MicrosoftWindowsDesktop30TargetingPackVersion>
 
-      <_MicrosoftAspNetCoreApp30PackageVersion>3.0.0-rc2.19461.12</_MicrosoftAspNetCoreApp30PackageVersion>
+      <_MicrosoftAspNetCoreApp30PackageVersion>3.0.0</_MicrosoftAspNetCoreApp30PackageVersion>
       <_AspNet30TargetingPackVersion>$(_MicrosoftAspNetCoreApp30PackageVersion)</_AspNet30TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
@@ -77,7 +77,7 @@
     </GetRuntimePackRids>
 
     <ItemGroup>
-      <AspNetCoreRuntimePackRids Include="
+      <AspNetCore30RuntimePackRids Include="
         win-x64;
         win-x86;
         win-arm;
@@ -87,6 +87,8 @@
         linux-x64;
         linux-arm;
         linux-arm64" />
+
+      <AspNetCoreRuntimePackRids Include="$(AspNetCore30RuntimePackRids)" />
 
       <NetCore30RuntimePackRids Include="linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;rhel.6-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm;win-arm64;win-x64;win-x86"/>
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
@@ -319,7 +321,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet30TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCore30RuntimePackRids, '%3B')"
                               />
                               
      <KnownFrameworkReference Include="NETStandard.Library"
