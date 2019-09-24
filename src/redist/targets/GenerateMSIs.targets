@@ -239,6 +239,9 @@
                       '$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedArmNetCoreAppHostPackInstallerFileName)' ^
+                      '$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
                       '$(Templates30MSIInstallerFile)' ^
