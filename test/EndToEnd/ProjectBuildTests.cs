@@ -143,10 +143,12 @@ namespace EndToEnd.Tests
                 .Execute(restoreArgs)
                 .Should().Pass();
 
+            var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             new BuildCommand()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
+                 .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
+                 .WithWorkingDirectory(projectDirectory)
+                 .Execute()
+                 .Should().Pass();
         }
     }
 }
