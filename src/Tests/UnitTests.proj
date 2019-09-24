@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+
+  <PropertyGroup>
+    <HelixType>test/product/</HelixType>
+    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild Condition="'$(HelixBuild)' == ''">123460.01</HelixBuild>
+
+    <IncludeDotNetCli>true</IncludeDotNetCli>
+    <DotNetCliPackageType>sdk</DotNetCliPackageType>
+
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <TestRunNamePrefix>$(AGENT_JOBNAME)</TestRunNamePrefix>
+
+    <EnableXUnitReporter>true</EnableXUnitReporter>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <XUnitProject Include="**\*.Tests.csproj"/>
+
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(HelixAccessToken)' != '' ">
+    <HelixTargetQueue Include="Windows.10.Amd64"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(HelixAccessToken)' == '' ">
+    <HelixTargetQueue Include="Windows.10.Amd64.Open"/>
+  </ItemGroup>
+
+</Project>
