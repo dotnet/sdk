@@ -39,6 +39,7 @@
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
       <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
+      <Templates31MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-31templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates31MSIInstallerFile>
       <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
       <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-22templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
       <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-21templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
@@ -59,7 +60,7 @@
           DependsOnTargets="GenerateLayout;SetupWixProperties;GetCoreSdkGitCommitInfo">
     <!-- Consumed By Publish -->
     <ItemGroup>
-      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
+      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
     </ItemGroup>
 
     <GenerateMsiVersion CommitCount="$(GitCommitCount)"
@@ -72,6 +73,11 @@
     <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="SdkInstallerUpgradeCode" />
+    </GenerateGuidFromName>
+
+    <GenerateGuidFromName Name="$(Templates31MSIInstallerFile)">
+      <Output TaskParameter="OutputGuid"
+          PropertyName="Templates31InstallerUpgradeCode" />
     </GenerateGuidFromName>
 
     <GenerateGuidFromName Name="$(Templates30MSIInstallerFile)">
@@ -192,6 +198,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <TemplatesMsiComponent Include="NetCore31TemplatesMsi">
+        <LayoutPath>$(Templates31LayoutPath.TrimEnd('\'))</LayoutPath>
+        <MSIInstallerFile>$(Templates31MSIInstallerFile)</MSIInstallerFile>
+        <BrandName>$(BundledTemplates31BrandName)</BrandName>
+        <MsiVersion>$(BundledTemplates31MsiVersion)</MsiVersion>
+        <UpgradeCode>$(Templates31InstallerUpgradeCode)</UpgradeCode>
+        <DependencyKeyName>NetCore_Templates_3.1</DependencyKeyName>
+      </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore30TemplatesMsi">
         <LayoutPath>$(Templates30LayoutPath.TrimEnd('\'))</LayoutPath>
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
@@ -244,7 +258,7 @@
                       '$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
-                      '$(Templates30MSIInstallerFile)' ^
+                      '$(Templates31MSIInstallerFile)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
@@ -321,6 +335,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <TemplatesNupkgComponent Include="NetCore31TemplatesNupkg">
+        <MSIInstallerFile>$(Templates31MSIInstallerFile)</MSIInstallerFile>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates31MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
+        <MajorMinorVersion>$(BundledTemplates31MajorMinorVersion)</MajorMinorVersion>
+      </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore30TemplatesNupkg">
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates30MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
