@@ -54,7 +54,8 @@ jobs:
         - _PerfIterations: 25
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
-      - script: eng\CIBuild.cmd
+      - script: eng\common\CIBuild.cmd
+                  -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
@@ -65,9 +66,12 @@ jobs:
           BuildConfig: $(_BuildConfig)
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          HelixAccessToken: ${{ parameters.HelixAccessToken }}
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
       - script: eng\common\CIBuild.cmd
+                  -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
@@ -78,6 +82,8 @@ jobs:
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
           TestFullMSBuild: 'true'
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          HelixAccessToken: ${{ parameters.HelixAccessToken }}
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
       - script: eng\common\CIBuild.cmd
