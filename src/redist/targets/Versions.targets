@@ -5,6 +5,10 @@
     <VersionSDKMinor>1</VersionSDKMinor>
     <VersionPatch>00</VersionPatch>
     <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview1</ReleaseSuffix>
+    <!--
+        When DropSuffix is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <DropSuffix>false</DropSuffix>
   </PropertyGroup>
   
   <Target Name="GetCoreSdkGitCommitInfo">
