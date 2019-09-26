@@ -9,8 +9,11 @@ param(
     [Parameter(Mandatory=$true)][string]$SharedHostMSIFile,
     [Parameter(Mandatory=$true)][string]$WinFormsAndWpfMSIFile,
     [Parameter(Mandatory=$true)][string]$NetCoreAppTargetingPackMSIFile,
-    [Parameter(Mandatory=$true)][string]$NetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$NetStandardTargetingPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$NetCoreAppHostPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$AlternateNetCoreAppHostPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$ArmNetCoreAppHostPackMSIFile,
+    [Parameter(Mandatory=$true)][string]$Arm64NetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AspNetTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$TemplatesMSIFile,
@@ -53,6 +56,9 @@ function RunCandleForBundle
         -dWinFormsAndWpfMsiSourcePath="$WinFormsAndWpfMSIFile" `
         -dNetCoreAppTargetingPackMsiSourcePath="$NetCoreAppTargetingPackMSIFile" `
         -dNetCoreAppHostPackMsiSourcePath="$NetCoreAppHostPackMSIFile" `
+        -dAlternateNetCoreAppHostPackMsiSourcePath="$AlternateNetCoreAppHostPackMSIFile" `
+        -dArmNetCoreAppHostPackMsiSourcePath="$ArmNetCoreAppHostPackMSIFile" `
+        -dArm64NetCoreAppHostPackMsiSourcePath="$Arm64NetCoreAppHostPackMSIFile" `
         -dNetStandardTargetingPackMsiSourcePath="$NetStandardTargetingPackMSIFile" `
         -dAspNetTargetingPackMsiSourcePath="$AspNetTargetingPackMSIFile" `
         -dWindowsDesktopTargetingPackMsiSourcePath="$WindowsDesktopTargetingPackMSIFile" `

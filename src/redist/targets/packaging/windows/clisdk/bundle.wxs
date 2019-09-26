@@ -133,6 +133,15 @@
       <MsiPackage SourceFile="$(var.NetCoreAppHostPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
+      <MsiPackage SourceFile="$(var.AlternateNetCoreAppHostPackMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
+      <MsiPackage SourceFile="$(var.ArmNetCoreAppHostPackMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
+      <MsiPackage SourceFile="$(var.Arm64NetCoreAppHostPackMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
       <MsiPackage SourceFile="$(var.NetStandardTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
