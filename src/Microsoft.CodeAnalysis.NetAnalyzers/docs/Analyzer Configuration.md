@@ -156,7 +156,7 @@ Examples:
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
 
-### Configure unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
+### Unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
 Option Name: `unsafe_DllImportSearchPath_bits`
 
 Configurable Rules: CA5393
