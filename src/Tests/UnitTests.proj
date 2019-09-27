@@ -2,18 +2,16 @@
 
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
-    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
-    <HelixBuild Condition="'$(HelixBuild)' == ''">123460.01</HelixBuild>
+    <Creator Condition="'$(BUILD_BUILDNUMBER)' != ''">sdk-dev</Creator>
 
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
 
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <TestRunNamePrefix>$(AGENT_JOBNAME)</TestRunNamePrefix>
+    <EnableAzurePipelinesReporter Condition="'$(BUILD_BUILDNUMBER)' != ''">true</EnableAzurePipelinesReporter>
 
     <EnableXUnitReporter>true</EnableXUnitReporter>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <XUnitProject Include="**\*.Tests.csproj"/>
 
