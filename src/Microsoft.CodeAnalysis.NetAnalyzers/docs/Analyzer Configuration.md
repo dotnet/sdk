@@ -167,7 +167,7 @@ Default Value: '770', which is AssemblyDirectory | UseDllDirectoryForDependencie
 
 Example: `dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770`
 
-### Configure if exclude aspnet core mvc ControllerBase when considering CSRF
+### Exclude ASP.NET Core MVC ControllerBase when considering CSRF
 Option Name: `exclude_aspnet_core_mvc_controller_base`
 
 Configurable Rules: CA5391
