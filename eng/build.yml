@@ -55,12 +55,11 @@ jobs:
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
       - script: eng\common\CIBuild.cmd
-                  -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
-                  $(_TestArgs)
+                  /p:Test=false
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
@@ -68,14 +67,26 @@ jobs:
           PublishType: $(_PublishType)
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      - powershell: eng\common\build.ps1
+              -configuration $(_BuildConfig)
+              -prepareMachine
+              -ci
+              -restore
+              -test
+              -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+              /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\Helix.binlog
+        displayName: Run Helix Tests
+        env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: ''
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
       - script: eng\common\CIBuild.cmd
-                  -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
+                  /p:Test=false
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
@@ -84,6 +95,18 @@ jobs:
           TestFullMSBuild: 'true'
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      - powershell: eng\common\build.ps1
+              -configuration $(_BuildConfig)
+              -prepareMachine
+              -ci
+              -restore
+              -test
+              -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+              /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\Helix.binlog
+        displayName: Run Helix Tests
+        env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: ''
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
       - script: eng\common\CIBuild.cmd
