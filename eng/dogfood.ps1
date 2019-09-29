@@ -2,6 +2,7 @@
 Param(
   [string] $configuration = "Debug",
   [string] $projects = "",
+  [string] $MSBuildSDKsPath = "",
   [switch] $help,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$command
 )
@@ -37,7 +38,12 @@ try {
 
   $env:SDK_REPO_ROOT = $RepoRoot
   $env:SDK_CLI_VERSION = $GlobalJson.tools.dotnet
-  $env:MSBuildSDKsPath = Join-Path $ArtifactsDir "bin\$configuration\Sdks"
+  if ($MSBuildSDKsPath -eq "") {
+    $env:MSBuildSDKsPath = Join-Path $ArtifactsDir "bin\$configuration\Sdks"
+  } else {
+    $env:MSBuildSDKsPath = $MSBuildSDKsPath
+  }
+
   $env:DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = $env:MSBuildSDKsPath
   $env:NETCoreSdkBundledVersionsProps = Join-Path $env:DOTNET_INSTALL_DIR "sdk\$env:SDK_CLI_VERSION\Microsoft.NETCoreSdk.BundledVersions.props"
   $env:MicrosoftNETBuildExtensionsTargets = Join-Path $env:MSBuildSDKsPath "Microsoft.NET.Build.Extensions\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets"

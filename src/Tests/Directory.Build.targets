@@ -74,7 +74,8 @@
 
   <ItemGroup>
     <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
-    <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
+    <!-- super short to avoid maxpath -->
+    <BuiltSdks Include="$(RepoRoot)\s\**\*.*"/>
 
     <TestNugetConfig Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
   </ItemGroup>
