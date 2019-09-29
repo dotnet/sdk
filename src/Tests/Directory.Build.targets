@@ -74,8 +74,7 @@
 
   <ItemGroup>
     <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
-    <!-- super short to avoid maxpath -->
-    <BuiltSdks Include="$(RepoRoot)\s\**\*.*"/>
+    <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
 
     <TestNugetConfig Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
   </ItemGroup>
@@ -83,7 +82,8 @@
   <Target Name="CopyFiles" AfterTargets="Publish">
     <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(PublishDir)\testlayout\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
 
-    <Copy SourceFiles="@(BuiltSdks)" DestinationFiles="@(BuiltSdks->'$(PublishDir)\testlayout\artifacts\bin\$(Configuration)\Sdks\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <!-- super short to avoid maxpath -->
+    <Copy SourceFiles="@(BuiltSdks)" DestinationFiles="@(BuiltSdks->'$(PublishDir)\s\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(TestNugetConfig)" DestinationFiles="@(TestNugetConfig->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
