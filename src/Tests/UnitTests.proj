@@ -11,6 +11,11 @@
     <EnableAzurePipelinesReporter Condition="'$(BUILD_BUILDNUMBER)' != ''">true</EnableAzurePipelinesReporter>
 
     <EnableXUnitReporter>true</EnableXUnitReporter>
+
+    <PropertyGroup>
+      <HelixPreCommands Condition="$(IsPosixShell)">$(HelixPreCommands);export DOTNET_MULTILEVEL_LOOKUP=0</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">$(HelixPreCommands);set DOTNET_MULTILEVEL_LOOKUP=0</HelixPreCommands>
+    </PropertyGroup>
   </PropertyGroup>
 
   <ItemGroup>
