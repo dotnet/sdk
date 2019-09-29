@@ -16,7 +16,7 @@
 
     <UserRuntimeConfig>$(MSBuildThisFileDirectory)Common\runtimeconfig.template.json</UserRuntimeConfig>
   </PropertyGroup>
-  
+
   <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe'">
     <Compile Include="$(MSBuildThisFileDirectory)Common\Program.cs" />
   </ItemGroup>
@@ -24,14 +24,12 @@
   <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe'">
 
     <!-- Note: These items are showing up in solution explorer even though Visible is set to false -->
-    <None Include="$(MSBuildThisFileDirectory)..\Assets\**\*.*" CopyToPublishDirectory="PreserveNewest" 
-          LinkBase="Assets" Visible="false" />
-    
+    <None Include="$(MSBuildThisFileDirectory)..\Assets\**\*.*" CopyToPublishDirectory="PreserveNewest" LinkBase="Assets" Visible="false" />
+
   </ItemGroup>
 
   <Target Name="LayoutSdk">
-    <MSBuild Projects="$(RepoRoot)\src\LayoutSdk\LayoutSdk.proj"
-             Targets="LayoutSdk"/>
+    <MSBuild Projects="$(RepoRoot)\src\LayoutSdk\LayoutSdk.proj" Targets="LayoutSdk"/>
   </Target>
 
   <Target Name="TestAsTool" DependsOnTargets="Pack;LayoutSdk;_InnerGetTestsToRun">
@@ -52,18 +50,11 @@
          hasn't changed. -->
     <RemoveDir Directories="$(NuGetPackageRoot)$(ToolCommandName)\$(PackageVersion)" />
 
-    <Exec Command="dotnet new tool-manifest"
-      IgnoreStandardErrorWarningFormat="true"
-      WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
-    
-    <Exec Command="dotnet tool install --local $(ToolCommandName) --version $(PackageVersion) --add-source $(ArtifactsNonShippingPackagesDir)"
-      WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
-    
-    <Exec Command="dotnet tool restore"
-      WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
+    <Exec Command="dotnet new tool-manifest" IgnoreStandardErrorWarningFormat="true" WorkingDirectory="$(TestLocalToolFolder)" EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
+
+    <Exec Command="dotnet tool install --local $(ToolCommandName) --version $(PackageVersion) --add-source $(ArtifactsNonShippingPackagesDir)" WorkingDirectory="$(TestLocalToolFolder)" EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
+
+    <Exec Command="dotnet tool restore" WorkingDirectory="$(TestLocalToolFolder)" EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
 
     <PropertyGroup>
       <ResultsXmlPath>@(TestToRun->'%(ResultsXmlPath)')</ResultsXmlPath>
@@ -78,10 +69,22 @@
       <TestArgs>$(TestArgs) -testExecutionDirectory $(TestLocalToolExecutionFolder)</TestArgs>
     </PropertyGroup>
 
-    <Exec Command="dotnet tool run $(ToolCommandName) -- $(TestArgs)"
-          WorkingDirectory="$(TestLocalToolFolder)"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"
-          IgnoreStandardErrorWarningFormat="true" />
+    <Exec Command="dotnet tool run $(ToolCommandName) -- $(TestArgs)" WorkingDirectory="$(TestLocalToolFolder)" EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <ItemGroup>
+    <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
+    <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
+
+    <TestNugetConfig Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
+  </ItemGroup>
+
+  <Target Name="CopyFiles" AfterTargets="Publish">
+    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(PublishDir)\testlayout\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Copy SourceFiles="@(BuiltSdks)" DestinationFiles="@(BuiltSdks->'$(PublishDir)\testlayout\artifacts\bin\$(Configuration)\Sdks\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Copy SourceFiles="@(TestNugetConfig)" DestinationFiles="@(TestNugetConfig->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Import Project="..\..\Directory.Build.targets" />

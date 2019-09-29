@@ -28,8 +28,10 @@
 
   <!-- need to be a target in order to have IsPosixShell available  -->
   <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter">
+    <PropertyGroup>
       <HelixPostCommands Condition="$(IsPosixShell)">$(HelixPostCommands);$HELIX_CORRELATION_PAYLOAD/eng/dogfood.cmd</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">$(HelixPostCommands);$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh</HelixPostCommands>
+    </PropertyGroup>
   </Target>
 
 </Project>
