@@ -71,10 +71,9 @@ namespace FrameworkReferenceTest
             runtimeFrameworkNames.Should().BeEquivalentTo("Microsoft.AspNetCore.App", "Microsoft.WindowsDesktop.App");
         }
 
-        [CoreMSBuildAndWindowsOnlyTheory]
-        // TODO - once integrated into 3.1 branch this should test 3.0 as false and 3.1 as success
-        [InlineData("netcoreapp2.1", false)]
-        [InlineData("netcoreapp3.0", true)]
+        [CoreMSBuildOnlyTheory]
+        [InlineData("netcoreapp3.0", false)]
+        [InlineData("netcoreapp3.1", true)]
         public void Multiple_frameworks_are_written_to_runtimeconfig_for_self_contained_apps(string tfm, bool shouldHaveIncludedFrameworks)
         {
             var testProject = new TestProject()
@@ -88,15 +87,14 @@ namespace FrameworkReferenceTest
             // Specifying RID makes the produced app self-contained.
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            if (tfm == "netcoreapp3.0")
+            if (tfm == "netcoreapp3.1")
             {
                 testProject.FrameworkReferences.Add("Microsoft.ASPNETCORE.App");
-                testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App");
             }
 
             testProject.SourceFiles.Add("Program.cs", FrameworkReferenceEmptyProgramSource);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -106,13 +104,13 @@ namespace FrameworkReferenceTest
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            DirectoryInfo outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
 
             string runtimeConfigFile = Path.Combine(outputDirectory.FullName, testProject.RuntimeIdentifier, testProject.Name + ".runtimeconfig.json");
-            var includedFrameworkNames = GetIncludedFrameworks(runtimeConfigFile);
+            List<string> includedFrameworkNames = GetIncludedFrameworks(runtimeConfigFile);
             if (shouldHaveIncludedFrameworks)
             {
-                includedFrameworkNames.Should().BeEquivalentTo("Microsoft.NETCore.App", "Microsoft.WindowsDesktop.App", "Microsoft.AspNetCore.App");
+                includedFrameworkNames.Should().BeEquivalentTo("Microsoft.NETCore.App", "Microsoft.AspNetCore.App");
             }
             else
             {
