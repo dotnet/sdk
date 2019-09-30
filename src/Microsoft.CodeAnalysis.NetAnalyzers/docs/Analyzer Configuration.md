@@ -213,6 +213,28 @@ Examples:
 |`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
 |`dotnet_code_quality.excluded_type_names_with_derived_types = M:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
+
+### Unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
+Option Name: `unsafe_DllImportSearchPath_bits`
+
+Configurable Rules: CA5393
+
+Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
+
+Default Value: '770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory
+
+Example: `dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770`
+
+### Exclude ASP.NET Core MVC ControllerBase when considering CSRF
+Option Name: `exclude_aspnet_core_mvc_controllerbase`
+
+Configurable Rules: CA5391
+
+Option Values: Boolean values
+
+Default Value: `true`
+
+Example: `dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false`
  
 ### Disallowed symbol names
 Option Name: `disallowed_symbol_names`
@@ -370,12 +392,3 @@ Option Values: integral values
 Default Value: Specific to each configurable rule ('100000' by default for most rules)
 
 Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
-
-#### Configure unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
-Option Name: `unsafe_DllImportSearchPath_bits`
-
-Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
-
-Default Value: Specific to each configurable rule ('770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory, by default for most rules)
-
-Example: `dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 770`
