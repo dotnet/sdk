@@ -175,6 +175,7 @@
       DependsOnTargets="SetSignProps">
 
     <ItemGroup>
+      <TemplatesMsiFilesToSign Include="$(Templates31MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates30MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates22MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates21MSIInstallerFile)" />
