@@ -129,7 +129,6 @@
     <PackageDownload Update="Microsoft.DotNet.Web.ItemTemplates;Microsoft.DotNet.Web.Spa.ProjectTemplates"
                      Version="[$(AspNetCorePackageVersionFor21Templates)];
                               [$(AspNetCorePackageVersionFor22Templates)];
-                              [$(AspNetCorePackageVersionFor30Templates)];
                               " />
 
     <PackageDownload Update="NUnit3.DotNetNew.Template"
