@@ -27,8 +27,8 @@
   <!-- need to be a target in order to have IsPosixShell available  -->
   <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter">
     <PropertyGroup>
-      <HelixPostCommands Condition="$(IsPosixShell)">$(HelixPostCommands);$HELIX_CORRELATION_PAYLOAD/eng/dogfood.cmd;dotnet msbuild UnzipInHelix.proj; -MSBuildSDKsPath $HELIX_CORRELATION_PAYLOAD/s</HelixPostCommands>
-      <HelixPostCommands Condition="!$(IsPosixShell)">$(HelixPostCommands);$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh</HelixPostCommands>
+      <HelixPostCommands Condition="$(IsPosixShell)">%HELIX_CORRELATION_PAYLOAD%/eng/dogfood.cmd;dotnet msbuild UnzipInHelix.proj;$env:HELIX_CORRELATION_PAYLOAD/eng/dogfood.ps1 -MSBuildSDKsPath $env:HELIX_CORRELATION_PAYLOAD/s;$(HelixPostCommands)</HelixPostCommands>
+      <HelixPostCommands Condition="!$(IsPosixShell)">$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh;$(HelixPostCommands)</HelixPostCommands>
     </PropertyGroup>
   </Target>
 
