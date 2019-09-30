@@ -61,7 +61,7 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [Fact]
+        [Fact(Skip = "Need support for ASP.NET on .NET Core 3.1")]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
             var directory = TestAssets.CreateTestDirectory();
@@ -143,10 +143,12 @@ namespace EndToEnd.Tests
                 .Execute(restoreArgs)
                 .Should().Pass();
 
+            var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             new BuildCommand()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
+                 .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
+                 .WithWorkingDirectory(projectDirectory)
+                 .Execute()
+                 .Should().Pass();
         }
     }
 }

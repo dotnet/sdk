@@ -3,6 +3,7 @@
     <PropertyGroup>
       <BuildName>cli</BuildName>
       <SdkBrandName>Microsoft .NET Core SDK $(CliBrandingVersion)</SdkBrandName>
+      <ToolsetBrandName>Microsoft .NET Core Toolset $(CliBrandingVersion)</ToolsetBrandName>
       <MSBuildExtensionsBrandName>.NET Standard Support for Visual Studio 2015</MSBuildExtensionsBrandName>
       <SharedFrameworkBrandName>Microsoft .NET Core Runtime $(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</SharedFrameworkBrandName>
       <NetCoreAppTargetingPackBrandName>Microsoft .NET Core Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
@@ -12,9 +13,10 @@
       <HostFxrBrandName>Microsoft .NET Core Host FX Resolver $(MicrosoftNETCoreDotNetAppHostPackageVersion)</HostFxrBrandName>
       <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
       <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
-      <BundledTemplates30BrandName>Microsoft .NET Core 3.0 Templates</BundledTemplates30BrandName>
-      <BundledTemplates22BrandName>Microsoft .NET Core 2.2 Templates</BundledTemplates22BrandName>
-      <BundledTemplates21BrandName>Microsoft .NET Core 2.1 Templates</BundledTemplates21BrandName>
+      <BundledTemplates31BrandName>Microsoft .NET Core 3.1 Templates $(CliBrandingVersion)</BundledTemplates31BrandName>
+      <BundledTemplates30BrandName>Microsoft .NET Core 3.0 Templates $(CliBrandingVersion)</BundledTemplates30BrandName>
+      <BundledTemplates22BrandName>Microsoft .NET Core 2.2 Templates $(CliBrandingVersion)</BundledTemplates22BrandName>
+      <BundledTemplates21BrandName>Microsoft .NET Core 2.1 Templates $(CliBrandingVersion)</BundledTemplates21BrandName>
     </PropertyGroup>
   </Target>
   
