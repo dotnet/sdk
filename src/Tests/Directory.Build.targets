@@ -77,7 +77,7 @@
     <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
 
     <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
-    <FilesInHelixRoot Include="$(RepoRoot)\Tests\UnzipInHelix.proj"/>
+    <FilesInHelixRoot Include="$(RepoRoot)\src\Tests\UnzipInHelix.proj"/>
   </ItemGroup>
 
   <Target Name="CopyFiles" AfterTargets="Publish">
@@ -86,7 +86,8 @@
     <!-- zip to fight helix long path -->
     <ZipDirectory
             SourceDirectory="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks"
-            DestinationFile="$(PublishDir)\sdks.zip" />
+            DestinationFile="$(PublishDir)\sdks.zip"
+            Overwrite= "true" />
 
     <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
