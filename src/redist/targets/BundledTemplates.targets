@@ -126,9 +126,15 @@
                               [$(MicrosoftDotNetCommonItemTemplates30PackageVersion)];
                               " />
 
-    <PackageDownload Update="Microsoft.DotNet.Web.ItemTemplates;Microsoft.DotNet.Web.Spa.ProjectTemplates"
+    <PackageDownload Update="Microsoft.DotNet.Web.Spa.ProjectTemplates"
                      Version="[$(AspNetCorePackageVersionFor21Templates)];
                               [$(AspNetCorePackageVersionFor22Templates)];
+                              " />
+
+    <PackageDownload Update="Microsoft.DotNet.Web.ItemTemplates"
+                     Version="[$(AspNetCorePackageVersionFor21Templates)];
+                              [$(AspNetCorePackageVersionFor22Templates)];
+                              [$(AspNetCorePackageVersionFor30Templates)];
                               " />
 
     <PackageDownload Update="NUnit3.DotNetNew.Template"
