@@ -76,16 +76,19 @@
     <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
     <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
 
-    <TestNugetConfig Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
+    <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
+    <FilesInHelixRoot Include="$(RepoRoot)\Tests\UnzipInHelix.proj"/>
   </ItemGroup>
 
   <Target Name="CopyFiles" AfterTargets="Publish">
     <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(PublishDir)\testlayout\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
 
-    <!-- super short to avoid maxpath -->
-    <Copy SourceFiles="@(BuiltSdks)" DestinationFiles="@(BuiltSdks->'$(PublishDir)\s\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <!-- zip to fight helix long path -->
+    <ZipDirectory
+            SourceDirectory="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks"
+            DestinationFile="$(PublishDir)\sdks.zip" />
 
-    <Copy SourceFiles="@(TestNugetConfig)" DestinationFiles="@(TestNugetConfig->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Import Project="..\..\Directory.Build.targets" />
