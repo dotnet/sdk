@@ -159,13 +159,13 @@
         <ReplacementString>$(SdkBrandName)</ReplacementString>
       </DebianConfigTokenValues>
       <DebianConfigTokenValues Include="%SHARED_FRAMEWORK_DEBIAN_PACKAGE_VERSION%">
-        <ReplacementString>$(MicrosoftNETCoreAppPackageVersionWithTilda)</ReplacementString>
+        <ReplacementString>$(MicrosoftNETCoreAppPackageVersionWithTilde)</ReplacementString>
       </DebianConfigTokenValues>
       <DebianConfigTokenValues Include="%NET_STANDARD_DEBIAN_PACKAGE_VERSION%">
-        <ReplacementString>$(NetStandardTargetingPackPackageVersionWithTilda)</ReplacementString>
+        <ReplacementString>$(NetStandardTargetingPackPackageVersionWithTilde)</ReplacementString>
       </DebianConfigTokenValues>
       <DebianConfigTokenValues Include="%ASPNETCORE_SHAREDFX_DEBIAN_PACKAGE_VERSION%">
-        <ReplacementString>$(AspNetCoreVersionWithTilda)</ReplacementString>
+        <ReplacementString>$(AspNetCoreVersionWithTilde)</ReplacementString>
       </DebianConfigTokenValues>
 
       <DebianPostInstTokenValues Include="%SDK_VERSION%">

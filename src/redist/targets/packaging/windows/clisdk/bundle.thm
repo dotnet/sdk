@@ -92,7 +92,7 @@
         <Text Name="FailureRepairHeader" X="11" Y="80" Width="-11" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRepairHeader)</Text>
         <Hypertext Name="FailureLogFileLink" X="11" Y="121" Width="-11" Height="42" FontId="3" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
         <Hypertext Name="FailureMessageText" X="22" Y="163" Width="-11" Height="51" FontId="3" TabStop="yes" HideWhenDisabled="yes" />
-        <Text Name="FailureRestartText" X="-11" Y="-40" Width="400" Height="23" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRestartText)</Text>
+        <Text Name="FailureRestartText" X="-11" Y="-40" Width="400" Height="34" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRestartText)</Text>
         <Button Name="FailureRestartButton" X="-131" Y="-11" Width="95" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
         <Button Name="FailureCloseButton" X="-31" Y="-11" Width="95" Height="23" TabStop="yes" FontId="0">#(loc.FailureCloseButton)</Button>
     </Page>

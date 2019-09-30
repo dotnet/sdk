@@ -94,7 +94,7 @@
           <ReplacementString>$(SdkVersion)</ReplacementString>
         </ResourcesReplacement>
         <ResourcesReplacement Include="{DOTNETRUNTIMEVERSION}">
-          <ReplacementString>$(MicrosoftNETCoreAppPackageVersion)</ReplacementString>
+          <ReplacementString>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</ReplacementString>
         </ResourcesReplacement>
         <ResourcesReplacement Include="{ASPNETCOREVERSION}">
           <ReplacementString>$(AspNetCoreVersion)</ReplacementString>
