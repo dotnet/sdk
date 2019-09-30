@@ -74,6 +74,7 @@
 
   <ItemGroup>
     <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
+    <GlobalJson Include="$(RepoRoot)\global.json"/>
     <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
 
     <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
@@ -81,7 +82,9 @@
   </ItemGroup>
 
   <Target Name="CopyFiles" AfterTargets="Publish">
-    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(PublishDir)\testlayout\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(PublishDir)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- zip to fight helix long path -->
     <ZipDirectory
