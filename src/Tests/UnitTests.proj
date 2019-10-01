@@ -9,6 +9,7 @@
     <EnableAzurePipelinesReporter Condition="'$(BUILD_BUILDNUMBER)' != ''">true</EnableAzurePipelinesReporter>
 
     <EnableXUnitReporter>true</EnableXUnitReporter>
+    <!-- <XUnitWorkItemTimeout>2:00:00</XUnitWorkItemTimeout> -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,12 +25,49 @@
     <HelixTargetQueue Include="Windows.10.Amd64.Open"/>
   </ItemGroup>
 
+
   <!-- need to be a target in order to have IsPosixShell available  -->
-  <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter">
+
+
+  <Target Name="CopyHelixFiles" AfterTargets="Publish">
+
+    <ItemGroup>
+      <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
+      <GlobalJson Include="$(RepoRoot)\global.json"/>
+      <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
+
+      <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
+    </ItemGroup>
+
     <PropertyGroup>
-      <HelixPreCommands Condition="!$(IsPosixShell)">eng\dogfood.cmd;dotnet msbuild UnzipInHelix.proj;.eng\dogfood.ps1 -MSBuildSDKsPath .eng\dogfood.ps1 -MSBuildSDKsPath (Resolve-Path -Path s).Path;cmd;$(HelixPreCommands)</HelixPreCommands>
-      <HelixPreCommands Condition="$(IsPosixShell)">$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh;$(HelixPreCommands)</HelixPreCommands>
+      <HelixPayloadOnHost>$(RepoRoot)\artifacts\tmp\Helixpayload</HelixPayloadOnHost>
     </PropertyGroup>
+
+    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
+  <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter" DependsOnTargets="CopyHelixFiles">
+    <PropertyGroup>
+      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\eng\dogfood.cmd -MSBuildSDKsPath %HELIX_CORRELATION_PAYLOAD%\t\s;cmd;$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="$(IsPosixShell)">$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh;$(HelixPreCommands)</HelixPreCommands>
+
+    </PropertyGroup>
+
+    <ItemGroup>
+      <HelixCorrelationPayload Include="$(HelixPayloadOnHost)">
+        <PayloadDirectory>$(HelixPayloadOnHost)</PayloadDirectory>
+        <Destination>t</Destination>
+      </HelixCorrelationPayload>
+
+      <HelixCorrelationPayload Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks">
+        <PayloadDirectory>%(Identity)</PayloadDirectory>
+        <Destination>s</Destination>
+      </HelixCorrelationPayload>
+
+    </ItemGroup>
+  </Target>
 </Project>

@@ -81,20 +81,6 @@
     <FilesInHelixRoot Include="$(RepoRoot)\src\Tests\UnzipInHelix.proj"/>
   </ItemGroup>
 
-  <Target Name="CopyFiles" AfterTargets="Publish">
-    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(PublishDir)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <!-- zip to fight helix long path -->
-    <ZipDirectory
-            SourceDirectory="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks"
-            DestinationFile="$(PublishDir)\sdks.zip"
-            Overwrite= "true" />
-
-    <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
-  </Target>
-
   <Import Project="..\..\Directory.Build.targets" />
 
 </Project>
