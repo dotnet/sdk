@@ -116,7 +116,7 @@ namespace Microsoft.NET.TestFramework
             }
             else if (runAsTool)
             {
-                testContext.TestExecutionDirectory = Path.Combine(Path.GetTempPath(), "dotnetSdkTests");
+                testContext.TestExecutionDirectory = Path.Combine(Path.GetTempPath(),"dotnetSdkTests", Path.GetRandomFileName());
             }
             else
             {
@@ -127,6 +127,14 @@ namespace Microsoft.NET.TestFramework
 
                 testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets", "TestProjects"), AppContext.BaseDirectory);
             }
+
+            NuGetConfigWriter.Write(testContext.TestExecutionDirectory,
+                "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json",
+                "https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json",
+                "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json",
+                "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json",
+                "https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json",
+                "https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json");
 
             string artifactsDir = Environment.GetEnvironmentVariable("DOTNET_SDK_ARTIFACTS_DIR");
             if (string.IsNullOrEmpty(artifactsDir) && !string.IsNullOrEmpty(repoRoot))
