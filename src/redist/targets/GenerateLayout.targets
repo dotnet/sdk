@@ -18,8 +18,17 @@
   <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo;SetBuildDefaults">
     <PropertyGroup>
       <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(SdkVersion)\</SdkOutputDirectory>
+      
+      <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal' and $(BUILD_SOURCEBRANCH.ToLower().contains('internal'))">true</InternalBuild>
+      <CoreSetupBlobAccessTokenParam Condition="'$(InternalBuild)' == 'true'">$(DOTNETCLIMSRC_READ_SAS_TOKEN)</CoreSetupBlobAccessTokenParam>
+
+      <CoreSetupBlobRootUrl Condition="'$(CoreSetupBlobRootUrl)' == '' and '$(InternalBuild)' == 'true'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</CoreSetupBlobRootUrl>
       <CoreSetupBlobRootUrl Condition="'$(CoreSetupBlobRootUrl)' == ''">https://dotnetcli.azureedge.net/dotnet/</CoreSetupBlobRootUrl>
+
+      <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == '' and '$(InternalBuild)' == 'true'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
       <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
+      
+      <DotnetToolsetBlobRootUrl Condition="'$(DotnetToolsetBlobRootUrl)' == '' and '$(InternalBuild)' == 'true'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotnetToolsetBlobRootUrl>
       <DotnetToolsetBlobRootUrl Condition="'$(DotnetToolsetBlobRootUrl)' == ''">https://dotnetfeed.blob.core.windows.net/dotnet-toolset/</DotnetToolsetBlobRootUrl>
       
       <CoreSetupRid Condition="'$(CoreSetupRid)' == ''">$(HostRid)</CoreSetupRid>
@@ -277,7 +286,7 @@
     </ItemGroup>
   
     <DownloadFile Condition=" '@(ComponentToDownload)' != '' And '%(ComponentToDownload.ShouldDownload)' == 'true'"
-                  Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)"
+                  Uri="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)%(ComponentToDownload.AccessToken)"
                   DestinationPath="%(ComponentToDownload.DownloadDestination)" />
 
     <ItemGroup>
