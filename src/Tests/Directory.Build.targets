@@ -72,6 +72,14 @@
     <Exec Command="dotnet tool run $(ToolCommandName) -- $(TestArgs)" WorkingDirectory="$(TestLocalToolFolder)" EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
+  <Target Name="CopyNugetConfig" AfterTargets="Publish">
+
+    <ItemGroup>
+      <NuGetConfig Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NuGetConfig)" DestinationFiles="@(NuGetConfig->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 
   <Import Project="..\..\Directory.Build.targets" />
 
