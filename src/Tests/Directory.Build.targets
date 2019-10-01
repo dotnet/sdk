@@ -72,14 +72,6 @@
     <Exec Command="dotnet tool run $(ToolCommandName) -- $(TestArgs)" WorkingDirectory="$(TestLocalToolFolder)" EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <ItemGroup>
-    <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
-    <GlobalJson Include="$(RepoRoot)\global.json"/>
-    <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
-
-    <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
-    <FilesInHelixRoot Include="$(RepoRoot)\src\Tests\UnzipInHelix.proj"/>
-  </ItemGroup>
 
   <Import Project="..\..\Directory.Build.targets" />
 
