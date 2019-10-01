@@ -37,6 +37,7 @@
       <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
 
       <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
+      <FilesInHelixRoot Include="$(RepoRoot)\build\RunTestsOnHelix.cmd"/>
     </ItemGroup>
 
     <PropertyGroup>
@@ -52,7 +53,7 @@
 
   <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
-      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\eng\dogfood.cmd -MSBuildSDKsPath %HELIX_CORRELATION_PAYLOAD%\t\s;cmd;$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\RunTestsOnHelix.cmd;$(HelixPreCommands)</HelixPreCommands>
       <HelixPreCommands Condition="$(IsPosixShell)">$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh;$(HelixPreCommands)</HelixPreCommands>
 
     </PropertyGroup>
@@ -64,7 +65,7 @@
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks">
-        <PayloadDirectory>%(Identity)</PayloadDirectory>
+        <PayloadDirectory>$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks</PayloadDirectory>
         <Destination>s</Destination>
       </HelixCorrelationPayload>
 
