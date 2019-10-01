@@ -128,6 +128,7 @@ namespace Microsoft.NET.TestFramework
                 testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets", "TestProjects"), AppContext.BaseDirectory);
             }
 
+            Directory.CreateDirectory(testContext.TestExecutionDirectory);
             NuGetConfigWriter.Write(testContext.TestExecutionDirectory,
                 "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json",
                 "https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json",
