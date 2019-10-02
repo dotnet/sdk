@@ -10,12 +10,7 @@
 
     <MajorUpgrade DowngradeErrorMessage="$(var.DowngradeErrorMessage)" Schedule="afterInstallInitialize"/>
 
-    <?if $(var.Platform)=x86?>
-      <MediaTemplate CabinetTemplate="dx86-{0}.cab" CompressionLevel="high" />
-    <?elseif $(var.Platform)=x64?>
-      <MediaTemplate CabinetTemplate="dx64-{0}.cab" CompressionLevel="high" />
-    <?endif?>
-      
+    <MediaTemplate CompressionLevel="high" EmbedCab="yes" />
     <Feature Id="MainFeature" Title="Main Feature" Level="1">
       <ComponentGroupRef Id="InstallFiles" />
       <ComponentGroupRef Id="AuthoredRegistryKeys_x86node"/>
