@@ -110,7 +110,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_ExtraTrimmerArgs>-l none --skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
-      <_ExtraTrimmerArgs>-c copyused -u copyused $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
+      <_ExtraTrimmerArgs>-c copyused -u copyused --verbose $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
     </PropertyGroup>
     <ItemGroup>
       <TrimmerRootAssembly Include="@(_ManagedAssembliesToLink)" Condition=" '%(_ManagedAssembliesToLink.IsTrimmable)' != 'true' " />
