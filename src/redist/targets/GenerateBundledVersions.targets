@@ -88,7 +88,7 @@
         linux-arm;
         linux-arm64" />
 
-      <AspNetCoreRuntimePackRids Include="$(AspNetCore30RuntimePackRids)" />
+      <AspNetCoreRuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
 
       <NetCore30RuntimePackRids Include="linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;rhel.6-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm;win-arm64;win-x64;win-x86"/>
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
