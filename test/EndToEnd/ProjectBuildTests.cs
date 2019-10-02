@@ -2,16 +2,15 @@
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;
 
 namespace EndToEnd.Tests
 {
-
     public class ProjectBuildTests : TestBase
     {
-
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -35,18 +34,8 @@ namespace EndToEnd.Tests
                 .Should().Pass();
 
             var runCommand = new RunCommand()
-                .WithWorkingDirectory(projectDirectory);
-
-            //  Set DOTNET_ROOT as workaround for https://github.com/dotnet/cli/issues/10196
-            var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
-            if (!string.IsNullOrEmpty(dotnetRoot))
-            {
-                bool useX86 = RepoDirectoriesProvider.DotnetRidUnderTest.EndsWith("x86", StringComparison.InvariantCultureIgnoreCase);
-                runCommand = runCommand.WithEnvironmentVariable(useX86 ? "DOTNET_ROOT(x86)" : "DOTNET_ROOT",
-                    dotnetRoot);
-            }
-
-            runCommand.ExecuteWithCapturedOutput()
+                .WithWorkingDirectory(projectDirectory)
+                .ExecuteWithCapturedOutput()
                 .Should().Pass()
                 .And.HaveStdOutContaining("Hello World!");
 
@@ -61,7 +50,7 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [Fact(Skip = "Need support for ASP.NET on .NET Core 3.1")]
+        [Fact]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
             var directory = TestAssets.CreateTestDirectory();
@@ -88,21 +77,10 @@ namespace EndToEnd.Tests
                 .Should().Pass();
 
             var runCommand = new RunCommand()
-                .WithWorkingDirectory(projectDirectory);
-
-            //  Set DOTNET_ROOT as workaround for https://github.com/dotnet/cli/issues/10196
-            var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
-            if (!string.IsNullOrEmpty(dotnetRoot))
-            {
-                bool useX86 = RepoDirectoriesProvider.DotnetRidUnderTest.EndsWith("x86", StringComparison.InvariantCultureIgnoreCase);
-                runCommand = runCommand.WithEnvironmentVariable(useX86 ? "DOTNET_ROOT(x86)" : "DOTNET_ROOT",
-                    dotnetRoot);
-            }
-
-            runCommand.ExecuteWithCapturedOutput()
+                .WithWorkingDirectory(projectDirectory)
+                .ExecuteWithCapturedOutput()
                 .Should().Pass()
                 .And.HaveStdOutContaining("Hello World!");
-
         }
 
         [Theory]
@@ -125,7 +103,22 @@ namespace EndToEnd.Tests
             TestTemplateBuild(templateName);
         }
 
-        private void TestTemplateBuild(string templateName)
+        [WindowsOnlyTheory]
+        [InlineData("wpf")]
+        public void ItCanBuildDesktopTemplatesSelfContained(string templateName)
+        {
+            TestTemplateBuild(templateName);
+        }
+
+        [Theory]
+        [InlineData("web")]
+        [InlineData("console")]
+        public void ItCanBuildTemplatesSelfContained(string templateName)
+        {
+            TestTemplateBuild(templateName, selfContained: true);
+        }
+
+        private void TestTemplateBuild(string templateName, bool selfContained = false)
         {
             var directory = TestAssets.CreateTestDirectory(identifier: templateName);
             string projectDirectory = directory.FullName;
@@ -136,18 +129,12 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
-            //  Work-around for MVC template test until ASP.Net publishes Preview 5 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' to NuGet.org
-            string restoreArgs = string.Equals(templateName, "mvc", StringComparison.OrdinalIgnoreCase) ? "/p:RestoreAdditionalProjectSources=https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json" : "";
-            new RestoreCommand()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute(restoreArgs)
-                .Should().Pass();
-
+            var buildArgs = selfContained ? "" :$"-r {RuntimeEnvironment.GetRuntimeIdentifier()}";
             var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             new BuildCommand()
                  .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
                  .WithWorkingDirectory(projectDirectory)
-                 .Execute()
+                 .Execute(buildArgs)
                  .Should().Pass();
         }
     }
