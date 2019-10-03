@@ -4,17 +4,17 @@
           DependsOnTargets="SetSdkBrandingInfo">
     
     <PropertyGroup>
-      <RuntimeNETCoreAppPackageName>runtime.$(SharedFrameworkRid).microsoft.netcore.app</RuntimeNETCoreAppPackageName>
+      <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
       <_crossDir Condition="'$(Architecture)' == 'arm64'">/x64_arm64</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">/x64_arm</_crossDir>
-      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppPackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
+      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
       <LibCLRJitRid Condition="!$(Architecture.StartsWith('arm'))">$(SharedFrameworkRid)</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm64'">x64_arm64</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86_arm</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">x64_arm</LibCLRJitRid>
-      <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppPackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
-      <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</SharedFrameworkNameVersionPath>
+      <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
+      <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
       <DIASymReaderCrossgenFilter>*</DIASymReaderCrossgenFilter>
       <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86</DIASymReaderCrossgenFilter>
     </PropertyGroup>
@@ -24,7 +24,7 @@
       <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
         <Properties>
           PackageToRestore=$(RuntimeNETCoreAppPackageName);
-          PackageVersionToRestore=$(MicrosoftNETCoreAppPackageVersion);
+          PackageVersionToRestore=$(MicrosoftNETCoreAppRuntimePackageVersion);
           TargetFramework=$(TargetFramework)
         </Properties>
       </CrossGenDownloadPackageProject>
@@ -88,12 +88,6 @@
       <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
       <RemainingFolders Remove="$(PublishDir)FSharp\**\*" />
     </ItemGroup>
-
-    <!-- Ensure crossgen tool is executable.  See https://github.com/NuGet/Home/issues/4424 -->
-    <!-- Probably not needed anymore -->
-    <!--<Chmod Condition=" '$(OSName)' != 'win' "
-           Glob="$(CrossgenPath)"
-           Mode="u+x" />-->
 
     <!-- Crossgen does not support generating symbols on Mac  -->
     <PropertyGroup Condition="'$(CreateCrossgenSymbols)' == ''">

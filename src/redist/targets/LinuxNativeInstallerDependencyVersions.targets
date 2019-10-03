@@ -1,43 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <Target Name="CalculateLinuxNativeInstallerDependencyVersions">
-    <PropertyGroup>
-      <MicrosoftNETCoreAppPatchSeparatorIndex>$([MSBuild]::Add($(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion.IndexOf('.')), 1))</MicrosoftNETCoreAppPatchSeparatorIndex>
-      <MicrosoftNETCoreAppPatchSeparatorIndex>$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion.IndexOf('.', $(MicrosoftNETCoreAppPatchSeparatorIndex)))</MicrosoftNETCoreAppPatchSeparatorIndex>
-      <MicrosoftNETCoreAppMajorMinorVersion>$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion.Substring(0, $(MicrosoftNETCoreAppPatchSeparatorIndex)))</MicrosoftNETCoreAppMajorMinorVersion>
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="MicrosoftNETCoreAppRuntimePackageVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="MicrosoftNETCoreAppMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="MicrosoftNETCoreAppMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
 
-      <MicrosoftNETCoreAppVersionPreReleaseSeparator>$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion.IndexOf('-'))</MicrosoftNETCoreAppVersionPreReleaseSeparator>
-      <MicrosoftNETCoreAppMajorMinorPatchVersion>$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppMajorMinorPatchVersion>
-      <MicrosoftNETCoreAppMajorMinorPatchVersion Condition=" '$(MicrosoftNETCoreAppVersionPreReleaseSeparator)' != -1 ">$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion.Substring(0, $(MicrosoftNETCoreAppVersionPreReleaseSeparator)))</MicrosoftNETCoreAppMajorMinorPatchVersion>
-      <MicrosoftNETCoreAppVersionPreReleaseSeparatorStartIndex>$([MSBuild]::Add($(MicrosoftNETCoreAppVersionPreReleaseSeparator), 1))</MicrosoftNETCoreAppVersionPreReleaseSeparatorStartIndex>
-      <MicrosoftNETCoreVersionSuffix Condition=" '$(MicrosoftNETCoreAppVersionPreReleaseSeparator)' != -1 ">$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion.Substring($(MicrosoftNETCoreAppVersionPreReleaseSeparatorStartIndex)))</MicrosoftNETCoreVersionSuffix>
-      <MicrosoftNETCoreAppPackageVersionWithTilde>$(MicrosoftNETCoreAppMajorMinorPatchVersion)</MicrosoftNETCoreAppPackageVersionWithTilde>
-      <MicrosoftNETCoreAppPackageVersionWithTilde Condition=" '$(MicrosoftNETCoreAppVersionPreReleaseSeparator)' != -1 ">$(MicrosoftNETCoreAppMajorMinorPatchVersion)~$(MicrosoftNETCoreVersionSuffix)</MicrosoftNETCoreAppPackageVersionWithTilde>
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="MicrosoftNETCoreAppRefPackageVersionWithTilde" />
+    </GetLinuxNativeInstallerDependencyVersions>
 
-      <NetStandardTargetingPackVersionPreReleaseSeparator>$(NETStandardLibraryRefPackageVersion.IndexOf('-'))</NetStandardTargetingPackVersionPreReleaseSeparator>
-      <NetStandardTargetingPackMajorMinorPatchVersion>$(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackMajorMinorPatchVersion>
-      <NetStandardTargetingPackMajorMinorPatchVersion Condition=" '$(NetStandardTargetingPackVersionPreReleaseSeparator)' != -1 ">$(NETStandardLibraryRefPackageVersion.Substring(0, $(NetStandardTargetingPackVersionPreReleaseSeparator)))</NetStandardTargetingPackMajorMinorPatchVersion>
-      <NetStandardTargetingPackVersionPreReleaseSeparatorStartIndex>$([MSBuild]::Add($(NetStandardTargetingPackVersionPreReleaseSeparator), 1))</NetStandardTargetingPackVersionPreReleaseSeparatorStartIndex>
-      <NetStandardTargetingPackVersionSuffix Condition=" '$(NetStandardTargetingPackVersionPreReleaseSeparator)' != -1 ">$(NETStandardLibraryRefPackageVersion.Substring($(NetStandardTargetingPackVersionPreReleaseSeparatorStartIndex)))</NetStandardTargetingPackVersionSuffix>
-      <NetStandardTargetingPackPackageVersionWithTilde>$(NetStandardTargetingPackMajorMinorPatchVersion)</NetStandardTargetingPackPackageVersionWithTilde>
-      <NetStandardTargetingPackPackageVersionWithTilde Condition=" '$(NetStandardTargetingPackVersionPreReleaseSeparator)' != -1 ">$(NetStandardTargetingPackMajorMinorPatchVersion)~$(NetStandardTargetingPackVersionSuffix)</NetStandardTargetingPackPackageVersionWithTilde>
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="AspNetCoreRuntimeVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="AspNetCoreMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="AspNetCoreMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
 
-      <AspNetCoreVersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCoreVersion.IndexOf('.')), 1))</AspNetCoreVersionPatchSeparatorIndex>
-      <AspNetCoreVersionPatchSeparatorIndex>$(AspNetCoreVersion.IndexOf('.', $(AspNetCoreVersionPatchSeparatorIndex)))</AspNetCoreVersionPatchSeparatorIndex>
-      <AspNetCoreMajorMinorVersion>$(AspNetCoreVersion.Substring(0, $(AspNetCoreVersionPatchSeparatorIndex)))</AspNetCoreMajorMinorVersion>
+    <GetLinuxNativeInstallerDependencyVersions  PackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="AspNetCoreRefVersionWithTilde" />
+    </GetLinuxNativeInstallerDependencyVersions>
 
-      <AspNetCoreVersionPreReleaseSeparator>$(AspNetCoreVersion.IndexOf('-'))</AspNetCoreVersionPreReleaseSeparator>
-      <AspNetCoreMajorMinorPatchVersion>$(AspNetCoreVersion)</AspNetCoreMajorMinorPatchVersion>
-      <AspNetCoreMajorMinorPatchVersion Condition=" '$(AspNetCoreVersionPreReleaseSeparator)' != -1 ">$(AspNetCoreVersion.Substring(0, $(AspNetCoreVersionPreReleaseSeparator)))</AspNetCoreMajorMinorPatchVersion>
-      <AspNetCoreVersionPreReleaseSeparatorStartIndex>$([MSBuild]::Add($(AspNetCoreVersionPreReleaseSeparator), 1))</AspNetCoreVersionPreReleaseSeparatorStartIndex>
-      <AspNetCoreVersionSuffix Condition=" '$(AspNetCoreVersionPreReleaseSeparator)' != -1 ">$(AspNetCoreVersion.Substring($(AspNetCoreVersionPreReleaseSeparatorStartIndex)))</AspNetCoreVersionSuffix>
-      <AspNetCoreVersionWithTilde>$(AspNetCoreMajorMinorPatchVersion)</AspNetCoreVersionWithTilde>
-      <AspNetCoreVersionWithTilde Condition=" '$(AspNetCoreVersionPreReleaseSeparator)' != -1 ">$(AspNetCoreMajorMinorPatchVersion)~$(AspNetCoreVersionSuffix)</AspNetCoreVersionWithTilde>
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(HostFxrVersion)">
+      <Output TaskParameter="MajorMinorVersion" PropertyName="HostFxrMajorMinorVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
 
-      <HostFxrVersionPatchSeparatorIndex>$([MSBuild]::Add($(HostFxrVersion.IndexOf('.')), 1))</HostFxrVersionPatchSeparatorIndex>
-      <HostFxrVersionPatchSeparatorIndex>$(HostFxrVersion.IndexOf('.', $(HostFxrVersionPatchSeparatorIndex)))</HostFxrVersionPatchSeparatorIndex>
-      <HostFxrMajorMinorVersion>$(HostFxrVersion.Substring(0, $(HostFxrVersionPatchSeparatorIndex)))</HostFxrMajorMinorVersion>
-
-    </PropertyGroup>
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(NETStandardLibraryRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="NetStandardTargetingPackPackageVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="NetStandardTargetingPackMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="NetStandardTargetingPackMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
   </Target>
 </Project>

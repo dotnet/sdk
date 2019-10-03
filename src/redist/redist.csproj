@@ -3,14 +3,13 @@
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Explicitlty reference Microsoft.NETCore.App package here, using the version from Version.props, instead
-         of the version from the stage 0 SDK. -->
-    <PackageReference Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)"
-                      PrivateAssets="All" Publish="true"/>
+    <FrameworkReference Update="Microsoft.NETCore.App" 
+                        TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                        />
 
     <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
