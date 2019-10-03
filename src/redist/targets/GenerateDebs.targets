@@ -235,10 +235,12 @@
       <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppHostPackInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedNetStandardTargetingPackInstallerFile)" />
+      <Exec Command="sudo dpkg -i $(DownloadedAspNetTargetingPackInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedRuntimeDepsInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedSharedHostInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedHostFxrInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedSharedFrameworkInstallerFile)" />
+      <Exec Command="sudo dpkg $(InstallAspNetCoreSharedFxArgs) -i $(DownloadedAspNetCoreSharedFxInstallerFile)" />
 
       <!-- Create layout: Binaries -->
       <Copy
@@ -309,15 +311,15 @@
       <!-- Proactively remove all possible Shared Framework and Debian Packages -->
       <ItemGroup>
         <SetupDebPackageToRemove Include="$(SdkDebianPackageName)" />
-        <!-- <SetupDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageName)" />
-        <SetupDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageFileName)" /> -->
+        <SetupDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageName)" />
+        <SetupDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageFileName)" />
         <SetupDebPackageToRemove Include="$(SharedFxDebianPackageName)" />
         <SetupDebPackageToRemove Include="$(SharedFxDebianPackageFileName)" />
         <SetupDebPackageToRemove Include="$(HostFxrDebianPackageName)" />
         <SetupDebPackageToRemove Include="$(HostFxrDebianPackageFileName)" />
         <SetupDebPackageToRemove Include="$(SharedHostDebianPackageName)" />
-        <!-- <SetupDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageName)" />
-        <SetupDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageFileName)" /> -->
+        <SetupDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageName)" />
+        <SetupDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageFileName)" />
         <SetupDebPackageToRemove Include="$(NetStandardTargetingPackDebianPackageName)" />
         <SetupDebPackageToRemove Include="$(NetStandardTargetingPackDebianPackageFileName)" />
         <SetupDebPackageToRemove Include="$(NetCoreAppTargetingPackDebianPackageName)" />
@@ -351,9 +353,11 @@
       <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppHostPackInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedNetStandardTargetingPackInstallerFile)" />
+      <Exec Command="sudo dpkg -i $(DownloadedAspNetTargetingPackInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedSharedHostInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedHostFxrInstallerFile)" />
       <Exec Command="sudo dpkg -i $(DownloadedSharedFrameworkInstallerFile)" />
+      <Exec Command="sudo dpkg $(InstallAspNetCoreSharedFxArgs) -i $(DownloadedAspNetCoreSharedFxInstallerFile)" />
 
       <Exec Command="sudo dpkg -i $(SdkDebInstallerFile)" />
 
@@ -370,9 +374,11 @@
 
       <ItemGroup>
         <TestSdkDebPackageToRemove Include="$(SdkDebianPackageName)" />
+        <TestSdkDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageName)" />
         <TestSdkDebPackageToRemove Include="$(SharedFxDebianPackageName)" />
         <TestSdkDebPackageToRemove Include="$(HostFxrDebianPackageName)" />
         <TestSdkDebPackageToRemove Include="$(SharedHostDebianPackageName)" />
+        <TestSdkDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageName)" />
         <TestSdkDebPackageToRemove Include="$(NetStandardTargetingPackDebianPackageName)" />
         <TestSdkDebPackageToRemove Include="$(NetCoreAppTargetingPackDebianPackageName)" />
         <TestSdkDebPackageToRemove Include="$(NetCoreAppHostPackDebianPackageName)" />
