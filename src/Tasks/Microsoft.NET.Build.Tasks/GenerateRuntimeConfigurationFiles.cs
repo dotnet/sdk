@@ -134,7 +134,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             runtimeOptions.Tfm = TargetFramework;
 
-            List<RuntimeConfigFramework> frameworks = new List<RuntimeConfigFramework>();
+            var frameworks = new List<RuntimeConfigFramework>();
             if (projectContext.RuntimeFrameworks == null || projectContext.RuntimeFrameworks.Length == 0)
             {
                 //  If there are no RuntimeFrameworks (which would be set in the ProcessFrameworkReferences task based
