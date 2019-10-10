@@ -3,13 +3,13 @@
   <ProductDependencies>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.19506.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.19509.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>7acc732c615d2c2326cd347c8c1841a300a632cb</Sha>
+      <Sha>1acb4c3ce4c6497388752adad31825ae7cdb7e2a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.19506.1">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.19509.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>7acc732c615d2c2326cd347c8c1841a300a632cb</Sha>
+      <Sha>1acb4c3ce4c6497388752adad31825ae7cdb7e2a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.HostModel" Version="3.1.0-preview1.19463.3">
       <Uri>https://github.com/dotnet/core-setup</Uri>
