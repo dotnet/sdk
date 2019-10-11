@@ -43,7 +43,8 @@ jobs:
 
 - job: Linux
   pool: 
-   vmImage: 'ubuntu-16.04'
+    name: NetCorePublic-Pool
+    queue: BuildPool.Ubuntu.1604.Amd64.Open
   variables:
     _os: Linux
   strategy:
