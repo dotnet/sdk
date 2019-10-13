@@ -18,11 +18,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(HelixAccessToken)' != '' ">
-    <HelixTargetQueue Include="Windows.10.Amd64"/>
+    <HelixTargetQueue Include="Windows.10.Amd64@williaml33/temp-test:latest1013"/>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(HelixAccessToken)' == '' ">
-    <HelixTargetQueue Include="Windows.10.Amd64.Open"/>
+    <HelixTargetQueue Include="windows.10.amd64.serverrs5.open@williaml33/temp-test:latest1013"/>
   </ItemGroup>
 
 
