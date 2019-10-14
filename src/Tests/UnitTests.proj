@@ -51,7 +51,7 @@
 
   <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
-      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\RunTestsOnHelix.cmd;$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\RunTestsOnHelix.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
       <HelixPreCommands Condition="$(IsPosixShell)">$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh;$(HelixPreCommands)</HelixPreCommands>
 
     </PropertyGroup>
