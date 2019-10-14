@@ -8,7 +8,21 @@
     <_SDKCustomXUnitPublishTargetsPath>$(MSBuildThisFileDirectory)XUnitPublish.targets</_SDKCustomXUnitPublishTargetsPath>
 
     <SDKCustomXUnitArguments Condition="'$(SDKCustomXUnitArguments)' == ''">-nocolor</SDKCustomXUnitArguments>
+
   </PropertyGroup>
+
+  <Choose>
+    <When Condition="$(HelixTargetQueue.ToLowerInvariant().Contains('windows'))">
+      <PropertyGroup>
+        <IsPosixShell>false</IsPosixShell>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <IsPosixShell>true</IsPosixShell>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <ItemGroup Condition="'@(SDKCustomXUnitProject)' != ''">
     <HelixCorrelationPayload Include="xunit-runner">
@@ -69,7 +83,7 @@
           BeforeTargets="CoreTest">
 
           <!-- TODO isPosixshell no check in -->
-    <SDKCustomCreateXUnitWorkItems XUnitProjects="@(SDKCustomXUnitProject)" IsPosixShell="false" XUnitArguments="$(SDKCustomXUnitArguments)" XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
+    <SDKCustomCreateXUnitWorkItems XUnitProjects="@(SDKCustomXUnitProject)" IsPosixShell="$(IsPosixShell)" XUnitArguments="$(SDKCustomXUnitArguments)" XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
       <Output TaskParameter="XUnitWorkItems" ItemName="HelixWorkItem"/>
     </SDKCustomCreateXUnitWorkItems>
   </Target>
