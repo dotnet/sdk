@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             var scheduler = new AssemblyScheduler(methodLimit: 50);
-            var assemblyPartitionInfos = scheduler.Schedule(assemblyName);
+            var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
