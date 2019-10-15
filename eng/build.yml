@@ -12,7 +12,7 @@ parameters:
   strategy: ''
 
   # Job timeout
-  timeoutInMinutes: 120
+  timeoutInMinutes: 180
 
 jobs:
 - template: /eng/common/templates/job/job.yml
@@ -185,7 +185,7 @@ jobs:
             WorkItemCommand: './build/RunPerfTestsOnHelix.sh $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling x64 Ubuntu_16.04 Ubuntu.1604.Amd64.Perf $(Build.BuildNumber)'
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf_CI', 'Linux_Perf_CI', 'Windows_Perf_Helix', 'Windows_Perf_CI_FullFramework', 'Windows_Perf_Helix_Fullframework', 'Linux_Perf_Helix') }}:
-      - script: eng/common/cibuild.sh 
+      - script: eng/cibuild.sh
                   --configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
