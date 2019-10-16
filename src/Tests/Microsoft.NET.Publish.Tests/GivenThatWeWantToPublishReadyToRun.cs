@@ -4,6 +4,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using FluentAssertions;
+using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -222,7 +223,81 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute()
                 .Should()
                 .Fail()
-                .And.HaveStdOutContainingIgnoreCase("NETSDK1095");
+                .And.HaveStdOutContaining(Strings.ReadyToRunTargetNotSupportedError);
+        }
+
+        [Fact]
+        public void It_warns_when_publishing_lib()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "ClassLib",
+                TargetFrameworks = "netstandard2.0",
+                IsSdkProject = true,
+                IsExe = false,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            publishCommand.Execute($"/p:PublishReadyToRun=true",
+                                   $"/p:RuntimeIdentifier={DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier()}")
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining(Strings.CannotCreateReadyToRunImagesForLibProjects)
+                .And
+                .NotHaveStdOutContaining(Strings.CanOnlyCreateReadyToRunImagesForNetCoreApp);
+        }
+
+        [Fact]
+        public void It_warns_when_targetting_netstandard()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "NetStandardApp",
+                TargetFrameworks = "netstandard2.0",
+                IsSdkProject = true,
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            publishCommand.Execute($"/p:PublishReadyToRun=true",
+                                   $"/p:RuntimeIdentifier={DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier()}",
+                                   $"/p:UseAppHost=true")
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining(Strings.CanOnlyCreateReadyToRunImagesForNetCoreApp)
+                .And
+                .NotHaveStdOutContaining(Strings.CannotCreateReadyToRunImagesForLibProjects);
+        }
+
+        [Fact]
+        public void It_warns_when_targetting_netcoreapp_2_x()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "ConsoleApp",
+                TargetFrameworks = "netcoreapp2.2",
+                IsSdkProject = true,
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            publishCommand.Execute($"/p:PublishReadyToRun=true",
+                                   $"/p:RuntimeIdentifier={DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier()}")
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining(Strings.PublishReadyToRunRequiresVersion30);
         }
 
 

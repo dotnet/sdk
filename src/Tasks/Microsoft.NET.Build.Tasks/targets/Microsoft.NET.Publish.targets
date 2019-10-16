@@ -90,6 +90,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And '$(_IsExecutable)' != 'true'"
                  ResourceName="CannotHaveSingleFileWithoutExecutable" />
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And '$(_IsExecutable)' == 'true' And '$(TargetFrameworkIdentifier)' != '.NETCoreApp'"
+                 ResourceName="CanOnlyHaveSingleFileWithNetCoreApp" />
+
+    <!-- The checks for PublishReadyToRun PublishTrimmed only generate warnings. 
+         Here, the constraints are an implementation/validation requirement, and may be relaxed in future releases. -->
+
+    <NETSdkWarning Condition="'$(PublishReadyToRun)' == 'true' And '$(_IsExecutable)' != 'true'"
+                 ResourceName="CannotCreateReadyToRunImagesForLibProjects" />
+    <NETSdkWarning Condition="'$(PublishReadyToRun)' == 'true' And '$(_IsExecutable)' == 'true' And '$(TargetFrameworkIdentifier)' != '.NETCoreApp'" 
+                 ResourceName="CanOnlyCreateReadyToRunImagesForNetCoreApp" />
+
+    <NETSdkWarning Condition="'$(PublishTrimmed)' == 'true' And '$(_IsExecutable)' != 'true'"
+             ResourceName="CannotTrimForLibProjects" />
+    <NETSdkWarning Condition="'$(PublishTrimmed)' == 'true' And '$(_IsExecutable)' == 'true' And '$(TargetFrameworkIdentifier)' != '.NETCoreApp'"
+             ResourceName="CanOnlyTrimForNetCoreApp" />
 
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
