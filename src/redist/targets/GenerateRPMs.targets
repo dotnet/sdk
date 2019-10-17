@@ -282,6 +282,7 @@
           Outputs="$(RpmTestResultsXmlFile)" >
 
     <!-- Install Dependencies and SDK Packages -->
+    <Exec Command="sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc" />
     <Exec Command="sudo rpm -iv $(DownloadedRuntimeDepsInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppHostPackInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
