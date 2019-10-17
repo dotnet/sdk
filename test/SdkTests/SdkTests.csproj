@@ -83,6 +83,7 @@
     <ItemGroup>
       <RuntimeVersionToInstall Include="2.1.0" />
       <RuntimeVersionToInstall Include="2.2.5" />
+      <RuntimeVersionToInstall Include="3.0.0" />
     </ItemGroup>
     
   </Target>
