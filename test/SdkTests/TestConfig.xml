@@ -145,6 +145,23 @@
             Skip="true"
             Issue=""
             Reason="Needs .NET Core 1.1"/>
-    
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildADesktopExeWithFSharp.It_builds_a_simple_desktop_app"
+            Skip="true"
+            Issue="https://github.com/dotnet/coreclr/issues/27275"
+            Reason="F# compiler is failing on .NET 5 runtime"
+            />
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildALibraryWithFSharp.It_builds_the_library_successfully"
+            Skip="true"
+            Issue="https://github.com/dotnet/coreclr/issues/27275"
+            Reason="F# compiler is failing on .NET 5 runtime"
+            />
+
+    <Method Name="Microsoft.NET.Publish.Tests.PublishWpfApp.It_publishes_and_runs_self_contained_wpf_app"
+            Skip="true"
+            Issue=""
+            Reason="Assumes `dotnet new wpf`produces a netcoreapp3.1 app, will get fixed when sdk takes .NET 5 stage 0"
+            />
   </SkippedTests>
 </Tests>
