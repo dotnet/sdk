@@ -126,6 +126,7 @@
                      Version="[$(MicrosoftDotNetCommonItemTemplates21PackageVersion)];
                               [$(MicrosoftDotNetCommonItemTemplates22PackageVersion)]; 
                               [$(MicrosoftDotNetCommonItemTemplates30PackageVersion)];
+                              [$(MicrosoftDotNetCommonItemTemplates31PackageVersion)];
                               " />
 
     <PackageDownload Update="Microsoft.DotNet.Web.Spa.ProjectTemplates"
