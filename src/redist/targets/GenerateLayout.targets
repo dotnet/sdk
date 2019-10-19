@@ -17,7 +17,7 @@
     <!-- Change these individually to or $(CoreSetupBlobVersion), $(AspNetCoreBlobVersion), or appropriate fixed version depending if corresponding .Ref packages are unpinned. -->
     <NETCoreAppTargetingPackBlobVersion>$(CoreSetupBlobVersion)</NETCoreAppTargetingPackBlobVersion>
     <AspNetCoreTargetingPackBlobVersion>$(CoreSetupBlobVersion)</AspNetCoreTargetingPackBlobVersion>
-    <WindowsDesktopTargetingPackBlobVersion>$(CoreSetupBlobVersion) </WindowsDesktopTargetingPackBlobVersion>
+    <WindowsDesktopTargetingPackBlobVersion>$(CoreSetupBlobVersion)</WindowsDesktopTargetingPackBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
  
@@ -62,9 +62,9 @@
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(MicrosoftNETCoreAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
       <DownloadedNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppHostPackInstallerFileName>
-      <DownloadedAlternateNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(NetCoreAppHostPackVersion)-$(SharedFrameworkInstallerFileRid)_$(AlternateArchitecture)$(InstallerExtension)</DownloadedAlternateNetCoreAppHostPackInstallerFileName>
-      <DownloadedArmNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(NetCoreAppHostPackVersion)-$(SharedFrameworkInstallerFileRid)_arm$(InstallerExtension)</DownloadedArmNetCoreAppHostPackInstallerFileName>
-      <DownloadedArm64NetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(NetCoreAppHostPackVersion)-$(SharedFrameworkInstallerFileRid)_arm64$(InstallerExtension)</DownloadedArm64NetCoreAppHostPackInstallerFileName>
+      <DownloadedAlternateNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_$(AlternateArchitecture)$(InstallerExtension)</DownloadedAlternateNetCoreAppHostPackInstallerFileName>
+      <DownloadedArmNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_arm$(InstallerExtension)</DownloadedArmNetCoreAppHostPackInstallerFileName>
+      <DownloadedArm64NetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_arm64$(InstallerExtension)</DownloadedArm64NetCoreAppHostPackInstallerFileName>
       <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-targeting-pack-$(MicrosoftWindowsDesktopAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
       <DownloadedNetStandardTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
       <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
@@ -74,7 +74,7 @@
       <SharedFrameworkRid Condition=" '$(ProductMonikerRid)' == 'linux-musl-x64' ">$(ProductMonikerRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
       <CombinedFrameworkHostArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
-      <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimewPackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
+      <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
       <AspNetCoreSharedFxInstallerRid Condition="'$(AspNetCoreSharedFxInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreSharedFxInstallerRid>
       <AspNetCoreSharedFxInstallerRid Condition="'$(SharedFrameworkRid)' == 'rhel.6-x64'">linux-x64</AspNetCoreSharedFxInstallerRid>
@@ -86,7 +86,7 @@
       <DownloadedAspNetCoreSharedFxWixLibFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxWixLibFileName>
       <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
       <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
-      <DownloadedAspNetCoreV2ModuleInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcoremodule_$(Architecture)_en_v2_$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(InstallerExtension)</DownloadedAspNetCoreV2ModuleInstallerFileName>
+      <DownloadedAspNetCoreV2ModuleInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcoremodule_$(Architecture)_en_v2_$(MicrosoftAspNetCoreAppRuntimePackageVersion)$(InstallerExtension)</DownloadedAspNetCoreV2ModuleInstallerFileName>
       <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
       <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
 
@@ -153,14 +153,14 @@
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Arm" Condition="'$(ArmAppHostRid)' != ''">
         <PackageName>Microsoft.NETCore.App.Host.$(ArmAppHostRid)</PackageName>
-        <PackageVersion>$(NetCoreAppHostPackVersion)</PackageVersion>
+        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Arm64" Condition="'$(Arm64AppHostRid)' != ''">
         <PackageName>Microsoft.NETCore.App.Host.$(Arm64AppHostRid)</PackageName>
-        <PackageVersion>$(NetCoreAppHostPackVersion)</PackageVersion>
+        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
@@ -217,21 +217,21 @@
 
       <BundledInstallerComponent Include="DownloadedAlternateNetCoreAppHostPackInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
+        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedArmNetCoreAppHostPackInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
+        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedArmNetCoreAppHostPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedArm64NetCoreAppHostPackInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppPackageVersion)</BaseUrl>
+        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedArm64NetCoreAppHostPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>

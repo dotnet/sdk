@@ -128,12 +128,6 @@
                               [$(MicrosoftDotNetCommonItemTemplates30PackageVersion)];
                               " />
 
-    <PackageDownload Update="Microsoft.DotNet.Web.ItemTemplates"
-                     Version="[$(AspNetCorePackageVersionFor21Templates)];
-                              [$(AspNetCorePackageVersionFor22Templates)];
-                              [$(AspNetCorePackageVersionFor30Templates)];
-                              " />
-
     <PackageDownload Update="Microsoft.DotNet.Web.Spa.ProjectTemplates"
                      Version="[$(AspNetCorePackageVersionFor21Templates)];
                               [$(AspNetCorePackageVersionFor22Templates)];
@@ -143,6 +137,7 @@
                      Version="[$(AspNetCorePackageVersionFor21Templates)];
                               [$(AspNetCorePackageVersionFor22Templates)];
                               [$(AspNetCorePackageVersionFor30Templates)];
+                              [$(AspNetCorePackageVersionFor31Templates)];
                               " />
 
     <PackageDownload Update="NUnit3.DotNetNew.Template"
@@ -150,6 +145,16 @@
                               [$(NUnit3Templates22PackageVersion)];
                               [$(NUnit3Templates30PackageVersion)];
                               " />
+
+   <PackageDownload Update="Microsoft.Dotnet.Wpf.ProjectTemplates" 
+                    Version="[$(MicrosoftDotnetWpfProjectTemplates30PackageVersion)];
+                             [$(MicrosoftDotnetWpfProjectTemplates31PackageVersion)];
+                             " />
+
+    <PackageDownload Update="Microsoft.Dotnet.Winforms.ProjectTemplates" 
+                     Version="[$(MicrosoftDotnetWinFormsProjectTemplates30PackageVersion)];
+                              [$(MicrosoftDotnetWinFormsProjectTemplates31PackageVersion)];
+                             " />
   </ItemGroup>
 
   <Target Name="LayoutTemplates"
