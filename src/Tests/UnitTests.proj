@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(HelixAccessToken)' == '' ">
-    <HelixTargetQueue Include="windows.10.amd64.serverrs5.open@williaml33/temp-test:latest1013"/>
+    <HelixTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open"/>
   </ItemGroup>
 
   <Import Project="xunit-runner\XunitRunner.targets" />
