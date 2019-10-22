@@ -163,5 +163,11 @@
             Issue=""
             Reason="Assumes `dotnet new wpf`produces a netcoreapp3.1 app, will get fixed when sdk takes .NET 5 stage 0"
             />
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.It_does_not_download_desktop_targeting_packs_on_unix"
+            Skip="true"
+            Issue=""
+            Reason="Assumes netcoreapp3.1 targeting pack is bundled, which it is not in 5.0 SDK. Will resolve when sdk takes newer stage 0 and hits same issue."/>
+
   </SkippedTests>
 </Tests>
