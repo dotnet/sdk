@@ -7,8 +7,8 @@
       <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.x64</SharedHostComponentId>
       <HostFxrComponentId>com.microsoft.dotnet.hostfxr.$(HostFxrVersion).component.osx.x64</HostFxrComponentId>
       <SharedFrameworkComponentId>com.microsoft.dotnet.sharedframework.$(SharedFrameworkNugetName).$(MicrosoftNETCoreAppPackageVersion).component.osx.x64</SharedFrameworkComponentId>
-      <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(NetCoreAppTargetingPackVersion).component.osx.x64</NetCoreAppTargetingPackComponentId>
-      <NetCoreAppHostPackComponentId>com.microsoft.dotnet.pack.apphost.$(NetCoreAppHostPackVersion).component.osx.x64</NetCoreAppHostPackComponentId>
+      <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(MicrosoftNETCoreAppRefPackageVersion).component.osx.x64</NetCoreAppTargetingPackComponentId>
+      <NetCoreAppHostPackComponentId>com.microsoft.dotnet.pack.apphost.$(MicrosoftNETCoreAppHostPackageVersion).component.osx.x64</NetCoreAppHostPackComponentId>
       <NetStandardTargetingPackComponentId>com.microsoft.standard.pack.targeting.$(NETStandardLibraryRefPackageVersion).component.osx.x64</NetStandardTargetingPackComponentId>
       <SdkComponentId>com.microsoft.dotnet.dev.$(SdkVersion).component.osx.x64</SdkComponentId>
       <SdkProductArchiveId>com.microsoft.dotnet.dev.$(SdkVersion).osx.x64</SdkProductArchiveId>
@@ -94,10 +94,10 @@
           <ReplacementString>$(SdkVersion)</ReplacementString>
         </ResourcesReplacement>
         <ResourcesReplacement Include="{DOTNETRUNTIMEVERSION}">
-          <ReplacementString>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</ReplacementString>
+          <ReplacementString>$(MicrosoftNETCoreAppRuntimePackageVersion)</ReplacementString>
         </ResourcesReplacement>
         <ResourcesReplacement Include="{ASPNETCOREVERSION}">
-          <ReplacementString>$(AspNetCoreVersion)</ReplacementString>
+          <ReplacementString>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</ReplacementString>
         </ResourcesReplacement>
       </ItemGroup>
       

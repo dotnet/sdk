@@ -14,8 +14,6 @@
                           SetSdkBrandingInfo">
     <PropertyGroup>
       <DotnetDebToolDir>$(MSBuildProjectDirectory)</DotnetDebToolDir>
-      <!--<DotnetDebToolDir>$(MSBuildThisFileDirectory)/dotnet-deb-tool-consumer</DotnetDebToolDir>-->
-      <!--<PackageTool>$(NuGetPackagesDir)/dotnet-deb-tool/$(DotnetDebToolVersion)/lib/netcoreapp2.0/tool/package_tool</PackageTool>-->
     </PropertyGroup>
 
     <!-- constants -->
@@ -65,12 +63,12 @@
       <DownloadedHostFxrInstallerFile>$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)</DownloadedHostFxrInstallerFile>
       <SharedHostDebianPackageName>dotnet-host</SharedHostDebianPackageName>
       <DownloadedSharedHostInstallerFile>$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)</DownloadedSharedHostInstallerFile>
-      <AspNetCoreSharedFxDebianPackageFileName>aspnetcore-runtime-$(AspNetCoreVersion)</AspNetCoreSharedFxDebianPackageFileName>
+      <AspNetCoreSharedFxDebianPackageFileName>aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCoreSharedFxDebianPackageFileName>
       <AspNetCoreSharedFxDebianPackageFileName>$(AspNetCoreSharedFxDebianPackageFileName.ToLower())</AspNetCoreSharedFxDebianPackageFileName>
       <AspNetCoreSharedFxDebianPackageName>aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)</AspNetCoreSharedFxDebianPackageName>
       <AspNetCoreSharedFxDebianPackageName>$(AspNetCoreSharedFxDebianPackageName.ToLower())</AspNetCoreSharedFxDebianPackageName>
       <DownloadedAspNetCoreSharedFxInstallerFile>$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadedAspNetCoreSharedFxInstallerFile>
-      <AspNetTargetingPackDebianPackageFileName>aspnetcore-targeting-pack-$(AspNetCoreVersion)</AspNetTargetingPackDebianPackageFileName>
+      <AspNetTargetingPackDebianPackageFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)</AspNetTargetingPackDebianPackageFileName>
       <AspNetTargetingPackDebianPackageFileName>$(AspNetTargetingPackDebianPackageFileName.ToLower())</AspNetTargetingPackDebianPackageFileName>
       <AspNetTargetingPackDebianPackageName>aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)</AspNetTargetingPackDebianPackageName>
       <AspNetTargetingPackDebianPackageName>$(AspNetTargetingPackDebianPackageName.ToLower())</AspNetTargetingPackDebianPackageName>
@@ -159,15 +157,20 @@
         <ReplacementString>$(SdkBrandName)</ReplacementString>
       </DebianConfigTokenValues>
       <DebianConfigTokenValues Include="%SHARED_FRAMEWORK_DEBIAN_PACKAGE_VERSION%">
-        <ReplacementString>$(MicrosoftNETCoreAppPackageVersionWithTilde)</ReplacementString>
+        <ReplacementString>$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%NETCOREAPP_TARGETING_PACK_DEBIAN_PACKAGE_VERSION%">
+        <ReplacementString>$(MicrosoftNETCoreAppRefPackageVersionWithTilde)</ReplacementString>
       </DebianConfigTokenValues>
       <DebianConfigTokenValues Include="%NET_STANDARD_DEBIAN_PACKAGE_VERSION%">
         <ReplacementString>$(NetStandardTargetingPackPackageVersionWithTilde)</ReplacementString>
       </DebianConfigTokenValues>
       <DebianConfigTokenValues Include="%ASPNETCORE_SHAREDFX_DEBIAN_PACKAGE_VERSION%">
-        <ReplacementString>$(AspNetCoreVersionWithTilde)</ReplacementString>
+        <ReplacementString>$(AspNetCoreRuntimeVersionWithTilde)</ReplacementString>
       </DebianConfigTokenValues>
-
+      <DebianConfigTokenValues Include="%ASPNET_TARGETING_PACK_DEBIAN_PACKAGE_VERSION%">
+        <ReplacementString>$(AspNetCoreRefVersionWithTilde)</ReplacementString>
+      </DebianConfigTokenValues>
       <DebianPostInstTokenValues Include="%SDK_VERSION%">
         <ReplacementString>$(SdkVersion)</ReplacementString>
       </DebianPostInstTokenValues>
@@ -191,7 +194,8 @@
                             GenerateDebsInner"/>
 
   <Target Name="GenerateDebsInner"
-          DependsOnTargets="SetupDebProps;
+          DependsOnTargets="SetupBundledComponents;
+                            SetupDebProps;
                             TestDebuild;
                             BuildSdkDeb;
                             TestSdkDeb"
@@ -281,10 +285,6 @@
         InputFiles="$(DebianConfigTemplateFile)"
         DestinationFiles="$(DebianConfigJsonFile)"
         ReplacementItems="@(DebianConfigTokenValues)" />
-
-      <!--<Chmod
-        Glob="$(PackageTool)"
-        Mode="u+x" />-->
 
       <!-- Build SDK Deb package -->
       <DotNetDebTool ToolPath="$([System.IO.Path]::GetDirectoryName($(DotNetTool)))"
