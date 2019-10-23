@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
-    <VersionMajor>3</VersionMajor>
-    <VersionMinor>1</VersionMinor>
+    <VersionMajor>5</VersionMajor>
+    <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
     <VersionPatch>00</VersionPatch>
-    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview2</ReleaseSuffix>
+    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">alpha1</ReleaseSuffix>
     <!--
         When DropSuffix is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
