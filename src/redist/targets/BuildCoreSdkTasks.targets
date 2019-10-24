@@ -38,5 +38,6 @@
   <UsingTask TaskName="GenerateChecksums" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="GetLinuxNativeInstallerDependencyVersions" AssemblyFile="$(CoreSdkTaskDll)"/>
 
 </Project>

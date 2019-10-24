@@ -117,13 +117,16 @@
   <ItemGroup>
     <!-- PackageDownload items must not have duplicate itemspecs, handle packages with multiple versions specially below -->
 
-    <PackageDownload Include="@(Bundled22Templates);@(Bundled21Templates);@(Bundled30Templates)" />
+    <PackageDownload Include="@(Bundled21Templates)" Exclude="@(PackageDownload)" />
     <PackageDownload Include="@(Bundled22Templates)" Exclude="@(PackageDownload)" />
+    <PackageDownload Include="@(Bundled30Templates)" Exclude="@(PackageDownload)" />
+    <PackageDownload Include="@(Bundled31Templates)" Exclude="@(PackageDownload)" />
 
     <PackageDownload Update="Microsoft.DotNet.Common.ItemTemplates"
                      Version="[$(MicrosoftDotNetCommonItemTemplates21PackageVersion)];
                               [$(MicrosoftDotNetCommonItemTemplates22PackageVersion)]; 
                               [$(MicrosoftDotNetCommonItemTemplates30PackageVersion)];
+                              [$(MicrosoftDotNetCommonItemTemplates31PackageVersion)];
                               " />
 
     <PackageDownload Update="Microsoft.DotNet.Web.Spa.ProjectTemplates"
@@ -135,6 +138,7 @@
                      Version="[$(AspNetCorePackageVersionFor21Templates)];
                               [$(AspNetCorePackageVersionFor22Templates)];
                               [$(AspNetCorePackageVersionFor30Templates)];
+                              [$(AspNetCorePackageVersionFor31Templates)];
                               " />
 
     <PackageDownload Update="NUnit3.DotNetNew.Template"
@@ -142,11 +146,16 @@
                               [$(NUnit3Templates22PackageVersion)];
                               [$(NUnit3Templates30PackageVersion)];
                               " />
-  </ItemGroup>
 
-  <!-- Restore bundled templates via PackageReference -->
-  <ItemGroup>
-    <PackageReference Include="@(Bundled31Templates)" />
+   <PackageDownload Update="Microsoft.Dotnet.Wpf.ProjectTemplates" 
+                    Version="[$(MicrosoftDotnetWpfProjectTemplates30PackageVersion)];
+                             [$(MicrosoftDotnetWpfProjectTemplates31PackageVersion)];
+                             " />
+
+    <PackageDownload Update="Microsoft.Dotnet.Winforms.ProjectTemplates" 
+                     Version="[$(MicrosoftDotnetWinFormsProjectTemplates30PackageVersion)];
+                              [$(MicrosoftDotnetWinFormsProjectTemplates31PackageVersion)];
+                             " />
   </ItemGroup>
 
   <Target Name="LayoutTemplates"

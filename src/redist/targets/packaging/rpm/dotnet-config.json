@@ -28,7 +28,7 @@
         },
         {
             "package_name": "%NETCOREAPP_TARGETING_PACK_RPM_PACKAGE_NAME%",
-            "package_version": "%SHARED_FRAMEWORK_RPM_PACKAGE_VERSION%"
+            "package_version": "%NETCOREAPP_TARGETING_PACK_RPM_PACKAGE_VERSION%"
         },
         {
             "package_name": "%NETCORE_APPHOST_PACK_RPM_PACKAGE_NAME%",
@@ -44,7 +44,7 @@
         },
         {
             "package_name": "%ASPNET_TARGETING_PACK_RPM_PACKAGE_NAME%",
-            "package_version": "%ASPNETCORE_SHAREDFX_RPM_PACKAGE_VERSION%"
+            "package_version": "%ASPNET_TARGETING_PACK_RPM_PACKAGE_VERSION%"
         }
     ],
     "directories": [
