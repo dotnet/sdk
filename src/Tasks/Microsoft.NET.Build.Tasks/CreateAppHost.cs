@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Microsoft.Build.Framework;
@@ -111,8 +112,25 @@ namespace Microsoft.NET.Build.Tasks
             }
             catch (AppHostMachOFormatException ex)
             {
-                throw new BuildErrorException(Strings.FileNameIsTooLong, ex.LongName);
+                throw new BuildErrorException(Strings.AppHostMachONotExpectedFormat , AppHostSourcePath, ErrorMap[ex.Error]);
             }
         }
+
+        private static readonly Dictionary<MachOFormatError, string> ErrorMap = new Dictionary<MachOFormatError, string>
+        {
+            [MachOFormatError.Not64BitExe] = Strings.AppHostMachOFormatNot64BitExe,
+            [MachOFormatError.DuplicateLinkEdit] = Strings.AppHostMachOFormatDuplicateLinkEdit,
+            [MachOFormatError.DuplicateSymtab] = Strings.AppHostMachOFormatDuplicateSymtab,
+            [MachOFormatError.SignNeedsLinkEdit] = Strings.AppHostMachOFormatSignNeedsLinkEdit,
+            [MachOFormatError.SignNeedsSymtab] = Strings.AppHostMachOFormatSignNeedsSymtab,
+            [MachOFormatError.LinkEditNotLast] = Strings.AppHostMachOFormatLinkEditNotLast,
+            [MachOFormatError.SymtabNotInLinkEdit] = Strings.AppHostMachOFormatSymtabNotInLinkEdit,
+            [MachOFormatError.SignNotInLinkEdit] = Strings.AppHostMachOFormatSignNotInLinkEdit,
+            [MachOFormatError.SignCommandNotLast] = Strings.AppHostMachOFormatSignCommandNotLast,
+            [MachOFormatError.SignBlobNotLast] = Strings.AppHostMachOFormatSignBlobNotLast,
+            [MachOFormatError.SignDoesntFollowSymtab] = Strings.AppHostMachOFormatSignDoesntFollowSymtab,
+            [MachOFormatError.MemoryMapAccessFault] = Strings.AppHostMachOFormatMemoryMapAccessFault,
+            [MachOFormatError.InvalidUTF8] = Strings.AppHostMachOFormatInvalidUTF8
+        };
     }
 }

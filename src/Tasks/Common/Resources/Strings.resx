@@ -598,12 +598,6 @@ The following are names of parameters or literal values and should not be transl
   <data name="AppHostMachOFormatDuplicateLinkEdit" xml:space="preserve">
     <value>Only one __LINKEDIT segment is expected in the application host</value>
   </data>
-  <data name="AppHostMachOFormatNot64BitExe" xml:space="preserve">
-    <value>Application host is expected to be a 64-bit MachO executable</value>
-  </data>
-  <data name="AppHostMachOFormatDuplicateLinkEdit" xml:space="preserve">
-    <value>Only one __LINKEDIT segment is expected in the application host</value>
-  </data>
   <data name="AppHostMachOFormatDuplicateSymtab" xml:space="preserve">
     <value>Only one SYMTAB is expected in the application host</value>
   </data>
@@ -635,6 +629,6 @@ The following are names of parameters or literal values and should not be transl
     <value>Error reading the memory-mapped application host</value>
   </data>
   <data name="AppHostMachOFormatInvalidUTF8" xml:space="preserve">
-    <value>UTF8 decoding failed </value>
+    <value>UTF8 decoding failed</value>
   </data>
 </root>

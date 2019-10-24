@@ -27,6 +27,76 @@
         <target state="translated">NETSDK1029: "{0}" kann nicht als ausführbare Anwendungshostdatei verwendet werden, da die erwartete Platzhalterbytesequenz "{1}" nicht vorhanden ist, die markiert, wo der Anwendungsname geschrieben wird.</target>
         <note>{StrBegin="NETSDK1029: "}</note>
       </trans-unit>
+      <trans-unit id="AppHostMachOFormatDuplicateLinkEdit">
+        <source>Only one __LINKEDIT segment is expected in the application host</source>
+        <target state="new">Only one __LINKEDIT segment is expected in the application host</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatDuplicateSymtab">
+        <source>Only one SYMTAB is expected in the application host</source>
+        <target state="new">Only one SYMTAB is expected in the application host</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatInvalidUTF8">
+        <source>UTF8 decoding failed</source>
+        <target state="new">UTF8 decoding failed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatLinkEditNotLast">
+        <source>__LINKEDIT must be the last segment in the binary layout</source>
+        <target state="new">__LINKEDIT must be the last segment in the binary layout</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatMemoryMapAccessFault">
+        <source>Error reading the memory-mapped application host</source>
+        <target state="new">Error reading the memory-mapped application host</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatNot64BitExe">
+        <source>Application host is expected to be a 64-bit MachO executable</source>
+        <target state="new">Application host is expected to be a 64-bit MachO executable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatSignBlobNotLast">
+        <source>Signature blob must be at the very end of the file</source>
+        <target state="new">Signature blob must be at the very end of the file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatSignCommandNotLast">
+        <source>CODE_SIGNATURE command must be the last command</source>
+        <target state="new">CODE_SIGNATURE command must be the last command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatSignDoesntFollowSymtab">
+        <source>Signature blob must immediately follow the Symtab</source>
+        <target state="new">Signature blob must immediately follow the Symtab</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatSignNeedsLinkEdit">
+        <source>CODE_SIGNATURE command must follow a Segment64 command named __LINKEDIT</source>
+        <target state="new">CODE_SIGNATURE command must follow a Segment64 command named __LINKEDIT</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatSignNeedsSymtab">
+        <source>CODE_SIGNATURE command must follow the SYMTAB command</source>
+        <target state="new">CODE_SIGNATURE command must follow the SYMTAB command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatSignNotInLinkEdit">
+        <source>Signature blob must be within the __LINKEDIT segment!</source>
+        <target state="new">Signature blob must be within the __LINKEDIT segment!</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachOFormatSymtabNotInLinkEdit">
+        <source>SYMTAB must within the __LINKEDIT segment!</source>
+        <target state="new">SYMTAB must within the __LINKEDIT segment!</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppHostMachONotExpectedFormat">
+        <source>NETSDK1121: Unable to use '{0}' as macOS application host executable it was not in the expected format. Detail reason: {1}.</source>
+        <target state="new">NETSDK1121: Unable to use '{0}' as macOS application host executable it was not in the expected format. Detail reason: {1}.</target>
+        <note>{StrBegin="NETSDK1121: "}</note>
+      </trans-unit>
       <trans-unit id="AppHostNotWindows">
         <source>NETSDK1078: Unable to use '{0}' as application host executable because it's not a Windows PE file.</source>
         <target state="translated">NETSDK1078: "{0}" kann nicht als ausführbare Anwendungshostdatei verwendet werden, weil es sich nicht um eine Windows PE-Datei handelt.</target>
