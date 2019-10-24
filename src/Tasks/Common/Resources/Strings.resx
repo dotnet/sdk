@@ -588,4 +588,53 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1120: C++/CLI projects targeting .NET Core require a target framework of at least 'netcoreapp3.1'.</value>
     <comment>{StrBegin="NETSDK1120: "}</comment>
   </data>
+  <data name="AppHostMachONotExpectedFormat" xml:space="preserve">
+    <value>NETSDK1121: Unable to use '{0}' as macOS application host executable it was not in the expected format. Detail reason: {1}.</value>
+    <comment>{StrBegin="NETSDK1121: "}</comment>
+  </data>
+  <data name="AppHostMachOFormatNot64BitExe" xml:space="preserve">
+    <value>Application host is expected to be a 64-bit MachO executable</value>
+  </data>
+  <data name="AppHostMachOFormatDuplicateLinkEdit" xml:space="preserve">
+    <value>Only one __LINKEDIT segment is expected in the application host</value>
+  </data>
+  <data name="AppHostMachOFormatNot64BitExe" xml:space="preserve">
+    <value>Application host is expected to be a 64-bit MachO executable</value>
+  </data>
+  <data name="AppHostMachOFormatDuplicateLinkEdit" xml:space="preserve">
+    <value>Only one __LINKEDIT segment is expected in the application host</value>
+  </data>
+  <data name="AppHostMachOFormatDuplicateSymtab" xml:space="preserve">
+    <value>Only one SYMTAB is expected in the application host</value>
+  </data>
+  <data name="AppHostMachOFormatSignNeedsLinkEdit" xml:space="preserve">
+    <value>CODE_SIGNATURE command must follow a Segment64 command named __LINKEDIT</value>
+  </data>
+  <data name="AppHostMachOFormatSignNeedsSymtab" xml:space="preserve">
+    <value>CODE_SIGNATURE command must follow the SYMTAB command</value>
+  </data>
+  <data name="AppHostMachOFormatLinkEditNotLast" xml:space="preserve">
+    <value>__LINKEDIT must be the last segment in the binary layout</value>
+  </data>
+  <data name="AppHostMachOFormatSymtabNotInLinkEdit" xml:space="preserve">
+    <value>SYMTAB must within the __LINKEDIT segment!</value>
+  </data>
+  <data name="AppHostMachOFormatSignNotInLinkEdit" xml:space="preserve">
+    <value>Signature blob must be within the __LINKEDIT segment!</value>
+  </data>
+  <data name="AppHostMachOFormatSignCommandNotLast" xml:space="preserve">
+    <value>CODE_SIGNATURE command must be the last command</value>
+  </data>
+  <data name="AppHostMachOFormatSignBlobNotLast" xml:space="preserve">
+    <value>Signature blob must be at the very end of the file</value>
+  </data>
+  <data name="AppHostMachOFormatSignDoesntFollowSymtab" xml:space="preserve">
+    <value>Signature blob must immediately follow the Symtab</value>
+  </data>
+  <data name="AppHostMachOFormatMemoryMapAccessFault" xml:space="preserve">
+    <value>Error reading the memory-mapped application host</value>
+  </data>
+  <data name="AppHostMachOFormatInvalidUTF8" xml:space="preserve">
+    <value>UTF8 decoding failed </value>
+  </data>
 </root>

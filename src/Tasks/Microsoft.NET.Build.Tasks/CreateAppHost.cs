@@ -109,6 +109,10 @@ namespace Microsoft.NET.Build.Tasks
             {
                 throw new BuildErrorException(Strings.AppHostHasBeenModified, AppHostSourcePath, BitConverter.ToString(ex.MissingPattern));
             }
+            catch (AppHostMachOFormatException ex)
+            {
+                throw new BuildErrorException(Strings.FileNameIsTooLong, ex.LongName);
+            }
         }
     }
 }
