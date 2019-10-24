@@ -448,11 +448,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(MarkPackageReferencesAsExternallyResolved)' == 'true'">
       <!--
-        Update Reference items with NuGetPackageId metadata to set ExternallyResolved appropriately.
+        Update Reference items with PackageName metadata to set ExternallyResolved appropriately.
         NetStandard.Library adds its assets in targets this way and not in the standard way that
         would get ExternallyResolved set in ResolvePackageAssets.
        -->
-      <Reference Condition="'%(Reference.NuGetPackageId)' != ''">
+      <Reference Condition="'%(Reference.PackageName)' != ''">
         <ExternallyResolved>true</ExternallyResolved>
       </Reference>
 
