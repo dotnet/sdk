@@ -102,7 +102,7 @@
 
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
-        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppRuntimePackageVersion)</BaseUrl>
+        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(CombinedFrameworkHostCompressedFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
         <RelativeLayoutPath></RelativeLayoutPath>
