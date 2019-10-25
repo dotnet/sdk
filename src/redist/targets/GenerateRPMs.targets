@@ -298,7 +298,6 @@
     <Exec Command="sudo rpm -iv $(DownloadedSharedFrameworkInstallerFile)" />
     <!-- Ignore dependencies, which may have an incoherent dependency on dotnet-runtime -->
     <Exec Command="sudo rpm -iv --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
-
     <Exec Command="sudo rpm -iv $(SdkRPMInstallerFile)" />
 
     <!-- Run End-2-end Tests https://github.com/dotnet/core-sdk/issues/1174
