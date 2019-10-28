@@ -51,7 +51,7 @@
     <Bundled22Templates Include="Microsoft.DotNet.Test.ProjectTemplates.2.2" PackageVersion="$(MicrosoftDotNetTestProjectTemplates22PackageVersion)" />
     <Bundled22Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor22Templates)" />
     <Bundled22Templates Include="Microsoft.DotNet.Web.ProjectTemplates.2.2" PackageVersion="$(AspNetCorePackageVersionFor22Templates)" />
-    <Bundled22Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" PackageVersion="$(AspNetCorePackageVersionFor22Templates)" />
+    <Bundled22Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2" PackageVersion="$(AspNetCorePackageVersionFor22Templates)" />
     <Bundled22Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates22PackageVersion)" />
   </ItemGroup>
   <ItemGroup>
@@ -60,7 +60,7 @@
     <Bundled21Templates Include="Microsoft.DotNet.Test.ProjectTemplates.2.1" PackageVersion="$(MicrosoftDotNetTestProjectTemplates21PackageVersion)" />
     <Bundled21Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
     <Bundled21Templates Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
-    <Bundled21Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
+    <Bundled21Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
     <Bundled21Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates21PackageVersion)" />
   </ItemGroup>
 
