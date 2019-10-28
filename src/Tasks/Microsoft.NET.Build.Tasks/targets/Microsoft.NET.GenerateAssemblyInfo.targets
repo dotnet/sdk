@@ -97,6 +97,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="GetInternalsVisibleTo"
+        DependsOnTargets="PrepareForBuild"
+        Condition="'@(InternalsVisibleTo)' != ''"
+        BeforeTargets="CoreCompile;GetAssemblyAttributes">
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1 Condition="'%(InternalsVisibleTo.Key)' != ''">%(InternalsVisibleTo.Identity), PublicKey=%(InternalsVisibleTo.Key)</_Parameter1>
+        <_Parameter1 Condition="'%(InternalsVisibleTo.Key)' == ''">%(InternalsVisibleTo.Identity)</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
   <!-- 
     To allow version changes to be respected on incremental builds (e.g. through CLI parameters),
     create a hash of all assembly attributes so that the cache file will change with the calculated
