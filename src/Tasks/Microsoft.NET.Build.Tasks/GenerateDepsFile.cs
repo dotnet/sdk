@@ -159,12 +159,16 @@ namespace Microsoft.NET.Build.Tasks
 
             // Generate the RID-fallback for self-contained builds.
             //
-            // In order to support loading components with RID-specific assets, the AssemblyDependencyResolver requires a RID fallback graph.
-            // The component itself should not carry the RID fallback graph with it (it would need to have the graph of all the RIDs there are and it would need to be updated with every addition).
-            // For framework dependent apps, the RID fallback graph comes from the core framework Microsoft.NETCore.App, so there is no need to write it into the app.
+            // In order to support loading components with RID-specific assets, 
+            // the AssemblyDependencyResolver requires a RID fallback graph.
+            // The component itself should not carry the RID fallback graph with it, because
+            // it would need to carry graph of all the RIDs and needs updates for newer RIDs.
+            // For framework dependent apps, the RID fallback graph comes from the core framework Microsoft.NETCore.App, 
+            // so there is no need to write it into the app.
             // If self-contained apps, the (applicable subset of) RID fallback graph needs to be written to the deps.json manifest.
             //
-            // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback graph wrt the current RuntimeIdentifier.
+            // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback 
+            // graph with respect to the target RuntimeIdentifier.
 
             RuntimeGraph runtimeGraph =
                 IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath) : null;

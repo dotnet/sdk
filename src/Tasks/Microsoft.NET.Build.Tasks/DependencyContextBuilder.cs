@@ -337,7 +337,7 @@ namespace Microsoft.NET.Build.Tasks
             // for a specific RID, then an runtime fallback graph is empty
             //
             // Otherwise, it is the set of all runtimes compatible with (inheriting)
-            // the current runtime-identifier.
+            // the target runtime-identifier.
 
             var runtimeFallbackGraph =
                 (_runtimeGraph == null || _runtimeIdentifier == null) ? 

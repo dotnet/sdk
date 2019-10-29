@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 resolvedNuGetFiles = Array.Empty<ResolvedFile>();
             }
 
-            DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, projectContext, includeRuntimeFileVersions: false, runtimeGraph:null)
+            DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, projectContext, includeRuntimeFileVersions: false, runtimeGraph: null)
                 .WithDirectReferences(directReferences)
                 .WithCompilationOptions(compilationOptions)
                 .WithResolvedNuGetFiles((ResolvedFile[]) resolvedNuGetFiles)
