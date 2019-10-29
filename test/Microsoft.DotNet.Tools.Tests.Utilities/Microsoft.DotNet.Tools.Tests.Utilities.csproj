@@ -8,5 +8,6 @@
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="$(MicrosoftDotNetCliUtilsPackageVersion)" />
+    <PackageReference Include="NuGet.ProjectModel" Version="$(NuGetProjectModelPackageVersion)" />
   </ItemGroup>
 </Project>
