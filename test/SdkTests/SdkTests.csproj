@@ -63,6 +63,10 @@
       <Supports1xRuntimes>false</Supports1xRuntimes>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Debian'))">
+      <Supports1xRuntimes>false</Supports1xRuntimes>
+    </PropertyGroup>
+
     <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22openSUSE Leap%22'))">
       <Supports1xRuntimes>false</Supports1xRuntimes>
     </PropertyGroup>
