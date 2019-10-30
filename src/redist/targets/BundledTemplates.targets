@@ -124,7 +124,7 @@
 
     <PackageDownload Update="Microsoft.DotNet.Common.ItemTemplates"
                      Version="[$(MicrosoftDotNetCommonItemTemplates21PackageVersion)];
-                              [$(MicrosoftDotNetCommonItemTemplates22PackageVersion)]; 
+                              [$(MicrosoftDotNetCommonItemTemplates22PackageVersion)];
                               [$(MicrosoftDotNetCommonItemTemplates30PackageVersion)];
                               [$(MicrosoftDotNetCommonItemTemplates31PackageVersion)];
                               " />
@@ -145,14 +145,15 @@
                      Version="[$(NUnit3Templates21PackageVersion)];
                               [$(NUnit3Templates22PackageVersion)];
                               [$(NUnit3Templates30PackageVersion)];
+                              [$(NUnit3Templates31PackageVersion)];
                               " />
 
-   <PackageDownload Update="Microsoft.Dotnet.Wpf.ProjectTemplates" 
+   <PackageDownload Update="Microsoft.Dotnet.Wpf.ProjectTemplates"
                     Version="[$(MicrosoftDotnetWpfProjectTemplates30PackageVersion)];
                              [$(MicrosoftDotnetWpfProjectTemplates31PackageVersion)];
                              " />
 
-    <PackageDownload Update="Microsoft.Dotnet.Winforms.ProjectTemplates" 
+    <PackageDownload Update="Microsoft.Dotnet.Winforms.ProjectTemplates"
                      Version="[$(MicrosoftDotnetWinFormsProjectTemplates30PackageVersion)];
                               [$(MicrosoftDotnetWinFormsProjectTemplates31PackageVersion)];
                              " />
@@ -160,7 +161,7 @@
 
   <Target Name="LayoutTemplates"
         DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesFor31MSI;LayoutTemplatesFor30MSI;LayoutTemplatesFor22MSI;LayoutTemplatesFor21MSI" />
-    
+
   <Target Name="LayoutTemplatesForSDK"
           DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
