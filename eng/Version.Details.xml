@@ -19,7 +19,7 @@
       <Uri>https://github.com/NuGet/NuGet.Client</Uri>
       <Sha>c1f6915918b82c096bbd666bd9c18528f1f70630</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.19524.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19474.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha />
     </Dependency>
