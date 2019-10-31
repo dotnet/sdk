@@ -10,6 +10,7 @@
 
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <XUnitWorkItemTimeout>2:00:00</XUnitWorkItemTimeout>
+    <HelixBaseUri>https://helix.int-dot.net</HelixBaseUri>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(HelixAccessToken)' == '' ">
-    <HelixTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open"/>
+    <HelixTargetQueue Include="Windows.10.Amd64.ClientRS5.VS2019.BT.Open"/>
   </ItemGroup>
 
   <Import Project="xunit-runner\XunitRunner.targets" />
