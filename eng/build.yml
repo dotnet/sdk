@@ -105,6 +105,7 @@ jobs:
               /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\Helix.binlog
         displayName: Run Helix Tests
         env:
+            TestFullMSBuild: 'true'
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: ''
 
