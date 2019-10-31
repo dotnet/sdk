@@ -13,7 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\*.Tests.csproj"/>
+    <SDKCustomXUnitProject Include="**\Microsoft.NET.Clean.Tests.csproj"/>
+    <!-- <SDKCustomXUnitProject Include="**\*.Tests.csproj"/> -->
   </ItemGroup>
 
   <ItemGroup Condition=" '$(HelixAccessToken)' != '' ">
@@ -30,8 +31,6 @@
   <Target Name="CopyHelixFiles" AfterTargets="Publish">
 
     <ItemGroup>
-      <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
-      <GlobalJson Include="$(RepoRoot)\global.json"/>
       <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
 
       <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
@@ -41,10 +40,6 @@
     <PropertyGroup>
       <HelixPayloadOnHost>$(RepoRoot)\artifacts\tmp\Helixpayload</HelixPayloadOnHost>
     </PropertyGroup>
-
-    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
@@ -60,6 +55,11 @@
       <HelixCorrelationPayload Include="$(HelixPayloadOnHost)">
         <PayloadDirectory>$(HelixPayloadOnHost)</PayloadDirectory>
         <Destination>t</Destination>
+      </HelixCorrelationPayload>
+
+      <HelixCorrelationPayload Include="$(RepoRoot)\.dotnet">
+        <PayloadDirectory>$(RepoRoot)\.dotnet</PayloadDirectory>
+        <Destination>d</Destination>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks">
