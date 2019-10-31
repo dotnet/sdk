@@ -13,8 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\Microsoft.NET.Clean.Tests.csproj"/>
-    <!-- <SDKCustomXUnitProject Include="**\*.Tests.csproj"/> -->
+    <SDKCustomXUnitProject Include="**\*.Tests.csproj"/>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(HelixAccessToken)' != '' ">
