@@ -75,6 +75,7 @@ jobs:
               -test
               -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
               /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\Helix.binlog
+              /p:_CustomHelixTargetQueue=$(helixTargetQueue)
         displayName: Run Helix Tests
         env:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -103,6 +104,7 @@ jobs:
               -test
               -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
               /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\Helix.binlog
+              /p:_CustomHelixTargetQueue=$(helixTargetQueue)
         displayName: Run Helix Tests
         env:
             TestFullMSBuild: 'true'
@@ -220,11 +222,25 @@ jobs:
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
+                  -p:Test=false
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
+      - script: eng\common\build.sh
+              --configuration $(_BuildConfig)
+              --prepareMachine
+              --ci
+              --restore
+              --test
+              --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+              /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/Helix.binlog
+              /p:_CustomHelixTargetQueue=$(helixTargetQueue)
+        displayName: Run Helix Tests
+        env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: ''
 
     - task: PublishTestResults@1	
       displayName: Publish Test Results	

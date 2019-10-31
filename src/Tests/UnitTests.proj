@@ -17,12 +17,8 @@
     <SDKCustomXUnitProject Include="**\*.Tests.csproj"/>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(HelixAccessToken)' != '' ">
-    <HelixTargetQueue Include="Windows.10.Amd64@williaml33/temp-test:latest1013"/>
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(HelixAccessToken)' == '' ">
-    <HelixTargetQueue Include="Windows.10.Amd64.ClientRS5.VS2019.BT.Open"/>
+    <HelixTargetQueue Include="$(_CustomHelixTargetQueue)"/>
   </ItemGroup>
 
   <Import Project="xunit-runner\XunitRunner.targets" />
