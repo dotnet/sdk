@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     $"--runtimeconfig {assemblyBaseName}.runtimeconfig.json --depsfile {assemblyBaseName}.deps.json ";
             }
 
-            var scheduler = new AssemblyScheduler(methodLimit: 1);
+            var scheduler = new AssemblyScheduler(methodLimit: 100);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
