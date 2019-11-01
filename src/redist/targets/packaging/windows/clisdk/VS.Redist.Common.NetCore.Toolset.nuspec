@@ -14,6 +14,5 @@
     </metadata>
     <files>
         <file src="$PAYLOAD_FILES$" />
-        <file src="$DOTNET_CAB_FILE$" />
     </files>
 </package>

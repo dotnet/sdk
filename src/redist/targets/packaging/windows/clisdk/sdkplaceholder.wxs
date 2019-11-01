@@ -18,6 +18,8 @@
       <ComponentRef Id="$(var.DependencyKeyId)" />
     </Feature>
 
+    <Icon Id="icon.ico" SourceFile="msi.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
     <Property Id="ARPNOMODIFY" Value="1" />
     <Property Id="ARPNOREPAIR" Value="1" />
     <Property Id="ProductFamily" Value="$(var.ProductFamily)" />
