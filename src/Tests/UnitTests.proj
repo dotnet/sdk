@@ -33,6 +33,13 @@
     <ItemGroup>
       <BuiltSdks Include="$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\**\*.*"/>
 
+      <!-- All the following files are just to get full framework msbuild while avoid to duplicated arcade logic by copying
+      arcade and run it -->
+      <Engfolder Include="$(RepoRoot)\eng\**\*.*"/>
+      <DotToolsFolder Include="$(RepoRoot)\.tools\**\*.*"/>
+      <GlobalJson Include="$(RepoRoot)\global.json"/>
+      <!-- Get full framework msbuild end -->
+
       <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
       <FilesInHelixRoot Include="$(RepoRoot)\build\RunTestsOnHelix.cmd"/>
     </ItemGroup>
@@ -41,8 +48,13 @@
       <HelixPayloadOnHost>$(RepoRoot)\artifacts\tmp\Helixpayload</HelixPayloadOnHost>
     </PropertyGroup>
 
+    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(DotToolsFolder)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
+
     <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
+
 
   <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
