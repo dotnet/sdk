@@ -56,9 +56,15 @@
   <Target Name="AppendHelixPreCommand" AfterTargets="AddXUnitReporter" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
       <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\RunTestsOnHelix.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
-      <HelixPreCommands Condition="$(IsPosixShell)">$HELIX_CORRELATION_PAYLOAD/eng/dogfood.sh;$(HelixPreCommands)</HelixPreCommands>
-
+      <HelixPreCommands Condition="$(IsPosixShell)">$HELIX_CORRELATION_PAYLOAD/t/RunTestsOnHelix.sh;$(HelixPreCommands)</HelixPreCommands>
+      <HelixStage0Targz>$(RepoRoot)\artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
     </PropertyGroup>
+
+    <TarGzFileCreateFromDirectory
+        Condition="'$(OS)' != 'Windows_NT'"
+        SourceDirectory="$(RepoRoot)\.dotnet"
+        DestinationArchive="$(HelixStage0Targz)"
+        OverwriteDestination="true"/>
 
     <ItemGroup>
       <HelixCorrelationPayload Include="$(HelixPayloadOnHost)">
@@ -66,7 +72,11 @@
         <Destination>t</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Include="$(RepoRoot)\.dotnet">
+      <HelixCorrelationPayload Condition="'$(OS)' == 'Windows_NT'" Include="$(HelixStage0Targz)">
+        <Destination>d</Destination>
+      </HelixCorrelationPayload>
+
+      <HelixCorrelationPayload Condition="'$(OS)' != 'Windows_NT'" Include="$(RepoRoot)\.dotnet">
         <PayloadDirectory>$(RepoRoot)\.dotnet</PayloadDirectory>
         <Destination>d</Destination>
       </HelixCorrelationPayload>
