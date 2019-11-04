@@ -50,7 +50,7 @@
 
     <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(DotToolsFolder)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(DotToolsFolder)" DestinationFiles="@(DotToolsFolder->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
