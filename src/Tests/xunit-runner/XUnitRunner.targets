@@ -9,6 +9,9 @@
 
     <SDKCustomXUnitArguments Condition="'$(SDKCustomXUnitArguments)' == ''">-nocolor</SDKCustomXUnitArguments>
 
+    <TaskTargetFramework>netcoreapp3.0</TaskTargetFramework>
+    <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
+
     <SDKHelixCustomSdkTaskDll>$(ArtifactsDir)\bin\HelixTasks\$(Configuration)\$(TaskTargetFramework)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
   </PropertyGroup>
 
@@ -73,11 +76,6 @@
       </SDKCustomXUnitProject>
     </ItemGroup>
   </Target>
-
-  <PropertyGroup>
-    <TaskTargetFramework>netcoreapp3.0</TaskTargetFramework>
-    <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
-  </PropertyGroup>
 
   <Target Name="CreateSDKCustomXUnitWorkItems"
           Condition="'@(SDKCustomXUnitProject)' != ''"
