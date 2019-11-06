@@ -21,7 +21,7 @@
     <HelixTargetQueue Include="$(_CustomHelixTargetQueue)"/>
   </ItemGroup>
 
-  <Import Project="xunit-runner\XunitRunner.targets" />
+  <Import Project="xunit-runner\XUnitRunner.targets" />
 
   <!-- need to be a target in order to have IsPosixShell available  -->
   <Target Name="CopyHelixFiles" AfterTargets="Publish">
