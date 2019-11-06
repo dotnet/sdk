@@ -72,11 +72,11 @@
         <Destination>t</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Condition="'$(OS)' == 'Windows_NT'" Include="$(HelixStage0Targz)">
+      <HelixCorrelationPayload Condition="'$(OS)' != 'Windows_NT'" Include="$(HelixStage0Targz)">
         <Destination>d</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Condition="'$(OS)' != 'Windows_NT'" Include="$(RepoRoot)\.dotnet">
+      <HelixCorrelationPayload Condition="'$(OS)' == 'Windows_NT'" Include="$(RepoRoot)\.dotnet">
         <PayloadDirectory>$(RepoRoot)\.dotnet</PayloadDirectory>
         <Destination>d</Destination>
       </HelixCorrelationPayload>
