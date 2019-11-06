@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\Microsoft.NET.Restore.Tests.csproj"/>
+    <SDKCustomXUnitProject Include="**\*.Tests.csproj"/>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(HelixAccessToken)' == '' ">
