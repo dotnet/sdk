@@ -75,7 +75,7 @@ jobs:
               -test
               -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
               /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\Helix.binlog
-              /p:_CustomHelixTargetQueue=$(helixTargetQueue)
+              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
         displayName: Run Helix Tests
         env:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
