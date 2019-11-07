@@ -218,7 +218,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [WindowsOnlyFact] // Windows-only due to https://github.com/dotnet/corefx/issues/42455
         public void It_retries_on_failure_to_create_apphost()
         {
             const string TFM = "netcoreapp3.0";
