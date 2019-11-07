@@ -203,7 +203,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void It_does_not_rewrite_the_single_file_unnecessarily()
         {
             var publishCommand = GetPublishCommand();

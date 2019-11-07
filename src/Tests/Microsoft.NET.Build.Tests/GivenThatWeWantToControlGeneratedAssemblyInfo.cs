@@ -395,7 +395,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void GenerateUserSecretsForTestProject()
         {
             //  Test the scenario where a test project references a web app and uses user secrets.

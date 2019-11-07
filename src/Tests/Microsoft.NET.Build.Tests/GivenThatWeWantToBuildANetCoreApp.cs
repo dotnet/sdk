@@ -655,7 +655,7 @@ class Program
                 .Pass();
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void ItHasNoPackageReferences()
         {
             var testProject = new TestProject()

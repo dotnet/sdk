@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyFact(Skip="only helix failed tests")]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3785")]
         public void It_cannot_pack_the_cppcliproject()
         {
             var testAsset = _testAssetsManager
