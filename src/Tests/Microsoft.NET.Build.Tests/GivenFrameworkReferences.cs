@@ -617,7 +617,7 @@ namespace FrameworkReferenceTest
         //  Transitive framework references require NuGet support, which isn't currently
         //  in the full Framework MSBuild we use in CI, so only run these tests for
         //  core MSBuild for now
-        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
+        [CoreMSBuildOnlyFact]
         public void TransitiveFrameworkReferenceFromProjectReference()
         {
             var testProject = new TestProject()

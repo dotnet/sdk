@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory(Skip="only helix failed tests")]
+        [Theory]
         [InlineData("net46", "netstandard1.3", false)]
         [InlineData("netcoreapp1.1", "netstandard1.3", false)]
         [InlineData("netcoreapp2.0", "netstandard2.0", false)]

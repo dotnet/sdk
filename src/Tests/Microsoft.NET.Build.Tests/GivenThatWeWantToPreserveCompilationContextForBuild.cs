@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory(Skip="only helix failed tests")]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void It_supports_copylocal_false_references(bool withoutCopyingRefs)

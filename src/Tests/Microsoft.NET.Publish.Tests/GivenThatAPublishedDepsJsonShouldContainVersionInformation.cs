@@ -155,7 +155,7 @@ namespace Microsoft.NET.Publish.Tests
             immutableDir.Should().BeEquivalentTo(coreDir, "inbox immutable collections library from should win");
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void Local_version_of_assembly_with_higher_version_is_loaded_over_inbox_version()
         {
             void publishFolderChanges(string publishFolder)

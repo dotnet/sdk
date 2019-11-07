@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void It_builds_the_project_successfully()
         {
             var testAsset = _testAssetsManager
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyAppBuilds(testAsset);
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void It_builds_the_project_successfully_twice()
         {
             var testAsset = _testAssetsManager
@@ -93,7 +93,7 @@ namespace Microsoft.NET.Build.Tests
             libInfo.ProductVersion.Should().Be("42.43.44.45-alpha");
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void It_generates_satellite_assemblies()
         {
             var testAsset = _testAssetsManager

@@ -21,7 +21,7 @@ namespace Microsoft.NET.ToolPack.Tests
         {
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void When_app_project_reference_a_library_it_flows_to_test_project()
         {
             TestAsset testAsset = _testAssetsManager

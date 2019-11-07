@@ -420,7 +420,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void Default_items_have_the_correct_relative_paths()
         {
             Action<XDocument> projectChanges = project =>

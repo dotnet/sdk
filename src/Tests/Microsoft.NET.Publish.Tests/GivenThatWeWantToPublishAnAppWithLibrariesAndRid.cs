@@ -21,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void It_publishes_a_self_contained_runnable_output()
         {
             PublishAppWithLibraryAndRid(true,
