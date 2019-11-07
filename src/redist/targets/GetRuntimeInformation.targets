@@ -13,7 +13,6 @@
       <OSName Condition=" '$(OSName)' == '' AND '$(IsLinux)' == 'True' ">linux</OSName>
       <OSPlatform Condition=" '$(OSPlatform)' == '' AND '$(IsLinux)' == 'True' ">linux</OSPlatform>
 
-      <Architecture Condition=" '$(Architecture)' == '' ">x64</Architecture>
       <Rid Condition=" '$(Rid)' == '' ">$(OSName)-$(Architecture)</Rid>
     </PropertyGroup>
     

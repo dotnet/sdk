@@ -48,11 +48,11 @@
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
       <SharedFrameworkInstallerFileRid>$(CoreSetupRid)</SharedFrameworkInstallerFileRid>
-      <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">x64</SharedFrameworkInstallerFileRid>
+      <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(Architecture)</SharedFrameworkInstallerFileRid>
 
       <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
       <RuntimeDepsInstallerFileRid>$(CoreSetupRid)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">x64</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
 
       <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
