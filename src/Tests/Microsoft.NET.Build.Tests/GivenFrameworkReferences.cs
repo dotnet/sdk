@@ -71,7 +71,7 @@ namespace FrameworkReferenceTest
             runtimeFrameworkNames.Should().BeEquivalentTo("Microsoft.AspNetCore.App", "Microsoft.WindowsDesktop.App");
         }
 
-        [CoreMSBuildOnlyTheory(Skip="only helix failed tests")]
+        [CoreMSBuildOnlyTheory]
         [InlineData("netcoreapp3.0", false)]
         [InlineData("netcoreapp3.1", true)]
         public void Multiple_frameworks_are_written_to_runtimeconfig_for_self_contained_apps(string tfm, bool shouldHaveIncludedFrameworks)

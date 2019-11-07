@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeHaveAPpContentFile(ITestOutputHelper log) : base(log)
         {}
 
-        [Fact(Skip="only helix failed tests")]
+        [Fact]
         public void It_copies_to_output_successfully()
         {
             var packageReference = GetPackageReference();

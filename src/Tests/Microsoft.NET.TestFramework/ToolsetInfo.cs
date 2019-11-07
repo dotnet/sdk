@@ -171,7 +171,15 @@ namespace Microsoft.NET.TestFramework
 
             if (repoRoot != null)
             {
-                ret.SdksPath = Path.Combine(repoArtifactsDir, "bin", configuration, "Sdks");
+                string envOverrideSdksPath = Environment.GetEnvironmentVariable("MSBuildSDKsPath");
+                if (!string.IsNullOrWhiteSpace(envOverrideSdksPath))
+                {
+                    ret.SdksPath = envOverrideSdksPath;
+                }
+                else
+                {
+                    ret.SdksPath = Path.Combine(repoArtifactsDir, "bin", configuration, "Sdks");
+                }
             }
 
             if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))

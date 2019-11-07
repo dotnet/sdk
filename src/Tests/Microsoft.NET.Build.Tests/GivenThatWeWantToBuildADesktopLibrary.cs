@@ -299,7 +299,7 @@ public static class {project.Name}
                 .NotHaveStdOutContaining("MSB3243");
         }
 
-        [WindowsOnlyTheory(Skip="only helix failed tests")]
+        [WindowsOnlyTheory]
         [InlineData(false)]
         [InlineData(true)]
         public void It_uses_hintpath_when_replacing_simple_name_references(bool useFacades)

@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
+        [CoreMSBuildOnlyFact]
         public void It_collects_TargetFramework_version_and_other_properties()
         {
             string targetFramework = "netcoreapp1.0";
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
                 .Contain("{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v1.0\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\"}");
         }
 
-        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
+        [CoreMSBuildOnlyFact]
         public void It_collects_multi_TargetFramework_version_and_other_properties()
         {
             string targetFramework = "net46;netcoreapp1.1";
