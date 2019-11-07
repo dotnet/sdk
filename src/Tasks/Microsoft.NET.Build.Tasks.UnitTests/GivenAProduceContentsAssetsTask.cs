@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAProduceContentsAssetsTask
     {
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItProcessesContentFiles()
         {
             // sample data
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ProcessedContentItems.Count().Should().Be(0); // buildAction = none
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItOutputsFileWritesForProcessedContent()
         {
             // sample data
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.CopyLocalItems.Count().Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItOutputsCopyLocalItems()
         {
             // sample data
@@ -184,7 +184,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             copyLocalItems.Where(t => t.ItemSpec.EndsWith(contentFiles[3])).Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItOutputsContentItemsWithActiveBuildAction()
         {
             // sample data
@@ -260,7 +260,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             contentItems.Where(t => t.ItemSpec.EndsWith(contentFiles[3])).Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItCanOutputOnlyPreprocessedItems()
         {
             // sample data
@@ -338,7 +338,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             copyLocalItems.Where(t => t.ItemSpec.EndsWith(contentFiles[3])).Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItIgnoresProjectLanguageIfCodeLanguageIsOnlyAny()
         {
             // sample data
@@ -377,7 +377,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             contentItems.All(t => t.GetMetadata(MetadataKeys.NuGetPackageVersion) == packageVersion).Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItProcessesOnlyProjectLanguageIfPresent()
         {
             // sample data
@@ -421,7 +421,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             contentItems.First().GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be(packageVersion);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItProcessesOnlyAnyItemsIfProjectLanguageNotPresent()
         {
             // sample data

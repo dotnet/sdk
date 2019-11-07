@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAProjectContext
     {
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItComputesExcludeFromPublishList()
         {
             LockFile lockFile = TestLockFiles.GetLockFile("dependencies.withgraphs");

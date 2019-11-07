@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("UseWPF")]
         [InlineData("UseWindowsForms")]
         public void It_builds_on_windows_with_the_windows_desktop_sdk(string uiFrameworkProperty)
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.WindowsDesktopFrameworkRequiresWindows);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("Microsoft.WindowsDesktop.App")]
         [InlineData("Microsoft.WindowsDesktop.App.WindowsForms")]
         [InlineData("Microsoft.WindowsDesktop.App.WPF")]

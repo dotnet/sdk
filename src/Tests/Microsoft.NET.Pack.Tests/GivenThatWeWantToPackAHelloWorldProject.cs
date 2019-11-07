@@ -23,7 +23,7 @@ namespace Microsoft.NET.Pack.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_packs_successfully()
         {
             var helloWorldAsset = _testAssetsManager
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Pack.Tests
             fileTargets.Should().BeEquivalentTo(expectedFileTargets);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_fails_if_nobuild_was_requested_but_build_was_invoked()
         {
             var testProject = new TestProject()

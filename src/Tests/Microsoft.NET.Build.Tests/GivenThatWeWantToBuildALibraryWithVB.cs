@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_the_library_successfully()
         {
             var testAsset = _testAssetsManager
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_the_library_twice_in_a_row()
         {
             var testAsset = _testAssetsManager
@@ -127,7 +127,7 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void The_build_fails_if_nuget_restore_has_not_occurred()
         {
             var testAsset = _testAssetsManager
@@ -143,7 +143,7 @@ namespace Microsoft.NET.Build.Tests
                 .Fail();
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
             var testAsset = _testAssetsManager
@@ -165,7 +165,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("Debug", new[] { "CONFIG=\"Debug\"", "DEBUG=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
         [InlineData("Release", new[] { "CONFIG=\"Release\"", "RELEASE=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
         [InlineData("CustomConfiguration",  new[] { "CONFIG=\"CustomConfiguration\"", "CUSTOMCONFIGURATION=-1", "_MyType=\"Empty\"" })]
@@ -194,7 +194,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(expectedDefines.Concat(new[] { "PLATFORM=\"AnyCPU\"", "NETSTANDARD=-1", "NETSTANDARD1_5=-1" }));
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD=-1", "NETSTANDARD1_0=-1", "_MyType=\"Empty\"" }, false)]
         [InlineData("netstandard1.3", new[] { "NETSTANDARD=-1", "NETSTANDARD1_3=-1", "_MyType=\"Empty\"" }, false)]
         [InlineData("netstandard1.6", new[] { "NETSTANDARD=-1", "NETSTANDARD1_6=-1", "_MyType=\"Empty\"" }, false)]

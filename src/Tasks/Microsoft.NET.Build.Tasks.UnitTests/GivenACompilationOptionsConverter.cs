@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             .GetType("Microsoft.NET.Build.Tasks.CompilationOptionsConverter")
             .GetMethod("ConvertFrom");
         
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [MemberData(nameof(CompilerOptionsData))]
         public void ItConvertsFromITaskItemsCorrectly(ITaskItem taskItem, CompilationOptions expectedOptions)
         {

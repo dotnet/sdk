@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_the_project_successfully()
         {
             // NOTE the project dependencies in AppWithTransitiveProjectRefs:
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("This string came from AuxLibrary!");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
             var testAsset = _testAssetsManager
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().OnlyHaveFiles(Array.Empty<string>());
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_build_the_project_successfully()
         {
             // NOTE the project dependencies in AppWithTransitiveProjectRefs:

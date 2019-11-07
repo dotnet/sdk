@@ -18,7 +18,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_publishes_comhost_to_the_publish_folder()
         {
             var testAsset = _testAssetsManager

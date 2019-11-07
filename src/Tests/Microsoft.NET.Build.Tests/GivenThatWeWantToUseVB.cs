@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             Referenced
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("net45", true)]
         [InlineData("netstandard2.0", false)]
         [InlineData("netcoreapp2.1", true)]

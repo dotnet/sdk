@@ -24,7 +24,7 @@ namespace Microsoft.NET.Rebuild.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_rebuilds_with_logging_assets_message()
         {
             var testAsset = _testAssetsManager

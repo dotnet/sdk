@@ -22,7 +22,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0")]
         [InlineData("netcoreapp3.0")]
 
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
 
             publishDirectory.Should().OnlyHaveFiles(files);
         }
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_publishes_all_satellites_when_not_filtered()
         {
             var testProject = new TestProject()

@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(".NETCoreApp")]
         [InlineData(".NETStandard")]
         public void TheMaximumVersionsAreSupported(string targetFrameworkIdentifier)
@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tests
                 because: $"Microsoft.NET.SupportedTargetFrameworks.props should include an entry for {expectedTFM}");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void TheSupportedTargetFrameworkListIsComposed()
         {
             var project = new TestProject

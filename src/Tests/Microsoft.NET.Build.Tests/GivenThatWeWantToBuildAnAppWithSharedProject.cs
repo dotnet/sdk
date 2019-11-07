@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_assign_link_metadata_to_items_from_shared_project()
         {
             var testAsset = _testAssetsManager
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Build.Tests
                                                   link: Path.Combine("MyFolder", "TextFile1.txt")));
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_copies_items_from_shared_project_to_correct_output_folder()
         {
             var testAsset = _testAssetsManager

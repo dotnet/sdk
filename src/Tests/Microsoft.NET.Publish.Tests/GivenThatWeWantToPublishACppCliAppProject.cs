@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip="only helix failed tests")]
         public void It_should_fail_with_error_message()
         {
             var testAsset = _testAssetsManager

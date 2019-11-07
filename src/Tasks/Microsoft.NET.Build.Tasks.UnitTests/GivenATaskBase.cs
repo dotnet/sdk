@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             protected override void ExecuteCore() {}
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItRoutesLogMessagesToMSBuild()
         {
             var task = new TestTask();

@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAGetDependsOnNETStandardTask
     {
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void CanCheckThisAssembly()
         {
             var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardTask).GetTypeInfo().Assembly.Location;
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.DependsOnNETStandard.Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void CanCheckThisAssemblyByHintPath()
         {
             var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardTask).GetTypeInfo().Assembly.Location;
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ReturnsFalseForNonPE()
         {
             string testFile = $"testFile.{nameof(GivenAGetDependsOnNETStandardTask)}.{nameof(ReturnsFalseForNonPE)}.txt";
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ReturnsFalseForNativeLibrary()
         {
             var corelibLocation = typeof(object).GetTypeInfo().Assembly.Location;
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void SucceedsOnMissingFileReturnsFalse()
         {
             var missingFile = $"{nameof(SucceedsOnMissingFileReturnsFalse)}.shouldNotExist.dll";
@@ -122,7 +122,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             ((MockBuildEngine)task.BuildEngine).Warnings.Count.Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void SucceedsWithWarningOnLockedFile()
         {
             var lockedFile = $"{nameof(SucceedsWithWarningOnLockedFile)}.dll";

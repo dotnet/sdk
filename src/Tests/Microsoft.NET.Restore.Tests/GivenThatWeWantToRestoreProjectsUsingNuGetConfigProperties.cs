@@ -26,7 +26,7 @@ namespace Microsoft.NET.Restore.Tests
         }
 
         // https://github.com/dotnet/sdk/issues/1327
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip="only helix failed tests")]
         [InlineData("netstandard1.3", "1.3", false)]
         [InlineData("netcoreapp1.0", "1.0", true)]
         [InlineData("netcoreapp1.1", "1.1", true)]
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Restore.Tests
                 $"{GetUniquePackageNameForEachTestProject(testProjectName)}.1.0.0.nupkg")).Should().Be(fileExists);
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netstandard1.3", "1.3")]
         [InlineData("netcoreapp1.0", "1.0")]
         // base line of the following tests
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Restore.Tests
             restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}").Should().Pass();
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netstandard1.3", "1.3")]
         [InlineData("netcoreapp1.0", "1.0")]
         [InlineData("netcoreapp1.1", "1.1")]
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Restore.Tests
             restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicitNuGetFallbackFolder=true").Should().Fail();
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netstandard1.3", "1.3", true)]
         [InlineData("netcoreapp1.0", "1.0", false)]
         [InlineData("netcoreapp1.1", "1.1", false)]

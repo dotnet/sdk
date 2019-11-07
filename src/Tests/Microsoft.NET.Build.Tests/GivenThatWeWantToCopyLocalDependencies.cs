@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_copies_local_package_dependencies_on_build()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_copy_local_package_dependencies_when_requested_not_to()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -104,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Core MSBuild only because CI machines don't have updated VS (with support for RuntimeIdentifierGraphPath)
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
         public void It_copies_local_specific_runtime_package_dependencies_on_build()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -148,7 +148,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_copy_local_package_dependencies_for_lib_projects()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_copies_local_package_dependencies_for_lib_projects_when_requested_to()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -220,7 +220,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_copy_local_package_dependencies_for_netstandard_projects()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -252,7 +252,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_copies_local_package_dependencies_for_netstandard_projects_when_requested_to()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -291,7 +291,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_copy_local_runtime_dependencies_for_netframework_projects()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -324,7 +324,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Core MSBuild only because CI machines don't have updated VS (with support for RuntimeIdentifierGraphPath)
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
         public void It_copies_local_all_assets_on_self_contained_build()
         {
             const string ProjectName = "TestProjWithPackageDependencies";

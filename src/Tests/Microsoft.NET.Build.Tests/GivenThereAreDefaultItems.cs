@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_ignores_excluded_folders()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -61,7 +61,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_excludes_items_in_a_custom_outputpath()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_allows_excluded_folders_to_be_overridden()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -145,7 +145,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_allows_items_outside_project_root_to_be_included()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -183,7 +183,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_allows_a_project_subfolder_to_be_excluded()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -218,7 +218,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_allows_files_in_the_obj_folder_to_be_explicitly_included()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -256,7 +256,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_allows_a_CSharp_file_to_be_used_as_an_EmbeddedResource()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -304,7 +304,7 @@ namespace Microsoft.NET.Build.Tests
             embeddedResourceItems.Should().BeEquivalentTo(expectedEmbeddedResourceItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_allows_a_CSharp_file_to_be_used_as_Content()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -366,7 +366,7 @@ namespace Microsoft.NET.Build.Tests
             noneItems.Should().BeEquivalentTo(expectedNoneItems);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_include_source_or_resx_files_in_None()
         {
             var testProject = new TestProject()
@@ -420,7 +420,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Default_items_have_the_correct_relative_paths()
         {
             Action<XDocument> projectChanges = project =>
@@ -471,7 +471,7 @@ namespace Microsoft.NET.Build.Tests
  
         //  Disable this test on full framework, as generating strong named satellite assemblies with AL.exe requires Admin permissions
         //  See https://github.com/dotnet/sdk/issues/732
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
         public void Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used()
         {
             Action<XDocument> projectChanges = project =>
@@ -495,7 +495,7 @@ namespace Microsoft.NET.Build.Tests
             GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources(Log, _testAssetsManager, projectChanges, setup, "ExplicitCompileDefaultEmbeddedResource");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_gives_an_error_message_if_duplicate_compile_items_are_included()
         {
             var testProject = new TestProject()
@@ -527,7 +527,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("EnableDefaultCompileItems");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_gives_the_correct_error_if_duplicate_compile_items_are_included_and_default_items_are_disabled()
         {
             var testProject = new TestProject()
@@ -567,7 +567,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutMatching("EnableDefaultCompileItems");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Implicit_package_references_are_overridden_by_PackageReference_includes_in_the_project_file()
         {
             var testProject = new TestProject()
@@ -606,7 +606,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("'NETStandard.Library'");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ImplicitFrameworkReferencesAreOverriddenByProjectFile()
         {
             var testProject = new TestProject()
@@ -645,7 +645,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1086");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void DuplicateFrameworkReferencesCauseError()
         {
             var testProject = new TestProject()
@@ -682,7 +682,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1087");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void Implicit_NetCoreApp_reference_can_be_overridden(bool disableImplicitFrameworkReferences)
@@ -722,7 +722,7 @@ namespace Microsoft.NET.Build.Tests
             netCoreAppLibrary.Version.ToString().Should().Be(explicitPackageVersion);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void DuplicatePackageReferencesCanBeUsed()
         {
             var testProject = new TestProject()

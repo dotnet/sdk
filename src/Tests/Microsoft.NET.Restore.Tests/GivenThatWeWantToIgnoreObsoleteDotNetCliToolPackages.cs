@@ -19,7 +19,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_issues_warning_and_skips_restore_for_obsolete_DotNetCliToolReference()
         {
             const string obsoletePackageId = "Banana.CommandLineTool";

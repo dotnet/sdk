@@ -51,7 +51,7 @@ namespace Microsoft.NET.ToolPack.Tests
             return packCommand.GetNuGetPackage();
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_packs_successfully(bool multiTarget)
@@ -65,7 +65,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file(bool multiTarget)
@@ -92,7 +92,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_removes_all_package_dependencies(bool multiTarget)
@@ -106,7 +106,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_runtimeconfig_for_each_tfm(bool multiTarget)
@@ -125,7 +125,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_does_not_contain_apphost_exe(bool multiTarget)
@@ -161,7 +161,7 @@ namespace Microsoft.NET.ToolPack.Tests
                 .BeTrue("run command should be apphost executable (for WinExe) to debug. But it will not be packed");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_DotnetToolSettingsXml_for_each_tfm(bool multiTarget)
@@ -180,7 +180,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_does_not_contain_lib(bool multiTarget)
@@ -192,7 +192,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_folder_structure_tfm_any(bool multiTarget)
@@ -208,7 +208,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_packagetype_dotnettool(bool multiTarget)
@@ -221,7 +221,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_contains_dependencies_dll(bool multiTarget)

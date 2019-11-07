@@ -44,7 +44,7 @@ namespace Microsoft.NET.Publish.Tests
             return testProject;
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Versions_are_included_in_deps_json()
         {
             var testProject = GetTestProject();
@@ -91,13 +91,13 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Versions_are_included_for_self_contained_apps()
         {
             Versions_are_included(build: false);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Versions_are_included_for_build()
         {
             Versions_are_included(build: true);
@@ -143,7 +143,7 @@ namespace Microsoft.NET.Publish.Tests
             immutableDir.Should().BeEquivalentTo(coreDir, "immutable collections library from Framework should win");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Inbox_version_is_loaded_if_runtime_file_versions_arent_in_deps()
         {
             void testProjectChanges(TestProject testProject)
@@ -155,7 +155,7 @@ namespace Microsoft.NET.Publish.Tests
             immutableDir.Should().BeEquivalentTo(coreDir, "inbox immutable collections library from should win");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Local_version_of_assembly_with_higher_version_is_loaded_over_inbox_version()
         {
             void publishFolderChanges(string publishFolder)

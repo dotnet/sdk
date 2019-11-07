@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netstandard1.5")]
         [InlineData("netcoreapp2.1")]
         [InlineData("netcoreapp3.0")]
@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_the_library_twice_in_a_row()
         {
             var testAsset = _testAssetsManager
@@ -155,7 +155,7 @@ namespace Microsoft.NET.Build.Tests
             return testAsset;
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("cs")]
         [InlineData("vb")]
         public void It_creates_a_documentation_file(string language)
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Build.Tests
             }, SearchOption.TopDirectoryOnly);
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("cs", true)]
         [InlineData("cs", false)]
         [InlineData("vb", true)]
@@ -230,7 +230,7 @@ namespace Microsoft.NET.Build.Tests
             new DirectoryInfo(libraryProjectDirectory).Should().OnlyHaveFiles(expectedProjectDirectoryFiles, SearchOption.TopDirectoryOnly);
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("cs", true)]
         [InlineData("cs", false)]
         [InlineData("vb", true)]
@@ -264,7 +264,7 @@ namespace Microsoft.NET.Build.Tests
             }, SearchOption.TopDirectoryOnly);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
             var testAsset = _testAssetsManager
@@ -286,7 +286,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("Debug", "DEBUG")]
         [InlineData("Release", "RELEASE")]
         [InlineData("CustomConfiguration", "CUSTOMCONFIGURATION")]
@@ -315,7 +315,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD1_5" });
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD", "NETSTANDARD1_0" }, false)]
         [InlineData("netstandard1.3", new[] { "NETSTANDARD", "NETSTANDARD1_3" }, false)]
         [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6" }, false)]
@@ -394,7 +394,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_is_empty(bool useSolution)
@@ -404,7 +404,7 @@ namespace Microsoft.NET.Build.Tests
                 $"The TargetFramework value '{targetFramework}' was not recognized");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_is_invalid(bool useSolution)
@@ -414,7 +414,7 @@ namespace Microsoft.NET.Build.Tests
                 $"The TargetFramework value '{targetFramework}' was not recognized");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_should_be_targetframeworks(bool useSolution)
@@ -507,7 +507,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutContaining(">="); // old error about comparing empty string to version when TargetFramework was blank;
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp5.1")]
         [InlineData("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
@@ -538,7 +538,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("The current .NET SDK does not support targeting");
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_passes_ridless_target_to_compiler()
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid("netcoreapp2.0");
@@ -585,7 +585,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_can_target_uwp_using_sdk_extras()
         {
             var testAsset = _testAssetsManager
@@ -599,7 +599,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(null)]
         [InlineData(true)]
         [InlineData(false)]
@@ -649,7 +649,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.2", null, false, null, false)]
         [InlineData("netcoreapp3.0", null, true, null, true)]
         [InlineData("netcoreapp3.0", "LatestMajor", true, null, true)]

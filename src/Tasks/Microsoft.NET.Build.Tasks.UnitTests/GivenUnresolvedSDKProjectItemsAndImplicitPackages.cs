@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenUnresolvedSDKProjectItemsAndImplicitPackages
     {
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItShouldCombineSdkReferencesWithImplicitPackageReferences()
         {
             // Arrange 

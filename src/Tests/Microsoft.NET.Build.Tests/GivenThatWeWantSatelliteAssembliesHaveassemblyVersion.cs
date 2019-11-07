@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
 
         //  Disable this test on full framework, as generating strong named satellite assemblies with AL.exe requires Admin permissions
         //  See https://github.com/dotnet/sdk/issues/732
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
         public void It_should_produce_same_satelliteAssembly_FileVersionInfo_as_main()
         {
             RestoreAndBuildTestAssets();
@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
             satelliteAssemblyFileVersioninfo.FileDescription.Should().Be(mainAssemblyFileVersioninfo.FileDescription);
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
         public void It_should_produce_same_satelliteAssembly_AssemblyVersions_as_main()
         {
             RestoreAndBuildTestAssets();

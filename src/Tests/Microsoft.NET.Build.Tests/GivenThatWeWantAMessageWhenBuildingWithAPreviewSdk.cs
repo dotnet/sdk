@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_displays_a_preview_message_when_using_a_preview_Sdk()
         {
             TestAsset testAsset = _testAssetsManager
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining(Strings.UsingPreviewSdk_Info);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_display_a_preview_message_when_using_a_release_Sdk()
         {
             TestAsset testAsset = _testAssetsManager

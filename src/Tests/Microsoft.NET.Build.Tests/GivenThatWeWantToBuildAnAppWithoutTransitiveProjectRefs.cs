@@ -24,19 +24,19 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/p:DisableTransitiveProjectReferences=true"});
         }
         
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_the_project_successfully_with_static_graph_and_isolation()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/graph", "/isolate"});
         }
         
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
             var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/graph", "/isolate"});
@@ -151,7 +151,7 @@ namespace Microsoft.NET.Build.Tests
             return (testAsset, outputDirectories);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_the_project_successfully_when_RAR_does_not_find_all_references()
         {
             var testAsset = _testAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());

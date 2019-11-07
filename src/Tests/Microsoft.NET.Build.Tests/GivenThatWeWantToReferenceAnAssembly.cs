@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "net40")]
         [InlineData("netcoreapp2.0", "netstandard1.5")]
         [InlineData("netcoreapp2.0", "netcoreapp1.0")]
@@ -92,7 +92,7 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from a direct reference.");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "netstandard2.0")]
         [InlineData("netcoreapp2.0", "netcoreapp2.0")]
         public void ItRunsAppsDirectlyReferencingAssembliesWithSatellites(
@@ -215,7 +215,7 @@ public static class Program
                 .And.HaveStdOutContaining("Hello World from en satellite assembly for a direct reference.");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "net40")]
         [InlineData("netcoreapp2.0", "netstandard1.5")]
         [InlineData("netcoreapp2.0", "netcoreapp1.0")]
@@ -303,7 +303,7 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from a reference of an indirect reference.");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "netstandard2.0")]
         [InlineData("netcoreapp2.0", "netcoreapp2.0")]
         public void ItRunsAppsDirectlyReferencingAssembliesWhichReferenceAssembliesWithSatellites(
@@ -444,7 +444,7 @@ public static class Program
                 .And.HaveStdOutContaining("Hello World from en satellite assembly for a reference of an indirect reference.");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "net40")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netstandard1.5")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netcoreapp1.0")]
@@ -533,7 +533,7 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from an indirect reference.");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netstandard2.0")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netcoreapp2.0")]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssembliesWithSatellites(
@@ -675,7 +675,7 @@ public static class Program
                 .And.HaveStdOutContaining("Hello World from en satellite assembly for an indirect reference.");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "net40")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netstandard1.5")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netcoreapp1.0")]
@@ -782,7 +782,7 @@ public static class Program
                 .And.HaveStdOutContaining("Hello from a reference of an indirect reference.");
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netstandard2.0")]
         [InlineData("netcoreapp2.0", "netstandard2.0", "netcoreapp2.0")]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssembliesWhichReferenceAssembliesWithSatellites(

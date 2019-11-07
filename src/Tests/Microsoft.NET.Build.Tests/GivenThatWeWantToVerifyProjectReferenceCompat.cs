@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
         [InlineData("net451", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 net45 net451", true, true)]
         [InlineData("net46", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 net45 net451 net46", true, true)]

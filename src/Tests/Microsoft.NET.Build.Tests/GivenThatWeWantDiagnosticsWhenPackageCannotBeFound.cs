@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_reports_missing_package_deleted_since_restore()
         {
             var package = GeneratePackageToGoMissing();

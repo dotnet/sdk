@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAPackageOverrideResolver
     {
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItMergesPackageOverridesUsingHighestVersion()
         {
             ITaskItem[] packageOverrides = new[]
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Assert.Equal(new NuGetVersion(4, 2, 0), packageOverride.OverriddenPackages["System.Nick"]);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItHandlesNullITaskItemArray()
         {
             var resolver = new PackageOverrideResolver<MockConflictItem>(null);
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Assert.Null(resolver.Resolve(new MockConflictItem(), new MockConflictItem()));
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void ItHandlesNullPackageIds()
         {
             ITaskItem[] packageOverrides = new[]

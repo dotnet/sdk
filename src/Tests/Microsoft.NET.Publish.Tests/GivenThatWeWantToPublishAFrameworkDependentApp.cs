@@ -25,7 +25,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(null, "netcoreapp2.1")]
         [InlineData("true", "netcoreapp2.1")]
         [InlineData("false", "netcoreapp2.1")]
@@ -104,7 +104,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_errors_when_using_app_host_with_older_target_framework()
         {
             var runtimeIdentifier = RuntimeEnvironment.GetRuntimeIdentifier();

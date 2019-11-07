@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Disabled on full Framework MSBuild due to https://github.com/dotnet/sdk/issues/1293
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
             TestProject toolProject = new TestProject()
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Disabled on full Framework MSBuild due to https://github.com/dotnet/sdk/issues/1293
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="only helix failed tests")]
         public void It_handles_conflicts_when_creating_a_tool_deps_file()
         {
             TestProject toolProject = new TestProject()

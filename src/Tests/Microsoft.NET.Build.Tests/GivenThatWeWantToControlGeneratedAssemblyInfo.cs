@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData("AssemblyInformationVersionAttribute")]
         [InlineData("AssemblyFileVersionAttribute")]
         [InlineData("AssemblyVersionAttribute")]
@@ -90,7 +90,7 @@ namespace Microsoft.NET.Build.Tests
             actualInfo.Should().Equal(expectedInfo);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_include_source_revision_id_if_initialize_source_control_target_not_available()
         {
             TestProject testProject = new TestProject()
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0" });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_include_source_revision_id_if_source_revision_id_not_set()
         {
             TestProject testProject = new TestProject()
@@ -140,7 +140,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0" });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_include_source_revision_id_if_disabled()
         {
             TestProject testProject = new TestProject()
@@ -173,7 +173,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0" });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_includes_source_revision_id_if_available__version_without_plus()
         {
             TestProject testProject = new TestProject()
@@ -210,7 +210,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0+xyz" });
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_includes_source_revision_id_if_available__version_with_plus()
         {
             TestProject testProject = new TestProject()
@@ -248,7 +248,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.2.3+abc.xyz" });
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.1")]
         [InlineData("net45")]
         public void It_respects_version_prefix(string targetFramework)
@@ -276,7 +276,7 @@ namespace Microsoft.NET.Build.Tests
             info["AssemblyInformationalVersionAttribute"].Should().Be("1.2.3");
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("netcoreapp2.1")]
         [InlineData("net45")]
         public void It_respects_version_changes_on_incremental_build(string targetFramework)
@@ -310,7 +310,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_respects_custom_assembly_attribute_items_on_incremental_build()
         {
             var targetFramework = "netstandard1.5";
@@ -349,7 +349,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [InlineData(false, false, false)]
         [InlineData(true, false, true)]
         [InlineData(false, true, true)]
@@ -395,7 +395,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void GenerateUserSecretsForTestProject()
         {
             //  Test the scenario where a test project references a web app and uses user secrets.

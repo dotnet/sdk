@@ -25,7 +25,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [MemberData(nameof(PublishData))]
         public void It_publishes_the_project_correctly(string targetFramework, string [] expectedPublishFiles)
         {
@@ -93,14 +93,14 @@ namespace Microsoft.NET.Publish.Tests
                 .BeEquivalentTo(baselineConfigJsonObject);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_fails_when_nobuild_is_set_and_build_was_not_performed_previously()
         {
             var publishCommand = GetPublishCommand("netcoreapp1.0").Execute("/p:NoBuild=true");
             publishCommand.Should().Fail().And.HaveStdOutContaining("MSB3030"); // "Could not copy ___ because it was not found."
         }
 
-        [Theory]
+        [Theory(Skip="only helix failed tests")]
         [MemberData(nameof(PublishData))]
         public void It_does_not_build_when_nobuild_is_set(string targetFramework, string[] expectedPublishFiles)
         {

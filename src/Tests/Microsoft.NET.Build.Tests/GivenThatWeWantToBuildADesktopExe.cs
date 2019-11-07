@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_builds_a_simple_desktop_app()
         {
             var targetFramework = "net45";
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Windows only because default RuntimeIdentifier only applies when current OS is Windows
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", false, "AnyCPU")]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", true, "x86")]
         [InlineData("SQLite/3.13.0", false, "x86")]
@@ -93,7 +93,7 @@ namespace Microsoft.NET.Build.Tests
             getValueCommand.GetValues().Single().Should().Be(expectedPlatform);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         // If we don't set platformTarget and don't use native dependency, we get working AnyCPU app.
         [InlineData("defaults", null, false, "Native code was not used (MSIL)")]
         // If we don't set platformTarget and do use native dependency, we get working x86 app.
@@ -157,7 +157,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         // implicit rid with option to append rid to output path off -> do not append
         [InlineData("implicitOff", "", false, false)]
         // implicit rid with option to append rid to output path on -> do not append (never append implicit rid irrespective of option)
@@ -237,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("win7-x86", "x86")]
         [InlineData("win8-x86-aot", "x86")]
         [InlineData("win7-x64", "x64")]
@@ -271,7 +271,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo(expectedPlatformTarget);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_respects_explicit_platform_target()
         {
             var testAsset = _testAssetsManager
@@ -292,7 +292,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("x64");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_includes_default_framework_references()
         {
             var testProject = new TestProject()
@@ -333,7 +333,7 @@ namespace DefaultReferences
 
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_reports_a_single_failure_if_reference_assemblies_are_not_found()
         {
             var testProject = new TestProject()
@@ -364,7 +364,7 @@ namespace DefaultReferences
             result.StdOut.Should().Contain("1 Error(s)");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_does_not_report_conflicts_if_the_same_framework_assembly_is_referenced_multiple_times()
         {
             var testProject = new TestProject()
@@ -396,7 +396,7 @@ namespace DefaultReferences
                 .NotHaveStdOutMatching("Encountered conflict", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_does_not_report_conflicts_when_referencing_a_nuget_package()
         {
             var testProject = new TestProject()
@@ -430,7 +430,7 @@ namespace DefaultReferences
                 .NotHaveStdOutMatching("Encountered conflict", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_does_not_report_conflicts_when_with_http_4_1_package()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -461,7 +461,7 @@ namespace DefaultReferences
                 .NotHaveStdOutMatching("MSB3243", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_does_not_report_conflicts_with_runtime_specific_items()
         {
             var testProject = new TestProject()
@@ -503,7 +503,7 @@ namespace DefaultReferences
             buildResult.Should().NotHaveStdOutMatching("Encountered conflict", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip="only helix failed tests")]
         [InlineData("4.3.3")]
         [InlineData("4.1.0")]
         public void It_builds_successfully_if_inbox_assembly_wins_conflict_resolution(string httpPackageVersion)
@@ -511,7 +511,7 @@ namespace DefaultReferences
             Test_inbox_assembly_wins_conflict_resolution(false, httpPackageVersion);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("4.3.3")]
         [InlineData("4.1.0")]
         public void It_builds_successfully_if_inbox_assembly_wins_conflict_resolution_sdk(string httpPackageVersion)
@@ -597,7 +597,7 @@ class Program
             Test_inbox_assembly_wins_conflict_resolution(false, httpPackageVersion, useAlias: true);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData("4.3.3")]
         [InlineData("4.1.0")]
         public void Aliases_are_preserved_if_inbox_assembly_wins_conflict_resolution_sdk(string httpPackageVersion)
@@ -605,7 +605,7 @@ class Program
             Test_inbox_assembly_wins_conflict_resolution(true, httpPackageVersion, useAlias: true);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void Aliases_are_preserved_if_framework_reference_is_overridden_by_package()
         {
             var testProject = new TestProject()
@@ -653,7 +653,7 @@ class Program
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_generates_binding_redirects_if_needed()
         {
             var testAsset = _testAssetsManager
@@ -678,7 +678,7 @@ class Program
             root.Elements("runtime").Single().Elements().Should().Contain(e => e.Name.LocalName == "assemblyBinding");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_generates_supportedRuntime_when_no_appconfig_in_source_require_binding_redirect()
         {
             var testAsset = _testAssetsManager
@@ -689,7 +689,7 @@ class Program
             root.Elements("startup").Single().Elements().Should().Contain(e => e.Name.LocalName == "supportedRuntime");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_generates_appconfig_incrementally()
         {
             var testAsset = _testAssetsManager
@@ -719,7 +719,7 @@ class Program
             secondBuildBuildWriteTime.Should().Be(firstBuildWriteTime);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_generates_supportedRuntime_when_no_appconfig_in_source_does_not_require_binding_redirect()
         {
             var testAsset = _testAssetsManager
@@ -739,7 +739,7 @@ class Program
                 .Contain(e => e.Name.LocalName == "supportedRuntime");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_generates_supportedRuntime_when_there_is_appconfig_with_supportedRuntime_in_source_require_binding_redirect()
         {
             var testAsset = _testAssetsManager
@@ -762,7 +762,7 @@ class Program
                 .Should().HaveAttribute("version", "v999", "It should keep existing supportedRuntime");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="only helix failed tests")]
         public void It_generates_supportedRuntime_when_there_is_appconfig_without_supportedRuntime_in_source_require_binding_redirect()
         {
             var testAsset = _testAssetsManager
@@ -797,7 +797,7 @@ class Program
             return XElement.Load(outputDirectory.GetFiles("DesktopNeedsBindingRedirects.exe.config").Single().FullName);
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="only helix failed tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_places_package_satellites_correctly(bool crossTarget)

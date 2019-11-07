@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="only helix failed tests")]
         public void It_builds_with_implicit_namespace_imports_disabled()
         {
             var asset = _testAssetsManager
