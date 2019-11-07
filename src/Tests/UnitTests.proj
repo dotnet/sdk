@@ -10,7 +10,6 @@
 
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <XUnitWorkItemTimeout>2:00:00</XUnitWorkItemTimeout>
-    <HelixBaseUri>https://helix.int-dot.net</HelixBaseUri>
   </PropertyGroup>
 
   <ItemGroup>
