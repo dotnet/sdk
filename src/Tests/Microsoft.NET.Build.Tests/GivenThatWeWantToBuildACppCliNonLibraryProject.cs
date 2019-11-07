@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);
         }
 
-        [FullMSBuildOnlyFact(Skip="only helix failed tests")]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3785")]
         public void Given_an_StaticLibrary_project_It_should_fail_with_error_message()
         {
             var testAsset = _testAssetsManager

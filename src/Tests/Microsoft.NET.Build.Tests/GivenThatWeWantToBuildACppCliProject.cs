@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [FullMSBuildOnlyFact(Skip="only helix failed tests")]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3785"]
         public void It_fails_with_error_message_on_EnableComHosting()
         {
             var testAsset = _testAssetsManager
@@ -110,7 +110,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.NETFrameworkWithoutUsingNETSdkDefaults);
         }
 
-        [FullMSBuildOnlyFact(Skip="only helix failed tests")]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3785")]
         public void It_fails_with_error_message_on_tfm_lower_than_3_1()
         {
             var testAsset = _testAssetsManager
