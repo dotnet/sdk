@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
-    <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)</AspNetCoreBlobVersion>
+    <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreTargetingPackx6430PackageVersion)</AspNetCoreBlobVersion>
     <CoreSetupBlobVersion>$(MicrosoftNETCoreAppInternalPackageVersion)</CoreSetupBlobVersion>
 
     <!-- Change these individually to or $(CoreSetupBlobVersion), $(AspNetCoreBlobVersion), or appropriate fixed version depending if corresponding .Ref packages are unpinned. -->
@@ -270,8 +270,7 @@
 
       <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl Condition="'$(AspNetTargetingPackIsPinned)' == 'true'">$(AspNetCoreSharedFxRootUrl)$(MicrosoftAspNetCoreAppRefPackageVersion)</BaseUrl>
-        <BaseUrl Condition="'$(AspNetTargetingPackIsPinned)' != 'true'">$(AspNetCoreSharedFxRootUrl)$(MicrosoftAspNetCoreAppRefPackageVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
