@@ -145,6 +145,17 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             psi.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
             psi.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
 
+            // Set DOTNET_ROOT to ensure sub process find the same host fxr
+            string dotnetDirectoryPath = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
+            if (System.Environment.Is64BitProcess)
+            {
+                psi.Environment.Add("DOTNET_ROOT", dotnetDirectoryPath);
+            }
+            else
+            {
+                psi.Environment.Add("DOTNET_ROOT(x86)", dotnetDirectoryPath);
+            }
+
             AddEnvironmentVariablesTo(psi);
 
             AddWorkingDirectoryTo(psi);
