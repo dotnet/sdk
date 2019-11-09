@@ -7,11 +7,6 @@
     <!-- Copy empty Directory.Build files to stop tests from getting repo build logic -->
     <Content Include="$(RepoRoot)TestAssets\Directory.Build.props" LinkBase="Tests" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(RepoRoot)TestAssets\Directory.Build.targets" LinkBase="Tests" CopyToOutputDirectory="PreserveNewest" />
-    
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
