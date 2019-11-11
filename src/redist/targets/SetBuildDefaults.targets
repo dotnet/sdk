@@ -15,6 +15,7 @@
       <UsePortableLinuxSharedFramework Condition=" '$(UsePortableLinuxSharedFramework)' == '' AND '$(OSPlatform)' == 'linux' AND '$(Rid)' != 'rhel.6-x64' AND '$(Rid)' != 'linux-musl-x64' ">true</UsePortableLinuxSharedFramework>
       <!--<IncludeSharedFrameworksForBackwardsCompatibilityTests Condition=" $(IncludeSharedFrameworksForBackwardsCompatibilityTests) == ''
         AND '$(Rid)' != 'linux-x64'
+        AND '$(Rid)' != 'rhel.6-x64'
         AND '$(Rid)' != 'linux-musl-x64'
         AND '$(Rid)' != 'ubuntu.18.04-x64'">true</IncludeSharedFrameworksForBackwardsCompatibilityTests>-->
       <HighEntropyVA>true</HighEntropyVA>
