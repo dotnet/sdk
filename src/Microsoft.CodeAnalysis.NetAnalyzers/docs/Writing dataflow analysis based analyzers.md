@@ -125,7 +125,7 @@ int c4 = flag ? c3 : c3 + param;     // assume 'param' is a parameter for this m
 ValueContentAnalysis will compute that variables `c1`, `c2` and `c3` have identical `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.No` to indicate it cannot contain a non-literal value. It will compute that `c4` has a different `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.Maybe` to indicate that it may contain some non-literal value(s) in some code path(s).
 
 4. [TaintedDataAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/TaintedDataAnalysis/TaintedDataAnalysis.cs): Dataflow analysis to track tainted state of AnalysisEntity and IOperation instances.
-5. [PropertySetAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/PropertySetAnalysis/PropertySetAnalysis.cs): Dataflow analysis to track values assigned to more then one property of an object to identify and flag incorrect/insecure object state.
+5. [PropertySetAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/PropertySetAnalysis/PropertySetAnalysis.cs): Dataflow analysis to track values assigned to one or more properties of an object to identify and flag incorrect/insecure object state.
 
 ## Interprocedural dataflow analysis
 
