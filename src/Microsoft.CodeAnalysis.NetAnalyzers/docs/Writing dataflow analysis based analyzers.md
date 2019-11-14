@@ -98,9 +98,34 @@ Once you have implemented the above custom analysis pieces, your dataflow analyz
 
 We have some common analyses that you may likely want to consume for your custom dataflow analysis implementation or use directly in dataflow analyzers:
 
-1. [PointsToAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/PointsToAnalysis/PointsToAnalysis.cs): Dataflow analysis to track locations pointed to by AnalysisEntity and IOperation instances. This is the most commonly used dataflow analysis in all our flow based analyzers/analyses.
-2. [ValueContentAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/ValueContentAnalysis/ValueContentAnalysis.cs): Dataflow analysis to track possible constant values that might be stored in an AnalysisEntity and IOperation instances. This is identical to constant propagation for constant values stored in non-constant symbols.
-3. [TaintedDataAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/TaintedDataAnalysis/TaintedDataAnalysis.cs): Dataflow analysis to track tainted state of AnalysisEntity and IOperation instances.
+1. [PointsToAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/PointsToAnalysis/PointsToAnalysis.cs): Dataflow analysis to track locations pointed to by AnalysisEntity and IOperation instances. This is the most commonly used dataflow analysis in all our flow based analyzers/analyses. Consider the following example:
+```csharp
+var x = new MyClass();
+object y = x;
+var z = flag ? new MyClass() : y;
+```
+PointsToAnalysis will compute that variables `x` and `y` have identical non-null `PointsToAbstractValue`, which contains a single `AbstractLocation` corresponding to the first `IObjectCreationOperation` for `new MyClass()`. Variable `z` has a different `PointsToAbstractValue`, which is guaranteed to be non-null, but has two potential `AbstractLocation`, one for each `IObjectCreationOperation` in the above code.
+
+2. [CopyAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/CopyAnalysis/CopyAnalysis.cs): Dataflow analysis to track AnalysisEntity instances that share the same value type or reference type value, determined based on [CopyAbstractValueKind](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/CopyAnalysis/CopyAbstractValueKind.cs#L8). Consider the following example:
+```csharp
+var x = new MyClass();
+object y = x;
+int c1 = 0;
+int c2 = 0;
+```
+CopyAnalysis will compute that variables `x` and `y` have identical `CopyAbstractValue` with `CopyAbstractValueKind.KnownReferenceCopy` with two `AnalysisEntity` instances, one for `x` and one for `y`. Similarly, it will compute that `c1` and `c2` have identical `CopyAbstractValue` with `CopyAbstractValueKind.KnownValueCopy` with two `AnalysisEntity` instances, one for `c1` and one for `c2`. CopyAnalysis is currently off by default for all analyzers as it has known performance issues and needs performance tuning. It can be enabled by end users with editorconfig option [copy_analysis](https://github.com/dotnet/roslyn-analyzers/blob/master/docs/Analyzer%20Configuration.md#configure-execution-of-copy-analysis-tracks-value-and-reference-copies).
+
+3. [ValueContentAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/ValueContentAnalysis/ValueContentAnalysis.cs): Dataflow analysis to track possible constant values that might be stored in an AnalysisEntity and IOperation instances. This is identical to constant propagation for constant values stored in non-constant symbols. Consider the following example:
+```csharp
+int c1 = 0;
+int c2 = 0;
+int c3 = c1 + c2;
+int c4 = flag ? c3 : c3 + param;     // assume 'param' is a parameter for this method block with unknown value content from callers.
+```
+ValueContentAnalysis will compute that variables `c1`, `c2` and `c3` have identical `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.No` to indicate it cannot contain a non-literal value. It will compute that `c4` has a different `ValueContentAbstractValue` with a single literal value `0` and `ValueContainsNonLiteralState.Maybe` to indicate that it may contain some non-literal value(s) in some code path(s).
+
+4. [TaintedDataAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/TaintedDataAnalysis/TaintedDataAnalysis.cs): Dataflow analysis to track tainted state of AnalysisEntity and IOperation instances.
+5. [PropertySetAnalysis](https://github.com/dotnet/roslyn-analyzers/blob/v2.9.7/src/Utilities/FlowAnalysis/FlowAnalysis/Analysis/PropertySetAnalysis/PropertySetAnalysis.cs): Dataflow analysis to track values assigned to more then one property of an object to identify and flag incorrect/insecure object state.
 
 ## Interprocedural dataflow analysis
 
