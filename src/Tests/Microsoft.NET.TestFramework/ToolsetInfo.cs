@@ -171,7 +171,7 @@ namespace Microsoft.NET.TestFramework
 
             if (repoRoot != null)
             {
-                string envOverrideSdksPath = Environment.GetEnvironmentVariable("MSBuildSDKsPath");
+                string envOverrideSdksPath = Environment.GetEnvironmentVariable("TestSubjectMSBuildSDKsPath");
                 if (!string.IsNullOrWhiteSpace(envOverrideSdksPath))
                 {
                     ret.SdksPath = envOverrideSdksPath;
