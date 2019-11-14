@@ -31,13 +31,6 @@
     </Otherwise>
   </Choose>
 
-  <ItemGroup Condition="'@(SDKCustomXUnitProject)' != ''">
-    <HelixCorrelationPayload Include="xunit-runner">
-      <Uri>https://api.nuget.org/v3-flatcontainer/xunit.runner.console/$(SDKCustomXUnitRunnerVersion)/xunit.runner.console.$(SDKCustomXUnitRunnerVersion).nupkg</Uri>
-      <Destination>xunit-runner</Destination>
-    </HelixCorrelationPayload>
-  </ItemGroup>
-
   <Target Name="RestoreSDKCustomXUnitProjects"
           Condition="'@(SDKCustomXUnitProject)' != ''"
           BeforeTargets="Restore"
