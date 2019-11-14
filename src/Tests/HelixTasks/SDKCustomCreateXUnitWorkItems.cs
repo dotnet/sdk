@@ -105,23 +105,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             xunitProject.TryGetMetadata("Arguments", out string arguments);
 
             string assemblyName = Path.GetFileName(targetPath);
-            string driver = runtimeTargetFramework.Contains("core") ? $"{PathToDotnet} exec " : "";
-            string runnerName = runtimeTargetFramework.Contains("core") ? "xunit.console.dll" : "xunit.console.exe";
-            string correlationPayload = IsPosixShell ? "$HELIX_CORRELATION_PAYLOAD" : "%HELIX_CORRELATION_PAYLOAD%";
-            string xUnitRunner = $"{correlationPayload}/xunit-runner/tools/{runtimeTargetFramework}/{runnerName}";
-
-            if (runtimeTargetFramework.Contains("core"))
+            if (!runtimeTargetFramework.Contains("core"))
             {
-                var assemblyBaseName = assemblyName;
-                if (assemblyBaseName.EndsWith(".dll"))
-                {
-                    assemblyBaseName = assemblyBaseName.Substring(0, assemblyBaseName.Length - 4);
-                }
-
-                Log.LogMessage($"Adding runtimeconfig and depsfile parameters for assembly {assemblyBaseName}.");
-                driver +=
-                    $"--runtimeconfig {assemblyBaseName}.runtimeconfig.json --depsfile {assemblyBaseName}.deps.json ";
+                throw new NotImplementedException("does not support non core runtime target");
             }
+
+            string driver = $"{PathToDotnet} exec ";
 
             var scheduler = new AssemblyScheduler(methodLimit: 20);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
@@ -129,7 +118,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                string command = $"{driver}{xUnitRunner} {assemblyName}{(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
+                string command = $"{driver} {assemblyName}{(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
