@@ -169,14 +169,14 @@ namespace Microsoft.NET.TestFramework
                 ret.DotNetHostPath = ResolveCommand("dotnet");
             }
 
-            if (repoRoot != null)
+            string envOverrideSdksPath = Environment.GetEnvironmentVariable("TestSubjectMSBuildSDKsPath");
+            if (!string.IsNullOrWhiteSpace(envOverrideSdksPath))
             {
-                string envOverrideSdksPath = Environment.GetEnvironmentVariable("TestSubjectMSBuildSDKsPath");
-                if (!string.IsNullOrWhiteSpace(envOverrideSdksPath))
-                {
-                    ret.SdksPath = envOverrideSdksPath;
-                }
-                else
+                ret.SdksPath = envOverrideSdksPath;
+            }
+            else
+            {
+                if (repoRoot == null)
                 {
                     ret.SdksPath = Path.Combine(repoArtifactsDir, "bin", configuration, "Sdks");
                 }
