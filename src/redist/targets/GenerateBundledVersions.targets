@@ -14,12 +14,12 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <_NETCoreApp30PRuntimePackVersion>3.0.0</_NETCoreApp30PRuntimePackVersion>
+      <_NETCoreApp30RuntimePackVersion>3.0.1</_NETCoreApp30RuntimePackVersion>
       <_NETCoreApp30TargetingPackVersion>3.0.0</_NETCoreApp30TargetingPackVersion>
-      <_WindowsDesktop30RuntimePackVersion>$(_NETCoreApp30PRuntimePackVersion)</_WindowsDesktop30RuntimePackVersion>
-      <_WindowsDesktop30TargetingPackVersion>$(_NETCoreApp30TargetingPackVersion)</_WindowsDesktop30TargetingPackVersion>
-      <_AspNet30RuntimePackVersion>3.0.0</_AspNet30RuntimePackVersion>
-      <_AspNet30TargetingPackVersion>3.0.0</_AspNet30TargetingPackVersion>
+      <_WindowsDesktop30RuntimePackVersion>3.0.1</_WindowsDesktop30RuntimePackVersion>
+      <_WindowsDesktop30TargetingPackVersion>3.0.0</_WindowsDesktop30TargetingPackVersion>
+      <_AspNet30RuntimePackVersion>3.0.1</_AspNet30RuntimePackVersion>
+      <_AspNet30TargetingPackVersion>3.0.1</_AspNet30TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
       <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
@@ -226,7 +226,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetFramework="netcoreapp3.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
                               DefaultRuntimeFrameworkVersion="3.0.0"
-                              LatestRuntimeFrameworkVersion="$(_NETCoreApp30PRuntimePackVersion)"
+                              LatestRuntimeFrameworkVersion="$(_NETCoreApp30RuntimePackVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NETCoreApp30TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
@@ -237,7 +237,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownAppHostPack Include="Microsoft.NETCore.App"
                       TargetFramework="netcoreapp3.0"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
-                      AppHostPackVersion="$(_NETCoreApp30PRuntimePackVersion)"
+                      AppHostPackVersion="$(_NETCoreApp30RuntimePackVersion)"
                       AppHostRuntimeIdentifiers="@(NetCore30RuntimePackRids, '%3B')"
                       />
     
