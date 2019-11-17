@@ -111,6 +111,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             string driver = $"{PathToDotnet} exec ";
+            string testExecutionDirectory = IsPosixShell ? "$TestExecutionDirectory" : "%TestExecutionDirectory%";
+            string sdkTestCommandlineArgs = $"-testExecutionDirectory {testExecutionDirectory}";
 
             var scheduler = new AssemblyScheduler(methodLimit: 20);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
@@ -118,7 +120,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                string command = $"{driver} {assemblyName}{(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
+                string command = $"{driver}{assemblyName} {sdkTestCommandlineArgs} {(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
