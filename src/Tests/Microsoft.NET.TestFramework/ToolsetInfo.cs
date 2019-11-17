@@ -176,7 +176,7 @@ namespace Microsoft.NET.TestFramework
             }
             else
             {
-                if (repoRoot == null)
+                if (repoRoot != null)
                 {
                     ret.SdksPath = Path.Combine(repoArtifactsDir, "bin", configuration, "Sdks");
                 }
