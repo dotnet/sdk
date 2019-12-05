@@ -11,13 +11,14 @@
 
   <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
-    <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreTargetingPackx6431PackageVersion)</AspNetCoreBlobVersion>
+    <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreTargetingPackx6450PackageVersion)</AspNetCoreBlobVersion>
     <CoreSetupBlobVersion>$(MicrosoftNETCoreAppInternalPackageVersion)</CoreSetupBlobVersion>
+    <WindowsDesktopBlobVersion>$(MicrosoftWindowsDesktopAppPackageVersion)</WindowsDesktopBlobVersion>
 
     <!-- Change these individually to or $(CoreSetupBlobVersion), $(AspNetCoreBlobVersion), or appropriate fixed version depending if corresponding .Ref packages are unpinned. -->
     <NETCoreAppTargetingPackBlobVersion>$(CoreSetupBlobVersion)</NETCoreAppTargetingPackBlobVersion>
     <AspNetCoreTargetingPackBlobVersion>$(AspNetCoreBlobVersion)</AspNetCoreTargetingPackBlobVersion>
-    <WindowsDesktopTargetingPackBlobVersion>$(CoreSetupBlobVersion)</WindowsDesktopTargetingPackBlobVersion>
+    <WindowsDesktopTargetingPackBlobVersion>$(WindowsDesktopBlobVersion)</WindowsDesktopTargetingPackBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
  
@@ -47,11 +48,11 @@
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
       <SharedFrameworkInstallerFileRid>$(CoreSetupRid)</SharedFrameworkInstallerFileRid>
-      <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">x64</SharedFrameworkInstallerFileRid>
+      <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(Architecture)</SharedFrameworkInstallerFileRid>
 
       <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
       <RuntimeDepsInstallerFileRid>$(CoreSetupRid)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">x64</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
 
       <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
@@ -97,7 +98,7 @@
     <PropertyGroup>
       <CoreSetupRootUrl>$(CoreSetupBlobRootUrl)Runtime/</CoreSetupRootUrl>
       <AspNetCoreSharedFxRootUrl>$(CoreSetupBlobRootUrl)aspnetcore/Runtime/</AspNetCoreSharedFxRootUrl>
-      <WinFormsAndWpfSharedFxRootUrl>$(CoreSetupRootUrl)</WinFormsAndWpfSharedFxRootUrl>
+      <WinFormsAndWpfSharedFxRootUrl>$(CoreSetupBlobRootUrl)WindowsDesktop/</WinFormsAndWpfSharedFxRootUrl>
       <CoreSetupDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)</CoreSetupDownloadDirectory>
       <CombinedSharedHostAndFrameworkArchive>$(CoreSetupDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
@@ -202,7 +203,7 @@
 
       <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
                            Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</BaseUrl>
+        <BaseUrl>$(CoreSetupRootUrl)$(NETCoreAppTargetingPackBlobVersion)</BaseUrl>
         <BaseUrl>$(CoreSetupRootUrl)3.0.0</BaseUrl>
         <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
@@ -238,7 +239,7 @@
 
       <BundledInstallerComponent Include="DownloadedWindowsDesktopTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(WindowsDesktopTargetingPackBlobVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
@@ -320,14 +321,14 @@
       </BundledLayoutPackage>
 
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledLayoutComponent>
 
       <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>
