@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
-    <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)</AspNetCoreBlobVersion>
+    <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreTargetingPackx6450PackageVersion)</AspNetCoreBlobVersion>
     <CoreSetupBlobVersion>$(MicrosoftNETCoreAppInternalPackageVersion)</CoreSetupBlobVersion>
     <WindowsDesktopBlobVersion>$(MicrosoftWindowsDesktopAppPackageVersion)</WindowsDesktopBlobVersion>
 
@@ -30,7 +30,7 @@
       <CoreSetupBlobAccessTokenParam Condition="'$(InternalBuild)' == 'true'">$(DOTNETCLIMSRC_READ_SAS_TOKEN)</CoreSetupBlobAccessTokenParam>
 
       <CoreSetupBlobRootUrl Condition="'$(CoreSetupBlobRootUrl)' == '' and '$(InternalBuild)' == 'true'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</CoreSetupBlobRootUrl>
-      <CoreSetupBlobRootUrl Condition="'$(CoreSetupBlobRootUrl)' == ''">https://dotnetcli.azureedge.net/dotnet/</CoreSetupBlobRootUrl>
+      <CoreSetupBlobRootUrl Condition="'$(CoreSetupBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</CoreSetupBlobRootUrl>
 
       <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == '' and '$(InternalBuild)' == 'true'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
       <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
@@ -78,6 +78,7 @@
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
       <AspNetCoreSharedFxInstallerRid Condition="'$(AspNetCoreSharedFxInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreSharedFxInstallerRid>
+      <AspNetCoreSharedFxInstallerRid Condition="'$(SharedFrameworkRid)' == 'rhel.6-x64'">linux-x64</AspNetCoreSharedFxInstallerRid>
       <AspNetCoreSharedFxArchiveRid>$(AspNetCoreSharedFxInstallerRid)</AspNetCoreSharedFxArchiveRid>
       <AspNetCoreSharedFxInstallerRid Condition="'$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm'">x64</AspNetCoreSharedFxInstallerRid>
 
@@ -271,8 +272,7 @@
 
       <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl Condition="'$(AspNetTargetingPackIsPinned)' == 'true'">$(AspNetCoreSharedFxRootUrl)$(MicrosoftAspNetCoreAppRefPackageVersion)</BaseUrl>
-        <BaseUrl Condition="'$(AspNetTargetingPackIsPinned)' != 'true'">$(AspNetCoreSharedFxRootUrl)$(MicrosoftAspNetCoreAppRefPackageVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
         <AccessToken>$(CoreSetupBlobAccessTokenParam)</AccessToken>
       </BundledInstallerComponent>

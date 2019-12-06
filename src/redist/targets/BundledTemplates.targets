@@ -4,7 +4,7 @@
     <PropertyGroup>
       <AspNetCore31VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor31Templates.IndexOf('-'))</AspNetCore31VersionPreReleaseSeparator>
       <AspNetCore31VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor31Templates)</AspNetCore31VersionMajorMinorPatchVersion>
-      <AspNetCore31VersionMajorMinorPatchVersion Condition=" '$(AspNetCore1VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor31Templates.Substring(0, $(AspNetCore31VersionPreReleaseSeparator)))</AspNetCore31VersionMajorMinorPatchVersion>
+      <AspNetCore31VersionMajorMinorPatchVersion Condition=" '$(AspNetCore31VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor31Templates.Substring(0, $(AspNetCore31VersionPreReleaseSeparator)))</AspNetCore31VersionMajorMinorPatchVersion>
       <BundledTemplates31MSIVersion>$(AspNetCore31VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates31MSIVersion>
       <BundledTemplates31InstallPath>$(AspNetCore31VersionMajorMinorPatchVersion)</BundledTemplates31InstallPath>
       <BundledTemplates31InstallPath Condition=" '$(AspNetCore31VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates31InstallPath)-$(VersionSuffix)</BundledTemplates31InstallPath>
