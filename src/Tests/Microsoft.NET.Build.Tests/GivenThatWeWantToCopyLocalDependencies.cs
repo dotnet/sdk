@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -54,8 +55,9 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{ProjectName}{Constants.ExeSuffix}",
+
+            var expectedFiles = new []
+            {
                 $"{ProjectName}.deps.json",
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
@@ -66,7 +68,9 @@ namespace Microsoft.NET.Build.Tests
                 "runtimes/osx-x64/native/libsqlite3.dylib",
                 "runtimes/win7-x64/native/sqlite3.dll",
                 "runtimes/win7-x86/native/sqlite3.dll"
-            });
+            };
+
+            outputDirectory.Should().OnlyHaveFiles(AssertionHelper.AppendApphostOnNonMacOS(ProjectName, expectedFiles));
         }
 
         [Fact]
@@ -95,14 +99,13 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
-            outputDirectory.Should().OnlyHaveFiles(new[] {
-                $"{ProjectName}{Constants.ExeSuffix}",
+            outputDirectory.Should().OnlyHaveFiles(AssertionHelper.AppendApphostOnNonMacOS(ProjectName, new[] {
                 $"{ProjectName}.deps.json",
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.dev.json",
                 $"{ProjectName}.runtimeconfig.json",
-            });
+            }));
         }
 
         //  Core MSBuild only because CI machines don't have updated VS (with support for RuntimeIdentifierGraphPath)
@@ -147,7 +150,7 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.runtimeconfig.json",
                 "Newtonsoft.Json.dll",
                 // NOTE: this may break in the future when the SDK supports platforms that sqlite does not
-                $"{FileConstants.DynamicLibPrefix}sqlite3{FileConstants.DynamicLibSuffix}",
+                $"{FileConstants.DynamicLibPrefix}sqlite3{FileConstants.DynamicLibSuffix}"
             });
         }
 
