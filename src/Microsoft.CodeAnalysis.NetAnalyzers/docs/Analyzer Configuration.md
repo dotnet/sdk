@@ -392,3 +392,20 @@ Option Values: integral values
 Default Value: Specific to each configurable rule ('100000' by default for most rules)
 
 Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
+
+### Do not prefix enum values with type name
+Option Name: `enum_values_prefix_trigger`
+
+Configurable Rules: [CA1712](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1712)
+
+Option Values:
+
+| Option Value | Summary |
+| --- | --- |
+| `AnyEnumValue` | The rule will be triggered if _any_ of the enum values starts with the enum type name. |
+| `AllEnumValues` | The rule will be triggered if _all_ of the enum values start with the enum type name. |
+| `Heuristic` | The rule will be triggered using the default FxCop heuristic (i.e. when at least 75% of the enum values start with the enum type name). |
+
+Default Value: `Heuristic`.
+
+Example: `dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue`
