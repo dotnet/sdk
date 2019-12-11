@@ -131,12 +131,12 @@ jobs:
             HelixSource: 'pr/dotnet/sdk/$(Build.SourceBranch)'
             HelixType: 'test/sdk_$(_BuildConfig)/'
             HelixAccessToken: $(HelixApiAccessToken)
-            HelixTargetQueues: 'Windows.10.Amd64.ClientRS1.Perf' # using a dedicated private Helix queue (perfsnakes)
+            HelixTargetQueues: 'Windows.10.Amd64.19h1.Tiger.Perf' # using a dedicated private Helix queue (perfsnakes)
             HelixPreCommands: 'set "PERF_COMMAND_UPLOAD_TOKEN=$(PerfCommandUploadToken)"'
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
-            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling false Windows.10.Amd64.ClientRS1.Perf $(Build.BuildNumber) '
+            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling false Windows.10.Amd64.19h1.Tiger.Perf $(Build.BuildNumber) '
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             HelixConfiguration: 'CoreMSBuild'
         - task: PublishBuildArtifacts@1
@@ -156,12 +156,12 @@ jobs:
             HelixSource: 'pr/dotnet/sdk/$(Build.SourceBranch)'
             HelixType: 'test/sdk_$(_BuildConfig)/'
             HelixAccessToken: $(HelixApiAccessToken)
-            HelixTargetQueues: 'Windows.10.Amd64.ClientRS1.Perf' # using a dedicated private Helix queue (perfsnakes)
+            HelixTargetQueues: 'Windows.10.Amd64.19h1.Tiger.Perf' # using a dedicated private Helix queue (perfsnakes)
             HelixPreCommands: 'set "PERF_COMMAND_UPLOAD_TOKEN=$(PerfCommandUploadToken)"'
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
-            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling true Windows.10.Amd64.ClientRS1.Perf $(Build.BuildNumber)'
+            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling true Windows.10.Amd64.19h1.Tiger.Perf $(Build.BuildNumber)'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             HelixConfiguration: 'FullMSBuild'
         - task: PublishBuildArtifacts@1
