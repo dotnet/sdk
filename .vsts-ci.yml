@@ -14,7 +14,7 @@ variables:
     value: .NETCore
   - name: _DotNetValidationArtifactsCategory
     value: .NETCore
-  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - name: PB_PublishBlobFeedUrl
       value: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
     - name: _DotNetPublishToBlobFeed
@@ -36,7 +36,7 @@ stages:
           queue: buildpool.windows.10.amd64.vs2017
       strategy:
         matrix:
-          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             Build_Debug:
               _BuildConfig: Debug
               _PublishType: none
@@ -44,16 +44,16 @@ stages:
               _Test: -test
           Build_Release:
             _BuildConfig: Release
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _PublishType: none
               _SignType: test
               _Test: -test
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _PublishType: blob
               _SignType: real
               _Test: ''
 
-  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build.yml
       parameters:
         agentOs: Windows_Perf_Helix
@@ -67,7 +67,7 @@ stages:
               _SignType: test
               _DotNetPublishToBlobFeed: false
 
-  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build.yml
       parameters:
         agentOs: Windows_Perf_Helix_Fullframework
@@ -94,7 +94,7 @@ stages:
               _SignType: test
               _DotNetPublishToBlobFeed: false
 
-  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build.yml
       parameters:
         agentOs: Windows_NT_FullFramework
