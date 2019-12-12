@@ -87,7 +87,7 @@ stages:
       parameters:
         agentOs: Linux_Perf_Helix
         pool:
-          name: Hosted Ubuntu 1604
+          name: Hosted 4 1604
         strategy:
           matrix:
             Build_Release:
@@ -141,10 +141,10 @@ stages:
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
+            queue: BuildPool.Ubuntu.1604.Amd64.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2019.Pre
+            queue: BuildPool.Ubuntu.1604.Amd64
         strategy:
           matrix:
             Build_Debug:
