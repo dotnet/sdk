@@ -208,8 +208,12 @@ stages:
       parameters:
         agentOs: Linux_Perf_CI
         pool:
-          name: NetCorePublic-Pool
-          queue: BuildPool.Ubuntu.1604.Amd64.Open
+          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+            name: NetCorePublic-Pool
+            queue: BuildPool.Ubuntu.1604.Amd64.Open
+          ${{ if ne(variables['System.TeamProject'], 'public') }}:
+            name: NetCoreInternal-Pool
+            queue: BuildPool.Ubuntu.1604.Amd64
         strategy:
           matrix:
             Build_Release:
