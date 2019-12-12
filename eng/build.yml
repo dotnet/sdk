@@ -112,6 +112,14 @@ jobs:
           TestFullMSBuild: 'true'
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf_CI') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: Bash@3
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+            arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: ./build.sh
                   --configuration $(_BuildConfig)
                   --ci --performancetest
