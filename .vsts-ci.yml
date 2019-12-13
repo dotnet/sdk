@@ -85,7 +85,7 @@ stages:
       parameters:
         agentOs: Linux_Perf_Helix
         pool:
-          name: Hosted 4 1604
+          name: Hosted Ubuntu 1604
         strategy:
           matrix:
             Build_Release:
