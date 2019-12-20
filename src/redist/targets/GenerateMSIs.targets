@@ -58,6 +58,17 @@
 
   <Target Name="MsiTargetsSetupInputOutputs"
           DependsOnTargets="GenerateLayout;SetupWixProperties">
+
+    <Exec Command="git rev-list --count HEAD"
+          ConsoleToMSBuild="true"
+          Condition=" '$(GitCommitCount)' == '' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
+    </Exec>
+
+    <PropertyGroup>
+      <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
+    </PropertyGroup>
+
     <!-- Consumed By Publish -->
     <ItemGroup>
       <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
