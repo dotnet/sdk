@@ -57,7 +57,7 @@
   </Target>
 
   <Target Name="MsiTargetsSetupInputOutputs"
-          DependsOnTargets="GenerateLayout;SetupWixProperties;GetCoreSdkGitCommitInfo">
+          DependsOnTargets="GenerateLayout;SetupWixProperties">
     <!-- Consumed By Publish -->
     <ItemGroup>
       <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
@@ -144,7 +144,7 @@
                       '$(ToolsetBrandName)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
-                      '$(NugetVersion)' ^
+                      '$(Version)' ^
                       '$(SdkInstallerUpgradeCode)' ^
                       '$(SdkDependencyKeyName)' ^
                       '$(Architecture)' ^
@@ -164,7 +164,7 @@
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
-                      '$(NugetVersion)' ^
+                      '$(Version)' ^
                       '$(SdkPlaceholderInstallerUpgradeCode)' ^
                       '$(SdkPlaceholderDependencyKeyName)' ^
                       '$(Architecture)' ^
@@ -264,7 +264,7 @@
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
-                      '$(NugetVersion)' ^
+                      '$(Version)' ^
                       '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
                       '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       '$(SdkDependencyKeyName)' ^

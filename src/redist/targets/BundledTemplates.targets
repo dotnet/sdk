@@ -1,6 +1,5 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="CalculateTemplatesVersions"
-          DependsOnTargets="SetSdkVersionInfo">
+  <Target Name="CalculateTemplatesVersions">
     <PropertyGroup>
       <AspNetCore31VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor31Templates.IndexOf('-'))</AspNetCore31VersionPreReleaseSeparator>
       <AspNetCore31VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor31Templates)</AspNetCore31VersionMajorMinorPatchVersion>

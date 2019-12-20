@@ -22,9 +22,9 @@
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
 
-  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetSdkVersionInfo;SetBuildDefaults">
+  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetBuildDefaults">
     <PropertyGroup>
-      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(SdkVersion)\</SdkOutputDirectory>
+      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
 
       <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
       <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</InternalBaseURL>
@@ -230,7 +230,7 @@
       <BundledLayoutComponent Include="ToolsetArchive">
         <BaseUrl>$(DotnetToolsetBlobRootUrl)Toolset/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
         <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
-        <RelativeLayoutPath>sdk/$(SdkVersion)</RelativeLayoutPath>
+        <RelativeLayoutPath>sdk/$(Version)</RelativeLayoutPath>
       </BundledLayoutComponent>
     </ItemGroup>
 
@@ -405,7 +405,7 @@
       <ReplacementString>"version": "$(MicrosoftNETCoreAppRuntimePackageVersion)"</ReplacementString>
     </PropertyGroup>
     <ItemGroup>
-      <ToolRuntimeConfigPath Include="$(RedistLayoutPath)sdk/$(SdkVersion)/**/*.runtimeconfig.json" />
+      <ToolRuntimeConfigPath Include="$(RedistLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
     </ItemGroup>
     <ReplaceFileContents
       InputFiles="@(ToolRuntimeConfigPath)"
@@ -414,9 +414,15 @@
       ReplacementStrings="$(ReplacementString)" />
   </Target>
 
-  <Target Name="GenerateVersionFile" DependsOnTargets="SetupBundledComponents;GetCoreSdkGitCommitInfo">
+  <Target Name="GenerateVersionFile" DependsOnTargets="SetupBundledComponents">
+    <Exec Command="git rev-parse HEAD"
+          ConsoleToMSBuild="true"
+          Condition=" '$(GitCommitHash)' == '' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+
     <WriteLinesToFile File="$(SdkOutputDirectory).version"
-                      Lines="$(GitCommitHash);$(SdkVersion);$(Rid)"
+                      Lines="$(GitCommitHash);$(Version);$(Rid)"
                       Overwrite="true" />
   </Target>
 
@@ -497,11 +503,11 @@
 
     <!-- Create "SDK Internal" layout to create the MSI to bundle -->
     <ItemGroup>
-      <SdkInternalFiles Include="$(RedistLayoutPath)sdk/$(SdkVersion)/**/*.*"/>
+      <SdkInternalFiles Include="$(RedistLayoutPath)sdk/$(Version)/**/*.*"/>
     </ItemGroup>
 
     <Copy SourceFiles="@(SdkInternalFiles)"
-          DestinationFiles="@(SdkInternalFiles -> '$(SdkInternalLayoutPath)sdk\$(SdkVersion)\%(RecursiveDir)%(Filename)%(Extension)')"/>
+          DestinationFiles="@(SdkInternalFiles -> '$(SdkInternalLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')"/>
 
   </Target>
 </Project>
