@@ -54,30 +54,25 @@
       <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)</SdkLayoutOutputDirectory>
       <MSBuildExtensionsOutputDirectory>$(LayoutDirectory)MSBuildExtensions</MSBuildExtensionsOutputDirectory>-->
     </PropertyGroup>
+
+    <PropertyGroup>
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
+      <CombinedBuildNumberAndRevision>$(_PatchNumber)</CombinedBuildNumberAndRevision>
+      <SDKBundleVersion>$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
+    </PropertyGroup>
   </Target>
 
   <Target Name="MsiTargetsSetupInputOutputs"
           DependsOnTargets="GenerateLayout;SetupWixProperties">
-
-    <Exec Command="git rev-list --count HEAD"
-          ConsoleToMSBuild="true"
-          Condition=" '$(GitCommitCount)' == '' ">
-      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
-    </Exec>
-
-    <PropertyGroup>
-      <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
-    </PropertyGroup>
-
     <!-- Consumed By Publish -->
     <ItemGroup>
       <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
     </ItemGroup>
 
-    <GenerateMsiVersion CommitCount="$(GitCommitCount)"
+    <GenerateMsiVersion VersionRevision="$(CombinedBuildNumberAndRevision)"
                         VersionMajor="$(VersionMajor)"
                         VersionMinor="$(VersionMinor)"
-                        VersionPatch="$(VersionPatch)">
+                        VersionPatch="$(VersionFeature)">
       <Output TaskParameter="MsiVersion" PropertyName="MsiVersion" />
     </GenerateMsiVersion>
 
