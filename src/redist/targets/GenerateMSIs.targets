@@ -55,9 +55,22 @@
       <MSBuildExtensionsOutputDirectory>$(LayoutDirectory)MSBuildExtensions</MSBuildExtensionsOutputDirectory>-->
     </PropertyGroup>
 
+    <Exec Command="git rev-list --count HEAD"
+          ConsoleToMSBuild="true"
+          Condition=" '$(GitCommitCount)' == '' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
+    </Exec>
+
+    <Error Condition=" '$(OfficialBuild)' == 'true' And '$(_PatchNumber)' == '' "
+           Text="_PatchNumber should not be empty in an official build. Check if there were changes in Arcade." />
+
     <PropertyGroup>
+      <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
+
       <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
       <CombinedBuildNumberAndRevision>$(_PatchNumber)</CombinedBuildNumberAndRevision>
+      <!-- Fallback to commit count when patch number is not set. This happens only during CI. -->
+      <CombinedBuildNumberAndRevision Condition=" '$(CombinedBuildNumberAndRevision)' == '' ">$(GitCommitCount)</CombinedBuildNumberAndRevision>
       <SDKBundleVersion>$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
     </PropertyGroup>
   </Target>
