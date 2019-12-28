@@ -99,15 +99,15 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf")]
-        [InlineData("winforms")]
+        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
+        [InlineData("winforms", Skip = "https://github.com/dotnet/wpf/issues/2363")]
         public void ItCanBuildDesktopTemplates(string templateName)
         {
             TestTemplateBuild(templateName);
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf")]
+        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName)
         {
             TestTemplateBuild(templateName);

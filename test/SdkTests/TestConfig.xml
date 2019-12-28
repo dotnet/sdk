@@ -169,5 +169,9 @@
             Issue=""
             Reason="Assumes netcoreapp3.1 targeting pack is bundled, which it is not in 5.0 SDK. Will resolve when sdk takes newer stage 0 and hits same issue."/>
 
+    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.It_builds_on_windows_with_the_windows_desktop_sdk"
+            Skip="true"
+            Issue="https://github.com/dotnet/wpf/issues/2363"
+            Reason="Desktop SDK missing required files."/>
   </SkippedTests>
 </Tests>
