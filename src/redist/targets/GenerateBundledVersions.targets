@@ -36,8 +36,8 @@
       <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
       <_NETStandardTargetFrameworkVersion>$(_NETStandardLibraryPackageVersion.Split('.')[0]).$(_NETStandardLibraryPackageVersion.Split('.')[1])</_NETStandardTargetFrameworkVersion>
 
-      <_NETCoreSdkBeingBuiltIsPreview Condition=" '$(DropSuffix)' != 'true' ">true</_NETCoreSdkBeingBuiltIsPreview>
-      <_NETCoreSdkBeingBuiltIsPreview Condition=" '$(DropSuffix)' == 'true' ">false</_NETCoreSdkBeingBuiltIsPreview>
+      <_NETCoreSdkBeingBuiltIsPreview Condition=" '$(DotNetFinalVersionKind)' != 'release' ">true</_NETCoreSdkBeingBuiltIsPreview>
+      <_NETCoreSdkBeingBuiltIsPreview Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</_NETCoreSdkBeingBuiltIsPreview>
     </PropertyGroup>
 
     <ItemGroup>
@@ -157,7 +157,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>
     <BundledNETCorePlatformsPackageVersion>$(_NETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
-    <NETCoreSdkVersion>$(SdkVersion)</NETCoreSdkVersion>
+    <NETCoreSdkVersion>$(Version)</NETCoreSdkVersion>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>
   </PropertyGroup>
