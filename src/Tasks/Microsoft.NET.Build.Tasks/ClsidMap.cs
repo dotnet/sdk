@@ -214,7 +214,7 @@ namespace Microsoft.NET.Build.Tasks
         private static bool IsTargetAttribute(MetadataReader reader, CustomAttribute attribute, string targetNamespace, string targetName)
         {
             StringHandle namespaceMaybe;
-            StringHandle nameMaybe = new StringHandle();
+            StringHandle nameMaybe;
             switch (attribute.Constructor.Kind)
             {
                 case HandleKind.MemberReference:
