@@ -213,7 +213,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static bool IsTargetAttribute(MetadataReader reader, CustomAttribute attribute, string targetNamespace, string targetName)
         {
-            StringHandle namespaceMaybe = new StringHandle();
+            StringHandle namespaceMaybe;
             StringHandle nameMaybe = new StringHandle();
             switch (attribute.Constructor.Kind)
             {
