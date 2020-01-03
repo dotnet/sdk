@@ -71,7 +71,11 @@
       <CombinedBuildNumberAndRevision>$(_PatchNumber)</CombinedBuildNumberAndRevision>
       <!-- Fallback to commit count when patch number is not set. This happens only during CI. -->
       <CombinedBuildNumberAndRevision Condition=" '$(CombinedBuildNumberAndRevision)' == '' ">$(GitCommitCount)</CombinedBuildNumberAndRevision>
-      <SDKBundleVersion>$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
+      
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->    
+      <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
+      <!-- Fallback to commit count when patch number is not set. This happens only during CI. -->
+      <SDKBundleVersion Condition=" '$(SDKBundleVersion)' == '' ">$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
     </PropertyGroup>
   </Target>
 

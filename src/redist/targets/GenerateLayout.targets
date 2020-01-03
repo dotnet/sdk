@@ -426,6 +426,13 @@
                       Overwrite="true" />
   </Target>
 
+  <Target Name="GenerateFullNuGetVersion">
+    <PropertyGroup>
+      <FullNugetVersion>$(VersionPrefix)-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</FullNugetVersion>
+      <FullNugetVersion Condition=" '$(VersionSuffixDateStamp)' != '' And '$(VersionSuffixBuildOfTheDay)' != '' ">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
 
     <PropertyGroup>
@@ -481,6 +488,7 @@
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
                             LayoutBundledComponents;
+                            GenerateFullNuGetVersion;
                             GenerateVersionFile;
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;
