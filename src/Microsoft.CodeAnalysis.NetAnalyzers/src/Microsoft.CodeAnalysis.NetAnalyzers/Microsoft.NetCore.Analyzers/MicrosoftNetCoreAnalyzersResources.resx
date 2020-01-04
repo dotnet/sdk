@@ -1,0 +1,1215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ReviewSQLQueriesForSecurityVulnerabilitiesDescription" xml:space="preserve">
+    <value>SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.</value>
+  </data>
+  <data name="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals" xml:space="preserve">
+    <value>Review if the query string passed to '{0}' in '{1}', accepts any user input.</value>
+  </data>
+  <data name="ReviewSQLQueriesForSecurityVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review SQL queries for security vulnerabilities</value>
+  </data>
+  <data name="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle" xml:space="preserve">
+    <value>Do not call ToImmutableCollection on an ImmutableCollection value</value>
+  </data>
+  <data name="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage" xml:space="preserve">
+    <value>Do not call {0} on an {1} value</value>
+  </data>
+  <data name="CategoryReliability" xml:space="preserve">
+    <value>Reliability</value>
+  </data>
+  <data name="RemoveRedundantCall" xml:space="preserve">
+    <value>Remove redundant call</value>
+  </data>
+  <data name="PInvokesShouldNotBeVisibleTitle" xml:space="preserve">
+    <value>P/Invokes should not be visible</value>
+  </data>
+  <data name="PInvokesShouldNotBeVisibleDescription" xml:space="preserve">
+    <value>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</value>
+  </data>
+  <data name="PInvokesShouldNotBeVisibleMessage" xml:space="preserve">
+    <value>P/Invoke method '{0}' should not be visible</value>
+  </data>
+  <data name="PInvokeDeclarationsShouldBePortableTitle" xml:space="preserve">
+    <value>PInvoke declarations should be portable</value>
+  </data>
+  <data name="PInvokeDeclarationsShouldBePortableDescription" xml:space="preserve">
+    <value>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</value>
+  </data>
+  <data name="PInvokeDeclarationsShouldBePortableMessageParameter" xml:space="preserve">
+    <value>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</value>
+  </data>
+  <data name="PInvokeDeclarationsShouldBePortableMessageReturn" xml:space="preserve">
+    <value>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</value>
+  </data>
+  <data name="SpecifyMarshalingForPInvokeStringArgumentsTitle" xml:space="preserve">
+    <value>Specify marshaling for P/Invoke string arguments</value>
+  </data>
+  <data name="SpecifyMarshalingForPInvokeStringArgumentsDescription" xml:space="preserve">
+    <value>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</value>
+  </data>
+  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter" xml:space="preserve">
+    <value>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</value>
+  </data>
+  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageField" xml:space="preserve">
+    <value>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</value>
+  </data>
+  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi" xml:space="preserve">
+    <value>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</value>
+  </data>
+  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi" xml:space="preserve">
+    <value>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</value>
+  </data>
+  <data name="UseManagedEquivalentsOfWin32ApiTitle" xml:space="preserve">
+    <value>Use managed equivalents of win32 api</value>
+  </data>
+  <data name="UseManagedEquivalentsOfWin32ApiDescription" xml:space="preserve">
+    <value>An operating system invoke method is defined and a method that has the equivalent functionality is located in the .NET Framework class library.</value>
+  </data>
+  <data name="UseManagedEquivalentsOfWin32ApiMessage" xml:space="preserve">
+    <value>Use managed equivalents of win32 api</value>
+  </data>
+  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle" xml:space="preserve">
+    <value>Always consume the value returned by methods marked with PreserveSigAttribute</value>
+  </data>
+  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription" xml:space="preserve">
+    <value>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</value>
+  </data>
+  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage" xml:space="preserve">
+    <value>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</value>
+  </data>
+  <data name="MarkBooleanPInvokeArgumentsWithMarshalAsTitle" xml:space="preserve">
+    <value>Mark boolean PInvoke arguments with MarshalAs</value>
+  </data>
+  <data name="MarkBooleanPInvokeArgumentsWithMarshalAsDescription" xml:space="preserve">
+    <value>The Boolean data type has multiple representations in unmanaged code.</value>
+  </data>
+  <data name="MarkBooleanPInvokeArgumentsWithMarshalAsMessageDefault" xml:space="preserve">
+    <value>Add the MarshalAsAttribute to parameter {0} of P/Invoke {1}. If the corresponding unmanaged parameter is a 4-byte Win32 'BOOL', use [MarshalAs(UnmanagedType.Bool)]. For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</value>
+  </data>
+  <data name="MarkBooleanPInvokeArgumentsWithMarshalAsMessageReturn" xml:space="preserve">
+    <value>Add the MarshalAsAttribute to the return type of P/Invoke {0}. If the corresponding unmanaged return type is a 4-byte Win32 'BOOL', use MarshalAs(UnmanagedType.Bool). For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</value>
+  </data>
+  <data name="MarkAssembliesWithNeutralResourcesLanguageTitle" xml:space="preserve">
+    <value>Mark assemblies with NeutralResourcesLanguageAttribute</value>
+  </data>
+  <data name="MarkAssembliesWithNeutralResourcesLanguageDescription" xml:space="preserve">
+    <value>The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.</value>
+  </data>
+  <data name="MarkAssembliesWithNeutralResourcesLanguageMessage" xml:space="preserve">
+    <value>Mark assemblies with NeutralResourcesLanguageAttribute</value>
+  </data>
+  <data name="UseOrdinalStringComparisonTitle" xml:space="preserve">
+    <value>Use ordinal stringcomparison</value>
+  </data>
+  <data name="UseOrdinalStringComparisonDescription" xml:space="preserve">
+    <value>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</value>
+  </data>
+  <data name="UseOrdinalStringComparisonMessageStringComparison" xml:space="preserve">
+    <value>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</value>
+  </data>
+  <data name="UseOrdinalStringComparisonMessageStringComparer" xml:space="preserve">
+    <value>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</value>
+  </data>
+  <data name="DoNotUseCountWhenAnyCanBeUsedDescription" xml:space="preserve">
+    <value>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</value>
+  </data>
+  <data name="DoNotUseCountWhenAnyCanBeUsedMessage" xml:space="preserve">
+    <value>{0}() is used where Any() could be used instead to improve performance.</value>
+  </data>
+  <data name="DoNotUseCountWhenAnyCanBeUsedTitle" xml:space="preserve">
+    <value>Do not use Count() or LongCount() when Any() can be used</value>
+  </data>
+  <data name="DoNotUseTimersThatPreventPowerStateChangesTitle" xml:space="preserve">
+    <value>Do not use timers that prevent power state changes</value>
+  </data>
+  <data name="DoNotUseTimersThatPreventPowerStateChangesDescription" xml:space="preserve">
+    <value>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</value>
+  </data>
+  <data name="DoNotUseTimersThatPreventPowerStateChangesMessage" xml:space="preserve">
+    <value>Do not use timers that prevent power state changes</value>
+  </data>
+  <data name="AvoidUnsealedAttributesTitle" xml:space="preserve">
+    <value>Avoid unsealed attributes</value>
+  </data>
+  <data name="AvoidUnsealedAttributesDescription" xml:space="preserve">
+    <value>The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.</value>
+  </data>
+  <data name="AvoidUnsealedAttributesMessage" xml:space="preserve">
+    <value>Avoid unsealed attributes</value>
+  </data>
+  <data name="TestForEmptyStringsUsingStringLengthTitle" xml:space="preserve">
+    <value>Test for empty strings using string length</value>
+  </data>
+  <data name="TestForEmptyStringsUsingStringLengthDescription" xml:space="preserve">
+    <value>Comparing strings by using the String.Length property or the String.IsNullOrEmpty method is significantly faster than using Equals.</value>
+  </data>
+  <data name="TestForEmptyStringsUsingStringLengthMessage" xml:space="preserve">
+    <value>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</value>
+  </data>
+  <data name="DoNotLockOnObjectsWithWeakIdentityTitle" xml:space="preserve">
+    <value>Do not lock on objects with weak identity</value>
+  </data>
+  <data name="DoNotLockOnObjectsWithWeakIdentityDescription" xml:space="preserve">
+    <value>An object is said to have a weak identity when it can be directly accessed across application domain boundaries. A thread that tries to acquire a lock on an object that has a weak identity can be blocked by a second thread in a different application domain that has a lock on the same object.</value>
+  </data>
+  <data name="DoNotLockOnObjectsWithWeakIdentityMessage" xml:space="preserve">
+    <value>Do not lock on objects with weak identity</value>
+  </data>
+  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle" xml:space="preserve">
+    <value>Do not catch corrupted state exceptions in general handlers.</value>
+  </data>
+  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription" xml:space="preserve">
+    <value>Do not author general catch handlers in code that receives corrupted state exceptions.</value>
+  </data>
+  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage" xml:space="preserve">
+    <value>Do not catch corrupted state exceptions in general handlers.</value>
+  </data>
+  <data name="RethrowToPreserveStackDetailsTitle" xml:space="preserve">
+    <value>Rethrow to preserve stack details</value>
+  </data>
+  <data name="RethrowToPreserveStackDetailsDescription" xml:space="preserve">
+    <value>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</value>
+  </data>
+  <data name="RethrowToPreserveStackDetailsMessage" xml:space="preserve">
+    <value>Rethrow to preserve stack details</value>
+  </data>
+  <data name="DoNotRaiseReservedExceptionTypesTitle" xml:space="preserve">
+    <value>Do not raise reserved exception types</value>
+  </data>
+  <data name="DoNotRaiseReservedExceptionTypesDescription" xml:space="preserve">
+    <value>An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.</value>
+  </data>
+  <data name="DoNotRaiseReservedExceptionTypesMessageTooGeneric" xml:space="preserve">
+    <value>Exception type {0} is not sufficiently specific.</value>
+  </data>
+  <data name="DoNotRaiseReservedExceptionTypesMessageReserved" xml:space="preserve">
+    <value>Exception type {0} is reserved by the runtime.</value>
+  </data>
+  <data name="InitializeValueTypeStaticFieldsInlineTitle" xml:space="preserve">
+    <value>Initialize value type static fields inline</value>
+  </data>
+  <data name="InitializeReferenceTypeStaticFieldsInlineTitle" xml:space="preserve">
+    <value>Initialize reference type static fields inline</value>
+  </data>
+  <data name="InitializeValueTypeStaticFieldsInlineDescription" xml:space="preserve">
+    <value>A value type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</value>
+  </data>
+  <data name="InitializeReferenceTypeStaticFieldsInlineDescription" xml:space="preserve">
+    <value>A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</value>
+  </data>
+  <data name="InitializeStaticFieldsInlineMessage" xml:space="preserve">
+    <value>Initialize all static fields in '{0}' when those fields are declared and remove the explicit static constructor</value>
+  </data>
+  <data name="DoNotCallOverridableMethodsInConstructorsTitle" xml:space="preserve">
+    <value>Do not call overridable methods in constructors</value>
+  </data>
+  <data name="DoNotCallOverridableMethodsInConstructorsDescription" xml:space="preserve">
+    <value>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</value>
+  </data>
+  <data name="DoNotCallOverridableMethodsInConstructorsMessage" xml:space="preserve">
+    <value>Do not call overridable methods in constructors</value>
+  </data>
+  <data name="DisposableTypesShouldDeclareFinalizerTitle" xml:space="preserve">
+    <value>Disposable types should declare finalizer</value>
+  </data>
+  <data name="DisposableTypesShouldDeclareFinalizerDescription" xml:space="preserve">
+    <value>A type that implements System.IDisposable and has fields that suggest the use of unmanaged resources does not implement a finalizer, as described by Object.Finalize.</value>
+  </data>
+  <data name="DisposableTypesShouldDeclareFinalizerMessage" xml:space="preserve">
+    <value>Disposable types should declare finalizer</value>
+  </data>
+  <data name="FinalizersShouldCallBaseClassFinalizerTitle" xml:space="preserve">
+    <value>Finalizers should call base class finalizer</value>
+  </data>
+  <data name="FinalizersShouldCallBaseClassFinalizerDescription" xml:space="preserve">
+    <value>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</value>
+  </data>
+  <data name="FinalizersShouldCallBaseClassFinalizerMessage" xml:space="preserve">
+    <value>Finalizers should call base class finalizer</value>
+  </data>
+  <data name="ProvideCorrectArgumentsToFormattingMethodsTitle" xml:space="preserve">
+    <value>Provide correct arguments to formatting methods</value>
+  </data>
+  <data name="ProvideCorrectArgumentsToFormattingMethodsDescription" xml:space="preserve">
+    <value>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</value>
+  </data>
+  <data name="ProvideCorrectArgumentsToFormattingMethodsMessage" xml:space="preserve">
+    <value>Provide correct arguments to formatting methods</value>
+  </data>
+  <data name="TestForNaNCorrectlyTitle" xml:space="preserve">
+    <value>Test for NaN correctly</value>
+  </data>
+  <data name="TestForNaNCorrectlyDescription" xml:space="preserve">
+    <value>This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.</value>
+  </data>
+  <data name="TestForNaNCorrectlyMessage" xml:space="preserve">
+    <value>Test for NaN correctly</value>
+  </data>
+  <data name="AttributeStringLiteralsShouldParseCorrectlyTitle" xml:space="preserve">
+    <value>Attribute string literals should parse correctly</value>
+  </data>
+  <data name="AttributeStringLiteralsShouldParseCorrectlyDescription" xml:space="preserve">
+    <value>The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.</value>
+  </data>
+  <data name="AttributeStringLiteralsShouldParseCorrectlyMessageDefault" xml:space="preserve">
+    <value>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</value>
+  </data>
+  <data name="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty" xml:space="preserve">
+    <value>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</value>
+  </data>
+  <data name="AvoidZeroLengthArrayAllocationsTitle" xml:space="preserve">
+    <value>Avoid zero-length array allocations.</value>
+  </data>
+  <data name="AvoidZeroLengthArrayAllocationsMessage" xml:space="preserve">
+    <value>Avoid unnecessary zero-length array allocations.  Use {0} instead.</value>
+  </data>
+  <data name="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle" xml:space="preserve">
+    <value>Do not use Enumerable methods on indexable collections. Instead use the collection directly</value>
+  </data>
+  <data name="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription" xml:space="preserve">
+    <value>This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.</value>
+  </data>
+  <data name="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage" xml:space="preserve">
+    <value>Do not use Enumerable methods on indexable collections. Instead use the collection directly</value>
+  </data>
+  <data name="SpecifyCultureInfoTitle" xml:space="preserve">
+    <value>Specify CultureInfo</value>
+  </data>
+  <data name="SpecifyCultureInfoDescription" xml:space="preserve">
+    <value>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</value>
+  </data>
+  <data name="SpecifyCultureInfoMessage" xml:space="preserve">
+    <value>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</value>
+  </data>
+  <data name="SpecifyIFormatProviderTitle" xml:space="preserve">
+    <value>Specify IFormatProvider</value>
+  </data>
+  <data name="SpecifyIFormatProviderDescription" xml:space="preserve">
+    <value>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</value>
+  </data>
+  <data name="SpecifyIFormatProviderMessageIFormatProviderAlternateString" xml:space="preserve">
+    <value>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</value>
+  </data>
+  <data name="SpecifyIFormatProviderMessageIFormatProviderAlternate" xml:space="preserve">
+    <value>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</value>
+  </data>
+  <data name="SpecifyIFormatProviderMessageUICultureString" xml:space="preserve">
+    <value>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</value>
+  </data>
+  <data name="SpecifyIFormatProviderMessageUICulture" xml:space="preserve">
+    <value>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</value>
+  </data>
+  <data name="SpecifyStringComparisonTitle" xml:space="preserve">
+    <value>Specify StringComparison</value>
+  </data>
+  <data name="SpecifyStringComparisonDescription" xml:space="preserve">
+    <value>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</value>
+  </data>
+  <data name="SpecifyStringComparisonMessage" xml:space="preserve">
+    <value>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</value>
+  </data>
+  <data name="NormalizeStringsToUppercaseTitle" xml:space="preserve">
+    <value>Normalize strings to uppercase</value>
+  </data>
+  <data name="NormalizeStringsToUppercaseDescription" xml:space="preserve">
+    <value>Strings should be normalized to uppercase. A small group of characters cannot make a round trip when they are converted to lowercase. To make a round trip means to convert the characters from one locale to another locale that represents character data differently, and then to accurately retrieve the original characters from the converted characters.</value>
+  </data>
+  <data name="NormalizeStringsToUppercaseMessageToUpper" xml:space="preserve">
+    <value>In method '{0}', replace the call to '{1}' with '{2}'.</value>
+  </data>
+  <data name="CallGCSuppressFinalizeCorrectlyTitle" xml:space="preserve">
+    <value>Dispose methods should call SuppressFinalize</value>
+  </data>
+  <data name="CallGCSuppressFinalizeCorrectlyDescription" xml:space="preserve">
+    <value>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</value>
+  </data>
+  <data name="CallGCSuppressFinalizeCorrectlyMessageNotCalledWithFinalizer" xml:space="preserve">
+    <value>Change {0} to call {1}. This will prevent unnecessary finalization of the object once it has been disposed and it has fallen out of scope.</value>
+  </data>
+  <data name="CallGCSuppressFinalizeCorrectlyMessageNotCalled" xml:space="preserve">
+    <value>Change {0} to call {1}. This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.</value>
+  </data>
+  <data name="CallGCSuppressFinalizeCorrectlyMessageNotPassedThis" xml:space="preserve">
+    <value>{0} calls {1} on something other than itself. Change the call site to pass 'this' ('Me' in Visual Basic) instead.</value>
+  </data>
+  <data name="CallGCSuppressFinalizeCorrectlyMessageOutsideDispose" xml:space="preserve">
+    <value>{0} calls {1}, a method that is typically only called within an implementation of 'IDisposable.Dispose'. Refer to the IDisposable pattern for more information.</value>
+  </data>
+  <data name="InstantiateArgumentExceptionsCorrectlyTitle" xml:space="preserve">
+    <value>Instantiate argument exceptions correctly</value>
+  </data>
+  <data name="InstantiateArgumentExceptionsCorrectlyDescription" xml:space="preserve">
+    <value>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</value>
+  </data>
+  <data name="InstantiateArgumentExceptionsCorrectlyMessageNoArguments" xml:space="preserve">
+    <value>Call the {0} constructor that contains a message and/or paramName parameter.</value>
+  </data>
+  <data name="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage" xml:space="preserve">
+    <value>Method {0} passes parameter name '{1}' as the {2} argument to a {3} constructor. Replace this argument with a descriptive message and pass the parameter name in the correct position.</value>
+  </data>
+  <data name="InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName" xml:space="preserve">
+    <value>Method {0} passes '{1}' as the {2} argument to a {3} constructor. Replace this argument with one of the method's parameter names. Note that the provided parameter name should have the exact casing as declared on the method.</value>
+  </data>
+  <data name="UseArrayEmpty" xml:space="preserve">
+    <value>Use Array.Empty</value>
+  </data>
+  <data name="UseIndexer" xml:space="preserve">
+    <value>Use indexer</value>
+  </data>
+  <data name="DisposableFieldsShouldBeDisposedDescription" xml:space="preserve">
+    <value>A type that implements System.IDisposable declares fields that are of types that also implement IDisposable. The Dispose method of the field is not called by the Dispose method of the declaring type. To fix a violation of this rule, call Dispose on fields that are of types that implement IDisposable if you are responsible for allocating and releasing the unmanaged resources held by the field.</value>
+  </data>
+  <data name="DisposableFieldsShouldBeDisposedMessage" xml:space="preserve">
+    <value>'{0}' contains field '{1}' that is of IDisposable type '{2}', but it is never disposed. Change the Dispose method on '{0}' to call Close or Dispose on this field.</value>
+  </data>
+  <data name="DisposableFieldsShouldBeDisposedTitle" xml:space="preserve">
+    <value>Disposable fields should be disposed</value>
+  </data>
+  <data name="DisposeMethodsShouldCallBaseClassDisposeDescription" xml:space="preserve">
+    <value>A type that implements System.IDisposable inherits from a type that also implements IDisposable. The Dispose method of the inheriting type does not call the Dispose method of the parent type. To fix a violation of this rule, call base.Dispose in your Dispose method.</value>
+  </data>
+  <data name="DisposeMethodsShouldCallBaseClassDisposeMessage" xml:space="preserve">
+    <value>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</value>
+  </data>
+  <data name="DisposeMethodsShouldCallBaseClassDisposeTitle" xml:space="preserve">
+    <value>Dispose methods should call base class dispose</value>
+  </data>
+  <data name="DisposeObjectsBeforeLosingScopeDescription" xml:space="preserve">
+    <value>If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.</value>
+  </data>
+  <data name="DisposeObjectsBeforeLosingScopeNotDisposedMessage" xml:space="preserve">
+    <value>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</value>
+  </data>
+  <data name="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage" xml:space="preserve">
+    <value>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</value>
+  </data>
+  <data name="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage" xml:space="preserve">
+    <value>Object created by '{0}' is not disposed along all exception paths. Call System.IDisposable.Dispose on the object before all references to it are out of scope.</value>
+  </data>
+  <data name="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage" xml:space="preserve">
+    <value>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</value>
+  </data>
+  <data name="DisposeObjectsBeforeLosingScopeTitle" xml:space="preserve">
+    <value>Dispose objects before losing scope</value>
+  </data>
+  <data name="DoNotPassLiteralsAsLocalizedParametersDescription" xml:space="preserve">
+    <value>A method passes a string literal as a parameter to a constructor or method in the .NET Framework class library and that string should be localizable. To fix a violation of this rule, replace the string literal with a string retrieved through an instance of the ResourceManager class.</value>
+  </data>
+  <data name="DoNotPassLiteralsAsLocalizedParametersMessage" xml:space="preserve">
+    <value>Method '{0}' passes a literal string as parameter '{1}' of a call to '{2}'. Retrieve the following string(s) from a resource table instead: "{3}".</value>
+  </data>
+  <data name="DoNotPassLiteralsAsLocalizedParametersTitle" xml:space="preserve">
+    <value>Do not pass literals as localized parameters</value>
+  </data>
+  <data name="AddNonSerializedAttributeCodeActionTitle" xml:space="preserve">
+    <value>Add the 'NonSerialized' attribute to this field.</value>
+  </data>
+  <data name="AddSerializableAttributeCodeActionTitle" xml:space="preserve">
+    <value>Add Serializable attribute</value>
+  </data>
+  <data name="ImplementSerializationConstructorsCodeActionTitle" xml:space="preserve">
+    <value>Implement Serialization constructor</value>
+  </data>
+  <data name="ImplementSerializationConstructorsDescription" xml:space="preserve">
+    <value>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</value>
+  </data>
+  <data name="ImplementSerializationConstructorsMessageCreateMagicConstructor" xml:space="preserve">
+    <value>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</value>
+  </data>
+  <data name="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate" xml:space="preserve">
+    <value>Declare the serialization constructor of {0}, a sealed type, as private.</value>
+  </data>
+  <data name="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily" xml:space="preserve">
+    <value>Declare the serialization constructor of {0}, an unsealed type, as protected.</value>
+  </data>
+  <data name="ImplementSerializationConstructorsTitle" xml:space="preserve">
+    <value>Implement serialization constructors</value>
+  </data>
+  <data name="MarkAllNonSerializableFieldsDescription" xml:space="preserve">
+    <value>An instance field of a type that is not serializable is declared in a type that is serializable.</value>
+  </data>
+  <data name="MarkAllNonSerializableFieldsMessage" xml:space="preserve">
+    <value>Field {0} is a member of type {1} which is serializable but is of type {2} which is not serializable</value>
+  </data>
+  <data name="MarkAllNonSerializableFieldsTitle" xml:space="preserve">
+    <value>Mark all non-serializable fields</value>
+  </data>
+  <data name="MarkISerializableTypesWithSerializableDescription" xml:space="preserve">
+    <value>To be recognized by the common language runtime as serializable, types must be marked by using the SerializableAttribute attribute even when the type uses a custom serialization routine through implementation of the ISerializable interface.</value>
+  </data>
+  <data name="MarkISerializableTypesWithSerializableMessage" xml:space="preserve">
+    <value>Add [Serializable] to {0} as this type implements ISerializable</value>
+  </data>
+  <data name="MarkISerializableTypesWithSerializableTitle" xml:space="preserve">
+    <value>Mark ISerializable types with serializable</value>
+  </data>
+  <data name="ImplementISerializableCorrectlyDescription" xml:space="preserve">
+    <value>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</value>
+  </data>
+  <data name="ImplementISerializableCorrectlyMessageDefault" xml:space="preserve">
+    <value>Add an implementation of GetObjectData to type {0}.</value>
+  </data>
+  <data name="ImplementISerializableCorrectlyMessageMakeOverridable" xml:space="preserve">
+    <value>Make {0}.GetObjectData virtual and overridable.</value>
+  </data>
+  <data name="ImplementISerializableCorrectlyMessageMakeVisible" xml:space="preserve">
+    <value>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</value>
+  </data>
+  <data name="ImplementISerializableCorrectlyTitle" xml:space="preserve">
+    <value>Implement ISerializable correctly</value>
+  </data>
+  <data name="ImplementSerializationMethodsCorrectlyDescription" xml:space="preserve">
+    <value>A method that handles a serialization event does not have the correct signature, return type, or visibility.</value>
+  </data>
+  <data name="ImplementSerializationMethodsCorrectlyMessageGeneric" xml:space="preserve">
+    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</value>
+  </data>
+  <data name="ImplementSerializationMethodsCorrectlyMessageParameters" xml:space="preserve">
+    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</value>
+  </data>
+  <data name="ImplementSerializationMethodsCorrectlyMessageReturnType" xml:space="preserve">
+    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</value>
+  </data>
+  <data name="ImplementSerializationMethodsCorrectlyMessageStatic" xml:space="preserve">
+    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</value>
+  </data>
+  <data name="ImplementSerializationMethodsCorrectlyMessageVisibility" xml:space="preserve">
+    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</value>
+  </data>
+  <data name="ImplementSerializationMethodsCorrectlyTitle" xml:space="preserve">
+    <value>Implement serialization methods correctly</value>
+  </data>
+  <data name="ProvideDeserializationMethodsForOptionalFieldsDescription" xml:space="preserve">
+    <value>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</value>
+  </data>
+  <data name="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized" xml:space="preserve">
+    <value>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</value>
+  </data>
+  <data name="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing" xml:space="preserve">
+    <value>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</value>
+  </data>
+  <data name="ProvideDeserializationMethodsForOptionalFieldsTitle" xml:space="preserve">
+    <value>Provide deserialization methods for optional fields</value>
+  </data>
+  <data name="ReviewCodeForSqlInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForSqlInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for SQL injection vulnerabilities</value>
+  </data>
+  <data name="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</value>
+  </data>
+  <data name="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle" xml:space="preserve">
+    <value>Ensure BinaryFormatter.Binder is set before calling BinaryFormatter.Deserialize</value>
+  </data>
+  <data name="BinaryFormatterDeserializeWithoutBinderSetMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</value>
+  </data>
+  <data name="BinaryFormatterDeserializeWithoutBinderSetTitle" xml:space="preserve">
+    <value>Do not call BinaryFormatter.Deserialize without first setting BinaryFormatter.Binder</value>
+  </data>
+  <data name="BinaryFormatterMethodUsedDescription" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.</value>
+  </data>
+  <data name="BinaryFormatterMethodUsedMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data.</value>
+  </data>
+  <data name="BinaryFormatterMethodUsedTitle" xml:space="preserve">
+    <value>Do not use insecure deserializer BinaryFormatter</value>
+  </data>
+  <data name="LosFormatterMethodUsedMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data.</value>
+  </data>
+  <data name="LosFormatterMethodUsedTitle" xml:space="preserve">
+    <value>Do not use insecure deserializer LosFormatter</value>
+  </data>
+  <data name="ReviewCodeForDllInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForDllInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for DLL injection vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForInformationDisclosureVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential information disclosure vulnerability was found where '{0}' in method '{1}' may contain unintended information from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForInformationDisclosureVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for information disclosure vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForFilePathInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForFilePathInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for file path injection vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for process command injection vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForRegexInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForRegexInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for regex injection vulnerabilities</value>
+  </data>
+  <data name="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</value>
+  </data>
+  <data name="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle" xml:space="preserve">
+    <value>Ensure NetDataContractSerializer.Binder is set before deserializing</value>
+  </data>
+  <data name="NetDataContractSerializerDeserializeWithoutBinderSetMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</value>
+  </data>
+  <data name="NetDataContractSerializerDeserializeWithoutBinderSetTitle" xml:space="preserve">
+    <value>Do not deserialize without first setting NetDataContractSerializer.Binder</value>
+  </data>
+  <data name="NetDataContractSerializerMethodUsedDescription" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect NetDataContractSerializer deserialization without a SerializationBinder set, then disable rule CA2310, and enable rules CA2311 and CA2312.</value>
+  </data>
+  <data name="NetDataContractSerializerMethodUsedMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data.</value>
+  </data>
+  <data name="NetDataContractSerializerMethodUsedTitle" xml:space="preserve">
+    <value>Do not use insecure deserializer NetDataContractSerializer</value>
+  </data>
+  <data name="ObjectStateFormatterMethodUsedMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data.</value>
+  </data>
+  <data name="ObjectStateFormatterMethodUsedTitle" xml:space="preserve">
+    <value>Do not use insecure deserializer ObjectStateFormatter</value>
+  </data>
+  <data name="ReviewCodeForXssVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForXssVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for XSS vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForLdapInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForLdapInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for LDAP injection vulnerabilities</value>
+  </data>
+  <data name="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</value>
+  </data>
+  <data name="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle" xml:space="preserve">
+    <value>Ensure JavaScriptSerializer is not initialized with SimpleTypeResolver before deserializing</value>
+  </data>
+  <data name="JavaScriptSerializerWithSimpleTypeResolverMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</value>
+  </data>
+  <data name="JavaScriptSerializerWithSimpleTypeResolverTitle" xml:space="preserve">
+    <value>Do not deserialize with JavaScriptSerializer using a SimpleTypeResolver</value>
+  </data>
+  <data name="ReviewCodeForOpenRedirectVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForOpenRedirectVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for open redirect vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForXPathInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForXPathInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for XPath injection vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForXmlInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForXmlInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for XML injection vulnerabilities</value>
+  </data>
+  <data name="ReviewCodeForXamlInjectionVulnerabilitiesMessage" xml:space="preserve">
+    <value>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
+  </data>
+  <data name="ReviewCodeForXamlInjectionVulnerabilitiesTitle" xml:space="preserve">
+    <value>Review code for XAML injection vulnerabilities</value>
+  </data>
+  <data name="JsonNetInsecureSettingsMessage" xml:space="preserve">
+    <value>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</value>
+  </data>
+  <data name="JsonNetInsecureSettingsTitle" xml:space="preserve">
+    <value>Do not use insecure JsonSerializerSettings</value>
+  </data>
+  <data name="JsonNetMaybeInsecureSettingsMessage" xml:space="preserve">
+    <value>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, ensure TypeNameHandling.None is specified, or for values other than None, ensure a SerializationBinder is specified to restrict deserialized types.</value>
+  </data>
+  <data name="JsonNetMaybeInsecureSettingsTitle" xml:space="preserve">
+    <value>Ensure that JsonSerializerSettings are secure</value>
+  </data>
+  <data name="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage" xml:space="preserve">
+    <value>Do not set Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols to true.  Setting this switch limits Windows Communication Framework (WCF) to using Transport Layer Security (TLS) 1.0, which is insecure and obsolete.</value>
+  </data>
+  <data name="DoNotDisableUsingServicePointManagerSecurityProtocolsTitle" xml:space="preserve">
+    <value>Do not disable ServicePointManagerSecurityProtocols</value>
+  </data>
+  <data name="JsonNetTypeNameHandlingDescription" xml:space="preserve">
+    <value>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.  If you need to instead detect Json.NET deserialization when a SerializationBinder isn't specified, then disable rule CA2326, and enable rules CA2327, CA2328, CA2329, and CA2330.</value>
+  </data>
+  <data name="JsonNetTypeNameHandlingMessage" xml:space="preserve">
+    <value>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.</value>
+  </data>
+  <data name="JsonNetTypeNameHandlingTitle" xml:space="preserve">
+    <value>Do not use TypeNameHandling values other than None</value>
+  </data>
+  <data name="ApprovedCipherMode" xml:space="preserve">
+    <value>Do Not Use Unsafe Cipher Modes</value>
+  </data>
+  <data name="ApprovedCipherModeDescription" xml:space="preserve">
+    <value>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</value>
+  </data>
+  <data name="ApprovedCipherModeMessage" xml:space="preserve">
+    <value>It uses an unsafe Cipher Mode {0}</value>
+  </data>
+  <data name="DefinitelyInstallRootCert" xml:space="preserve">
+    <value>Do Not Add Certificates To Root Store</value>
+  </data>
+  <data name="DefinitelyInstallRootCertMessage" xml:space="preserve">
+    <value>Adding certificates to the operating system's trusted root certificates increases the risk of incorrectly authenticating an illegitimate certificate</value>
+  </data>
+  <data name="DefinitelyUseSecureCookiesASPNetCore" xml:space="preserve">
+    <value>Use Secure Cookies In ASP.Net Core</value>
+  </data>
+  <data name="DefinitelyUseSecureCookiesASPNetCoreMessage" xml:space="preserve">
+    <value>Set CookieOptions.Secure = true when setting a cookie</value>
+  </data>
+  <data name="DoNotAddSchemaByURL" xml:space="preserve">
+    <value>Do Not Add Schema By URL</value>
+  </data>
+  <data name="DoNotAddSchemaByURLDescription" xml:space="preserve">
+    <value>This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
+  </data>
+  <data name="DoNotAddSchemaByURLMessage" xml:space="preserve">
+    <value>This overload of the Add method is potentially unsafe because it may resolve dangerous external references</value>
+  </data>
+  <data name="DoNotCallDangerousMethodsInDeserialization" xml:space="preserve">
+    <value>Do Not Call Dangerous Methods In Deserialization</value>
+  </data>
+  <data name="DoNotCallDangerousMethodsInDeserializationDescription" xml:space="preserve">
+    <value>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</value>
+  </data>
+  <data name="DoNotCallDangerousMethodsInDeserializationMessage" xml:space="preserve">
+    <value>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</value>
+  </data>
+  <data name="DoNotDisableCertificateValidation" xml:space="preserve">
+    <value>Do Not Disable Certificate Validation</value>
+  </data>
+  <data name="DoNotDisableCertificateValidationDescription" xml:space="preserve">
+    <value>A certificate can help authenticate the identity of the server. Clients should validate the server certificate to ensure requests are sent to the intended server. If the ServerCertificateValidationCallback always returns 'true', any certificate will pass validation.</value>
+  </data>
+  <data name="DoNotDisableCertificateValidationMessage" xml:space="preserve">
+    <value>The ServerCertificateValidationCallback is set to a function that accepts any server certificate, by always returning true. Ensure that server certificates are validated to verify the identity of the server receiving requests.</value>
+  </data>
+  <data name="DoNotDisableHTTPHeaderChecking" xml:space="preserve">
+    <value>Do Not Disable HTTP Header Checking</value>
+  </data>
+  <data name="DoNotDisableHTTPHeaderCheckingDescription" xml:space="preserve">
+    <value>HTTP header checking enables encoding of the carriage return and newline characters, \r and \n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.</value>
+  </data>
+  <data name="DoNotDisableHTTPHeaderCheckingMessage" xml:space="preserve">
+    <value>Do not disable HTTP header checking</value>
+  </data>
+  <data name="DoNotDisableRequestValidation" xml:space="preserve">
+    <value>Do Not Disable Request Validation</value>
+  </data>
+  <data name="DoNotDisableRequestValidationDescription" xml:space="preserve">
+    <value>Request validation is a feature in ASP.NET that examines HTTP requests and determines whether they contain potentially dangerous content. This check adds protection from markup or code in the URL query string, cookies, or posted form values that might have been added for malicious purposes. So, it is generally desirable and should be left enabled for defense in depth.</value>
+  </data>
+  <data name="DoNotDisableRequestValidationMessage" xml:space="preserve">
+    <value>{0} has request validation disabled</value>
+  </data>
+  <data name="DoNotDisableSchUseStrongCrypto" xml:space="preserve">
+    <value>Do Not Disable SChannel Use of Strong Crypto</value>
+  </data>
+  <data name="DoNotDisableSchUseStrongCryptoDescription" xml:space="preserve">
+    <value>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</value>
+  </data>
+  <data name="DoNotDisableSchUseStrongCryptoMessage" xml:space="preserve">
+    <value>{0} disables TLS 1.2 and enables SSLv3</value>
+  </data>
+  <data name="DoNotHardCodeEncryptionKey" xml:space="preserve">
+    <value>Do not hard-code encryption key</value>
+  </data>
+  <data name="DoNotHardCodeEncryptionKeyDescription" xml:space="preserve">
+    <value>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</value>
+  </data>
+  <data name="DoNotHardCodeEncryptionKeyMessage" xml:space="preserve">
+    <value>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</value>
+  </data>
+  <data name="DoNotInstallRootCertDescription" xml:space="preserve">
+    <value>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</value>
+  </data>
+  <data name="DoNotReferSelfInSerializableClass" xml:space="preserve">
+    <value>Do Not Refer Self In Serializable Class</value>
+  </data>
+  <data name="DoNotReferSelfInSerializableClassDescription" xml:space="preserve">
+    <value>This can allow an attacker to DOS or exhaust the memory of the process.</value>
+  </data>
+  <data name="DoNotReferSelfInSerializableClassMessage" xml:space="preserve">
+    <value>{0} participates in a potential reference cycle</value>
+  </data>
+  <data name="DoNotSerializeTypesWithPointerFields" xml:space="preserve">
+    <value>Do Not Serialize Types With Pointer Fields</value>
+  </data>
+  <data name="DoNotSerializeTypesWithPointerFieldsDescription" xml:space="preserve">
+    <value>Pointers are not "type safe" in the sense that you cannot guarantee the correctness of the memory they point at. So, serializing types with pointer fields is dangerous, as it may allow an attacker to control the pointer.</value>
+  </data>
+  <data name="DoNotSerializeTypesWithPointerFieldsMessage" xml:space="preserve">
+    <value>Pointer field {0} on serializable type.</value>
+  </data>
+  <data name="DoNotUseAccountSAS" xml:space="preserve">
+    <value>Do Not Use Account Shared Access Signature</value>
+  </data>
+  <data name="DoNotUseAccountSASDescription" xml:space="preserve">
+    <value>Shared Access Signatures(SAS) are a vital part of the security model for any application using Azure Storage, they should provide limited and safe permissions to your storage account to clients that don't have the account key. All of the operations available via a service SAS are also available via an account SAS, that is, account SAS is too powerful. So it is recommended to use Service SAS to delegate access more carefully.</value>
+  </data>
+  <data name="DoNotUseAccountSASMessage" xml:space="preserve">
+    <value>Use Service SAS instead of Account SAS for fine grained access control and container-level access policy</value>
+  </data>
+  <data name="DoNotUseBrokenCryptographicAlgorithms" xml:space="preserve">
+    <value>Do Not Use Broken Cryptographic Algorithms</value>
+  </data>
+  <data name="DoNotUseBrokenCryptographicAlgorithmsDescription" xml:space="preserve">
+    <value>An attack making it computationally feasible to break this algorithm exists. This allows attackers to break the cryptographic guarantees it is designed to provide. Depending on the type and application of this cryptographic algorithm, this may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA512, SHA384, or SHA256. Replace digital signature uses with RSA with a key length greater than or equal to 2048-bits, or ECDSA with a key length greater than or equal to 256 bits.</value>
+  </data>
+  <data name="DoNotUseBrokenCryptographicAlgorithmsMessage" xml:space="preserve">
+    <value>{0} uses a broken cryptographic algorithm {1}</value>
+  </data>
+  <data name="DoNotUseDeprecatedSecurityProtocols" xml:space="preserve">
+    <value>Do Not Use Deprecated Security Protocols</value>
+  </data>
+  <data name="DoNotUseDeprecatedSecurityProtocolsDescription" xml:space="preserve">
+    <value>Using a deprecated security protocol rather than the system default is risky.</value>
+  </data>
+  <data name="DoNotUseDeprecatedSecurityProtocolsMessage" xml:space="preserve">
+    <value>Hard-coded use of deprecated security protocol {0}</value>
+  </data>
+  <data name="DoNotUseDSA" xml:space="preserve">
+    <value>Do Not Use Digital Signature Algorithm (DSA)</value>
+  </data>
+  <data name="DoNotUseDSADescription" xml:space="preserve">
+    <value>DSA is too weak to use.</value>
+  </data>
+  <data name="DoNotUseDSAMessage" xml:space="preserve">
+    <value>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</value>
+  </data>
+  <data name="DoNotUseMD5" xml:space="preserve">
+    <value>Do not use insecure cryptographic algorithm MD5.</value>
+  </data>
+  <data name="DoNotUseMD5Description" xml:space="preserve">
+    <value>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</value>
+  </data>
+  <data name="DoNotUseObsoleteKDFAlgorithm" xml:space="preserve">
+    <value>Do not use obsolete key derivation function</value>
+  </data>
+  <data name="DoNotUseObsoleteKDFAlgorithmDescription" xml:space="preserve">
+    <value>Password-based key derivation should use PBKDF2 with SHA-2. Avoid using PasswordDeriveBytes since it generates a PBKDF1 key. Avoid using Rfc2898DeriveBytes.CryptDeriveKey since it doesn't use the iteration count or salt.</value>
+  </data>
+  <data name="DoNotUseObsoleteKDFAlgorithmMessage" xml:space="preserve">
+    <value>Call to obsolete key derivation function {0}.{1}</value>
+  </data>
+  <data name="DoNotUseSHA1" xml:space="preserve">
+    <value>Do not use insecure cryptographic algorithm SHA1.</value>
+  </data>
+  <data name="DoNotUseSHA1Description" xml:space="preserve">
+    <value>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</value>
+  </data>
+  <data name="DoNotUseWeakCryptographicAlgorithms" xml:space="preserve">
+    <value>Do Not Use Weak Cryptographic Algorithms</value>
+  </data>
+  <data name="DoNotUseWeakCryptographicAlgorithmsDescription" xml:space="preserve">
+    <value>Cryptographic algorithms degrade over time as attacks become for advances to attacker get access to more computation. Depending on the type and application of this cryptographic algorithm, further degradation of the cryptographic strength of it may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA-2 512, SHA-2 384, or SHA-2 256.</value>
+  </data>
+  <data name="DoNotUseWeakCryptographicAlgorithmsMessage" xml:space="preserve">
+    <value>{0} uses a weak cryptographic algorithm {1}</value>
+  </data>
+  <data name="DoNotUseWeakKDFAlgorithm" xml:space="preserve">
+    <value>Do Not Use Weak Key Derivation Function Algorithm</value>
+  </data>
+  <data name="DoNotUseWeakKDFAlgorithmDescription" xml:space="preserve">
+    <value>Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.</value>
+  </data>
+  <data name="DoNotUseWeakKDFAlgorithmMessage" xml:space="preserve">
+    <value>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</value>
+  </data>
+  <data name="DoNotUseXslTransform" xml:space="preserve">
+    <value>Do Not Use XslTransform</value>
+  </data>
+  <data name="DoNotUseXslTransformMessage" xml:space="preserve">
+    <value>Do not use XslTransform. It does not restrict potentially dangerous external references.</value>
+  </data>
+  <data name="HardCodedSecurityProtocolMessage" xml:space="preserve">
+    <value>Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.</value>
+  </data>
+  <data name="HardCodedSecurityProtocolTitle" xml:space="preserve">
+    <value>Avoid hardcoding SecurityProtocolType value</value>
+  </data>
+  <data name="MaybeInstallRootCert" xml:space="preserve">
+    <value>Ensure Certificates Are Not Added To Root Store</value>
+  </data>
+  <data name="MaybeInstallRootCertMessage" xml:space="preserve">
+    <value>Adding certificates to the operating system's trusted root certificates is insecure. Ensure that the target store is not root store.</value>
+  </data>
+  <data name="MaybeUseSecureCookiesASPNetCore" xml:space="preserve">
+    <value>Ensure Use Secure Cookies In ASP.Net Core</value>
+  </data>
+  <data name="MaybeUseSecureCookiesASPNetCoreMessage" xml:space="preserve">
+    <value>Ensure that CookieOptions.Secure = true when setting a cookie</value>
+  </data>
+  <data name="SetViewStateUserKey" xml:space="preserve">
+    <value>Set ViewStateUserKey For Classes Derived From Page</value>
+  </data>
+  <data name="SetViewStateUserKeyDescription" xml:space="preserve">
+    <value>Setting the ViewStateUserKey property can help you prevent attacks on your application by allowing you to assign an identifier to the view-state variable for individual users so that they cannot use the variable to generate an attack. Otherwise, there will be cross-site request forgery vulnerabilities.</value>
+  </data>
+  <data name="SetViewStateUserKeyMessage" xml:space="preserve">
+    <value>The class {0} derived from System.Web.UI.Page does not set the ViewStateUserKey property in the OnInit method or Page_Init method</value>
+  </data>
+  <data name="UseContainerLevelAccessPolicy" xml:space="preserve">
+    <value>Use Container Level Access Policy</value>
+  </data>
+  <data name="UseContainerLevelAccessPolicyDescription" xml:space="preserve">
+    <value>No access policy identifier is specified, making tokens non-revocable.</value>
+  </data>
+  <data name="UseContainerLevelAccessPolicyMessage" xml:space="preserve">
+    <value>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</value>
+  </data>
+  <data name="UseSecureCookiesASPNetCoreDescription" xml:space="preserve">
+    <value>Applications available over HTTPS must use secure cookies.</value>
+  </data>
+  <data name="UseSharedAccessProtocolHttpsOnly" xml:space="preserve">
+    <value>Use SharedAccessProtocol HttpsOnly</value>
+  </data>
+  <data name="UseSharedAccessProtocolHttpsOnlyDescription" xml:space="preserve">
+    <value>HTTPS encrypts network traffic. Use HttpsOnly, rather than HttpOrHttps, to ensure network traffic is always encrypted to help prevent disclosure of sensitive data.</value>
+  </data>
+  <data name="UseSharedAccessProtocolHttpsOnlyMessage" xml:space="preserve">
+    <value>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</value>
+  </data>
+  <data name="UseXmlReaderDescription" xml:space="preserve">
+    <value>Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.</value>
+  </data>
+  <data name="UseXmlReaderForDataSetReadXml" xml:space="preserve">
+    <value>Use XmlReader For DataSet Read Xml</value>
+  </data>
+  <data name="UseXmlReaderForDeserialize" xml:space="preserve">
+    <value>Use XmlReader For Deserialize</value>
+  </data>
+  <data name="UseXmlReaderForSchemaRead" xml:space="preserve">
+    <value>Use XmlReader For Schema Read</value>
+  </data>
+  <data name="UseXmlReaderForValidatingReader" xml:space="preserve">
+    <value>Use XmlReader For Validating Reader</value>
+  </data>
+  <data name="UseXmlReaderForXPathDocument" xml:space="preserve">
+    <value>Use XmlReader For XPathDocument</value>
+  </data>
+  <data name="UseXmlReaderMessage" xml:space="preserve">
+    <value>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</value>
+  </data>
+  <data name="UseRSAWithSufficientKeySize" xml:space="preserve">
+    <value>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</value>
+  </data>
+  <data name="UseRSAWithSufficientKeySizeDescription" xml:space="preserve">
+    <value>Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.</value>
+  </data>
+  <data name="UseRSAWithSufficientKeySizeMessage" xml:space="preserve">
+    <value>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</value>
+  </data>
+  <data name="DefinitelyUseWeakKDFInsufficientIterationCount" xml:space="preserve">
+    <value>Do Not Use Weak Key Derivation Function With Insufficient Iteration Count</value>
+  </data>
+  <data name="DefinitelyUseWeakKDFInsufficientIterationCountMessage" xml:space="preserve">
+    <value>Use at least {0} iterations when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</value>
+  </data>
+  <data name="DoNotUseWeakKDFInsufficientIterationCountDescription" xml:space="preserve">
+    <value>When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).</value>
+  </data>
+  <data name="MaybeUseWeakKDFInsufficientIterationCount" xml:space="preserve">
+    <value>Ensure Sufficient Iteration Count When Using Weak Key Derivation Function</value>
+  </data>
+  <data name="MaybeUseWeakKDFInsufficientIterationCountMessage" xml:space="preserve">
+    <value>Ensure that the iteration count is at least {0} when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</value>
+  </data>
+  <data name="DoNotAddArchiveItemPathToTheTargetFileSystemPath" xml:space="preserve">
+    <value>Do Not Add Archive Item's Path To The Target File System Path</value>
+  </data>
+  <data name="DoNotAddArchiveItemPathToTheTargetFileSystemPathDescription" xml:space="preserve">
+    <value>When extracting files from an archive and using the archive item's path, check if the path is safe. Archive path can be relative and can lead to file system access outside of the expected file system target path, leading to malicious config changes and remote code execution via lay-and-wait technique.</value>
+  </data>
+  <data name="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage" xml:space="preserve">
+    <value>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</value>
+  </data>
+  <data name="DoNotCreateTasksWithoutPassingATaskSchedulerTitle" xml:space="preserve">
+    <value>Do not create tasks without passing a TaskScheduler</value>
+  </data>
+  <data name="DoNotCreateTasksWithoutPassingATaskSchedulerDescription" xml:space="preserve">
+    <value>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</value>
+  </data>
+  <data name="DoNotCreateTasksWithoutPassingATaskSchedulerMessage" xml:space="preserve">
+    <value>Do not create tasks without passing a TaskScheduler</value>
+  </data>
+  <data name="JsonNetInsecureSerializerMessage" xml:space="preserve">
+    <value>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</value>
+  </data>
+  <data name="JsonNetInsecureSerializerTitle" xml:space="preserve">
+    <value>Do not deserialize with JsonSerializer using an insecure configuration</value>
+  </data>
+  <data name="JsonNetMaybeInsecureSerializerMessage" xml:space="preserve">
+    <value>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</value>
+  </data>
+  <data name="JsonNetMaybeInsecureSerializerTitle" xml:space="preserve">
+    <value>Ensure that JsonSerializer has a secure configuration when deserializing</value>
+  </data>
+  <data name="UseDefaultDllImportSearchPathsAttribute" xml:space="preserve">
+    <value>Use DefaultDllImportSearchPaths attribute for P/Invokes</value>
+  </data>
+  <data name="UseDefaultDllImportSearchPathsAttributeDescription" xml:space="preserve">
+    <value>By default, P/Invokes using DllImportAttribute probe a number of directories, including the current working directory for the library to load. This can be a security issue for certain applications, leading to DLL hijacking.</value>
+  </data>
+  <data name="UseDefaultDllImportSearchPathsAttributeMessage" xml:space="preserve">
+    <value>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</value>
+  </data>
+  <data name="DoNotUseUnsafeDllImportSearchPath" xml:space="preserve">
+    <value>Do not use unsafe DllImportSearchPath value</value>
+  </data>
+  <data name="DoNotUseUnsafeDllImportSearchPathDescription" xml:space="preserve">
+    <value>There could be a malicious DLL in the default DLL search directories. Or, depending on where your application is run from, there could be a malicious DLL in the application's directory. Use a DllImportSearchPath value that specifies an explicit search path instead. The DllImportSearchPath flags that this rule looks for can be configured in .editorconfig.</value>
+  </data>
+  <data name="DoNotUseUnsafeDllImportSearchPathMessage" xml:space="preserve">
+    <value>Use of unsafe DllImportSearchPath value {0}</value>
+  </data>
+  <data name="UseAutoValidateAntiforgeryToken" xml:space="preserve">
+    <value>Use antiforgery tokens in ASP.NET Core MVC controllers</value>
+  </data>
+  <data name="UseAutoValidateAntiforgeryTokenDescription" xml:space="preserve">
+    <value>Handling a POST, PUT, PATCH, or DELETE request without validating an antiforgery token may be vulnerable to cross-site request forgery attacks. A cross-site request forgery attack can send malicious requests from an authenticated user to your ASP.NET Core MVC controller.</value>
+  </data>
+  <data name="UseAutoValidateAntiforgeryTokenMessage" xml:space="preserve">
+    <value>Method {0} handles a {1} request without performing antiforgery token validation. You also need to ensure that your HTML form sends an antiforgery token.</value>
+  </data>
+  <data name="MissHttpVerbAttribute" xml:space="preserve">
+    <value>Miss HttpVerb attribute for action methods</value>
+  </data>
+  <data name="MissHttpVerbAttributeMessage" xml:space="preserve">
+    <value>Action method {0} needs to specify the Http request kind explictly</value>
+  </data>
+  <data name="DoNotUseInsecureRandomness" xml:space="preserve">
+    <value>Do not use insecure randomness</value>
+  </data>
+  <data name="DoNotUseInsecureRandomnessMessage" xml:space="preserve">
+    <value>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</value>
+  </data>
+  <data name="DoNotUseInsecureRandomnessDescription" xml:space="preserve">
+    <value>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</value>
+  </data>
+  <data name="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription" xml:space="preserve">
+    <value>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</value>
+  </data>
+  <data name="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage" xml:space="preserve">
+    <value>{0}() is used where AnyAsync() could be used instead to improve performance.</value>
+  </data>
+  <data name="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle" xml:space="preserve">
+    <value>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</value>
+  </data>
+  <data name="UsePropertyInsteadOfCountMethodWhenAvailableDescription" xml:space="preserve">
+    <value>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</value>
+  </data>
+  <data name="UsePropertyInsteadOfCountMethodWhenAvailableMessage" xml:space="preserve">
+    <value>Use the "{0}" property instead of Enumerable.Count().</value>
+  </data>
+  <data name="UsePropertyInsteadOfCountMethodWhenAvailableTitle" xml:space="preserve">
+    <value>Use Length/Count property instead of Count() when available</value>
+  </data>
+  <data name="SetHttpOnlyForHttpCookie" xml:space="preserve">
+    <value>Set HttpOnly to true for HttpCookie</value>
+  </data>
+  <data name="SetHttpOnlyForHttpCookieDescription" xml:space="preserve">
+    <value>As a defense in depth measure, ensure security sensitive HTTP cookies are marked as HttpOnly. This indicates web browsers should disallow scripts from accessing the cookies. Injected malicious scripts are a common way of stealing cookies.</value>
+  </data>
+  <data name="SetHttpOnlyForHttpCookieMessage" xml:space="preserve">
+    <value>HttpCookie.HttpOnly is set to false or not set at all when using an HttpCookie. Ensure security sensitive cookies are marked as HttpOnly to prevent malicious scripts from stealing the cookies</value>
+  </data>
+  <data name="DeprecatedSslProtocolsDescription" xml:space="preserve">
+    <value>Older protocol versions of Transport Layer Security (TLS) are less secure than TLS 1.2 and TLS 1.3, and are more likely to have new vulnerabilities. Avoid older protocol versions to minimize risk.</value>
+  </data>
+  <data name="DeprecatedSslProtocolsMessage" xml:space="preserve">
+    <value>Transport Layer Security protocol version '{0}' is deprecated.  Use 'None' to let the Operating System choose a version.</value>
+  </data>
+  <data name="DeprecatedSslProtocolsTitle" xml:space="preserve">
+    <value>Do not use deprecated SslProtocols values</value>
+  </data>
+  <data name="HardcodedSslProtocolsDescription" xml:space="preserve">
+    <value>Current Transport Layer Security protocol versions may become deprecated if vulnerabilities are found. Avoid hardcoding SslProtocols values to keep your application secure. Use 'None' to let the Operating System choose a version.</value>
+  </data>
+  <data name="HardcodedSslProtocolsMessage" xml:space="preserve">
+    <value>Avoid hardcoding SslProtocols '{0}' to ensure your application remains secure in the future. Use 'None' to let the Operating System choose a version.</value>
+  </data>
+  <data name="HardcodedSslProtocolsTitle" xml:space="preserve">
+    <value>Avoid hardcoded SslProtocols values</value>
+  </data>
+  <data name="MissHttpVerbAttributeDescription" xml:space="preserve">
+    <value>All the methods that create, edit, delete, or otherwise modify data do so in the [HttpPost] overload of the method, which needs to be protected with the anti forgery attribute from request forgery. Performing a GET operation should be a safe operation that has no side effects and doesn't modify your persisted data.</value>
+  </data>
+  <data name="DefinitelyDisableHttpClientCRLCheck" xml:space="preserve">
+    <value>HttpClients should enable certificate revocation list checks</value>
+  </data>
+  <data name="DefinitelyDisableHttpClientCRLCheckMessage" xml:space="preserve">
+    <value>HttpClient is created without enabling CheckCertificateRevocationList</value>
+  </data>
+  <data name="DoNotDisableHttpClientCRLCheckDescription" xml:space="preserve">
+    <value>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</value>
+  </data>
+  <data name="MaybeDisableHttpClientCRLCheck" xml:space="preserve">
+    <value>Ensure HttpClient certificate revocation list check is not disabled</value>
+  </data>
+  <data name="MaybeDisableHttpClientCRLCheckMessage" xml:space="preserve">
+    <value>HttpClient may be created without enabling CheckCertificateRevocationList</value>
+  </data>
+  <data name="DoNotHardCodeCertificate" xml:space="preserve">
+    <value>Do not hard-code certificate</value>
+  </data>
+  <data name="DoNotHardCodeCertificateDescription" xml:space="preserve">
+    <value>Hard-coded certificates in source code are vulnerable to being exploited.</value>
+  </data>
+  <data name="DoNotHardCodeCertificateMessage" xml:space="preserve">
+    <value>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</value>
+  </data>
+  <data name="DefinitelyUseCreateEncryptorWithNonDefaultIV" xml:space="preserve">
+    <value>Do not use CreateEncryptor with non-default IV</value>
+  </data>
+  <data name="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage" xml:space="preserve">
+    <value>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</value>
+  </data>
+  <data name="MaybeUseCreateEncryptorWithNonDefaultIV" xml:space="preserve">
+    <value>Use CreateEncryptor with the default IV </value>
+  </data>
+  <data name="MaybeUseCreateEncryptorWithNonDefaultIVMessage" xml:space="preserve">
+    <value>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</value>
+  </data>
+  <data name="DoNotUseCreateEncryptorWithNonDefaultIVDescription" xml:space="preserve">
+    <value>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</value>
+  </data>
+</root>
