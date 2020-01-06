@@ -409,3 +409,46 @@ Option Values:
 Default Value: `Heuristic`.
 
 Example: `dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue`
+
+### Exclude indirect base types
+Option Name: `exclude_indirect_base_types`
+
+Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710-identifiers-should-have-correct-suffix)
+
+Option Values: `true` or `false`
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1710.exclude_indirect_base_types = true`
+
+For example, consider the code below:
+```csharp
+// An issue is always raised on this type because the suffix should be 'Exception'.
+public class MyBaseClass : Exception, IEnumerable
+{
+   // code omitted for simplicity
+}
+
+// If the option is enabled no issue is raised on 'MyClass'; otherwise an issue will
+// suggest to add the 'Exception' suffix.
+public class MyClass : MyBaseClass
+{
+   // code omitted for simplicity
+}
+```
+
+### Additional required suffixes
+Option Name: `additional_required_suffixes`
+
+Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710-identifiers-should-have-correct-suffix)
+
+Option Values: List (separated by '|') of fully qualified type name followed by colon and the required suffix.
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass:Class` | All types inheriting from MyClass are expected to have the 'Class' suffix |
+|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass:Class|MyNamespace.IFoo:Foo` | All types inheriting from MyClass are expected to have the 'Class' suffix AND all types implementing MyNamespace.IFoo are expected to have the 'Foo' suffix. |
