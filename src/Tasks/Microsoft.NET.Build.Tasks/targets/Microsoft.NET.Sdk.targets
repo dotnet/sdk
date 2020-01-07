@@ -226,7 +226,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- To achieve incremental build with property change. When any property changes, WriteOnlyWhenDifferent will be triggered to write cache file.
   And the cache file's timestamp will be later, and it then triggers the incremental build.-->
-  <Target Name="_GenerateRuntimeConfigurationFilesInputCache" DependsOnTargets="ResolveAssemblyReferences">
+  <Target Name="_GenerateRuntimeConfigurationFilesInputCache">
     <ItemGroup>
       <GenerateRuntimeConfigurationFilesInputs Include="$(_GenerateRuntimeConfigurationPropertyInputsCache)" />
 
