@@ -1,0 +1,33 @@
+﻿<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <GeneratePkgDefFile>false</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <ImportVSSDKTargets>true</ImportVSSDKTargets>
+    <PublishWindowsPdb>false</PublishWindowsPdb>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Microsoft.CodeAnalysis.NetAnalyzers.csproj">
+      <Name>Microsoft.CodeAnalysis.NetAnalyzers</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <ForceIncludeInVSIX>true</ForceIncludeInVSIX>
+    </ProjectReference>
+    <ProjectReference Include="..\CSharp\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj">
+      <Name>Microsoft.CodeAnalysis.CSharp.NetAnalyzers</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <ForceIncludeInVSIX>true</ForceIncludeInVSIX>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualBasic\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj">
+      <Name>Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <ForceIncludeInVSIX>true</ForceIncludeInVSIX>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,162 @@
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using System.Threading.Tasks;
+using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseNameofInPlaceOfStringAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseNameofInPlaceOfStringFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicUseNameofInPlaceOfStringAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicUseNameofInPlaceOfStringFixer>;
+
+namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
+{
+    public class UseNameOfInPlaceOfStringFixerTests
+    {
+        [Fact]
+        public async Task Fixer_CSharp_ArgumentMatchesAParameterInScope()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException([|""x""|]);
+    }
+}",
+@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(nameof(x));
+    }
+}");
+        }
+
+        [Fact]
+        public async Task Fixer_CSharp_ArgumentWithComments()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(/*Leading*/[|""x""|]/*Trailing*/);
+    }
+}",
+@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(/*Leading*/nameof(x)/*Trailing*/);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task Fixer_CSharp_ArgumentWithComments2()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentException(""Somemessage"", /*Leading*/[|""x""|]/*Trailing*/);
+    }
+}",
+@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentException(""Somemessage"", /*Leading*/nameof(x)/*Trailing*/);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task Fixer_VB_ArgumentMatchesAParameterInScope()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+
+Module Mod1
+    Sub f(s As String)
+        Throw New ArgumentNullException([|""s""|])
+    End Sub
+End Module",
+@"
+Imports System
+
+Module Mod1
+    Sub f(s As String)
+        Throw New ArgumentNullException(NameOf(s))
+    End Sub
+End Module");
+        }
+
+        [Fact]
+        public async Task Fixer_CSharp_ArgumentMatchesPropertyInScope()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System.ComponentModel;
+
+public class Person : INotifyPropertyChanged
+{
+    private string name;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public string PersonName {
+        get { return name; }
+        set
+        {
+            name = value;
+            OnPropertyChanged([|""PersonName""|]);
+        }
+    }
+
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler handler = PropertyChanged;
+        if (handler != null)
+        {
+            handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}", @"
+using System.ComponentModel;
+
+public class Person : INotifyPropertyChanged
+{
+    private string name;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public string PersonName {
+        get { return name; }
+        set
+        {
+            name = value;
+            OnPropertyChanged(nameof(PersonName));
+        }
+    }
+
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler handler = PropertyChanged;
+        if (handler != null)
+        {
+            handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}");
+        }
+    }
+}

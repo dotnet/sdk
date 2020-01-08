@@ -1,0 +1,95 @@
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
+using System.Diagnostics;
+
+namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
+{
+    /// <summary>
+    /// CA1044: Properties should not be write only
+    /// </summary>
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class PropertiesShouldNotBeWriteOnlyAnalyzer : DiagnosticAnalyzer
+    {
+        internal const string RuleId = "CA1044";
+        private const string HelpLinkUri = "https://docs.microsoft.com/visualstudio/code-quality/ca1044-properties-should-not-be-write-only";
+
+        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageAddGetter = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyMessageAddGetter), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageMakeMoreAccessible = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+
+        internal static DiagnosticDescriptor AddGetterRule = new DiagnosticDescriptor(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageAddGetter,
+                                                                             DiagnosticCategory.Design,
+                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
+                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             description: s_localizableDescription,
+                                                                             helpLinkUri: HelpLinkUri,
+                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+        internal static DiagnosticDescriptor MakeMoreAccessibleRule = new DiagnosticDescriptor(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageMakeMoreAccessible,
+                                                                             DiagnosticCategory.Design,
+                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
+                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             description: s_localizableDescription,
+                                                                             helpLinkUri: HelpLinkUri,
+                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AddGetterRule, MakeMoreAccessibleRule);
+
+        public override void Initialize(AnalysisContext analysisContext)
+        {
+            analysisContext.EnableConcurrentExecution();
+            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+
+            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+        }
+
+        /// <summary>
+        /// Implementation for CA1044: Properties should not be write only
+        /// </summary>
+        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        {
+            if (!(context.Symbol is IPropertySymbol property))
+            {
+                return;
+            }
+
+            // not raising a violation for when: 
+            //     property is overridden because the issue can only be fixed in the base type 
+            //     property is the implementaton of any interface member 
+            if (property.IsOverride || property.IsImplementationOfAnyInterfaceMember())
+            {
+                return;
+            }
+
+            // Only analyze externally visible properties by default
+            if (!property.MatchesConfiguredVisibility(context.Options, AddGetterRule, context.CancellationToken))
+            {
+                Debug.Assert(!property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+                return;
+            }
+
+            Debug.Assert(property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+
+            // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
+            // If there is no getter then it is not accessible
+            if (property.IsWriteOnly)
+            {
+                context.ReportDiagnostic(property.CreateDiagnostic(AddGetterRule, property.Name));
+            }
+            // Otherwise if there is a setter, check for its relative accessibility
+            else if (!(property.IsReadOnly) && (property.GetMethod.DeclaredAccessibility < property.SetMethod.DeclaredAccessibility))
+            {
+                context.ReportDiagnostic(property.CreateDiagnostic(MakeMoreAccessibleRule, property.Name));
+            }
+        }
+    }
+}
