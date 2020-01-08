@@ -9,8 +9,6 @@ using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.Options;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using static Microsoft.CodeQuality.Analyzers.MicrosoftCodeQualityAnalyzersResources;
-using System.Collections.Generic;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
