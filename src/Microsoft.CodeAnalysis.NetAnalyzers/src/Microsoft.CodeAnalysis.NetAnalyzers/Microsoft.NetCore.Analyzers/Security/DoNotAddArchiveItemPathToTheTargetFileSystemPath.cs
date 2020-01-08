@@ -1,0 +1,29 @@
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.NetCore.Analyzers.Security.Helpers;
+
+namespace Microsoft.NetCore.Analyzers.Security
+{
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public class DoNotAddArchiveItemPathToTheTargetFileSystemPath : SourceTriggeredTaintedDataAnalyzerBase
+    {
+        internal const string RuleId = "CA5389";
+
+        internal static DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
+            RuleId,
+            typeof(MicrosoftNetCoreAnalyzersResources),
+            nameof(MicrosoftNetCoreAnalyzersResources.DoNotAddArchiveItemPathToTheTargetFileSystemPath),
+            nameof(MicrosoftNetCoreAnalyzersResources.DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage),
+            isEnabledByDefault: false,
+            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5389",
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotAddArchiveItemPathToTheTargetFileSystemPathDescription),
+            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+
+        protected override SinkKind SinkKind { get { return SinkKind.ZipSlip; } }
+
+        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor { get { return Rule; } }
+    }
+}

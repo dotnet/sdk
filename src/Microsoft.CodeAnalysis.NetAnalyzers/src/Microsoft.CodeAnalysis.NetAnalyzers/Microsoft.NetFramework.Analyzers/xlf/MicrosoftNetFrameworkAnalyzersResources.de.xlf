@@ -1,0 +1,392 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="de" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
+    <body>
+      <trans-unit id="SpecifyMessageBoxOptionsTitle">
+        <source>Specify MessageBoxOptions</source>
+        <target state="translated">MessageBoxOptions angeben</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMessageBoxOptionsDescription">
+        <source>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</source>
+        <target state="translated">Um ein Meldungsfeld für Kulturen mit Leserichtung von rechts nach links ordnungsgemäß anzuzeigen, müssen die Member "RightAlign" und "RtlReading" der Enumeration "MessageBoxOptions" an die Show-Methode übergeben werden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMessageBoxOptionsMessage">
+        <source>Specify MessageBoxOptions</source>
+        <target state="translated">MessageBoxOptions angeben</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsTitle">
+        <source>Avoid duplicate accelerators</source>
+        <target state="translated">Doppelte Zugriffstasten vermeiden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsDescription">
+        <source>An access key, also known as an accelerator, enables keyboard access to a control by using the ALT key. When multiple controls have duplicate access keys, the behavior of the access key is not well defined.</source>
+        <target state="translated">Eine Zugriffstaste, auch als Accelerator bezeichnet, ermöglicht den Tastaturzugriff auf ein Steuerelement über die ALT-Taste. Wenn mehrere Steuerelemente doppelte Zugriffstasten aufweisen, ist das Verhalten der Zugriffstaste nicht gut definiert.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsMessage">
+        <source>Avoid duplicate accelerators</source>
+        <target state="translated">Doppelte Zugriffstasten vermeiden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesTitle">
+        <source>Set locale for data types</source>
+        <target state="translated">Gebietsschema für Datentypen festlegen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesDescription">
+        <source>The locale determines culture-specific presentation elements for data, such as formatting that is used for numeric values, currency symbols, and sort order. When you create a DataTable or DataSet, you should explicitly set the locale.</source>
+        <target state="translated">Das Gebietsschema legt kulturspezifische Darstellungselemente für Daten fest, beispielsweise Formatierungen, die für numerische Werte, Währungssymbole und Sortierreihenfolgen verwendet werden. Wenn Sie eine DataTable oder ein DataSet erstellen, müssen Sie das Gebietsschema explizit festlegen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesMessage">
+        <source>Set locale for data types</source>
+        <target state="translated">Gebietsschema für Datentypen festlegen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodTitle">
+        <source>Do not mark serviced components with WebMethod</source>
+        <target state="translated">ServicedComponents nicht mit WebMethod markieren</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodDescription">
+        <source>A method in a type that inherits from System.EnterpriseServices.ServicedComponent is marked by using System.Web.Services.WebMethodAttribute. Because WebMethodAttribute and a ServicedComponent method have conflicting behavior and requirements for context and transaction flow, the behavior of the method will be incorrect in some scenarios.</source>
+        <target state="translated">Eine Methode in einem Typ, der von System.EnterpriseServices.ServicedComponent erbt, wird mit System.Web.Services.WebMethodAttribute markiert. Da das Verhalten und die Anforderungen für Kontext- und Transaktionsfluss bei WebMethodAttribute und einer ServicedComponent-Methode zueinander in Konflikt stehen, ist das Verhalten der Methode in einigen Szenarien falsch.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodMessage">
+        <source>Do not mark serviced components with WebMethod</source>
+        <target state="translated">ServicedComponents nicht mit WebMethod markieren</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadTitle">
+        <source>Mark Windows Forms entry points with STAThread</source>
+        <target state="translated">Windows Forms-Einstiegspunkte mit STAThread markieren</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadDescription">
+        <source>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</source>
+        <target state="translated">STAThreadAttribute weist darauf hin, dass es sich bei dem COM-Threadingmodell für die Anwendung um ein Singlethread-Apartment handelt. Dieses Attribut muss am Einstiegspunkt jeder Anwendung vorhanden sein, die Windows Forms verwendet. Wenn es ausgelassen wird, funktionieren die Windows-Komponenten möglicherweise nicht ordnungsgemäß.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadMessage">
+        <source>Mark Windows Forms entry points with STAThread</source>
+        <target state="translated">Windows Forms-Einstiegspunkte mit STAThread markieren</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesTitle">
+        <source>Call base class methods on ISerializable types</source>
+        <target state="translated">Basisklassenmethoden bei ISerializable-Typen aufrufen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesDescription">
+        <source>To fix a violation of this rule, call the base type GetObjectData method or serialization constructor from the corresponding derived type method or constructor.</source>
+        <target state="translated">Um einen Verstoß gegen diese Regel zu korrigieren, rufen Sie die GetObjectData-Methode oder den Serialisierungskonstruktor des Basistyps aus der entsprechenden abgeleiteten Typenmethode oder dem entsprechenden Konstruktor auf.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesMessage">
+        <source>Call base class methods on ISerializable types</source>
+        <target state="translated">Basisklassenmethoden bei ISerializable-Typen aufrufen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlTitle">
+        <source>Use XmlReader for DataSet ReadXml</source>
+        <target state="translated">XmlReader für DataSet ReadXml verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlDescription">
+        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">Verwenden Sie keine unsicheren Überladungen von "System.Data.DataSet.ReadXml". Diese API aktiviert intern die DTD-Verarbeitung für die verwendete XML-Readerinstanz und verwendet den UrlResolver zum Auflösen externer XML-Entitäten. Das Ergebnis ist die Veröffentlichung von Informationen. Inhalte aus dem Dateisystem oder aus Netzwerkfreigaben für den Computer, auf dem das XML verarbeitet wird, können einem Angreifer verfügbar gemacht werden. Außerdem kann ein Angreifer dies als DoS-Vektor verwenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlMessage">
+        <source>Use XmlReader for DataSet ReadXml</source>
+        <target state="translated">XmlReader für DataSet ReadXml verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaTitle">
+        <source>Use XmlReader for DataSet ReadXmlSchema</source>
+        <target state="translated">XmlReader für DataSet ReadXmlSchema verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaDescription">
+        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">Verwenden Sie keine unsicheren Überladungen von "System.Data.DataSet.ReadXmlSchema". Diese API aktiviert intern die DTD-Verarbeitung für die verwendete XML-Readerinstanz und verwendet den UrlResolver zum Auflösen externer XML-Entitäten. Das Ergebnis ist die Veröffentlichung von Informationen. Inhalte aus dem Dateisystem oder aus Netzwerkfreigaben für den Computer, auf dem das XML verarbeitet wird, können einem Angreifer verfügbar gemacht werden. Außerdem kann ein Angreifer dies als DoS-Vektor verwenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaMessage">
+        <source>Use XmlReader for DataSet ReadXmlSchema</source>
+        <target state="translated">XmlReader für DataSet ReadXmlSchema verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringTitle">
+        <source>Review DataView CollectionString</source>
+        <target state="translated">DataView CollectionString prüfen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringDescription">
+        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">Prüfen Sie den Code, um sicherzustellen, dass die Syntax der Eingabe für "System.Data.DataViewManager.DataViewSettingCollectionString" so bereinigt wurde, dass keine DTD enthalten ist. Das Aktivieren der DTD´-Verarbeitung im XML-Reader und die Verwendung von UrlResolver zum Auflösen externer XML-Entitäten können zur Veröffentlichung von Informationen führen. Inhalte aus dem Dateisystem oder aus Netzwerkfreigaben für den Computer, auf dem das XML verarbeitet wird, können einem Angreifer verfügbar gemacht werden. Außerdem kann ein Angreifer dies als DoS-Vektor verwenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringMessage">
+        <source>Review DataView CollectionString</source>
+        <target state="translated">DataView CollectionString prüfen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlTitle">
+        <source>Use XmlReader for DataTable ReadXml</source>
+        <target state="translated">XmlReader für DataTable ReadXml verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlDescription">
+        <source>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">Verwenden Sie keine unsicheren Überladungen von "System.Data.DataTable.ReadXml". Diese API aktiviert intern die DTD-Verarbeitung für die verwendete XML-Readerinstanz und verwendet den UrlResolver zum Auflösen externer XML-Entitäten. Das Ergebnis ist die Veröffentlichung von Informationen. Inhalte aus dem Dateisystem oder aus Netzwerkfreigaben für den Computer, auf dem das XML verarbeitet wird, können einem Angreifer verfügbar gemacht werden. Außerdem kann ein Angreifer dies als DoS-Vektor verwenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlMessage">
+        <source>Use XmlReader for DataTable ReadXml</source>
+        <target state="translated">XmlReader für DataTable ReadXml verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaTitle">
+        <source>Use XmlReader for DataTable ReadXmlSchema</source>
+        <target state="translated">XmlReader für DataTable ReadXmlSchema verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaDescription">
+        <source>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">Prüft auf die Nutzung einer unsicheren Überladung von "System.Data.DataTable.ReadXmlSchema". Diese API aktiviert intern die DTD-Verarbeitung für die verwendete XML-Readerinstanz und verwendet den UrlResolver zum Auflösen externer XML-Entitäten. Das Ergebnis ist die Veröffentlichung von Informationen. Inhalte aus dem Dateisystem oder aus Netzwerkfreigaben für den Computer, auf dem das XML verarbeitet wird, können einem Angreifer verfügbar gemacht werden. Außerdem kann ein Angreifer dies als DoS-Vektor verwenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaMessage">
+        <source>Use XmlReader for DataTable ReadXmlSchema</source>
+        <target state="translated">XmlReader für DataTable ReadXmlSchema verwenden</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptions">
+        <source>Do Not Catch Corrupted State Exceptions</source>
+        <target state="translated">Keine Corrupted State Exceptions abfangen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
+        <target state="translated">Durch das Abfangen von Corrupted State Exceptions können Fehler (beispielsweise Zugriffsverletzungen) verdeckt werden. Dadurch wird möglicherweise ein inkonsistenter Ausführungsstatus verursacht oder das Kompromittieren des Systems für Angreifer vereinfacht. Fangen Sie stattdessen eine spezifischere Menge von Ausnahmetypen ab, und verarbeiten Sie sie, oder lösen Sie die Ausnahme erneut aus.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
+        <source>{0} is catching corrupted state exception.</source>
+        <target state="translated">"{0}" fängt eine Corrupted State Exception ab.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
+        <source>Types should not extend certain base types</source>
+        <target state="translated">Typen dürfen bestimmte Basistypen nicht erweitern</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesDescription">
+        <source>An externally visible type extends certain base types. Use one of the alternatives.</source>
+        <target state="translated">Ein extern sichtbarer Typ erweitert bestimmte Basistypen. Verwenden Sie eine der Alternativen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemXmlXmlDocument">
+        <source>Change the base type of {0} so that it no longer extends {1}. The preferred design is to decouple the underlying XmlDocument representation from the type's interface by using containment instead of inheritance.</source>
+        <target state="translated">Ändern Sie den Basistyp "{0}" so, dass "{1}" nicht mehr erweitert wird. Das bevorzugte Design sieht vor, die zugrunde liegende XmlDocument-Darstellung von der Schnittstelle des Typs durch Eigenständigkeit anstelle von Vererbung zu entkoppeln.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemApplicationException">
+        <source>Change the base type of {0} so that it no longer extends {1}. This base exception type does not provide any additional value for framework classes. Extend 'System.Exception' or an existing unsealed exception type instead. Do not create a new exception base type unless there is specific value in enabling the creation of a catch handler for an entire class of exceptions.</source>
+        <target state="translated">Ändern Sie den Basistyp "{0}" so, dass "{1}" nicht mehr erweitert wird. Dieser Basisausnahmetyp bietet keinen zusätzlichen Wert für Framework-Klassen. Erweitern Sie stattdessen "System.Exception" oder einen vorhandenen nicht versiegelten Ausnahmetyp. Erstellen Sie nur dann einen neuen Ausnahmebasistyp, wenn sich durch das Aktivieren der Erstellung eines catch-Handlers für eine ganze Klasse von Ausnahmen ein bestimmter Vorteil ergibt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsCollectionBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.Collection'.</source>
+        <target state="translated">Ändern Sie den Basistyp von "{0}" von "{1}" in das generische Äquivalent "System.Collections.ObjectModel.Collection".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsDictionaryBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.KeyedCollection'.</source>
+        <target state="translated">Ändern Sie den Basistyp von "{0}" von "{1}" in das generische Äquivalent "System.Collections.ObjectModel.KeyedCollection".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsQueue">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Queue'.</source>
+        <target state="translated">Ändern Sie den Basistyp von "{0}" von "{1}" in das generische Äquivalent "System.Collections.Generic.Queue".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsReadOnlyCollectionBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.ReadOnlyCollection'.</source>
+        <target state="translated">Ändern Sie den Basistyp von "{0}" von "{1}" in das generische Äquivalent "System.Collections.ObjectModel.ReadOnlyCollection".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsSortedList">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.SortedList'.</source>
+        <target state="translated">Ändern Sie den Basistyp von "{0}" von "{1}" in das generische Äquivalent "System.Collections.Generic.SortedList".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsStack">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Stack'.</source>
+        <target state="translated">Ändern Sie den Basistyp von "{0}" von "{1}" in das generische Äquivalent "System.Collections.Generic.Stack".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingDescription">
+        <source>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. </source>
+        <target state="translated">Die Verwendung von "XmlTextReader.Load()", das Erstellen einer unsicheren XmlReaderSettings-Instanz beim Aufruf von "XmlReader.Create()", das Festlegen der InnerXml-Eigenschaft von XmlDocument und das Aktivieren der DTD-Verarbeitung durch unsichere Verwendung von XmlUrlResolver können zur Veröffentlichung von Informationen führen. Ersetzen Sie diesen Vorgang durch einen Aufruf der Load()-Methodenüberladung, die eine XmlReader-Instanz akzeptiert, verwenden Sie "XmlReader.Create()" zum Akzeptieren von XmlReaderSettings-Argumenten, oder erwägen Sie die explizite Festlegung sicherer Werte. Die DataViewSettingCollectionString-Eigenschaft von DataViewManager muss immer von einer vertrauenswürdigen Quelle aus zugewiesen werden, die DtdProcessing-Eigenschaft muss auf FALSE festgelegt werden, und die XmlResolver-Eigenschaft muss in "XmlSecureResolver" oder NULL geändert werden. </target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
+        <source>Unsafe overload of '{0}' method</source>
+        <target state="translated">Unsichere Überladung der Methode "{0}"</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseDtdProcessingOverloads">
+        <source>Insecure DTD Processing</source>
+        <target state="translated">Unsichere DTD-Verarbeitung</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseSetInnerXmlMessage">
+        <source>Uses the unsafe setter of InnerXml property of System.Xml.XmlDocument.</source>
+        <target state="translated">Verwendet den unsicheren Setter der InnerXml-Eigenschaft von "System.Xml.XmlDocument".</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="InsecureXmlDtdProcessing">
+        <source>Insecure DTD processing in XML</source>
+        <target state="translated">Unsichere DTD-Verarbeitung in XML</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="ReviewDtdProcessingPropertiesMessage">
+        <source>Property in {0} might be set from an untrusted source.</source>
+        <target state="translated">Die Eigenschaft in "{0}" wird möglicherweise von einer nicht vertrauenswürdigen Quelle aus festgelegt.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentWithNoSecureResolverMessage">
+        <source>An XmlDocument instance is created without setting its XmlResolver property to a secure value.</source>
+        <target state="translated">Eine XmlDocument-Instanz wird erstellt, ohne dass die zugehörige XmlResolver-Eigenschaft auf einen sicheren Wert festgelegt wird.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateInsecureConstructedMessage">
+        <source>An insecure XmlReaderSettings instance is provided to XmlReader.Create method.</source>
+        <target state="translated">Der XmlReader.Create-Methode wird eine unsichere XmlReaderSettings-Instanz bereitgestellt.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateInsecureInputMessage">
+        <source>A potentially insecure XmlReaderSettings instance is provided to XmlReader.Create method.</source>
+        <target state="translated">Der XmlReader.Create-Methode wird eine möglicherweise unsichere XmlReaderSettings-Instanz bereitgestellt.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateWrongOverloadMessage">
+        <source>An insecure overload of XmlReader.Create which does not accept an XmlReaderSettings argument.</source>
+        <target state="translated">Eine unsichere Überladung von "XmlReader.Create", die kein XmlReaderSettings-Argument akzeptiert.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderConstructedWithNoSecureResolutionMessage">
+        <source>XmlTextReader instance created with insecure default settings.</source>
+        <target state="translated">Eine XmlTextReader-Instanz wurde mit unsicheren Standardeinstellungen erstellt.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderSetInsecureResolutionMessage">
+        <source>XmlTextReader instance is set with insecure values.</source>
+        <target state="translated">Eine XmlTextReader-Instanz wurde mit unsicheren Werte festgelegt.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingGenericMessage">
+        <source>{0}</source>
+        <target state="translated">{0}</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="InsecureDtdProcessingInApiDesign">
+        <source>Insecure Processing in API Design, XmlDocument and XmlTextReader</source>
+        <target state="translated">Unsichere Verarbeitung in API-Design, XmlDocument und XmlTextReader</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingInApiDesignDescription">
+        <source>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. </source>
+        <target state="translated">Das Aktivieren der DTD´-Verarbeitung in allen von XmlTextReader oder XmlDocument abgeleiteten Instanzen und die Verwendung von XmlUrlResolver zum Auflösen externer XML-Entitäten können zur Veröffentlichung von Informationen führen. Legen Sie die XmlResolver-Eigenschaft unbedingt auf NULL fest, erstellen Sie eine Instanz von XmlSecureResolver bei der Verarbeitung nicht vertrauenswürdiger Inhalte, oder verwenden Sie die XmlReader.Create-Methode mit einem sicheren XmlReaderSettings-Argument. Wenn Sie sie nicht aktivieren müssen, stellen Sie sicher, dass die DtdProcessing-Eigenschaft auf FALSE festgelegt wird. </target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage">
+        <source>Constructor of XmlDocument derived class {0} implicitly uses insecure default value for DTD processing.</source>
+        <target state="translated">Der Konstruktor der von XmlDocument abgeleiteten Klasse "{0}" verwendet implizit einen unsicheren Standardwert für die DTD-Verarbeitung.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
+        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
+        <target state="translated">Die von XmlDocument abgeleitete Klasse "{0}" definiert explizit keinen Konstruktor.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
+        <source>Method {0} of XmlDocument derived class sets XmlResolver property to an insecure value.</source>
+        <target state="translated">Die Methode "{0}" der von XmlDocument abgeleiteten Klasse legt die XmlResolver-Eigenschaft auf einen unsicheren Wert fest.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage">
+        <source>Constructor of XmlTextReader derived class {0} uses insecure default values for DTD processing.</source>
+        <target state="translated">Der Konstruktor der von XmlTextReader abgeleiteten Klasse "{0}" verwendet unsichere Standardwerte für die DTD-Verarbeitung.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
+        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
+        <target state="translated">Die von XmlTextReader abgeleitete Klasse "{0}" definiert explizit keinen Konstruktor.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
+        <source>{0} method of XmlTextReader derived class sets XmlResolver and/or DtdProcessing property to insecure value.</source>
+        <target state="translated">Die Methode "{0}" der von XmlTextReader abgeleiteten Klasse legt die XmlResolver- und/oder DtdProcessing-Eigenschaft auf einen unsicheren Wert fest.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="InsecureXsltScriptProcessingMessage">
+        <source>Insecure XSLT script processing.</source>
+        <target state="translated">Unsichere XSLT-Skriptverarbeitung.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="translated">Das Bereitstellen einer unsicheren XsltSettings-Instanz und einer unsicheren XmlResolver-Instanz für die Methode "XslCompiledTransform.Load" ist möglicherweise unsicher, weil dadurch die Verarbeitung von Skript innerhalb von XSL ermöglicht wird. Dies kann in einer nicht vertrauenswürdigen XSL-Eingabe zur Ausführung von Malware führen. Ersetzen Sie entweder das unsichere XsltSettings-Argument durch "XsltSettings.Default" oder eine Instanz, bei der die Ausführung von Dokumentfunktionen und Skripts deaktiviert wurde, oder ersetzen Sie das XmlResolver-Argument durch NULL oder eine XmlSecureResolver-Instanz. Diese Meldung kann unterdrückt werden, wenn die Eingabe bekanntermaßen von einer vertrauenswürdigen Quelle stammt und die Auflösung externer Ressourcen von Standorten, die nicht im Voraus bekannt sind, unterstützt werden muss.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
+        <source>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</source>
+        <target state="translated">In "{0}" wird XslCompiledTransfor.Load eine unsichere Kombination aus XsltSettings- und XmlResolver-Instanzen als Argumente bereitgestellt.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="XslCompiledTransformLoadInsecureInputMessage">
+        <source>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</source>
+        <target state="translated">In "{0}" wird XslCompiledTransfor.Load eine unsichere Kombination aus XsltSettings- und XmlResolver-Instanzen als Argumente bereitgestellt.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndOtherAndTokenMessage">
+        <source>The ValidateAntiForgeryAttribute is defined with HttpVerbs.Get and at least one of HttpVerbs.Post, HttpVerbs.Put, HttpVerbs.Delete, or HttpVerbs.Patch on controller action {0}. The attribute will not be used when GET verb is used.</source>
+        <target state="translated">"ValidateAntiForgeryAttribute" wird mit "HttpVerbs.Get" und mindestens einem der folgenden Elemente für die Controlleraktion {0} definiert: HttpVerbs.Post, HttpVerbs.Put, HttpVerbs.Delete oder HttpVerbs.Patch. Das Attribut wird nicht verwendet, wenn ein GET-Verb verwendet wird.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
+        <target state="translated">Die Verwendung von "HttpVerbs.GET" und "ValidateAntiForgeryTokenAttribute" wird von MVC bei der Controlleraktion {0} nicht unterstützt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
+        <source>HTTP verb attributes attributes are missing on controller action {0}. The ValidateAntiForgeryTokenAttribute will not be used when GET verb is used.</source>
+        <target state="translated">Für die Controlleraktion {0} fehlen HTTP-Verbattribute. Das ValidateAntiForgeryTokenAttribute wird nicht verwendet, wenn das GET-Verb verwendet wird.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
+        <target state="translated">Für die MVC-Controlleraktion {0}, die standardmäßig POST-Anforderungen akzeptiert, fehlt ein ValidateAntiForgeryTokenAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
+        <source>Mark Verb Handlers With Validate Antiforgery Token</source>
+        <target state="translated">Kennzeichnen Sie Verbhandler mit einem ValidateAntiForgeryToken-Attribut</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
+        <target state="translated">Für die Controlleraktion {0} fehlt das ValidateAntiForgeryTokenAttribute.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
