@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Globalization;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -26,16 +25,36 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessageIncorrectParameterName = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Descriptor = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleNoArguments = new DiagnosticDescriptor(RuleId,
                                                                              s_localizableTitle,
-                                                                             "{0}",
+                                                                             s_localizableMessageNoArguments,
                                                                              DiagnosticCategory.Usage,
                                                                              DiagnosticHelpers.DefaultDiagnosticSeverity,
                                                                              isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
                                                                              description: s_localizableDescription,
                                                                              helpLinkUri: HelpUri,
                                                                              customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
+
+        internal static DiagnosticDescriptor RuleIncorrectMessage = new DiagnosticDescriptor(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageIncorrectMessage,
+                                                                             DiagnosticCategory.Usage,
+                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
+                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             description: s_localizableDescription,
+                                                                             helpLinkUri: HelpUri,
+                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+
+        internal static DiagnosticDescriptor RuleIncorrectParameterName = new DiagnosticDescriptor(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageIncorrectParameterName,
+                                                                             DiagnosticCategory.Usage,
+                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
+                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             description: s_localizableDescription,
+                                                                             helpLinkUri: HelpUri,
+                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleNoArguments, RuleIncorrectMessage, RuleIncorrectParameterName);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -78,7 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (HasMessageOrParameterNameConstructor(creation.Type))
                 {
                     // Call the {0} constructor that contains a message and/ or paramName parameter
-                    ReportDiagnostic(context, s_localizableMessageNoArguments, creation.Type.Name);
+                    context.ReportDiagnostic(context.Operation.Syntax.CreateDiagnostic(RuleNoArguments, creation.Type.Name));
                 }
             }
             else
@@ -108,11 +127,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             OperationAnalysisContext context)
         {
             bool matchesParameter = MatchesParameter(targetSymbol, creation, stringArgument);
-            LocalizableString? format = null;
+            DiagnosticDescriptor? rule = null;
 
             if (IsMessage(parameter) && matchesParameter)
             {
-                format = s_localizableMessageIncorrectMessage;
+                rule = RuleIncorrectMessage;
             }
             else if (IsParameterName(parameter) && !matchesParameter)
             {
@@ -122,21 +141,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                format = s_localizableMessageIncorrectParameterName;
+                rule = RuleIncorrectParameterName;
             }
 
-            if (format != null)
+            if (rule != null)
             {
-                ReportDiagnostic(context, format, targetSymbol.Name, stringArgument, parameter.Name, creation.Type.Name);
+                context.ReportDiagnostic(context.Operation.Syntax.CreateDiagnostic(rule, targetSymbol.Name, stringArgument, parameter.Name, creation.Type.Name));
             }
-        }
-
-        private static void ReportDiagnostic(OperationAnalysisContext context, LocalizableString format, params object[] args)
-        {
-            context.ReportDiagnostic(
-                context.Operation.Syntax.CreateDiagnostic(
-                    Descriptor,
-                    string.Format(CultureInfo.CurrentCulture, format.ToString(CultureInfo.CurrentCulture), args)));
         }
 
         private static bool IsMessage(IParameterSymbol parameter)

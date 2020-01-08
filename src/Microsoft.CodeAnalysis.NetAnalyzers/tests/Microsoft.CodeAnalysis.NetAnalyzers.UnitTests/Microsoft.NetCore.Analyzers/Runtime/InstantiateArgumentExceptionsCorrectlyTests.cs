@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -16,10 +15,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class InstantiateArgumentExceptionsCorrectlyTests
     {
-        private static readonly string s_noArguments = MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyMessageNoArguments;
-        private static readonly string s_incorrectMessage = MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage;
-        private static readonly string s_incorrectParameterName = MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName;
-
         [Fact]
         public async Task ArgumentException_NoArguments_Warns()
         {
@@ -31,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentException();
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_noArguments, "ArgumentException"));
+                GetCSharpNoArgumentsExpectedResult(6, 31, "ArgumentException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -39,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentException()
                     End Sub
                 End Class",
-              GetBasicExpectedResult(4, 31, s_noArguments, "ArgumentException"));
+              GetBasicNoArgumentsExpectedResult(4, 31, "ArgumentException"));
         }
 
         [Fact]
@@ -53,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentNullException("""");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "", "paramName", "ArgumentNullException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "", "paramName", "ArgumentNullException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -61,7 +56,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentNullException("""")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", "", "paramName", "ArgumentNullException"));
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "", "paramName", "ArgumentNullException"));
         }
 
         [Fact]
@@ -75,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentNullException("" "");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", " ", "paramName", "ArgumentNullException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", " ", "paramName", "ArgumentNullException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -83,7 +78,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentNullException("" "")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", " ", "paramName", "ArgumentNullException"));
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", " ", "paramName", "ArgumentNullException"));
         }
 
         [Fact]
@@ -98,7 +93,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentNullException(nameof(foo));
                     }
                 }",
-                GetCSharpExpectedResult(7, 31, s_incorrectParameterName, "Test", "foo", "paramName", "ArgumentNullException"));
+                GetCSharpIncorrectParameterNameExpectedResult(7, 31, "Test", "foo", "paramName", "ArgumentNullException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -107,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentNullException(NameOf(foo))
                     End Sub
                 End Class",
-                GetBasicExpectedResult(5, 31, s_incorrectParameterName, "Test", "foo", "paramName", "ArgumentNullException"));
+                GetBasicIncorrectParameterNameExpectedResult(5, 31, "Test", "foo", "paramName", "ArgumentNullException"));
         }
 
         [Fact]
@@ -121,7 +116,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentException(""first"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentException"));
+                GetCSharpIncorrectMessageExpectedResult(6, 31, "Test", "first", "message", "ArgumentException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -129,7 +124,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentException(""first"")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentException"));
+                GetBasicIncorrectMessageExpectedResult(4, 31, "Test", "first", "message", "ArgumentException"));
         }
 
         [Fact]
@@ -143,8 +138,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentException(""first"", ""first is incorrect"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentException"),
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "first is incorrect", "paramName", "ArgumentException"));
+                GetCSharpIncorrectMessageExpectedResult(6, 31, "Test", "first", "message", "ArgumentException"),
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is incorrect", "paramName", "ArgumentException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -152,8 +147,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentException(""first"", ""first is incorrect"")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentException"),
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", "first is incorrect", "paramName", "ArgumentException"));
+                GetBasicIncorrectMessageExpectedResult(4, 31, "Test", "first", "message", "ArgumentException"),
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is incorrect", "paramName", "ArgumentException"));
         }
 
         [Fact]
@@ -167,7 +162,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentNullException();
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_noArguments, "ArgumentNullException"));
+                GetCSharpNoArgumentsExpectedResult(6, 31, "ArgumentNullException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -175,7 +170,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentNullException()
                     End Sub
                 End Class",
-                 GetBasicExpectedResult(4, 31, s_noArguments, "ArgumentNullException"));
+                 GetBasicNoArgumentsExpectedResult(4, 31, "ArgumentNullException"));
         }
 
         [Fact]
@@ -189,7 +184,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentNullException(""first is null"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "first is null", "paramName", "ArgumentNullException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is null", "paramName", "ArgumentNullException"));
         }
 
         [Fact]
@@ -203,8 +198,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentNullException(""first is null"", ""first"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "first is null", "paramName", "ArgumentNullException"),
-                GetCSharpExpectedResult(6, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentNullException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is null", "paramName", "ArgumentNullException"),
+                GetCSharpIncorrectMessageExpectedResult(6, 31, "Test", "first", "message", "ArgumentNullException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -212,8 +207,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentNullException(""first is null"", ""first"")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", "first is null", "paramName", "ArgumentNullException"),
-                GetBasicExpectedResult(4, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentNullException"));
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is null", "paramName", "ArgumentNullException"),
+                GetBasicIncorrectMessageExpectedResult(4, 31, "Test", "first", "message", "ArgumentNullException"));
         }
 
         [Fact]
@@ -227,7 +222,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentOutOfRangeException();
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_noArguments, "ArgumentOutOfRangeException"));
+                GetCSharpNoArgumentsExpectedResult(6, 31, "ArgumentOutOfRangeException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -235,7 +230,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentOutOfRangeException()
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_noArguments, "ArgumentOutOfRangeException"));
+                GetBasicNoArgumentsExpectedResult(4, 31, "ArgumentOutOfRangeException"));
         }
 
         [Fact]
@@ -249,7 +244,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentOutOfRangeException(""first is out of range"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -257,7 +252,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentOutOfRangeException(""first is out of range"")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"));
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"));
         }
 
         [Fact]
@@ -271,8 +266,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.ArgumentOutOfRangeException(""first is out of range"", ""first"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"),
-                GetCSharpExpectedResult(6, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentOutOfRangeException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"),
+                GetCSharpIncorrectMessageExpectedResult(6, 31, "Test", "first", "message", "ArgumentOutOfRangeException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -280,8 +275,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.ArgumentOutOfRangeException(""first is out of range"", ""first"")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"),
-                GetBasicExpectedResult(4, 31, s_incorrectMessage, "Test", "first", "message", "ArgumentOutOfRangeException"));
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"),
+                GetBasicIncorrectMessageExpectedResult(4, 31, "Test", "first", "message", "ArgumentOutOfRangeException"));
         }
 
         [Fact]
@@ -295,7 +290,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.DuplicateWaitObjectException();
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_noArguments, "DuplicateWaitObjectException"));
+                GetCSharpNoArgumentsExpectedResult(6, 31, "DuplicateWaitObjectException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -303,7 +298,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.DuplicateWaitObjectException()
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_noArguments, "DuplicateWaitObjectException"));
+                GetBasicNoArgumentsExpectedResult(4, 31, "DuplicateWaitObjectException"));
         }
 
         [Fact]
@@ -317,7 +312,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.DuplicateWaitObjectException(""first is duplicate"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -325,7 +320,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.DuplicateWaitObjectException(""first is duplicate"")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"));
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"));
         }
 
         [Fact]
@@ -339,8 +334,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         throw new System.DuplicateWaitObjectException(""first is duplicate"", ""first"");
                     }
                 }",
-                GetCSharpExpectedResult(6, 31, s_incorrectParameterName, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"),
-                GetCSharpExpectedResult(6, 31, s_incorrectMessage, "Test", "first", "message", "DuplicateWaitObjectException"));
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"),
+                GetCSharpIncorrectMessageExpectedResult(6, 31, "Test", "first", "message", "DuplicateWaitObjectException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
@@ -348,8 +343,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         Throw New System.DuplicateWaitObjectException(""first is duplicate"", ""first"")
                     End Sub
                 End Class",
-                GetBasicExpectedResult(4, 31, s_incorrectParameterName, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"),
-                GetBasicExpectedResult(4, 31, s_incorrectMessage, "Test", "first", "message", "DuplicateWaitObjectException"));
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"),
+                GetBasicIncorrectMessageExpectedResult(4, 31, "Test", "first", "message", "DuplicateWaitObjectException"));
         }
 
 
@@ -611,20 +606,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }");
         }
 
-        private static DiagnosticResult GetCSharpExpectedResult(int line, int column, string format, params string[] args)
-        {
-            string message = string.Format(CultureInfo.CurrentCulture, format, args);
-            return new DiagnosticResult(InstantiateArgumentExceptionsCorrectlyAnalyzer.Descriptor)
+        private static DiagnosticResult GetCSharpNoArgumentsExpectedResult(int line, int column, string typeName) =>
+            VerifyCS.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleNoArguments)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetBasicExpectedResult(int line, int column, string format, params string[] args)
-        {
-            string message = string.Format(CultureInfo.CurrentCulture, format, args);
-            return new DiagnosticResult(InstantiateArgumentExceptionsCorrectlyAnalyzer.Descriptor)
+        private static DiagnosticResult GetBasicNoArgumentsExpectedResult(int line, int column, string typeName) =>
+            VerifyVB.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleNoArguments)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName);
+
+        private static DiagnosticResult GetCSharpIncorrectMessageExpectedResult(int line, int column, params string[] args) =>
+            VerifyCS.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectMessage)
+                .WithLocation(line, column)
+                .WithArguments(args);
+
+        private static DiagnosticResult GetBasicIncorrectMessageExpectedResult(int line, int column, params string[] args) =>
+            VerifyVB.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectMessage)
+                .WithLocation(line, column)
+                .WithArguments(args);
+
+        private static DiagnosticResult GetCSharpIncorrectParameterNameExpectedResult(int line, int column, params string[] args) =>
+            VerifyCS.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectParameterName)
+                .WithLocation(line, column)
+                .WithArguments(args);
+
+        private static DiagnosticResult GetBasicIncorrectParameterNameExpectedResult(int line, int column, params string[] args) =>
+            VerifyVB.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectParameterName)
+                .WithLocation(line, column)
+                .WithArguments(args);
     }
 }
