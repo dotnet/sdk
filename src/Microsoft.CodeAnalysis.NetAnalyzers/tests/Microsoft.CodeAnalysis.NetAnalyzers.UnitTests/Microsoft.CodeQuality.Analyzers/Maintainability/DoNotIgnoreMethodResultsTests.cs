@@ -645,6 +645,51 @@ End Class", MSTestAttributes.VisualBasic
             }.RunAsync();
         }
 
+        [Fact, WorkItem(3104, "https://github.com/dotnet/roslyn-analyzers/issues/3104")]
+        public async Task PureMethodVoid()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Diagnostics.Contracts;
+
+public class A
+{
+    public int Write(string s) => 42;
+}
+
+public class B
+{
+    public string GetBar()
+    {
+        WriteToDmm(""foo"");
+        return ""bar"";
+    }
+
+    [Pure]
+    private void WriteToDmm(string s) => new A().Write(s);
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Diagnostics.Contracts
+
+Public Class A
+    Public Function Write(ByVal s As String) As Integer
+        Return 42
+    End Function
+End Class
+
+Public Class B
+    Public Function GetBar() As String
+        WriteToDmm(""foo"")
+        Return ""bar""
+    End Function
+
+    <Pure>
+    Private Sub WriteToDmm(ByVal s As String)
+        Dim x = New A().Write(s)
+    End Sub
+End Class");
+        }
+
         #endregion
 
         #region Helpers
