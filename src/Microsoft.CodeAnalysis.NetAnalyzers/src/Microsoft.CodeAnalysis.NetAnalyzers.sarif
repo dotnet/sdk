@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Humanizer",
-        "version": "2.9.9",
+        "version": "3.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -14,7 +14,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "2.9.9",
+        "version": "3.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -387,7 +387,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "2.9.9",
+        "version": "3.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -1954,6 +1954,24 @@
             "category": "Reliability",
             "isEnabledByDefault": true,
             "typeName": "DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2011": {
+          "id": "CA2011",
+          "shortDescription": "Avoid infinite recursion",
+          "fullDescription": "Do not assign the property within its setter. This call might result in an infinite recursion.",
+          "defaultLevel": "warning",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidInfiniteRecursion",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3860,7 +3878,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "2.9.9",
+        "version": "3.0.0",
         "language": "en-US"
       },
       "rules": {
