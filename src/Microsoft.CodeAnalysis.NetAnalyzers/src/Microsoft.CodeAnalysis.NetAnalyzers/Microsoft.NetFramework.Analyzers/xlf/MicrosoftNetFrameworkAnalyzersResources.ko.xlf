@@ -1,0 +1,392 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
+    <body>
+      <trans-unit id="SpecifyMessageBoxOptionsTitle">
+        <source>Specify MessageBoxOptions</source>
+        <target state="translated">MessageBoxOptions를 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMessageBoxOptionsDescription">
+        <source>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</source>
+        <target state="translated">오른쪽에서 왼쪽 방향의 읽기 순서를 사용하는 문화권에 맞는 메시지 상자를 올바르게 표시하려면 MessageBoxOptions 열거형의 RightAlign 및 RtlReading 멤버가 Show 메서드로 전달되어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMessageBoxOptionsMessage">
+        <source>Specify MessageBoxOptions</source>
+        <target state="translated">MessageBoxOptions를 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsTitle">
+        <source>Avoid duplicate accelerators</source>
+        <target state="translated">중복 액셀러레이터 키를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsDescription">
+        <source>An access key, also known as an accelerator, enables keyboard access to a control by using the ALT key. When multiple controls have duplicate access keys, the behavior of the access key is not well defined.</source>
+        <target state="translated">액셀러레이터 키라고도 알려진 선택키는 &lt;ALT&gt; 키를 사용하여 컨트롤에 대한 키보드 액세스를 사용합니다. 여러 컨트롤에 중복되는 선택키가 있는 경우 선택키의 동작이 잘 정의되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsMessage">
+        <source>Avoid duplicate accelerators</source>
+        <target state="translated">중복 액셀러레이터 키를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesTitle">
+        <source>Set locale for data types</source>
+        <target state="translated">데이터 형식에 맞는 로캘을 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesDescription">
+        <source>The locale determines culture-specific presentation elements for data, such as formatting that is used for numeric values, currency symbols, and sort order. When you create a DataTable or DataSet, you should explicitly set the locale.</source>
+        <target state="translated">로캘은 데이터에 대해 숫자 값에 사용하는 서식, 통화 기호, 정렬 순서와 같은 문화권별 프레젠테이션 요소를 결정합니다. DataTable 또는 DataSet를 만드는 경우 로캘을 명시적으로 설정해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesMessage">
+        <source>Set locale for data types</source>
+        <target state="translated">데이터 형식에 맞는 로캘을 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodTitle">
+        <source>Do not mark serviced components with WebMethod</source>
+        <target state="translated">서비스 구성 요소를 WebMethod를 사용하여 표시하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodDescription">
+        <source>A method in a type that inherits from System.EnterpriseServices.ServicedComponent is marked by using System.Web.Services.WebMethodAttribute. Because WebMethodAttribute and a ServicedComponent method have conflicting behavior and requirements for context and transaction flow, the behavior of the method will be incorrect in some scenarios.</source>
+        <target state="translated">System.EnterpriseServices.ServicedComponent에서 상속된 형식의 메서드는 System.Web.Services.WebMethodAttribute를 사용하여 표시됩니다. WebMethodAttribute와 ServicedComponent 메서드에 컨텍스트 및 트랜잭션 흐름에 대해 충돌하는 동작과 요구 사항이 있으므로 메서드 동작이 일부 시나리오에서 올바르지 않을 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodMessage">
+        <source>Do not mark serviced components with WebMethod</source>
+        <target state="translated">서비스 구성 요소를 WebMethod를 사용하여 표시하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadTitle">
+        <source>Mark Windows Forms entry points with STAThread</source>
+        <target state="translated">Windows Forms 진입점을 STAThread를 사용하여 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadDescription">
+        <source>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</source>
+        <target state="translated">STAThreadAttribute는 이 애플리케이션에 대한 COM 스레딩 모델이 단일 스레드 아파트임을 나타냅니다. 이 특성은 Windows Forms를 사용하는 애플리케이션의 진입점에 있어야 하며 이 특성이 생략된 경우 Windows 구성 요소가 올바르게 작동하지 않을 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadMessage">
+        <source>Mark Windows Forms entry points with STAThread</source>
+        <target state="translated">Windows Forms 진입점을 STAThread를 사용하여 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesTitle">
+        <source>Call base class methods on ISerializable types</source>
+        <target state="translated">ISerializable 형식에서 기본 클래스 메서드를 호출하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesDescription">
+        <source>To fix a violation of this rule, call the base type GetObjectData method or serialization constructor from the corresponding derived type method or constructor.</source>
+        <target state="translated">이 규칙 위반 문제를 해결하려면 해당 파생 형식 메서드 또는 생성자에서 기본 형식 GetObjectData 메서드 또는 serialization 생성자를 호출하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesMessage">
+        <source>Call base class methods on ISerializable types</source>
+        <target state="translated">ISerializable 형식에서 기본 클래스 메서드를 호출하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlTitle">
+        <source>Use XmlReader for DataSet ReadXml</source>
+        <target state="translated">DataSet ReadXml에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlDescription">
+        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">System.Data.DataSet.ReadXml의 안전하지 않은 오버로드를 사용하지 마세요. 이 API는 사용하는 XML 판독기 인스턴스에서 DTD 처리를 내부적으로 활성화하고, UrlResolver를 사용하여 외부 XML 엔터티를 확인합니다. 이에 따른 결과는 정보 공개입니다. XML을 처리하는 머신의 파일 시스템 또는 네트워크 공유 콘텐츠는 공격자에게 노출될 수 있습니다. 또한, 공격자는 이러한 콘텐츠를 DoS 벡터로 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlMessage">
+        <source>Use XmlReader for DataSet ReadXml</source>
+        <target state="translated">DataSet ReadXml에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaTitle">
+        <source>Use XmlReader for DataSet ReadXmlSchema</source>
+        <target state="translated">DataSet ReadXmlSchema에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaDescription">
+        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">System.Data.DataSet.ReadXmlSchema의 안전하지 않은 오버로드를 사용하지 마세요. 이 API는 사용하는 XML 판독기 인스턴스에서 DTD 처리를 내부적으로 활성화하고, UrlResolver를 사용하여 외부 XML 엔터티를 확인합니다. 이에 따른 결과는 정보 공개입니다. XML을 처리하는 머신의 파일 시스템 또는 네트워크 공유 콘텐츠는 공격자에게 노출될 수 있습니다. 또한, 공격자는 이러한 콘텐츠를 DoS 벡터로 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaMessage">
+        <source>Use XmlReader for DataSet ReadXmlSchema</source>
+        <target state="translated">DataSet ReadXmlSchema에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringTitle">
+        <source>Review DataView CollectionString</source>
+        <target state="translated">DataView CollectionString을 검토하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringDescription">
+        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">DTD를 포함하지 않도록 System.Data.DataViewManager.DataViewSettingCollectionString 입력의 사용이 삭제되었는지 코드를 검토하세요. XML 판독기에서 DTD 처리를 사용하고 외부 XML 엔터티를 확인하기 위해 UrlResolver를 사용하면 정보가 공개될 수 있습니다. 파일 시스템의 콘텐츠 또는 XML을 처리하는 컴퓨터의 네트워크 공유가 공격자에 노출될 수 있습니다. 또한 공격자는 이를 DoS 벡터로 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringMessage">
+        <source>Review DataView CollectionString</source>
+        <target state="translated">DataView CollectionString을 검토하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlTitle">
+        <source>Use XmlReader for DataTable ReadXml</source>
+        <target state="translated">DataTable ReadXml에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlDescription">
+        <source>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">System.Data.DataTable.ReadXml의 안전하지 않은 오버로드를 사용하지 마세요. 이 API는 인스턴스가 사용된 XML 판독기에서 내부적으로 DTD 처리를 사용하며 외부 XML 엔터티를 확인하기 위해 UrlResolver를 사용합니다. 그 결과, 정보가 공개됩니다. 파일 시스템의 콘텐츠 또는 XML을 처리하는 컴퓨터의 네트워크 공유가 공격자에 노출될 수 있습니다. 또한 공격자는 이를 DoS 벡터로 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlMessage">
+        <source>Use XmlReader for DataTable ReadXml</source>
+        <target state="translated">DataTable ReadXml에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaTitle">
+        <source>Use XmlReader for DataTable ReadXmlSchema</source>
+        <target state="translated">DataTable ReadXmlSchema에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaDescription">
+        <source>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">System.Data.DataTable.ReadXmlSchema의 안전하지 않은 오버로드 사용을 확인합니다. 이 API는 인스턴스가 사용된 XML 판독기에서 내부적으로 DTD 처리를 사용하며 외부 XML 엔터티를 확인하기 위해 UrlResolver를 사용합니다. 그 결과, 정보가 공개됩니다. 파일 시스템의 콘텐츠 또는 XML을 처리하는 컴퓨터의 네트워크 공유가 공격자에 노출될 수 있습니다. 또한 공격자는 이를 DoS 벡터로 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaMessage">
+        <source>Use XmlReader for DataTable ReadXmlSchema</source>
+        <target state="translated">DataTable ReadXmlSchema에 대해 XmlReader를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptions">
+        <source>Do Not Catch Corrupted State Exceptions</source>
+        <target state="translated">손상된 상태 예외를 catch하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
+        <target state="translated">손상된 상태 예외를 catch하면 오류(예: 액세스 위반)가 숨겨질 수 있으며 이로 인해 실행 상태가 일관되지 않거나 공격자가 더 쉽게 시스템을 손상시킬 수 있습니다. 더 구체적인 예외 형식 집합을 catch하고 처리하거나 예외를 다시 throw하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
+        <source>{0} is catching corrupted state exception.</source>
+        <target state="translated">{0}이(가) 손상된 상태 예외를 catch하고 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
+        <source>Types should not extend certain base types</source>
+        <target state="translated">형식은 특정 기본 형식을 확장할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesDescription">
+        <source>An externally visible type extends certain base types. Use one of the alternatives.</source>
+        <target state="translated">외부에 표시되는 형식이 특정 기본 형식을 확장합니다. 대체 형식 중 하나를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemXmlXmlDocument">
+        <source>Change the base type of {0} so that it no longer extends {1}. The preferred design is to decouple the underlying XmlDocument representation from the type's interface by using containment instead of inheritance.</source>
+        <target state="translated">더 이상 {1}을(를) 확장하지 않도록 {0}의 기본 형식을 변경하세요. 상속 대신 포함을 사용하여 형식의 인터페이스에서 내부 XmlDocument 표현을 분리하는 것이 좋습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemApplicationException">
+        <source>Change the base type of {0} so that it no longer extends {1}. This base exception type does not provide any additional value for framework classes. Extend 'System.Exception' or an existing unsealed exception type instead. Do not create a new exception base type unless there is specific value in enabling the creation of a catch handler for an entire class of exceptions.</source>
+        <target state="translated">더 이상 {1}을(를) 확장하지 않도록 {0}의 기본 형식을 변경하세요. 이 기본 예외 형식은 Framework 클래스에 대한 추가 값을 제공하지 않습니다. 'System.Exception'을 확장하거나 기존 unsealed 예외 형식을 대신 확장하세요. 전체 예외 클래스에 대해 catch 처리기를 만들 수 있는 특정 값이 없는 경우 새로운 예외 기본 형식을 만들지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsCollectionBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.Collection'.</source>
+        <target state="translated">{0}의 기본 형식을 {1}에서 해당 제네릭 형식인 'System.Collections.ObjectModel.Collection'으로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsDictionaryBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.KeyedCollection'.</source>
+        <target state="translated">{0}의 기본 형식을 {1}에서 해당 제네릭 형식인 'System.Collections.ObjectModel.KeyedCollection'으로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsQueue">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Queue'.</source>
+        <target state="translated">{0}의 기본 형식을 {1}에서 해당 제네릭 형식인 'System.Collections.Generic.Queue'로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsReadOnlyCollectionBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.ReadOnlyCollection'.</source>
+        <target state="translated">{0}의 기본 형식을 {1}에서 해당 제네릭 형식인 'System.Collections.ObjectModel.ReadOnlyCollection'으로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsSortedList">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.SortedList'.</source>
+        <target state="translated">{0}의 기본 형식을 {1}에서 해당 제네릭 형식인 'System.Collections.Generic.SortedList'로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsStack">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Stack'.</source>
+        <target state="translated">{0}의 기본 형식을 {1}에서 해당 제네릭 형식인 'System.Collections.Generic.Stack'으로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingDescription">
+        <source>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. </source>
+        <target state="translated">XmlTextReader.Load()를 사용하고, XmlReader.Create()를 호출할 때 안전하지 않은 XmlReaderSettings 인스턴스를 만들고, XmlDocument의 InnerXml 속성을 설정하고, 안전하지 않은 방법으로 XmlUrlResolver를 사용하여 DTD를 처리하면 정보가 공개될 수 있습니다. XmlReader 인스턴스를 사용하는 Load() 메서드 오버로드에 대한 호출로 바꾸고, XmlReader.Create()를 사용하여 XmlReaderSettings 인수를 사용하거나 보안 값을 명시적으로 설정하세요. DataViewManager의 DataViewSettingCollectionString 속성은 항상 신뢰할 수 있는 출처에서 할당되어야 하며, DtdProcessing 속성은 false로 설정되어야 하고, XmlResolver 속성은 XmlSecureResolver 또는 null로 변경되어야 합니다. </target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
+        <source>Unsafe overload of '{0}' method</source>
+        <target state="translated">'{0}' 메서드의 안전하지 않은 오버로드</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseDtdProcessingOverloads">
+        <source>Insecure DTD Processing</source>
+        <target state="translated">안전하지 않은 DTD 처리</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseSetInnerXmlMessage">
+        <source>Uses the unsafe setter of InnerXml property of System.Xml.XmlDocument.</source>
+        <target state="translated">System.Xml.XmlDocument의 InnerXml 속성에 대한 안전하지 않은 setter를 사용합니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="InsecureXmlDtdProcessing">
+        <source>Insecure DTD processing in XML</source>
+        <target state="translated">XML의 안전하지 않은 DTD 처리</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="ReviewDtdProcessingPropertiesMessage">
+        <source>Property in {0} might be set from an untrusted source.</source>
+        <target state="translated">{0}의 속성이 신뢰할 수 없는 출처에서 설정되었을 수 있습니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentWithNoSecureResolverMessage">
+        <source>An XmlDocument instance is created without setting its XmlResolver property to a secure value.</source>
+        <target state="translated">XmlResolver 속성이 보안 값으로 설정되지 않은 상태에서 XmlDocument 인스턴스가 만들어졌습니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateInsecureConstructedMessage">
+        <source>An insecure XmlReaderSettings instance is provided to XmlReader.Create method.</source>
+        <target state="translated">안전하지 않은 XmlReaderSettings 인스턴스가 XmlReader.Create 메서드에 제공되었습니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateInsecureInputMessage">
+        <source>A potentially insecure XmlReaderSettings instance is provided to XmlReader.Create method.</source>
+        <target state="translated">잠재적으로 안전하지 않은 XmlReaderSettings 인스턴스가 XmlReader.Create 메서드에 제공되었습니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateWrongOverloadMessage">
+        <source>An insecure overload of XmlReader.Create which does not accept an XmlReaderSettings argument.</source>
+        <target state="translated">XmlReaderSettings 인수를 사용하지 않는 XmlReader.Create의 안전하지 않은 오버로드입니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderConstructedWithNoSecureResolutionMessage">
+        <source>XmlTextReader instance created with insecure default settings.</source>
+        <target state="translated">안전하지 않은 기본 설정을 사용하여 XmlTextReader 인스턴스가 만들어졌습니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderSetInsecureResolutionMessage">
+        <source>XmlTextReader instance is set with insecure values.</source>
+        <target state="translated">안전하지 않은 값을 사용하여 XmlTextReader 인스턴스가 설정되었습니다.</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingGenericMessage">
+        <source>{0}</source>
+        <target state="translated">{0}</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="InsecureDtdProcessingInApiDesign">
+        <source>Insecure Processing in API Design, XmlDocument and XmlTextReader</source>
+        <target state="translated">API 디자인, XmlDocument 및 XmlTextReader의 안전하지 않은 처리</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingInApiDesignDescription">
+        <source>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. </source>
+        <target state="translated">XmlTextReader 또는 XmlDocument에서 파생된 모든 인스턴스에서 DTD 처리를 사용하고, 외부 XML 엔터티를 확인하기 위해 XmlUrlResolver를 사용하면 정보가 공개될 수 있습니다. XmlResolver 속성을 null로 설정하고, 신뢰할 수 없는 입력을 처리할 때 XmlSecureResolver의 인스턴스를 만들거나 안전한 XmlReaderSettings 인수로 XmlReader.Create 메서드를 사용하세요. 사용해야 하는 경우를 제외하고 DtdProcessing 속성을 false로 설정하세요. </target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage">
+        <source>Constructor of XmlDocument derived class {0} implicitly uses insecure default value for DTD processing.</source>
+        <target state="translated">XmlDocument 파생 클래스 {0}의 생성자가 DTD 처리의 안전하지 않은 기본값을 암시적으로 사용합니다.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
+        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
+        <target state="translated">XmlDocument 파생 클래스 {0}이(가) 명시적으로 생성자를 정의하지 않습니다.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
+        <source>Method {0} of XmlDocument derived class sets XmlResolver property to an insecure value.</source>
+        <target state="translated">XmlDocument 파생 클래스의 {0} 메서드가 XmlResolver 속성을 안전하지 않은 값으로 설정합니다.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage">
+        <source>Constructor of XmlTextReader derived class {0} uses insecure default values for DTD processing.</source>
+        <target state="translated">XmlTextReader 파생 클래스 {0}의 생성자가 DTD 처리의 안전하지 않은 기본값을 사용합니다.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
+        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
+        <target state="translated">XmlTextReader 파생 클래스 {0}이(가) 명시적으로 생성자를 정의하지 않습니다.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
+        <source>{0} method of XmlTextReader derived class sets XmlResolver and/or DtdProcessing property to insecure value.</source>
+        <target state="translated">XmlTextReader 파생 클래스의 {0} 메서드가 XmlResolver 및/또는 DtdProcessing 속성을 안전하지 않은 값으로 설정합니다.</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="InsecureXsltScriptProcessingMessage">
+        <source>Insecure XSLT script processing.</source>
+        <target state="translated">안전하지 않은 XSLT 스크립트 처리입니다.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="translated">안전하지 않은 XsltSettings 인스턴스와 XmlResolver 인스턴스를 XslCompiledTransform.Load 메서드에 제공하면 XSL 내에서 스크립트를 처리할 수 있게 되며 신뢰할 수 없는 XSL 입력에서 스크립트를 처리하면 악의적인 코드가 실행될 수 있으므로 잠재적으로 위험합니다. 안전하지 않은 XsltSettings 인수를 XsltSettings.Default 또는 문서 기능과 스크립트 실행을 사용할 수 없는 인스턴스로 바꾸거나, XmlResolver 인수를 null 또는 XmlSecureResolver 인스턴스로 바꾸세요. 신뢰할 수 있는 출처의 입력임이 알려지면 이 메시지가 표시되지 않을 수 있으며, 미리 알려지지 않은 위치의 외부 리소스 해결 방법이 지원되어야 합니다.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
+        <source>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</source>
+        <target state="translated">{0}에서 XsltSettings와 XmlResolver 인스턴스의 안전하지 않은 조합이 XslCompiledTransfor.Load에 인수로 제공되었습니다.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="XslCompiledTransformLoadInsecureInputMessage">
+        <source>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</source>
+        <target state="translated">{0}에서 XsltSettings와 XmlResolver 인스턴스의 안전하지 않은 조합이 XslCompiledTransfor.Load에 인수로 제공되었습니다.</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndOtherAndTokenMessage">
+        <source>The ValidateAntiForgeryAttribute is defined with HttpVerbs.Get and at least one of HttpVerbs.Post, HttpVerbs.Put, HttpVerbs.Delete, or HttpVerbs.Patch on controller action {0}. The attribute will not be used when GET verb is used.</source>
+        <target state="translated">ValidateAntiForgeryAttribute가 HttpVerbs.Get으로 정의되었고 하나 이상의 HttpVerbs.Post, HttpVerbs.Put, HttpVerbs.Delete 또는 HttpVerbs.Patch가 컨트롤러 작업 {0}에 있습니다. 이 특성은 GET 동사를 사용하는 경우 사용되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
+        <target state="translated">컨트롤러 작업 {0}의 MVC에서는 HttpVerbs.GET 및 ValidateAntiForgeryTokenAttribute를 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
+        <source>HTTP verb attributes attributes are missing on controller action {0}. The ValidateAntiForgeryTokenAttribute will not be used when GET verb is used.</source>
+        <target state="translated">컨트롤러 동작 {0}에 HTTP 동사 특성이 없습니다. GET 동사를 사용할 때 ValidateAntiForgeryTokenAttribute가 사용되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
+        <target state="translated">기본적으로 POST 요청을 승인하는 MVC 컨트롤러 작업 {0}에 ValidateAntiForgeryTokenAttribute가 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
+        <source>Mark Verb Handlers With Validate Antiforgery Token</source>
+        <target state="translated">위조 방지 유효성 검사 토큰을 사용하여 동사 처리기 표시</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
+        <target state="translated">컨트롤러 작업 {0}에 ValidateAntiForgeryTokenAttribute가 없습니다.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

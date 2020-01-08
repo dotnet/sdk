@@ -1,0 +1,376 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SpecifyMessageBoxOptionsTitle" xml:space="preserve">
+    <value>Specify MessageBoxOptions</value>
+  </data>
+  <data name="SpecifyMessageBoxOptionsDescription" xml:space="preserve">
+    <value>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</value>
+  </data>
+  <data name="SpecifyMessageBoxOptionsMessage" xml:space="preserve">
+    <value>Specify MessageBoxOptions</value>
+  </data>
+  <data name="AvoidDuplicateAcceleratorsTitle" xml:space="preserve">
+    <value>Avoid duplicate accelerators</value>
+  </data>
+  <data name="AvoidDuplicateAcceleratorsDescription" xml:space="preserve">
+    <value>An access key, also known as an accelerator, enables keyboard access to a control by using the ALT key. When multiple controls have duplicate access keys, the behavior of the access key is not well defined.</value>
+  </data>
+  <data name="AvoidDuplicateAcceleratorsMessage" xml:space="preserve">
+    <value>Avoid duplicate accelerators</value>
+  </data>
+  <data name="SetLocaleForDataTypesTitle" xml:space="preserve">
+    <value>Set locale for data types</value>
+  </data>
+  <data name="SetLocaleForDataTypesDescription" xml:space="preserve">
+    <value>The locale determines culture-specific presentation elements for data, such as formatting that is used for numeric values, currency symbols, and sort order. When you create a DataTable or DataSet, you should explicitly set the locale.</value>
+  </data>
+  <data name="SetLocaleForDataTypesMessage" xml:space="preserve">
+    <value>Set locale for data types</value>
+  </data>
+  <data name="DoNotMarkServicedComponentsWithWebMethodTitle" xml:space="preserve">
+    <value>Do not mark serviced components with WebMethod</value>
+  </data>
+  <data name="DoNotMarkServicedComponentsWithWebMethodDescription" xml:space="preserve">
+    <value>A method in a type that inherits from System.EnterpriseServices.ServicedComponent is marked by using System.Web.Services.WebMethodAttribute. Because WebMethodAttribute and a ServicedComponent method have conflicting behavior and requirements for context and transaction flow, the behavior of the method will be incorrect in some scenarios.</value>
+  </data>
+  <data name="DoNotMarkServicedComponentsWithWebMethodMessage" xml:space="preserve">
+    <value>Do not mark serviced components with WebMethod</value>
+  </data>
+  <data name="MarkWindowsFormsEntryPointsWithStaThreadTitle" xml:space="preserve">
+    <value>Mark Windows Forms entry points with STAThread</value>
+  </data>
+  <data name="MarkWindowsFormsEntryPointsWithStaThreadDescription" xml:space="preserve">
+    <value>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</value>
+  </data>
+  <data name="MarkWindowsFormsEntryPointsWithStaThreadMessage" xml:space="preserve">
+    <value>Mark Windows Forms entry points with STAThread</value>
+  </data>
+  <data name="CallBaseClassMethodsOnISerializableTypesTitle" xml:space="preserve">
+    <value>Call base class methods on ISerializable types</value>
+  </data>
+  <data name="CallBaseClassMethodsOnISerializableTypesDescription" xml:space="preserve">
+    <value>To fix a violation of this rule, call the base type GetObjectData method or serialization constructor from the corresponding derived type method or constructor.</value>
+  </data>
+  <data name="CallBaseClassMethodsOnISerializableTypesMessage" xml:space="preserve">
+    <value>Call base class methods on ISerializable types</value>
+  </data>
+  <data name="UseXmlReaderForDataSetReadXmlTitle" xml:space="preserve">
+    <value>Use XmlReader for DataSet ReadXml</value>
+  </data>
+  <data name="UseXmlReaderForDataSetReadXmlDescription" xml:space="preserve">
+    <value>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
+  </data>
+  <data name="UseXmlReaderForDataSetReadXmlMessage" xml:space="preserve">
+    <value>Use XmlReader for DataSet ReadXml</value>
+  </data>
+  <data name="UseXmlReaderForDataSetReadXmlSchemaTitle" xml:space="preserve">
+    <value>Use XmlReader for DataSet ReadXmlSchema</value>
+  </data>
+  <data name="UseXmlReaderForDataSetReadXmlSchemaDescription" xml:space="preserve">
+    <value>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
+  </data>
+  <data name="UseXmlReaderForDataSetReadXmlSchemaMessage" xml:space="preserve">
+    <value>Use XmlReader for DataSet ReadXmlSchema</value>
+  </data>
+  <data name="ReviewDataViewCollectionStringTitle" xml:space="preserve">
+    <value>Review DataView CollectionString</value>
+  </data>
+  <data name="ReviewDataViewCollectionStringDescription" xml:space="preserve">
+    <value>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
+  </data>
+  <data name="ReviewDataViewCollectionStringMessage" xml:space="preserve">
+    <value>Review DataView CollectionString</value>
+  </data>
+  <data name="UseXmlReaderForDataTableReadXmlTitle" xml:space="preserve">
+    <value>Use XmlReader for DataTable ReadXml</value>
+  </data>
+  <data name="UseXmlReaderForDataTableReadXmlDescription" xml:space="preserve">
+    <value>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
+  </data>
+  <data name="UseXmlReaderForDataTableReadXmlMessage" xml:space="preserve">
+    <value>Use XmlReader for DataTable ReadXml</value>
+  </data>
+  <data name="UseXmlReaderForDataTableReadXmlSchemaTitle" xml:space="preserve">
+    <value>Use XmlReader for DataTable ReadXmlSchema</value>
+  </data>
+  <data name="UseXmlReaderForDataTableReadXmlSchemaDescription" xml:space="preserve">
+    <value>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
+  </data>
+  <data name="UseXmlReaderForDataTableReadXmlSchemaMessage" xml:space="preserve">
+    <value>Use XmlReader for DataTable ReadXmlSchema</value>
+  </data>
+  <data name="DoNotCatchCorruptedStateExceptions" xml:space="preserve">
+    <value>Do Not Catch Corrupted State Exceptions</value>
+  </data>
+  <data name="DoNotCatchCorruptedStateExceptionsDescription" xml:space="preserve">
+    <value>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</value>
+  </data>
+  <data name="DoNotCatchCorruptedStateExceptionsMessage" xml:space="preserve">
+    <value>{0} is catching corrupted state exception.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesTitle" xml:space="preserve">
+    <value>Types should not extend certain base types</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesDescription" xml:space="preserve">
+    <value>An externally visible type extends certain base types. Use one of the alternatives.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemXmlXmlDocument" xml:space="preserve">
+    <value>Change the base type of {0} so that it no longer extends {1}. The preferred design is to decouple the underlying XmlDocument representation from the type's interface by using containment instead of inheritance.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemApplicationException" xml:space="preserve">
+    <value>Change the base type of {0} so that it no longer extends {1}. This base exception type does not provide any additional value for framework classes. Extend 'System.Exception' or an existing unsealed exception type instead. Do not create a new exception base type unless there is specific value in enabling the creation of a catch handler for an entire class of exceptions.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsCollectionBase" xml:space="preserve">
+    <value>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.Collection'.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsDictionaryBase" xml:space="preserve">
+    <value>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.KeyedCollection'.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsQueue" xml:space="preserve">
+    <value>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Queue'.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsReadOnlyCollectionBase" xml:space="preserve">
+    <value>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.ReadOnlyCollection'.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsSortedList" xml:space="preserve">
+    <value>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.SortedList'.</value>
+  </data>
+  <data name="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsStack" xml:space="preserve">
+    <value>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Stack'.</value>
+  </data>
+  <data name="DoNotUseInsecureDtdProcessingDescription" xml:space="preserve">
+    <value>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. </value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="DoNotUseDtdProcessingOverloadsMessage" xml:space="preserve">
+    <value>Unsafe overload of '{0}' method</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="DoNotUseDtdProcessingOverloads" xml:space="preserve">
+    <value>Insecure DTD Processing</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="DoNotUseSetInnerXmlMessage" xml:space="preserve">
+    <value>Uses the unsafe setter of InnerXml property of System.Xml.XmlDocument.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="InsecureXmlDtdProcessing" xml:space="preserve">
+    <value>Insecure DTD processing in XML</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="ReviewDtdProcessingPropertiesMessage" xml:space="preserve">
+    <value>Property in {0} might be set from an untrusted source.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="XmlDocumentWithNoSecureResolverMessage" xml:space="preserve">
+    <value>An XmlDocument instance is created without setting its XmlResolver property to a secure value.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="XmlReaderCreateInsecureConstructedMessage" xml:space="preserve">
+    <value>An insecure XmlReaderSettings instance is provided to XmlReader.Create method.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="XmlReaderCreateInsecureInputMessage" xml:space="preserve">
+    <value>A potentially insecure XmlReaderSettings instance is provided to XmlReader.Create method.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="XmlReaderCreateWrongOverloadMessage" xml:space="preserve">
+    <value>An insecure overload of XmlReader.Create which does not accept an XmlReaderSettings argument.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="XmlTextReaderConstructedWithNoSecureResolutionMessage" xml:space="preserve">
+    <value>XmlTextReader instance created with insecure default settings.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="XmlTextReaderSetInsecureResolutionMessage" xml:space="preserve">
+    <value>XmlTextReader instance is set with insecure values.</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="DoNotUseInsecureDtdProcessingGenericMessage" xml:space="preserve">
+    <value>{0}</value>
+    <comment>CA3075</comment>
+  </data>
+  <data name="InsecureDtdProcessingInApiDesign" xml:space="preserve">
+    <value>Insecure Processing in API Design, XmlDocument and XmlTextReader</value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="DoNotUseInsecureDtdProcessingInApiDesignDescription" xml:space="preserve">
+    <value>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. </value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage" xml:space="preserve">
+    <value>Constructor of XmlDocument derived class {0} implicitly uses insecure default value for DTD processing.</value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="XmlDocumentDerivedClassNoConstructorMessage" xml:space="preserve">
+    <value>XmlDocument derived class {0} doesn't explictily define a constructor.</value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage" xml:space="preserve">
+    <value>Method {0} of XmlDocument derived class sets XmlResolver property to an insecure value.</value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage" xml:space="preserve">
+    <value>Constructor of XmlTextReader derived class {0} uses insecure default values for DTD processing.</value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="XmlTextReaderDerivedClassNoConstructorMessage" xml:space="preserve">
+    <value>XmlTextReader derived class {0} doesn't explictily define a constructor.</value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage" xml:space="preserve">
+    <value>{0} method of XmlTextReader derived class sets XmlResolver and/or DtdProcessing property to insecure value.</value>
+    <comment>CA3077</comment>
+  </data>
+  <data name="InsecureXsltScriptProcessingMessage" xml:space="preserve">
+    <value>Insecure XSLT script processing.</value>
+    <comment>CA3076</comment>
+  </data>
+  <data name="DoNotUseInsecureXSLTScriptExecutionDescription" xml:space="preserve">
+    <value>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</value>
+    <comment>CA3076</comment>
+  </data>
+  <data name="XslCompiledTransformLoadInsecureConstructedMessage" xml:space="preserve">
+    <value>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</value>
+    <comment>CA3076</comment>
+  </data>
+  <data name="XslCompiledTransformLoadInsecureInputMessage" xml:space="preserve">
+    <value>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</value>
+    <comment>CA3076</comment>
+  </data>
+  <data name="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndOtherAndTokenMessage" xml:space="preserve">
+    <value>The ValidateAntiForgeryAttribute is defined with HttpVerbs.Get and at least one of HttpVerbs.Post, HttpVerbs.Put, HttpVerbs.Delete, or HttpVerbs.Patch on controller action {0}. The attribute will not be used when GET verb is used.</value>
+  </data>
+  <data name="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage" xml:space="preserve">
+    <value>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</value>
+  </data>
+  <data name="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage" xml:space="preserve">
+    <value>HTTP verb attributes attributes are missing on controller action {0}. The ValidateAntiForgeryTokenAttribute will not be used when GET verb is used.</value>
+  </data>
+  <data name="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage" xml:space="preserve">
+    <value>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</value>
+  </data>
+  <data name="MarkVerbHandlersWithValidateAntiforgeryTokenTitle" xml:space="preserve">
+    <value>Mark Verb Handlers With Validate Antiforgery Token</value>
+  </data>
+  <data name="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage" xml:space="preserve">
+    <value>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</value>
+  </data>
+</root>
