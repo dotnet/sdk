@@ -1,0 +1,392 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-HANT" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
+    <body>
+      <trans-unit id="SpecifyMessageBoxOptionsTitle">
+        <source>Specify MessageBoxOptions</source>
+        <target state="translated">指定 MessageBoxOptions</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMessageBoxOptionsDescription">
+        <source>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</source>
+        <target state="translated">為正確顯示由右至左閱讀順序文化特性 (Culture) 的訊息方塊，必須將 MessageBoxOptions 列舉的 RightAlign 與 RtlReading 成員傳遞到 Show 方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMessageBoxOptionsMessage">
+        <source>Specify MessageBoxOptions</source>
+        <target state="translated">指定 MessageBoxOptions</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsTitle">
+        <source>Avoid duplicate accelerators</source>
+        <target state="translated">避免重複的快速鍵</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsDescription">
+        <source>An access key, also known as an accelerator, enables keyboard access to a control by using the ALT key. When multiple controls have duplicate access keys, the behavior of the access key is not well defined.</source>
+        <target state="translated">便捷鍵也稱為快速鍵，讓您可使用 ALT 鍵，利用鍵盤存取控制項。當多個控制項使用重複的存取金鑰時，會無法完善地定義存取金鑰行為。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateAcceleratorsMessage">
+        <source>Avoid duplicate accelerators</source>
+        <target state="translated">避免重複的快速鍵</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesTitle">
+        <source>Set locale for data types</source>
+        <target state="translated">設定資料類型的地區設定</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesDescription">
+        <source>The locale determines culture-specific presentation elements for data, such as formatting that is used for numeric values, currency symbols, and sort order. When you create a DataTable or DataSet, you should explicitly set the locale.</source>
+        <target state="translated">地區設定會決定資料的文化特性 (Culture) 專屬之呈現元素，例如為數值、貨幣符號及排序次序所用的格式。當您建立 DataTable 或 DataSet 時，應要明確設定地區設定。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetLocaleForDataTypesMessage">
+        <source>Set locale for data types</source>
+        <target state="translated">設定資料類型的地區設定</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodTitle">
+        <source>Do not mark serviced components with WebMethod</source>
+        <target state="translated">請勿將 Serviced 元件標記為 WebMethod</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodDescription">
+        <source>A method in a type that inherits from System.EnterpriseServices.ServicedComponent is marked by using System.Web.Services.WebMethodAttribute. Because WebMethodAttribute and a ServicedComponent method have conflicting behavior and requirements for context and transaction flow, the behavior of the method will be incorrect in some scenarios.</source>
+        <target state="translated">其類型為繼承自 System.EnterpriseServices.ServicedComponent 的方法，會標記為 System.Web.Services.WebMethodAttribute。因為 WebMethodAttribute 與 ServicedComponent 方法在內容以及交易流程中發生行為及需求的衝突，所以此方法在某些情況下的行為會不正確。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkServicedComponentsWithWebMethodMessage">
+        <source>Do not mark serviced components with WebMethod</source>
+        <target state="translated">請勿將 Serviced 元件標記為 WebMethod</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadTitle">
+        <source>Mark Windows Forms entry points with STAThread</source>
+        <target state="translated">將 Windows Forms 進入點標記為 STAThread</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadDescription">
+        <source>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</source>
+        <target state="translated">STAThreadAttribute 表示應用程式的 COM 執行緒模式是單一執行緒 Apartment。所有使用 Windows Forms 的應用程式之進入點上，都必須要有此屬性，如果省略此屬性，Windows 元件可能會無法正確運作。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadMessage">
+        <source>Mark Windows Forms entry points with STAThread</source>
+        <target state="translated">將 Windows Forms 進入點標記為 STAThread</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesTitle">
+        <source>Call base class methods on ISerializable types</source>
+        <target state="translated">呼叫 ISerializable 類型上的基底類別方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesDescription">
+        <source>To fix a violation of this rule, call the base type GetObjectData method or serialization constructor from the corresponding derived type method or constructor.</source>
+        <target state="translated">若要修正此規則的違規，請從相對應的衍生類型方法或建構函式，呼叫基底類型 GetObjectData 方法或序列化建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallBaseClassMethodsOnISerializableTypesMessage">
+        <source>Call base class methods on ISerializable types</source>
+        <target state="translated">呼叫 ISerializable 類型上的基底類別方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlTitle">
+        <source>Use XmlReader for DataSet ReadXml</source>
+        <target state="translated">為 DataSet ReadXml 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlDescription">
+        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">請勿使用 System.Data.DataSet.ReadXml 的不安全多載。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlMessage">
+        <source>Use XmlReader for DataSet ReadXml</source>
+        <target state="translated">為 DataSet ReadXml 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaTitle">
+        <source>Use XmlReader for DataSet ReadXmlSchema</source>
+        <target state="translated">為 DataSet ReadXmlSchema 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaDescription">
+        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">請勿使用 System.Data.DataSet.ReadXmlSchema 的不安全多載。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaMessage">
+        <source>Use XmlReader for DataSet ReadXmlSchema</source>
+        <target state="translated">為 DataSet ReadXmlSchema 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringTitle">
+        <source>Review DataView CollectionString</source>
+        <target state="translated">檢閱 DataView CollectionString</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringDescription">
+        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">檢閱程式碼以確保 System.Data.DataViewManager.DataViewSettingCollectionString 輸入的使用經過處理，以排除 DTD。在 XML 讀取器上啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體，可能會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewDataViewCollectionStringMessage">
+        <source>Review DataView CollectionString</source>
+        <target state="translated">檢閱 DataView CollectionString</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlTitle">
+        <source>Use XmlReader for DataTable ReadXml</source>
+        <target state="translated">為 DataTable ReadXml 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlDescription">
+        <source>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">請勿使用 System.Data.DataTable.ReadXml 的不安全多載。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlMessage">
+        <source>Use XmlReader for DataTable ReadXml</source>
+        <target state="translated">為 DataTable ReadXml 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaTitle">
+        <source>Use XmlReader for DataTable ReadXmlSchema</source>
+        <target state="translated">為 DataTable ReadXmlSchema 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaDescription">
+        <source>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">檢查 System.Data.DataTable.ReadXmlSchema 不安全多載的使用方式。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaMessage">
+        <source>Use XmlReader for DataTable ReadXmlSchema</source>
+        <target state="translated">為 DataTable ReadXmlSchema 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptions">
+        <source>Do Not Catch Corrupted State Exceptions</source>
+        <target state="translated">請勿擷取損毀狀態例外狀況</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
+        <target state="translated">擷取損毀狀態例外狀況有可能會遮罩錯誤 (例如存取違規)，而造成例外狀況的狀態不一致，或是利於攻擊者危害系統。請改為擷取並處理更精確的例外狀況類型集，或是重新擲回例外狀況</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
+        <source>{0} is catching corrupted state exception.</source>
+        <target state="translated">{0} 正在擷取損毀狀態例外狀況。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
+        <source>Types should not extend certain base types</source>
+        <target state="translated">類型不應擴充特定的基底類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesDescription">
+        <source>An externally visible type extends certain base types. Use one of the alternatives.</source>
+        <target state="translated">外部可見的類型，擴充了特定的基底類型。使用其中一個替代項。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemXmlXmlDocument">
+        <source>Change the base type of {0} so that it no longer extends {1}. The preferred design is to decouple the underlying XmlDocument representation from the type's interface by using containment instead of inheritance.</source>
+        <target state="translated">變更 {0} 的基底類型，讓其無法再擴充 {1}。慣用的設計為使用內含項目而非繼承，將基礎 XmlDocument 表示法與類型的介面脫勾。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemApplicationException">
+        <source>Change the base type of {0} so that it no longer extends {1}. This base exception type does not provide any additional value for framework classes. Extend 'System.Exception' or an existing unsealed exception type instead. Do not create a new exception base type unless there is specific value in enabling the creation of a catch handler for an entire class of exceptions.</source>
+        <target state="translated">變更 {0} 的基底類型，讓其無法再擴充 {1}。此基底例外狀況類型不會為架構類別提供任何額外的值。請改為擴充 'System.Exception' 或現有的非密封例外狀況類型。除非有特定的值能夠建立整個例外狀況類別的 catch 處理常式，否則，請勿建立新的例外狀況基底類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsCollectionBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.Collection'.</source>
+        <target state="translated">將 {0} 的基底類型從 {1} 變更為其泛型對應項 'System.Collections.ObjectModel.Collection'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsDictionaryBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.KeyedCollection'.</source>
+        <target state="translated">將 {0} 的基底類型從 {1} 變更為其泛型對應項 'System.Collections.ObjectModel.KeyedCollection'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsQueue">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Queue'.</source>
+        <target state="translated">將 {0} 的基底類型從 {1} 變更為其泛型對應項 'System.Collections.Generic.Queue'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsReadOnlyCollectionBase">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.ObjectModel.ReadOnlyCollection'.</source>
+        <target state="translated">將 {0} 的基底類型從 {1} 變更為其泛型對應項 'System.Collections.ObjectModel.ReadOnlyCollection'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsSortedList">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.SortedList'.</source>
+        <target state="translated">將 {0} 的基底類型從 {1} 變更為其泛型對應項 'System.Collections.Generic.SortedList'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsStack">
+        <source>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Stack'.</source>
+        <target state="translated">將 {0} 的基底類型從 {1} 變更為其泛型對應項 'System.Collections.Generic.Stack'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingDescription">
+        <source>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. </source>
+        <target state="translated">使用 XmlTextReader.Load()、叫用 XmlReader.Create() 時建立不安全的 XmlReaderSettings 執行個體、設定 XmlDocument 的 InnerXml 屬性，以及用不安全的方式使用 XmlUrlResolver 啟用 DTD 處理，都可能會造成資訊外洩。以採用 XmlReader 執行個體的呼叫 Load() 方法多載取代它、使用 XmlReader.Create() 接受 XmlReaderSettings 引數或明確地考慮設定安全的值。DataViewManager 的 DataViewSettingCollectionString 屬性應一律從信任的來源指派，DtdProcessing 屬性應設為 false，而 XmlResolver 屬性則應變更為 XmlSecureResolver 或 Null。 </target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
+        <source>Unsafe overload of '{0}' method</source>
+        <target state="translated">'{0}' 方法的不安全多載</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseDtdProcessingOverloads">
+        <source>Insecure DTD Processing</source>
+        <target state="translated">不安全的 DTD 處理</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseSetInnerXmlMessage">
+        <source>Uses the unsafe setter of InnerXml property of System.Xml.XmlDocument.</source>
+        <target state="translated">使用 System.Xml.XmlDocument 的 InnerXml 屬性之不安全 setter。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="InsecureXmlDtdProcessing">
+        <source>Insecure DTD processing in XML</source>
+        <target state="translated">XML 中不安全的 DTD 處理</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="ReviewDtdProcessingPropertiesMessage">
+        <source>Property in {0} might be set from an untrusted source.</source>
+        <target state="translated">{0} 中的屬性可從不受信任的來源設定。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentWithNoSecureResolverMessage">
+        <source>An XmlDocument instance is created without setting its XmlResolver property to a secure value.</source>
+        <target state="translated">建立 XmlDocument 執行個體時，未將其 XmlResolver 屬性設為安全的值。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateInsecureConstructedMessage">
+        <source>An insecure XmlReaderSettings instance is provided to XmlReader.Create method.</source>
+        <target state="translated">對 XmlReader.Create 方法提供的 XmlReaderSettings 執行個體不安全。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateInsecureInputMessage">
+        <source>A potentially insecure XmlReaderSettings instance is provided to XmlReader.Create method.</source>
+        <target state="translated">對 XmlReader.Create 方法提供了可能不安全的 XmlReaderSettings 執行個體。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlReaderCreateWrongOverloadMessage">
+        <source>An insecure overload of XmlReader.Create which does not accept an XmlReaderSettings argument.</source>
+        <target state="translated">不接受 XmlReaderSettings 引數的 XmlReader.Create 之非安全多載。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderConstructedWithNoSecureResolutionMessage">
+        <source>XmlTextReader instance created with insecure default settings.</source>
+        <target state="translated">建立 XmlTextReader 執行個體時使用了不安全的預設設定。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderSetInsecureResolutionMessage">
+        <source>XmlTextReader instance is set with insecure values.</source>
+        <target state="translated">設定 XmlTextReader 執行個體時使用了不安全的值。</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingGenericMessage">
+        <source>{0}</source>
+        <target state="translated">{0}</target>
+        <note>CA3075</note>
+      </trans-unit>
+      <trans-unit id="InsecureDtdProcessingInApiDesign">
+        <source>Insecure Processing in API Design, XmlDocument and XmlTextReader</source>
+        <target state="translated">API 設計、XmlDocument 及 XmlTextReader 中的不安全處理</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureDtdProcessingInApiDesignDescription">
+        <source>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. </source>
+        <target state="translated">在所有衍生自 XmlTextReader 或 XmlDocument 的執行個體上啟用 DTD 處理，並使用 XmlUrlResolver 解析外部 XML 實體，可能會造成資訊外洩。請務必將 XmlResolver 屬性設為 Null，在處理不受信任的輸入時建立 XmlSecureResolver 執行個體，或使用具有安全 XmlReaderSettings 引數的 XmlReader.Create 方法。除非需要將其啟用，否則請務必將 DtdProcessing 屬性設為 false。 </target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage">
+        <source>Constructor of XmlDocument derived class {0} implicitly uses insecure default value for DTD processing.</source>
+        <target state="translated">XmlDocument 衍生類別 {0} 的建構函式，會以隱含方式使用 DTD 處理的不安全預設值。</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
+        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
+        <target state="translated">XmlDocument 衍生類別 {0} 不會明確定義建構函式。</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
+        <source>Method {0} of XmlDocument derived class sets XmlResolver property to an insecure value.</source>
+        <target state="translated">XmlDocument 衍生類別的方法 {0}，會將 XmlResolver 屬性設為不安全的值。</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage">
+        <source>Constructor of XmlTextReader derived class {0} uses insecure default values for DTD processing.</source>
+        <target state="translated">XmlTextReader 衍生類別 {0} 的建構函式，會使用 DTD 處理的不安全預設值。</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
+        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
+        <target state="translated">XmlTextReader 衍生類別 {0} 不會明確定義建構函式。</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
+        <source>{0} method of XmlTextReader derived class sets XmlResolver and/or DtdProcessing property to insecure value.</source>
+        <target state="translated">XmlTextReader 衍生類別的 {0} 方法，會將 XmlResolver 及 (或) DtdProcessing 屬性設為不安全的值。</target>
+        <note>CA3077</note>
+      </trans-unit>
+      <trans-unit id="InsecureXsltScriptProcessingMessage">
+        <source>Insecure XSLT script processing.</source>
+        <target state="translated">不安全的 XSLT 指令碼處理。</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="translated">將不安全的 XsltSettings 執行個體以及不安全的 XmlResolver 執行個體提供給 XslCompiledTransform.Load 方法，可能不安全，因為它會允許在 XSL 內處理指令碼，若在不受信任的 XSL 輸入上，可能會導致執行惡意程式碼。以 XsltSettings.Default 或已停用文件功能和指令碼執行的執行個體，取代不安全的 XsltSettings 引數，或是以 Null 或 XmlSecureResolver 執行個體取代 XmlResolver 引數。如果已知輸入來自受信任的來源，可能不會顯示此訊息，且必須支援來自事先未知位置的外部資源解析。</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
+        <source>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</source>
+        <target state="translated">在 {0} 中，為 XslCompiledTransfor.Load 提供了不安全的 XsltSettings 與 XmlResolver 執行個體組合作為引數。</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="XslCompiledTransformLoadInsecureInputMessage">
+        <source>In {0} an insecure combination of XsltSettings and XmlResolver instances are provided to XslCompiledTransfor.Load as arguments.</source>
+        <target state="translated">在 {0} 中，為 XslCompiledTransfor.Load 提供了不安全的 XsltSettings 與 XmlResolver 執行個體組合作為引數。</target>
+        <note>CA3076</note>
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndOtherAndTokenMessage">
+        <source>The ValidateAntiForgeryAttribute is defined with HttpVerbs.Get and at least one of HttpVerbs.Post, HttpVerbs.Put, HttpVerbs.Delete, or HttpVerbs.Patch on controller action {0}. The attribute will not be used when GET verb is used.</source>
+        <target state="translated">ValidateAntiForgeryAttribute 在控制器動作 {0} 上會使用 HttpVerbs.Get，以及至少一個 HttpVerbs.Post、HttpVerbs.Put、HttpVerbs.Delete 或 HttpVerbs.Patch 來定義。當使用 GET 動詞時，不會使用該屬性。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
+        <target state="translated">控制器動作 {0} 上的 MVC 不支援使用 HttpVerbs.GET 和 ValidateAntiForgeryTokenAttribute。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
+        <source>HTTP verb attributes attributes are missing on controller action {0}. The ValidateAntiForgeryTokenAttribute will not be used when GET verb is used.</source>
+        <target state="translated">控制器動作 {0} 上缺少 HTTP 動詞屬性。當使用 GET 動詞時，不會使用 ValidateAntiForgeryTokenAttribute。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
+        <target state="translated">MVC 控制器動作 {0} 上缺少 ValidateAntiForgeryTokenAttribute，該動作根據預設接受 POST 要求。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
+        <source>Mark Verb Handlers With Validate Antiforgery Token</source>
+        <target state="translated">使用驗證 Antiforgery 權杖標記動詞命令處理常式</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
+        <target state="translated">控制器動作 {0} 上缺少 ValidateAntiForgeryTokenAttribute。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
