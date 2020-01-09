@@ -201,13 +201,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)
-            => new DiagnosticResult(UseIntegralOrStringArgumentForIndexersAnalyzer.Rule)
-                .WithLocation(line, col)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.UseIntegralOrStringArgumentForIndexersMessage);
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, col);
 
         private static DiagnosticResult CreateBasicResult(int line, int col)
-            => new DiagnosticResult(UseIntegralOrStringArgumentForIndexersAnalyzer.Rule)
-                .WithLocation(line, col)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.UseIntegralOrStringArgumentForIndexersMessage);
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, col);
     }
 }

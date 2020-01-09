@@ -653,12 +653,12 @@ Public Class DerivedCultureInfo
 End Class");
         }
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2, string arg3) =>
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2, string arg3) =>
             new DiagnosticResult(rule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2, string arg3) =>
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2, string arg3) =>
             new DiagnosticResult(rule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);

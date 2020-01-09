@@ -103,14 +103,12 @@ Public Class NonException
 End Class");
         }
 
-        private DiagnosticResult GetCA1064CSharpResultAt(int line, int column)
-            => new DiagnosticResult(ExceptionsShouldBePublicAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.ExceptionsShouldBePublicMessage);
+        private static DiagnosticResult GetCA1064CSharpResultAt(int line, int column)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
-        private DiagnosticResult GetCA1064VBasicResultAt(int line, int column)
-            => new DiagnosticResult(ExceptionsShouldBePublicAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.ExceptionsShouldBePublicMessage);
+        private static DiagnosticResult GetCA1064VBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

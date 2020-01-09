@@ -160,12 +160,12 @@ End Class",
         }
 
         private static DiagnosticResult GetCA1056CSharpResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriPropertiesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
 
         private static DiagnosticResult GetCA1056BasicResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriPropertiesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
     }

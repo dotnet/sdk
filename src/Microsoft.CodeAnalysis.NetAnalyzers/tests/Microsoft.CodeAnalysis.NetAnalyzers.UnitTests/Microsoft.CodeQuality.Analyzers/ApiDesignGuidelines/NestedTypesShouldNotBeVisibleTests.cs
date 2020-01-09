@@ -473,18 +473,18 @@ End Class
                 GetBasicCA1034ResultAt(9, 18, "MyDataRow"));
         }
 
-        private DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)
-            => new DiagnosticResult(NestedTypesShouldNotBeVisibleAnalyzer.DefaultRule)
+        private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)
+            => VerifyCS.Diagnostic(NestedTypesShouldNotBeVisibleAnalyzer.DefaultRule)
                 .WithLocation(line, column)
                 .WithArguments(nestedTypeName);
 
-        private DiagnosticResult GetBasicCA1034ResultAt(int line, int column, string nestedTypeName)
-            => new DiagnosticResult(NestedTypesShouldNotBeVisibleAnalyzer.DefaultRule)
+        private static DiagnosticResult GetBasicCA1034ResultAt(int line, int column, string nestedTypeName)
+            => VerifyVB.Diagnostic(NestedTypesShouldNotBeVisibleAnalyzer.DefaultRule)
                 .WithLocation(line, column)
                 .WithArguments(nestedTypeName);
 
-        private DiagnosticResult GetBasicCA1034ModuleResultAt(int line, int column, string nestedTypeName)
-            => new DiagnosticResult(NestedTypesShouldNotBeVisibleAnalyzer.VisualBasicModuleRule)
+        private static DiagnosticResult GetBasicCA1034ModuleResultAt(int line, int column, string nestedTypeName)
+            => VerifyVB.Diagnostic(NestedTypesShouldNotBeVisibleAnalyzer.VisualBasicModuleRule)
                 .WithLocation(line, column)
                 .WithArguments(nestedTypeName);
     }

@@ -1005,13 +1005,13 @@ End Class
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
-        {
-            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(symbolName);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
-        {
-            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(symbolName);
-        }
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
     }
 }

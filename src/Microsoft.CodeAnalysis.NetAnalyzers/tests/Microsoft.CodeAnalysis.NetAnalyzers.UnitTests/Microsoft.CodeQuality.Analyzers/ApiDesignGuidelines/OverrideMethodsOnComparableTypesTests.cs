@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -15,18 +13,8 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public partial class OverrideMethodsOnComparableTypesTests : DiagnosticAnalyzerTestBase
+    public partial class OverrideMethodsOnComparableTypesTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new OverrideMethodsOnComparableTypesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new OverrideMethodsOnComparableTypesAnalyzer();
-        }
-
         [Fact]
         public async Task CA1036ClassNoWarningCSharp()
         {
@@ -208,12 +196,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1036ClassWrongEqualsCSharpwithScope()
+        public async Task CA1036ClassWrongEquals2()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
-    [|public class A : IComparable
+    public class A : IComparable
     {    
         public override int GetHashCode()
         {
@@ -259,7 +247,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             return true;
         }
-    }|]
+    }
 
     public class B : IComparable
     {    
@@ -305,7 +293,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             return true;
         }
     }
-");
+",
+                GetCA1036CSharpEqualsResultAt(52, 18, "B"));
         }
 
         [Fact]
@@ -820,12 +809,12 @@ End Class
         }
 
         [Fact]
-        public void CA1036StructWrongEqualsBasicWithScope()
+        public async Task CA1036StructWrongEqualsBasic2()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
-[|Public Class A : Implements IComparable
+Public Class A : Implements IComparable
 
     Public Overrides Function GetHashCode() As Integer
         Return 1234
@@ -863,7 +852,7 @@ Imports System
         Return True
     End Operator
 
-End Class|]
+End Class
 
 Public Structure B : Implements IComparable
 
@@ -894,7 +883,8 @@ Public Structure B : Implements IComparable
     End Operator
 
 End Structure
-");
+",
+                GetCA1036BasicBothResultAt(44, 18, "B", "<=, >="));
         }
 
         [Fact]
@@ -1308,35 +1298,33 @@ public class DerivedClass<T> : BaseClass<T>
         }
 
         private static DiagnosticResult GetCA1036CSharpOperatorsResultAt(int line, int column, string typeName, string operators)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageOperator, typeName, operators);
-            return new DiagnosticResult(OverrideMethodsOnComparableTypesAnalyzer.RuleOperator)
+            => VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleOperator)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName, operators);
 
         private static DiagnosticResult GetCA1036BasicOperatorsResultAt(int line, int column, string typeName, string operators)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageOperator, typeName, operators);
-            return new DiagnosticResult(OverrideMethodsOnComparableTypesAnalyzer.RuleOperator)
+            => VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleOperator)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName, operators);
 
         private static DiagnosticResult GetCA1036CSharpBothResultAt(int line, int column, string typeName, string operators)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageBoth, typeName, operators);
-            return new DiagnosticResult(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth)
+            => VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName, operators);
 
         private static DiagnosticResult GetCA1036BasicBothResultAt(int line, int column, string typeName, string operators)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageBoth, typeName, operators);
-            return new DiagnosticResult(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth)
+            => VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName, operators);
+
+        private static DiagnosticResult GetCA1036CSharpEqualsResultAt(int line, int column, string typeName)
+            => VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleEquals)
+                .WithLocation(line, column)
+                .WithArguments(typeName);
+
+        private static DiagnosticResult GetCA1036BasicEqualsResultAt(int line, int column, string typeName)
+            => VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleEquals)
+                .WithLocation(line, column)
+                .WithArguments(typeName);
     }
 }

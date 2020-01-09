@@ -85,13 +85,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCSharpExpectedResult(int line, int column)
-            => new DiagnosticResult(DeclareTypesInNamespacesAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.DeclareTypesInNamespacesMessage);
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicExpectedResult(int line, int column)
-            => new DiagnosticResult(DeclareTypesInNamespacesAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.DeclareTypesInNamespacesMessage);
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

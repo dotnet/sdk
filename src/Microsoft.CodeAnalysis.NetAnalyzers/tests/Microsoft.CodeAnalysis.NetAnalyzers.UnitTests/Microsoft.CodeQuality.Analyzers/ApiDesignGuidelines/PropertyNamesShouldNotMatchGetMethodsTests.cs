@@ -589,22 +589,14 @@ End Class
         #region Helpers
 
         private static DiagnosticResult GetCA1721CSharpResultAt(int line, int column, string identifierName, string otherIdentifierName)
-        {
-            // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
-            string message = string.Format(CultureInfo.InvariantCulture, MicrosoftCodeQualityAnalyzersResources.PropertyNamesShouldNotMatchGetMethodsMessage, identifierName, otherIdentifierName);
-            return new DiagnosticResult(PropertyNamesShouldNotMatchGetMethodsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(identifierName, otherIdentifierName);
 
         private static DiagnosticResult GetCA1721BasicResultAt(int line, int column, string identifierName, string otherIdentifierName)
-        {
-            // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
-            string message = string.Format(CultureInfo.InvariantCulture, MicrosoftCodeQualityAnalyzersResources.PropertyNamesShouldNotMatchGetMethodsMessage, identifierName, otherIdentifierName);
-            return new DiagnosticResult(PropertyNamesShouldNotMatchGetMethodsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(identifierName, otherIdentifierName);
 
         #endregion
     }

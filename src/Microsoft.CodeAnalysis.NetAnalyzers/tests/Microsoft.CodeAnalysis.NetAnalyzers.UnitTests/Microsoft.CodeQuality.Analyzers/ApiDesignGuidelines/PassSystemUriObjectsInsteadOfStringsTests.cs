@@ -464,10 +464,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         Public Sub Method()
             Method(""test"", 0, ""test"")
         End Sub
-    
+
         Public Sub Method(firstUri As String, i As Integer, lastUrl As String)
         End Sub
-    
+
         Public Sub Method(Uri As Uri, i As Integer, lastUrl As String)
         End Sub
     End Module
@@ -491,12 +491,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCA2234CSharpResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(PassSystemUriObjectsInsteadOfStringsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
 
         private static DiagnosticResult GetCA2234BasicResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(PassSystemUriObjectsInsteadOfStringsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
     }

@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines;
 using Xunit;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideGetHashCodeOnOverridingEqualsAnalyzer,
@@ -89,7 +87,7 @@ Class C
     End Function
 End Class",
             // Test0.vb(2,7): warning CA2224: Override GetHashCode on overriding Equals
-            GetBasicResultAt(2, 7, BasicOverrideGetHashCodeOnOverridingEqualsAnalyzer.Rule));
+            GetBasicResultAt(2, 7));
         }
 
         [Fact]
@@ -102,7 +100,7 @@ Structure C
     End Function
 End Structure",
             // Test0.vb(2,11): warning CA2224: Override GetHashCode on overriding Equals
-            GetBasicResultAt(2, 11, BasicOverrideGetHashCodeOnOverridingEqualsAnalyzer.Rule));
+            GetBasicResultAt(2, 11));
         }
 
         [Fact]
@@ -119,7 +117,7 @@ Class C
     End Function
 End Class",
             // Test0.vb(2,7): warning CA2224: Override GetHashCode on overriding Equals
-            GetBasicResultAt(2, 7, BasicOverrideGetHashCodeOnOverridingEqualsAnalyzer.Rule));
+            GetBasicResultAt(2, 7));
         }
 
         [Fact]
@@ -142,11 +140,11 @@ Class Derived : Inherits Base
     End Function
 End Class",
             // Test0.vb(8,7): warning CA2224: Override GetHashCode on overriding Equals
-            GetBasicResultAt(8, 7, BasicOverrideGetHashCodeOnOverridingEqualsAnalyzer.Rule));
+            GetBasicResultAt(8, 7));
         }
 
-        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
     }
 }

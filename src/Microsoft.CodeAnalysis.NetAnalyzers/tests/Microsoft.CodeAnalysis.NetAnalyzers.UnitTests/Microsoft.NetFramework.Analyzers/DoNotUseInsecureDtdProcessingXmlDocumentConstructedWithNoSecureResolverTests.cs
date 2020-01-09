@@ -15,14 +15,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         private static DiagnosticResult GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage);
-        }
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage);
 
         private static DiagnosticResult GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage);
-        }
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage);
 
 
         [Fact]

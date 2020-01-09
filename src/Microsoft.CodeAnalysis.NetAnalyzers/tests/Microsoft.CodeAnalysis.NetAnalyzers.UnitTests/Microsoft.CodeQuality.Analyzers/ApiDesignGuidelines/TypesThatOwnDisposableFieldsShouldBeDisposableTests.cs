@@ -1,10 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -16,18 +13,8 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzerTests : DiagnosticAnalyzerTestBase
+    public class TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzerTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer();
-        }
-
         [Fact]
         public async Task CA1001CSharpTestWithNoDisposableType()
         {
@@ -124,13 +111,13 @@ using System.IO;
         }
 
         [Fact]
-        public void CA1001CSharpTestWithNoDisposeMethodInScope()
+        public async Task CA1001CSharpTestWithNoDisposeMethodInScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
     // This class violates the rule.
-    [|public class NoDisposeClass
+    public class [|NoDisposeClass|]
     {
         FileStream newFile;
 
@@ -138,20 +125,19 @@ using System.IO;
         {
             newFile = new FileStream(""data.txt"", FileMode.Append);
         }
-    }|]
-",
-            GetCA1001CSharpResultAt(5, 18, "NoDisposeClass", "newFile"));
+    }
+");
         }
 
         [Fact]
-        public void CA1001CSharpScopedTestWithNoDisposeMethodOutOfScope()
+        public async Task CA1001CSharpScopedTestWithNoDisposeMethodOutOfScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
 // This class violates the rule.
-public class NoDisposeClass
+public class [|NoDisposeClass|]
 {
     FileStream newFile;
 
@@ -161,10 +147,9 @@ public class NoDisposeClass
     }
 }
 
-[|public class Foo
+public class Foo
 {
 }
-|]
 ");
         }
 
@@ -369,13 +354,13 @@ Imports System.IO
         }
 
         [Fact]
-        public void CA1001BasicTestWithNoDisposeMethodInScope()
+        public async Task CA1001BasicTestWithNoDisposeMethodInScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System.IO
 
    ' This class violates the rule.
-   [|Public Class NoDisposeMethod
+   Public Class [|NoDisposeMethod|]
 
       Dim newFile As FileStream
 
@@ -383,19 +368,18 @@ Imports System.IO
          newFile = New FileStream("""", FileMode.Append)
       End Sub
 
-   End Class|]
-",
-            GetCA1001BasicResultAt(5, 17, "NoDisposeMethod", "newFile"));
+   End Class
+");
         }
 
         [Fact]
-        public void CA1001BasicTestWithNoDisposeMethodOutOfScope()
+        public async Task CA1001BasicTestWithNoDisposeMethodOutOfScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System.IO
 
    ' This class violates the rule.
-   Public Class NoDisposeMethod
+   Public Class [|NoDisposeMethod|]
 
       Dim newFile As FileStream
 
@@ -405,10 +389,8 @@ Imports System.IO
 
    End Class
 
-   [|
    Public Class Foo
    End Class
-   |]
 ");
         }
 
@@ -469,12 +451,12 @@ End Namespace
         }
 
         private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
-            => VerifyCS.Diagnostic(CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName, disposableFields);
 
         private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
-            => VerifyVB.Diagnostic(CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName, disposableFields);
     }

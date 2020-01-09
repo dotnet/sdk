@@ -1,47 +1,78 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-    public partial class AvoidDeadConditionalCodeTests : DiagnosticAnalyzerTestBase
+    public partial class AvoidDeadConditionalCodeTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer() => new AvoidDeadConditionalCode();
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new AvoidDeadConditionalCode();
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string condition, string reason)
+            => VerifyCS.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
+                .WithLocation(line, column)
+                .WithArguments(condition, reason);
 
-        protected new DiagnosticResult GetCSharpResultAt(int line, int column, string condition, string reason) =>
-            GetCSharpResultAt(line, column, AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule, condition, reason);
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string condition, string reason)
+            => VerifyVB.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
+                .WithLocation(line, column)
+                .WithArguments(condition, reason);
 
-        protected new DiagnosticResult GetBasicResultAt(int line, int column, string condition, string reason) =>
-            GetBasicResultAt(line, column, AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule, condition, reason);
+        private static DiagnosticResult GetCSharpNeverNullResultAt(int line, int column, string condition, string reason)
+            => VerifyCS.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
+                .WithLocation(line, column)
+                .WithArguments(condition, reason);
 
-        protected DiagnosticResult GetCSharpNeverNullResultAt(int line, int column, string condition, string reason) =>
-            GetCSharpResultAt(line, column, AvoidDeadConditionalCode.NeverNullRule, condition, reason);
+        private static DiagnosticResult GetBasicNeverNullResultAt(int line, int column, string condition, string reason)
+            => VerifyVB.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
+                .WithLocation(line, column)
+                .WithArguments(condition, reason);
 
-        protected DiagnosticResult GetBasicNeverNullResultAt(int line, int column, string condition, string reason) =>
-            GetBasicResultAt(line, column, AvoidDeadConditionalCode.NeverNullRule, condition, reason);
-
-        protected new void VerifyCSharp(string source, params DiagnosticResult[] expected)
+        private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
         {
-            VerifyCSharp(source, GetEditorConfigToEnableCopyAnalysis(), expected);
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                }
+            };
+
+            csharpTest.ExpectedDiagnostics.AddRange(expected);
+
+            await csharpTest.RunAsync();
         }
 
-        protected new void VerifyBasic(string source, params DiagnosticResult[] expected)
+        private static async Task VerifyBasicAnalyzerAsync(string source, params DiagnosticResult[] expected)
         {
-            VerifyBasic(source, GetEditorConfigToEnableCopyAnalysis(), expected);
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                }
+            };
+
+            vbTest.ExpectedDiagnostics.AddRange(expected);
+
+            await vbTest.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void SimpleNullCompare_NoDiagnostic()
+        public async Task SimpleNullCompare_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -57,7 +88,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         If param Is Nothing Then
@@ -71,9 +102,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void SimpleNullCompare_AfterAssignment_Diagnostic()
+        public async Task SimpleNullCompare_AfterAssignment_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -94,7 +125,7 @@ class Test
             // Test0.cs(11,13): warning CA1508: 'null != param' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(11, 13, @"null != param", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         param = Nothing
@@ -113,9 +144,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_NullCompare_IsNullValue_Diagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsNullValue_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -183,7 +214,7 @@ class Test
             // Test0.cs(45,17): warning CA1508: 'param == cNotNull' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(45, 17, "param == cNotNull", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -237,9 +268,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_NullCompare_IsNotNullValue_Diagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsNotNullValue_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -307,7 +338,7 @@ class Test
             // Test0.cs(45,17): warning CA1508: 'param == cNotNull' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(45, 17, "param == cNotNull", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -361,9 +392,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_NullCompare_IsNotNotNullValue_NoDiagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsNotNotNullValue_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -419,7 +450,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -461,9 +492,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_NullCompare_IsMayBeNullValue_NoDiagnostic()
+        public async Task ElseIf_NestedIf_NullCompare_IsMayBeNullValue_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -519,7 +550,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -561,9 +592,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_WhileLoop()
+        public async Task NullCompare_WhileLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param)
@@ -599,7 +630,7 @@ class Test
             // Test0.cs(22,13): warning CA1508: 'str != param' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(22, 13, "str != param", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' While loop
     Private Sub M1(ByVal param As String)
@@ -631,9 +662,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_WhileLoop_02()
+        public async Task NullCompare_WhileLoop_02()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2)
@@ -649,7 +680,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' While loop
     Private Sub M1(param As String, param2 As String)
@@ -664,9 +695,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_WhileLoop_03()
+        public async Task NullCompare_WhileLoop_03()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public C ContainingC => new C();
@@ -689,7 +720,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
     Public ReadOnly Property ContainingC As C
 End Class
@@ -709,9 +740,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_WhileLoop_04()
+        public async Task NullCompare_WhileLoop_04()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -734,7 +765,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -758,9 +789,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_WhileLoop_05()
+        public async Task NullCompare_WhileLoop_05()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C[] args)
@@ -790,7 +821,7 @@ class C
 {
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(args As C())
         Dim local As C = Nothing
@@ -817,9 +848,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_WhileLoop_WithBreak()
+        public async Task NullCompare_WhileLoop_WithBreak()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2, bool flag)
@@ -859,7 +890,7 @@ class Test
             // Test0.cs(21,17): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(21, 17, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' While loop
     Private Sub M1(param As String, param2 As String, flag As Boolean)
@@ -892,9 +923,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_WhileLoop_WithContinue()
+        public async Task NullCompare_WhileLoop_WithContinue()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2, string param3, bool flag)
@@ -949,7 +980,7 @@ class Test
             // Test0.cs(41,13): warning CA1508: 'str != param' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(41, 13, "str != param", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' While loop
     Private Sub M1(param As String, param2 As String, param3 As String, flag As Boolean)
@@ -993,9 +1024,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_DoWhileLoop()
+        public async Task NullCompare_DoWhileLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -1032,7 +1063,7 @@ class Test
             // Test0.cs(27,13): warning CA1508: 'param != cNotNull' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(27, 13, "param != cNotNull", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -1085,9 +1116,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_DoWhileLoop_02()
+        public async Task NullCompare_DoWhileLoop_02()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public C ContainingC => new C();
@@ -1111,7 +1142,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
     Public ReadOnly Property ContainingC As C
 End Class
@@ -1131,9 +1162,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_DoWhileLoop_WithBreak()
+        public async Task NullCompare_DoWhileLoop_WithBreak()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -1171,7 +1202,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -1224,9 +1255,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_DoWhileLoop_WithContinue()
+        public async Task NullCompare_DoWhileLoop_WithContinue()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -1286,7 +1317,7 @@ class Test
             // Test0.cs(42,13): warning CA1508: 'param != cNull' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(42, 13, "param != cNull", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -1379,9 +1410,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_DoUntilLoop()
+        public async Task NullCompare_DoUntilLoop()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' Do-Until top loop
     Private Sub M(ByVal param As String)
@@ -1435,9 +1466,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ForLoop()
+        public async Task NullCompare_ForLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C param, C param2)
@@ -1500,9 +1531,9 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ForLoop_02()
+        public async Task NullCompare_ForLoop_02()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C[] args)
@@ -1525,9 +1556,9 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ForLoop_03()
+        public async Task NullCompare_ForLoop_03()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C[] args)
@@ -1554,7 +1585,7 @@ class C
 {
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(args As C())
         Dim local As C = Nothing
@@ -1579,9 +1610,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ForLoop_WithBreak()
+        public async Task NullCompare_ForLoop_WithBreak()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2, bool flag)
@@ -1621,7 +1652,7 @@ class Test
             // Test0.cs(21,17): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(21, 17, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' For loop
     Private Sub M1(param As String, param2 As String, flag As Boolean)
@@ -1655,9 +1686,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ForLoop_WithContinue()
+        public async Task NullCompare_ForLoop_WithContinue()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2, string param3, bool flag)
@@ -1712,7 +1743,7 @@ class Test
             // Test0.cs(41,13): warning CA1508: 'str != param' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(41, 13, "str != param", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Private Sub M1(param As String, param2 As String, param3 As String, flag As Boolean)
         Dim str As String = Nothing
@@ -1752,9 +1783,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ValueCompare_ForLoop()
+        public async Task ValueCompare_ForLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string[] args, int j)
@@ -1771,7 +1802,7 @@ class Test
     }
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(args As C(), j As Integer)
         Dim i As Integer
@@ -1791,9 +1822,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ForEachLoop()
+        public async Task NullCompare_ForEachLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C[] args)
@@ -1820,7 +1851,7 @@ class C
 {
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(args As C())
         Dim local As C = Nothing
@@ -1844,9 +1875,9 @@ End Class
         }
 
         [Fact]
-        public void NullCompare_ForEachLoop_WithBreak()
+        public async Task NullCompare_ForEachLoop_WithBreak()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2, bool flag)
@@ -1887,7 +1918,7 @@ class Test
             // Test0.cs(22,17): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(22, 17, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' While loop
     Private Sub M1(param As String, param2 As String, flag As Boolean)
@@ -1921,9 +1952,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ForEachLoop_WithContinue()
+        public async Task NullCompare_ForEachLoop_WithContinue()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2, string param3, bool flag)
@@ -1987,7 +2018,7 @@ class Test
             // Test0.cs(42,13): warning CA1508: 'str != param' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(42, 13, "str != param", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Private Sub M1(param As String, param2 As String, param3 As String, flag As Boolean)
         Dim str As String = Nothing
@@ -2037,9 +2068,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_SwitchStatement_01_NoDiagnostic()
+        public async Task NullCompare_SwitchStatement_01_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(C param, int i)
@@ -2068,7 +2099,7 @@ class C
 {
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M(param As C, i As Integer)
         Select Case i
@@ -2092,9 +2123,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_SwitchStatement_02_NoDiagnostic()
+        public async Task NullCompare_SwitchStatement_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C param, int i)
@@ -2123,7 +2154,7 @@ class C
 {
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M(param As C, i As Integer)
         Select Case i
@@ -2147,9 +2178,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_SwitchStatement_03_NoDiagnostic()
+        public async Task NullCompare_SwitchStatement_03_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C param, int i)
@@ -2178,7 +2209,7 @@ class C
 {
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M(param As C, i As Integer)
         Select Case i
@@ -2204,9 +2235,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_SwitchStatement_01_Diagnostic()
+        public async Task NullCompare_SwitchStatement_01_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C param, int i)
@@ -2238,7 +2269,7 @@ class C
             // Test0.cs(20,13): warning CA1508: 'param != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(20, 13, "param != null", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M(param As C, i As Integer)
         Select Case i
@@ -2264,9 +2295,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_SwitchStatement_02_Diagnostic()
+        public async Task NullCompare_SwitchStatement_02_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(C param, int i)
@@ -2298,7 +2329,7 @@ class C
             // Test0.cs(20,13): warning CA1508: 'param != null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(20, 13, "param != null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M(param As C, i As Integer)
         Select Case i
@@ -2325,9 +2356,9 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCompare_CopyAnalysis()
+        public async Task NullCompare_CopyAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(C param, C param2)
@@ -2353,7 +2384,7 @@ class C
             // Test0.cs(12,34): warning CA1508: 'param2 != cNotNull' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(12, 34, "param2 != cNotNull", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As C, param2 As C)
         Dim cNotNull As New C()
@@ -2377,9 +2408,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ConditionalOr_NoDiagnostic()
+        public async Task NullCompare_ConditionalOr_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, string param2)
@@ -2403,7 +2434,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String)
         Dim strNotNull = """"
@@ -2424,9 +2455,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ConditionalOr_Diagnostic()
+        public async Task NullCompare_ConditionalOr_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, string param2)
@@ -2450,7 +2481,7 @@ class Test
             // Test0.cs(14,36): warning CA1508: 'strNull != param' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(14, 36, "strNull != param", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String)
         Dim strNotNull = """"
@@ -2472,9 +2503,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ConditionalAnd_NoDiagnostic()
+        public async Task NullCompare_ConditionalAnd_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, string param2)
@@ -2514,7 +2545,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String, flag As Boolean)
         Dim strNotNull = """"
@@ -2529,10 +2560,10 @@ Module Test
 
         If strNull <> param AndAlso param <> strNotNull Then
         End If
-        
+
         If strNull <> param AndAlso param2 <> strNotNull Then
         End If
-        
+
         If strNull <> param AndAlso param = strMayBeNull Then
         End If
 
@@ -2547,9 +2578,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ConditionalAnd_Diagnostic()
+        public async Task NullCompare_ConditionalAnd_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, string param2)
@@ -2573,7 +2604,7 @@ class Test
             // Test0.cs(14,59): warning CA1508: 'strNull != param' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(14, 59, "strNull != param", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String)
         Dim strNotNull = """"
@@ -2596,9 +2627,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ConditionaAndOrNullCompare_Diagnostic()
+        public async Task ConditionaAndOrNullCompare_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -2619,7 +2650,7 @@ class Test
             // Test0.cs(11,30): warning CA1508: 'param != str' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(11, 30, "param != str", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         Dim str = """"
@@ -2638,9 +2669,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ContractCheck_NoDiagnostic()
+        public async Task NullCompare_ContractCheck_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -2659,7 +2690,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -2676,9 +2707,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_ContractCheck_Diagnostic()
+        public async Task NullCompare_ContractCheck_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -2723,7 +2754,7 @@ class Test
             // Test0.cs(33,56): warning CA1508: 'param != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(33, 56, "param != null", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -2764,9 +2795,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_InAssignment_Diagnostic()
+        public async Task NullCompare_InAssignment_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -2784,7 +2815,7 @@ class Test
             // Test0.cs(12,21): warning CA1508: 'param == c' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(12, 21, "param == c", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -2801,9 +2832,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_Nested_NoDiagnostic()
+        public async Task NullCompare_Nested_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -2825,7 +2856,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -2846,9 +2877,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCoalesce_NoDiagnostic()
+        public async Task NullCoalesce_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -2865,7 +2896,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -2881,9 +2912,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCoalesce_Diagnostic()
+        public async Task NullCoalesce_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -2916,7 +2947,7 @@ class Test
             // Test0.cs(23,17): warning CA1508: 'local' is never 'null'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpNeverNullResultAt(23, 17, "local", "null"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -2939,9 +2970,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCoalesce_NullableValueType_NoDiagnostic()
+        public async Task NullCoalesce_NullableValueType_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public int X;
@@ -2956,7 +2987,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
     Public X As Integer
 End Class
@@ -2970,9 +3001,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCoalesce_NullableValueType_Diagnostic()
+        public async Task NullCoalesce_NullableValueType_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int? x)
@@ -2988,7 +3019,7 @@ class Test
             // Test0.cs(7,13): warning CA1508: 'x == null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(7, 13, "x == null", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Private Sub M1(x As Integer?)
         x = Nothing
@@ -3002,9 +3033,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ConditionalAccess_NoDiagnostic()
+        public async Task ConditionalAccess_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public int X;
@@ -3022,7 +3053,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
     Public X As Integer
 End Class
@@ -3039,9 +3070,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ConditionalAccess_Diagnostic()
+        public async Task ConditionalAccess_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public int X;
@@ -3075,7 +3106,7 @@ class Test
             // Test0.cs(24,17): warning CA1508: 'local' is never 'null'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpNeverNullResultAt(24, 17, "local", "null"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
     Public X As Integer
 End Class
@@ -3099,9 +3130,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ConditionalAccessNullCoalesce_Field_NoDiagnostic()
+        public async Task ConditionalAccessNullCoalesce_Field_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public int X;
@@ -3118,7 +3149,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
     Public X As Integer
 End Class
@@ -3135,9 +3166,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3169,7 +3200,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -3198,9 +3229,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_02_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3259,7 +3290,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -3307,9 +3338,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_Diagnostic()
+        public async Task NullCheck_AfterTryCast_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3346,7 +3377,7 @@ class Test
             // Test0.cs(26,13): warning CA1508: 'd == c' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(26, 13, "d == c", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -3380,9 +3411,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_02_Diagnostic()
+        public async Task NullCheck_AfterTryCast_02_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3487,7 +3518,7 @@ class Test
             // Test0.cs(90,13): warning CA1508: 'd != c' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(90, 13, "d != c", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -3578,9 +3609,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_IsPattern_Diagnostic()
+        public async Task NullCheck_AfterTryCast_IsPattern_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3655,9 +3686,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void DeclarationPattern_DiscardSymbol_Diagnostic()
+        public async Task DeclarationPattern_DiscardSymbol_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3691,9 +3722,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_IsPattern_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_IsPattern_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3741,9 +3772,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_Interfaces_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_Interfaces_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 interface I
 {
 }
@@ -3786,7 +3817,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Interface I
 End Interface
 
@@ -3825,9 +3856,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_Interfaces_Diagnostic()
+        public async Task NullCheck_AfterTryCast_Interfaces_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 interface I
 {
 }
@@ -3868,7 +3899,7 @@ class Test
             // Test0.cs(30,13): warning CA1508: 'i == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(30, 13, "i == null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Interface I
 End Interface
 
@@ -3906,9 +3937,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_TypeParameter_NoDiagnostic()
+        public async Task NullCheck_AfterTryCast_TypeParameter_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -3950,7 +3981,7 @@ class Test<T>
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -3986,9 +4017,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterTryCast_TypeParameter_Diagnostic()
+        public async Task NullCheck_AfterTryCast_TypeParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4018,7 +4049,7 @@ class Test<T>
             // Test0.cs(21,13): warning CA1508: 'c == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(21, 13, "c == null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4045,9 +4076,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4078,7 +4109,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4105,9 +4136,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_NarrowingConversion_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_NarrowingConversion_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int value)
@@ -4123,9 +4154,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4154,7 +4185,7 @@ class Test
             // Test0.cs(20,13): warning CA1508: 'd == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(20, 13, "d == null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4181,9 +4212,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_02_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_02_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4212,7 +4243,7 @@ class Test
             // Test0.cs(20,13): warning CA1508: 'd == c' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(20, 13, "d == c", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4239,9 +4270,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_03_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_03_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4306,7 +4337,7 @@ class Test
             // Test0.cs(52,13): warning CA1508: 'd == c' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(52, 13, "d == c", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4360,9 +4391,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_04_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_04_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4388,7 +4419,7 @@ class Test
             // Test0.cs(17,13): warning CA1508: 'd == local' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(17, 13, "d == local", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4413,9 +4444,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_05_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_05_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4445,7 +4476,7 @@ class Test
             // Test0.cs(21,13): warning CA1508: 'd == local' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(21, 13, "d == local", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4474,9 +4505,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_Interfaces_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_Interfaces_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 interface I
 {
 }
@@ -4520,7 +4551,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Interface I
 End Interface
 
@@ -4559,9 +4590,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_Interfaces_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_Interfaces_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 interface I
 {
 }
@@ -4602,7 +4633,7 @@ class Test
             // Test0.cs(30,13): warning CA1508: 'i == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(30, 13, "i == null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Interface I
 End Interface
 
@@ -4640,9 +4671,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_Interfaces_02_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_Interfaces_02_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 interface I
 {
 }
@@ -4691,7 +4722,7 @@ class Test
             // Test0.cs(36,13): warning CA1508: 'c == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(36, 13, "c == null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Interface I
 End Interface
 
@@ -4736,9 +4767,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_TypeParameter_NoDiagnostic()
+        public async Task NullCheck_AfterDirectCast_TypeParameter_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4757,16 +4788,16 @@ class Test<T>
             return;
         }
 
-        var d = (D)t;   // Compiler error CS0030: Cannot convert type 'T' to 'D'
+        var d = {|CS0030:(D)t|};   // Compiler error CS0030: Cannot convert type 'T' to 'D'
         if (d == null)
         {
             return;
         }
     }
 }
-", TestValidationMode.AllowCompileErrors);
+");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4780,20 +4811,20 @@ Class Test(Of T As C)
             Return
         End If
 
-        Dim d = DirectCast(t, D)    '  Compiler error BC30311: Value of type 'T' cannot be converted to 'D'
+        Dim d = DirectCast({|BC30311:t|}, D)    '  Compiler error BC30311: Value of type 'T' cannot be converted to 'D'
         If d Is Nothing Then
             Return
         End If
     End Sub
-End Class", TestValidationMode.AllowCompileErrors);
+End Class");
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AfterDirectCast_TypeParameter_Diagnostic()
+        public async Task NullCheck_AfterDirectCast_TypeParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4839,7 +4870,7 @@ class Test<T>
             // Test0.cs(35,13): warning CA1508: 'c == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(35, 13, "c == null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -4879,9 +4910,9 @@ End Class",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_ThrowExpressionWithoutArgument_NoDiagnostic()
+        public async Task NullCheck_ThrowExpressionWithoutArgument_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4908,9 +4939,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AssignedInCatch_NoDiagnostic()
+        public async Task NullCheck_AssignedInCatch_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -4944,9 +4975,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_OutArgument_NoDiagnostic()
+        public async Task NullCheck_OutArgument_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public void Cleanup() { }
@@ -4984,9 +5015,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_RefArgument_NoDiagnostic()
+        public async Task NullCheck_RefArgument_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int count)
@@ -5010,9 +5041,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_LogicalOr_NoDiagnostic()
+        public async Task NullCheck_LogicalOr_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int x, int y)
@@ -5030,9 +5061,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_DeconstructionAssignment_NoDiagnostic()
+        public async Task NullCheck_DeconstructionAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -5056,9 +5087,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_DeconstructionAssignment_InLambda_NoDiagnostic()
+        public async Task NullCheck_DeconstructionAssignment_InLambda_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -5083,9 +5114,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1647")]
-        public void NullCheck_DeconstructionAssignment_InLambdaPassedAsArgument_NoDiagnostic()
+        public async Task NullCheck_DeconstructionAssignment_InLambdaPassedAsArgument_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -5111,9 +5142,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_AwaitExpression_NoDiagnostic()
+        public async Task NullCheck_AwaitExpression_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System.Threading.Tasks;
 
 class Test
@@ -5130,7 +5161,7 @@ class Test
     }
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System.Threading.Tasks
 
 Class Test
@@ -5151,9 +5182,9 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_CollectionAddAndCount_NoDiagnostic()
+        public async Task NullCheck_CollectionAddAndCount_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System.Collections.Generic;
 
 class Test
@@ -5176,7 +5207,7 @@ class C
 {
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System.Collections.Immutable
 
 Class Test
@@ -5199,9 +5230,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCheck_BothSidesOfEquals_NoDiagnostic()
+        public async Task NullCheck_BothSidesOfEquals_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(Test a, Test b)
@@ -5219,7 +5250,7 @@ class Test
     }
 }
 ");
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M(a As Test, b As Test)
         ' If a is not-null, ensure b is not null.
@@ -5237,9 +5268,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ConditionalAccessCheck_InsideLocalFunction_NoDiagnostic()
+        public async Task ConditionalAccessCheck_InsideLocalFunction_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     public bool Flag;
@@ -5255,9 +5286,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ConditionalAccessCheck_InsideLocalFunction_02_NoDiagnostic()
+        public async Task ConditionalAccessCheck_InsideLocalFunction_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     public bool Flag;
@@ -5273,9 +5304,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ConditionalAccessCheck_InsideInitializer_NoDiagnostic()
+        public async Task ConditionalAccessCheck_InsideInitializer_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public bool Flag;
@@ -5299,9 +5330,9 @@ class Test : Base
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public void ConditionalAccessCheck_InsideConstructorInitializer_Diagnostic()
+        public async Task ConditionalAccessCheck_InsideConstructorInitializer_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public bool Flag;
@@ -5327,9 +5358,9 @@ class Test : Base
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public void ConditionalAccessCheck_InsideFieldInitializer_Diagnostic()
+        public async Task ConditionalAccessCheck_InsideFieldInitializer_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public bool Flag;
@@ -5347,9 +5378,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public void ConditionalAccessCheck_InsidePropertyInitializer_ExpressionBody_Diagnostic()
+        public async Task ConditionalAccessCheck_InsidePropertyInitializer_ExpressionBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public bool Flag;
@@ -5370,9 +5401,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void InsideLockStatement_FieldCheck_NoDiagnostic()
+        public async Task InsideLockStatement_FieldCheck_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -5397,7 +5428,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
 End Class
 
@@ -5420,9 +5451,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void TestCompilerGeneratedNullCheckNotFlagged()
+        public async Task TestCompilerGeneratedNullCheckNotFlagged()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -5446,9 +5477,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void StaticObjectReferenceEquals_Diagnostic()
+        public async Task StaticObjectReferenceEquals_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -5499,7 +5530,7 @@ public class Test
             // Test0.cs(40,14): warning CA1508: 'ReferenceEquals(c, c2)' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(40, 14, "ReferenceEquals(c, c2)", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -5541,9 +5572,9 @@ End Class",
         }
 
         [Fact]
-        public void StaticObjectEquals_NoObjectEqualsOverride_Diagnostic()
+        public async Task StaticObjectEquals_NoObjectEqualsOverride_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -5594,7 +5625,7 @@ public class Test
             // Test0.cs(40,14): warning CA1508: 'object.Equals(c, c2)' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(40, 14, "object.Equals(c, c2)", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -5636,9 +5667,9 @@ End Class",
         }
 
         [Fact]
-        public void StaticObjectEquals_ObjectEqualsOverride_Diagnostic()
+        public async Task StaticObjectEquals_ObjectEqualsOverride_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -5689,7 +5720,7 @@ public class Test
             // Test0.cs(42,14): warning CA1508: 'object.Equals(c, c2)' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(42, 14, "object.Equals(c, c2)", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 
@@ -5733,9 +5764,9 @@ End Class",
         }
 
         [Fact]
-        public void ObjectEquals_NoObjectEqualsOverride_Diagnostic()
+        public async Task ObjectEquals_NoObjectEqualsOverride_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -5786,7 +5817,7 @@ public class Test
             // Test0.cs(40,14): warning CA1508: 'c.Equals(c2)' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(40, 14, "c.Equals(c2)", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -5828,9 +5859,9 @@ End Class",
         }
 
         [Fact]
-        public void ObjectEquals_ObjectEqualsOverride_Diagnostic()
+        public async Task ObjectEquals_ObjectEqualsOverride_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -5881,7 +5912,7 @@ public class Test
             // Test0.cs(42,14): warning CA1508: 'c.Equals(c2)' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(42, 14, "c.Equals(c2)", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 
@@ -5925,12 +5956,12 @@ End Class",
         }
 
         [Fact]
-        public void IEquatableEquals_ExplicitImplementation_Diagnostic()
+        public async Task IEquatableEquals_ExplicitImplementation_Diagnostic()
         {
             // Explicit implementation of Equals means c1.Equals(c2) performs
             // reference equality using object.Equals(object) overload.
 
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 
 public class C : IEquatable<C>
@@ -5986,7 +6017,7 @@ public class Test
             // Test0.cs(44,14): warning CA1508: 'c.Equals(c2)' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(44, 14, "c.Equals(c2)", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -6035,9 +6066,9 @@ End Class",
         }
 
         [Fact]
-        public void IEquatableEquals_ImplicitImplementation_Diagnostic()
+        public async Task IEquatableEquals_ImplicitImplementation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 
 public class C : IEquatable<C>
@@ -6093,9 +6124,9 @@ public class Test
         }
 
         [Fact]
-        public void IEquatableEquals_Override_Diagnostic()
+        public async Task IEquatableEquals_Override_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 
 public abstract class MyEquatable<T> : IEquatable<T>
@@ -6156,9 +6187,9 @@ public class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void MultidimensionalArray_NoDiagnostic()
+        public async Task MultidimensionalArray_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M()
@@ -6173,7 +6204,7 @@ class Test
             // Test0.cs(7,13): warning CA1508: 'x == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(7, 13, "x == null", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M()
         Dim x = New Integer(,) { { 1, 2 }, { 2, 3 } }
@@ -6189,9 +6220,9 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_LambdaResult_Diagnostic()
+        public async Task NullCheck_LambdaResult_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1()
@@ -6209,7 +6240,7 @@ class Test
             // Test0.cs(9,13): warning CA1508: 'isNonNull(x)' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(9, 13, "isNonNull(x)", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M1()
         Dim x As String = Nothing
@@ -6228,11 +6259,17 @@ End Class
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_LambdaResult_EditorConfig_NoInterproceduralLambdaAnalysis_NoDiagnostic()
+        public async Task NullCheck_LambdaResult_EditorConfig_NoInterproceduralLambdaAnalysis_NoDiagnostic()
         {
             const string editorConfigText = "dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 0";
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 class Test
 {
     void M1()
@@ -6246,9 +6283,19 @@ class Test
         }
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Class Test
     Private Sub M1()
         Dim x As String = Nothing
@@ -6259,15 +6306,19 @@ Class Test
         End If
     End Sub
 End Class
-", GetEditorConfigAdditionalFile(editorConfigText));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_LambdaResult_NoDiagnostic()
+        public async Task NullCheck_LambdaResult_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1()
@@ -6287,7 +6338,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M1()
         Dim myLambda As System.Action(Of String) = Sub(x As String)
@@ -6306,9 +6357,9 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_LambdaResult_NoDiagnostic_02()
+        public async Task NullCheck_LambdaResult_NoDiagnostic_02()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1()
@@ -6329,7 +6380,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M1()
         Dim myLambda As System.Action(Of String) = Sub(x As String)
@@ -6349,11 +6400,11 @@ End Class");
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCheck_LambdaResult_NoDiagnostic_03()
+        public async Task NullCheck_LambdaResult_NoDiagnostic_03()
         {
             // We do not analyze lambdas/local functions independent of the calling context
             // Hence no diagnostic reported for dead code in lambda here.
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1()
@@ -6373,7 +6424,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Private Sub M1()
         Dim myLambda As System.Action = Sub()
@@ -6389,9 +6440,9 @@ End Class");
         }
 
         [Fact, WorkItem(1855, "https://github.com/dotnet/roslyn-analyzers/issues/1855")]
-        public void PointsToAbstractValue_MakeMayBeNull_AssertsKindNotEqualKnownKnownLValueCaptures()
+        public async Task PointsToAbstractValue_MakeMayBeNull_AssertsKindNotEqualKnownKnownLValueCaptures()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6444,9 +6495,9 @@ using System.Linq;
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void NullCompare_Unboxing_InstanceEntityAssert()
+        public async Task NullCompare_Unboxing_InstanceEntityAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 struct S
 {
     public C C { get; }
@@ -6464,9 +6515,9 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NullCompare_PointsToFlowCaptureAssert()
+        public async Task NullCompare_PointsToFlowCaptureAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     private C _field;
@@ -6507,9 +6558,9 @@ class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NestedLambdaAndLocalFunctionsWithCaptures()
+        public async Task NestedLambdaAndLocalFunctionsWithCaptures()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 
 class C
@@ -6534,9 +6585,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void CopyAnalysisAssert_IndexerArrayAccessWithCast()
+        public async Task CopyAnalysisAssert_IndexerArrayAccessWithCast()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 public struct S
 {
     public object Value { get; }
@@ -6560,16 +6611,16 @@ public class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void ArrayInitializerNotParentedByArrayCreation()
+        public async Task ArrayInitializerNotParentedByArrayCreation()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class C
     Public Sub F(p As Object)
-        Dim a = {M}
+        Dim a = {|BC30451:M|}
         Dim b = If(p, new C())
     End Sub
 End Class
-", validationMode: TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
@@ -6578,19 +6629,15 @@ End Class
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + AvoidDeadConditionalCode.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public void EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
         {
-            var expected = Array.Empty<DiagnosticResult>();
-            if (editorConfigText.Length == 0)
+            var csharpTest = new VerifyCS.Test
             {
-                expected = new DiagnosticResult[]
+                TestState =
                 {
-                    // Test0.cs(7,13): warning CA1508: 'param == null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-                    GetCSharpResultAt(7, 13, @"param == null", "true")
-                };
-            }
-
-            VerifyCSharp(@"
+                    Sources =
+                    {
+                        @"
 class Test
 {
     void M1(string param)
@@ -6601,26 +6648,50 @@ class Test
         }
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            };
 
-            expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
-                {
-                    // Test0.vb(5,12): warning CA1508: 'param Is Nothing' is always 'True'. Remove or refactor the condition(s) to avoid dead code.
-                    GetBasicResultAt(5, 12, "param Is Nothing", "True")
-                };
+                csharpTest.ExpectedDiagnostics.Add(
+                    // Test0.cs(7,13): warning CA1508: 'param == null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(7, 13, @"param == null", "true")
+                );
             }
 
-            VerifyBasic(@"
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Module Test
     Sub M1(param As String)
         param = Nothing
         If param Is Nothing Then
         End If
     End Sub
-End Module", GetEditorConfigAdditionalFile(editorConfigText), expected);
+End Module"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                vbTest.ExpectedDiagnostics.Add(
+                    // Test0.vb(5,12): warning CA1508: 'param Is Nothing' is always 'True'. Remove or refactor the condition(s) to avoid dead code.
+                    GetBasicResultAt(5, 12, "param Is Nothing", "True")
+                );
+            }
+
+            await vbTest.RunAsync();
         }
     }
 }

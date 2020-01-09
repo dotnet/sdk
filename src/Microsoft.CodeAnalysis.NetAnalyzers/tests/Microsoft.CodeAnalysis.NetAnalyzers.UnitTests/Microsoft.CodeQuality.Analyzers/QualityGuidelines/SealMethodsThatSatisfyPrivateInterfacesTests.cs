@@ -428,11 +428,11 @@ End Class
         // sealed overrides - no diagnostic
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-            => new DiagnosticResult(SealMethodsThatSatisfyPrivateInterfacesAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
-            => new DiagnosticResult(SealMethodsThatSatisfyPrivateInterfacesAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
     }
 }

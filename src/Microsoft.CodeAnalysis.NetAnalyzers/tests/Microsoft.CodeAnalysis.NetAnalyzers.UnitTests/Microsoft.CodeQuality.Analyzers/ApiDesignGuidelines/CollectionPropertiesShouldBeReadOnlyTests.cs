@@ -15,12 +15,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public class CollectionPropertiesShouldBeReadOnlyTests
     {
-        private DiagnosticResult GetBasicResultAt(int line, int column, string propertyName)
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string propertyName)
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(propertyName);
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column, string propertyName)
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string propertyName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(propertyName);

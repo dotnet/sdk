@@ -101,7 +101,7 @@ Class C
     End Operator
 End Class",
             // Test0.vb(2,7): warning CA2224: Override Equals on overloading operator equals
-            GetBasicResultAt(2, 7, BasicOverrideEqualsOnOverloadingOperatorEqualsAnalyzer.Rule));
+            GetBasicResultAt(2, 7));
         }
 
         [Fact]
@@ -118,7 +118,7 @@ Structure C
     End Operator
 End Structure",
             // Test0.vb(2,11): warning CA2224: Override Equals on overloading operator equals
-            GetBasicResultAt(2, 11, BasicOverrideEqualsOnOverloadingOperatorEqualsAnalyzer.Rule));
+            GetBasicResultAt(2, 11));
         }
 
         [Fact]
@@ -139,7 +139,7 @@ Class C
     End Function
 End Class",
             // Test0.vb(2,7): warning CA2224: Override Equals on overloading operator equals
-            GetBasicResultAt(2, 7, BasicOverrideEqualsOnOverloadingOperatorEqualsAnalyzer.Rule));
+            GetBasicResultAt(2, 7));
         }
 
         [Fact]
@@ -166,11 +166,11 @@ Class Derived : Inherits Base
     End Function
 End Class",
             // Test0.vb(8,7): warning CA2224: Override Equals on overloading operator equals
-            GetBasicResultAt(8, 7, BasicOverrideEqualsOnOverloadingOperatorEqualsAnalyzer.Rule));
+            GetBasicResultAt(8, 7));
         }
 
-        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
     }
 }

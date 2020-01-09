@@ -96,12 +96,12 @@ End Class
         }
 
         private static DiagnosticResult GetCA1018CSharpResultAt(int line, int column, string objectName)
-            => VerifyCS.Diagnostic(MarkAttributesWithAttributeUsageAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName);
 
         private static DiagnosticResult GetCA1018BasicResultAt(int line, int column, string objectName)
-            => VerifyVB.Diagnostic(MarkAttributesWithAttributeUsageAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName);
     }

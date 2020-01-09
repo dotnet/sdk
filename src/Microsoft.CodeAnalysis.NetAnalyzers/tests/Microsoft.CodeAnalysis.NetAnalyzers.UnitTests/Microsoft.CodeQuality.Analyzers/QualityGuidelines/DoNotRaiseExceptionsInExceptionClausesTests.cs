@@ -140,11 +140,11 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-            => new DiagnosticResult(DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
-            => new DiagnosticResult(DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
     }
 }

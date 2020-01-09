@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -16,18 +13,8 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class DoNotDirectlyAwaitATaskTests : DiagnosticAnalyzerTestBase
+    public class DoNotDirectlyAwaitATaskTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotDirectlyAwaitATaskAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotDirectlyAwaitATaskAnalyzer();
-        }
-
         [Fact]
         public async Task CSharpSimpleAwaitTask()
         {
@@ -366,10 +353,21 @@ public class C
             }.RunAsync();
         }
 
-        [Fact, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
-        public void CSharpSimpleAwaitTask_AnalyzerOption_OutputKind()
+        [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
+        [InlineData("", true)]
+        [InlineData("dotnet_code_quality.output_kind = ConsoleApplication", false)]
+        [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, WindowsApplication", false)]
+        [InlineData("dotnet_code_quality.output_kind = DynamicallyLinkedLibrary", true)]
+        [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary", true)]
+        public async Task CSharpSimpleAwaitTask_AnalyzerOption_OutputKind(string editorConfigText, bool isExpectingDiagnostic)
         {
-            var code = @"
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 using System.Threading.Tasks;
 
 public class C
@@ -380,25 +378,18 @@ public class C
         await t;
     }
 }
-";
-            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
 
-            // Verify diagnostic with no editor config options.
-            VerifyCSharp(code, compilationOptions, parseOptions: null, expected: GetCSharpResultAt(9, 15));
+            if (isExpectingDiagnostic)
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(9, 15));
+            }
 
-            // Verify no diagnostic with editor config options that exclude OutputKind.DynamicallyLinkedLibrary.
-            var editorConfigText = "dotnet_code_quality.output_kind = ConsoleApplication";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null);
-
-            editorConfigText = "dotnet_code_quality.CA2007.output_kind = ConsoleApplication, WindowsApplication";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null);
-
-            // Verify diagnostic with editor config options that include OutputKind.DynamicallyLinkedLibrary.
-            editorConfigText = "dotnet_code_quality.output_kind = DynamicallyLinkedLibrary";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null, expected: GetCSharpResultAt(9, 15));
-
-            editorConfigText = "dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null, expected: GetCSharpResultAt(9, 15));
+            await csharpTest.RunAsync();
         }
 
         [Fact, WorkItem(2393, "https://github.com/dotnet/roslyn-analyzers/issues/2393")]
@@ -422,14 +413,12 @@ public class C
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(11, 19));
         }
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column)
-            => new DiagnosticResult(DoNotDirectlyAwaitATaskAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskMessage);
+        private static DiagnosticResult GetCSharpResultAt(int line, int column)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column)
-            => new DiagnosticResult(DoNotDirectlyAwaitATaskAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskMessage);
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

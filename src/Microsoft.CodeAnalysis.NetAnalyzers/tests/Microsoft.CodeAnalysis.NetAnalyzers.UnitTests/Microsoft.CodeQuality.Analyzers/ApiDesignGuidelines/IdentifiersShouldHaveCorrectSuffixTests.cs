@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -1144,29 +1143,17 @@ public class C : IReadOnlyCollection<int>
         }
 
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture,
-                isSpecial ?
-                    MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                    MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-                symbolName,
-                replacementName);
-            return new DiagnosticResult(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+            => VerifyCS.Diagnostic(isSpecial
+                    ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule
+                    : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(symbolName, replacementName);
 
         private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture,
-               isSpecial ?
-                   MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                   MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-               symbolName,
-               replacementName);
-            return new DiagnosticResult(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+            => VerifyVB.Diagnostic(isSpecial
+                    ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule
+                    : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(symbolName, replacementName);
     }
 }

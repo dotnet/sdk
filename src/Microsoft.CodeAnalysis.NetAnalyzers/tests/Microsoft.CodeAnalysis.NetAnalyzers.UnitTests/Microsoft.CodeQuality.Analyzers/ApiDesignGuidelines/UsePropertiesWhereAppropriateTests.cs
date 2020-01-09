@@ -330,10 +330,12 @@ public class class1
 ");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7222")]
+        [Fact]
         public async Task VisualBasic_CA1024NoDiagnosticOnUnboundMethodCaller()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
 Public Class class1
     Public Function GetSomethingWithUnboundInvocation() As Integer
         Console.WriteLine(Me)
@@ -438,12 +440,12 @@ public class Foo : IFoo
         }
 
         private static DiagnosticResult GetCA1024CSharpResultAt(int line, int column, string methodName)
-            => VerifyCS.Diagnostic(UsePropertiesWhereAppropriateAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(methodName);
 
         private static DiagnosticResult GetCA1024BasicResultAt(int line, int column, string methodName)
-            => VerifyVB.Diagnostic(UsePropertiesWhereAppropriateAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(methodName);
     }

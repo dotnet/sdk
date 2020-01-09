@@ -1,26 +1,21 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTests : DiagnosticAnalyzerTestBase
+    public class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer();
-        }
-
         [Fact]
-        public void CSharpCases()
+        public async Task CSharpCases()
         {
             var code = @"
 using System;
@@ -88,7 +83,7 @@ class C
 }
 ";
 
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpResultAt(39, 13),
                 GetCSharpResultAt(40, 13),
                 GetCSharpResultAt(42, 13),
@@ -100,7 +95,7 @@ class C
         }
 
         [Fact]
-        public void BasicCases()
+        public async Task BasicCases()
         {
             var code = @"
 Imports System
@@ -182,7 +177,7 @@ Class C
     End Sub
 End Class
 ";
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicResultAt(54, 13),
                 GetBasicResultAt(55, 13),
                 GetBasicResultAt(57, 13),
@@ -193,13 +188,11 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }
