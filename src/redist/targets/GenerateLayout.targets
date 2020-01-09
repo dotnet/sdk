@@ -414,13 +414,7 @@
       ReplacementStrings="$(ReplacementString)" />
   </Target>
 
-  <Target Name="GenerateVersionFile" DependsOnTargets="SetupBundledComponents">
-    <Exec Command="git rev-parse HEAD"
-          ConsoleToMSBuild="true"
-          Condition=" '$(GitCommitHash)' == '' ">
-      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
-    </Exec>
-
+  <Target Name="GenerateVersionFile" DependsOnTargets="SetupBundledComponents;GetCommitHash">
     <WriteLinesToFile File="$(SdkOutputDirectory).version"
                       Lines="$(GitCommitHash);$(Version);$(Rid)"
                       Overwrite="true" />

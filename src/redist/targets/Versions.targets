@@ -5,4 +5,12 @@
       <FullNugetVersion Condition=" '$(VersionSuffixDateStamp)' != '' And '$(VersionSuffixBuildOfTheDay)' != '' ">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
     </PropertyGroup>
   </Target>
+
+  <Target Name="GetCommitHash">
+    <Exec Command="git rev-parse HEAD"
+          ConsoleToMSBuild="true"
+          Condition=" '$(GitCommitHash)' == '' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+  </Target>
 </Project>
