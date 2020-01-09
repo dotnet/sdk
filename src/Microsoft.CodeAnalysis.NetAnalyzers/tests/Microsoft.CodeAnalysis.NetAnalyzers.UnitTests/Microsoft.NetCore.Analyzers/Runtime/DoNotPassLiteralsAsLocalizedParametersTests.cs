@@ -1384,12 +1384,11 @@ internal static class Program
 
     private class BaseClass
     {
-        public virtual T Generic<T>(string text) => default(T);
     }
 
     private class DerivedClass : BaseClass
     {
-        public override T Generic<T>(string text) => base.Generic<T>(text);
+        public override T {|CS0115:Generic|}<T>(string text) => base.{|CS0117:Generic<T>|}(text);
     }
 }",
             // Test0.cs(6,45): warning CA1303: Method 'void Program.Main()' passes a literal string as parameter 'text' of a call to 'decimal DerivedClass.Generic<decimal>(string text)'. Retrieve the following string(s) from a resource table instead: "number".

@@ -1317,8 +1317,9 @@ internal interface IFoo3 {}
 [CoClass(typeof(IFoo3))] // This isn't a class-type
 internal interface IFoo4 {}
 
-internal class CFoo {}  // Test0.cs(16,16): warning CA1812: CFoo is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).
+internal class CFoo {}
 ",
+                // Test0.cs(16,16): warning CA1812: CFoo is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).
                 GetCSharpResultAt(16, 16, "CFoo"));
         }
 
