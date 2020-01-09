@@ -8,7 +8,7 @@
   <Import Project="targets\BranchInfo.props" />
   <Import Project="..\redist\targets\BuildCoreSdkTasks.targets" />
   <Import Project="..\redist\targets\GetRuntimeInformation.targets" />
-  <Import Project="..\redist\targets\SetBuildDefaults.targets" />
+  <Import Project="..\redist\targets\Versions.targets" />
   
   <Import Project="targets\FinishBuild.targets" />
 </Project>
