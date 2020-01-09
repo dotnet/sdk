@@ -41,14 +41,14 @@ public enum MyEnum
     Value1 = 1,
     Value2 = 1,
 }",
-                GetCSharpResultAt(5, 5));
+                GetCSharpResultAt(5, 5, "Value2", "1", "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
     Value1 = 1
     Value2 = 1
 End Enum",
-                GetBasicResultAt(4, 5));
+                GetBasicResultAt(4, 5, "Value2", "1", "Value1"));
         }
 
         [Fact]
@@ -102,14 +102,14 @@ public enum MyULongEnum : ulong
     Value1 = 1,
     Value2 = 1,
 }",
-                GetCSharpResultAt(5, 5),
-                GetCSharpResultAt(11, 5),
-                GetCSharpResultAt(17, 5),
-                GetCSharpResultAt(23, 5),
-                GetCSharpResultAt(29, 5),
-                GetCSharpResultAt(35, 5),
-                GetCSharpResultAt(41, 5),
-                GetCSharpResultAt(47, 5));
+                GetCSharpResultAt(5, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(11, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(17, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(23, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(29, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(35, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(41, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(47, 5, "Value2", "1", "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyByteEnum As Byte
@@ -152,14 +152,14 @@ Public Enum MyULongEnum As ULong
     Value2 = 1
 End Enum
 ",
-                GetBasicResultAt(4, 5),
-                GetBasicResultAt(9, 5),
-                GetBasicResultAt(14, 5),
-                GetBasicResultAt(19, 5),
-                GetBasicResultAt(24, 5),
-                GetBasicResultAt(29, 5),
-                GetBasicResultAt(34, 5),
-                GetBasicResultAt(39, 5));
+                GetBasicResultAt(4, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(9, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(14, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(19, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(24, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(29, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(34, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(39, 5, "Value2", "1", "Value1"));
         }
 
         [Fact]
@@ -173,7 +173,7 @@ public enum MyEnum
     Value2 = 0x1,
     Value3 = 0x4,
 }",
-                GetCSharpResultAt(6, 5));
+                GetCSharpResultAt(6, 5, "Value2", "1", "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
@@ -182,7 +182,7 @@ Public Enum MyEnum
     Value2 = &H1
     Value3 = &H4
 End Enum",
-                GetBasicResultAt(5, 5));
+                GetBasicResultAt(5, 5, "Value2", "1", "Value1"));
         }
 
         [Fact]
@@ -195,16 +195,15 @@ public enum MyEnum
     Value2 = 2,
     Value3 = 1,
 }",
-                GetCSharpResultAt(6, 5));
+                GetCSharpResultAt(6, 5, "Value3", "1", "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
-    None = &H0
-    Value1 = &H1
-    Value2 = &H1
-    Value3 = &H4
+    Value1 = 1
+    Value2 = 2
+    Value3 = 1
 End Enum",
-                GetBasicResultAt(5, 5));
+                GetBasicResultAt(5, 5, "Value3", "1", "Value1"));
         }
 
         [Fact]
@@ -217,7 +216,7 @@ public enum MyEnum
     Value2,
     Value3 = 2,
 }",
-                GetCSharpResultAt(6, 5));
+                GetCSharpResultAt(6, 5, "Value3", "2", "Value2"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
@@ -225,7 +224,7 @@ Public Enum MyEnum
     Value2
     Value3 = 2
 End Enum",
-                GetBasicResultAt(5, 5));
+                GetBasicResultAt(5, 5, "Value3", "2", "Value2"));
         }
 
         [Fact]
@@ -257,8 +256,8 @@ public enum MyEnum
     Value2 = 2,
     Value3 = Value1 | Value1,
 }",
-                GetCSharpResultAt(6, 5),
-                GetCSharpBitwiseResultAt(6, 23));
+                GetCSharpResultAt(6, 5, "Value3", "1", "Value1"),
+                GetCSharpBitwiseResultAt(6, 23, "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
@@ -266,8 +265,8 @@ Public Enum MyEnum
     Value2 = 2
     Value3 = Value1 Or Value1
 End Enum",
-                GetBasicResultAt(5, 5),
-                GetBasicBitwiseResultAt(5, 24));
+                GetBasicResultAt(5, 5, "Value3", "1", "Value1"),
+                GetBasicBitwiseResultAt(5, 24, "Value1"));
         }
 
         [Fact]
@@ -281,8 +280,8 @@ public enum MyEnum
     Value3 = 3,
     Value4 = Value1 | Value2 | Value1,
 }",
-                GetCSharpResultAt(7, 5),
-                GetCSharpBitwiseResultAt(7, 32));
+                GetCSharpResultAt(7, 5, "Value4", "3", "Value3"),
+                GetCSharpBitwiseResultAt(7, 32, "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
@@ -291,8 +290,8 @@ Public Enum MyEnum
     Value3 = 3
     Value4 = Value1 Or Value2 Or Value1
 End Enum",
-                GetBasicResultAt(6, 5),
-                GetBasicBitwiseResultAt(6, 34));
+                GetBasicResultAt(6, 5, "Value4", "3", "Value3"),
+                GetBasicBitwiseResultAt(6, 34, "Value1"));
         }
 
         [Fact]
@@ -305,7 +304,7 @@ public enum MyEnum
     Value2 = 2,
     Value3 = Value1 | 1,
 }",
-                GetCSharpResultAt(6, 5));
+                GetCSharpResultAt(6, 5, "Value3", "1", "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
@@ -313,7 +312,7 @@ Public Enum MyEnum
     Value2 = 2
     Value3 = Value1 Or 1
 End Enum",
-                GetBasicResultAt(5, 5));
+                GetBasicResultAt(5, 5, "Value3", "1", "Value1"));
         }
 
         [Fact]
@@ -326,8 +325,8 @@ public enum MyEnum
     Value2 = 2 - 1,
     Value3 = Value1 * Value2,
 }",
-                GetCSharpResultAt(5, 5),
-                GetCSharpResultAt(6, 5));
+                GetCSharpResultAt(5, 5, "Value2", "1", "Value1"),
+                GetCSharpResultAt(6, 5, "Value3", "1", "Value1"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum MyEnum
@@ -335,8 +334,8 @@ Public Enum MyEnum
     Value2 = 2 - 1
     Value3 = Value1 * Value2
 End Enum",
-                GetBasicResultAt(4, 5),
-                GetBasicResultAt(5, 5));
+                GetBasicResultAt(4, 5, "Value2", "1", "Value1"),
+                GetBasicResultAt(5, 5, "Value3", "1", "Value1"));
         }
 
         [Fact]
@@ -396,16 +395,54 @@ Public Enum MyEnum
 End Enum");
         }
 
-        private static DiagnosticResult GetCSharpResultAt(int line, int column)
-            => VerifyCS.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedValue).WithLocation(line, column);
+        [Fact]
+        public async Task EnumMemberReferencesAnotherEnum()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum MyEnum1
+{
+    Value1 = 1,
+    Value2 = 2
+}
 
-        private static DiagnosticResult GetCSharpBitwiseResultAt(int line, int column)
-            => VerifyCS.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedBitwiseValuePart).WithLocation(line, column);
+public enum MyEnum2
+{
+    Value1 = 1,
+    Value2 = MyEnum1.Value1
+}",
+                GetCSharpResultAt(11, 5, "Value2", "1", "Value1"));
 
-        private static DiagnosticResult GetBasicResultAt(int line, int column)
-            => VerifyVB.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedValue).WithLocation(line, column);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum MyEnum1
+    Value1 = 1
+    Value2 = 2
+End Enum
 
-        private static DiagnosticResult GetBasicBitwiseResultAt(int line, int column)
-            => VerifyVB.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedBitwiseValuePart).WithLocation(line, column);
+Public Enum MyEnum2
+    Value1 = 1
+    Value2 = MyEnum1.Value1
+End Enum",
+                GetBasicResultAt(9, 5, "Value2", "1", "Value1"));
+        }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string fieldName, string constantValue, string duplicatedFieldName) =>
+            VerifyCS.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedValue)
+                .WithLocation(line, column)
+                .WithArguments(fieldName, constantValue, duplicatedFieldName);
+
+        private static DiagnosticResult GetCSharpBitwiseResultAt(int line, int column, string duplicatedFieldName) =>
+            VerifyCS.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedBitwiseValuePart)
+                .WithLocation(line, column)
+                .WithArguments(duplicatedFieldName);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string fieldName, string constantValue, string duplicatedFieldName) =>
+            VerifyVB.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedValue)
+                .WithLocation(line, column)
+                .WithArguments(fieldName, constantValue, duplicatedFieldName);
+
+        private static DiagnosticResult GetBasicBitwiseResultAt(int line, int column, string duplicatedFieldName) =>
+            VerifyVB.Diagnostic(EnumShouldNotHaveDuplicatedValues.RuleDuplicatedBitwiseValuePart)
+                .WithLocation(line, column)
+                .WithArguments(duplicatedFieldName);
     }
 }

@@ -56,20 +56,36 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                var invalidMembersByValue = new ConcurrentDictionary<object, List<SyntaxNode>>();
+                var invalidMembersByValue = new ConcurrentDictionary<object, ConcurrentBag<(SyntaxNode fieldSyntax, string fieldName)>>();
+
+                // Workaround to get the value of all enum fields that don't have an explicit initializer.
+                // We will start with all of the enum fields and remove the ones with an explicit initializer.
+                // See https://github.com/dotnet/roslyn/issues/40811
+                var filteredFields = enumSymbol.GetMembers()
+                    .OfType<IFieldSymbol>()
+                    .Where(f => !f.IsImplicitlyDeclared)
+                    .Select(x => new KeyValuePair<IFieldSymbol, object>(x, x.ConstantValue));
+                var enumFieldsWithImplicitValue = new ConcurrentDictionary<IFieldSymbol, object>(filteredFields);
 
                 // Collect duplicated values...
                 ssac.RegisterOperationAction(oc =>
                 {
                     var fieldInitializerOperation = (IFieldInitializerOperation)oc.Operation;
+
                     if (fieldInitializerOperation.InitializedFields.Length != 1 ||
                         !fieldInitializerOperation.Value.ConstantValue.HasValue)
                     {
                         return;
                     }
 
+                    var currentField = fieldInitializerOperation.InitializedFields[0];
+
+                    // Remove the explicitly initialized field
+                    enumFieldsWithImplicitValue.TryRemove(currentField, out _);
+
                     var onlyReferencesOneField = GetFilteredDescendants(fieldInitializerOperation, op => op.Kind != OperationKind.Binary)
                         .OfType<IFieldReferenceOperation>()
+                        .Where(fro => fro.Field.ContainingType.Equals(enumSymbol))
                         .Any();
                     if (onlyReferencesOneField)
                     {
@@ -77,10 +93,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     invalidMembersByValue.AddOrUpdate(fieldInitializerOperation.Value.ConstantValue.Value,
-                        new List<SyntaxNode> { fieldInitializerOperation.Syntax.Parent },
+                        new ConcurrentBag<(SyntaxNode, string)> { (fieldInitializerOperation.Syntax.Parent, currentField.Name) },
                         (key, value) =>
                         {
-                            value.Add(fieldInitializerOperation.Syntax.Parent);
+                            value.Add((fieldInitializerOperation.Syntax.Parent, currentField.Name));
                             return value;
                         });
                 }, OperationKind.FieldInitializer);
@@ -88,11 +104,31 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // ...and report at the end of the enum declaration
                 ssac.RegisterSymbolEndAction(sac =>
                 {
+                    // Handle all enum fields without an explicit initializer
+                    foreach ((var field, var value) in enumFieldsWithImplicitValue)
+                    {
+                        var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+
+                        if (fieldSyntax != null)
+                        {
+                            invalidMembersByValue.AddOrUpdate(value,
+                                new ConcurrentBag<(SyntaxNode, string)> { (fieldSyntax, field.Name) },
+                                (k, v) =>
+                                {
+                                    v.Add((fieldSyntax, field.Name));
+                                    return v;
+                                });
+                        }
+                    }
+
                     foreach (var kvp in invalidMembersByValue)
                     {
-                        foreach (var item in kvp.Value.OrderBy(x => x.GetLocation().SourceSpan).Skip(1))
+                        var orderedItems = kvp.Value.OrderBy(x => x.fieldSyntax.GetLocation().SourceSpan);
+                        var duplicatedMemberName = orderedItems.FirstOrDefault().fieldName;
+
+                        foreach ((var fieldSyntax, var fieldName) in orderedItems.Skip(1))
                         {
-                            sac.ReportDiagnostic(item.CreateDiagnostic(RuleDuplicatedValue));
+                            sac.ReportDiagnostic(fieldSyntax.CreateDiagnostic(RuleDuplicatedValue, fieldName, kvp.Key, duplicatedMemberName));
                         }
                     }
                 });
@@ -116,7 +152,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     {
                         foreach (var item in kvp.Value.OrderBy(x => x.GetLocation().SourceSpan).Skip(1))
                         {
-                            oc.ReportDiagnostic(item.CreateDiagnostic(RuleDuplicatedBitwiseValuePart));
+                            oc.ReportDiagnostic(item.CreateDiagnostic(RuleDuplicatedBitwiseValuePart, kvp.Key.Name));
                         }
                     }
                 }, OperationKind.Binary);

@@ -128,13 +128,13 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
-        <source>This enum value bitwise part duplicates another part.</source>
-        <target state="new">This enum value bitwise part duplicates another part.</target>
+        <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
+        <target state="new">The field reference '{0}' is duplicated in this bitwise initialization.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
-        <source>This enum value duplicates another value.</source>
-        <target state="new">This enum value duplicates another value.</target>
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
+        <target state="new">The enum member '{0}' has the same constant value '{1}' as member '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
