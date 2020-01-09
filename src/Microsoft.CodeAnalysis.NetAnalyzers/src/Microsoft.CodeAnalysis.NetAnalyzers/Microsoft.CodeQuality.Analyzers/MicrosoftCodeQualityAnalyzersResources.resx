@@ -1352,6 +1352,15 @@
   <data name="AvoidInfiniteRecursionMessageMaybe" xml:space="preserve">
     <value>Do not assign the property within its setter. This call might result in an infinite recursion.</value>
   </data>
+  <data name="AvoidOutParametersDescription" xml:space="preserve">
+    <value>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</value>
+  </data>
+  <data name="AvoidOutParametersMessage" xml:space="preserve">
+    <value>Avoid 'out' parameters as they are not designed for general audience.</value>
+  </data>
+  <data name="AvoidOutParametersTitle" xml:space="preserve">
+    <value>Avoid out parameters</value>
+  </data>
   <data name="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart" xml:space="preserve">
     <value>The field reference '{0}' is duplicated in this bitwise initialization.</value>
   </data>
