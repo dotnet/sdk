@@ -551,6 +551,29 @@ Assembly: (Lines: 17, ExecutableLines: 2, MntIndex: 100, CycCxty: 5, CoupledType
         }
 
         [Fact]
+        public void MethodWithAnonymousType()
+        {
+            var source = @"
+class C
+{
+    object M1(C1 c)
+    {
+        return new {a = 1};
+    }
+}
+";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1}, DepthInherit: 1)
+   C: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1}, DepthInherit: 1)
+      C.M1(C1): (Lines: 4, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1})
+";
+
+            VerifyCSharp(source, expectedMetricsText, true);
+        }
+
+
+        [Fact]
         public void MethodWithTypeReferencesInAttributes()
         {
             var source = @"
