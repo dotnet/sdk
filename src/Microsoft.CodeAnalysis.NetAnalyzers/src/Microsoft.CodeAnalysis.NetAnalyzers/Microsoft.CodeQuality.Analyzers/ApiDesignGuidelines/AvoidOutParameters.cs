@@ -25,7 +25,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Design,
                                                                              DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             isEnabledByDefault: false,
                                                                              description: s_localizableDescription,
                                                                              helpLinkUri: "https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1021",
                                                                              customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
@@ -40,31 +40,70 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.RegisterCompilationStartAction(csac =>
             {
                 var outAttributeType = csac.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOutAttribute);
+                var analyzer = new MethodAnalyzer(outAttributeType);
 
-                csac.RegisterSymbolAction(sac =>
-                {
-                    var methodSymbol = (IMethodSymbol)sac.Symbol;
-
-                    var numberOfOutParams = methodSymbol.Parameters.Count(p => IsOutParameter(p, outAttributeType));
-
-                    if (numberOfOutParams >= 1 && !IsTryPatternMethod(methodSymbol, outAttributeType, numberOfOutParams))
-                    {
-                        sac.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
-                    }
-                }, SymbolKind.Method);
+                csac.RegisterSymbolAction(analyzer.Analyze, SymbolKind.Method);
             });
         }
 
-        private static bool IsOutParameter(IParameterSymbol parameterSymbol, INamedTypeSymbol? outAttributeSymbol) =>
-            parameterSymbol.RefKind == RefKind.Out ||
-            // Handle VB.NET special case for out parameters
-            (parameterSymbol.RefKind == RefKind.Ref && parameterSymbol.HasAttribute(outAttributeSymbol));
+        private class MethodAnalyzer
+        {
+            private readonly INamedTypeSymbol? outAttributeSymbol;
 
-        private static bool IsTryPatternMethod(IMethodSymbol methodSymbol, INamedTypeSymbol? outAttributeSymbol, int numberOfOutParams) =>
-            methodSymbol.Name.StartsWith("Try", StringComparison.Ordinal) &&
-            methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
-            methodSymbol.Parameters.Length >= 1 &&
-            IsOutParameter(methodSymbol.Parameters[methodSymbol.Parameters.Length - 1], outAttributeSymbol) &&
-            numberOfOutParams == 1;
+            public MethodAnalyzer(INamedTypeSymbol? outAttributeSymbol)
+            {
+                this.outAttributeSymbol = outAttributeSymbol;
+            }
+
+            public void Analyze(SymbolAnalysisContext analysisContext)
+            {
+                var methodSymbol = (IMethodSymbol)analysisContext.Symbol;
+
+                if (!methodSymbol.MatchesConfiguredVisibility(analysisContext.Options, Rule, analysisContext.CancellationToken))
+                {
+                    return;
+                }
+
+                var numberOfOutParams = methodSymbol.Parameters.Count(IsOutParameter);
+
+                if (numberOfOutParams >= 1 &&
+                    !IsTryPatternMethod(methodSymbol, numberOfOutParams) &&
+                    !IsDeconstructPattern(methodSymbol))
+                {
+                    analysisContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
+                }
+            }
+
+            private bool IsOutParameter(IParameterSymbol parameterSymbol) =>
+                parameterSymbol.RefKind == RefKind.Out ||
+                // Handle VB.NET special case for out parameters
+                (parameterSymbol.RefKind == RefKind.Ref && parameterSymbol.HasAttribute(outAttributeSymbol));
+
+            private bool IsTryPatternMethod(IMethodSymbol methodSymbol, int numberOfOutParams) =>
+                methodSymbol.Name.StartsWith("Try", StringComparison.Ordinal) &&
+                methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                methodSymbol.Parameters.Length >= 1 &&
+                IsOutParameter(methodSymbol.Parameters[methodSymbol.Parameters.Length - 1]) &&
+                numberOfOutParams == 1;
+
+            private bool IsDeconstructPattern(IMethodSymbol methodSymbol)
+            {
+                if (!methodSymbol.Name.Equals("Deconstruct", StringComparison.Ordinal) ||
+                    !methodSymbol.ReturnsVoid ||
+                    methodSymbol.Parameters.Length == 0)
+                {
+                    return false;
+                }
+
+                // The first parameter of a Deconstruct method can either be this XXX or out XXX
+                if (!methodSymbol.IsExtensionMethod &&
+                    !IsOutParameter(methodSymbol.Parameters[0]))
+                {
+                    return false;
+                }
+
+                return methodSymbol.Parameters.Skip(1).All(IsOutParameter);
+            }
+        }
     }
 }

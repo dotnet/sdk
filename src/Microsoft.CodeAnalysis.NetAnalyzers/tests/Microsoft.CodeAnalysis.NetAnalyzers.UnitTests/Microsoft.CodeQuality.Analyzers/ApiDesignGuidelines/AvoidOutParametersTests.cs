@@ -73,6 +73,117 @@ End Class",
                 GetBasicExpectedResult(17, 16));
         }
 
+        [Theory]
+        [InlineData("public", "dotnet_code_quality.api_surface = private")]
+        [InlineData("private", "dotnet_code_quality.api_surface = internal, public")]
+        [InlineData("public", "dotnet_code_quality.CA1021.api_surface = private")]
+        [InlineData("private", "dotnet_code_quality.CA1021.api_surface = internal, public")]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1021.api_surface = private")]
+        public async Task ApiSurface_NoDiagnostic(string accessibility, string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class C
+{{
+    {accessibility} void M(out string s)
+    {{
+        s = null;
+    }}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Imports System.Runtime.InteropServices
+
+Public Class C
+    {accessibility} Sub M(<Out> ByRef s As String)
+        s = Nothing
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("private", "dotnet_code_quality.api_surface = private")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = internal")]
+        [InlineData("public", "dotnet_code_quality.api_surface = public")]
+        [InlineData("private", "dotnet_code_quality.CA1021.api_surface = private")]
+        [InlineData("internal", "dotnet_code_quality.CA1021.api_surface = internal")]
+        [InlineData("public", "dotnet_code_quality.CA1021.api_surface = public")]
+        [InlineData("public", @"dotnet_code_quality.api_surface = private
+                                dotnet_code_quality.CA1021.api_surface = public")]
+        public async Task ApiSurface_Diagnostic(string accessibility, string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class C
+{{
+    {accessibility} void M(out string s)
+    {{
+        s = null;
+    }}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpExpectedResult(4, 11 + accessibility.Length)
+                    }
+                }
+            }.RunAsync();
+
+            if (accessibility.Equals("internal", System.StringComparison.Ordinal))
+            {
+                accessibility = "Friend";
+            }
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Imports System.Runtime.InteropServices
+
+Public Class C
+    {accessibility} Sub M(<Out> ByRef s As String)
+        s = Nothing
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicExpectedResult(5, 10 + accessibility.Length)
+                    }
+                }
+            }.RunAsync();
+        }
+
         [Fact]
         public async Task MultipleOut_Diagnostic()
         {
@@ -280,6 +391,52 @@ End Class",
                 GetCSharpExpectedResult(5, 16),
                 GetCSharpExpectedResult(9, 21),
                 GetCSharpExpectedResult(14, 28));
+        }
+
+        [Fact]
+        public async Task Deconstruct_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Person
+{
+    public void Deconstruct(out string fname, out string lname)
+    {
+        fname = null;
+        lname = null;
+    }
+}");
+        }
+
+        [Fact]
+        public async Task DeconstructExtensionMethod_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Person
+{
+    public string Name { get; set; }
+}
+
+public static class Ext
+{
+    public static void Deconstruct(this Person p, out string name)
+    {
+        name = p.Name;
+    }
+}");
+        }
+
+        [Fact]
+        public async Task InvalidDeconstruct_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Person
+{
+    public void Deconstruct(out string fname, string lname)
+    {
+        fname = null;
+    }
+}",
+                GetCSharpExpectedResult(4, 17));
         }
 
         private static DiagnosticResult GetCSharpExpectedResult(int line, int col) =>
