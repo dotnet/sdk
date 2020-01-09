@@ -2051,7 +2051,7 @@ End Class
                 // Test0.vb(7,28): warning CA1063: Ensure that 'B.Dispose' is declared as public and sealed.
                 GetCA1063BasicDisposeSignatureResultAt(7, 28, "B", "Dispose"),
                 // Test0.vb(25,26): warning CA1063: Remove 'C.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
-                GetCA1063BasicDisposeSignatureResultAt(25, 26, "C", "Dispose"));
+                GetCA1063BasicDisposeOverrideResultAt(25, 26, "C", "Dispose"));
         }
 
         [Fact]
@@ -2096,9 +2096,9 @@ End Class
                 // Test0.vb(7,28): warning CA1063: Ensure that 'A.Dispose' is declared as public and sealed.
                 GetCA1063BasicDisposeSignatureResultAt(7, 28, "A", "Dispose"),
                 // Test0.vb(25,26): warning CA1063: Remove 'B.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
-                GetCA1063BasicDisposeSignatureResultAt(25, 26, "B", "Dispose"),
+                GetCA1063BasicDisposeOverrideResultAt(25, 26, "B", "Dispose"),
                 // Test0.vb(32,26): warning CA1063: Remove 'C.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
-                GetCA1063BasicDisposeSignatureResultAt(32, 26, "C", "Dispose"));
+                GetCA1063BasicDisposeOverrideResultAt(32, 26, "C", "Dispose"));
         }
 
         [Fact]
