@@ -56,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                var invalidMembersByValue = new ConcurrentDictionary<object, ConcurrentBag<(SyntaxNode fieldSyntax, string fieldName)>>();
+                var membersByValue = new ConcurrentDictionary<object, ConcurrentBag<(SyntaxNode fieldSyntax, string fieldName)>>();
 
                 // Workaround to get the value of all enum fields that don't have an explicit initializer.
                 // We will start with all of the enum fields and remove the ones with an explicit initializer.
@@ -92,7 +92,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
-                    invalidMembersByValue.AddOrUpdate(fieldInitializerOperation.Value.ConstantValue.Value,
+                    membersByValue.AddOrUpdate(fieldInitializerOperation.Value.ConstantValue.Value,
                         new ConcurrentBag<(SyntaxNode, string)> { (fieldInitializerOperation.Syntax.Parent, currentField.Name) },
                         (key, value) =>
                         {
@@ -111,7 +111,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                         if (fieldSyntax != null)
                         {
-                            invalidMembersByValue.AddOrUpdate(value,
+                            membersByValue.AddOrUpdate(value,
                                 new ConcurrentBag<(SyntaxNode, string)> { (fieldSyntax, field.Name) },
                                 (k, v) =>
                                 {
@@ -121,7 +121,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         }
                     }
 
-                    foreach (var kvp in invalidMembersByValue)
+                    foreach (var kvp in membersByValue)
                     {
                         var orderedItems = kvp.Value.OrderBy(x => x.fieldSyntax.GetLocation().SourceSpan);
                         var duplicatedMemberName = orderedItems.FirstOrDefault().fieldName;
