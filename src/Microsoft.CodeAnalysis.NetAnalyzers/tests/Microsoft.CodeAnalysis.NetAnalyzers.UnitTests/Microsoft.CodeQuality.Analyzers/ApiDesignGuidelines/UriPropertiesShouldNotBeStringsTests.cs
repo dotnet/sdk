@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriPropertiesShouldNotBeStringsAnalyzer,
@@ -130,13 +131,41 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1056BasicResultAt(5, 34, "A.SampleUrl"));
         }
 
+        [Fact, WorkItem(3146, "https://github.com/dotnet/roslyn-analyzers/issues/3146")]
+        public async Task DoNotReportOnInterfaceImplementation()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface IPath
+{
+    string UrlPathSegment { get; }
+}
+
+public class Foo : IPath
+{
+    public string UrlPathSegment { get; }
+}",
+                GetCA1056CSharpResultAt(4, 12, "IPath.UrlPathSegment"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Interface IPath
+    Property UrlPathSegment As String
+End Interface
+
+Public Class Foo
+    Implements IPath
+
+    Public Property UrlPathSegment As String Implements IPath.UrlPathSegment
+End Class",
+                GetCA1056BasicResultAt(3, 14, "IPath.UrlPathSegment"));
+        }
+
         private static DiagnosticResult GetCA1056CSharpResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriPropertiesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
 
         private static DiagnosticResult GetCA1056BasicResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriPropertiesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
     }

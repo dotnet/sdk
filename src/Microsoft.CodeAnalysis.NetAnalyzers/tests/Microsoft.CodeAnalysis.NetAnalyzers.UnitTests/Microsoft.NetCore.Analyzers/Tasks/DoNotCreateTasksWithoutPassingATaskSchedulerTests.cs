@@ -229,13 +229,11 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-            => new DiagnosticResult(DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftNetCoreAnalyzersResources.DoNotCreateTasksWithoutPassingATaskSchedulerMessage);
+            => VerifyCS.Diagnostic(DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.Rule)
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
-            => new DiagnosticResult(DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftNetCoreAnalyzersResources.DoNotCreateTasksWithoutPassingATaskSchedulerMessage);
+            => VerifyVB.Diagnostic(DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer.Rule)
+                .WithLocation(line, column);
     }
 }

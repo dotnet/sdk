@@ -139,13 +139,11 @@ End Class");
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)
-            => new DiagnosticResult(PropertiesShouldNotReturnArraysAnalyzer.Rule)
-                .WithLocation(line, col)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotReturnArraysMessage);
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, col);
 
         private static DiagnosticResult CreateBasicResult(int line, int col)
-            => new DiagnosticResult(PropertiesShouldNotReturnArraysAnalyzer.Rule)
-                .WithLocation(line, col)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotReturnArraysMessage);
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, col);
     }
 }

@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotPrefixEnumValuesWithTypeNameAnalyzer,
@@ -358,12 +357,12 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
-            => new DiagnosticResult(DoNotPrefixEnumValuesWithTypeNameAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
-            => new DiagnosticResult(DoNotPrefixEnumValuesWithTypeNameAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arguments);
     }

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -917,10 +916,6 @@ public class C
         return M1(paramC).M1(M1(localC));
     }
 }",
-                    },
-                    ExpectedDiagnostics =
-                    {
-                        DiagnosticResult.CompilerError("CS0176").WithSpan(13, 16, 13, 29).WithMessage("Member 'C.M1(C)' cannot be accessed with an instance reference; qualify it with a type name instead"),
                     },
                 },
             }.RunAsync();

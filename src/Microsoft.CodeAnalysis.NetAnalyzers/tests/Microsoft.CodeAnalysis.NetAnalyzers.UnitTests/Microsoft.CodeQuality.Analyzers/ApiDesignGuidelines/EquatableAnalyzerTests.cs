@@ -304,6 +304,7 @@ struct C : {|CS0527:B|}
             string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsMessage, "C");
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpResultAt(4, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, expectedMessage1),
+                // Test0.cs(12,8): warning CA1066: Implement IEquatable when overriding Object.Equals
                 GetCSharpResultAt(12, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, expectedMessage2));
         }
 
@@ -396,7 +397,7 @@ public ref struct S
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string message)
-            => new DiagnosticResult(rule)
+            => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
                 .WithMessage(message);
     }

@@ -84,11 +84,9 @@ End Structure
         }
 
         [Fact]
-        public async Task CA2231_CSharp_FixAll()
+        public async Task CA2231_CSharp_MultipleViolations()
         {
-            await new VerifyCS.Test
-            {
-                TestCode = @"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 public struct [|A|]
@@ -106,7 +104,7 @@ public struct [|B|]
         return true;
     }
 }",
-                FixedCode = @"
+@"
 using System;
 
 public struct A
@@ -143,17 +141,13 @@ public struct B
     {
         return !(left == right);
     }
-}",
-                NumberOfFixAllIterations = 1
-            }.RunAsync();
+}");
         }
 
         [Fact]
-        public async Task CA2231_Basic_FixAll()
+        public async Task CA2231_Basic_MultipleViolations()
         {
-            await new VerifyVB.Test
-            {
-                TestCode = @"
+            await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
 
 Public Structure [|A|]
@@ -167,7 +161,7 @@ Public Structure [|B|]
         Return True
     End Function
 End Structure",
-                FixedCode = @"
+@"
 Imports System
 
 Public Structure A
@@ -196,9 +190,7 @@ Public Structure B
     Public Shared Operator <>(left As B, right As B) As Boolean
         Return Not left = right
     End Operator
-End Structure",
-                NumberOfFixAllIterations = 1
-            }.RunAsync();
+End Structure");
         }
     }
 }

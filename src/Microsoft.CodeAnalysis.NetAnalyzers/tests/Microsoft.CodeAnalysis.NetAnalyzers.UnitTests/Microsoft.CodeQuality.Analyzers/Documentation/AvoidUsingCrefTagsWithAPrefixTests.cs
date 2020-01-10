@@ -81,13 +81,11 @@ End Class
         #endregion
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-            => new DiagnosticResult(AvoidUsingCrefTagsWithAPrefixAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.AvoidUsingCrefTagsWithAPrefixMessage);
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
-            => new DiagnosticResult(AvoidUsingCrefTagsWithAPrefixAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.AvoidUsingCrefTagsWithAPrefixMessage);
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

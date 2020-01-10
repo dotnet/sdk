@@ -613,12 +613,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string violatingMember, string violatingParameter, string baseParameter, string baseMember)
-            => new DiagnosticResult(ParameterNamesShouldMatchBaseDeclarationAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(violatingMember, violatingParameter, baseParameter, baseMember);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string violatingMember, string violatingParameter, string baseParameter, string baseMember)
-            => new DiagnosticResult(ParameterNamesShouldMatchBaseDeclarationAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(violatingMember, violatingParameter, baseParameter, baseMember);
     }

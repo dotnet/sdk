@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -1099,30 +1098,62 @@ public class C
 }");
         }
 
-        private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
+        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        public async Task CA1710_IReadOnlyDictionary()
         {
-            var message = string.Format(CultureInfo.CurrentCulture,
-                isSpecial ?
-                    MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                    MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-                symbolName,
-                replacementName);
-            return new DiagnosticResult(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
-                .WithLocation(line, column)
-                .WithMessage(message);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class C : IReadOnlyDictionary<int, string>
+{
+    public string this[int key] => throw new System.NotImplementedException();
+
+    public IEnumerable<int> Keys => throw new System.NotImplementedException();
+
+    public IEnumerable<string> Values => throw new System.NotImplementedException();
+
+    public int Count => throw new System.NotImplementedException();
+
+    public bool ContainsKey(int key) => throw new System.NotImplementedException();
+    public IEnumerator<KeyValuePair<int, string>> GetEnumerator() => throw new System.NotImplementedException();
+    public bool TryGetValue(int key, out string value) => throw new System.NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+}",
+                GetCA1710CSharpResultAt(6, 14, "C", "Dictionary"));
         }
 
-        private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
+        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        public async Task CA1710_IReadOnlyCollection()
         {
-            var message = string.Format(CultureInfo.CurrentCulture,
-               isSpecial ?
-                   MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                   MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-               symbolName,
-               replacementName);
-            return new DiagnosticResult(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
-                .WithLocation(line, column)
-                .WithMessage(message);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class C : IReadOnlyCollection<int>
+{
+    public int Count => throw new System.NotImplementedException();
+
+    public IEnumerator<int> GetEnumerator() => throw new System.NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+}",
+                GetCA1710CSharpResultAt(6, 14, "C", "Collection"));
         }
+
+        private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
+            => VerifyCS.Diagnostic(isSpecial
+                    ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule
+                    : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, replacementName);
+
+        private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
+            => VerifyVB.Diagnostic(isSpecial
+                    ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule
+                    : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, replacementName);
     }
 }

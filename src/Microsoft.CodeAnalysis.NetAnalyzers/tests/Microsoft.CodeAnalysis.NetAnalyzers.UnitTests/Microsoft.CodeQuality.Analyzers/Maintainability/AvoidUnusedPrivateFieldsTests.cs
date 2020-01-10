@@ -414,12 +414,12 @@ End Class
         }
 
         private static DiagnosticResult GetCA1823CSharpResultAt(int line, int column, string fieldName)
-            => VerifyCS.Diagnostic(AvoidUnusedPrivateFieldsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(fieldName);
 
         private static DiagnosticResult GetCA1823BasicResultAt(int line, int column, string fieldName)
-            => VerifyVB.Diagnostic(AvoidUnusedPrivateFieldsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(fieldName);
     }

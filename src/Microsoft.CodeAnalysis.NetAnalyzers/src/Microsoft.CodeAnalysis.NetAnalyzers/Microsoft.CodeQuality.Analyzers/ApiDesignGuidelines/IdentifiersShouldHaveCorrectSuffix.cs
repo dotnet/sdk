@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
+using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Analyzer.Utilities;
-using System.Collections.Generic;
-using System;
-using System.Linq;
-using Analyzer.Utilities.Extensions;
-using System.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -63,6 +63,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                         ("System.Collections.Generic.Stack`1", "Stack", true),
                                                         ("System.Collections.Generic.ICollection`1", "Collection", false),
                                                         ("System.Collections.Generic.IDictionary`2", "Dictionary", false),
+                                                        ("System.Collections.Generic.IReadOnlyDictionary`2", "Dictionary", false),
                                                         ("System.Data.DataSet", "DataSet", false),
                                                         ("System.Data.DataTable", "DataTable", true),
                                                         ("System.IO.Stream", "Stream", false),
