@@ -550,7 +550,7 @@ Assembly: (Lines: 17, ExecutableLines: 2, MntIndex: 100, CycCxty: 5, CoupledType
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void MethodWithAnonymousType()
         {
             var source = @"
