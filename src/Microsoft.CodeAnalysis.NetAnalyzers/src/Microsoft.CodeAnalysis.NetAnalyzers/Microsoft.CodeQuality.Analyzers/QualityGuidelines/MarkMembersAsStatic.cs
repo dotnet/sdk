@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -70,7 +69,23 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 compilationContext.RegisterOperationBlockStartAction(blockStartContext =>
                 {
-                    if (!(blockStartContext.OwningSymbol is IMethodSymbol methodSymbol) || !ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes))
+                    if (!(blockStartContext.OwningSymbol is IMethodSymbol methodSymbol))
+                    {
+                        return;
+                    }
+
+                    // Whatever the method is, we want to store the not externally visible method calls.
+                    blockStartContext.RegisterOperationAction(operationContext =>
+                    {
+                        var invocation = (IInvocationOperation)operationContext.Operation;
+                        if (!invocation.TargetMethod.IsExternallyVisible())
+                        {
+                            invokedInternalMethods.Add(invocation.TargetMethod);
+                        }
+                    }, OperationKind.Invocation);
+
+                    // Don't run any other check for this method if it isn't a valid analysis context
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes))
                     {
                         return;
                     }
@@ -84,15 +99,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             isInstanceReferenced = true;
                         }
                     }, OperationKind.InstanceReference);
-
-                    blockStartContext.RegisterOperationAction(operationContext =>
-                    {
-                        var invocation = (IInvocationOperation)operationContext.Operation;
-                        if (!invocation.TargetMethod.IsExternallyVisible())
-                        {
-                            invokedInternalMethods.Add(invocation.TargetMethod);
-                        }
-                    }, OperationKind.Invocation);
 
                     blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                     {
