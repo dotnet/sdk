@@ -14,8 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA3009",
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForXmlInjectionVulnerabilitiesTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForXmlInjectionVulnerabilitiesMessage),
-            isEnabledByDefault: false,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca3009-review-code-for-xml-injection-vulnerabilities");
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         protected override SinkKind SinkKind { get { return SinkKind.Xml; } }
 

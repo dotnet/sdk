@@ -19,29 +19,29 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <param name="id">Diagnostic identifier.</param>
         /// <param name="titleResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's title.</param>
         /// <param name="messageResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's message.</param>
-        /// <param name="isEnabledByDefault">Flag indicating the diagnostic is enabled by default</param>
+        /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
         /// <param name="descriptionResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's descrption.</param>
-        /// <param name="helpLinkUri">Help link URI.</param>
-        /// <param name="customTags">Optional custom tags for the diagnostic. See Microsoft.CodeAnalysis.WellKnownDiagnosticTags for some well known tags.</param>
-        /// <returns>New DiagnosticDescriptor.</returns>
+        /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
+        /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
+        /// <returns>new DiagnosticDescriptor</returns>
         public static DiagnosticDescriptor CreateDiagnosticDescriptor(
             string id,
             string titleResourceStringName,
             string messageResourceStringName,
-            bool isEnabledByDefault,
-            string? helpLinkUri,
-            string? descriptionResourceStringName = null,
-            params string[] customTags)
+            RuleLevel ruleLevel,
+            bool isPortedFxCopRule,
+            bool isDataflowRule,
+            string? descriptionResourceStringName = null)
         {
             return CreateDiagnosticDescriptor(
                 id,
                 typeof(MicrosoftNetCoreAnalyzersResources),
                 titleResourceStringName,
                 messageResourceStringName,
-                isEnabledByDefault,
-                helpLinkUri,
-                descriptionResourceStringName,
-                customTags);
+                ruleLevel,
+                isPortedFxCopRule,
+                isDataflowRule,
+                descriptionResourceStringName);
         }
 
         /// <summary>
@@ -51,31 +51,31 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <param name="resourceSource">Type containing the resource strings.</param>
         /// <param name="titleResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's title.</param>
         /// <param name="messageResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's message.</param>
-        /// <param name="isEnabledByDefault">Flag indicating the diagnostic is enabled by default</param>
+        /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
         /// <param name="descriptionResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's descrption.</param>
-        /// <param name="helpLinkUri">Help link URI.</param>
-        /// <param name="customTags">Optional custom tags for the diagnostic. See Microsoft.CodeAnalysis.WellKnownDiagnosticTags for some well known tags.</param>
-        /// <returns>New DiagnosticDescriptor.</returns>
+        /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
+        /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
+        /// <returns>new DiagnosticDescriptor</returns>
         public static DiagnosticDescriptor CreateDiagnosticDescriptor(
             string id,
             Type resourceSource,
             string titleResourceStringName,
             string messageResourceStringName,
-            bool isEnabledByDefault,
-            string? helpLinkUri,
-            string? descriptionResourceStringName = null,
-            params string[] customTags)
+            RuleLevel ruleLevel,
+            bool isPortedFxCopRule,
+            bool isDataflowRule,
+            string? descriptionResourceStringName = null)
         {
-            return new DiagnosticDescriptor(
+            return DiagnosticDescriptorHelper.Create(
                 id,
                 GetResourceString(resourceSource, titleResourceStringName),
                 GetResourceString(resourceSource, messageResourceStringName),
                 DiagnosticCategory.Security,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault,
+                ruleLevel,
                 descriptionResourceStringName != null ? GetResourceString(resourceSource, descriptionResourceStringName) : null,
-                helpLinkUri,
-                customTags);
+                isPortedFxCopRule,
+                isDataflowRule,
+                isEnabledByDefaultInFxCopAnalyzers: ruleLevel == RuleLevel.BuildWarning);
         }
 
         /// <summary>

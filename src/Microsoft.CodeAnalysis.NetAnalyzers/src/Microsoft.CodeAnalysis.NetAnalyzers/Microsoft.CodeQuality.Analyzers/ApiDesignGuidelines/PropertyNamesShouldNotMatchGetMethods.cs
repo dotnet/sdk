@@ -24,15 +24,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertyNamesShouldNotMatchGetMethodsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertyNamesShouldNotMatchGetMethodsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Naming,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             RuleLevel.Disabled,    // Heuristic based naming rule.
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1721-property-names-should-not-match-get-methods",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

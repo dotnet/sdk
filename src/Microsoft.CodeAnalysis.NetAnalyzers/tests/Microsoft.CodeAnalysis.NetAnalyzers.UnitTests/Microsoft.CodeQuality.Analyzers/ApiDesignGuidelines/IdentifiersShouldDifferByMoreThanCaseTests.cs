@@ -366,9 +366,6 @@ namespace N
 
         #region Helper Methods
 
-        private const string RuleName = IdentifiersShouldDifferByMoreThanCaseAnalyzer.RuleId;
-        private static readonly string s_message = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseMessage;
-
         private const string Namespace = IdentifiersShouldDifferByMoreThanCaseAnalyzer.Namespace;
         private const string Type = IdentifiersShouldDifferByMoreThanCaseAnalyzer.Type;
         private const string Member = IdentifiersShouldDifferByMoreThanCaseAnalyzer.Member;
@@ -386,17 +383,17 @@ namespace N
 
         private static DiagnosticResult GetCA1708CSharpResult(string typeName, string objectName)
         {
-            return GetGlobalResult(RuleName, string.Format(s_message, typeName, objectName));
+            return GetGlobalResult(IdentifiersShouldDifferByMoreThanCaseAnalyzer.Rule, typeName, objectName);
         }
 
         private static DiagnosticResult GetCA1708CSharpResultAt(string typeName, string objectName, int line, int column)
         {
-            return GetCSharpResultAt(line, column, RuleName, string.Format(s_message, typeName, objectName));
+            return GetCSharpResultAt(line, column, IdentifiersShouldDifferByMoreThanCaseAnalyzer.Rule, typeName, objectName);
         }
 
         private static DiagnosticResult GetCA1708CSharpResultAt(string typeName, string objectName, params string[] locations)
         {
-            return GetCSharpResultAt(RuleName, string.Format(s_message, typeName, objectName), locations);
+            return GetCSharpResultAt(IdentifiersShouldDifferByMoreThanCaseAnalyzer.Rule, new[] { typeName, objectName }, locations);
         }
 
         #endregion

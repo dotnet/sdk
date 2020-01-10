@@ -18,7 +18,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA1063";
 
-        private const string HelpLinkUri = "https://docs.microsoft.com/visualstudio/code-quality/ca1063-implement-idisposable-correctly";
         private const string DisposeMethodName = "Dispose";
         private const string GarbageCollectorTypeName = "System.GC";
         private const string SuppressFinalizeMethodName = "SuppressFinalize";
@@ -36,87 +35,80 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageProvideDisposeBool = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageProvideDisposeBool), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor IDisposableReimplementationRule = new DiagnosticDescriptor(RuleId,
+        // Rules disabled by default until https://github.com/dotnet/docs/issues/8463 is resolved.
+
+        internal static DiagnosticDescriptor IDisposableReimplementationRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageIDisposableReimplementation,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor FinalizeOverrideRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor FinalizeOverrideRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageFinalizeOverride,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor DisposeOverrideRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor DisposeOverrideRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageDisposeOverride,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor DisposeSignatureRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor DisposeSignatureRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageDisposeSignature,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor RenameDisposeRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor RenameDisposeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageRenameDispose,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor DisposeBoolSignatureRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor DisposeBoolSignatureRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageDisposeBoolSignature,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor DisposeImplementationRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor DisposeImplementationRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageDisposeImplementation,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor FinalizeImplementationRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor FinalizeImplementationRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageFinalizeImplementation,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor ProvideDisposeBoolRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor ProvideDisposeBoolRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageProvideDisposeBool,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(IDisposableReimplementationRule, FinalizeOverrideRule, DisposeOverrideRule, DisposeSignatureRule, RenameDisposeRule, DisposeBoolSignatureRule, DisposeImplementationRule, FinalizeImplementationRule, ProvideDisposeBoolRule);

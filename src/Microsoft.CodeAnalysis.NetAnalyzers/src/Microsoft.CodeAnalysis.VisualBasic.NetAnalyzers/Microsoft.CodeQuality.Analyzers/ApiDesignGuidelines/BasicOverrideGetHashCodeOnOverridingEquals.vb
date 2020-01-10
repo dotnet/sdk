@@ -25,16 +25,15 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
         Private Shared ReadOnly s_localizableMessage As LocalizableString = New LocalizableResourceString(NameOf(MicrosoftCodeQualityAnalyzersResources.OverrideGetHashCodeOnOverridingEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, GetType(MicrosoftCodeQualityAnalyzersResources))
         Private Shared ReadOnly s_localizableDescription As LocalizableString = New LocalizableResourceString(NameOf(MicrosoftCodeQualityAnalyzersResources.OverrideGetHashCodeOnOverridingEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, GetType(MicrosoftCodeQualityAnalyzersResources))
 
-        Friend Shared Rule As DiagnosticDescriptor = New DiagnosticDescriptor(
+        Friend Shared Rule As DiagnosticDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Usage,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
-            "https://docs.microsoft.com/visualstudio/code-quality/ca2218-override-gethashcode-on-overriding-equals",
-            FxCopWellKnownDiagnosticTags.PortedFxCopRule)
+            isPortedFxCopRule:=True,
+            isDataflowRule:=False)
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
 

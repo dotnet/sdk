@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using Analyzer.Utilities;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -688,7 +689,7 @@ CA 1501: 10
         // '{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'
         private static DiagnosticResult GetCA1501ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold, string baseTypes)
         {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1501RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
+            return new DiagnosticResult(CodeMetricsAnalyzer.CA1501RuleId, DiagnosticSeverity.Warning)
                 .WithLocation(line, column)
                 .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveInheritanceMessage)
                 .WithArguments(symbolName, metricValue, threshold, baseTypes);
@@ -697,7 +698,7 @@ CA 1501: 10
         // '{0}' has a cyclomatic complexity of '{1}'. Rewrite or refactor the code to decrease its complexity below '{2}'.
         private static DiagnosticResult GetCA1502ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
         {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1502RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
+            return new DiagnosticResult(CodeMetricsAnalyzer.CA1502RuleId, DiagnosticSeverity.Warning)
                 .WithLocation(line, column)
                 .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveComplexityMessage)
                 .WithArguments(symbolName, metricValue, threshold);
@@ -706,7 +707,7 @@ CA 1501: 10
         // '{0}' has a maintainability index of '{1}'. Rewrite or refactor the code to increase its maintainability index (MI) above '{2}'.
         private static DiagnosticResult GetCA1505ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
         {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1505RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
+            return new DiagnosticResult(CodeMetricsAnalyzer.CA1505RuleId, DiagnosticSeverity.Warning)
                 .WithLocation(line, column)
                 .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidUnmantainableCodeMessage)
                 .WithArguments(symbolName, metricValue, threshold);
@@ -715,7 +716,7 @@ CA 1501: 10
         // '{0}' is coupled with '{1}' different types from '{2}' different namespaces. Rewrite or refactor the code to decrease its class coupling below '{3}'.
         private static DiagnosticResult GetCA1506ExpectedDiagnostic(int line, int column, string symbolName, int coupledTypesCount, int namespaceCount, int threshold)
         {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1506RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
+            return new DiagnosticResult(CodeMetricsAnalyzer.CA1506RuleId, DiagnosticSeverity.Warning)
                 .WithLocation(line, column)
                 .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveClassCouplingMessage)
                 .WithArguments(symbolName, coupledTypesCount, namespaceCount, threshold);
@@ -723,7 +724,7 @@ CA 1501: 10
 
         private static DiagnosticResult GetCA1509ExpectedDiagnostic(int line, int column, string entry, string additionalFile)
         {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1509RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
+            return new DiagnosticResult(CodeMetricsAnalyzer.CA1509RuleId, DiagnosticSeverity.Warning)
                 .WithLocation(AdditionalFileName, line, column)
                 .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.InvalidEntryInCodeMetricsConfigFileMessage)
                 .WithArguments(entry, additionalFile);

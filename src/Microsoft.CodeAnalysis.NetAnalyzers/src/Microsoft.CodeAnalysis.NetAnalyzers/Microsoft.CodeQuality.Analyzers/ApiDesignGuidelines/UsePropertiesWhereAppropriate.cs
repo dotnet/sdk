@@ -23,15 +23,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UsePropertiesWhereAppropriateMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UsePropertiesWhereAppropriateDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                          s_localizableTitle,
                                                                          s_localizableMessage,
                                                                          DiagnosticCategory.Design,
-                                                                         DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                         isEnabledByDefault: false,
+                                                                         RuleLevel.Disabled,    // Heuristic based rule.
                                                                          description: s_localizableDescription,
-                                                                         helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1024-use-properties-where-appropriate",
-                                                                         customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                         isPortedFxCopRule: true,
+                                                                         isDataflowRule: false,
+                                                                         isEnabledByDefaultInFxCopAnalyzers: false);
         private const string GetHashCodeName = "GetHashCode";
         private const string GetEnumeratorName = "GetEnumerator";
 

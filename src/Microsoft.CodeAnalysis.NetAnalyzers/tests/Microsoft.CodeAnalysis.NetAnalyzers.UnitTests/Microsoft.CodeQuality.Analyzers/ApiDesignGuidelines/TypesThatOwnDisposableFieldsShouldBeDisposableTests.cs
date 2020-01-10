@@ -429,14 +429,12 @@ End Namespace
 
         private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
         {
-            return GetCSharpResultAt(line, column, CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.RuleId,
-                string.Format(MicrosoftCodeQualityAnalyzersResources.TypesThatOwnDisposableFieldsShouldBeDisposableMessageNonBreaking, objectName, disposableFields));
+            return GetCSharpResultAt(line, column, CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Rule, objectName, disposableFields);
         }
 
         private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
         {
-            return GetBasicResultAt(line, column, BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.RuleId,
-                string.Format(MicrosoftCodeQualityAnalyzersResources.TypesThatOwnDisposableFieldsShouldBeDisposableMessageNonBreaking, objectName, disposableFields));
+            return GetBasicResultAt(line, column, BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Rule, objectName, disposableFields);
         }
     }
 }

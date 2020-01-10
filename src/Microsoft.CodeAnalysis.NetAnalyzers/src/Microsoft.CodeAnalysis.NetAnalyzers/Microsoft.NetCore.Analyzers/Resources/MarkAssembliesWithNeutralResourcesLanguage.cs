@@ -28,15 +28,14 @@ namespace Microsoft.NetCore.Analyzers.Resources
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Performance,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             RuleLevel.IdeSuggestion,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1824-mark-assemblies-with-neutralresourceslanguageattribute",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
         protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound);
 

@@ -20,8 +20,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2315",
                 nameof(MicrosoftNetCoreAnalyzersResources.ObjectStateFormatterMethodUsedTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.ObjectStateFormatterMethodUsedMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2315-do-not-use-insecure-deserializer-objectstateformatter");
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
         protected override string DeserializerTypeMetadataName => WellKnownTypeNames.SystemWebUIObjectStateFormatter;
 

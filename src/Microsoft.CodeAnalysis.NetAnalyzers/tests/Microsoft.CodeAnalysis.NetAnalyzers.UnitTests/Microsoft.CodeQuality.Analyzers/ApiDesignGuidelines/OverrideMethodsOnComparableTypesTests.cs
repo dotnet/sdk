@@ -1301,26 +1301,22 @@ public class DerivedClass<T> : BaseClass<T>
 
         private static DiagnosticResult GetCA1036CSharpOperatorsResultAt(int line, int column, string typeName, string operators)
         {
-            var message = string.Format(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageOperator, typeName, operators);
-            return GetCSharpResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleOperator, typeName, operators);
         }
 
         private static DiagnosticResult GetCA1036BasicOperatorsResultAt(int line, int column, string typeName, string operators)
         {
-            var message = string.Format(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageOperator, typeName, operators);
-            return GetBasicResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleOperator, typeName, operators);
         }
 
         private static DiagnosticResult GetCA1036CSharpBothResultAt(int line, int column, string typeName, string operators)
         {
-            var message = string.Format(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageBoth, typeName, operators);
-            return GetCSharpResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleBoth, typeName, operators);
         }
 
         private static DiagnosticResult GetCA1036BasicBothResultAt(int line, int column, string typeName, string operators)
         {
-            var message = string.Format(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageBoth, typeName, operators);
-            return GetBasicResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, OverrideMethodsOnComparableTypesAnalyzer.RuleBoth, typeName, operators);
         }
     }
 }

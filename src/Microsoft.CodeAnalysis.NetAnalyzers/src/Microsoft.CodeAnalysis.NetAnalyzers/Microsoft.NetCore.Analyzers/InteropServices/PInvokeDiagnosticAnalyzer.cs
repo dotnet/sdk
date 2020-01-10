@@ -19,28 +19,26 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly LocalizableString s_localizableTitleCA1401 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageCA1401 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionCA1401 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        internal static DiagnosticDescriptor RuleCA1401 = new DiagnosticDescriptor(RuleCA1401Id,
+        internal static DiagnosticDescriptor RuleCA1401 = DiagnosticDescriptorHelper.Create(RuleCA1401Id,
                                                                          s_localizableTitleCA1401,
                                                                          s_localizableMessageCA1401,
                                                                          DiagnosticCategory.Interoperability,
-                                                                         DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                         isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                         RuleLevel.IdeSuggestion,
                                                                          description: s_localizableDescriptionCA1401,
-                                                                         helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1401-p-invokes-should-not-be-visible",
-                                                                         customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                         isPortedFxCopRule: true,
+                                                                         isDataflowRule: false);
 
         private static readonly LocalizableString s_localizableMessageAndTitleCA2101 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyMarshalingForPInvokeStringArgumentsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionCA2101 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyMarshalingForPInvokeStringArgumentsDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleCA2101 = new DiagnosticDescriptor(RuleCA2101Id,
+        internal static DiagnosticDescriptor RuleCA2101 = DiagnosticDescriptorHelper.Create(RuleCA2101Id,
                                                                          s_localizableMessageAndTitleCA2101,
                                                                          s_localizableMessageAndTitleCA2101,
                                                                          DiagnosticCategory.Globalization,
-                                                                         DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                         isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                         RuleLevel.BuildWarning,
                                                                          description: s_localizableDescriptionCA2101,
-                                                                         helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2101-specify-marshaling-for-p-invoke-string-arguments",
-                                                                         customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                         isPortedFxCopRule: true,
+                                                                         isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA1401, RuleCA2101);
 

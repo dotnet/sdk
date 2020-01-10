@@ -19,18 +19,18 @@ namespace Microsoft.NetCore.Analyzers.Security
             typeof(MicrosoftNetCoreAnalyzersResources),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocols),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocolsMessage),
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocolsDescription),
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5364",
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.BuildWarning,
+            isPortedFxCopRule: false,
+            isDataflowRule: false,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocolsDescription));
         internal static DiagnosticDescriptor HardCodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5386",
             typeof(MicrosoftNetCoreAnalyzersResources),
             nameof(MicrosoftNetCoreAnalyzersResources.HardCodedSecurityProtocolTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.HardCodedSecurityProtocolMessage),
-            isEnabledByDefault: false,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5386",
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         private readonly ImmutableHashSet<string> HardCodedSafeProtocolMetadataNames = ImmutableHashSet.Create(
             StringComparer.Ordinal,

@@ -53,10 +53,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             get { return string.Empty; }
         }
     }",
-    GetCSharpResultAt(10, 28, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString()),
-    GetCSharpResultAt(15, 30, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString()),
-    GetCSharpResultAt(23, 28, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString()),
-    GetCSharpResultAt(28, 30, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString())
+    GetCSharpResultAt(10, 28, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
+    GetCSharpResultAt(15, 30, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
+    GetCSharpResultAt(23, 28, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
+    GetCSharpResultAt(28, 30, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule)
     );
         }
 
@@ -90,10 +90,10 @@ Public NotInheritable Class GenericType2(Of T)
         End Get
     End Property
 End Class",
-    GetBasicResultAt(6, 23, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString()),
-    GetBasicResultAt(10, 37, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString()),
-    GetBasicResultAt(18, 23, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString()),
-    GetBasicResultAt(22, 37, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.RuleId, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule.MessageFormat.ToString())
+    GetBasicResultAt(6, 23, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
+    GetBasicResultAt(10, 37, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
+    GetBasicResultAt(18, 23, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
+    GetBasicResultAt(22, 37, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule)
     );
         }
 

@@ -102,26 +102,24 @@ End Namespace",
             GetReservedBasicResultAt(7, 23, "System.StackOverflowException"));
         }
 
-        private const string RuleId = CSharpDoNotRaiseReservedExceptionTypesAnalyzer.RuleId;
-
         private DiagnosticResult GetTooGenericCSharpResultAt(int line, int column, string callee)
         {
-            return GetCSharpResultAt(line, column, RuleId, string.Format(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageTooGeneric, callee));
+            return GetCSharpResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule, callee);
         }
 
         private DiagnosticResult GetReservedCSharpResultAt(int line, int column, string callee)
         {
-            return GetCSharpResultAt(line, column, RuleId, string.Format(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageReserved, callee));
+            return GetCSharpResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule, callee);
         }
 
         private DiagnosticResult GetTooGenericBasicResultAt(int line, int column, string callee)
         {
-            return GetBasicResultAt(line, column, RuleId, string.Format(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageTooGeneric, callee));
+            return GetBasicResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule, callee);
         }
 
         private DiagnosticResult GetReservedBasicResultAt(int line, int column, string callee)
         {
-            return GetBasicResultAt(line, column, RuleId, string.Format(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageReserved, callee));
+            return GetBasicResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule, callee);
         }
 
         protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()

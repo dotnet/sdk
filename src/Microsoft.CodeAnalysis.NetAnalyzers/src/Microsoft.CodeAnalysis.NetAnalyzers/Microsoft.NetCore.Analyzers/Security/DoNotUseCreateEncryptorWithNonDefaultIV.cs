@@ -24,18 +24,18 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA5401",
             nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyUseCreateEncryptorWithNonDefaultIV),
             nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyUseCreateEncryptorWithNonDefaultIVMessage),
-            false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCreateEncryptorWithNonDefaultIVDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCreateEncryptorWithNonDefaultIVDescription));
         internal static DiagnosticDescriptor MaybeUseCreateEncryptorWithNonDefaultIVRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5402",
             nameof(MicrosoftNetCoreAnalyzersResources.MaybeUseCreateEncryptorWithNonDefaultIV),
             nameof(MicrosoftNetCoreAnalyzersResources.MaybeUseCreateEncryptorWithNonDefaultIVMessage),
-            false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCreateEncryptorWithNonDefaultIVDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCreateEncryptorWithNonDefaultIVDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
                                                                                         DefinitelyUseCreateEncryptorWithNonDefaultIVRule,

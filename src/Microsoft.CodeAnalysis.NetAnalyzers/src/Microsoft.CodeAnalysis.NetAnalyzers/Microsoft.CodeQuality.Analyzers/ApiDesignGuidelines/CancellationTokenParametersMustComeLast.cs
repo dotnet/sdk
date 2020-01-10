@@ -20,13 +20,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.CancellationTokenParametersMustComeLastTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.CancellationTokenParametersMustComeLastMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget);
+            RuleLevel.IdeSuggestion,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

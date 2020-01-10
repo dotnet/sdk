@@ -23,51 +23,51 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessageStatic = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationMethodsCorrectlyMessageStatic), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationMethodsCorrectlyDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor VisibilityRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor VisibilityRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageVisibility,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2238-implement-serialization-methods-correctly",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor ReturnTypeRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+        internal static DiagnosticDescriptor ReturnTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageReturnType,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2238-implement-serialization-methods-correctly",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor ParametersRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+        internal static DiagnosticDescriptor ParametersRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageParameters,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2238-implement-serialization-methods-correctly",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor GenericRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+        internal static DiagnosticDescriptor GenericRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageGeneric,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2238-implement-serialization-methods-correctly",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor StaticRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+        internal static DiagnosticDescriptor StaticRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageStatic,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2238-implement-serialization-methods-correctly",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
         //DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX ? ImmutableArray.Create(VisibilityRule, ReturnTypeRule, ParametersRule, GenericRule, StaticRule) : ImmutableArray<DiagnosticDescriptor>.Empty;

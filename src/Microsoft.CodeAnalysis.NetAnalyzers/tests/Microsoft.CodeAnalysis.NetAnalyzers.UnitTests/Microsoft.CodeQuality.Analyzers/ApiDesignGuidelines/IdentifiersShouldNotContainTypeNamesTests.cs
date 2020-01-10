@@ -460,9 +460,7 @@ public sealed class SomeEqualityComparer : IEqualityComparer<string>, IEqualityC
 
         private static DiagnosticResult GetCA1720CSharpResultAt(int line, int column, string identifierName)
         {
-            // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainTypeNamesMessage, identifierName);
-            return GetCSharpResultAt(line, column, IdentifiersShouldNotContainTypeNames.RuleId, message);
+            return GetCSharpResultAt(line, column, IdentifiersShouldNotContainTypeNames.Rule, identifierName);
         }
 
         #endregion

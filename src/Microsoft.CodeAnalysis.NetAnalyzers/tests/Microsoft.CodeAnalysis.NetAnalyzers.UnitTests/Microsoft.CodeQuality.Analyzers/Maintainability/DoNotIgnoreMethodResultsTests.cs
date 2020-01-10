@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -530,56 +529,47 @@ End Class", MSTestAttributes.VisualBasic },
 
         private static DiagnosticResult GetCSharpStringCreationResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageStringCreation, containingMethodName, invokedMethodName);
-            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.StringCreationRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetBasicStringCreationResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageStringCreation, containingMethodName, invokedMethodName);
-            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.StringCreationRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetCSharpObjectCreationResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageObjectCreation, containingMethodName, invokedMethodName);
-            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.ObjectCreationRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetCSharpTryParseResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageTryParse, containingMethodName, invokedMethodName);
-            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.TryParseRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetBasicTryParseResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageTryParse, containingMethodName, invokedMethodName);
-            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.TryParseRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetCSharpHResultOrErrorCodeResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageHResultOrErrorCode, containingMethodName, invokedMethodName);
-            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.HResultOrErrorCodeRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetBasicHResultOrErrorCodeResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageHResultOrErrorCode, containingMethodName, invokedMethodName);
-            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.HResultOrErrorCodeRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetCSharpPureMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessagePureMethod, containingMethodName, invokedMethodName);
-            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.PureMethodRule, containingMethodName, invokedMethodName);
         }
 
         private static DiagnosticResult GetBasicPureMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
         {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessagePureMethod, containingMethodName, invokedMethodName);
-            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, DoNotIgnoreMethodResultsAnalyzer.PureMethodRule, containingMethodName, invokedMethodName);
         }
 
         #endregion

@@ -23,9 +23,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2326",
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2326",
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingDescription));
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: false,
+                descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create<DiagnosticDescriptor>(Rule);

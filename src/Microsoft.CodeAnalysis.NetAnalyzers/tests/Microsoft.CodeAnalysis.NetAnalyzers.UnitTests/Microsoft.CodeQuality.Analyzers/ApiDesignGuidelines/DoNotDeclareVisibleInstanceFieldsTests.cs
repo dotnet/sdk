@@ -25,7 +25,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 public class A
 {
     public string field; 
-}", GetCSharpResultAt(4, 19, DoNotDeclareVisibleInstanceFieldsAnalyzer.RuleId, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule.MessageFormat.ToString()));
+}", GetCSharpResultAt(4, 19, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
         }
 
         [Fact]
@@ -34,7 +34,7 @@ public class A
             VerifyBasic(@"
 Public Class A
     Public field As System.String
-End Class", GetBasicResultAt(3, 12, DoNotDeclareVisibleInstanceFieldsAnalyzer.RuleId, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule.MessageFormat.ToString()));
+End Class", GetBasicResultAt(3, 12, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -149,7 +149,7 @@ End Class");
 public class A
 {
     protected string field;
-}", GetCSharpResultAt(4, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.RuleId, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule.MessageFormat.ToString()));
+}", GetCSharpResultAt(4, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
         }
 
         [Fact]
@@ -158,7 +158,7 @@ public class A
             VerifyBasic(@"
 Public Class A
     Protected field As System.String
-End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.RuleId, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule.MessageFormat.ToString()));
+End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -254,7 +254,7 @@ End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
 public class A
 {
     protected internal string field;
-}", GetCSharpResultAt(4, 31, DoNotDeclareVisibleInstanceFieldsAnalyzer.RuleId, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule.MessageFormat.ToString()));
+}", GetCSharpResultAt(4, 31, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
         }
 
         [Fact]
@@ -263,7 +263,7 @@ public class A
             VerifyBasic(@"
 Public Class A
     Protected Friend field As System.String
-End Class", GetBasicResultAt(3, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.RuleId, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule.MessageFormat.ToString()));
+End Class", GetBasicResultAt(3, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]

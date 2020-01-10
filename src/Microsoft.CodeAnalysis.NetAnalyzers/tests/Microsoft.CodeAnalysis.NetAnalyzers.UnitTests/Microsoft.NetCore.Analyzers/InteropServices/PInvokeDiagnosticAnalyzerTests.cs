@@ -11,9 +11,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     {
         #region Verifiers 
 
-        private static readonly string s_CA1401RuleText = MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleMessage;
-        private static readonly string s_CA2101RuleText = MicrosoftNetCoreAnalyzersResources.SpecifyMarshalingForPInvokeStringArgumentsTitle;
-
         protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
         {
             return new PInvokeDiagnosticAnalyzer();
@@ -26,22 +23,22 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 
         private static DiagnosticResult CSharpResult1401(int line, int column, string typeName)
         {
-            return GetCSharpResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA1401Id, string.Format(s_CA1401RuleText, typeName));
+            return GetCSharpResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA1401, typeName);
         }
 
         private static DiagnosticResult BasicResult1401(int line, int column, string typeName)
         {
-            return GetBasicResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA1401Id, string.Format(s_CA1401RuleText, typeName));
+            return GetBasicResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA1401, typeName);
         }
 
         private static DiagnosticResult CSharpResult2101(int line, int column)
         {
-            return GetCSharpResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA2101Id, s_CA2101RuleText);
+            return GetCSharpResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA2101);
         }
 
         private static DiagnosticResult BasicResult2101(int line, int column)
         {
-            return GetBasicResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA2101Id, s_CA2101RuleText);
+            return GetBasicResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA2101);
         }
 
         #endregion

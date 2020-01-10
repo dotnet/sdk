@@ -54,24 +54,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessageReserved = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageReserved), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor TooGenericRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor TooGenericRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageTooGeneric,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2201-do-not-raise-reserved-exception-types",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor ReservedRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+        internal static DiagnosticDescriptor ReservedRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageReserved,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2201-do-not-raise-reserved-exception-types",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
 
         private static readonly SymbolDisplayFormat s_symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 

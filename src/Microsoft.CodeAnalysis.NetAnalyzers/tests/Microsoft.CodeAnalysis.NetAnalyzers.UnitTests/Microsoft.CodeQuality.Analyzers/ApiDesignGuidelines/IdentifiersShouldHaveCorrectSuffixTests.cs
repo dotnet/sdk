@@ -1119,13 +1119,9 @@ public class C
             return GetBasicResultAt(
                 line,
                 column,
-                IdentifiersShouldHaveCorrectSuffixAnalyzer.RuleId,
-                string.Format(
-                    isSpecial ?
-                        MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                        MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-                    symbolName,
-                    replacementName));
+                isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule,
+                symbolName,
+                replacementName);
         }
 
         private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
@@ -1133,13 +1129,9 @@ public class C
             return GetCSharpResultAt(
                 line,
                 column,
-                IdentifiersShouldHaveCorrectSuffixAnalyzer.RuleId,
-                string.Format(
-                    isSpecial ?
-                        MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                        MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-                    symbolName,
-                    replacementName));
+                isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule,
+                symbolName,
+                replacementName);
         }
     }
 }

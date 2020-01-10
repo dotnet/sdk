@@ -28,17 +28,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly DiagnosticDescriptor s_rule = new DiagnosticDescriptor(
+        private static readonly DiagnosticDescriptor s_rule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Performance,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+            RuleLevel.IdeSuggestion,
             description: s_localizableDescription,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/" + RuleId.ToLowerInvariant());
-#pragma warning restore CA1308 // Normalize strings to uppercase
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         /// <summary>
         /// Returns a set of descriptors for the diagnostics that this analyzer is capable of producing.

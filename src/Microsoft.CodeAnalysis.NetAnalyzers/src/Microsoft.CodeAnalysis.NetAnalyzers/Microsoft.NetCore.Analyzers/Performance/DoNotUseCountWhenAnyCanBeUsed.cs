@@ -115,28 +115,24 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static readonly LocalizableString s_syncLocalizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_syncLocalizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_syncLocalizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly DiagnosticDescriptor s_asyncRule = new DiagnosticDescriptor(
+        private static readonly DiagnosticDescriptor s_asyncRule = DiagnosticDescriptorHelper.Create(
             AsyncRuleId,
             s_asyncLocalizableTitle,
             s_asyncLocalizableMessage,
             DiagnosticCategory.Performance,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+            RuleLevel.IdeSuggestion,
             description: s_localizableDescription,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/" + AsyncRuleId.ToLowerInvariant());
-#pragma warning restore CA1308 // Normalize strings to uppercase
-        private static readonly DiagnosticDescriptor s_syncRule = new DiagnosticDescriptor(
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
+        private static readonly DiagnosticDescriptor s_syncRule = DiagnosticDescriptorHelper.Create(
             SyncRuleId,
             s_syncLocalizableTitle,
             s_syncLocalizableMessage,
             DiagnosticCategory.Performance,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+            RuleLevel.IdeSuggestion,
             description: s_syncLocalizableDescription,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/" + SyncRuleId.ToLowerInvariant());
-#pragma warning restore CA1308 // Normalize strings to uppercase
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         private static readonly ImmutableHashSet<string> s_syncMethodNames = ImmutableHashSet.Create(StringComparer.Ordinal, "Count", "LongCount");
         private static readonly ImmutableHashSet<string> s_asyncMethodNames = ImmutableHashSet.Create(StringComparer.Ordinal, "CountAsync", "LongCountAsync");

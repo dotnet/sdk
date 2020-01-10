@@ -591,14 +591,12 @@ namespace ConsoleApp14
 
         private DiagnosticResult GetBasicNameofResultAt(int line, int column, string name)
         {
-            var message = string.Format(MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringMessage, name);
-            return GetBasicResultAt(line, column, UseNameofInPlaceOfStringAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, UseNameofInPlaceOfStringAnalyzer.RuleWithSuggestion, name);
         }
 
         private DiagnosticResult GetCSharpNameofResultAt(int line, int column, string name)
         {
-            var message = string.Format(MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringMessage, name);
-            return GetCSharpResultAt(line, column, UseNameofInPlaceOfStringAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, UseNameofInPlaceOfStringAnalyzer.RuleWithSuggestion, name);
         }
 
         protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()

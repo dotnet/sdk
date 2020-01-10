@@ -503,12 +503,12 @@ End Class
 
         private static DiagnosticResult GetCA2200BasicResultAt(int line, int column)
         {
-            return GetBasicResultAt(line, column, RethrowToPreserveStackDetailsAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.RethrowToPreserveStackDetailsMessage);
+            return GetBasicResultAt(line, column, RethrowToPreserveStackDetailsAnalyzer.Rule);
         }
 
         private static DiagnosticResult GetCA2200CSharpResultAt(int line, int column)
         {
-            return GetCSharpResultAt(line, column, RethrowToPreserveStackDetailsAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.RethrowToPreserveStackDetailsMessage);
+            return GetCSharpResultAt(line, column, RethrowToPreserveStackDetailsAnalyzer.Rule);
         }
     }
 }

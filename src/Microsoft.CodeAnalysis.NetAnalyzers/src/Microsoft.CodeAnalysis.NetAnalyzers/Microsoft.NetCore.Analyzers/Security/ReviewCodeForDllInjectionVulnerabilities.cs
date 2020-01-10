@@ -14,8 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA3011",
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForDllInjectionVulnerabilitiesTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForDllInjectionVulnerabilitiesMessage),
-            isEnabledByDefault: false,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca3011-review-code-for-dll-injection-vulnerabilities");
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         protected override SinkKind SinkKind { get { return SinkKind.Dll; } }
 

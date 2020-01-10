@@ -63,7 +63,7 @@ End Class");
 public class A
 {
     public static string field; 
-}", GetCSharpResultAt(4, 26, NonConstantFieldsShouldNotBeVisibleAnalyzer.RuleId, NonConstantFieldsShouldNotBeVisibleAnalyzer.Rule.MessageFormat.ToString()));
+}", GetCSharpResultAt(4, 26, NonConstantFieldsShouldNotBeVisibleAnalyzer.Rule));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -91,7 +91,7 @@ public class B
             VerifyBasic(@"
 Public Class A
     Public Shared field as System.String
-End Class", GetBasicResultAt(3, 19, NonConstantFieldsShouldNotBeVisibleAnalyzer.RuleId, NonConstantFieldsShouldNotBeVisibleAnalyzer.Rule.MessageFormat.ToString()));
+End Class", GetBasicResultAt(3, 19, NonConstantFieldsShouldNotBeVisibleAnalyzer.Rule));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]

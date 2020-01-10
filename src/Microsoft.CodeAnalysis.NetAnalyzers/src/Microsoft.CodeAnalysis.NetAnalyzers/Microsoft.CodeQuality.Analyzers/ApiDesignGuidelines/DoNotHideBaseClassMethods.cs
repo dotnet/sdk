@@ -22,16 +22,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotHideBaseClassMethodsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotHideBaseClassMethodsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        public static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+            RuleLevel.IdeSuggestion,
             description: s_localizableDescription,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1061-do-not-hide-base-class-methods",
-            customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

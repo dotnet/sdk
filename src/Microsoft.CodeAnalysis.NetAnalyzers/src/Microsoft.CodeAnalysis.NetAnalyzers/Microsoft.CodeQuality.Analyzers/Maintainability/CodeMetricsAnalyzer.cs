@@ -66,55 +66,55 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
         private static readonly LocalizableString s_localizableMessageCA1509 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InvalidEntryInCodeMetricsConfigFileMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionCA1509 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InvalidEntryInCodeMetricsConfigFileDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor CA1501Rule = new DiagnosticDescriptor(CA1501RuleId,
+        internal static DiagnosticDescriptor CA1501Rule = DiagnosticDescriptorHelper.Create(CA1501RuleId,
                                                                      s_localizableTitleCA1501,
                                                                      s_localizableMessageCA1501,
                                                                      DiagnosticCategory.Maintainability,
-                                                                     DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                     isEnabledByDefault: false,
+                                                                     RuleLevel.CandidateForRemoval,
                                                                      description: s_localizableDescriptionCA1501,
-                                                                     helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1501-avoid-excessive-inheritance",
-                                                                     customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                     isPortedFxCopRule: true,
+                                                                     isDataflowRule: false,
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor CA1502Rule = new DiagnosticDescriptor(CA1502RuleId,
+        internal static DiagnosticDescriptor CA1502Rule = DiagnosticDescriptorHelper.Create(CA1502RuleId,
                                                                      s_localizableTitleCA1502,
                                                                      s_localizableMessageCA1502,
                                                                      DiagnosticCategory.Maintainability,
-                                                                     DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                     isEnabledByDefault: false,
+                                                                     RuleLevel.CandidateForRemoval,
                                                                      description: s_localizableDescriptionCA1502,
-                                                                     helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1502-avoid-excessive-complexity",
-                                                                     customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                     isPortedFxCopRule: true,
+                                                                     isDataflowRule: false,
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor CA1505Rule = new DiagnosticDescriptor(CA1505RuleId,
+        internal static DiagnosticDescriptor CA1505Rule = DiagnosticDescriptorHelper.Create(CA1505RuleId,
                                                                      s_localizableTitleCA1505,
                                                                      s_localizableMessageCA1505,
                                                                      DiagnosticCategory.Maintainability,
-                                                                     DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                     isEnabledByDefault: false,
+                                                                     RuleLevel.CandidateForRemoval,
                                                                      description: s_localizableDescriptionCA1505,
-                                                                     helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1505-avoid-unmaintainable-code",
-                                                                     customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                     isPortedFxCopRule: true,
+                                                                     isDataflowRule: false,
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor CA1506Rule = new DiagnosticDescriptor(CA1506RuleId,
+        internal static DiagnosticDescriptor CA1506Rule = DiagnosticDescriptorHelper.Create(CA1506RuleId,
                                                                      s_localizableTitleCA1506,
                                                                      s_localizableMessageCA1506,
                                                                      DiagnosticCategory.Maintainability,
-                                                                     DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                     isEnabledByDefault: false,
+                                                                     RuleLevel.CandidateForRemoval,
                                                                      description: s_localizableDescriptionCA1506,
-                                                                     helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1506-avoid-excessive-class-coupling",
-                                                                     customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                     isPortedFxCopRule: true,
+                                                                     isDataflowRule: false,
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor InvalidEntryInCodeMetricsConfigFileRule = new DiagnosticDescriptor(CA1509RuleId,
+        internal static DiagnosticDescriptor InvalidEntryInCodeMetricsConfigFileRule = DiagnosticDescriptorHelper.Create(CA1509RuleId,
                                                                      s_localizableTitleCA1509,
                                                                      s_localizableMessageCA1509,
                                                                      DiagnosticCategory.Maintainability,
-                                                                     DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                     isEnabledByDefault: false,
+                                                                     RuleLevel.CandidateForRemoval,
                                                                      description: s_localizableDescriptionCA1509,
-                                                                     helpLinkUri: null, // TODO: Add help link
-                                                                     customTags: WellKnownDiagnosticTags.Telemetry);
+                                                                     isPortedFxCopRule: false,
+                                                                     isDataflowRule: false,
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
 
