@@ -1,35 +1,21 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForCommandExecutionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForCommandExecutionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForCommandExecutionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForCommandExecutionVulnerabilities, ReviewCodeForCommandExecutionVulnerabilities>
     {
-        public ReviewCodeForCommandExecutionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForCommandExecutionVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForCommandExecutionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForCommandExecutionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_fileName_Diagnostic()
+        public async Task DocSample1_CSharp_fileName_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Diagnostics;
 
@@ -45,9 +31,16 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DocSample1_VB_fileName_Diagnostic()
+        public async Task DocSample1_VB_fileName_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Diagnostics
 
@@ -60,13 +53,19 @@ Partial Public Class WebForm
     End Sub
 End Class
 ",
-                GetBasicResultAt(10, 28, 9, 31, "Function Process.Start(fileName As String) As Process", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(10, 28, 9, 31, "Function Process.Start(fileName As String) As Process", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void Process_Start_arguments_Diagnostic()
+        public async Task Process_Start_arguments_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Diagnostics;
 using System.Web;
@@ -84,9 +83,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void ProcessStartInfo_Constructor_Diagnostic()
+        public async Task ProcessStartInfo_Constructor_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Diagnostics;
 using System.Web;
@@ -104,9 +103,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void ProcessStartInfo_Arguments_Diagnostic()
+        public async Task ProcessStartInfo_Arguments_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Diagnostics;
 using System.Web;

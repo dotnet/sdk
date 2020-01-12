@@ -1,22 +1,16 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.DoNotHardCodeEncryptionKey, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class DoNotHardCodeEncryptionKeyTests : TaintedDataAnalyzerTestBase
+    public class DoNotHardCodeEncryptionKeyTests : TaintedDataAnalyzerTestBase<DoNotHardCodeEncryptionKey, DoNotHardCodeEncryptionKey>
     {
-        public DoNotHardCodeEncryptionKeyTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => DoNotHardCodeEncryptionKey.Rule;
 
         protected override IEnumerable<string> AdditionalCSharpSources => new string[] { readOnlySpanAndAesGcmAndAesCcmCSharpSourceCode };
@@ -58,9 +52,9 @@ namespace System.Security.Cryptography
 }";
 
         [Fact]
-        public void Test_HardcodedStaticReadonlyField__Diagnostic()
+        public async Task Test_HardcodedStaticReadonlyField__Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -80,9 +74,9 @@ internal static class Program
         }
 
         [Fact]
-        public void Test_HardcodedInString_CreateEncryptor_NeedValueContentAnalysis_Diagnostic()
+        public async Task Test_HardcodedInString_CreateEncryptor_NeedValueContentAnalysis_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -99,9 +93,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_ASCIIEncodingGetBytesWithStringParameter_CreateEncryptor_Diagnostic()
+        public async Task Test_ASCIIEncodingGetBytesWithStringParameter_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Text;
 using System.Security.Cryptography;
 
@@ -118,9 +112,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_EncodingUTF8GetBytesWithStringParameter_CreateEncryptor_Diagnostic()
+        public async Task Test_EncodingUTF8GetBytesWithStringParameter_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Text;
 using System.Security.Cryptography;
 
@@ -137,9 +131,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_ASCIIEncodingGetBytesWithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_Diagnostic()
+        public async Task Test_ASCIIEncodingGetBytesWithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Text;
 using System.Security.Cryptography;
 
@@ -156,9 +150,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInStringWithVariable_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedInStringWithVariable_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -176,9 +170,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInMultilinesString_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedInMultilinesString_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -199,9 +193,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArray_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedInByteArray_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -218,9 +212,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_AesGcmWithByteArrayParameter_Diagnostic()
+        public async Task Test_AesGcmWithByteArrayParameter_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -236,9 +230,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_AesGcmWithReadOnlySpanParameter_Diagnostic()
+        public async Task Test_AesGcmWithReadOnlySpanParameter_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -254,9 +248,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInStringWithVariable_AesGcm_Diagnostic()
+        public async Task Test_HardcodedInStringWithVariable_AesGcm_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -273,9 +267,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_AesCcmWithByteArrayParameter_Diagnostic()
+        public async Task Test_AesCcmWithByteArrayParameter_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -291,9 +285,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_AesCcmWithReadOnlySpanParameter_Diagnostic()
+        public async Task Test_AesCcmWithReadOnlySpanParameter_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -309,9 +303,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInStringWithVariable_AesCcm_Diagnostic()
+        public async Task Test_HardcodedInStringWithVariable_AesCcm_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -328,9 +322,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArray_CreateDecryptor_Diagnostic()
+        public async Task Test_HardcodedInByteArray_CreateDecryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -347,9 +341,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArrayWithVariable_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedInByteArrayWithVariable_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -367,9 +361,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArray_KeyProperty_Diagnostic()
+        public async Task Test_HardcodedInByteArray_KeyProperty_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -386,9 +380,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArray_CreateEncryptorFromDerivedClassOfSymmetricAlgorithm_Diagnostic()
+        public async Task Test_HardcodedInByteArray_CreateEncryptorFromDerivedClassOfSymmetricAlgorithm_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -405,9 +399,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArray_AesKey_Diagnostic()
+        public async Task Test_HardcodedInByteArray_AesKey_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -425,9 +419,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArray_CreateEncryptor_Multivalues_Diagnostic()
+        public async Task Test_HardcodedInByteArray_CreateEncryptor_Multivalues_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -452,9 +446,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInByteArray_CreateEncryptor_WithoutAssignment_Diagnostic()
+        public async Task Test_HardcodedInByteArray_CreateEncryptor_WithoutAssignment_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -470,9 +464,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_MaybeHardcoded_CreateEncryptor_Diagnostic()
+        public async Task Test_MaybeHardcoded_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -495,9 +489,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_PassTaintedSourceInfoAsParameter_SinkMethodParameters_Interprocedual_Diagnostic()
+        public async Task Test_PassTaintedSourceInfoAsParameter_SinkMethodParameters_Interprocedual_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -519,9 +513,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_PassTaintedSourceInfoAsParameter_SinkProperties_Interprocedual_Diagnostic()
+        public async Task Test_PassTaintedSourceInfoAsParameter_SinkProperties_Interprocedual_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -543,9 +537,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedIn2DByteArray_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedIn2DByteArray_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -563,9 +557,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInJaggedArrayInitializer_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodedInJaggedArrayInitializer_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -589,9 +583,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodeByParamsBytesArray_CreateEncryptor_Diagnostic()
+        public async Task Test_HardcodeByParamsBytesArray_CreateEncryptor_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -613,9 +607,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_ASCIIEncodingGetBytesWithCharArrayParameter_CreateEncryptor_NoDiagnostic()
+        public async Task Test_ASCIIEncodingGetBytesWithCharArrayParameter_CreateEncryptor_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Text;
 using System.Security.Cryptography;
 
@@ -631,9 +625,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_ASCIIEncodingGetBytesWithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_NoDiagnostic()
+        public async Task Test_ASCIIEncodingGetBytesWithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Text;
 using System.Security.Cryptography;
 
@@ -649,9 +643,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_ASCIIEncodingGetBytesWithConstantCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_NoDiagnostic()
+        public async Task Test_ASCIIEncodingGetBytesWithConstantCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_CreateEncryptor_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Text;
 using System.Security.Cryptography;
 
@@ -668,9 +662,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_ElementTypeIsTypeParameter_NoDiagnostic()
+        public async Task Test_ElementTypeIsTypeParameter_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class TestClass<T1> where T1 : struct
@@ -687,9 +681,9 @@ class TestClass<T1> where T1 : struct
         }
 
         [Fact]
-        public void Test_HardcodedInJaggedArray_CreateEncryptor_NoDiagnostic()
+        public async Task Test_HardcodedInJaggedArray_CreateEncryptor_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -708,9 +702,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_NotHardcoded_CreateEncryptor_NoDiagnostic()
+        public async Task Test_NotHardcoded_CreateEncryptor_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -725,9 +719,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_HardcodedInArrayThenOverwrite_NoDiagnostic()
+        public async Task Test_HardcodedInArrayThenOverwrite_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -744,9 +738,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_NotHardcodedInString_CreateEncryptor_NoDiagnostic()
+        public async Task Test_NotHardcodedInString_CreateEncryptor_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -763,9 +757,9 @@ class TestClass
 
         // For now, it doesn't support checking return tainted source info.
         [Fact]
-        public void Test_ReturnTaintedSourceInfo_Interprocedual_NoDiagnostic()
+        public async Task Test_ReturnTaintedSourceInfo_Interprocedual_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Security.Cryptography;
 
@@ -786,9 +780,9 @@ class TestClass
         }
 
         [Fact, WorkItem(2723, "https://github.com/dotnet/roslyn-analyzers/issues/2723")]
-        public void Test_ArrayInitializerInAttribute()
+        public async Task Test_ArrayInitializerInAttribute()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class MyAttr : Attribute
@@ -800,16 +794,6 @@ class MyAttr : Attribute
 class C
 {
 }");
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotHardCodeEncryptionKey();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotHardCodeEncryptionKey();
         }
     }
 }
