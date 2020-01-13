@@ -1,35 +1,29 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXPathInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXPathInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForXPathInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForXPathInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXPathInjectionVulnerabilities, ReviewCodeForXPathInjectionVulnerabilities>
     {
-        public ReviewCodeForXPathInjectionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForXPathInjectionVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXPathInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXPathInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Diagnostic_Violation()
+        public async Task DocSample1_CSharp_Diagnostic_Violation()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Xml.XPath;
 
@@ -50,13 +44,26 @@ public partial class WebForm : System.Web.UI.Page
             ""//authorizedOperation[@username = 'anonymous' and @operationName = '"" + operation + ""']"");
     }
 }",
-                GetCSharpResultAt(18, 31, 11, 28, "XPathNavigator XPathNavigator.SelectSingleNode(string xpath)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(18, 31, 11, 28, "XPathNavigator XPathNavigator.SelectSingleNode(string xpath)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_VB_Diagnostic_Violation()
+        public async Task DocSample1_VB_Diagnostic_Violation()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Xml.XPath
 
@@ -78,13 +85,19 @@ Partial Public Class WebForm
     End Sub
 End Class
 ",
-                GetBasicResultAt(18, 38, 11, 35, "Function XPathNavigator.SelectSingleNode(xpath As String) As XPathNavigator", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(18, 38, 11, 35, "Function XPathNavigator.SelectSingleNode(xpath As String) As XPathNavigator", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void XPathNavigator_Select_Diagnostic()
+        public async Task XPathNavigator_Select_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Xml.XPath;
@@ -102,9 +115,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void XPathNavigator_Select_NoDiagnostic()
+        public async Task XPathNavigator_Select_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Xml.XPath;
@@ -121,9 +134,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void XmlNode_SelectSingleNode_Diagnostic()
+        public async Task XmlNode_SelectSingleNode_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Xml;
@@ -141,9 +154,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void TemplateControl_XPath_Diagnostic()
+        public async Task TemplateControl_XPath_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Web.UI;
@@ -171,9 +184,9 @@ public class MyTemplateControl : TemplateControl
         }
 
         [Fact]
-        public void XmlDataSource_XPath_Diagnostic()
+        public async Task XmlDataSource_XPath_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Web.UI.WebControls;

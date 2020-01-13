@@ -1,39 +1,33 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Test.Utilities.MinimalImplementations;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForXmlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForXmlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXmlInjectionVulnerabilities, ReviewCodeForXmlInjectionVulnerabilities>
     {
-        public ReviewCodeForXmlInjectionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForXmlInjectionVulnerabilities.Rule;
 
         protected override IEnumerable<string> AdditionalCSharpSources => new string[] { AntiXssApis.CSharp };
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXmlInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXmlInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Xml;
 
@@ -58,13 +52,26 @@ public partial class WebForm : System.Web.UI.Page
         root.InnerXml = input;
     }
 }",
-            GetCSharpResultAt(23, 9, 9, 24, "string XmlElement.InnerXml", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(23, 9, 9, 24, "string XmlElement.InnerXml", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Xml
 
@@ -89,13 +96,26 @@ Public Partial Class WebForm
         root.InnerXml = input
     End Sub
 End Class",
-                GetBasicResultAt(23, 9, 9, 31, "Property XmlElement.InnerXml As String", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(23, 9, 9, 31, "Property XmlElement.InnerXml As String", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample1_CSharp_Solution_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Xml;
 
@@ -119,13 +139,23 @@ public partial class WebForm : System.Web.UI.Page
         //     <root>&lt;allowedUser&gt;oscar&lt;/allowedUser&gt;some text<allowedUser>alice</allowedUser></root>
         root.InnerText = input;
     }
-}");
+}",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_VB_Solution_Diagnostic()
+        public async Task DocSample1_VB_Solution_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Xml
 
@@ -149,13 +179,16 @@ Public Partial Class WebForm
         '     <root>&lt;allowedUser&gt;oscar&lt;/allowedUser&gt;some text<allowedUser>alice</allowedUser></root>
         root.InnerText = input
     End Sub
-End Class");
+End Class",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void XmlAttribute_InnerXml_Diagnostic()
+        public async Task XmlAttribute_InnerXml_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Xml;
@@ -174,9 +207,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void XmlTextWriter_WriteRaw_Diagnostic()
+        public async Task XmlTextWriter_WriteRaw_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 using System.Text;
@@ -196,9 +229,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void XmlTextWriter_WriteRaw_NoDiagnostic()
+        public async Task XmlTextWriter_WriteRaw_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 using System.Text;
@@ -218,9 +251,9 @@ public partial class WebForm : System.Web.UI.Page
 
 
         [Fact]
-        public void XmlNotation_InnerXml_Diagnostic()
+        public async Task XmlNotation_InnerXml_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Xml;
@@ -239,9 +272,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void XmlNotation_InnerXml_Sanitized_NoDiagnostic()
+        public async Task XmlNotation_InnerXml_Sanitized_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Xml;
