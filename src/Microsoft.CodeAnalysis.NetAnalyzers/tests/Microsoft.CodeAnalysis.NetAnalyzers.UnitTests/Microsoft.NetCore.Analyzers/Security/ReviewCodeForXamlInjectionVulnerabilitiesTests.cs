@@ -1,35 +1,21 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXamlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForXamlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForXamlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXamlInjectionVulnerabilities, ReviewCodeForXamlInjectionVulnerabilities>
     {
-        public ReviewCodeForXamlInjectionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForXamlInjectionVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXamlInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXamlInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 
@@ -47,9 +33,16 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.IO
 
@@ -63,13 +56,19 @@ Public Partial Class WebForm
         System.Windows.Markup.XamlReader.Load(ms)
     End Sub
 End Class",
-                GetBasicResultAt(12, 9, 9, 31, "Function XamlReader.Load(stream As Stream) As Object", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(12, 9, 9, 31, "Function XamlReader.Load(stream As Stream) As Object", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void XamlReader_Load_Diagnostic()
+        public async Task XamlReader_Load_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 using System.Web;
@@ -87,9 +86,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void XamlReader_Load_NoDiagnostic()
+        public async Task XamlReader_Load_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 using System.Web;

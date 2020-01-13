@@ -1,39 +1,33 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Test.Utilities.MinimalImplementations;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForLdapInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForLdapInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForLdapInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForLdapInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForLdapInjectionVulnerabilities, ReviewCodeForLdapInjectionVulnerabilities>
     {
-        public ReviewCodeForLdapInjectionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForLdapInjectionVulnerabilities.Rule;
 
         protected override IEnumerable<string> AdditionalCSharpSources => new string[] { AntiXssApis.CSharp };
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForLdapInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForLdapInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.DirectoryServices;
 
@@ -58,13 +52,26 @@ public partial class WebForm : System.Web.UI.Page
         }
     }
 }",
-                GetCSharpResultAt(16, 38, 9, 27, "DirectorySearcher.DirectorySearcher(string filter)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Params", "void WebForm.Page_Load(object sender, EventArgs e)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(16, 38, 9, 27, "DirectorySearcher.DirectorySearcher(string filter)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Params", "void WebForm.Page_Load(object sender, EventArgs e)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.DirectoryServices
 
@@ -88,13 +95,19 @@ Partial Public Class WebForm
         Next searchResult
     End Sub
 End Class",
-                GetBasicResultAt(16, 45, 9, 34, "Sub DirectorySearcher.New(filter As String)", "Sub WebForm.Page_Load(send As Object, e As EventArgs)", "Property HttpRequest.Params As NameValueCollection", "Sub WebForm.Page_Load(send As Object, e As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(16, 45, 9, 34, "Sub DirectorySearcher.New(filter As String)", "Sub WebForm.Page_Load(send As Object, e As EventArgs)", "Property HttpRequest.Params As NameValueCollection", "Sub WebForm.Page_Load(send As Object, e As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DirectoryEntry_Path_Diagnostic()
+        public async Task DirectoryEntry_Path_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.DirectoryServices;
 using System.Web;
@@ -112,9 +125,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DirectoryEntry_Username_NoDiagnostic()
+        public async Task DirectoryEntry_Username_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.DirectoryServices;
 using System.Web;
@@ -131,9 +144,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DirectorySearcher_Filter_Diagnostic()
+        public async Task DirectorySearcher_Filter_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.DirectoryServices;
 using System.Web;
@@ -152,9 +165,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DirectoryEntry_Path_Sanitized_NoDiagnostic()
+        public async Task DirectoryEntry_Path_Sanitized_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.DirectoryServices;
 using System.Web;
