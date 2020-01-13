@@ -98,11 +98,11 @@
           "id": "CA1065",
           "shortDescription": "Do not raise exceptions in unexpected locations",
           "fullDescription": "A method that is not expected to throw exceptions throws an exception.",
-          "defaultLevel": "hidden",
+          "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1065",
           "properties": {
             "category": "Design",
-            "isEnabledByDefault": true,
+            "isEnabledByDefault": false,
             "typeName": "CSharpDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer",
             "languages": [
               "C#"
@@ -645,11 +645,11 @@
           "id": "CA1031",
           "shortDescription": "Do not catch general exception types",
           "fullDescription": "A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.",
-          "defaultLevel": "hidden",
+          "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1031",
           "properties": {
             "category": "Design",
-            "isEnabledByDefault": true,
+            "isEnabledByDefault": false,
             "typeName": "DoNotCatchGeneralExceptionTypesAnalyzer",
             "languages": [
               "C#",
@@ -4080,11 +4080,11 @@
           "id": "CA1065",
           "shortDescription": "Do not raise exceptions in unexpected locations",
           "fullDescription": "A method that is not expected to throw exceptions throws an exception.",
-          "defaultLevel": "hidden",
+          "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1065",
           "properties": {
             "category": "Design",
-            "isEnabledByDefault": true,
+            "isEnabledByDefault": false,
             "typeName": "BasicDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer",
             "languages": [
               "Visual Basic"

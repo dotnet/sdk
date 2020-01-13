@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          s_localizabletitleCA1014,
                                                                          s_localizableMessageCA1014,
                                                                          DiagnosticCategory.Design,
-                                                                         RuleLevel.Disabled,  // Need to update templates to add CLSCompliant(false)
+                                                                         RuleLevel.Disabled,  // We can make this an IdeSuggestion once we update templates to add CLSCompliant(false)
                                                                          description: s_localizableDescriptionCA1014,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false,

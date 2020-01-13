@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              s_localizableTitle,
                                                                              s_localizableMessagePropertyGetter,
                                                                              DiagnosticCategory.Design,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable, // Could consider Suggestion level if we could exclude test code by default.
+                                                                             RuleLevel.Disabled, // Could consider Suggestion level if we could exclude test code by default.
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -39,7 +39,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              s_localizableTitle,
                                                                              s_localizableMessageHasAllowedExceptions,
                                                                              DiagnosticCategory.Design,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable, // Could consider Suggestion level if we could exclude test code by default.
+                                                                             RuleLevel.Disabled, // Could consider Suggestion level if we could exclude test code by default.
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNoAllowedExceptions,
                                                                              DiagnosticCategory.Design,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable, // Could consider Suggestion level if we could exclude test code by default.
+                                                                             RuleLevel.Disabled, // Could consider Suggestion level if we could exclude test code by default.
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
