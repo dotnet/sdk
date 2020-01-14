@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -209,31 +208,31 @@ public class DataTableWithWrongSuffix : DataTable
     protected DataTableWithWrongSuffix(SerializationInfo info, StreamingContext context)
         : base(info, context) { }
 }",
-GetCA1710CSharpResultAt(line: 16, column: 14, symbolName: "EventsItemsDerived", replacementName: "EventArgs"),
-GetCA1710CSharpResultAt(line: 18, column: 14, symbolName: "EventsItems", replacementName: "EventArgs"),
-GetCA1710CSharpResultAt(line: 24, column: 32, symbolName: "EventCallback", replacementName: "EventHandler"),
-GetCA1710CSharpResultAt(line: 28, column: 14, symbolName: "DiskError", replacementName: "Exception"),
-GetCA1710CSharpResultAt(line: 39, column: 21, symbolName: "Verifiable", replacementName: "Attribute"),
-GetCA1710CSharpResultAt(line: 43, column: 14, symbolName: "ConditionClass", replacementName: "Condition"),
-GetCA1710CSharpResultAt(line: 54, column: 14, symbolName: "MyTable<TKey, TValue>", replacementName: "Dictionary"),
-GetCA1710CSharpResultAt(line: 60, column: 14, symbolName: "MyStringObjectHashtable", replacementName: "Dictionary"),
-GetCA1710CSharpResultAt(line: 65, column: 14, symbolName: "MyList<T>", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 67, column: 14, symbolName: "StringGrouping<T>", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 69, column: 14, symbolName: "LastInFirstOut<T>", replacementName: "Stack", isSpecial: true),
-GetCA1710CSharpResultAt(line: 71, column: 14, symbolName: "StackOfIntegers", replacementName: "Stack", isSpecial: true),
-GetCA1710CSharpResultAt(line: 73, column: 14, symbolName: "FirstInFirstOut<T>", replacementName: "Queue", isSpecial: true),
-GetCA1710CSharpResultAt(line: 75, column: 14, symbolName: "QueueOfNumbers", replacementName: "Queue", isSpecial: true),
-GetCA1710CSharpResultAt(line: 77, column: 14, symbolName: "MyDataStructure", replacementName: "Stack", isSpecial: true),
-GetCA1710CSharpResultAt(line: 79, column: 14, symbolName: "AnotherDataStructure", replacementName: "Queue", isSpecial: true),
-GetCA1710CSharpResultAt(line: 81, column: 14, symbolName: "WronglyNamedPermissionClass", replacementName: "Permission"),
-GetCA1710CSharpResultAt(line: 90, column: 14, symbolName: "WronglyNamedIPermissionClass", replacementName: "Permission"),
-GetCA1710CSharpResultAt(line: 101, column: 14, symbolName: "WronglyNamedType", replacementName: "Stream"),
-GetCA1710CSharpResultAt(line: 116, column: 14, symbolName: "MyCollectionIsEnumerable", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 165, column: 14, symbolName: "CollectionDoesNotEndInCollectionClass", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 168, column: 14, symbolName: "DictionaryDoesNotEndInDictionaryClass", replacementName: "Dictionary"),
-GetCA1710CSharpResultAt(line: 174, column: 14, symbolName: "MyTest<T>", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 179, column: 14, symbolName: "DataSetWithWrongSuffix", replacementName: "DataSet"),
-GetCA1710CSharpResultAt(line: 186, column: 14, symbolName: "DataTableWithWrongSuffix", replacementName: "DataTable", isSpecial: true));
+GetCA1710CSharpResultAt(line: 16, column: 14, typeName: "EventsItemsDerived", suffix: "EventArgs"),
+GetCA1710CSharpResultAt(line: 18, column: 14, typeName: "EventsItems", suffix: "EventArgs"),
+GetCA1710CSharpResultAt(line: 24, column: 32, typeName: "EventCallback", suffix: "EventHandler"),
+GetCA1710CSharpResultAt(line: 28, column: 14, typeName: "DiskError", suffix: "Exception"),
+GetCA1710CSharpResultAt(line: 39, column: 21, typeName: "Verifiable", suffix: "Attribute"),
+GetCA1710CSharpResultAt(line: 43, column: 14, typeName: "ConditionClass", suffix: "Condition"),
+GetCA1710CSharpResultAt(line: 54, column: 14, typeName: "MyTable<TKey, TValue>", suffix: "Dictionary"),
+GetCA1710CSharpResultAt(line: 60, column: 14, typeName: "MyStringObjectHashtable", suffix: "Dictionary"),
+GetCA1710CSharpResultAt(line: 65, column: 14, typeName: "MyList<T>", suffix: "Collection"),
+GetCA1710CSharpResultAt(line: 67, column: 14, typeName: "StringGrouping<T>", suffix: "Collection"),
+GetCA1710CSharpResultAt(line: 69, column: 14, typeName: "LastInFirstOut<T>", suffix: "Stack", isSpecial: true),
+GetCA1710CSharpResultAt(line: 71, column: 14, typeName: "StackOfIntegers", suffix: "Stack", isSpecial: true),
+GetCA1710CSharpResultAt(line: 73, column: 14, typeName: "FirstInFirstOut<T>", suffix: "Queue", isSpecial: true),
+GetCA1710CSharpResultAt(line: 75, column: 14, typeName: "QueueOfNumbers", suffix: "Queue", isSpecial: true),
+GetCA1710CSharpResultAt(line: 77, column: 14, typeName: "MyDataStructure", suffix: "Stack", isSpecial: true),
+GetCA1710CSharpResultAt(line: 79, column: 14, typeName: "AnotherDataStructure", suffix: "Queue", isSpecial: true),
+GetCA1710CSharpResultAt(line: 81, column: 14, typeName: "WronglyNamedPermissionClass", suffix: "Permission"),
+GetCA1710CSharpResultAt(line: 90, column: 14, typeName: "WronglyNamedIPermissionClass", suffix: "Permission"),
+GetCA1710CSharpResultAt(line: 101, column: 14, typeName: "WronglyNamedType", suffix: "Stream"),
+GetCA1710CSharpResultAt(line: 116, column: 14, typeName: "MyCollectionIsEnumerable", suffix: "Collection"),
+GetCA1710CSharpResultAt(line: 165, column: 14, typeName: "CollectionDoesNotEndInCollectionClass", suffix: "Collection"),
+GetCA1710CSharpResultAt(line: 168, column: 14, typeName: "DictionaryDoesNotEndInDictionaryClass", suffix: "Dictionary"),
+GetCA1710CSharpResultAt(line: 174, column: 14, typeName: "MyTest<T>", suffix: "Collection"),
+GetCA1710CSharpResultAt(line: 179, column: 14, typeName: "DataSetWithWrongSuffix", suffix: "DataSet"),
+GetCA1710CSharpResultAt(line: 186, column: 14, typeName: "DataTableWithWrongSuffix", suffix: "DataTable", isSpecial: true));
         }
 
         [Fact]
@@ -739,30 +738,30 @@ Public Class WronglyNamedType
     End Property
 
 End Class",
-GetCA1710BasicResultAt(line: 13, column: 14, symbolName: "AnotherDataStructure", replacementName: "Queue", isSpecial: true),
-GetCA1710BasicResultAt(line: 17, column: 14, symbolName: "CollectionDoesNotEndInCollectionClass", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 22, column: 14, symbolName: "ConditionClass", replacementName: "Condition"),
-GetCA1710BasicResultAt(line: 64, column: 14, symbolName: "DataSetWithWrongSuffix", replacementName: "DataSet"),
-GetCA1710BasicResultAt(line: 75, column: 14, symbolName: "DataTableWithWrongSuffix", replacementName: "DataTable", isSpecial: true),
-GetCA1710BasicResultAt(line: 86, column: 14, symbolName: "DictionaryDoesNotEndInDictionaryClass", replacementName: "Dictionary"),
-GetCA1710BasicResultAt(line: 97, column: 14, symbolName: "DiskError", replacementName: "Exception"),
-GetCA1710BasicResultAt(line: 122, column: 18, symbolName: "EventCallback", replacementName: "EventHandler"),
-GetCA1710BasicResultAt(line: 125, column: 14, symbolName: "EventsItems", replacementName: "EventArgs"),
-GetCA1710BasicResultAt(line: 130, column: 14, symbolName: "FirstInFirstOut(Of T)", replacementName: "Queue", isSpecial: true),
-GetCA1710BasicResultAt(line: 135, column: 14, symbolName: "LastInFirstOut(Of T)", replacementName: "Stack", isSpecial: true),
-GetCA1710BasicResultAt(line: 140, column: 14, symbolName: "MyCollectionIsEnumerable", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 148, column: 14, symbolName: "MyDataStructure", replacementName: "Stack", isSpecial: true),
-GetCA1710BasicResultAt(line: 153, column: 14, symbolName: "MyList(Of T)", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 159, column: 14, symbolName: "MyStringObjectHashtable", replacementName: "Dictionary"),
-GetCA1710BasicResultAt(line: 170, column: 14, symbolName: "MyTable(Of TKey, TValue)", replacementName: "Dictionary"),
-GetCA1710BasicResultAt(line: 180, column: 14, symbolName: "MyTest(Of T)", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 185, column: 14, symbolName: "QueueOfNumbers", replacementName: "Queue", isSpecial: true),
-GetCA1710BasicResultAt(line: 190, column: 14, symbolName: "StackOfIntegers", replacementName: "Stack", isSpecial: true),
-GetCA1710BasicResultAt(line: 195, column: 14, symbolName: "StringGrouping(Of T)", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 201, column: 29, symbolName: "Verifiable", replacementName: "Attribute"),
-GetCA1710BasicResultAt(line: 206, column: 14, symbolName: "WronglyNamedIPermissionClass", replacementName: "Permission"),
-GetCA1710BasicResultAt(line: 238, column: 14, symbolName: "WronglyNamedPermissionClass", replacementName: "Permission"),
-GetCA1710BasicResultAt(line: 263, column: 14, symbolName: "WronglyNamedType", replacementName: "Stream"));
+GetCA1710BasicResultAt(line: 13, column: 14, typeName: "AnotherDataStructure", suffix: "Queue", isSpecial: true),
+GetCA1710BasicResultAt(line: 17, column: 14, typeName: "CollectionDoesNotEndInCollectionClass", suffix: "Collection"),
+GetCA1710BasicResultAt(line: 22, column: 14, typeName: "ConditionClass", suffix: "Condition"),
+GetCA1710BasicResultAt(line: 64, column: 14, typeName: "DataSetWithWrongSuffix", suffix: "DataSet"),
+GetCA1710BasicResultAt(line: 75, column: 14, typeName: "DataTableWithWrongSuffix", suffix: "DataTable", isSpecial: true),
+GetCA1710BasicResultAt(line: 86, column: 14, typeName: "DictionaryDoesNotEndInDictionaryClass", suffix: "Dictionary"),
+GetCA1710BasicResultAt(line: 97, column: 14, typeName: "DiskError", suffix: "Exception"),
+GetCA1710BasicResultAt(line: 122, column: 18, typeName: "EventCallback", suffix: "EventHandler"),
+GetCA1710BasicResultAt(line: 125, column: 14, typeName: "EventsItems", suffix: "EventArgs"),
+GetCA1710BasicResultAt(line: 130, column: 14, typeName: "FirstInFirstOut(Of T)", suffix: "Queue", isSpecial: true),
+GetCA1710BasicResultAt(line: 135, column: 14, typeName: "LastInFirstOut(Of T)", suffix: "Stack", isSpecial: true),
+GetCA1710BasicResultAt(line: 140, column: 14, typeName: "MyCollectionIsEnumerable", suffix: "Collection"),
+GetCA1710BasicResultAt(line: 148, column: 14, typeName: "MyDataStructure", suffix: "Stack", isSpecial: true),
+GetCA1710BasicResultAt(line: 153, column: 14, typeName: "MyList(Of T)", suffix: "Collection"),
+GetCA1710BasicResultAt(line: 159, column: 14, typeName: "MyStringObjectHashtable", suffix: "Dictionary"),
+GetCA1710BasicResultAt(line: 170, column: 14, typeName: "MyTable(Of TKey, TValue)", suffix: "Dictionary"),
+GetCA1710BasicResultAt(line: 180, column: 14, typeName: "MyTest(Of T)", suffix: "Collection"),
+GetCA1710BasicResultAt(line: 185, column: 14, typeName: "QueueOfNumbers", suffix: "Queue", isSpecial: true),
+GetCA1710BasicResultAt(line: 190, column: 14, typeName: "StackOfIntegers", suffix: "Stack", isSpecial: true),
+GetCA1710BasicResultAt(line: 195, column: 14, typeName: "StringGrouping(Of T)", suffix: "Collection"),
+GetCA1710BasicResultAt(line: 201, column: 29, typeName: "Verifiable", suffix: "Attribute"),
+GetCA1710BasicResultAt(line: 206, column: 14, typeName: "WronglyNamedIPermissionClass", suffix: "Permission"),
+GetCA1710BasicResultAt(line: 238, column: 14, typeName: "WronglyNamedPermissionClass", suffix: "Permission"),
+GetCA1710BasicResultAt(line: 263, column: 14, typeName: "WronglyNamedType", suffix: "Stream"));
         }
 
         [Fact]
@@ -1146,11 +1145,15 @@ public class C : IReadOnlyCollection<int>
         [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         [InlineData("")]
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.Bar:Bar")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.Bar:Bar")]
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = Buzz:ABC")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:Buzz:ABC")]
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.Bar:Bar|MyNamespace.IFoo:Foo")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.Bar:Bar|T:MyNamespace.IFoo:Foo")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = junk")]
         // In case of duplicated entries, only the first is kept
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.Bar:Bar|MyNamespace.Bar:BaBar")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = junk")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.Bar:Bar|T:MyNamespace.Bar:BaBar")]
         public async Task CA1710_AdditionalSuffixes(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1276,6 +1279,98 @@ End Class"
             }
 
             await vbTest.RunAsync();
+        }
+
+        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        public async Task CA1710_IgnoresNonTypesOptions()
+        {
+            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix|M:MyNamespace.Foo.Bar():Suffix";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyNamespace
+{
+    public class Foo
+    {
+        public void Bar() {}
+    }
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace MyNamespace
+    Public Class Foo
+        Public Sub Bar()
+        End Sub
+    End Class
+End Namespace"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        public async Task CA1710_HardcodedMappingWinsOverAdditionals()
+        {
+            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IDictionary`2:MySuffix";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Collections.Generic;
+
+public class Foo : Dictionary<string, string>
+{
+}
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1710CSharpResultAt(4, 14, "Foo", "Dictionary"),
+                    }
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System.Collections.Generic
+
+Public Class Foo
+    Inherits Dictionary(Of String, String)
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1710BasicResultAt(5, 18, "Foo", "Dictionary"),
+                    }
+                }
+            }.RunAsync();
         }
 
         [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
@@ -1419,30 +1514,14 @@ End Class"
             await vbTest.RunAsync();
         }
 
-        private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture,
-                isSpecial ?
-                    MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                    MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-                symbolName,
-                replacementName);
-            return new DiagnosticResult(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+        private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
+            VerifyVB.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName, suffix);
 
-        private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture,
-               isSpecial ?
-                   MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection :
-                   MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault,
-               symbolName,
-               replacementName);
-            return new DiagnosticResult(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+        private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
+            VerifyCS.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName, suffix);
     }
 }

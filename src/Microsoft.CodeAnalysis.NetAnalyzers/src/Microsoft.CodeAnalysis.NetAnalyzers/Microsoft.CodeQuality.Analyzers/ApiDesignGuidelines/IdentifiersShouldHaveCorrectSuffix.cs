@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -81,12 +81,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
         {
+            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+
             var baseTypeSuffixMapBuilder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, SuffixInfo>();
             var interfaceTypeSuffixMapBuilder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, SuffixInfo>();
 
             foreach (var (typeName, suffix, canSuffixBeCollection) in s_baseTypesAndTheirSuffix)
             {
-                var wellKnownNamedType = context.Compilation.GetOrCreateTypeByMetadataName(typeName);
+                var wellKnownNamedType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(typeName);
 
                 if (wellKnownNamedType != null && wellKnownNamedType.OriginalDefinition != null)
                 {
@@ -102,99 +104,99 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
             }
 
-            var additionalTypesWithTheirSuffix = context.Options.GetAdditionalRequiredSuffixesOption(DefaultRule,
+            var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(DefaultRule,
                 context.Compilation, context.CancellationToken);
-            foreach (var (type, suffix) in additionalTypesWithTheirSuffix)
+
+            if (baseTypeSuffixMapBuilder.Count <= 0 && interfaceTypeSuffixMapBuilder.Count <= 0 && userTypeSuffixMap.IsEmpty)
             {
-                if (type.OriginalDefinition.TypeKind == TypeKind.Interface)
-                {
-                    if (!interfaceTypeSuffixMapBuilder.ContainsKey(type.OriginalDefinition))
-                    {
-                        interfaceTypeSuffixMapBuilder.Add(type.OriginalDefinition, SuffixInfo.Create(suffix, false));
-                    }
-                }
-                else
-                {
-                    if (!baseTypeSuffixMapBuilder.ContainsKey(type.OriginalDefinition))
-                    {
-                        baseTypeSuffixMapBuilder.Add(type.OriginalDefinition, SuffixInfo.Create(suffix, false));
-                    }
-                }
+                return;
             }
 
-            if (baseTypeSuffixMapBuilder.Count > 0 || interfaceTypeSuffixMapBuilder.Count > 0)
+            var baseTypeSuffixMap = baseTypeSuffixMapBuilder.ToImmutable();
+            var interfaceTypeSuffixMap = interfaceTypeSuffixMapBuilder.ToImmutable();
+
+            var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
+                defaultValue: false, cancellationToken: context.CancellationToken);
+
+            context.RegisterSymbolAction((saContext) =>
             {
-                var baseTypeSuffixMap = baseTypeSuffixMapBuilder.ToImmutable();
-                var interfaceTypeSuffixMap = interfaceTypeSuffixMapBuilder.ToImmutable();
+                var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
+                if (!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.CancellationToken))
+                {
+                    Debug.Assert(!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
+                    return;
+                }
 
-                var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
-                    defaultValue: false, cancellationToken: context.CancellationToken);
+                Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
 
+                var baseTypes = excludeIndirectBaseTypes
+                    ? (new[] { namedTypeSymbol.BaseType })
+                    : namedTypeSymbol.GetBaseTypes();
+
+                if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typeSuffixInfo))
+                {
+                    // SpecialCollectionRule - Rename 'LastInFirstOut<T>' to end in either 'Collection' or 'Stack'.
+                    // DefaultRule - Rename 'MyStringObjectHashtable' to end in 'Dictionary'.
+                    var rule = typeSuffixInfo.CanSuffixBeCollection ? SpecialCollectionRule : DefaultRule;
+                    if ((typeSuffixInfo.CanSuffixBeCollection && !namedTypeSymbol.Name.EndsWith("Collection", StringComparison.Ordinal) && !namedTypeSymbol.Name.EndsWith(typeSuffixInfo.Suffix, StringComparison.Ordinal)) ||
+                        (!typeSuffixInfo.CanSuffixBeCollection && !namedTypeSymbol.Name.EndsWith(typeSuffixInfo.Suffix, StringComparison.Ordinal)))
+                    {
+                        saContext.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(rule, namedTypeSymbol.ToDisplayString(), typeSuffixInfo.Suffix));
+                    }
+
+                    return;
+                }
+
+                var interfaces = excludeIndirectBaseTypes
+                    ? namedTypeSymbol.Interfaces
+                    : namedTypeSymbol.AllInterfaces;
+
+                if (TryGetTypeSuffix(interfaces, interfaceTypeSuffixMap, userTypeSuffixMap, out var interfaceSuffixInfo) &&
+                    !namedTypeSymbol.Name.EndsWith(interfaceSuffixInfo.Suffix, StringComparison.Ordinal))
+                {
+                    saContext.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(DefaultRule, namedTypeSymbol.ToDisplayString(), interfaceSuffixInfo.Suffix));
+                }
+            }
+            , SymbolKind.NamedType);
+
+            var eventArgsType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
+            if (eventArgsType != null)
+            {
                 context.RegisterSymbolAction((saContext) =>
                 {
-                    var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
-                    if (!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.CancellationToken))
+                    const string eventHandlerString = "EventHandler";
+                    var eventSymbol = (IEventSymbol)saContext.Symbol;
+                    if (!eventSymbol.Type.Name.EndsWith(eventHandlerString, StringComparison.Ordinal) &&
+                        eventSymbol.Type.IsInSource() &&
+                        eventSymbol.Type.TypeKind == TypeKind.Delegate &&
+                        ((INamedTypeSymbol)eventSymbol.Type).DelegateInvokeMethod?.HasEventHandlerSignature(eventArgsType) == true)
                     {
-                        Debug.Assert(!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
-                        return;
+                        saContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(DefaultRule, eventSymbol.Type.Name, eventHandlerString));
                     }
+                },
+                SymbolKind.Event);
+            }
+        }
 
-                    Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
-
-                    var baseTypes = excludeIndirectBaseTypes
-                        ? (new[] { namedTypeSymbol.BaseType })
-                        : namedTypeSymbol.GetBaseTypes();
-                    var baseType = baseTypes.FirstOrDefault(bt => baseTypeSuffixMap.ContainsKey(bt.OriginalDefinition));
-                    if (baseType != null)
-                    {
-                        var suffixInfo = baseTypeSuffixMap[baseType.OriginalDefinition];
-
-                        // SpecialCollectionRule - Rename 'LastInFirstOut<T>' to end in either 'Collection' or 'Stack'.
-                        // DefaultRule - Rename 'MyStringObjectHashtable' to end in 'Dictionary'.
-                        var rule = suffixInfo.CanSuffixBeCollection ? SpecialCollectionRule : DefaultRule;
-                        if ((suffixInfo.CanSuffixBeCollection && !namedTypeSymbol.Name.EndsWith("Collection", StringComparison.Ordinal) && !namedTypeSymbol.Name.EndsWith(suffixInfo.Suffix, StringComparison.Ordinal)) ||
-                            (!suffixInfo.CanSuffixBeCollection && !namedTypeSymbol.Name.EndsWith(suffixInfo.Suffix, StringComparison.Ordinal)))
-                        {
-
-                            saContext.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(rule, namedTypeSymbol.ToDisplayString(), suffixInfo.Suffix));
-                        }
-
-                        return;
-                    }
-
-                    var interfaces = excludeIndirectBaseTypes
-                        ? namedTypeSymbol.Interfaces
-                        : namedTypeSymbol.AllInterfaces;
-                    var implementedInterface = interfaces.FirstOrDefault(i => interfaceTypeSuffixMap.ContainsKey(i.OriginalDefinition));
-                    if (implementedInterface != null)
-                    {
-                        var suffixInfo = interfaceTypeSuffixMap[implementedInterface.OriginalDefinition];
-                        if (!namedTypeSymbol.Name.EndsWith(suffixInfo.Suffix, StringComparison.Ordinal))
-                        {
-                            saContext.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(DefaultRule, namedTypeSymbol.ToDisplayString(), suffixInfo.Suffix));
-                        }
-                    }
-                }
-                , SymbolKind.NamedType);
-
-                var eventArgsType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
-                if (eventArgsType != null)
+        private static bool TryGetTypeSuffix(IEnumerable<INamedTypeSymbol> typeSymbols, ImmutableDictionary<INamedTypeSymbol, SuffixInfo> hardcodedMap,
+            SymbolNamesOption userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
+        {
+            foreach (var type in typeSymbols)
+            {
+                if (hardcodedMap.TryGetValue(type.OriginalDefinition, out suffixInfo))
                 {
-                    context.RegisterSymbolAction((saContext) =>
-                    {
-                        const string eventHandlerString = "EventHandler";
-                        var eventSymbol = (IEventSymbol)saContext.Symbol;
-                        if (!eventSymbol.Type.Name.EndsWith(eventHandlerString, StringComparison.Ordinal) &&
-                            eventSymbol.Type.IsInSource() &&
-                            eventSymbol.Type.TypeKind == TypeKind.Delegate &&
-                            ((INamedTypeSymbol)eventSymbol.Type).DelegateInvokeMethod?.HasEventHandlerSignature(eventArgsType) == true)
-                        {
-                            saContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(DefaultRule, eventSymbol.Type.Name, eventHandlerString));
-                        }
-                    },
-                    SymbolKind.Event);
+                    return true;
+                }
+
+                if (userMap.TryGetSuffix(type.OriginalDefinition, out var suffix))
+                {
+                    suffixInfo = SuffixInfo.Create(suffix, false);
+                    return true;
                 }
             }
+
+            suffixInfo = null;
+            return false;
         }
     }
 
