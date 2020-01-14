@@ -17,12 +17,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region Verifiers
 
         private static DiagnosticResult CSharpResult(int line, int column, string className, string methodName)
-            => new DiagnosticResult(InterfaceMethodsShouldBeCallableByChildTypesAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(className, methodName);
 
         private static DiagnosticResult BasicResult(int line, int column, string className, string methodName)
-            => new DiagnosticResult(InterfaceMethodsShouldBeCallableByChildTypesAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(className, methodName);
 

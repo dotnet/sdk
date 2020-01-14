@@ -811,12 +811,12 @@ End Namespace",
             );
         }
 
-        private DiagnosticResult GetCA3075InnerXmlCSharpResultAt(int line, int column)
+        private static DiagnosticResult GetCA3075InnerXmlCSharpResultAt(int line, int column)
         {
             return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.DoNotUseSetInnerXmlMessage);
         }
 
-        private DiagnosticResult GetCA3075InnerXmlBasicResultAt(int line, int column)
+        private static DiagnosticResult GetCA3075InnerXmlBasicResultAt(int line, int column)
         {
             return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.DoNotUseSetInnerXmlMessage);
         }

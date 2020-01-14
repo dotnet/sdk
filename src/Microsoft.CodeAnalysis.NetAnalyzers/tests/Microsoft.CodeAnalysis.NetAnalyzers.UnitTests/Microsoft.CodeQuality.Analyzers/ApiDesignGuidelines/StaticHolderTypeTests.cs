@@ -18,12 +18,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region Verifiers
 
         private static DiagnosticResult CSharpResult(int line, int column, string objectName)
-            => VerifyCS.Diagnostic(StaticHolderTypesAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName);
 
         private static DiagnosticResult BasicResult(int line, int column, string objectName)
-            => VerifyVB.Diagnostic(StaticHolderTypesAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName);
 

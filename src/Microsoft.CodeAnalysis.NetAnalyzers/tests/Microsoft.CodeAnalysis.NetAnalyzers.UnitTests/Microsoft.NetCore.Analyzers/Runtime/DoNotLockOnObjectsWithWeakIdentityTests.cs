@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -15,22 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public partial class DoNotLockOnObjectsWithWeakIdentityTests : DiagnosticAnalyzerTestBase
+    public class DoNotLockOnObjectsWithWeakIdentityTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotLockOnObjectsWithWeakIdentityAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotLockOnObjectsWithWeakIdentityAnalyzer();
-        }
-
         [Fact]
-        public void CA2002TestLockOnStrongType()
+        public async Task CA2002TestLockOnStrongType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             public class foo {
                 public void Test() {
@@ -41,7 +29,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
             }
 ");
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Public Class foo
                 Public Sub Test()
@@ -55,9 +43,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public void CA2002TestLockOnWeakIdentities()
+        public async Task CA2002TestLockOnWeakIdentities()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             public class foo
             {
@@ -97,20 +85,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
             }
             ",
-            GetCA2002CSharpResultAt(8, 27, "string"),
-            GetCA2002CSharpResultAt(9, 27, "string"),
-            GetCA2002CSharpResultAt(12, 27, "System.OutOfMemoryException"),
-            GetCA2002CSharpResultAt(14, 27, "System.StackOverflowException"),
-            GetCA2002CSharpResultAt(16, 27, "System.ExecutionEngineException"),
-            GetCA2002CSharpResultAt(18, 27, "System.Threading.Thread"),
-            GetCA2002CSharpResultAt(20, 27, "System.Type"),
-            GetCA2002CSharpResultAt(23, 27, "System.Reflection.MemberInfo"),
-            GetCA2002CSharpResultAt(26, 27, "System.Reflection.ConstructorInfo"),
-            GetCA2002CSharpResultAt(29, 27, "System.Reflection.ParameterInfo"),
-            GetCA2002CSharpResultAt(32, 27, "int[]"),
-            GetCA2002CSharpResultAt(37, 27, "this"));
+            GetCSharpResultAt(8, 27, "string"),
+            GetCSharpResultAt(9, 27, "string"),
+            GetCSharpResultAt(12, 27, "System.OutOfMemoryException"),
+            GetCSharpResultAt(14, 27, "System.StackOverflowException"),
+            GetCSharpResultAt(16, 27, "System.ExecutionEngineException"),
+            GetCSharpResultAt(18, 27, "System.Threading.Thread"),
+            GetCSharpResultAt(20, 27, "System.Type"),
+            GetCSharpResultAt(23, 27, "System.Reflection.MemberInfo"),
+            GetCSharpResultAt(26, 27, "System.Reflection.ConstructorInfo"),
+            GetCSharpResultAt(29, 27, "System.Reflection.ParameterInfo"),
+            GetCSharpResultAt(32, 27, "int[]"),
+            GetCSharpResultAt(37, 27, "this"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Public Class foo
                 Public Sub Test()
@@ -160,115 +148,108 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     End SyncLock
                 End Sub
             End Class",
-            GetCA2002BasicResultAt(6, 30, "String"),
-            GetCA2002BasicResultAt(8, 30, "String"),
-            GetCA2002BasicResultAt(12, 30, "System.OutOfMemoryException"),
-            GetCA2002BasicResultAt(15, 30, "System.StackOverflowException"),
-            GetCA2002BasicResultAt(18, 30, "System.ExecutionEngineException"),
-            GetCA2002BasicResultAt(21, 30, "System.Threading.Thread"),
-            GetCA2002BasicResultAt(24, 30, "System.Type"),
-            GetCA2002BasicResultAt(28, 30, "System.Reflection.MemberInfo"),
-            GetCA2002BasicResultAt(32, 30, "System.Reflection.ConstructorInfo"),
-            GetCA2002BasicResultAt(36, 30, "System.Reflection.ParameterInfo"),
-            GetCA2002BasicResultAt(40, 30, "Integer()"),
-            GetCA2002BasicResultAt(47, 30, "Me"));
+            GetBasicResultAt(6, 30, "String"),
+            GetBasicResultAt(8, 30, "String"),
+            GetBasicResultAt(12, 30, "System.OutOfMemoryException"),
+            GetBasicResultAt(15, 30, "System.StackOverflowException"),
+            GetBasicResultAt(18, 30, "System.ExecutionEngineException"),
+            GetBasicResultAt(21, 30, "System.Threading.Thread"),
+            GetBasicResultAt(24, 30, "System.Type"),
+            GetBasicResultAt(28, 30, "System.Reflection.MemberInfo"),
+            GetBasicResultAt(32, 30, "System.Reflection.ConstructorInfo"),
+            GetBasicResultAt(36, 30, "System.Reflection.ParameterInfo"),
+            GetBasicResultAt(40, 30, "Integer()"),
+            GetBasicResultAt(47, 30, "Me"));
         }
 
         [Fact]
-        public void CA2002TestLockOnWeakIdentitiesWithScope()
+        public async Task CA2002TestLockOnWeakIdentitiesWithScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             public class foo
             {
                 public void Test()
                 {
                     string s1 = """";
-                    lock (s1) { }
-                    lock (""Hello"") { }
+                    lock ([|s1|]) { }
+                    lock ([|""Hello""|]) { }
 
-                    [|var o1 = new OutOfMemoryException();
-                    lock (o1) { }
+                    var o1 = new OutOfMemoryException();
+                    lock ([|o1|]) { }
                     var o2 = new StackOverflowException();
-                    lock (o2) { }
+                    lock ([|o2|]) { }
                     var o3 = new ExecutionEngineException();
-                    lock (o3) { }|]
+                    lock ([|o3|]) { }
 
-                    lock (System.Threading.Thread.CurrentThread) { }
+                    lock ([|System.Threading.Thread.CurrentThread|]) { }
 
-                    lock (typeof(foo)) { }
+                    lock ([|typeof(foo)|]) { }
 
                     System.Reflection.MemberInfo mi = null;
-                    lock (mi) { }
+                    lock ([|mi|]) { }
 
                     System.Reflection.ConstructorInfo ci = null;
-                    lock (ci) { }
+                    lock ([|ci|]) { }
 
                     System.Reflection.ParameterInfo pi = null;
-                    lock (pi) { }
+                    lock ([|pi|]) { }
 
                     int[] values = { 1, 2, 3 };
-                    lock (values) { }
+                    lock ([|values|]) { }
 
                     System.Reflection.MemberInfo[] values1 = null;
                     lock (values1) { }
                 }
-            }
-            ",
-            GetCA2002CSharpResultAt(12, 27, "System.OutOfMemoryException"),
-            GetCA2002CSharpResultAt(14, 27, "System.StackOverflowException"),
-            GetCA2002CSharpResultAt(16, 27, "System.ExecutionEngineException"));
+            }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Public Class foo
                 Public Sub Test()
                     Dim s1 As String = """"
-                    SyncLock s1
+                    SyncLock [|s1|]
                     End SyncLock
-                    SyncLock (""Hello"")
+                    SyncLock [|(""Hello"")|]
                     End SyncLock
 
-                    [|Dim o1 = New OutOfMemoryException()
-                    SyncLock o1
+                    Dim o1 = New OutOfMemoryException()
+                    SyncLock [|o1|]
                     End SyncLock
                     Dim o2 = New StackOverflowException()
-                    SyncLock o2
+                    SyncLock [|o2|]
                     End SyncLock
                     Dim o3 = New ExecutionEngineException()
-                    SyncLock o3
-                    End SyncLock|]
-
-                    SyncLock System.Threading.Thread.CurrentThread
+                    SyncLock [|o3|]
                     End SyncLock
 
-                    SyncLock GetType (foo)
+                    SyncLock [|System.Threading.Thread.CurrentThread|]
+                    End SyncLock
+
+                    SyncLock [|GetType (foo)|]
                     End SyncLock
 
                     Dim mi As System.Reflection.MemberInfo = Nothing
-                    SyncLock mi
+                    SyncLock [|mi|]
                     End SyncLock
 
                     Dim ci As System.Reflection.ConstructorInfo = Nothing
-                    SyncLock ci
+                    SyncLock [|ci|]
                     End SyncLock
 
                     Dim pi As System.Reflection.ParameterInfo = Nothing
-                    SyncLock pi
+                    SyncLock [|pi|]
                     End SyncLock
 
                     Dim values As Integer() = { 1, 2, 3}
-                    SyncLock values
+                    SyncLock [|values|]
                     End SyncLock
 
                     Dim values1 As System.Reflection.MemberInfo() = Nothing
                     SyncLock values1
                     End SyncLock
                 End Sub
-            End Class",
-            GetCA2002BasicResultAt(12, 30, "System.OutOfMemoryException"),
-            GetCA2002BasicResultAt(15, 30, "System.StackOverflowException"),
-            GetCA2002BasicResultAt(18, 30, "System.ExecutionEngineException"));
+            End Class");
         }
 
         [Fact]
@@ -290,10 +271,10 @@ public class C
         Monitor.Enter(""test1"", ref b);
     }
 }",
-                GetCA2002CSharpResultAt(8, 23, "C"),
-                GetCA2002CSharpResultAt(9, 23, "C"),
-                GetCA2002CSharpResultAt(12, 23, "C"),
-                GetCA2002CSharpResultAt(13, 23, "C"));
+                GetCSharpResultAt(8, 23, "C"),
+                GetCSharpResultAt(9, 23, "C"),
+                GetCSharpResultAt(12, 23, "C"),
+                GetCSharpResultAt(13, 23, "C"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -309,10 +290,10 @@ Public Class C
     End Sub
 End Class
 ",
-                GetCA2002BasicResultAt(6, 23, "C"),
-                GetCA2002BasicResultAt(7, 23, "C"),
-                GetCA2002BasicResultAt(10, 23, "C"),
-                GetCA2002BasicResultAt(11, 23, "C"));
+                GetBasicResultAt(6, 23, "C"),
+                GetBasicResultAt(7, 23, "C"),
+                GetBasicResultAt(10, 23, "C"),
+                GetBasicResultAt(11, 23, "C"));
         }
 
         [Fact]
@@ -344,16 +325,16 @@ public class C
         Monitor.TryEnter(""test1"", 42, ref b);
     }
 }",
-                GetCA2002CSharpResultAt(9, 26, "C"),
-                GetCA2002CSharpResultAt(10, 26, "C"),
-                GetCA2002CSharpResultAt(12, 26, "C"),
-                GetCA2002CSharpResultAt(13, 26, "C"),
-                GetCA2002CSharpResultAt(15, 26, "C"),
-                GetCA2002CSharpResultAt(16, 26, "C"),
-                GetCA2002CSharpResultAt(19, 26, "C"),
-                GetCA2002CSharpResultAt(20, 26, "C"),
-                GetCA2002CSharpResultAt(22, 26, "C"),
-                GetCA2002CSharpResultAt(23, 26, "C"));
+                GetCSharpResultAt(9, 26, "C"),
+                GetCSharpResultAt(10, 26, "C"),
+                GetCSharpResultAt(12, 26, "C"),
+                GetCSharpResultAt(13, 26, "C"),
+                GetCSharpResultAt(15, 26, "C"),
+                GetCSharpResultAt(16, 26, "C"),
+                GetCSharpResultAt(19, 26, "C"),
+                GetCSharpResultAt(20, 26, "C"),
+                GetCSharpResultAt(22, 26, "C"),
+                GetCSharpResultAt(23, 26, "C"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -379,28 +360,26 @@ Public Class C
     End Sub
 End Class
 ",
-                GetCA2002BasicResultAt(7, 26, "C"),
-                GetCA2002BasicResultAt(8, 26, "C"),
-                GetCA2002BasicResultAt(10, 26, "C"),
-                GetCA2002BasicResultAt(11, 26, "C"),
-                GetCA2002BasicResultAt(13, 26, "C"),
-                GetCA2002BasicResultAt(14, 26, "C"),
-                GetCA2002BasicResultAt(17, 26, "C"),
-                GetCA2002BasicResultAt(18, 26, "C"),
-                GetCA2002BasicResultAt(20, 26, "C"),
-                GetCA2002BasicResultAt(21, 26, "C"));
+                GetBasicResultAt(7, 26, "C"),
+                GetBasicResultAt(8, 26, "C"),
+                GetBasicResultAt(10, 26, "C"),
+                GetBasicResultAt(11, 26, "C"),
+                GetBasicResultAt(13, 26, "C"),
+                GetBasicResultAt(14, 26, "C"),
+                GetBasicResultAt(17, 26, "C"),
+                GetBasicResultAt(18, 26, "C"),
+                GetBasicResultAt(20, 26, "C"),
+                GetBasicResultAt(21, 26, "C"));
         }
 
-        private const string CA2002RuleName = "CA2002";
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arguments);
 
-        private DiagnosticResult GetCA2002CSharpResultAt(int line, int column, string typeName)
-        {
-            return GetCSharpResultAt(line, column, CA2002RuleName, string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.DoNotLockOnObjectsWithWeakIdentityMessage, typeName));
-        }
-
-        private DiagnosticResult GetCA2002BasicResultAt(int line, int column, string typeName)
-        {
-            return GetBasicResultAt(line, column, CA2002RuleName, string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.DoNotLockOnObjectsWithWeakIdentityMessage, typeName));
-        }
+        private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arguments);
     }
 }

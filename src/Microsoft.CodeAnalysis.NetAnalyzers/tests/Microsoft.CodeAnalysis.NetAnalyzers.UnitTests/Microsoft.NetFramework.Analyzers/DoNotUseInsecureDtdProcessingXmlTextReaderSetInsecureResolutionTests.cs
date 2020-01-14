@@ -15,14 +15,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         private static DiagnosticResult GetCA3075XmlTextReaderSetInsecureResolutionCSharpResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage);
-        }
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage);
 
         private static DiagnosticResult GetCA3075XmlTextReaderSetInsecureResolutionBasicResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage);
-        }
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage);
 
         [Fact]
         public async Task UseXmlTextReaderNoCtorShouldNotGenerateDiagnostic()

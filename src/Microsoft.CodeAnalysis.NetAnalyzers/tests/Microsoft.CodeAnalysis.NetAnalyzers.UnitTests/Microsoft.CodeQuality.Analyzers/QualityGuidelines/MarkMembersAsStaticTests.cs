@@ -577,6 +577,70 @@ End Class
             }.RunAsync();
         }
 
+        [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
+        public async Task PrivateMethodOnlyCalledByASkippedMethod_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using Xunit;
+
+public class Program
+{
+    [Fact]
+    private void M()
+    {
+        N();
+    }
+
+    private void N()
+    {
+    }
+}",
+                        XunitApis.CSharp,
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(12, 18, "N")
+                    }
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
+        public async Task PrivateMethodOnlyReferencedByASkippedMethod_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using Xunit;
+
+public class Program
+{
+    [Fact]
+    private void M()
+    {
+        var x = nameof(N);
+    }
+
+    private void N()
+    {
+    }
+}",
+                        XunitApis.CSharp,
+                    }
+                }
+            }.RunAsync();
+        }
+
         [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
         public async Task CSharp_InstanceReferenceInObjectInitializer_Diagnostic()
         {
@@ -1005,13 +1069,13 @@ End Class
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
-        {
-            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(symbolName);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
-        {
-            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(symbolName);
-        }
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
     }
 }

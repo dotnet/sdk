@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
@@ -476,28 +475,14 @@ End Class
 ");
         }
 
-        private DiagnosticResult GetCA1061CSharpResultAt(int line, int column, string derivedMethod, string baseMethod)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture,
-                MicrosoftCodeQualityAnalyzersResources.DoNotHideBaseClassMethodsMessage,
-                derivedMethod,
-                baseMethod);
-
-            return new DiagnosticResult(DoNotHideBaseClassMethodsAnalyzer.Rule)
+        private static DiagnosticResult GetCA1061CSharpResultAt(int line, int column, string derivedMethod, string baseMethod)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(derivedMethod, baseMethod);
 
-        private DiagnosticResult GetCA1061BasicResultAt(int line, int column, string derivedMethod, string baseMethod)
-        {
-            var message = string.Format(CultureInfo.CurrentCulture,
-                MicrosoftCodeQualityAnalyzersResources.DoNotHideBaseClassMethodsMessage,
-                derivedMethod,
-                baseMethod);
-
-            return new DiagnosticResult(DoNotHideBaseClassMethodsAnalyzer.Rule)
+        private static DiagnosticResult GetCA1061BasicResultAt(int line, int column, string derivedMethod, string baseMethod)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(derivedMethod, baseMethod);
     }
 }

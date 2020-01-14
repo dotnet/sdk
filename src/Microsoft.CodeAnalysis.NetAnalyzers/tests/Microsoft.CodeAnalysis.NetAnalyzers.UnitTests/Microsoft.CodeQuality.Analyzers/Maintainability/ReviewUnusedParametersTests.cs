@@ -1077,12 +1077,12 @@ public class C
         #region Helpers
 
         private static DiagnosticResult GetCSharpUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
-            => VerifyCS.Diagnostic(ReviewUnusedParametersAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(parameterName, methodName);
 
         private static DiagnosticResult GetBasicUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
-            => VerifyVB.Diagnostic(ReviewUnusedParametersAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(parameterName, methodName);
 

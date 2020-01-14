@@ -1,10 +1,8 @@
 
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -17,46 +15,53 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class IdentifiersShouldNotContainUnderscoresTests : DiagnosticAnalyzerTestBase
+    public class IdentifiersShouldNotContainUnderscoresTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldNotContainUnderscoresAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldNotContainUnderscoresAnalyzer();
-        }
-
         #region CSharp Tests
         [Fact]
-        public void CA1707_ForAssembly_CSharp()
+        public async Task CA1707_ForAssembly_CSharp()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 public class DoesNotMatter
 {
 }
 ",
-            testProjectName: "AssemblyNameHasUnderScore_",
-            expected: GetCA1707CSharpResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_"));
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                        solution.WithProjectAssemblyName(projectId, "AssemblyNameHasUnderScore_")
+                },
+                ExpectedDiagnostics =
+                {
+                    GetCA1707CSharpResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_")
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA1707_ForAssembly_NoDiagnostics_CSharp()
+        public async Task CA1707_ForAssembly_NoDiagnostics_CSharp()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 public class DoesNotMatter
 {
 }
 ",
-            testProjectName: "AssemblyNameHasNoUnderScore");
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                        solution.WithProjectAssemblyName(projectId, "AssemblyNameHasNoUnderScore")
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA1707_ForNamespace_CSharp()
+        public async Task CA1707_ForNamespace_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace OuterNamespace
 {
     namespace HasUnderScore_
@@ -77,9 +82,9 @@ namespace HasNoUnderScore
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1707_ForTypes_CSharp()
+        public async Task CA1707_ForTypes_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class OuterType
 {
     public class UnderScoreInName_
@@ -106,9 +111,9 @@ internal class OuterType2
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1707_ForFields_CSharp()
+        public async Task CA1707_ForFields_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class DoesNotMatter
 {
         public const int ConstField_ = 5;
@@ -142,9 +147,9 @@ public class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1707_ForMethods_CSharp()
+        public async Task CA1707_ForMethods_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class DoesNotMatter
 {
     public void PublicM1_() { }
@@ -184,9 +189,9 @@ internal class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1707_ForProperties_CSharp()
+        public async Task CA1707_ForProperties_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class DoesNotMatter
 {
     public int PublicP1_ { get; set; }
@@ -226,9 +231,9 @@ internal class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1707_ForEvents_CSharp()
+        public async Task CA1707_ForEvents_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class DoesNotMatter
@@ -270,9 +275,9 @@ internal class C
         }
 
         [Fact]
-        public void CA1707_ForDelegates_CSharp()
+        public async Task CA1707_ForDelegates_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void Dele(int intPublic_, string stringPublic_);
 internal delegate void Dele2(int intInternal_, string stringInternal_); // No diagnostics
 public delegate T Del<T>(int t_);
@@ -283,9 +288,9 @@ public delegate T Del<T>(int t_);
         }
 
         [Fact]
-        public void CA1707_ForMemberparameters_CSharp()
+        public async Task CA1707_ForMemberparameters_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class DoesNotMatter
 {
     public void PublicM1(int int_) { }
@@ -335,9 +340,9 @@ public class Der : Base
         }
 
         [Fact]
-        public void CA1707_ForTypeTypeParameters_CSharp()
+        public async Task CA1707_ForTypeTypeParameters_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class DoesNotMatter<T_>
 {
 }
@@ -349,9 +354,9 @@ class NoDiag<U_>
         }
 
         [Fact]
-        public void CA1707_ForMemberTypeParameters_CSharp()
+        public async Task CA1707_ForMemberTypeParameters_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class DoesNotMatter22
 {
     public void PublicM1<T1_>() { }
@@ -402,9 +407,9 @@ public class Der : Base
         }
 
         [Fact, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
-        public void CA1707_ForOperators_CSharp()
+        public async Task CA1707_ForOperators_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public struct S
 {
     public static bool operator ==(S left, S right)
@@ -421,9 +426,9 @@ public struct S
         }
 
         [Fact, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
-        public void CA1707_CustomOperator_CSharp()
+        public async Task CA1707_CustomOperator_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Span
 {
     public static implicit operator Span(string text) => new Span(text);
@@ -558,30 +563,47 @@ public class InvalidContext
 
         #region Visual Basic Tests
         [Fact]
-        public void CA1707_ForAssembly_VisualBasic()
+        public async Task CA1707_ForAssembly_VisualBasic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestCode = @"
 Public Class DoesNotMatter
 End Class
 ",
-            testProjectName: "AssemblyNameHasUnderScore_",
-            expected: GetCA1707BasicResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_"));
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                        solution.WithProjectAssemblyName(projectId, "AssemblyNameHasUnderScore_")
+                },
+                ExpectedDiagnostics =
+                {
+                    GetCA1707BasicResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_")
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA1707_ForAssembly_NoDiagnostics_VisualBasic()
+        public async Task CA1707_ForAssembly_NoDiagnostics_VisualBasic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestCode = @"
 Public Class DoesNotMatter
 End Class
 ",
-            testProjectName: "AssemblyNameHasNoUnderScore");
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                        solution.WithProjectAssemblyName(projectId, "AssemblyNameHasNoUnderScore")
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA1707_ForNamespace_VisualBasic()
+        public async Task CA1707_ForNamespace_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace OuterNamespace
     Namespace HasUnderScore_
         Public Class DoesNotMatter
@@ -597,9 +619,9 @@ End Namespace",
         }
 
         [Fact]
-        public void CA1707_ForTypes_VisualBasic()
+        public async Task CA1707_ForTypes_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class OuterType
     Public Class UnderScoreInName_
     End Class
@@ -611,9 +633,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1707_ForFields_VisualBasic()
+        public async Task CA1707_ForFields_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class DoesNotMatter
     Public Const ConstField_ As Integer = 5
     Public Shared ReadOnly SharedReadOnlyField_ As Integer = 5
@@ -634,9 +656,9 @@ End Enum",
         }
 
         [Fact]
-        public void CA1707_ForMethods_VisualBasic()
+        public async Task CA1707_ForMethods_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class DoesNotMatter
     Public Sub PublicM1_()
     End Sub
@@ -676,9 +698,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1707_ForProperties_VisualBasic()
+        public async Task CA1707_ForProperties_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class DoesNotMatter
     Public Property PublicP1_() As Integer
         Get
@@ -753,9 +775,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1707_ForEvents_VisualBasic()
+        public async Task CA1707_ForEvents_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class DoesNotMatter
     Public Event PublicE1_ As System.EventHandler
     Private Event PrivateE2_ As System.EventHandler
@@ -789,9 +811,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1707_ForDelegates_VisualBasic()
+        public async Task CA1707_ForDelegates_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Delegate Sub Dele(intPublic_ As Integer, stringPublic_ As String)
 ' No diagnostics
 Friend Delegate Sub Dele2(intInternal_ As Integer, stringInternal_ As String)
@@ -803,9 +825,9 @@ Public Delegate Function Del(Of T)(t_ As Integer) As T
         }
 
         [Fact]
-        public void CA1707_ForMemberparameters_VisualBasic()
+        public async Task CA1707_ForMemberparameters_VisualBasic()
         {
-            VerifyBasic(@"Public Class DoesNotMatter
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Class DoesNotMatter
     Public Sub PublicM1(int_ As Integer)
     End Sub
     Private Sub PrivateM2(int_ As Integer)
@@ -853,9 +875,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1707_ForTypeTypeParameters_VisualBasic()
+        public async Task CA1707_ForTypeTypeParameters_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class DoesNotMatter(Of T_)
 End Class
 
@@ -865,9 +887,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1707_ForMemberTypeParameters_VisualBasic()
+        public async Task CA1707_ForMemberTypeParameters_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class DoesNotMatter22
     Public Sub PublicM1(Of T1_)()
     End Sub
@@ -915,9 +937,9 @@ End Class",
         }
 
         [Fact, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
-        public void CA1707_ForOperators_VisualBasic()
+        public async Task CA1707_ForOperators_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure S
 	Public Shared Operator =(left As S, right As S) As Boolean
 		Return left.Equals(right)
@@ -931,9 +953,9 @@ End Structure
         }
 
         [Fact, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
-        public void CA1707_CustomOperator_VisualBasic()
+        public async Task CA1707_CustomOperator_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Span
     Public Shared Narrowing Operator CType(ByVal text As String) As Span
         Return New Span(text)
@@ -1041,54 +1063,27 @@ End Class",
         #region Helpers
 
         private static DiagnosticResult GetCA1707CSharpResultAt(int line, int column, SymbolKind symbolKind, params string[] identifierNames)
-        {
-            return GetCA1707CSharpResultAt(line, column, GetApproriateMessage(symbolKind), identifierNames);
-        }
-
-        private static DiagnosticResult GetCA1707CSharpResultAt(int line, int column, string message, params string[] identifierName)
-        {
-            return GetCSharpResultAt(line, column, IdentifiersShouldNotContainUnderscoresAnalyzer.RuleId, string.Format(CultureInfo.CurrentCulture, message, identifierName));
-        }
-
-        private void VerifyCSharp(string source, string testProjectName, params DiagnosticResult[] expected)
-        {
-            Verify(source, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), testProjectName, expected);
-        }
+            => VerifyCS.Diagnostic(GetApproriateRule(symbolKind))
+                .WithLocation(line, column)
+                .WithArguments(identifierNames);
 
         private static DiagnosticResult GetCA1707BasicResultAt(int line, int column, SymbolKind symbolKind, params string[] identifierNames)
-        {
-            return GetCA1707BasicResultAt(line, column, GetApproriateMessage(symbolKind), identifierNames);
-        }
+            => VerifyVB.Diagnostic(GetApproriateRule(symbolKind))
+                .WithLocation(line, column)
+                .WithArguments(identifierNames);
 
-        private static DiagnosticResult GetCA1707BasicResultAt(int line, int column, string message, params string[] identifierName)
-        {
-            return GetBasicResultAt(line, column, IdentifiersShouldNotContainUnderscoresAnalyzer.RuleId, string.Format(CultureInfo.CurrentCulture, message, identifierName));
-        }
-
-        private void VerifyBasic(string source, string testProjectName, params DiagnosticResult[] expected)
-        {
-            Verify(source, LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), testProjectName, expected);
-        }
-
-        private void Verify(string source, string language, DiagnosticAnalyzer analyzer, string testProjectName, DiagnosticResult[] expected)
-        {
-            var sources = new[] { source };
-            var diagnostics = GetSortedDiagnostics(sources.ToFileAndSource(), language, analyzer, compilationOptions: null, parseOptions: null, referenceFlags: ReferenceFlags.None, projectName: testProjectName);
-            diagnostics.Verify(analyzer, GetDefaultPath(language), expected);
-        }
-
-        private static string GetApproriateMessage(SymbolKind symbolKind)
+        private static DiagnosticDescriptor GetApproriateRule(SymbolKind symbolKind)
         {
             return symbolKind switch
             {
-                SymbolKind.Assembly => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageAssembly,
-                SymbolKind.Namespace => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageNamespace,
-                SymbolKind.NamedType => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageType,
-                SymbolKind.Member => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageMember,
-                SymbolKind.DelegateParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageDelegateParameter,
-                SymbolKind.MemberParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageMemberParameter,
-                SymbolKind.TypeTypeParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter,
-                SymbolKind.MethodTypeParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter,
+                SymbolKind.Assembly => IdentifiersShouldNotContainUnderscoresAnalyzer.AssemblyRule,
+                SymbolKind.Namespace => IdentifiersShouldNotContainUnderscoresAnalyzer.NamespaceRule,
+                SymbolKind.NamedType => IdentifiersShouldNotContainUnderscoresAnalyzer.TypeRule,
+                SymbolKind.Member => IdentifiersShouldNotContainUnderscoresAnalyzer.MemberRule,
+                SymbolKind.DelegateParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.DelegateParameterRule,
+                SymbolKind.MemberParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MemberParameterRule,
+                SymbolKind.TypeTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.TypeTypeParameterRule,
+                SymbolKind.MethodTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MethodTypeParameterRule,
                 _ => throw new System.Exception("Unknown Symbol Kind"),
             };
         }

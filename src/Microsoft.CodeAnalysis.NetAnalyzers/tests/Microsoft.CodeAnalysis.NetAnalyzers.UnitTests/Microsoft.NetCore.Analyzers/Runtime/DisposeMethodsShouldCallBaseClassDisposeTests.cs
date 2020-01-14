@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -13,21 +13,22 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public partial class DisposeMethodsShouldCallBaseClassDisposeTests : DiagnosticAnalyzerTestBase
+    public class DisposeMethodsShouldCallBaseClassDisposeTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer() => new DisposeMethodsShouldCallBaseClassDispose();
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new DisposeMethodsShouldCallBaseClassDispose();
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+           => VerifyCS.Diagnostic()
+               .WithLocation(line, column)
+               .WithArguments(arguments);
 
-        private new DiagnosticResult GetCSharpResultAt(int line, int column, string containingMethod, string baseDisposeSignature) =>
-            GetCSharpResultAt(line, column, DisposeMethodsShouldCallBaseClassDispose.Rule, containingMethod, baseDisposeSignature);
-
-        private new DiagnosticResult GetBasicResultAt(int line, int column, string containingMethod, string baseDisposeSignature) =>
-            GetBasicResultAt(line, column, DisposeMethodsShouldCallBaseClassDispose.Rule, containingMethod, baseDisposeSignature);
+        private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arguments);
 
         [Fact]
-        public void NoBaseDisposeImplementation_NoBaseDisposeCall_NoDiagnostic()
+        public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A 
@@ -42,7 +43,7 @@ class B : A, IDisposable
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -58,9 +59,9 @@ End Class");
         }
 
         [Fact]
-        public void NoBaseDisposeImplementation_NoBaseDisposeCall_02_NoDiagnostic()
+        public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A 
@@ -78,7 +79,7 @@ class B : A, IDisposable
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -96,9 +97,9 @@ End Class");
         }
 
         [Fact]
-        public void BaseDisposeCall_NoDiagnostic()
+        public async Task BaseDisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -117,7 +118,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -137,9 +138,9 @@ End Class");
         }
 
         [Fact]
-        public void NoBaseDisposeCall_Diagnostic()
+        public async Task NoBaseDisposeCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -159,7 +160,7 @@ class B : A
             // Test0.cs(13,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(13, 26, "void B.Dispose()", "base.Dispose()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -180,9 +181,9 @@ End Class",
         }
 
         [Fact]
-        public void BaseDisposeCall_IgnoreCase_VB_NoDiagnostic()
+        public async Task BaseDisposeCall_IgnoreCase_VB_NoDiagnostic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -202,9 +203,9 @@ End Class");
         }
 
         [Fact]
-        public void BaseDisposeBoolCall_NoDiagnostic()
+        public async Task BaseDisposeBoolCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -229,7 +230,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -254,9 +255,9 @@ End Class");
         }
 
         [Fact]
-        public void NoBaseDisposeBoolCall_Diagnostic()
+        public async Task NoBaseDisposeBoolCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -282,7 +283,7 @@ class B : A
             // Test0.cs(19,26): warning CA2215: Ensure that method 'void B.Dispose(bool b)' calls 'base.Dispose(bool)' in all possible control flow paths.
             GetCSharpResultAt(19, 26, "void B.Dispose(bool b)", "base.Dispose(bool)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -308,9 +309,9 @@ End Class",
         }
 
         [Fact]
-        public void NoBaseDisposeCloseCall_NoDiagnostic()
+        public async Task NoBaseDisposeCloseCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -334,7 +335,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -358,9 +359,9 @@ End Class");
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public void BaseDisposeAsyncCall_NoDiagnostic()
+        public async Task BaseDisposeAsyncCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -383,7 +384,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -409,9 +410,9 @@ End Class");
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public void NoBaseDisposeAsyncCall_Diagnostic()
+        public async Task NoBaseDisposeAsyncCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -436,7 +437,7 @@ class B : A
             // Test0.cs(17,26): warning CA2215: Ensure that method 'Task B.DisposeAsync()' calls 'base.DisposeAsync()' in all possible control flow paths.
             GetCSharpResultAt(17, 26, "Task B.DisposeAsync()", "base.DisposeAsync()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -464,9 +465,9 @@ End Class",
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public void BaseDisposeCoreAsyncCall_NoDiagnostic()
+        public async Task BaseDisposeCoreAsyncCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -496,7 +497,7 @@ class C : B
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -532,9 +533,9 @@ End Class");
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public void NoBaseDisposeCoreAsyncCall_Diagnostic()
+        public async Task NoBaseDisposeCoreAsyncCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -566,7 +567,7 @@ class C : B
             // Test0.cs(24,29): warning CA2215: Ensure that method 'Task C.DisposeCoreAsync(bool initialized)' calls 'base.DisposeCoreAsync(bool)' in all possible control flow paths.
             GetCSharpResultAt(24, 29, "Task C.DisposeCoreAsync(bool initialized)", "base.DisposeCoreAsync(bool)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -604,9 +605,9 @@ End Class",
         }
 
         [Fact]
-        public void AbstractBaseDisposeMethod_NoBaseDisposeCall_NoDiagnostic()
+        public async Task AbstractBaseDisposeMethod_NoBaseDisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 abstract class A : IDisposable
@@ -622,7 +623,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 MustInherit Class A
@@ -640,9 +641,9 @@ End Class");
         }
 
         [Fact]
-        public void ShadowsBaseDisposeMethod_NoBaseDisposeCall_NoDiagnostic()
+        public async Task ShadowsBaseDisposeMethod_NoBaseDisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -660,7 +661,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -679,9 +680,9 @@ End Class");
         }
 
         [Fact]
-        public void Multiple_BaseDisposeCalls_NoDiagnostic()
+        public async Task Multiple_BaseDisposeCalls_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -701,7 +702,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -722,9 +723,9 @@ End Class");
         }
 
         [Fact]
-        public void BaseDisposeCalls_AllPaths_NoDiagnostic()
+        public async Task BaseDisposeCalls_AllPaths_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -751,7 +752,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -775,10 +776,10 @@ Class B
 End Class");
         }
 
-        [Fact, WorkItem(1654, "https://github.com/dotnet/roslyn-analyzers/issues/1654")]
-        public void BaseDisposeCalls_SomePaths_Diagnostic()
+        [Fact(Skip = "Analyzer isn't yet flow based."), WorkItem(1654, "https://github.com/dotnet/roslyn-analyzers/issues/1654")]
+        public async Task BaseDisposeCalls_SomePaths_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -803,7 +804,7 @@ class B : A
             // Test0.cs(14,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(14, 26, "void B.Dispose()", "base.Dispose()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -828,9 +829,9 @@ End Class",
         }
 
         [Fact]
-        public void BaseDisposeCall_GuardedWithBoolField_NoDiagnostic()
+        public async Task BaseDisposeCall_GuardedWithBoolField_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -857,7 +858,7 @@ class B : A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -884,9 +885,9 @@ End Class");
         }
 
         [Fact]
-        public void BaseDisposeCall_DifferentOverload_Diagnostic()
+        public async Task BaseDisposeCall_DifferentOverload_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -911,7 +912,7 @@ class B : A
             // Test0.cs(17,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(17, 26, "void B.Dispose()", "base.Dispose()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -936,9 +937,9 @@ End Class",
         }
 
         [Fact]
-        public void DisposeCall_DifferentInstance_Diagnostic()
+        public async Task DisposeCall_DifferentInstance_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -960,7 +961,7 @@ class B : A
             // Test0.cs(14,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(14, 26, "void B.Dispose()", "base.Dispose()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -983,9 +984,9 @@ End Class",
         }
 
         [Fact]
-        public void DisposeCall_StaticMethod_Diagnostic()
+        public async Task DisposeCall_StaticMethod_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -1010,7 +1011,7 @@ class B : A
             // Test0.cs(17,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(17, 26, "void B.Dispose()", "base.Dispose()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -1035,9 +1036,9 @@ End Class",
         }
 
         [Fact]
-        public void DisposeCall_ThisOrMeInstance_Diagnostic()
+        public async Task DisposeCall_ThisOrMeInstance_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -1058,7 +1059,7 @@ class B : A
             // Test0.cs(13,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(13, 26, "void B.Dispose()", "base.Dispose()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -1080,22 +1081,22 @@ End Class",
         }
 
         [Fact, WorkItem(1671, "https://github.com/dotnet/roslyn-analyzers/issues/1671")]
-        public void ErrorCase_NoDiagnostic()
+        public async Task ErrorCase_NoDiagnostic()
         {
             // Missing "using System;" causes "Equals" method be marked as IsOverride but with null OverriddenMethod.
-            VerifyCSharp(@"
-public class BaseClass<T> : IComparable<T>
-     where T : IComparable<T>
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class BaseClass<T> : {|CS0246:IComparable<T>|}
+     where T : {|CS0246:IComparable<T>|}
 {
     public T Value { get; set; }
 
 
     public int CompareTo(T other)
     {
-        return Value.CompareTo(other);
+        return Value.{|CS1061:CompareTo|}(other);
     }
 
-    public override bool Equals(object obj)
+    public override bool {|CS0115:Equals|}(object obj)
     {
         if (obj is BaseClass<T> other)
         {
@@ -1105,14 +1106,14 @@ public class BaseClass<T> : IComparable<T>
         return false;
     }
 
-    public override int GetHashCode() => Value?.GetHashCode() ?? 0;
+    public override int {|CS0115:GetHashCode|}() => Value?.GetHashCode() ?? 0;
 }
 
-public class DerivedClass<T> : BaseClass<T>
-    where T : IComparable<T>
+public class {|CS0314:DerivedClass|}<T> : BaseClass<T>
+    where T : {|CS0246:IComparable<T>|}
 {
 }
-", TestValidationMode.AllowCompileErrors);
+");
         }
     }
 }

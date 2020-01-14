@@ -1,58 +1,50 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.InteropServices.PInvokeDiagnosticAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.InteropServices.PInvokeDiagnosticAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
-    public class PInvokeDiagnosticAnalyzerTests : DiagnosticAnalyzerTestBase
+    public class PInvokeDiagnosticAnalyzerTests
     {
         #region Verifiers
 
-        private static readonly string s_CA1401RuleText = MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleMessage;
-        private static readonly string s_CA2101RuleText = MicrosoftNetCoreAnalyzersResources.SpecifyMarshalingForPInvokeStringArgumentsTitle;
+        private DiagnosticResult CSharpResult1401(int line, int column, params string[] arguments)
+           => VerifyCS.Diagnostic(PInvokeDiagnosticAnalyzer.RuleCA1401)
+               .WithLocation(line, column)
+               .WithArguments(arguments);
 
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new PInvokeDiagnosticAnalyzer();
-        }
+        private DiagnosticResult BasicResult1401(int line, int column, params string[] arguments)
+            => VerifyVB.Diagnostic(PInvokeDiagnosticAnalyzer.RuleCA1401)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new PInvokeDiagnosticAnalyzer();
-        }
+        private DiagnosticResult CSharpResult2101(int line, int column, params string[] arguments)
+           => VerifyCS.Diagnostic(PInvokeDiagnosticAnalyzer.RuleCA2101)
+               .WithLocation(line, column)
+               .WithArguments(arguments);
 
-        private static DiagnosticResult CSharpResult1401(int line, int column, string typeName)
-        {
-            return GetCSharpResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA1401Id, string.Format(CultureInfo.CurrentCulture, s_CA1401RuleText, typeName));
-        }
-
-        private static DiagnosticResult BasicResult1401(int line, int column, string typeName)
-        {
-            return GetBasicResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA1401Id, string.Format(CultureInfo.CurrentCulture, s_CA1401RuleText, typeName));
-        }
-
-        private static DiagnosticResult CSharpResult2101(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA2101Id, s_CA2101RuleText);
-        }
-
-        private static DiagnosticResult BasicResult2101(int line, int column)
-        {
-            return GetBasicResultAt(line, column, PInvokeDiagnosticAnalyzer.RuleCA2101Id, s_CA2101RuleText);
-        }
+        private DiagnosticResult BasicResult2101(int line, int column, params string[] arguments)
+            => VerifyVB.Diagnostic(PInvokeDiagnosticAnalyzer.RuleCA2101)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
 
         #endregion
 
         #region CA1401 tests
 
         [Fact]
-        public void CA1401CSharpTest()
+        public async Task CA1401CSharpTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
 public class C
@@ -75,33 +67,32 @@ public class C
         }
 
         [Fact]
-        public void CA1401CSharpTestWithScope()
+        public async Task CA1401CSharpTestWithScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
 public class C
 {
     [DllImport(""user32.dll"")]
-    public static extern void Foo1(); // should not be public
+    public static extern void {|CA1401:Foo1|}(); // should not be public
 
-    [|[DllImport(""user32.dll"")]
-    protected static extern void Foo2(); // should not be protected
-    |]
+    [DllImport(""user32.dll"")]
+    protected static extern void {|CA1401:Foo2|}(); // should not be protected
+
     [DllImport(""user32.dll"")]
     private static extern void Foo3(); // private is OK
 
     [DllImport(""user32.dll"")]
     static extern void Foo4(); // implicitly private is OK
 }
-",
-                CSharpResult1401(10, 34, "Foo2"));
+");
         }
 
         [Fact]
-        public void CA1401BasicSubTest()
+        public async Task CA1401BasicSubTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Public Class C
@@ -128,36 +119,35 @@ End Class
         }
 
         [Fact]
-        public void CA1401BasicSubTestWithScope()
+        public async Task CA1401BasicSubTestWithScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Public Class C
     <DllImport(""user32.dll"")>
-    Public Shared Sub Foo1() ' should not be public
+    Public Shared Sub {|CA1401:Foo1|}() ' should not be public
     End Sub
 
-    [|<DllImport(""user32.dll"")>
-    Protected Shared Sub Foo2() ' should not be protected
-    End Sub|]
+    <DllImport(""user32.dll"")>
+    Protected Shared Sub {|CA1401:Foo2|}() ' should not be protected
+    End Sub
 
     <DllImport(""user32.dll"")>
     Private Shared Sub Foo3() ' private is OK
     End Sub
 
     <DllImport(""user32.dll"")>
-    Shared Sub Foo4() ' implicitly public is not OK
+    Shared Sub {|CA1401:Foo4|}() ' implicitly public is not OK
     End Sub
 End Class
-",
-                BasicResult1401(10, 26, "Foo2"));
+");
         }
 
         [Fact]
-        public void CA1401BasicFunctionTest()
+        public async Task CA1401BasicFunctionTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Public Class C
@@ -184,9 +174,9 @@ End Class
         }
 
         [Fact]
-        public void CA1401BasicDeclareSubTest()
+        public async Task CA1401BasicDeclareSubTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Public Class C
@@ -205,9 +195,9 @@ End Class
         }
 
         [Fact]
-        public void CA1401BasicDeclareFunctionTest()
+        public async Task CA1401BasicDeclareFunctionTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Public Class C
@@ -227,9 +217,9 @@ End Class
 
         [WorkItem(792, "https://github.com/dotnet/roslyn-analyzers/issues/792")]
         [Fact]
-        public void CA1401CSharpNonPublic()
+        public async Task CA1401CSharpNonPublic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Runtime.InteropServices;
 
@@ -246,9 +236,9 @@ public sealed class TimerFontContainer
 
         [WorkItem(792, "https://github.com/dotnet/roslyn-analyzers/issues/792")]
         [Fact]
-        public void CA1401BasicNonPublic()
+        public async Task CA1401BasicNonPublic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public NotInheritable Class TimerFontContainer
     Private Class NativeMethods
         Public Declare Function AddFontMemResourceEx Lib ""gdi32.dll"" (pbFont As Integer, cbFont As Integer, pdv As Integer) As Integer
@@ -262,9 +252,9 @@ End Class
         #region CA2101 tests
 
         [Fact]
-        public void CA2101SimpleCSharpTest()
+        public async Task CA2101SimpleCSharpTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -290,34 +280,33 @@ class C
         }
 
         [Fact]
-        public void CA2101SimpleCSharpTestWithScope()
+        public async Task CA2101SimpleCSharpTestWithScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 using System.Text;
 
 class C
 {
-    [DllImport(""user32.dll"")]
+    [{|CA2101:DllImport(""user32.dll"")|}]
     private static extern void Foo1(string s); // one string parameter
 
-    [|[DllImport(""user32.dll"")]
-    private static extern void Foo2(string s, string t); // two string parameters, should be only 1 diagnostic|]
+    [{|CA2101:DllImport(""user32.dll"")|}]
+    private static extern void Foo2(string s, string t); // two string parameters, should be only 1 diagnostic
 
-    [DllImport(""user32.dll"")]
+    [{|CA2101:DllImport(""user32.dll"")|}]
     private static extern void Foo3(StringBuilder s); // one StringBuilder parameter
 
-    [DllImport(""user32.dll"")]
+    [{|CA2101:DllImport(""user32.dll"")|}]
     private static extern void Foo4(StringBuilder s, StringBuilder t); // two StringBuilder parameters, should be only 1 diagnostic
 }
-",
-                CSharpResult2101(10, 6));
+");
         }
 
         [Fact]
-        public void CA2101SimpleBasicTest()
+        public async Task CA2101SimpleBasicTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 Imports System.Text
 
@@ -346,37 +335,36 @@ End Class
         }
 
         [Fact]
-        public void CA2101SimpleBasicTestWithScope()
+        public async Task CA2101SimpleBasicTestWithScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 Imports System.Text
 
 Class C
-    <DllImport(""user32.dll"")>
+    <{|CA2101:DllImport(""user32.dll"")|}>
     Private Shared Sub Foo1(s As String) ' one string parameter
     End Sub
 
-    [|<DllImport(""user32.dll"")>
+    <{|CA2101:DllImport(""user32.dll"")|}>
     Private Shared Sub Foo2(s As String, t As String) ' two string parameters, should be only 1 diagnostic
-    End Sub|]
+    End Sub
 
-    <DllImport(""user32.dll"")>
+    <{|CA2101:DllImport(""user32.dll"")|}>
     Private Shared Sub Foo3(s As StringBuilder) ' one StringBuilder parameter
     End Sub
 
-    <DllImport(""user32.dll"")>
+    <{|CA2101:DllImport(""user32.dll"")|}>
     Private Shared Sub Foo4(s As StringBuilder, t As StringBuilder) ' two StringBuilder parameters, should be only 1 diagnostic
     End Sub
 End Class
-",
-                BasicResult2101(10, 6));
+");
         }
 
         [Fact]
-        public void CA2101SimpleDeclareBasicTest()
+        public async Task CA2101SimpleDeclareBasicTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Text
 
 Class C
@@ -396,9 +384,9 @@ End Class
         }
 
         [Fact]
-        public void CA2101ParameterMarshaledCSharpTest()
+        public async Task CA2101ParameterMarshaledCSharpTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -450,9 +438,9 @@ class C
         }
 
         [Fact]
-        public void CA2101ParameterMarshaledBasicTest()
+        public async Task CA2101ParameterMarshaledBasicTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 Imports System.Text
 
@@ -514,9 +502,9 @@ End Class
         }
 
         [Fact]
-        public void CA2101CharSetCSharpTest()
+        public async Task CA2101CharSetCSharpTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -548,9 +536,9 @@ class C
         }
 
         [Fact]
-        public void CA2101CharSetBasicTest()
+        public async Task CA2101CharSetBasicTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 Imports System.Text
 
@@ -587,9 +575,9 @@ End Class
         }
 
         [Fact]
-        public void CA2101ReturnTypeCSharpTest()
+        public async Task CA2101ReturnTypeCSharpTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -613,9 +601,9 @@ class C
         }
 
         [Fact]
-        public void CA2101ReturnTypeBasicTest()
+        public async Task CA2101ReturnTypeBasicTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 Imports System.Text
 

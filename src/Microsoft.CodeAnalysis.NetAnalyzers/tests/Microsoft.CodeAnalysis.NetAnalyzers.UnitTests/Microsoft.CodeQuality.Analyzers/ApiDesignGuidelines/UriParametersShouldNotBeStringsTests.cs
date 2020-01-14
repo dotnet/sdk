@@ -194,12 +194,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCA1054CSharpResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriParametersShouldNotBeStringsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
 
         private static DiagnosticResult GetCA1054BasicResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriParametersShouldNotBeStringsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
     }

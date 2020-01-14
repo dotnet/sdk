@@ -335,7 +335,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                         {
                             FileStream fileStream = new FileStream(""name"", FileMode.Create);
                         }
-                        catch 
+                        catch
                         {
                         }
                     }
@@ -356,7 +356,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                     Public Shared Sub TestMethod()
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
-                        Catch 
+                        Catch
                         End Try
                     End Sub
                 End Class
@@ -377,7 +377,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                     Public Shared Function TestMethod() As Double
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
-                        Catch 
+                        Catch
                         End Try
                         Return 0
                     End Function
@@ -1041,7 +1041,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                             }
                             file = value;
                         }
-                    } 
+                    }
 
                     private static void AccessViolation()
                     {
@@ -1531,13 +1531,9 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         private static DiagnosticResult GetCA2153CSharpResultAt(int line, int column, string signature, string typeName)
-        {
-            return new DiagnosticResult(DoNotCatchCorruptedStateExceptionsAnalyzer.Rule).WithLocation(line, column).WithArguments(signature, typeName);
-        }
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(signature, typeName);
 
         private static DiagnosticResult GetCA2153BasicResultAt(int line, int column, string signature, string typeName)
-        {
-            return new DiagnosticResult(DoNotCatchCorruptedStateExceptionsAnalyzer.Rule).WithLocation(line, column).WithArguments(signature, typeName);
-        }
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(signature, typeName);
     }
 }

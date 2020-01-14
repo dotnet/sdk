@@ -3,8 +3,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.NetFramework.CSharp.Analyzers;
-using Microsoft.NetFramework.VisualBasic.Analyzers;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.CSharp.Analyzers.CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer,
@@ -18,14 +16,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureXSLTScriptExecutionAnalyzerTests
     {
         private static DiagnosticResult GetCA3076LoadCSharpResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer.RuleDoNotUseInsecureXSLTScriptExecution).WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
-        }
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
 
         private static DiagnosticResult GetCA3076LoadBasicResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(BasicDoNotUseInsecureXSLTScriptExecutionAnalyzer.RuleDoNotUseInsecureXSLTScriptExecution).WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
-        }
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
 
         [Fact]
         public async Task Issue2752()

@@ -1,29 +1,25 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public partial class OverloadOperatorEqualsOnOverridingValueTypeEqualsTests : DiagnosticAnalyzerTestBase
+    public partial class OverloadOperatorEqualsOnOverridingValueTypeEqualsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer();
-        }
-
         [Fact]
-        public void CA2231NoWarningCSharp()
+        public async Task CA2231NoWarningCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     // Non-value type
@@ -47,9 +43,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2231NoEqualsOperatorCSharp()
+        public async Task CA2231NoEqualsOperatorCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public struct A
@@ -64,9 +60,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA2231NoEqualsOperatorButNotExternallyVisibleCSharp()
+        public async Task CA2231NoEqualsOperatorButNotExternallyVisibleCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     struct A
@@ -91,12 +87,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2231NoEqualsOperatorCSharpOutofScope()
+        public async Task CA2231NoEqualsOperatorCSharpOutofScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
-    public struct A
+    public struct [|A|]
     {
         public override bool Equals(Object obj)
         {
@@ -104,21 +100,21 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
     }
 
-    [|// value type without overriding Equals
+    // value type without overriding Equals
     public struct B
     {    
         public new bool Equals(Object obj)
         {
             return true;
         }
-    }|]
+    }
 ");
         }
 
         [Fact]
-        public void CA2231CSharpInnerClassHasNoEqualsOperatorCSharp()
+        public async Task CA2231CSharpInnerClassHasNoEqualsOperatorCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public struct A
@@ -142,9 +138,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2231HasEqualsOperatorCSharp()
+        public async Task CA2231HasEqualsOperatorCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public struct A
@@ -168,9 +164,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA2231_CSharp_RefStruct_NoDiagnostic()
+        public async Task CA2231_CSharp_RefStruct_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 public ref struct S
 {
     public override bool Equals(object other)
@@ -178,13 +176,15 @@ public ref struct S
         return false;
     }
 }
-", parseOptions: new CSharpParseOptions(LanguageVersion.CSharp8));
+",
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA2231NoWarningBasic()
+        public async Task CA2231NoWarningBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -196,9 +196,9 @@ End Class
         }
 
         [Fact]
-        public void CA2231NoEqualsOperatorBasic()
+        public async Task CA2231NoEqualsOperatorBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Structure A
@@ -211,9 +211,9 @@ End Structure
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA2231NoEqualsOperatorButNotExternallyVisibleBasic()
+        public async Task CA2231NoEqualsOperatorButNotExternallyVisibleBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Structure A
@@ -233,18 +233,18 @@ End Class
         }
 
         [Fact]
-        public void CA2231NoEqualsOperatorBasicWithScope()
+        public async Task CA2231NoEqualsOperatorBasicWithScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
-[|Public Class A
+Public Class A
     Public Overloads Overrides Function Equals(obj As Object) As Boolean
         Return True
     End Function
-End Class|]
+End Class
 
-Public Structure B
+Public Structure [|B|]
     Public Overloads Overrides Function Equals(obj As Object) As Boolean
         Return True
     End Function
@@ -253,9 +253,9 @@ End Structure
         }
 
         [Fact]
-        public void CA2231BasicInnerClassHasNoEqualsOperatorBasic()
+        public async Task CA2231BasicInnerClassHasNoEqualsOperatorBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Structure A
@@ -275,9 +275,9 @@ End Structure
         }
 
         [Fact]
-        public void CA2231HasEqualsOperatorBasic()
+        public async Task CA2231HasEqualsOperatorBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Structure A
@@ -297,13 +297,11 @@ End Structure
         }
 
         private static DiagnosticResult GetCA2231CSharpResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetCA2231BasicResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

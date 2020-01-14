@@ -126,12 +126,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCA1055CSharpResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriReturnValuesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
 
         private static DiagnosticResult GetCA1055BasicResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriReturnValuesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
     }

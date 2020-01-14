@@ -15,12 +15,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public class CollectionsShouldImplementGenericInterfaceTests
     {
-        private DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName)
+        private static DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(typeName, interfaceName, $"{interfaceName}<T>");
 
-        private DiagnosticResult GetCA1010BasicResultAt(int line, int column, string typeName, string interfaceName)
+        private static DiagnosticResult GetCA1010BasicResultAt(int line, int column, string typeName, string interfaceName)
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(typeName, interfaceName, $"{interfaceName}(Of T)");

@@ -169,12 +169,12 @@ End Namespace
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-            => new DiagnosticResult(rule)
+            => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-            => new DiagnosticResult(rule)
+            => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
                 .WithArguments(arguments);
     }

@@ -324,14 +324,14 @@ GetCA1307BasicResultsAt(7, 9, "StringComparisonTests.DoNothing(String)",
                               "StringComparisonTests.DoNothing(Of T)(String, System.StringComparison)"));
         }
 
-        private DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3)
+        private static DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3)
         {
             return new DiagnosticResult(SpecifyStringComparisonAnalyzer.Rule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
         }
 
-        private DiagnosticResult GetCA1307BasicResultsAt(int line, int column, string arg1, string arg2, string arg3)
+        private static DiagnosticResult GetCA1307BasicResultsAt(int line, int column, string arg1, string arg2, string arg3)
         {
             return new DiagnosticResult(SpecifyStringComparisonAnalyzer.Rule)
                 .WithLocation(line, column)
