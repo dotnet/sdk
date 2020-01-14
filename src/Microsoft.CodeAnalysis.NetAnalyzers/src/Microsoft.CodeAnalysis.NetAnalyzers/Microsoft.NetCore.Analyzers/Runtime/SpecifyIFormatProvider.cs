@@ -18,7 +18,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public sealed class SpecifyIFormatProviderAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1305";
-        internal const string Uri = "https://docs.microsoft.com/visualstudio/code-quality/ca1305-specify-iformatprovider";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
@@ -28,42 +27,38 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessageUICulture = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderMessageUICulture), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor IFormatProviderAlternateStringRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor IFormatProviderAlternateStringRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageIFormatProviderAlternateString,
                                                                              DiagnosticCategory.Globalization,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: Uri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor IFormatProviderAlternateRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor IFormatProviderAlternateRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageIFormatProviderAlternate,
                                                                              DiagnosticCategory.Globalization,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: Uri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor UICultureStringRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor UICultureStringRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageUICultureString,
                                                                              DiagnosticCategory.Globalization,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: Uri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor UICultureRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor UICultureRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageUICulture,
                                                                              DiagnosticCategory.Globalization,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: Uri,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, UICultureStringRule, UICultureRule);
 

@@ -283,12 +283,12 @@ End Structure
 
         private static DiagnosticResult GetCA2231CSharpResultAt(int line, int column)
         {
-            return GetCSharpResultAt(line, column, OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage);
+            return GetCSharpResultAt(line, column, OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer.Rule);
         }
 
         private static DiagnosticResult GetCA2231BasicResultAt(int line, int column)
         {
-            return GetBasicResultAt(line, column, OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage);
+            return GetBasicResultAt(line, column, OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer.Rule);
         }
     }
 }

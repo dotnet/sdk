@@ -24,15 +24,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleWithSuggestion = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleWithSuggestion = DiagnosticDescriptorHelper.Create(RuleId,
                                                                          s_localizableTitle,
                                                                          s_localizableMessage,
                                                                          DiagnosticCategory.Maintainability,
-                                                                         DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                         isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                         RuleLevel.IdeSuggestion,
                                                                          description: s_localizableDescription,
-                                                                         helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1507",
-                                                                         customTags: WellKnownDiagnosticTags.Telemetry);
+                                                                         isPortedFxCopRule: false,
+                                                                         isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleWithSuggestion);
 

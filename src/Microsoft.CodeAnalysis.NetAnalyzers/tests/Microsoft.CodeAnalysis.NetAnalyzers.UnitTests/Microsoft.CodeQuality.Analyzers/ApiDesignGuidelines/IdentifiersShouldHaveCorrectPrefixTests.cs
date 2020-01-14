@@ -72,13 +72,13 @@ public interface IAmAnInterface
     void SomeMethod();
 }
 ",
-                GetCA1715CSharpResultAt(2, 18, CA1715InterfaceMessage, "Controller"),
-                GetCA1715CSharpResultAt(7, 18, CA1715InterfaceMessage, "\u65E5\u672C\u8A9E"),
-                GetCA1715CSharpResultAt(12, 18, CA1715InterfaceMessage, "_Controller"),
-                GetCA1715CSharpResultAt(17, 18, CA1715InterfaceMessage, "_\u65E5\u672C\u8A9E"),
-                GetCA1715CSharpResultAt(22, 18, CA1715InterfaceMessage, "Internet"),
-                GetCA1715CSharpResultAt(27, 18, CA1715InterfaceMessage, "Iinternet"),
-                GetCA1715CSharpResultAt(34, 22, CA1715InterfaceMessage, "Controller"));
+                GetCA1715InterfaceCSharpResultAt(2, 18, "Controller"),
+                GetCA1715InterfaceCSharpResultAt(7, 18, "\u65E5\u672C\u8A9E"),
+                GetCA1715InterfaceCSharpResultAt(12, 18, "_Controller"),
+                GetCA1715InterfaceCSharpResultAt(17, 18, "_\u65E5\u672C\u8A9E"),
+                GetCA1715InterfaceCSharpResultAt(22, 18, "Internet"),
+                GetCA1715InterfaceCSharpResultAt(27, 18, "Iinternet"),
+                GetCA1715InterfaceCSharpResultAt(34, 22, "Controller"));
         }
 
         [Fact]
@@ -151,25 +151,25 @@ public class Class6<TTypeParameter>
 {
 }
 ",
-                GetCA1715CSharpResultAt(4, 25, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(8, 32, CA1715TypeParameterMessage, "\u672C\u8A9E"),
-                GetCA1715CSharpResultAt(12, 31, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(14, 21, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(18, 24, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(22, 21, CA1715TypeParameterMessage, "Type"),
-                GetCA1715CSharpResultAt(26, 24, CA1715TypeParameterMessage, "Type"),
-                GetCA1715CSharpResultAt(30, 19, CA1715TypeParameterMessage, "Key"),
-                GetCA1715CSharpResultAt(30, 24, CA1715TypeParameterMessage, "Value"),
-                GetCA1715CSharpResultAt(34, 22, CA1715TypeParameterMessage, "Key"),
-                GetCA1715CSharpResultAt(34, 27, CA1715TypeParameterMessage, "Value"),
-                GetCA1715CSharpResultAt(38, 21, CA1715TypeParameterMessage, "Type1"),
-                GetCA1715CSharpResultAt(40, 31, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715CSharpResultAt(45, 24, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715CSharpResultAt(50, 24, CA1715TypeParameterMessage, "KType"),
-                GetCA1715CSharpResultAt(50, 31, CA1715TypeParameterMessage, "VType"),
-                GetCA1715CSharpResultAt(56, 21, CA1715TypeParameterMessage, "_Type1"),
-                GetCA1715CSharpResultAt(58, 24, CA1715TypeParameterMessage, "_K"),
-                GetCA1715CSharpResultAt(58, 28, CA1715TypeParameterMessage, "_V"));
+                GetCA1715TypeParameterCSharpResultAt(4, 25, "VSome"),
+                GetCA1715TypeParameterCSharpResultAt(8, 32, "\u672C\u8A9E"),
+                GetCA1715TypeParameterCSharpResultAt(12, 31, "VSome"),
+                GetCA1715TypeParameterCSharpResultAt(14, 21, "VSome"),
+                GetCA1715TypeParameterCSharpResultAt(18, 24, "VSome"),
+                GetCA1715TypeParameterCSharpResultAt(22, 21, "Type"),
+                GetCA1715TypeParameterCSharpResultAt(26, 24, "Type"),
+                GetCA1715TypeParameterCSharpResultAt(30, 19, "Key"),
+                GetCA1715TypeParameterCSharpResultAt(30, 24, "Value"),
+                GetCA1715TypeParameterCSharpResultAt(34, 22, "Key"),
+                GetCA1715TypeParameterCSharpResultAt(34, 27, "Value"),
+                GetCA1715TypeParameterCSharpResultAt(38, 21, "Type1"),
+                GetCA1715TypeParameterCSharpResultAt(40, 31, "Type2"),
+                GetCA1715TypeParameterCSharpResultAt(45, 24, "Type2"),
+                GetCA1715TypeParameterCSharpResultAt(50, 24, "KType"),
+                GetCA1715TypeParameterCSharpResultAt(50, 31, "VType"),
+                GetCA1715TypeParameterCSharpResultAt(56, 21, "_Type1"),
+                GetCA1715TypeParameterCSharpResultAt(58, 24, "_K"),
+                GetCA1715TypeParameterCSharpResultAt(58, 28, "_V"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -252,11 +252,11 @@ public class Class6<TTypeParameter>
 {
 }
 ",
-            GetCA1715CSharpResultAt(4, 25, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(8, 31, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(10, 24, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(16, 24, CA1715TypeParameterMessage, "K"),
-            GetCA1715CSharpResultAt(16, 27, CA1715TypeParameterMessage, "V"));
+            GetCA1715TypeParameterCSharpResultAt(4, 25, "V"),
+            GetCA1715TypeParameterCSharpResultAt(8, 31, "V"),
+            GetCA1715TypeParameterCSharpResultAt(10, 24, "V"),
+            GetCA1715TypeParameterCSharpResultAt(16, 24, "K"),
+            GetCA1715TypeParameterCSharpResultAt(16, 27, "V"));
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -294,11 +294,11 @@ public class Class6<TTypeParameter>
 }
 ",
             GetEditorConfigAdditionalFile(editorConfigText),
-            GetCA1715CSharpResultAt(4, 25, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(8, 31, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(10, 24, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(16, 24, CA1715TypeParameterMessage, "K"),
-            GetCA1715CSharpResultAt(16, 27, CA1715TypeParameterMessage, "V"));
+            GetCA1715TypeParameterCSharpResultAt(4, 25, "V"),
+            GetCA1715TypeParameterCSharpResultAt(8, 31, "V"),
+            GetCA1715TypeParameterCSharpResultAt(10, 24, "V"),
+            GetCA1715TypeParameterCSharpResultAt(16, 24, "K"),
+            GetCA1715TypeParameterCSharpResultAt(16, 27, "V"));
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -374,13 +374,13 @@ Public Interface IAmAnInterface
     Sub SomeMethod()
 End Interface
 ",
-                GetCA1715BasicResultAt(2, 18, CA1715InterfaceMessage, "Controller"),
-                GetCA1715BasicResultAt(6, 18, CA1715InterfaceMessage, "\u65E5\u672C\u8A9E"),
-                GetCA1715BasicResultAt(10, 18, CA1715InterfaceMessage, "_Controller"),
-                GetCA1715BasicResultAt(14, 18, CA1715InterfaceMessage, "_\u65E5\u672C\u8A9E"),
-                GetCA1715BasicResultAt(18, 18, CA1715InterfaceMessage, "Internet"),
-                GetCA1715BasicResultAt(22, 18, CA1715InterfaceMessage, "Iinternet"),
-                GetCA1715BasicResultAt(27, 22, CA1715InterfaceMessage, "Controller"));
+                GetCA1715InterfaceBasicResultAt(2, 18, "Controller"),
+                GetCA1715InterfaceBasicResultAt(6, 18, "\u65E5\u672C\u8A9E"),
+                GetCA1715InterfaceBasicResultAt(10, 18, "_Controller"),
+                GetCA1715InterfaceBasicResultAt(14, 18, "_\u65E5\u672C\u8A9E"),
+                GetCA1715InterfaceBasicResultAt(18, 18, "Internet"),
+                GetCA1715InterfaceBasicResultAt(22, 18, "Iinternet"),
+                GetCA1715InterfaceBasicResultAt(27, 22, "Controller"));
         }
 
         [Fact]
@@ -439,25 +439,25 @@ End Class
 Public Class Class6(Of TTypeParameter)
 End Class
 ",
-                GetCA1715BasicResultAt(4, 28, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(7, 35, CA1715TypeParameterMessage, "\u672C\u8A9E"),
-                GetCA1715BasicResultAt(10, 33, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(12, 24, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(15, 27, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(18, 24, CA1715TypeParameterMessage, "Type"),
-                GetCA1715BasicResultAt(21, 27, CA1715TypeParameterMessage, "Type"),
-                GetCA1715BasicResultAt(24, 22, CA1715TypeParameterMessage, "Key"),
-                GetCA1715BasicResultAt(24, 27, CA1715TypeParameterMessage, "Value"),
-                GetCA1715BasicResultAt(27, 25, CA1715TypeParameterMessage, "Key"),
-                GetCA1715BasicResultAt(27, 30, CA1715TypeParameterMessage, "Value"),
-                GetCA1715BasicResultAt(31, 24, CA1715TypeParameterMessage, "Type1"),
-                GetCA1715BasicResultAt(32, 33, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715BasicResultAt(36, 26, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715BasicResultAt(40, 26, CA1715TypeParameterMessage, "KType"),
-                GetCA1715BasicResultAt(40, 33, CA1715TypeParameterMessage, "VType"),
-                GetCA1715BasicResultAt(45, 24, CA1715TypeParameterMessage, "_Type1"),
-                GetCA1715BasicResultAt(46, 26, CA1715TypeParameterMessage, "_K"),
-                GetCA1715BasicResultAt(46, 30, CA1715TypeParameterMessage, "_V"));
+                GetCA1715TypeParameterBasicResultAt(4, 28, "VSome"),
+                GetCA1715TypeParameterBasicResultAt(7, 35, "\u672C\u8A9E"),
+                GetCA1715TypeParameterBasicResultAt(10, 33, "VSome"),
+                GetCA1715TypeParameterBasicResultAt(12, 24, "VSome"),
+                GetCA1715TypeParameterBasicResultAt(15, 27, "VSome"),
+                GetCA1715TypeParameterBasicResultAt(18, 24, "Type"),
+                GetCA1715TypeParameterBasicResultAt(21, 27, "Type"),
+                GetCA1715TypeParameterBasicResultAt(24, 22, "Key"),
+                GetCA1715TypeParameterBasicResultAt(24, 27, "Value"),
+                GetCA1715TypeParameterBasicResultAt(27, 25, "Key"),
+                GetCA1715TypeParameterBasicResultAt(27, 30, "Value"),
+                GetCA1715TypeParameterBasicResultAt(31, 24, "Type1"),
+                GetCA1715TypeParameterBasicResultAt(32, 33, "Type2"),
+                GetCA1715TypeParameterBasicResultAt(36, 26, "Type2"),
+                GetCA1715TypeParameterBasicResultAt(40, 26, "KType"),
+                GetCA1715TypeParameterBasicResultAt(40, 33, "VType"),
+                GetCA1715TypeParameterBasicResultAt(45, 24, "_Type1"),
+                GetCA1715TypeParameterBasicResultAt(46, 26, "_K"),
+                GetCA1715TypeParameterBasicResultAt(46, 30, "_V"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -526,11 +526,11 @@ End Class
 Public Class Class6(Of TTypeParameter)
 End Class
 ",
-            GetCA1715BasicResultAt(4, 28, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(7, 33, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(9, 27, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(13, 26, CA1715TypeParameterMessage, "K"),
-            GetCA1715BasicResultAt(13, 29, CA1715TypeParameterMessage, "V"));
+            GetCA1715TypeParameterBasicResultAt(4, 28, "V"),
+            GetCA1715TypeParameterBasicResultAt(7, 33, "V"),
+            GetCA1715TypeParameterBasicResultAt(9, 27, "V"),
+            GetCA1715TypeParameterBasicResultAt(13, 26, "K"),
+            GetCA1715TypeParameterBasicResultAt(13, 29, "V"));
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -563,11 +563,11 @@ Public Class Class6(Of TTypeParameter)
 End Class
 ",
             GetEditorConfigAdditionalFile(editorConfigText),
-            GetCA1715BasicResultAt(4, 28, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(7, 33, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(9, 27, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(13, 26, CA1715TypeParameterMessage, "K"),
-            GetCA1715BasicResultAt(13, 29, CA1715TypeParameterMessage, "V"));
+            GetCA1715TypeParameterBasicResultAt(4, 28, "V"),
+            GetCA1715TypeParameterBasicResultAt(7, 33, "V"),
+            GetCA1715TypeParameterBasicResultAt(9, 27, "V"),
+            GetCA1715TypeParameterBasicResultAt(13, 26, "K"),
+            GetCA1715TypeParameterBasicResultAt(13, 29, "V"));
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -603,14 +603,24 @@ End Class
         internal static readonly string CA1715InterfaceMessage = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageInterface;
         internal static readonly string CA1715TypeParameterMessage = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageTypeParameter;
 
-        private static DiagnosticResult GetCA1715CSharpResultAt(int line, int column, string message, string name)
+        private static DiagnosticResult GetCA1715InterfaceCSharpResultAt(int line, int column, string name)
         {
-            return GetCSharpResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.RuleId, string.Format(message, name));
+            return GetCSharpResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, name);
         }
 
-        private static DiagnosticResult GetCA1715BasicResultAt(int line, int column, string message, string name)
+        private static DiagnosticResult GetCA1715InterfaceBasicResultAt(int line, int column, string name)
         {
-            return GetBasicResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.RuleId, string.Format(message, name));
+            return GetBasicResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, name);
+        }
+
+        private static DiagnosticResult GetCA1715TypeParameterCSharpResultAt(int line, int column, string name)
+        {
+            return GetCSharpResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, name);
+        }
+
+        private static DiagnosticResult GetCA1715TypeParameterBasicResultAt(int line, int column, string name)
+        {
+            return GetBasicResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, name);
         }
     }
 }

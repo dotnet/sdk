@@ -845,12 +845,7 @@ End Class
 
         private static DiagnosticResult GetCA1707CSharpResultAt(int line, int column, SymbolKind symbolKind, params string[] identifierNames)
         {
-            return GetCA1707CSharpResultAt(line, column, GetApproriateMessage(symbolKind), identifierNames);
-        }
-
-        private static DiagnosticResult GetCA1707CSharpResultAt(int line, int column, string message, params string[] identifierName)
-        {
-            return GetCSharpResultAt(line, column, IdentifiersShouldNotContainUnderscoresAnalyzer.RuleId, string.Format(message, identifierName));
+            return GetCSharpResultAt(line, column, GetApproriateRule(symbolKind), identifierNames);
         }
 
         private void VerifyCSharp(string source, string testProjectName, params DiagnosticResult[] expected)
@@ -860,12 +855,7 @@ End Class
 
         private static DiagnosticResult GetCA1707BasicResultAt(int line, int column, SymbolKind symbolKind, params string[] identifierNames)
         {
-            return GetCA1707BasicResultAt(line, column, GetApproriateMessage(symbolKind), identifierNames);
-        }
-
-        private static DiagnosticResult GetCA1707BasicResultAt(int line, int column, string message, params string[] identifierName)
-        {
-            return GetBasicResultAt(line, column, IdentifiersShouldNotContainUnderscoresAnalyzer.RuleId, string.Format(message, identifierName));
+            return GetBasicResultAt(line, column, GetApproriateRule(symbolKind), identifierNames);
         }
 
         private void VerifyBasic(string source, string testProjectName, params DiagnosticResult[] expected)
@@ -880,18 +870,18 @@ End Class
             diagnostics.Verify(analyzer, GetDefaultPath(language), expected);
         }
 
-        private static string GetApproriateMessage(SymbolKind symbolKind)
+        private static DiagnosticDescriptor GetApproriateRule(SymbolKind symbolKind)
         {
             return symbolKind switch
             {
-                SymbolKind.Assembly => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageAssembly,
-                SymbolKind.Namespace => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageNamespace,
-                SymbolKind.NamedType => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageType,
-                SymbolKind.Member => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageMember,
-                SymbolKind.DelegateParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageDelegateParameter,
-                SymbolKind.MemberParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageMemberParameter,
-                SymbolKind.TypeTypeParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter,
-                SymbolKind.MethodTypeParameter => MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter,
+                SymbolKind.Assembly => IdentifiersShouldNotContainUnderscoresAnalyzer.AssemblyRule,
+                SymbolKind.Namespace => IdentifiersShouldNotContainUnderscoresAnalyzer.NamespaceRule,
+                SymbolKind.NamedType => IdentifiersShouldNotContainUnderscoresAnalyzer.TypeRule,
+                SymbolKind.Member => IdentifiersShouldNotContainUnderscoresAnalyzer.MemberRule,
+                SymbolKind.DelegateParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.DelegateParameterRule,
+                SymbolKind.MemberParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MemberParameterRule,
+                SymbolKind.TypeTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.TypeTypeParameterRule,
+                SymbolKind.MethodTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MethodTypeParameterRule,
                 _ => throw new System.Exception("Unknown Symbol Kind"),
             };
         }

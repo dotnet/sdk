@@ -25,22 +25,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             return new CollectionsShouldImplementGenericInterfaceAnalyzer();
         }
 
-        private static readonly string CA1010Message = MicrosoftCodeQualityAnalyzersResources.CollectionsShouldImplementGenericInterfaceMessage;
-
         private DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName)
         {
             return GetCSharpResultAt(line,
                                      column,
-                                     CollectionsShouldImplementGenericInterfaceAnalyzer.RuleId,
-                                     string.Format(CA1010Message, typeName, interfaceName, $"{interfaceName}<T>"));
+                                     CollectionsShouldImplementGenericInterfaceAnalyzer.Rule,
+                                     typeName, interfaceName, $"{interfaceName}<T>");
         }
 
         private DiagnosticResult GetCA1010BasicResultAt(int line, int column, string typeName, string interfaceName)
         {
             return GetBasicResultAt(line,
-                                     column,
-                                     CollectionsShouldImplementGenericInterfaceAnalyzer.RuleId,
-                                     string.Format(CA1010Message, typeName, interfaceName, $"{interfaceName}(Of T)"));
+                                    column,
+                                    CollectionsShouldImplementGenericInterfaceAnalyzer.Rule,
+                                    typeName, interfaceName, $"{interfaceName}(Of T)");
         }
 
         [Fact]

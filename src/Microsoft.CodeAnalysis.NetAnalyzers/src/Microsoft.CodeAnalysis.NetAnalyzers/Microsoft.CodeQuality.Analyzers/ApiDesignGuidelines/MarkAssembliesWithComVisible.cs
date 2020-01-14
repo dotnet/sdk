@@ -16,30 +16,30 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithComVisibleTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithComVisibleDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        private static readonly LocalizableString s_localizableMessageA = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ChangeAssemblyLevelComVisibleToFalse), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageB = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AddAssemblyLevelComVisibleFalse), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageChangeComVisible = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ChangeAssemblyLevelComVisibleToFalse), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageAddComVisible = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AddAssemblyLevelComVisibleFalse), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static readonly DiagnosticDescriptor RuleA = new DiagnosticDescriptor(RuleId,
+        internal static readonly DiagnosticDescriptor RuleChangeComVisible = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                        s_localizableTitle,
-                                                                                       s_localizableMessageA,
+                                                                                       s_localizableMessageChangeComVisible,
                                                                                        DiagnosticCategory.Design,
-                                                                                       DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                       isEnabledByDefault: false,
+                                                                                       RuleLevel.Disabled,
                                                                                        description: s_localizableDescription,
-                                                                                       helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1017-mark-assemblies-with-comvisibleattribute",
-                                                                                       customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                       isPortedFxCopRule: true,
+                                                                                       isDataflowRule: false,
+                                                                                       isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static readonly DiagnosticDescriptor RuleB = new DiagnosticDescriptor(RuleId,
+        internal static readonly DiagnosticDescriptor RuleAddComVisible = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                        s_localizableTitle,
-                                                                                       s_localizableMessageB,
+                                                                                       s_localizableMessageAddComVisible,
                                                                                        DiagnosticCategory.Design,
-                                                                                       DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                       isEnabledByDefault: false,
+                                                                                       RuleLevel.Disabled,
                                                                                        description: s_localizableDescription,
-                                                                                       helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1017-mark-assemblies-with-comvisibleattribute",
-                                                                                       customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                       isPortedFxCopRule: true,
+                                                                                       isDataflowRule: false,
+                                                                                       isEnabledByDefaultInFxCopAnalyzers: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleA, RuleB);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleChangeComVisible, RuleAddComVisible);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -69,13 +69,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         attributeInstance.ConstructorArguments[0].Value.Equals(true))
                     {
                         // Has the attribute, with the value 'true'.
-                        context.ReportNoLocationDiagnostic(RuleA, context.Compilation.Assembly.Name);
+                        context.ReportNoLocationDiagnostic(RuleChangeComVisible, context.Compilation.Assembly.Name);
                     }
                 }
                 else
                 {
                     // No ComVisible attribute at all.
-                    context.ReportNoLocationDiagnostic(RuleB, context.Compilation.Assembly.Name);
+                    context.ReportNoLocationDiagnostic(RuleAddComVisible, context.Compilation.Assembly.Name);
                 }
             }
 

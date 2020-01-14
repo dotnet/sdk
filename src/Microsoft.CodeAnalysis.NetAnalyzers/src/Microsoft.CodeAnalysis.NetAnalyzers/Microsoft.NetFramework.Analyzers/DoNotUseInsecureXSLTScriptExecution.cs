@@ -16,10 +16,8 @@ namespace Microsoft.NetFramework.Analyzers
     public abstract class DoNotUseInsecureXSLTScriptExecutionAnalyzer<TLanguageKindEnum> : DiagnosticAnalyzer where TLanguageKindEnum : struct
     {
         internal const string RuleId = "CA3076";
-        private const string HelpLink = "https://docs.microsoft.com/visualstudio/code-quality/ca3076-insecure-xslt-script-execution";
         internal static DiagnosticDescriptor RuleDoNotUseInsecureXSLTScriptExecution = CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
-                                                                                                                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureXSLTScriptExecutionDescription)),
-                                                                                                                 HelpLink);
+                                                                                                                  SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureXSLTScriptExecutionDescription)));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDoNotUseInsecureXSLTScriptExecution);
 
@@ -50,17 +48,16 @@ namespace Microsoft.NetFramework.Analyzers
         }
 
 
-        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description, string helpLink = null)
+        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description)
         {
-            return new DiagnosticDescriptor(RuleId,
+            return DiagnosticDescriptorHelper.Create(RuleId,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXsltScriptProcessingMessage)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-                                            description: description,
-                                            helpLinkUri: helpLink,
-                                            customTags: WellKnownDiagnosticTags.Telemetry);
+                                            RuleLevel.BuildWarning,
+                                            description,
+                                            isPortedFxCopRule: false,
+                                            isDataflowRule: false);
         }
 
         protected abstract SyntaxNodeAnalyzer GetAnalyzer(CodeBlockStartAnalysisContext<TLanguageKindEnum> context, CompilationSecurityTypes types);

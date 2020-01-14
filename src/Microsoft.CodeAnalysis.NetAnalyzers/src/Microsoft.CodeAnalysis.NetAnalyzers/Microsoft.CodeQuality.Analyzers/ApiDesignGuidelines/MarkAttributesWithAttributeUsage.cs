@@ -20,14 +20,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageMessageDefault), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                     s_localizableTitle,
                                                                     s_localizableMessage,
                                                                     DiagnosticCategory.Design,
-                                                                    DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                    isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-                                                                    helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1018-mark-attributes-with-attributeusageattribute",
-                                                                    customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                    RuleLevel.IdeSuggestion,
+                                                                    description: null,
+                                                                    isPortedFxCopRule: true,
+                                                                    isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

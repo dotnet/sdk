@@ -25,12 +25,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         private static DiagnosticResult CSharpResult(int line, int column)
         {
-            return GetCSharpResultAt(line, column, UseOrdinalStringComparisonAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.UseOrdinalStringComparisonTitle);
+            return GetCSharpResultAt(line, column, UseOrdinalStringComparisonAnalyzer.Rule);
         }
 
         private static DiagnosticResult BasicResult(int line, int column)
         {
-            return GetBasicResultAt(line, column, UseOrdinalStringComparisonAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.UseOrdinalStringComparisonTitle);
+            return GetBasicResultAt(line, column, UseOrdinalStringComparisonAnalyzer.Rule);
         }
 
         #endregion

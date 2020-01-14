@@ -31,13 +31,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidZeroLengthArrayAllocationsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         /// <summary>The diagnostic descriptor used when Array.Empty should be used instead of a new array allocation.</summary>
-        internal static readonly DiagnosticDescriptor UseArrayEmptyDescriptor = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor UseArrayEmptyDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Performance,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget);
+            RuleLevel.IdeSuggestion,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         /// <summary>Gets the set of supported diagnostic descriptors from this analyzer.</summary>
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UseArrayEmptyDescriptor);

@@ -101,14 +101,12 @@ End Class
 
         private static DiagnosticResult GetCA1018CSharpResultAt(int line, int column, string objectName)
         {
-            return GetCSharpResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.RuleId,
-                string.Format(MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageMessageDefault, objectName));
+            return GetCSharpResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.Rule, objectName);
         }
 
         private static DiagnosticResult GetCA1018BasicResultAt(int line, int column, string objectName)
         {
-            return GetBasicResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.RuleId,
-                string.Format(MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageMessageDefault, objectName));
+            return GetBasicResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.Rule, objectName);
         }
     }
 }

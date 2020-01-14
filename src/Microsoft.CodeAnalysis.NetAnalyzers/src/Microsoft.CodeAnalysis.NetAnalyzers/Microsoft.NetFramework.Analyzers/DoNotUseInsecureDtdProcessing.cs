@@ -22,12 +22,10 @@ namespace Microsoft.NetFramework.Analyzers
     public sealed class DoNotUseInsecureDtdProcessingAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3075";
-        private const string HelpLink = "https://docs.microsoft.com/visualstudio/code-quality/ca3075-insecure-dtd-processing";
 
         internal static DiagnosticDescriptor RuleDoNotUseInsecureDtdProcessing = CreateDiagnosticDescriptor(
                                                                                     SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
-                                                                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
-                                                                                    HelpLink);
+                                                                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDoNotUseInsecureDtdProcessing);
 
@@ -781,17 +779,16 @@ namespace Microsoft.NetFramework.Analyzers
                 || types.XmlSerializer != null;
         }
 
-        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description, string helpLink)
+        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description)
         {
-            return new DiagnosticDescriptor(RuleId,
+            return DiagnosticDescriptorHelper.Create(RuleId,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-                                            description: description,
-                                            helpLinkUri: helpLink,
-                                            customTags: WellKnownDiagnosticTags.Telemetry);
+                                            RuleLevel.BuildWarning,
+                                            description,
+                                            isPortedFxCopRule: false,
+                                            isDataflowRule: false);
         }
     }
 }

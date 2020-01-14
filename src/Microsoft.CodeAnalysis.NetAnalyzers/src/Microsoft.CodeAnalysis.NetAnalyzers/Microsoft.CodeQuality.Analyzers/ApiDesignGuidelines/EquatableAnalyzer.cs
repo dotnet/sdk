@@ -19,29 +19,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageImplementIEquatable = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionImplementIEquatable = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        private static readonly DiagnosticDescriptor s_implementIEquatableDescriptor = new DiagnosticDescriptor(
+        private static readonly DiagnosticDescriptor s_implementIEquatableDescriptor = DiagnosticDescriptorHelper.Create(
             ImplementIEquatableRuleId,
             s_localizableTitleImplementIEquatable,
             s_localizableMessageImplementIEquatable,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+            RuleLevel.Disabled,
             description: s_localizableDescriptionImplementIEquatable,
-            helpLinkUri: "http://go.microsoft.com/fwlink/?LinkId=734907");
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         private static readonly LocalizableString s_localizableTitleOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        private static readonly DiagnosticDescriptor s_overridesObjectEqualsDescriptor = new DiagnosticDescriptor(
+        private static readonly DiagnosticDescriptor s_overridesObjectEqualsDescriptor = DiagnosticDescriptorHelper.Create(
             OverrideObjectEqualsRuleId,
             s_localizableTitleOverridesObjectEquals,
             s_localizableMessageOverridesObjectEquals,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+            RuleLevel.BuildWarning,
             description: s_localizableDescriptionOverridesObjectEquals,
-            helpLinkUri: "http://go.microsoft.com/fwlink/?LinkId=734909");
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(s_implementIEquatableDescriptor, s_overridesObjectEqualsDescriptor);
 

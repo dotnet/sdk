@@ -25,18 +25,18 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA5399",
             nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyDisableHttpClientCRLCheck),
             nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyDisableHttpClientCRLCheckMessage),
-            false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription));
         internal static DiagnosticDescriptor MaybeDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5400",
             nameof(MicrosoftNetCoreAnalyzersResources.MaybeDisableHttpClientCRLCheck),
             nameof(MicrosoftNetCoreAnalyzersResources.MaybeDisableHttpClientCRLCheckMessage),
-            false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(

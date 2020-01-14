@@ -23,27 +23,22 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageVisualBasicModule = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.NestedTypesShouldNotBeVisibleMessageVisualBasicModule), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.NestedTypesShouldNotBeVisibleDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        // Properties common to the descriptors defined by this analyzer.
-        private const string HelpLinkUrl = "https://docs.microsoft.com/visualstudio/code-quality/ca1034-nested-types-should-not-be-visible";
-
-        internal static DiagnosticDescriptor DefaultRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor DefaultRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageDefault,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.CandidateForRemoval,     // Need to validate cases where people want it.
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUrl,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor VisualBasicModuleRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+        internal static DiagnosticDescriptor VisualBasicModuleRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageVisualBasicModule,
                                                                              DiagnosticCategory.Design,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.CandidateForRemoval,     // Need to validate cases where people want it.
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: HelpLinkUrl,
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, VisualBasicModuleRule);
 

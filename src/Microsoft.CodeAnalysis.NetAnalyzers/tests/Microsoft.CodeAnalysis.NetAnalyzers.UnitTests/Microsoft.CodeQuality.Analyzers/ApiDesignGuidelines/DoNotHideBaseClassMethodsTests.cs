@@ -494,22 +494,12 @@ End Class
 
         private DiagnosticResult GetCA1061CSharpResultAt(int line, int column, string derivedMethod, string baseMethod)
         {
-            var message = string.Format(
-                MicrosoftCodeQualityAnalyzersResources.DoNotHideBaseClassMethodsMessage,
-                derivedMethod,
-                baseMethod);
-
-            return GetCSharpResultAt(line, column, DoNotHideBaseClassMethodsAnalyzer.RuleId, message);
+            return GetCSharpResultAt(line, column, DoNotHideBaseClassMethodsAnalyzer.Rule, derivedMethod, baseMethod);
         }
 
         private DiagnosticResult GetCA1061BasicResultAt(int line, int column, string derivedMethod, string baseMethod)
         {
-            var message = string.Format(
-                MicrosoftCodeQualityAnalyzersResources.DoNotHideBaseClassMethodsMessage,
-                derivedMethod,
-                baseMethod);
-
-            return GetBasicResultAt(line, column, DoNotHideBaseClassMethodsAnalyzer.RuleId, message);
+            return GetBasicResultAt(line, column, DoNotHideBaseClassMethodsAnalyzer.Rule, derivedMethod, baseMethod);
         }
     }
 }

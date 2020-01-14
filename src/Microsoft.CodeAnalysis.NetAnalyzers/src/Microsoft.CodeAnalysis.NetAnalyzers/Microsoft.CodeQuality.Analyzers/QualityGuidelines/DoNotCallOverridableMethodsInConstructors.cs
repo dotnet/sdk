@@ -25,17 +25,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         private static readonly LocalizableString s_localizableMessageAndTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotCallOverridableMethodsInConstructors), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotCallOverridableMethodsInConstructorsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        public static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
+        public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                          s_localizableMessageAndTitle,
                                                                          s_localizableMessageAndTitle,
                                                                          DiagnosticCategory.Usage,
-                                                                         DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                         isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                         RuleLevel.Disabled,
                                                                          description: s_localizableDescription,
-                                                                         helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2214-do-not-call-overridable-methods-in-constructors",
-                                                                         customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                         isPortedFxCopRule: true,
+                                                                         isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX ? ImmutableArray.Create(Rule) : ImmutableArray<DiagnosticDescriptor>.Empty;
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext analysisContext)
         {

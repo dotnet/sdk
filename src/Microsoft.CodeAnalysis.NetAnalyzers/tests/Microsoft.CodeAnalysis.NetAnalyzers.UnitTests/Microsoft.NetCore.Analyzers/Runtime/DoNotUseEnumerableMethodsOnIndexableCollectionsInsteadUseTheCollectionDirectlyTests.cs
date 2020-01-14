@@ -194,12 +194,12 @@ End Class
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
         {
-            return GetCSharpResultAt(line, column, DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage);
+            return GetCSharpResultAt(line, column, DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.Rule);
         }
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
         {
-            return GetBasicResultAt(line, column, DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage);
+            return GetBasicResultAt(line, column, DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.Rule);
         }
     }
 }
