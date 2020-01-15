@@ -26,16 +26,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotPrefixEnumValuesWithTypeNameDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 RuleId,
                 s_localizableTitle,
                 s_localizableMessage,
                 DiagnosticCategory.Naming,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_localizableDescription,
-                helpLinkUri: "https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1712-do-not-prefix-enum-values-with-type-name",
-                customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                isPortedFxCopRule: true,
+                isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

@@ -33,38 +33,38 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageForEvent2 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseGenericEventHandlerInstancesForEvent2Message), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionForEvent2 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseGenericEventHandlerInstancesForEvent2Description), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleForDelegates = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor RuleForDelegates = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessageForDelegate,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: false,
+            RuleLevel.Disabled,
             description: s_localizableDescriptionForDelegate,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1003-use-generic-event-handler-instances",
-            customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor RuleForEvents = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor RuleForEvents = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessageForEvent,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: false,
+            RuleLevel.Disabled,
             description: s_localizableDescriptionForEvent,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1003-use-generic-event-handler-instances",
-            customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor RuleForEvents2 = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor RuleForEvents2 = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessageForEvent2,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: false,
+            RuleLevel.Disabled,
             description: s_localizableDescriptionForEvent2,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1003-use-generic-event-handler-instances",
-            customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInFxCopAnalyzers: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleForDelegates, RuleForEvents, RuleForEvents2);
         protected abstract bool IsAssignableTo(

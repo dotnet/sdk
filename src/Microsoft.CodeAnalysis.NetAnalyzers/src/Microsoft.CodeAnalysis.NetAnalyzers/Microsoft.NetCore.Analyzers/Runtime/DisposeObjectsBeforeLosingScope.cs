@@ -28,45 +28,41 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMayBeDisposedOnExceptionPathsMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor NotDisposedRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor NotDisposedRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                         s_localizableTitle,
                                                                                         s_localizableNotDisposedMessage,
                                                                                         DiagnosticCategory.Reliability,
-                                                                                        DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                        isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                                        RuleLevel.Disabled,
                                                                                         description: s_localizableDescription,
-                                                                                        helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope",
-                                                                                        customTags: FxCopWellKnownDiagnosticTags.PortedFxCopDataflowRule);
+                                                                                        isPortedFxCopRule: true,
+                                                                                        isDataflowRule: true);
 
-        internal static DiagnosticDescriptor MayBeDisposedRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor MayBeDisposedRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                           s_localizableTitle,
                                                                                           s_localizableMayBeDisposedMessage,
                                                                                           DiagnosticCategory.Reliability,
-                                                                                          DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                          isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                                          RuleLevel.Disabled,
                                                                                           description: s_localizableDescription,
-                                                                                          helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope",
-                                                                                          customTags: FxCopWellKnownDiagnosticTags.PortedFxCopDataflowRule);
+                                                                                          isPortedFxCopRule: true,
+                                                                                          isDataflowRule: true);
 
-        internal static DiagnosticDescriptor NotDisposedOnExceptionPathsRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor NotDisposedOnExceptionPathsRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                         s_localizableTitle,
                                                                                                         s_localizableNotDisposedOnExceptionPathsMessage,
                                                                                                         DiagnosticCategory.Reliability,
-                                                                                                        DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                                        isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                                                        RuleLevel.Disabled,
                                                                                                         description: s_localizableDescription,
-                                                                                                        helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope",
-                                                                                                        customTags: FxCopWellKnownDiagnosticTags.PortedFxCopDataflowRule);
+                                                                                                        isPortedFxCopRule: true,
+                                                                                                        isDataflowRule: true);
 
-        internal static DiagnosticDescriptor MayBeDisposedOnExceptionPathsRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor MayBeDisposedOnExceptionPathsRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                           s_localizableTitle,
                                                                                                           s_localizableMayBeDisposedOnExceptionPathsMessage,
                                                                                                           DiagnosticCategory.Reliability,
-                                                                                                          DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                                          isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                                                          RuleLevel.Disabled,
                                                                                                           description: s_localizableDescription,
-                                                                                                          helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope",
-                                                                                                          customTags: FxCopWellKnownDiagnosticTags.PortedFxCopDataflowRule);
+                                                                                                          isPortedFxCopRule: true,
+                                                                                                          isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(NotDisposedRule, MayBeDisposedRule, NotDisposedOnExceptionPathsRule, MayBeDisposedOnExceptionPathsRule);

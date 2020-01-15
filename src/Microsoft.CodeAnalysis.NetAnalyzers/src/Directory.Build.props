@@ -1,0 +1,10 @@
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project>
+  <Import Project="..\Directory.Build.props"/>
+
+  <PropertyGroup>
+    <FxCopAnalyzersProject Condition="$(MSBuildProjectName.StartsWith('Microsoft.CodeQuality')) OR $(MSBuildProjectName.StartsWith('Microsoft.NetCore')) OR $(MSBuildProjectName.StartsWith('Microsoft.NetFramework'))">true</FxCopAnalyzersProject>
+	<DefineConstants Condition="'$(FxCopAnalyzersProject)' == 'true'">$(DefineConstants),FXCOP_ANALYZERS</DefineConstants>
+    <DefineConstants Condition="'$(FxCopAnalyzersProject)' != 'true'">$(DefineConstants),NET_ANALYZERS</DefineConstants>
+  </PropertyGroup>
+</Project>

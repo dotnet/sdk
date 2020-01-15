@@ -50,15 +50,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             MicrosoftCodeQualityAnalyzersResources.ResourceManager,
             typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_title,
             s_messageFormat,
             DiagnosticCategory.Design,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1052-static-holder-types-should-be-sealed",
-            customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+            RuleLevel.Disabled,
+            description: null,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

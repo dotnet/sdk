@@ -45,37 +45,40 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         private static readonly LocalizableString s_localizableMessageRuleRename = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleRename = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleRename = DiagnosticDescriptorHelper.Create(RuleId,
                                                                        s_localizableTitle,
                                                                        s_localizableMessageRuleRename,
                                                                        DiagnosticCategory.Design,
-                                                                       DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                       isEnabledByDefault: false,
+                                                                       RuleLevel.Disabled,
                                                                        description: s_localizableDescription,
-                                                                       helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1008-enums-should-have-zero-value",
-                                                                       customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule.Concat(RuleRenameCustomTag).ToArray());
+                                                                       isPortedFxCopRule: true,
+                                                                       isDataflowRule: false,
+                                                                       isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                       additionalCustomTags: RuleRenameCustomTag);
 
         private static readonly LocalizableString s_localizableMessageRuleMultipleZero = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleMultipleZero = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleMultipleZero = DiagnosticDescriptorHelper.Create(RuleId,
                                                                s_localizableTitle,
                                                                s_localizableMessageRuleMultipleZero,
                                                                DiagnosticCategory.Design,
-                                                               DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                               isEnabledByDefault: false,
+                                                               RuleLevel.Disabled,
                                                                description: s_localizableDescription,
-                                                               helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1008-enums-should-have-zero-value",
-                                                               customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule.Concat(RuleMultipleZeroCustomTag).ToArray());
+                                                               isPortedFxCopRule: true,
+                                                               isDataflowRule: false,
+                                                               isEnabledByDefaultInFxCopAnalyzers: false,
+                                                               additionalCustomTags: RuleMultipleZeroCustomTag);
 
         private static readonly LocalizableString s_localizableMessageRuleNoZero = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleNoZero = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleNoZero = DiagnosticDescriptorHelper.Create(RuleId,
                                                                s_localizableTitle,
                                                                s_localizableMessageRuleNoZero,
                                                                DiagnosticCategory.Design,
-                                                               DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                               isEnabledByDefault: false,
+                                                               RuleLevel.Disabled,
                                                                description: s_localizableDescription,
-                                                               helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1008-enums-should-have-zero-value",
-                                                               customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule.Concat(RuleNoZeroCustomTag).ToArray());
+                                                               isPortedFxCopRule: true,
+                                                               isDataflowRule: false,
+                                                               isEnabledByDefaultInFxCopAnalyzers: false,
+                                                               additionalCustomTags: RuleNoZeroCustomTag);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleRename, RuleMultipleZero, RuleNoZero);
 
