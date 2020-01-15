@@ -16,7 +16,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public sealed class InstantiateArgumentExceptionsCorrectlyAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2208";
-        private const string HelpUri = "https://docs.microsoft.com/visualstudio/code-quality/ca2208-instantiate-argument-exceptions-correctly";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
@@ -25,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessageIncorrectParameterName = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleNoArguments = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleNoArguments = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNoArguments,
                                                                              DiagnosticCategory.Usage,
@@ -49,11 +48,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageIncorrectParameterName,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                             RuleLevel.CandidateForRemoval,    // Superseded by VS threading analyzers.
                                                                              description: s_localizableDescription,
                                                                              helpLinkUri: HelpUri,
                                                                              customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleNoArguments, RuleIncorrectMessage, RuleIncorrectParameterName);
 
         public override void Initialize(AnalysisContext analysisContext)

@@ -30,32 +30,35 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_increaseVisibilityMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_removeSetterMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DefineAccessorsForAttributeArgumentsMessageRemoveSetter), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor DefaultRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor DefaultRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                     s_localizableTitle,
                                                                                     s_defaultRuleMessage,
                                                                                     DiagnosticCategory.Design,
-                                                                                    DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                    isEnabledByDefault: false,
-                                                                                    helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1019-define-accessors-for-attribute-arguments",
-                                                                                    customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                    RuleLevel.Disabled,
+                                                                                    description: null,
+                                                                                    isPortedFxCopRule: true,
+                                                                                    isDataflowRule: false,
+                                                                                    isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor IncreaseVisibilityRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor IncreaseVisibilityRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                s_localizableTitle,
                                                                                                s_increaseVisibilityMessage,
                                                                                                DiagnosticCategory.Design,
-                                                                                               DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                               isEnabledByDefault: false,
-                                                                                               helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1019-define-accessors-for-attribute-arguments",
-                                                                                               customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                               RuleLevel.Disabled,
+                                                                                               description: null,
+                                                                                               isPortedFxCopRule: true,
+                                                                                               isDataflowRule: false,
+                                                                                               isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor RemoveSetterRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RemoveSetterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                          s_localizableTitle,
                                                                                          s_removeSetterMessage,
                                                                                          DiagnosticCategory.Design,
-                                                                                         DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                         isEnabledByDefault: false,
-                                                                                         helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1019-define-accessors-for-attribute-arguments",
-                                                                                         customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                         RuleLevel.Disabled,
+                                                                                         description: null,
+                                                                                         isPortedFxCopRule: true,
+                                                                                         isDataflowRule: false,
+                                                                                         isEnabledByDefaultInFxCopAnalyzers: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, IncreaseVisibilityRule, RemoveSetterRule);
 

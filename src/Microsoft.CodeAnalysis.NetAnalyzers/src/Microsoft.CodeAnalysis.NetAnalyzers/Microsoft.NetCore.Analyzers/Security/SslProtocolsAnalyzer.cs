@@ -19,18 +19,18 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA5397",
             nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsMessage),
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsDescription),
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5397",
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.BuildWarning,
+            isPortedFxCopRule: false,
+            isDataflowRule: false,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsDescription));
         internal static DiagnosticDescriptor HardcodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5398",
             nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsMessage),
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsDescription),
-            isEnabledByDefault: false,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5398",
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: false,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsDescription));
 
         private readonly ImmutableHashSet<string> HardcodedSslProtocolsMetadataNames = ImmutableHashSet.Create(
             StringComparer.Ordinal,

@@ -20,15 +20,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AbstractTypesShouldNotHaveConstructorsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AbstractTypesShouldNotHaveConstructorsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
-                                                                         s_localizableTitle,
-                                                                         s_localizableMessage,
-                                                                         DiagnosticCategory.Design,
-                                                                         DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                         isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultOnlyIfBuildingVSIX,
-                                                                         helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1012-abstract-types-should-not-have-constructors",
-                                                                         description: s_localizableDescription,
-                                                                         customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                                    s_localizableTitle,
+                                                                                    s_localizableMessage,
+                                                                                    DiagnosticCategory.Design,
+                                                                                    RuleLevel.Disabled,
+                                                                                    description: s_localizableDescription,
+                                                                                    isPortedFxCopRule: true,
+                                                                                    isDataflowRule: false,
+                                                                                    isEnabledByDefaultInFxCopAnalyzers: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

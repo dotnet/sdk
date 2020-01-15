@@ -14,10 +14,10 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA5403",
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeCertificate),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeCertificateMessage),
-            false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeCertificateDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeCertificateDescription));
 
         protected override SinkKind SinkKind { get { return SinkKind.HardcodedCertificate; } }
 

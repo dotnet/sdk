@@ -26,17 +26,17 @@ namespace Microsoft.NetCore.Analyzers.Security
             typeof(MicrosoftNetCoreAnalyzersResources),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableSchUseStrongCrypto),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableSchUseStrongCryptoMessage),
-            DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5361",
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableSchUseStrongCryptoDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableSchUseStrongCryptoDescription));
         internal static DiagnosticDescriptor DoNotDisableSpmSecurityProtocolsRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5378",
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableUsingServicePointManagerSecurityProtocolsTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableUsingServicePointManagerSecurityProtocolsMessage),
-            DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5378",
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         internal static ImmutableDictionary<string, (bool BadValue, DiagnosticDescriptor Rule)> BadSwitches =
             ImmutableDictionary.CreateRange(

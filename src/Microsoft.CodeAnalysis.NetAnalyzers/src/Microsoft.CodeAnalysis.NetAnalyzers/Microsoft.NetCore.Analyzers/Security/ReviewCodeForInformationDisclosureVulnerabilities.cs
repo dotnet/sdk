@@ -14,8 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA3004",
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForInformationDisclosureVulnerabilitiesTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForInformationDisclosureVulnerabilitiesMessage),
-            isEnabledByDefault: false,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca3004-review-code-for-information-disclosure-vulnerabilities");
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         protected override SinkKind SinkKind { get { return SinkKind.InformationDisclosure; } }
 

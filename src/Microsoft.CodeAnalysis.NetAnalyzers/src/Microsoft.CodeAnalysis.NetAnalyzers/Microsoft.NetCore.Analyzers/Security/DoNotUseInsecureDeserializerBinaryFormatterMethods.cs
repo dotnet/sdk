@@ -21,8 +21,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2300",
                 nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterMethodUsedTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterMethodUsedMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2300-do-not-use-insecure-deserializer-binaryformatter",
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: false,
                 descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterMethodUsedDescription));
 
         protected override string DeserializerTypeMetadataName =>
