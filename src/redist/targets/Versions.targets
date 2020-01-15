@@ -8,7 +8,7 @@
     <!--
         When DropSuffix is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
-    <DropSuffix>false</DropSuffix>
+    <DropSuffix>true</DropSuffix>
   </PropertyGroup>
   
   <Target Name="GetCoreSdkGitCommitInfo">
