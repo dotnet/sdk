@@ -1367,7 +1367,7 @@ End Class"
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                     ExpectedDiagnostics =
                     {
-                        GetCA1710BasicResultAt(5, 18, "Foo", "Dictionary"),
+                        GetCA1710BasicResultAt(4, 14, "Foo", "Dictionary"),
                     }
                 }
             }.RunAsync();
