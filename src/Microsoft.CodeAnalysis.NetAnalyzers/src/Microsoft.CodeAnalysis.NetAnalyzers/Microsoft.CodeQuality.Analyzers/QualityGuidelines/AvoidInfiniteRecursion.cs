@@ -14,23 +14,23 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     {
         internal const string RuleId = "CA2011";
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
             new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidInfiniteRecursionTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
             new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidInfiniteRecursionMessageSure), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: null,
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.IdeSuggestion,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor MaybeRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor MaybeRule = DiagnosticDescriptorHelper.Create(RuleId,
             new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidInfiniteRecursionTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
             new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidInfiniteRecursionMessageMaybe), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: null,
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.IdeSuggestion,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule, MaybeRule);
 

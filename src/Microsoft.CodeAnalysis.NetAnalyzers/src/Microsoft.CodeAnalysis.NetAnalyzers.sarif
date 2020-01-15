@@ -561,6 +561,26 @@
             ]
           }
         },
+        "CA1021": {
+          "id": "CA1021",
+          "shortDescription": "Avoid out parameters",
+          "fullDescription": "Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1021",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": false,
+            "typeName": "AvoidOutParameters",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
         "CA1024": {
           "id": "CA1024",
           "shortDescription": "Use properties where appropriate",
@@ -1090,6 +1110,25 @@
             "category": "Design",
             "isEnabledByDefault": true,
             "typeName": "CancellationTokenParametersMustComeLastAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1069": {
+          "id": "CA1069",
+          "shortDescription": "Enums values should not be duplicated",
+          "fullDescription": "The field reference '{0}' is duplicated in this bitwise initialization.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1069",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": true,
+            "typeName": "EnumShouldNotHaveDuplicatedValues",
             "languages": [
               "C#",
               "Visual Basic"
@@ -1997,7 +2036,8 @@
           "id": "CA2011",
           "shortDescription": "Avoid infinite recursion",
           "fullDescription": "Do not assign the property within its setter. This call might result in an infinite recursion.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2011",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -2095,11 +2135,11 @@
           "id": "CA2208",
           "shortDescription": "Instantiate argument exceptions correctly",
           "fullDescription": "A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2208",
           "properties": {
             "category": "Usage",
-            "isEnabledByDefault": false,
+            "isEnabledByDefault": true,
             "typeName": "InstantiateArgumentExceptionsCorrectlyAnalyzer",
             "languages": [
               "C#",
@@ -2162,6 +2202,26 @@
             "category": "Usage",
             "isEnabledByDefault": false,
             "typeName": "DoNotCallOverridableMethodsInConstructorsAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2215": {
+          "id": "CA2215",
+          "shortDescription": "Dispose methods should call base class dispose",
+          "fullDescription": "A type that implements System.IDisposable inherits from a type that also implements IDisposable. The Dispose method of the inheriting type does not call the Dispose method of the parent type. To fix a violation of this rule, call base.Dispose in your Dispose method.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2215",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "DisposeMethodsShouldCallBaseClassDispose",
             "languages": [
               "C#",
               "Visual Basic"
