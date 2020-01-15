@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpMarkAllNonSerializableFieldsFixer>;
-using VerifyVB = Microsoft.CodeAnalysis.VisualBasic.Testing.XUnit.CodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicMarkAllNonSerializableFieldsFixer>;
 
@@ -496,7 +496,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task CA2235WithSpecialSerializableTypeFields()
         {
-            // Interface, type parameter and delegate fields are always considered serializable. 
+            // Interface, type parameter and delegate fields are always considered serializable.
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
                 interface I
@@ -585,14 +585,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         internal static readonly string CA2235Message = MicrosoftNetCoreAnalyzersResources.MarkAllNonSerializableFieldsMessage;
 
-        private static DiagnosticResult GetCA2235CSharpResultAt(int line, int column, string fieldName, string containerName, string typeName)
-        {
-            return new DiagnosticResult(SerializationRulesDiagnosticAnalyzer.RuleCA2235).WithLocation(line, column).WithArguments(fieldName, containerName, typeName);
-        }
+        private static DiagnosticResult GetCA2235CSharpResultAt(int line, int column, string fieldName, string containerName, string typeName) =>
+            VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2235)
+                .WithLocation(line, column)
+                .WithArguments(fieldName, containerName, typeName);
 
-        private static DiagnosticResult GetCA2235BasicResultAt(int line, int column, string fieldName, string containerName, string typeName)
-        {
-            return new DiagnosticResult(SerializationRulesDiagnosticAnalyzer.RuleCA2235).WithLocation(line, column).WithArguments(fieldName, containerName, typeName);
-        }
+        private static DiagnosticResult GetCA2235BasicResultAt(int line, int column, string fieldName, string containerName, string typeName) =>
+            VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2235)
+                .WithLocation(line, column)
+                .WithArguments(fieldName, containerName, typeName);
     }
 }

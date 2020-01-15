@@ -303,7 +303,7 @@ class TestClass
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     GetCSharpResultAt(11, 9)
                 };

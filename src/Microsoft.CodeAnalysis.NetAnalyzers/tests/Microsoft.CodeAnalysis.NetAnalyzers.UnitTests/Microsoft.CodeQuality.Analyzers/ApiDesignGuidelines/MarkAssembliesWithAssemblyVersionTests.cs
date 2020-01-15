@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Analyzer.Utilities;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -32,7 +30,7 @@ imports System
         End Sub
     End class
 ",
-                s_diagnostic);
+                VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule));
         }
 
         [Fact]
@@ -53,7 +51,7 @@ class AssemblyVersionAttribute : Attribute {
     public AssemblyVersionAttribute(string s) {}
 }
 ",
-                s_diagnostic);
+                VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule));
         }
 
         [Fact]
@@ -70,7 +68,7 @@ class AssemblyVersionAttribute : Attribute {
         }
     }
 ",
-                s_diagnostic);
+                VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule));
         }
 
         [Fact]
@@ -176,8 +174,5 @@ public class C
 }
 ");
         }
-
-        private static readonly DiagnosticResult s_diagnostic = new DiagnosticResult(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
-            .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithAssemblyVersionMessage);
     }
 }

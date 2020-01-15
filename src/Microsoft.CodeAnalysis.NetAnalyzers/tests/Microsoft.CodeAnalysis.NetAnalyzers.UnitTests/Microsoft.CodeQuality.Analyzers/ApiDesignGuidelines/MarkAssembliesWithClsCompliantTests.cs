@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -28,7 +27,7 @@ imports System.Reflection
         End Sub
     End class
 ",
-            s_diagnosticCA1016, s_diagnosticCA1014);
+            VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule), VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
         [Fact]
@@ -45,7 +44,7 @@ imports System.Reflection
         End Sub
     End class
 ",
-                s_diagnosticCA1014);
+                VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
         [Fact]
@@ -68,7 +67,7 @@ class CLSCompliantAttribute : Attribute {
     public CLSCompliantAttribute(bool s) {}
 }
 ",
-                s_diagnosticCA1014);
+                VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
         [Fact]
@@ -86,7 +85,7 @@ class Program
     }
 }
 ",
-                s_diagnosticCA1014);
+                VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
         [Fact]
@@ -186,7 +185,7 @@ class Program
     }
 }
 ",
-            s_diagnosticCA1016, s_diagnosticCA1014);
+            VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule), VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
         [Fact, WorkItem(2143, "https://github.com/dotnet/roslyn-analyzers/issues/2143")]
@@ -212,9 +211,5 @@ public class C
 }
 ");
         }
-
-        private static readonly DiagnosticResult s_diagnosticCA1014 = new DiagnosticResult(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule);
-
-        private static readonly DiagnosticResult s_diagnosticCA1016 = new DiagnosticResult(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule);
     }
 }

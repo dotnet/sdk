@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -29,7 +28,7 @@ public class CultureInfoTestClass0
         return ""foo"".ToLower();
     }
 }",
-            GetCSharpResultAt(9, 16, SpecifyCultureInfoAnalyzer.Rule, "string.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "string.ToLower(CultureInfo)"));
+            GetCSharpResultAt(9, 16, "string.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "string.ToLower(CultureInfo)"));
         }
 
         [Fact]
@@ -70,9 +69,9 @@ public class CultureInfoTestClass1
     }
 }
 ",
-            GetCSharpResultAt(9, 16, SpecifyCultureInfoAnalyzer.Rule, "string.ToLower()", "CultureInfoTestClass1.LowercaseAString(string)", "string.ToLower(CultureInfo)"),
-            GetCSharpResultAt(16, 20, SpecifyCultureInfoAnalyzer.Rule, "string.ToLower()", "CultureInfoTestClass1.InsideALambda(string)", "string.ToLower(CultureInfo)"),
-            GetCSharpResultAt(28, 24, SpecifyCultureInfoAnalyzer.Rule, "string.ToLower()", "CultureInfoTestClass1.PropertyWithALambda.get", "string.ToLower(CultureInfo)"));
+            GetCSharpResultAt(9, 16, "string.ToLower()", "CultureInfoTestClass1.LowercaseAString(string)", "string.ToLower(CultureInfo)"),
+            GetCSharpResultAt(16, 20, "string.ToLower()", "CultureInfoTestClass1.InsideALambda(string)", "string.ToLower(CultureInfo)"),
+            GetCSharpResultAt(28, 24, "string.ToLower()", "CultureInfoTestClass1.PropertyWithALambda.get", "string.ToLower(CultureInfo)"));
         }
 
         [Fact]
@@ -99,7 +98,7 @@ public class CultureInfoTestClass2
         Console.WriteLine(string.Format(provider, format));
     }
 }",
-            GetCSharpResultAt(9, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(string)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo, string)"));
+            GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(string)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo, string)"));
         }
 
         [Fact]
@@ -126,7 +125,7 @@ public class CultureInfoTestClass2
     }
 }",
             // Test0.cs(9,9): warning CA1304: The behavior of 'CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo)' could vary based on the current user's locale settings. Replace this call in 'CultureInfoTestClass2.Method(CultureInfo)' with a call to 'CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo, CultureInfo)'.
-            GetCSharpResultAt(9, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo)", "CultureInfoTestClass2.Method(CultureInfo)", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo, CultureInfo)"));
+            GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo)", "CultureInfoTestClass2.Method(CultureInfo)", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo, CultureInfo)"));
         }
 
         [Fact]
@@ -185,7 +184,7 @@ public class CultureInfoTestClass2
         Console.WriteLine(string.Format(provider, format));
     }
 }",
-            GetCSharpResultAt(9, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(string)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(string, CultureInfo)"));
+            GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(string)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(string, CultureInfo)"));
         }
 
         [Fact]
@@ -240,7 +239,7 @@ public class CultureInfoTestClass2
         Console.WriteLine(string.Format(provider, """"));
     }
 }",
-            GetCSharpResultAt(9, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo(CultureInfo)"));
+            GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo(CultureInfo)"));
         }
 
         [Fact]
@@ -301,7 +300,7 @@ public class CultureInfoTestClass2
     {
     }
 }",
-            GetCSharpResultAt(9, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.TargetMethodIsNonGenerics()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.TargetMethodIsNonGenerics<T>(CultureInfo)"));
+            GetCSharpResultAt(9, 9, "CultureInfoTestClass2.TargetMethodIsNonGenerics()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.TargetMethodIsNonGenerics<T>(CultureInfo)"));
         }
 
         [Fact]
@@ -331,7 +330,7 @@ public class CultureInfoTestClass2
     {
     }
 }",
-            GetCSharpResultAt(9, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadCount3()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadCount3(CultureInfo)"));
+            GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadCount3()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadCount3(CultureInfo)"));
         }
 
         [Fact]
@@ -358,7 +357,7 @@ public class CultureInfoTestClass2
         Console.WriteLine(string.Format(provider, """"));
     }
 }",
-            GetCSharpResultAt(9, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(int, int)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(int, int, CultureInfo)"));
+            GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(int, int)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(int, int, CultureInfo)"));
         }
 
         [Fact]
@@ -444,7 +443,7 @@ Public Class CultureInfoTestClass0
         Return ""foo"".ToLower()
     End Function
 End Class",
-            GetBasicResultAt(7, 16, SpecifyCultureInfoAnalyzer.Rule, "String.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "String.ToLower(CultureInfo)"));
+            GetBasicResultAt(7, 16, "String.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "String.ToLower(CultureInfo)"));
         }
 
         [Fact]
@@ -476,9 +475,9 @@ Public Class CultureInfoTestClass1
         End Get
     End Property
 End Class",
-            GetBasicResultAt(7, 16, SpecifyCultureInfoAnalyzer.Rule, "String.ToLower()", "CultureInfoTestClass1.LowercaseAString(String)", "String.ToLower(CultureInfo)"),
-            GetBasicResultAt(12, 48, SpecifyCultureInfoAnalyzer.Rule, "String.ToLower()", "CultureInfoTestClass1.InsideALambda(String)", "String.ToLower(CultureInfo)"),
-            GetBasicResultAt(21, 52, SpecifyCultureInfoAnalyzer.Rule, "String.ToLower()", "CultureInfoTestClass1.PropertyWithALambda()", "String.ToLower(CultureInfo)"));
+            GetBasicResultAt(7, 16, "String.ToLower()", "CultureInfoTestClass1.LowercaseAString(String)", "String.ToLower(CultureInfo)"),
+            GetBasicResultAt(12, 48, "String.ToLower()", "CultureInfoTestClass1.InsideALambda(String)", "String.ToLower(CultureInfo)"),
+            GetBasicResultAt(21, 52, "String.ToLower()", "CultureInfoTestClass1.PropertyWithALambda()", "String.ToLower(CultureInfo)"));
         }
 
         [Fact]
@@ -501,7 +500,7 @@ Public Class CultureInfoTestClass2
         Console.WriteLine(String.Format(provider, format))
     End Sub
 End Class",
-            GetBasicResultAt(7, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(String)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo, String)"));
+            GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(String)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo, String)"));
         }
 
         [Fact]
@@ -528,7 +527,7 @@ Public Class CultureInfoTestClass2
         Console.WriteLine(String.Format(provider, format))
     End Sub
 End Class",
-            GetBasicResultAt(7, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(String)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(String, CultureInfo)"));
+            GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(String)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(String, CultureInfo)"));
         }
 
         [Fact]
@@ -551,7 +550,7 @@ Public Class CultureInfoTestClass2
         Console.WriteLine(String.Format(provider, """"))
     End Sub
 End Class",
-            GetBasicResultAt(7, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo(CultureInfo)"));
+            GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo(CultureInfo)"));
         }
 
         [Fact]
@@ -577,7 +576,7 @@ Public Class CultureInfoTestClass2
     Public Shared Sub MethodOverloadCount3(b As String)
     End Sub
 End Class",
-            GetBasicResultAt(7, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadCount3()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadCount3(CultureInfo)"));
+            GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadCount3()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadCount3(CultureInfo)"));
         }
 
         [Fact]
@@ -600,7 +599,7 @@ Public Class CultureInfoTestClass2
         Console.WriteLine(String.Format(provider, """"))
     End Sub
 End Class",
-            GetBasicResultAt(7, 9, SpecifyCultureInfoAnalyzer.Rule, "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(Integer, Integer)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(Integer, Integer, CultureInfo)"));
+            GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(Integer, Integer)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(Integer, Integer, CultureInfo)"));
         }
 
         [Fact]
@@ -653,13 +652,13 @@ Public Class DerivedCultureInfo
 End Class");
         }
 
-        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2, string arg3) =>
-            new DiagnosticResult(rule)
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
 
-        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2, string arg3) =>
-            new DiagnosticResult(rule)
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
     }
