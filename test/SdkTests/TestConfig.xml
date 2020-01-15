@@ -145,6 +145,21 @@
             Skip="true"
             Issue=""
             Reason="Needs .NET Core 1.1"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_a_rid_specific_app_from_the_output_folder"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 2.1.15"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASelfContainedApp.It_can_make_a_Windows_GUI_exe"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 2.1.15"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAFrameworkDependentApp.It_publishes_with_or_without_apphost"
+            Skip="true"
+            Issue=""
+            Reason="Needs .NET Core 2.1.15 on Mac OS"/>
     
   </SkippedTests>
 </Tests>
