@@ -1,35 +1,29 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXssVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXssVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForXssVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForXssVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXssVulnerabilities, ReviewCodeForXssVulnerabilities>
     {
-        public ReviewCodeForXssVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForXssVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXssVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForXssVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample2_CSharp_Violation_Diagnostic()
+        public async Task DocSample2_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public partial class WebForm : System.Web.UI.Page
@@ -40,13 +34,26 @@ public partial class WebForm : System.Web.UI.Page
         Response.Write(""<HTML>"" + input + ""</HTML>"");
     }
 }",
-                GetCSharpResultAt(9, 9, 8, 24, "void HttpResponse.Write(string s)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(9, 9, 8, 24, "void HttpResponse.Write(string s)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample2_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample2_CSharp_Solution_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public partial class WebForm : System.Web.UI.Page
@@ -58,13 +65,23 @@ public partial class WebForm : System.Web.UI.Page
         // Example usage of System.Web.HttpServerUtility.HtmlEncode().
         Response.Write(""<HTML>"" + Server.HtmlEncode(input) + ""</HTML>"");
     }
-}");
+}",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample2_VB_Violation_Diagnostic()
+        public async Task DocSample2_VB_Violation_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Partial Public Class WebForm
@@ -76,13 +93,26 @@ Partial Public Class WebForm
     End Sub
 End Class
 ",
-                GetBasicResultAt(9, 9, 8, 31, "Sub HttpResponse.Write(s As String)", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(9, 9, 8, 31, "Sub HttpResponse.Write(s As String)", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample2_VB_Solution_NoDiagnostic()
+        public async Task DocSample2_VB_Solution_NoDiagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Partial Public Class WebForm
@@ -95,13 +125,23 @@ Partial Public Class WebForm
         Me.Response.Write(""<HTML>"" + Me.Server.HtmlEncode(input) + ""</HTML>"")
     End Sub
 End Class
-");
+",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void Simple_NoDiagnostic()
+        public async Task Simple_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Web;
 
@@ -112,13 +152,23 @@ public partial class WebForm : System.Web.UI.Page
         string input = Request.Form[""in""];
         Response.Write(""<HTML><TITLE>test</TITLE><BODY>Hello world!</BODY></HTML>"");
     }
-}");
+}",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void Int32_Parse_NoDiagnostic()
+        public async Task Int32_Parse_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Web;
 
@@ -130,13 +180,23 @@ public partial class WebForm : System.Web.UI.Page
         string integer = Int32.Parse(input).ToString();
         Response.Write(""<HTML>"" + integer + ""</HTML>"");
     }
-}");
+}",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void HttpServerUtility_HtmlEncode_NoDiagnostic()
+        public async Task HttpServerUtility_HtmlEncode_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Web;
 
@@ -148,7 +208,10 @@ public partial class WebForm : System.Web.UI.Page
         string encoded = Server.HtmlEncode(input);
         Response.Write(""<HTML>"" + encoded + ""</HTML>"");
     }
-}");
+}",
+                    },
+                },
+            }.RunAsync();
         }
     }
 }

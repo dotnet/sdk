@@ -1361,4 +1361,13 @@
   <data name="AvoidOutParametersTitle" xml:space="preserve">
     <value>Avoid out parameters</value>
   </data>
+  <data name="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart" xml:space="preserve">
+    <value>The field reference '{0}' is duplicated in this bitwise initialization.</value>
+  </data>
+  <data name="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue" xml:space="preserve">
+    <value>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</value>
+  </data>
+  <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
+    <value>Enums values should not be duplicated</value>
+  </data>
 </root>

@@ -1,35 +1,19 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForFileCanonicalizationVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForFileCanonicalizationVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForFilePathInjectionVulnerabilities, ReviewCodeForFilePathInjectionVulnerabilities>
     {
-        public ReviewCodeForFileCanonicalizationVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForFilePathInjectionVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForFilePathInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForFilePathInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 
@@ -61,9 +45,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            VerifyBasicWithDependencies(@"
+            await VerifyVisualBasicWithDependenciesAsync(@"
 Imports System
 Imports System.IO
 
@@ -94,9 +78,9 @@ End Class",
         }
 
         [Fact]
-        public void File_ReadAllText_Diagnostic()
+        public async Task File_ReadAllText_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 using System.Web;
@@ -114,9 +98,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void FileInfo_Constructor_Diagnostic()
+        public async Task FileInfo_Constructor_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 using System.Web;
@@ -134,9 +118,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void File_ReadAllText_NoDiagnostic()
+        public async Task File_ReadAllText_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO;
 using System.Web;
