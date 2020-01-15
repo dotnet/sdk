@@ -26,7 +26,7 @@ jobs:
   steps:
     - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine
       displayName: Build and Test
-    - task: PublishTestResults@1
+    - task: PublishTestResults@2
       inputs:
         testRunner: XUnit
         testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.xml'
