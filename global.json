@@ -1,12 +1,12 @@
 {
   "tools": {
-    "dotnet": "5.0.100-alpha1-015580",
+    "dotnet": "5.0.100-alpha.1.20060.5",
     "vs-opt": {
       "version": "15.9"
     }
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.19558.11",
-    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.19558.11"
+    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20063.2",
+    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.20063.2"
   }
 }
