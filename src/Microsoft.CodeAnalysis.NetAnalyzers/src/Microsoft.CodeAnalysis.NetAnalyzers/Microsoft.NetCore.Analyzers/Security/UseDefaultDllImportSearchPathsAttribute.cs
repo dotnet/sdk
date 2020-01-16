@@ -20,18 +20,18 @@ namespace Microsoft.NetCore.Analyzers.Security
             typeof(MicrosoftNetCoreAnalyzersResources),
             nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttribute),
             nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttributeMessage),
-            false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttributeDescription),
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: false,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttributeDescription));
         internal static DiagnosticDescriptor DoNotUseUnsafeDllImportSearchPathRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5393",
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPath),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPathMessage),
-            false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPathDescription),
-            customTags: WellKnownDiagnosticTags.Telemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: false,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPathDescription));
 
         // DllImportSearchPath.AssemblyDirectory = 2.
         // DllImportSearchPath.UseDllDirectoryForDependencies = 256.

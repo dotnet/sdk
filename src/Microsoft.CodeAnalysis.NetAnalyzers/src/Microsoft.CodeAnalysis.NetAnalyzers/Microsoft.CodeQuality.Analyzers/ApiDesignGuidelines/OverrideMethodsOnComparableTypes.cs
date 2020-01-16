@@ -27,35 +27,32 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageBoth = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageBoth), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static readonly DiagnosticDescriptor RuleEquals = new DiagnosticDescriptor(RuleId,
+        internal static readonly DiagnosticDescriptor RuleEquals = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                   s_localizableTitle,
                                                                                   s_localizableMessageEquals,
                                                                                   DiagnosticCategory.Design,
-                                                                                  DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                  isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                                  RuleLevel.IdeHidden_BulkConfigurable,
                                                                                   description: s_localizableDescription,
-                                                                                  helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1036-override-methods-on-comparable-types",
-                                                                                  customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                  isPortedFxCopRule: true,
+                                                                                  isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor RuleOperator = new DiagnosticDescriptor(RuleId,
+        internal static readonly DiagnosticDescriptor RuleOperator = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                   s_localizableTitle,
                                                                                   s_localizableMessageOperators,
                                                                                   DiagnosticCategory.Design,
-                                                                                  DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                  isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                                  RuleLevel.IdeHidden_BulkConfigurable,
                                                                                   description: s_localizableDescription,
-                                                                                  helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1036-override-methods-on-comparable-types",
-                                                                                  customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                  isPortedFxCopRule: true,
+                                                                                  isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor RuleBoth = new DiagnosticDescriptor(RuleId,
+        internal static readonly DiagnosticDescriptor RuleBoth = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                   s_localizableTitle,
                                                                                   s_localizableMessageBoth,
                                                                                   DiagnosticCategory.Design,
-                                                                                  DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                  isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                                  RuleLevel.IdeHidden_BulkConfigurable,
                                                                                   description: s_localizableDescription,
-                                                                                  helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1036-override-methods-on-comparable-types",
-                                                                                  customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                  isPortedFxCopRule: true,
+                                                                                  isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleBoth, RuleEquals, RuleOperator);
 

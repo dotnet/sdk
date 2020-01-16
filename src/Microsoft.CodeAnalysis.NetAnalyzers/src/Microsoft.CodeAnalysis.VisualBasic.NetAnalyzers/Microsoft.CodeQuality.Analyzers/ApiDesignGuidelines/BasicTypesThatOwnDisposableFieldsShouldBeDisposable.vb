@@ -6,7 +6,6 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-Imports Analyzer.Utilities
 
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>

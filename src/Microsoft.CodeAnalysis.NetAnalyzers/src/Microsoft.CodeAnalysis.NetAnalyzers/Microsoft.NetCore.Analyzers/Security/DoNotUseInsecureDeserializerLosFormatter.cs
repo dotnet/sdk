@@ -20,8 +20,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2305",
                 nameof(MicrosoftNetCoreAnalyzersResources.LosFormatterMethodUsedTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.LosFormatterMethodUsedMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2305-do-not-use-insecure-deserializer-losformatter");
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
         protected override string DeserializerTypeMetadataName => WellKnownTypeNames.SystemWebUILosFormatter;
 

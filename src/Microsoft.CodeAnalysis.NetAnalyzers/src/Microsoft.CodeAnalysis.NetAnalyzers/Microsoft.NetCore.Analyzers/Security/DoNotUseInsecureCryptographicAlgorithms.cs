@@ -17,9 +17,6 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal const string DoNotUseWeakCryptographyRuleId = "CA5350";
         internal const string DoNotUseBrokenCryptographyRuleId = "CA5351";
 
-        internal const string CA5350HelpLink = "https://docs.microsoft.com/visualstudio/code-quality/ca5350-do-not-use-weak-cryptographic-algorithms";
-        internal const string CA5351HelpLink = "https://docs.microsoft.com/visualstudio/code-quality/ca5351-do-not-use-broken-cryptographic-algorithms";
-
         private static readonly LocalizableString s_localizableDoNotUseWeakAlgorithmsTitle = new LocalizableResourceString(
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakCryptographicAlgorithms),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
@@ -46,28 +43,26 @@ namespace Microsoft.NetCore.Analyzers.Security
             typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor DoNotUseBrokenCryptographyRule =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 DoNotUseBrokenCryptographyRuleId,
                 s_localizableDoNotUseBrokenAlgorithmsTitle,
                 s_localizableDoNotUseBrokenAlgorithmsMessage,
                 DiagnosticCategory.Security,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.BuildWarning,
                 description: s_localizableDoNotUseBrokenAlgorithmsDescription,
-                helpLinkUri: CA5351HelpLink,
-                customTags: WellKnownDiagnosticTags.Telemetry);
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
         internal static DiagnosticDescriptor DoNotUseWeakCryptographyRule =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 DoNotUseWeakCryptographyRuleId,
                 s_localizableDoNotUseWeakAlgorithmsTitle,
                 s_localizableDoNotUseWeakAlgorithmsMessage,
                 DiagnosticCategory.Security,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.BuildWarning,
                 description: s_localizableDoNotUseWeakAlgorithmsDescription,
-                helpLinkUri: CA5350HelpLink,
-                customTags: WellKnownDiagnosticTags.Telemetry);
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DoNotUseBrokenCryptographyRule, DoNotUseWeakCryptographyRule);
 

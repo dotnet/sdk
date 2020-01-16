@@ -14,8 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA3012",
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForRegexInjectionVulnerabilitiesTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForRegexInjectionVulnerabilitiesMessage),
-            isEnabledByDefault: false,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca3012-review-code-for-regex-injection-vulnerabilities");
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         protected override SinkKind SinkKind { get { return SinkKind.Regex; } }
 

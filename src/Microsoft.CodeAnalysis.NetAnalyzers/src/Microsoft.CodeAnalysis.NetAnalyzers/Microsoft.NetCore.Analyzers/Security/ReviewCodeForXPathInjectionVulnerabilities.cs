@@ -14,8 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA3008",
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForXPathInjectionVulnerabilitiesTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForXPathInjectionVulnerabilitiesMessage),
-            isEnabledByDefault: false,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca3008-review-code-for-xpath-injection-vulnerabilities");
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         protected override SinkKind SinkKind { get { return SinkKind.XPath; } }
 

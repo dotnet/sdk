@@ -3061,9 +3061,6 @@ class C : B
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = B")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
         {
-            var expected = Array.Empty<DiagnosticResult>();
-
-
             var csharpTest = new VerifyCS.Test
             {
                 TestState =

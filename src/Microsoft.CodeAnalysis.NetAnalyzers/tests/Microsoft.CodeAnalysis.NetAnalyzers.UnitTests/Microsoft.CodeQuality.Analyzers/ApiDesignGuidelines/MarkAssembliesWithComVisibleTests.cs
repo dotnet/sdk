@@ -108,11 +108,11 @@ internal class C
         }
 
         private static DiagnosticResult GetExposeIndividualTypesResult()
-            => VerifyCS.Diagnostic(MarkAssembliesWithComVisibleAnalyzer.RuleA)
+            => VerifyCS.Diagnostic(MarkAssembliesWithComVisibleAnalyzer.RuleChangeComVisible)
                 .WithArguments("TestProject");
 
         private static DiagnosticResult GetAddComVisibleFalseResult()
-            => VerifyCS.Diagnostic(MarkAssembliesWithComVisibleAnalyzer.RuleB)
+            => VerifyCS.Diagnostic(MarkAssembliesWithComVisibleAnalyzer.RuleAddComVisible)
                 .WithArguments("TestProject");
     }
 }
