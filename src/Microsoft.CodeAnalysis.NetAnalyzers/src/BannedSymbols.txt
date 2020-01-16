@@ -1,0 +1,3 @@
+M:Microsoft.CodeAnalysis.Compilation.GetTypeByMetadataName(System.String); Use WellKnownTypeProvider instead
+M:Microsoft.CodeAnalysis.DiagnosticDescriptor.#ctor(System.String,System.String,System.String,System.String,Microsoft.CodeAnalysis.DiagnosticSeverity,System.Boolean,System.String,System.String,System.String[]); Use 'DiagnosticDescriptorHelper.Create' instead
+M:Microsoft.CodeAnalysis.DiagnosticDescriptor.#ctor(System.String,Microsoft.CodeAnalysis.LocalizableString,Microsoft.CodeAnalysis.LocalizableString,System.String,Microsoft.CodeAnalysis.DiagnosticSeverity,System.Boolean,Microsoft.CodeAnalysis.LocalizableString,System.String,System.String[]); Use 'DiagnosticDescriptorHelper.Create' instead
