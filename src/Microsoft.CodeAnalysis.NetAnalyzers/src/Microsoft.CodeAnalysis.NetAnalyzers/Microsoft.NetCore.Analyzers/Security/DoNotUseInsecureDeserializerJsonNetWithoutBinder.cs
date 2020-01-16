@@ -32,17 +32,17 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2329",
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSerializerTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSerializerMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2329",
-                customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true);
         internal static readonly DiagnosticDescriptor MaybeInsecureSerializer =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2330",
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSerializerTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSerializerMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2330",
-                customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(

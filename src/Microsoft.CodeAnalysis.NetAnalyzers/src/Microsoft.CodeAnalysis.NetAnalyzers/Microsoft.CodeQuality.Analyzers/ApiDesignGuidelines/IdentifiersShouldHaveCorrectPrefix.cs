@@ -19,26 +19,24 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         private static readonly LocalizableString s_localizableMessageInterfaceRule = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageInterface), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        public static readonly DiagnosticDescriptor InterfaceRule = new DiagnosticDescriptor(RuleId,
+        public static readonly DiagnosticDescriptor InterfaceRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                     s_localizableTitle,
                                                                                     s_localizableMessageInterfaceRule,
                                                                                     DiagnosticCategory.Naming,
-                                                                                    DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                    isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                                    RuleLevel.IdeHidden_BulkConfigurable,
                                                                                     description: s_localizableDescription,
-                                                                                    helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix",
-                                                                                    customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                    isPortedFxCopRule: true,
+                                                                                    isDataflowRule: false);
 
         private static readonly LocalizableString s_localizableMessageTypeParameterRule = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageTypeParameter), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        public static readonly DiagnosticDescriptor TypeParameterRule = new DiagnosticDescriptor(RuleId,
+        public static readonly DiagnosticDescriptor TypeParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       s_localizableTitle,
                                                                                       s_localizableMessageTypeParameterRule,
                                                                                       DiagnosticCategory.Naming,
-                                                                                      DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                      isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                                                                                      RuleLevel.IdeHidden_BulkConfigurable,
                                                                                       description: s_localizableDescription,
-                                                                                      helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix",
-                                                                                      customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                      isPortedFxCopRule: true,
+                                                                                      isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(InterfaceRule, TypeParameterRule);
 

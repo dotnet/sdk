@@ -25,15 +25,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleCA2229 = new DiagnosticDescriptor(RuleCA2229Id,
+        internal static DiagnosticDescriptor RuleCA2229 = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
                                                                         s_localizableTitleCA2229,
                                                                         "{0}",
                                                                         DiagnosticCategory.Usage,
-                                                                        DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                        isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                        RuleLevel.IdeHidden_BulkConfigurable,
                                                                         description: s_localizableDescriptionCA2229,
-                                                                        helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2229-implement-serialization-constructors",
-                                                                        customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                        isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
 
         // Mark ISerializable types with SerializableAttribute
         internal const string RuleCA2237Id = "CA2237";
@@ -51,15 +50,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleCA2237 = new DiagnosticDescriptor(RuleCA2237Id,
+        internal static DiagnosticDescriptor RuleCA2237 = DiagnosticDescriptorHelper.Create(RuleCA2237Id,
                                                                         s_localizableTitleCA2237,
                                                                         s_localizableMessageCA2237,
                                                                         DiagnosticCategory.Usage,
-                                                                        DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                        isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                        RuleLevel.CandidateForRemoval,   // Cannot implement this for .NET Core: https://github.com/dotnet/roslyn-analyzers/issues/1775#issuecomment-518457308
                                                                         description: s_localizableDescriptionCA2237,
-                                                                        helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2237-mark-iserializable-types-with-serializableattribute",
-                                                                        customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                        isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
 
         // Mark all non-serializable fields
         internal const string RuleCA2235Id = "CA2235";
@@ -77,15 +75,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 nameof(MicrosoftNetCoreAnalyzersResources.MarkAllNonSerializableFieldsDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleCA2235 = new DiagnosticDescriptor(RuleCA2235Id,
+        internal static DiagnosticDescriptor RuleCA2235 = DiagnosticDescriptorHelper.Create(RuleCA2235Id,
                                                                         s_localizableTitleCA2235,
                                                                         s_localizableMessageCA2235,
                                                                         DiagnosticCategory.Usage,
-                                                                        DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                        isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                        RuleLevel.CandidateForRemoval,   // Cannot implement this for .NET Core: https://github.com/dotnet/roslyn-analyzers/issues/1775#issuecomment-518457308
                                                                         description: s_localizableDescriptionCA2235,
-                                                                        helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2235-mark-all-non-serializable-fields",
-                                                                        customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                        isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA2229, RuleCA2235, RuleCA2237);
 

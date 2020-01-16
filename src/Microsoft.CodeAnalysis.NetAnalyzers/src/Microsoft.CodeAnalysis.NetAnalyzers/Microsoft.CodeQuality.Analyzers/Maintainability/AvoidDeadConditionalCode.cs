@@ -26,23 +26,27 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static readonly LocalizableString s_localizableAlwaysTrueFalseOrNullMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidDeadConditionalCodeAlwaysTruFalseOrNullMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableNeverNullMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidDeadConditionalCodeNeverNullMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor AlwaysTrueFalseOrNullRule = new DiagnosticDescriptor(RuleId,
+        // https://github.com/dotnet/roslyn-analyzers/issues/2180 tracks enabling the rule by default
+
+        internal static DiagnosticDescriptor AlwaysTrueFalseOrNullRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableAlwaysTrueFalseOrNullMessage,
                                                                              DiagnosticCategory.Maintainability,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false, // https://github.com/dotnet/roslyn-analyzers/issues/2180 tracks enabling the rule by default
-                                                                             helpLinkUri: null, // TODO: Add helplink
-                                                                             customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                                                                             RuleLevel.Disabled,
+                                                                             description: null,
+                                                                             isPortedFxCopRule: false,
+                                                                             isDataflowRule: true,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor NeverNullRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor NeverNullRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableNeverNullMessage,
                                                                              DiagnosticCategory.Maintainability,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false, // https://github.com/dotnet/roslyn-analyzers/issues/2180 tracks enabling the rule by default
-                                                                             helpLinkUri: null, // TODO: Add helplink
-                                                                             customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                                                                             RuleLevel.Disabled,
+                                                                             description: null,
+                                                                             isPortedFxCopRule: false,
+                                                                             isDataflowRule: true,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AlwaysTrueFalseOrNullRule);
 

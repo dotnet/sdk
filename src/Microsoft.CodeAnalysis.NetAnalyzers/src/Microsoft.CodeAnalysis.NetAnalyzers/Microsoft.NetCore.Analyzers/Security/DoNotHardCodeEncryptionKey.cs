@@ -15,10 +15,10 @@ namespace Microsoft.NetCore.Analyzers.Security
             typeof(MicrosoftNetCoreAnalyzersResources),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeEncryptionKey),
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeEncryptionKeyMessage),
-            isEnabledByDefault: false,
-            helpLinkUri: null,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeEncryptionKeyDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeEncryptionKeyDescription));
 
         protected override SinkKind SinkKind { get { return SinkKind.HardcodedEncryptionKey; } }
 

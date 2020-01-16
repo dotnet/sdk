@@ -177,7 +177,7 @@ public class C
 ");
         }
 
-        private static readonly DiagnosticResult s_diagnostic = new DiagnosticResult(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
+        private static readonly DiagnosticResult s_diagnostic = new DiagnosticResult(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule.Id, MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule.DefaultSeverity)
             .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithAssemblyVersionMessage);
     }
 }

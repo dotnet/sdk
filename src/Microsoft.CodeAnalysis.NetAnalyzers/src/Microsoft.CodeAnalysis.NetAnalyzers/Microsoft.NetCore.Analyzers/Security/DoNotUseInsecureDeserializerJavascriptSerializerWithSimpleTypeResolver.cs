@@ -30,17 +30,17 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2321",
                 nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerWithSimpleTypeResolverTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerWithSimpleTypeResolverMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2321",
-                customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true);
         internal static readonly DiagnosticDescriptor MaybeWithSimpleTypeResolver =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2322",
                 nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerMaybeWithSimpleTypeResolverTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerMaybeWithSimpleTypeResolverMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2322",
-                customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(

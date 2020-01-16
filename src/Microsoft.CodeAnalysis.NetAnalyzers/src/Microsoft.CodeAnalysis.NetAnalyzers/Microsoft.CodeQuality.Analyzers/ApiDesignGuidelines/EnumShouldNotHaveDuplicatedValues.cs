@@ -22,24 +22,24 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumShouldNotHaveDuplicatedValuesTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         private static readonly LocalizableString s_localizableMessageRuleDuplicatedValue = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleDuplicatedValue = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleDuplicatedValue = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                             s_localizableTitle,
                                                                                             s_localizableMessageRuleDuplicatedValue,
                                                                                             DiagnosticCategory.Design,
-                                                                                            DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                            isEnabledByDefault: false,
-                                                                                            helpLinkUri: null,
-                                                                                            customTags: WellKnownDiagnosticTags.Telemetry);
+                                                                                            RuleLevel.IdeSuggestion,
+                                                                                            description: null,
+                                                                                            isPortedFxCopRule: false,
+                                                                                            isDataflowRule: false);
 
         private static readonly LocalizableString s_localizableMessageRuleDuplicatedBitwiseValuePart = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleDuplicatedBitwiseValuePart = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor RuleDuplicatedBitwiseValuePart = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                        s_localizableTitle,
                                                                                                        s_localizableMessageRuleDuplicatedBitwiseValuePart,
                                                                                                        DiagnosticCategory.Design,
-                                                                                                       DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                                       isEnabledByDefault: false,
-                                                                                                       helpLinkUri: null,
-                                                                                                       customTags: WellKnownDiagnosticTags.Telemetry);
+                                                                                                       RuleLevel.IdeSuggestion,
+                                                                                                       description: null,
+                                                                                                       isPortedFxCopRule: false,
+                                                                                                       isDataflowRule: false);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDuplicatedValue, RuleDuplicatedBitwiseValuePart);
 
