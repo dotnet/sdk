@@ -20,39 +20,35 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         private static readonly LocalizableString s_localizableDescriptionCA2229 =
-            new LocalizableResourceString(
-                nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor RuleCA2229Default = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
                                                                         s_localizableTitleCA2229,
                                                                         MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageCreateMagicConstructor,
                                                                         DiagnosticCategory.Usage,
-                                                                        DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                        isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                        RuleLevel.IdeHidden_BulkConfigurable,
                                                                         description: s_localizableDescriptionCA2229,
-                                                                        helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2229-implement-serialization-constructors",
-                                                                        customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                        isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
 
         internal static DiagnosticDescriptor RuleCA2229Sealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
                                                                             s_localizableTitleCA2229,
                                                                             MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
                                                                             DiagnosticCategory.Usage,
-                                                                            DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                            RuleLevel.IdeHidden_BulkConfigurable,
                                                                             description: s_localizableDescriptionCA2229,
-                                                                            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2229-implement-serialization-constructors",
-                                                                            customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                            isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
 
         internal static DiagnosticDescriptor RuleCA2229Unsealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
                                                                                 s_localizableTitleCA2229,
                                                                                 MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
                                                                                 DiagnosticCategory.Usage,
-                                                                                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                                RuleLevel.IdeHidden_BulkConfigurable,
                                                                                 description: s_localizableDescriptionCA2229,
-                                                                                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2229-implement-serialization-constructors",
-                                                                                customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                                isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
 
         // Mark ISerializable types with SerializableAttribute
         internal const string RuleCA2237Id = "CA2237";
@@ -66,8 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         private static readonly LocalizableString s_localizableDescriptionCA2237 =
-            new LocalizableResourceString(
-                nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor RuleCA2237 = DiagnosticDescriptorHelper.Create(RuleCA2237Id,
