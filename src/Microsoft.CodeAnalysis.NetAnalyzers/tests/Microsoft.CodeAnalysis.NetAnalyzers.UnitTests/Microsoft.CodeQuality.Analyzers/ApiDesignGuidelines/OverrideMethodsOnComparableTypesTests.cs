@@ -1321,10 +1321,5 @@ public class DerivedClass<T> : BaseClass<T>
             => VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleEquals)
                 .WithLocation(line, column)
                 .WithArguments(typeName);
-
-        private static DiagnosticResult GetCA1036BasicEqualsResultAt(int line, int column, string typeName)
-            => VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleEquals)
-                .WithLocation(line, column)
-                .WithArguments(typeName);
     }
 }

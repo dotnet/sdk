@@ -40,16 +40,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule_CA1714 =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 RuleId_Plural,
                 s_localizableTitle_CA1714,
                 s_localizableMessage_CA1714,
                 DiagnosticCategory.Naming,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.Disabled,
                 description: s_localizableDescription_CA1714,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1714-flags-enums-should-have-plural-names",
-                customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                isPortedFxCopRule: true,
+                isDataflowRule: false);
 
         #endregion
 
@@ -75,16 +74,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule_CA1717 =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 RuleId_NoPlural,
                 s_localizableTitle_CA1717,
                 s_localizableMessage_CA1717,
                 DiagnosticCategory.Naming,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.Disabled,
                 description: s_localizableDescription_CA1717,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1717-only-flagsattribute-enums-should-have-plural-names",
-                customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                isPortedFxCopRule: true,
+                isDataflowRule: false);
 
         #endregion
 

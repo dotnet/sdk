@@ -709,15 +709,14 @@ namespace Microsoft.NetFramework.Analyzers
 
         private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat)
         {
-            return new DiagnosticDescriptor(RuleId,
+            return DiagnosticDescriptorHelper.Create(RuleId,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-                                            description: SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
-                                            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca3075-insecure-dtd-processing",
-                                            customTags: WellKnownDiagnosticTags.Telemetry);
+                                            RuleLevel.BuildWarning,
+                                            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
+                                            isPortedFxCopRule: false,
+                                            isDataflowRule: false);
         }
     }
 }

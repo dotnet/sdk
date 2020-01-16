@@ -21,8 +21,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2310",
                 nameof(MicrosoftNetCoreAnalyzersResources.NetDataContractSerializerMethodUsedTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.NetDataContractSerializerMethodUsedMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2310-do-not-use-insecure-deserializer-netdatacontractserializer",
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: false,
                 descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.NetDataContractSerializerMethodUsedDescription));
 
         protected override string DeserializerTypeMetadataName =>

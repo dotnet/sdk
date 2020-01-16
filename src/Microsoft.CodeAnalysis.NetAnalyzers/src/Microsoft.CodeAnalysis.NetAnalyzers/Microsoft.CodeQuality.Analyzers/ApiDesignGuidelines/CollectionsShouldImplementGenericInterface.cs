@@ -36,16 +36,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 RuleId,
                 s_localizableTitle,
                 s_localizableStandardMessage,
                 DiagnosticCategory.Design,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_localizableDescription,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1010-collections-should-implement-generic-interface",
-                customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                isPortedFxCopRule: true,
+                isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

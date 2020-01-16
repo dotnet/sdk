@@ -27,19 +27,19 @@ namespace Microsoft.NetCore.Analyzers.Security
             typeof(MicrosoftNetCoreAnalyzersResources),
             nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyInstallRootCert),
             nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyInstallRootCertMessage),
-            DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5380",
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotInstallRootCertDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotInstallRootCertDescription));
         internal static DiagnosticDescriptor MaybeInstallRootCertRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5381",
             typeof(MicrosoftNetCoreAnalyzersResources),
             nameof(MicrosoftNetCoreAnalyzersResources.MaybeInstallRootCert),
             nameof(MicrosoftNetCoreAnalyzersResources.MaybeInstallRootCertMessage),
-            DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-            helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca5381",
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotInstallRootCertDescription),
-            customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotInstallRootCertDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
                                                                                         DefinitelyInstallRootCertRule,
