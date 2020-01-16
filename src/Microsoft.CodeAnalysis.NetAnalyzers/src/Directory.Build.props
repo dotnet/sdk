@@ -6,8 +6,5 @@
     <FxCopAnalyzersProject Condition="$(MSBuildProjectName.StartsWith('Microsoft.CodeQuality')) OR $(MSBuildProjectName.StartsWith('Microsoft.NetCore')) OR $(MSBuildProjectName.StartsWith('Microsoft.NetFramework'))">true</FxCopAnalyzersProject>
 	<DefineConstants Condition="'$(FxCopAnalyzersProject)' == 'true'">$(DefineConstants),FXCOP_ANALYZERS</DefineConstants>
     <DefineConstants Condition="'$(FxCopAnalyzersProject)' != 'true'">$(DefineConstants),NET_ANALYZERS</DefineConstants>
-
-    <!-- Override the directory for BannedSymbols.txt -->
-    <BannedSymbolsDir>$(MSBuildThisFileDirectory)</BannedSymbolsDir>
   </PropertyGroup>
 </Project>
