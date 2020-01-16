@@ -143,7 +143,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         // No data
         [InlineData("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = FOO")]
+        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue, AllEnumValues")]
         // Valid options
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
@@ -212,7 +212,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         // No data
         [InlineData("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = FOO")]
+        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         // Valid options
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
@@ -280,7 +280,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         // No data
         [InlineData("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = FOO")]
+        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         // Valid options
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]

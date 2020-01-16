@@ -97,21 +97,21 @@ public class Derived
         public async Task CSharp_CA1720_SomeDiagnostic5()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public class Bar
+public class SomeClass
 {
-   public void BarMethod(int Int)
+   public void SomeMethod(int Int)
    {
    }
 }
 ",
-    GetCA1720CSharpResultAt(line: 4, column: 30, identifierName: "Int"));
+    GetCA1720CSharpResultAt(line: 4, column: 31, identifierName: "Int"));
         }
 
         [Fact]
         public async Task CSharp_CA1720_SomeDiagnostic6()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public class DerivedBar
+public class DerivedClass
 {
    public int Int;
 }
@@ -123,7 +123,7 @@ public class DerivedBar
         public async Task CSharp_CA1720_NoDiagnosticOnEqualsOverride()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public class Bar
+public class SomeClass
 {
    public override bool Equals(object obj)
    {
@@ -208,7 +208,7 @@ public class Derived : Base
 {
 }
 
-public class Bar : Derived
+public class SomeClass : Derived
 {
     public override void BaseMethod(object okay, object obj)
     {
@@ -310,11 +310,11 @@ public interface IDerived
     void DerivedMethod(object okay, object obj);
 }
 
-public interface IBar : IDerived
+public interface IMyInterface : IDerived
 {
 }
 
-public class Derived : IBar
+public class Derived : IMyInterface
 {
     public void DerivedMethod(object okay, object obj) 
     {
@@ -334,11 +334,11 @@ public interface IDerived
     void DerivedMethod(object okay, object obj);
 }
 
-public interface IBar : IDerived
+public interface IMyInterface : IDerived
 {
 }
 
-public class Derived : IBar
+public class Derived : IMyInterface
 {
     void IDerived.DerivedMethod(object okay, object obj) 
     {
@@ -358,11 +358,11 @@ public interface IDerived<in T1, in T2>
     void DerivedMethod(int okay, T1 obj, T2 @int);
 }
 
-public interface IBar<in T1, in T2> : IDerived<T1, T2>
+public interface IMyInterface<in T1, in T2> : IDerived<T1, T2>
 {
 }
 
-public class Derived : IBar<int, string>
+public class Derived : IMyInterface<int, string>
 {
     public void DerivedMethod(int okay, int obj, string @int)
     {
@@ -383,11 +383,11 @@ public interface IDerived<in T1, in T2>
     void DerivedMethod(int okay, T1 obj, T2 @int);
 }
 
-public interface IBar<in T1, in T2> : IDerived<T1, T2>
+public interface IMyInterface<in T1, in T2> : IDerived<T1, T2>
 {
 }
 
-public class Derived : IBar<int, string>
+public class Derived : IMyInterface<int, string>
 {
     void IDerived<int, string>.DerivedMethod(int okay, int obj, string @int)
     {

@@ -332,7 +332,7 @@ public struct Test
             await VerifyCS.VerifyAnalyzerAsync(@"
 public static class Class1
 {
-    public static void Foo()
+    public static void SomeMethod()
     {
         var u = new System.UriBuilder();
         u.Host = u.Path = string.Empty;

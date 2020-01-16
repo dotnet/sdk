@@ -2043,10 +2043,10 @@ public static class Issue2578Test
         Param.RequireNotNull(input);
 
         // This line still generates a CA1062 error.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(DataThing input)
+    private static void SomeMethod(DataThing input)
     {
         input.Items.Any();
     }
@@ -2093,10 +2093,10 @@ public static class Issue2578Test
         Param.RequireNotNull(input);
 
         // This line still generates a CA1062 error.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(DataThing input)
+    private static void SomeMethod(DataThing input)
     {
         input.Items.Any();
     }
@@ -6012,10 +6012,10 @@ public class Class1
     public static void DoSomething(object input)
     {
         // Ensure no diagnostic here.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1)
         {
@@ -6036,10 +6036,10 @@ public class Class1
     public static void DoSomething(object input)
     {
         // Ensure diagnostic here.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1)
         {
@@ -6053,7 +6053,7 @@ public class Class1
     }
 }",
             // Test0.cs(7,13): warning CA1062: In externally visible method 'void Class1.DoSomething(object input)', validate parameter 'input' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(7, 13, "void Class1.DoSomething(object input)", "input"));
+            GetCSharpResultAt(7, 20, "void Class1.DoSomething(object input)", "input"));
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
@@ -6066,10 +6066,10 @@ public class Class1
     public static void DoSomething(object input)
     {
         // Ensure no diagnostic here.
-        Bar2(input);
+        SomeMethod(input);
     }
 
-    private static void Bar2(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1 c)
         {

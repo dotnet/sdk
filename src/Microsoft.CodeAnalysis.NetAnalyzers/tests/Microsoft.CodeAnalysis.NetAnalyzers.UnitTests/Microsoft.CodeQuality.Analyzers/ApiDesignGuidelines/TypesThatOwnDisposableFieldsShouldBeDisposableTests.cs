@@ -147,7 +147,7 @@ public class [|NoDisposeClass|]
     }
 }
 
-public class Foo
+public class SomeClass
 {
 }
 ");
@@ -389,7 +389,7 @@ Imports System.IO
 
    End Class
 
-   Public Class Foo
+   Public Class SomeClass
    End Class
 ");
         }

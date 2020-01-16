@@ -405,14 +405,14 @@ End Class
         public async Task CA1024_ExplicitInterfaceImplementation_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public interface IFoo
+public interface ISomething
 {
     object GetContent();
 }
 
-public class Foo : IFoo
+public class Something : ISomething
 {
-    object IFoo.GetContent()
+    object ISomething.GetContent()
     {
         return null;
     }
@@ -424,12 +424,12 @@ public class Foo : IFoo
         public async Task CA1024_ImplicitInterfaceImplementation_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public interface IFoo
+public interface ISomething
 {
     object GetContent();
 }
 
-public class Foo : IFoo
+public class Something : ISomething
 {
     public object GetContent()
     {

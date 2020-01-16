@@ -169,8 +169,8 @@ namespace NI
                 }
                 public interface Ci 
                 {
-                    void foo();
-                    void Foo();
+                    void method();
+                    void Method();
                 }
            }
         }
@@ -190,7 +190,7 @@ namespace NI
             GetCA1708CSharpResultAt(8, 22, Member, GetSymbolDisplayString("NI.Ni.C.nD", "NI.Ni.C.nd")),
             GetCA1708CSharpResultAt(11, 26, Member, GetSymbolDisplayString("NI.Ni.C.nd.CI", "NI.Ni.C.nd.ci", "NI.Ni.C.nd.Ci")),
             GetCA1708CSharpResultAt(14, 31, Member, GetSymbolDisplayString("NI.Ni.C.nd.ci.x", "NI.Ni.C.nd.ci.X()")),
-            GetCA1708CSharpResultAt(19, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.foo()", "NI.Ni.C.nd.Ci.Foo()")));
+            GetCA1708CSharpResultAt(19, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.method()", "NI.Ni.C.nd.Ci.Method()")));
         }
 
         [Fact]
@@ -217,8 +217,8 @@ namespace NI
                 }
                 public interface Ci 
                 {
-                    void foo();
-                    void Foo();
+                    void method();
+                    void Method();
                 }
            }
         }
@@ -238,7 +238,7 @@ namespace NI
             GetCA1708CSharpResultAt(9, 22, Member, GetSymbolDisplayString("NI.Ni.C.nD", "NI.Ni.C.nd")),
             GetCA1708CSharpResultAt(12, 26, Member, GetSymbolDisplayString("NI.Ni.C.nd.CI", "NI.Ni.C.nd.Ci", "NI.Ni.C.nd.ci")),
             GetCA1708CSharpResultAt(15, 31, Member, GetSymbolDisplayString("NI.Ni.C.nd.ci.X()", "NI.Ni.C.nd.ci.x")),
-            GetCA1708CSharpResultAt(20, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.Foo()", "NI.Ni.C.nd.Ci.foo()")));
+            GetCA1708CSharpResultAt(20, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.Method()", "NI.Ni.C.nd.Ci.method()")));
         }
 
         [Fact]
@@ -249,9 +249,9 @@ namespace NI
 {
     public class C
     {
-        public void foo() { }
-        public void foo(int x) { }
-        public void foo<T>(T x) { }
+        public void method() { }
+        public void method(int x) { }
+        public void method<T>(T x) { }
     }
 }
 ");
@@ -265,15 +265,15 @@ namespace NI
 {
     public class C
     {
-        public void foo() { }
-        public void foO(int x) { }
-        public void fOo(int x) { }
-        public void FOO<T>(T x) { }
-        public void fOo<T, X>(T x, X y) { }
+        public void method() { }
+        public void methoD(int x) { }
+        public void mEthod(int x) { }
+        public void METHOD<T>(T x) { }
+        public void mEthod<T, X>(T x, X y) { }
     }
 }
 ",
-            GetCA1708CSharpResultAt(4, 18, Member, GetSymbolDisplayString("NI.C.foo()", "NI.C.foO(int)", "NI.C.fOo(int)", "NI.C.FOO<T>(T)")));
+            GetCA1708CSharpResultAt(4, 18, Member, GetSymbolDisplayString("NI.C.method()", "NI.C.methoD(int)", "NI.C.mEthod(int)", "NI.C.METHOD<T>(T)")));
         }
 
         [Fact]
@@ -356,7 +356,7 @@ namespace N
     }
     public partial class D
     {
-        public delegate void Foo(int x, int X);
+        public delegate void SomeDelegate(int x, int X);
     }
 }
 ",
@@ -365,7 +365,7 @@ namespace N
             GetCA1708CSharpResultAt(9, 16, Parameter, "N.C.C(int, int)"),
             GetCA1708CSharpResultAt(12, 36, Parameter, "N.C.operator +(N.C, int)"),
             GetCA1708CSharpResultAt(18, 20, Parameter, "N.C.this[int, int]"),
-            GetCA1708CSharpResultAt(30, 30, Parameter, "N.D.Foo"));
+            GetCA1708CSharpResultAt(30, 30, Parameter, "N.D.SomeDelegate"));
         }
 
         #endregion
