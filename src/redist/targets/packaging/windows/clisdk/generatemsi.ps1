@@ -31,7 +31,7 @@ function RunHeat
     # use XSLT tranform to match the file path contains "AppHostTemplate\apphost.exe" and give it the same ID all the time.
 
     $heatOutput = .\heat.exe dir `"$inputDir`" -template fragment  `
-        -sreg -gg  `
+        -sreg -ag `
         -var var.DotnetSrc  `
         -cg InstallFiles  `
         -srd  `
