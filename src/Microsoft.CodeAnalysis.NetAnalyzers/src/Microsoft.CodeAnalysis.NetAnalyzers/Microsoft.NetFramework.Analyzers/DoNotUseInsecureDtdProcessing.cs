@@ -23,42 +23,11 @@ namespace Microsoft.NetFramework.Analyzers
     {
         internal const string RuleId = "CA3075";
 
-        internal static DiagnosticDescriptor RuleXmlDocumentWithNoSecureResolver =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)));
+        internal static DiagnosticDescriptor RuleDoNotUseInsecureDtdProcessing = CreateDiagnosticDescriptor(
+                                                                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
+                                                                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)));
 
-        internal static DiagnosticDescriptor RuleXmlTextReaderConstructedWithNoSecureResolution =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderConstructedWithNoSecureResolutionMessage)));
-
-        internal static DiagnosticDescriptor RuleDoNotUseDtdProcessingOverloads =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseDtdProcessingOverloadsMessage)));
-
-        internal static DiagnosticDescriptor RuleXmlReaderCreateWrongOverload =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateWrongOverloadMessage)));
-
-        internal static DiagnosticDescriptor RuleXmlReaderCreateInsecureInput =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateInsecureInputMessage)));
-
-        internal static DiagnosticDescriptor RuleXmlReaderCreateInsecureConstructed =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateInsecureConstructedMessage)));
-
-        internal static DiagnosticDescriptor RuleXmlTextReaderSetInsecureResolution =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage)));
-
-        internal static DiagnosticDescriptor RuleDoNotUseSetInnerXml =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseSetInnerXmlMessage)));
-
-        internal static DiagnosticDescriptor RuleReviewDtdProcessingProperties =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.ReviewDtdProcessingPropertiesMessage)));
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleXmlDocumentWithNoSecureResolver,
-            RuleXmlTextReaderConstructedWithNoSecureResolution,
-            RuleDoNotUseDtdProcessingOverloads,
-            RuleXmlReaderCreateWrongOverload,
-            RuleXmlReaderCreateInsecureInput,
-            RuleXmlReaderCreateInsecureConstructed,
-            RuleXmlTextReaderSetInsecureResolution,
-            RuleDoNotUseSetInnerXml,
-            RuleReviewDtdProcessingProperties);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDoNotUseInsecureDtdProcessing);
 
         private static void RegisterAnalyzer(OperationBlockStartAnalysisContext context, CompilationSecurityTypes types, Version frameworkVersion)
         {
@@ -186,7 +155,14 @@ namespace Microsoft.NetFramework.Analyzers
                     XmlDocumentEnvironment env = p.Value;
                     if (!(env.IsXmlResolverSet | env.IsSecureResolver))
                     {
-                        context.ReportDiagnostic(env.XmlDocumentDefinition.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
+                        Diagnostic diag = Diagnostic.Create(
+                            RuleDoNotUseInsecureDtdProcessing,
+                            env.XmlDocumentDefinition.GetLocation(),
+                            SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)
+                            )
+                        );
+                        context.ReportDiagnostic(diag);
                     }
                 }
 
@@ -196,7 +172,15 @@ namespace Microsoft.NetFramework.Analyzers
                     if (!(env.IsXmlResolverSet | env.IsSecureResolver) ||
                         !(env.IsDtdProcessingSet | env.IsDtdProcessingDisabled))
                     {
-                        context.ReportDiagnostic(env.XmlTextReaderDefinition.CreateDiagnostic(RuleXmlTextReaderConstructedWithNoSecureResolution));
+                        Diagnostic diag = Diagnostic.Create(
+                            RuleDoNotUseInsecureDtdProcessing,
+                            env.XmlTextReaderDefinition.GetLocation(),
+                            SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderConstructedWithNoSecureResolutionMessage)
+                            )
+                        );
+
+                        context.ReportDiagnostic(diag);
                     }
                 }
             }
@@ -243,7 +227,17 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     if (SecurityDiagnosticHelpers.HasXmlReaderParameter(method, _xmlTypes) < 0)
                     {
-                        context.ReportDiagnostic(expressionSyntax.CreateDiagnostic(RuleDoNotUseDtdProcessingOverloads, method.Name));
+                        DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessing;
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                rule,
+                                expressionSyntax.GetLocation(),
+                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                    nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseDtdProcessingOverloadsMessage),
+                                    method.Name
+                                )
+                            )
+                        );
                     }
                 }
                 else if (method.MatchMethodDerivedByName(_xmlTypes.XmlReader, SecurityMemberNames.Create))
@@ -257,7 +251,14 @@ namespace Microsoft.NetFramework.Analyzers
                             && method.Parameters[0].Type.SpecialType == SpecialType.System_String)
                         {
                             // inputUri can load be a URL.  Should further investigate if this is worth flagging.
-                            context.ReportDiagnostic(expressionSyntax.CreateDiagnostic(RuleXmlReaderCreateWrongOverload));
+                            Diagnostic diag = Diagnostic.Create(
+                                    RuleDoNotUseInsecureDtdProcessing,
+                                    expressionSyntax.GetLocation(),
+                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                        nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateWrongOverloadMessage)
+                                    )
+                                );
+                            context.ReportDiagnostic(diag);
                         }
 
                         // If no XmlReaderSettings are passed, then the default
@@ -281,11 +282,23 @@ namespace Microsoft.NetFramework.Analyzers
                             Diagnostic diag;
                             if (env.IsConstructedInCodeBlock)
                             {
-                                diag = expressionSyntax.CreateDiagnostic(RuleXmlReaderCreateInsecureConstructed);
+                                diag = Diagnostic.Create(
+                                    RuleDoNotUseInsecureDtdProcessing,
+                                    expressionSyntax.GetLocation(),
+                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                        nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateInsecureConstructedMessage)
+                                    )
+                                );
                             }
                             else
                             {
-                                diag = expressionSyntax.CreateDiagnostic(RuleXmlReaderCreateInsecureInput);
+                                diag = Diagnostic.Create(
+                                    RuleDoNotUseInsecureDtdProcessing,
+                                    expressionSyntax.GetLocation(),
+                                    SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                        nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateInsecureInputMessage)
+                                    )
+                                );
                             }
 
                             context.ReportDiagnostic(diag);
@@ -380,7 +393,7 @@ namespace Microsoft.NetFramework.Analyzers
                                 }
                                 else // Non secure resolvers
                                 {
-                                    context.ReportDiagnostic(assign.Syntax.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
+                                    ReportDiagnostic(assign.Syntax, context);
                                     return;
                                 }
                             }
@@ -400,10 +413,23 @@ namespace Microsoft.NetFramework.Analyzers
                 }
                 else if (!xmlDocumentEnvironment.IsSecureResolver) // Insecure temp object
                 {
-                    context.ReportDiagnostic(node.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
+                    ReportDiagnostic(node, context);
                 }
 
                 return;
+
+                // Local functions
+                static void ReportDiagnostic(SyntaxNode node, OperationAnalysisContext context)
+                {
+                    Diagnostic diag = Diagnostic.Create(
+                                        RuleDoNotUseInsecureDtdProcessing,
+                                        node.GetLocation(),
+                                        SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                            nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)
+                                        )
+                                    );
+                    context.ReportDiagnostic(diag);
+                }
             }
 
             private void AnalyzeObjectCreationForXmlTextReader(OperationAnalysisContext context, ISymbol variable, IObjectCreationOperation objCreation)
@@ -466,7 +492,14 @@ namespace Microsoft.NetFramework.Analyzers
                 if ((env.IsXmlResolverSet && !env.IsSecureResolver) ||
                     (env.IsDtdProcessingSet && !env.IsDtdProcessingDisabled))
                 {
-                    context.ReportDiagnostic(env.XmlTextReaderDefinition.CreateDiagnostic(RuleXmlTextReaderSetInsecureResolution));
+                    Diagnostic diag = Diagnostic.Create(
+                        RuleDoNotUseInsecureDtdProcessing,
+                        env.XmlTextReaderDefinition.GetLocation(),
+                        SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                            nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage)
+                        )
+                    );
+                    context.ReportDiagnostic(diag);
                 }
                 // if the XmlResolver or Dtdprocessing property is not explicitly set when constructed for a non-temp XmlTextReader object, add env to the dictionary.
                 else if (variable != null && !(env.IsDtdProcessingSet && env.IsXmlResolverSet))
@@ -476,7 +509,14 @@ namespace Microsoft.NetFramework.Analyzers
                 // if the is not set or set to Parse for a temporary object, report right now.
                 else if (variable == null && !(env.IsDtdProcessingSet && env.IsDtdProcessingDisabled))
                 {
-                    context.ReportDiagnostic(env.XmlTextReaderDefinition.CreateDiagnostic(RuleXmlTextReaderConstructedWithNoSecureResolution));
+                    Diagnostic diag = Diagnostic.Create(
+                        RuleDoNotUseInsecureDtdProcessing,
+                        env.XmlTextReaderDefinition.GetLocation(),
+                        SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                            nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderConstructedWithNoSecureResolutionMessage)
+                        )
+                    );
+                    context.ReportDiagnostic(diag);
                 }
             }
 
@@ -552,7 +592,14 @@ namespace Microsoft.NetFramework.Analyzers
                 }
                 else // Assigning XmlDocument's XmlResolver to an insecure value
                 {
-                    context.ReportDiagnostic(context.Operation.Syntax.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
+                    Diagnostic diag = Diagnostic.Create(
+                                RuleDoNotUseInsecureDtdProcessing,
+                                context.Operation.Syntax.GetLocation(),
+                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)
+                                )
+                            );
+                    context.ReportDiagnostic(diag);
                 }
 
                 if (_xmlDocumentEnvironments.TryGetValue(assignedSymbol, out XmlDocumentEnvironment xmlDocumentEnv))
@@ -595,7 +642,14 @@ namespace Microsoft.NetFramework.Analyzers
                 else if (context.Operation?.Parent?.Kind != OperationKind.ObjectOrCollectionInitializer)
                 {
                     // Generate a warning whenever the XmlResolver or DtdProcessing property is set to an insecure value
-                    context.ReportDiagnostic(expression.Syntax.CreateDiagnostic(RuleXmlTextReaderSetInsecureResolution));
+                    Diagnostic diag = Diagnostic.Create(
+                        RuleDoNotUseInsecureDtdProcessing,
+                        expression.Syntax.GetLocation(),
+                        SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                            nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage)
+                        )
+                    );
+                    context.ReportDiagnostic(diag);
                 }
             }
 
@@ -679,11 +733,29 @@ namespace Microsoft.NetFramework.Analyzers
             {
                 if (property.MatchPropertyDerivedByName(_xmlTypes.XmlDocument, SecurityMemberNames.InnerXml))
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(RuleDoNotUseSetInnerXml, location));
+                    DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessing;
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            rule,
+                            location,
+                            SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseSetInnerXmlMessage)
+                            )
+                        )
+                    );
                 }
                 else if (property.MatchPropertyDerivedByName(_xmlTypes.DataViewManager, SecurityMemberNames.DataViewSettingCollectionString))
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(RuleReviewDtdProcessingProperties, location));
+                    DiagnosticDescriptor rule = RuleDoNotUseInsecureDtdProcessing;
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            rule,
+                            location,
+                            SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                nameof(MicrosoftNetFrameworkAnalyzersResources.ReviewDtdProcessingPropertiesMessage)
+                            )
+                        )
+                    );
                 }
             }
 
@@ -707,16 +779,16 @@ namespace Microsoft.NetFramework.Analyzers
                 || types.XmlSerializer != null;
         }
 
-        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat)
+        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description)
         {
             return DiagnosticDescriptorHelper.Create(RuleId,
-                                            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
-                                            messageFormat,
-                                            DiagnosticCategory.Security,
-                                            RuleLevel.BuildWarning,
-                                            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
-                                            isPortedFxCopRule: false,
-                                            isDataflowRule: false);
+                                           SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
+                                           messageFormat,
+                                           DiagnosticCategory.Security,
+                                           RuleLevel.BuildWarning,
+                                           description,
+                                           isPortedFxCopRule: false,
+                                           isDataflowRule: false);
         }
     }
 }
