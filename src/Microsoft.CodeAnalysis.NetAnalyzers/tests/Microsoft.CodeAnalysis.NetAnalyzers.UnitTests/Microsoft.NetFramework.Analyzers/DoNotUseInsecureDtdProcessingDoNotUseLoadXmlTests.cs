@@ -14,15 +14,11 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
-        private DiagnosticResult GetCA3075LoadXmlCSharpResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(string.Format(MicrosoftNetFrameworkAnalyzersResources.DoNotUseDtdProcessingOverloadsMessage, "LoadXml"));
-        }
+        private static DiagnosticResult GetCA3075LoadXmlCSharpResultAt(int line, int column)
+            => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseDtdProcessingOverloads).WithLocation(line, column).WithArguments("LoadXml");
 
-        private DiagnosticResult GetCA3075LoadXmlBasicResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(string.Format(MicrosoftNetFrameworkAnalyzersResources.DoNotUseDtdProcessingOverloadsMessage, "LoadXml"));
-        }
+        private static DiagnosticResult GetCA3075LoadXmlBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseDtdProcessingOverloads).WithLocation(line, column).WithArguments("LoadXml");
 
         [Fact]
         public async Task UseXmlDocumentLoadXmlShouldGenerateDiagnostic()
