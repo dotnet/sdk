@@ -442,7 +442,9 @@ Option Name: `additional_required_suffixes`
 
 Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710-identifiers-should-have-correct-suffix)
 
-Option Values: List (separated by '|') of fully qualified type name followed by colon and the required suffix.
+Option Values: List (separated by '|') of type names with their required suffix (separated by '->').<br/>Allowed type name formats:
+  1. Type name only (includes all types with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix.
 
 Default Value: None
 
@@ -450,5 +452,5 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass:Class` | All types inheriting from MyClass are expected to have the 'Class' suffix |
-|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass:Class|MyNamespace.IFoo:Foo` | All types inheriting from MyClass are expected to have the 'Class' suffix AND all types implementing MyNamespace.IFoo are expected to have the 'Foo' suffix. |
+|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from MyClass are expected to have the 'Class' suffix |
+|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class|MyNamespace.IPath->Path` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix AND all types implementing 'MyNamespace.IPath' are expected to have the 'Path' suffix. |

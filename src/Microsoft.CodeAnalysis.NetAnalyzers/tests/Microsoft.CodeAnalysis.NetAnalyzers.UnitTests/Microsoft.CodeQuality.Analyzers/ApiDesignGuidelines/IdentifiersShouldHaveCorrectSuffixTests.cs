@@ -1144,16 +1144,16 @@ public class C : IReadOnlyCollection<int>
 
         [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.Bar:Bar")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.Bar:Bar")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = Buzz:ABC")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:Buzz:ABC")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.Bar:Bar|MyNamespace.IFoo:Foo")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.Bar:Bar|T:MyNamespace.IFoo:Foo")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = junk")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = SomeOtherClass->ABC")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:SomeOtherClass->ABC")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.IMyInterface->Interface")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.IMyInterface->Interface")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = invalid")]
         // In case of duplicated entries, only the first is kept
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.Bar:Bar|MyNamespace.Bar:BaBar")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.Bar:Bar|T:MyNamespace.Bar:BaBar")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.SomeClass->SecondSuffix")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.SomeClass->SecondSuffix")]
         public async Task CA1710_AdditionalSuffixes(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1167,46 +1167,46 @@ using System;
 
 namespace MyNamespace
 {
-    public interface IFoo {}
-    public class Bar {}
+    public interface IMyInterface {}
+    public class SomeClass {}
 
-    public class B : Bar {}
-    public class B1 : B {}
+    public class SomeSubClass : SomeClass {}
+    public class SomeSubSubClass : SomeSubClass {}
 
-    public class C : ICloneable, IFoo
+    public class C : ICloneable, IMyInterface
     {
         public object Clone() => null;
     }
 }
 
-public class Buzz
+public class SomeOtherClass
 {
 }
 
-public class Bzzz : Buzz {}"},
+public class SomeOtherSubClass : SomeOtherClass {}"},
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                 }
             };
 
-            if (editorConfigText.EndsWith("Bar", System.StringComparison.Ordinal))
+            if (editorConfigText.EndsWith("Suffix", System.StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCA1710CSharpResultAt(9, 18, "MyNamespace.B", "Bar"),
-                    GetCA1710CSharpResultAt(10, 18, "MyNamespace.B1", "Bar"),
+                    GetCA1710CSharpResultAt(9, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710CSharpResultAt(10, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
                 });
             }
             else if (editorConfigText.EndsWith("ABC", System.StringComparison.Ordinal))
             {
-                csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(22, 14, "Bzzz", "ABC"));
+                csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(22, 14, "SomeOtherSubClass", "ABC"));
             }
-            else if (editorConfigText.EndsWith("Foo", System.StringComparison.Ordinal))
+            else if (editorConfigText.EndsWith("Interface", System.StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCA1710CSharpResultAt(9, 18, "MyNamespace.B", "Bar"),
-                    GetCA1710CSharpResultAt(10, 18, "MyNamespace.B1", "Bar"),
-                    GetCA1710CSharpResultAt(12, 18, "MyNamespace.C", "Foo"),
+                    GetCA1710CSharpResultAt(9, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710CSharpResultAt(10, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
+                    GetCA1710CSharpResultAt(12, 18, "MyNamespace.C", "Interface"),
                 });
             }
 
@@ -1222,22 +1222,22 @@ public class Bzzz : Buzz {}"},
 Imports System
 
 Namespace MyNamespace
-    Interface IFoo
+    Interface IMyInterface
     End Interface
 
-    Public Class Bar
+    Public Class SomeClass
     End Class
 
-    Public Class B
-        Inherits Bar
+    Public Class SomeSubClass
+        Inherits SomeClass
     End Class
 
-    Public Class B1
-        Inherits B
+    Public Class SomeSubSubClass
+        Inherits SomeSubClass
     End Class
 
     Public Class C
-        Implements ICloneable, IFoo
+        Implements ICloneable, IMyInterface
 
         Public Function Clone() As Object Implements ICloneable.Clone
             Return Nothing
@@ -1245,47 +1245,53 @@ Namespace MyNamespace
     End Class
 End Namespace
 
-Public Class Buzz
+Public Class SomeOtherClass
 End Class
 
-Public Class Bzzz
-    Inherits Buzz
+Public Class SomeOtherSubClass
+    Inherits SomeOtherClass
 End Class"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                 }
             };
 
-            if (editorConfigText.EndsWith("Bar", System.StringComparison.Ordinal))
+            if (editorConfigText.EndsWith("Suffix", System.StringComparison.Ordinal))
             {
                 vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCA1710BasicResultAt(11, 18, "MyNamespace.B", "Bar"),
-                    GetCA1710BasicResultAt(15, 18, "MyNamespace.B1", "Bar"),
+                    GetCA1710BasicResultAt(11, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710BasicResultAt(15, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
                 });
             }
             else if (editorConfigText.EndsWith("ABC", System.StringComparison.Ordinal))
             {
-                vbTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(31, 14, "Bzzz", "ABC"));
+                vbTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(31, 14, "SomeOtherSubClass", "ABC"));
             }
-            else if (editorConfigText.EndsWith("Foo", System.StringComparison.Ordinal))
+            else if (editorConfigText.EndsWith("Interface", System.StringComparison.Ordinal))
             {
                 vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCA1710BasicResultAt(11, 18, "MyNamespace.B", "Bar"),
-                    GetCA1710BasicResultAt(15, 18, "MyNamespace.B1", "Bar"),
-                    GetCA1710BasicResultAt(19, 18, "MyNamespace.C", "Foo"),
+                    GetCA1710BasicResultAt(11, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710BasicResultAt(15, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
+                    GetCA1710BasicResultAt(19, 18, "MyNamespace.C", "Interface"),
                 });
             }
 
             await vbTest.RunAsync();
         }
 
-        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
-        public async Task CA1710_IgnoresNonTypesOptions()
+        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        // methods are not handled
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = M:MyNamespace.SomeClass.MyMethod()->Suffix")]
+        // namespaces are not handled
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix")]
+        // more than one -> is not handled
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->Suffix1->Suffix2")]
+        // no suffix
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass")]
+        public async Task CA1710_InvalidSyntaxNoSuffix(string editorConfigText)
         {
-            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix|M:MyNamespace.Foo.Bar():Suffix";
-
             await new VerifyCS.Test
             {
                 TestState =
@@ -1295,9 +1301,9 @@ End Class"
                         @"
 namespace MyNamespace
 {
-    public class Foo
+    public class SomeClass
     {
-        public void Bar() {}
+        public void MyMethod() {}
     }
 }"
                     },
@@ -1313,8 +1319,8 @@ namespace MyNamespace
                     {
                         @"
 Namespace MyNamespace
-    Public Class Foo
-        Public Sub Bar()
+    Public Class SomeClass
+        Public Sub MyMethod()
         End Sub
     End Class
 End Namespace"
@@ -1324,10 +1330,11 @@ End Namespace"
             }.RunAsync();
         }
 
+
         [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
-        public async Task CA1710_HardcodedMappingWinsOverAdditionals()
+        public async Task CA1710_UserMappingWinsOverHardcoded()
         {
-            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IDictionary`2:MySuffix";
+            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IDictionary`2->MySuffix";
 
             await new VerifyCS.Test
             {
@@ -1338,7 +1345,7 @@ End Namespace"
                         @"
 using System.Collections.Generic;
 
-public class Foo : Dictionary<string, string>
+public class SomeClass : Dictionary<string, string>
 {
 }
 "
@@ -1346,7 +1353,7 @@ public class Foo : Dictionary<string, string>
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                     ExpectedDiagnostics =
                     {
-                        GetCA1710CSharpResultAt(4, 14, "Foo", "Dictionary"),
+                        GetCA1710CSharpResultAt(4, 14, "SomeClass", "MySuffix"),
                     }
                 }
             }.RunAsync();
@@ -1360,14 +1367,14 @@ public class Foo : Dictionary<string, string>
                         @"
 Imports System.Collections.Generic
 
-Public Class Foo
+Public Class SomeClass
     Inherits Dictionary(Of String, String)
 End Class"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                     ExpectedDiagnostics =
                     {
-                        GetCA1710BasicResultAt(4, 14, "Foo", "Dictionary"),
+                        GetCA1710BasicResultAt(4, 14, "SomeClass", "MySuffix"),
                     }
                 }
             }.RunAsync();
@@ -1377,11 +1384,11 @@ End Class"
         [InlineData("")]
         [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
         [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = true")]
-        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = junk")]
+        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = invalid")]
         [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = true
-                      dotnet_code_quality.CA1710.additional_required_suffixes = Foo:Foo")]
+                      dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
         [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
-                      dotnet_code_quality.CA1710.additional_required_suffixes = Foo:Foo")]
+                      dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
         public async Task CA1710_ExcludeIndirectTypes(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1406,9 +1413,9 @@ public class FreezableList : ReadOnlyCollection<int>
     }
 }
 
-public class Foo {}
-public class Bar : Foo {}
-public class Buzz : Bar {}"
+public class SomeClass {}
+public class SomeSubClass : SomeClass {}
+public class SomeSubSubClass : SomeSubClass {}"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                     ExpectedDiagnostics = { GetCA1710CSharpResultAt(7, 14, "C", "Exception") },
@@ -1417,9 +1424,9 @@ public class Buzz : Bar {}"
 
             if (editorConfigText.Contains("exclude_indirect_base_types = true"))
             {
-                if (editorConfigText.EndsWith("Foo", System.StringComparison.Ordinal))
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
                 {
-                    csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(18, 14, "Bar", "Foo"));
+                    csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(18, 14, "SomeSubClass", "Suffix1"));
                 }
             }
             else
@@ -1430,12 +1437,12 @@ public class Buzz : Bar {}"
                     GetCA1710CSharpResultAt(10, 14, "FreezableList", "Collection"),
                 });
 
-                if (editorConfigText.EndsWith("Foo", System.StringComparison.Ordinal))
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
                 {
                     csharpTest.ExpectedDiagnostics.AddRange(new[]
                     {
-                        GetCA1710CSharpResultAt(18, 14, "Bar", "Foo"),
-                        GetCA1710CSharpResultAt(19, 14, "Buzz", "Foo"),
+                        GetCA1710CSharpResultAt(18, 14, "SomeSubClass", "Suffix1"),
+                        GetCA1710CSharpResultAt(19, 14, "SomeSubSubClass", "Suffix1"),
                     });
                 }
             }
@@ -1470,15 +1477,15 @@ Public Class FreezableList
     End Sub
 End Class
 
-Public Class Foo
+Public Class SomeClass
 End Class
 
-Public Class Bar
-    Inherits Foo
+Public Class SomeSubClass
+    Inherits SomeClass
 End Class
 
-Public Class Buzz
-    Inherits Bar
+Public Class SomeSubSubClass
+    Inherits SomeSubClass
 End Class"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
@@ -1488,9 +1495,9 @@ End Class"
 
             if (editorConfigText.Contains("exclude_indirect_base_types = true"))
             {
-                if (editorConfigText.EndsWith("Foo", System.StringComparison.Ordinal))
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
                 {
-                    vbTest.ExpectedDiagnostics.Add(GetCA1710BasicResultAt(26, 14, "Bar", "Foo"));
+                    vbTest.ExpectedDiagnostics.Add(GetCA1710BasicResultAt(26, 14, "SomeSubClass", "Suffix1"));
                 }
             }
             else
@@ -1501,12 +1508,12 @@ End Class"
                     GetCA1710BasicResultAt(15, 14, "FreezableList", "Collection"),
                 });
 
-                if (editorConfigText.EndsWith("Foo", System.StringComparison.Ordinal))
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
                 {
                     vbTest.ExpectedDiagnostics.AddRange(new[]
                     {
-                        GetCA1710BasicResultAt(26, 14, "Bar", "Foo"),
-                        GetCA1710BasicResultAt(30, 14, "Buzz", "Foo"),
+                        GetCA1710BasicResultAt(26, 14, "SomeSubClass", "Suffix1"),
+                        GetCA1710BasicResultAt(30, 14, "SomeSubSubClass", "Suffix1"),
                     });
                 }
             }
