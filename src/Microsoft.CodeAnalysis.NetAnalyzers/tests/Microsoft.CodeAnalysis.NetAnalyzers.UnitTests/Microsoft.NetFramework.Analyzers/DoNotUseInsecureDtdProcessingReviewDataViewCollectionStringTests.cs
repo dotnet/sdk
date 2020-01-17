@@ -15,14 +15,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         private static DiagnosticResult GetCA3075DataViewCSharpResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.ReviewDtdProcessingPropertiesMessage);
-        }
+            => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleReviewDtdProcessingProperties).WithLocation(line, column);
 
         private static DiagnosticResult GetCA3075DataViewBasicResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.ReviewDtdProcessingPropertiesMessage);
-        }
+            => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleReviewDtdProcessingProperties).WithLocation(line, column);
 
         [Fact]
         public async Task UseDataSetDefaultDataViewManagerSetCollectionStringShouldGenerateDiagnostic()
