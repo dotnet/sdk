@@ -1292,10 +1292,10 @@ public class JobStateChangeHandler<TState>
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
-[CoClass(typeof(CFoo))]
-internal interface IFoo {}
+[CoClass(typeof(CSomeClass))]
+internal interface ISomeInterface {}
 
-internal class CFoo {}
+internal class CSomeClass {}
 ");
         }
 
@@ -1306,21 +1306,21 @@ internal class CFoo {}
 using System.Runtime.InteropServices;
 
 [{|CS7036:CoClass|}]
-internal interface IFoo1 {}
+internal interface ISomeInterface1 {}
 
-[CoClass({|CS0119:CFoo|})]
-internal interface IFoo2 {}
+[CoClass({|CS0119:CSomeClass|})]
+internal interface ISomeInterface2 {}
 
-[{|CS1729:CoClass(typeof(CFoo), null)|}]
-internal interface IFoo3 {}
+[{|CS1729:CoClass(typeof(CSomeClass), null)|}]
+internal interface ISomeInterface3 {}
 
-[CoClass(typeof(IFoo3))] // This isn't a class-type
-internal interface IFoo4 {}
+[CoClass(typeof(ISomeInterface3))] // This isn't a class-type
+internal interface ISomeInterface4 {}
 
-internal class CFoo {}
+internal class CSomeClass {}
 ",
-                // Test0.cs(16,16): warning CA1812: CFoo is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).
-                GetCSharpResultAt(16, 16, "CFoo"));
+                // Test0.cs(16,16): warning CA1812: CSomeClass is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).
+                GetCSharpResultAt(16, 16, "CSomeClass"));
         }
 
         [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
@@ -1330,11 +1330,11 @@ internal class CFoo {}
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject"")]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"")]
     public class MyTextBox { }
 }");
         }
@@ -1346,11 +1346,11 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
     public class MyTextBox { }
 }");
         }
@@ -1375,7 +1375,7 @@ public class MyTextBox { }");
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
@@ -1391,12 +1391,12 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     public class SomeBaseType { }
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject"", ""Foo.SomeBaseType"")]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"", ""SomeNamespace.SomeBaseType"")]
     public class MyTextBox { }
 }");
         }
@@ -1408,12 +1408,12 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     public class SomeBaseType { }
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject"", typeof(SomeBaseType))]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"", typeof(SomeBaseType))]
     public class MyTextBox { }
 }");
         }
@@ -1425,12 +1425,12 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     public class SomeBaseType { }
     internal class MyTextBoxDesigner { }
 
-    [Designer(typeof(Foo.MyTextBoxDesigner), typeof(SomeBaseType))]
+    [Designer(typeof(SomeNamespace.MyTextBoxDesigner), typeof(SomeBaseType))]
     public class MyTextBox { }
 }");
         }
@@ -1442,9 +1442,9 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
-    [Designer(""Foo.MyTextBox.MyTextBoxDesigner, TestProject"")]
+    [Designer(""SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject"")]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }
@@ -1461,9 +1461,9 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
-    [Designer(typeof(Foo.MyTextBox.MyTextBoxDesigner))]
+    [Designer(typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }

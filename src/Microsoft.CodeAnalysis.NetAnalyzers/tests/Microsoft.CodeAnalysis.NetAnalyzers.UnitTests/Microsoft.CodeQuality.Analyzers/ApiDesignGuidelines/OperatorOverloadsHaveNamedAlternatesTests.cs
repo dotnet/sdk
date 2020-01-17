@@ -98,22 +98,22 @@ public class C
         public async Task HasAppropriateConversionAlternate02_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public class Bar
+public class Other
 {	
 	public int i {get; set;}
 
-	public Bar(int i) => this.i = i;	
+	public Other(int i) => this.i = i;	
 }
 
-public class Foo
+public class SomeClass
 {	
 	public int i {get; set;}
 
-	public Foo(int i) => this.i = i;
+	public SomeClass(int i) => this.i = i;
 
-	public static implicit operator Foo(Bar b) => new Foo(b.i);
+	public static implicit operator SomeClass(Other b) => new SomeClass(b.i);
 
-	public static Foo FromBar(Bar b) => new Foo(b.i);
+	public static SomeClass FromOther(Other b) => new SomeClass(b.i);
 }
 ");
         }

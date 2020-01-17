@@ -140,7 +140,7 @@ public interface IPath
     string UrlPathSegment { get; }
 }
 
-public class Foo : IPath
+public class SomeClass : IPath
 {
     public string UrlPathSegment { get; }
 }",
@@ -151,7 +151,7 @@ Public Interface IPath
     Property UrlPathSegment As String
 End Interface
 
-Public Class Foo
+Public Class SomeClass
     Implements IPath
 
     Public Property UrlPathSegment As String Implements IPath.UrlPathSegment

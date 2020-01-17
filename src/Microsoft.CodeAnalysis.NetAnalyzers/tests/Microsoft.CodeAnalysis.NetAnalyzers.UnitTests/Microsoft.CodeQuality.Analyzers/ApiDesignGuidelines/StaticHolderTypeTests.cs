@@ -55,7 +55,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 public static class C2
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -66,7 +66,7 @@ public static class C2
             await VerifyCS.VerifyAnalyzerAsync(@"
 public sealed class C3
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -76,7 +76,7 @@ public sealed class C3
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public NotInheritable Class B3
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ");
@@ -118,7 +118,7 @@ public sealed class ConcurrentCreationDummy
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C4
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ",
                 CSharpResult(2, 14, "C4"));
@@ -129,7 +129,7 @@ public class C4
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class B4
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ",
@@ -143,7 +143,7 @@ End Class
 public class C5
 {
     public void Moo() { }
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -156,7 +156,7 @@ Public Class B5
     Public Sub Moo()
     End Sub
 
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ");
@@ -168,7 +168,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class C6
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -181,7 +181,7 @@ internal class C6
 {
     public class Inner
     {
-        public static void Foo() { }
+        public static void DoSomething() { }
     }
 }
 ");
@@ -192,7 +192,7 @@ internal class C6
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Class B6
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ");
@@ -204,7 +204,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Class B6
     Public Class InnerClass
-        Public Shared Sub Foo()
+        Public Shared Sub DoSomething()
         End Sub
     End Class
 End Class
@@ -243,7 +243,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C8
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 
     public static int operator +(C8 a, C8 b)
     {
@@ -258,7 +258,7 @@ public class C8
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class B8
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 
     Public Shared Operator +(a As B8, b As B8) As Integer
@@ -276,7 +276,7 @@ public class C9
 {
     public C9() { }
 
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ",
             CSharpResult(2, 14, "C9"));
@@ -290,7 +290,7 @@ Public Class B9
     Public Sub New()
     End Sub
 
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ",
@@ -305,7 +305,7 @@ public class C10
 {
     protected C10() { }
 
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ",
             CSharpResult(2, 14, "C10"));
@@ -319,7 +319,7 @@ Public Class B10
     Protected Sub New()
     End Sub
 
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ",
@@ -334,7 +334,7 @@ public class C11
 {
     private C11() { }
 
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ",
             CSharpResult(2, 14, "C11"));
@@ -348,7 +348,7 @@ Public Class B11
     Private Sub New()
     End Sub
 
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ",
@@ -363,7 +363,7 @@ public class C12
 {
     public C12(int i) { }
 
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -376,7 +376,7 @@ Public Class B12
     Public Sub New(i as Integer)
     End Sub
 
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ");
@@ -390,7 +390,7 @@ public class C13
 {
     public C13(int i = 0, string s = """") { }
 
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -403,7 +403,7 @@ Public Class B13
     Public Sub New(Optional i as Integer = 0, Optional s as String = """")
     End Sub
 
-    Public Shared Sub Foo()
+    Public Shared Sub DoSomething()
     End Sub
 End Class
 ");
@@ -420,7 +420,7 @@ public class C14
     public class C14Inner
     {
         public C14Inner() { }
-        public static void Foo() { }
+        public static void DoSomething() { }
     }
 }
 ",
@@ -439,7 +439,7 @@ Public Class B14
         Public Sub New()
         End Sub
 
-        Public Shared Sub Foo()
+        Public Shared Sub DoSomething()
         End Sub
     End Class
 End Class
@@ -596,7 +596,7 @@ public class C22
     private class C22Inner
     {
         public C22Inner() { }
-        public static void Foo() { }
+        public static void DoSomething() { }
     }
 }
 ");
@@ -614,7 +614,7 @@ Public Class B22
         Public Sub New()
         End Sub
 
-        Public Shared Sub Foo()
+        Public Shared Sub DoSomething()
         End Sub
     End Class
 End Class
@@ -630,7 +630,7 @@ public class C23Base
 }
 public class C23 : C23Base
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -643,7 +643,7 @@ Public Class B23Base
 End Class
 Public Class B23
 	Inherits B23Base
-	Public Shared Sub Foo()
+	Public Shared Sub DoSomething()
 	End Sub
 End Class
 ");
@@ -658,7 +658,7 @@ public interface IC24Base
 }
 public class C24 : IC24Base
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -671,7 +671,7 @@ Public Interface IB24Base
 End Interface
 Public Class B24
 	Implements IB24Base
-	Public Shared Sub Foo()
+	Public Shared Sub DoSomething()
 	End Sub
 End Class
 ");
@@ -687,7 +687,7 @@ public interface IC25Base
 }
 public class C25 : IC25Base
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
     void IC25Base.Moo() { }
 }
 ");
@@ -702,7 +702,7 @@ Public Interface IB25Base
 End Interface
 Public Class B25
 	Implements IB25Base
-	Public Shared Sub Foo()
+	Public Shared Sub DoSomething()
 	End Sub
 	Private Sub B25Base_Moo() Implements IB25Base.Moo
 	End Sub
@@ -716,7 +716,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C26 :{|CS1031:|}
 {
-    public static void Foo() { }
+    public static void DoSomething() { }
 }
 ");
         }
@@ -727,7 +727,7 @@ public class C26 :{|CS1031:|}
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class B26
 	Inherits{|BC30182:|}
-	Public Shared Sub Foo()
+	Public Shared Sub DoSomething()
 	End Sub
 End Class
 ");
@@ -759,8 +759,8 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C28
 {
-    private static void Foo() {}
-    protected static void Bar() {}
+    private static void SomeMethod() {}
+    protected static void SomeOtherMethod() {}
 }
 ");
         }
@@ -770,9 +770,9 @@ public class C28
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class B28
-	Private Shared Sub Foo()
+	Private Shared Sub SomeMethod()
 	End Sub
-	Protected Shared Sub Bar()
+	Protected Shared Sub SomeOtherMethod()
 	End Sub
 End Class
 ");
@@ -784,7 +784,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C29
 {
-    public static explicit operator C29(int foo) => new C29();
+    public static explicit operator C29(int p) => new C29();
 }
 ");
         }
@@ -795,7 +795,7 @@ public class C29
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C29
 {
-    public static implicit operator C29(int foo) => new C29();
+    public static implicit operator C29(int p) => new C29();
 }
 ");
         }
@@ -805,7 +805,7 @@ public class C29
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class B29
-    Public Shared Widening Operator CType(ByVal foo As Integer) As B29
+    Public Shared Widening Operator CType(ByVal p As Integer) As B29
         Return New B29()
     End Operator
 End Class

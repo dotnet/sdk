@@ -658,10 +658,10 @@ public class A
 
 public class B
 {
-    public string GetBar()
+    public string GetSomething()
     {
-        WriteToDmm(""foo"");
-        return ""bar"";
+        WriteToDmm(""a"");
+        return ""something"";
     }
 
     [Pure]
@@ -678,9 +678,9 @@ Public Class A
 End Class
 
 Public Class B
-    Public Function GetBar() As String
-        WriteToDmm(""foo"")
-        Return ""bar""
+    Public Function GetSomething() As String
+        WriteToDmm(""a"")
+        Return ""something""
     End Function
 
     <Pure>

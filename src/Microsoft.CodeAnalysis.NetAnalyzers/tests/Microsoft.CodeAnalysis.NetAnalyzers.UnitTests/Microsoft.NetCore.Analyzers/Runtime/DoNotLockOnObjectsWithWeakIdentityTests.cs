@@ -20,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
-            public class foo {
+            public class SomeClass {
                 public void Test() {
                     object o = new object();
                     lock (o) {
@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 ");
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
-            Public Class foo
+            Public Class SomeClass
                 Public Sub Test()
                     Dim o As new Object()
                     SyncLock o
@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
-            public class foo
+            public class SomeClass
             {
                 public void Test()
                 {
@@ -64,7 +64,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     lock (System.Threading.Thread.CurrentThread) { }
 
-                    lock (typeof(foo)) { }
+                    lock (typeof(SomeClass)) { }
 
                     System.Reflection.MemberInfo mi = null;
                     lock (mi) { }
@@ -100,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
-            Public Class foo
+            Public Class SomeClass
                 Public Sub Test()
                     Dim s1 As String = """"
                     SyncLock s1
@@ -121,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     SyncLock System.Threading.Thread.CurrentThread
                     End SyncLock
 
-                    SyncLock GetType(foo)
+                    SyncLock GetType(SomeClass)
                     End SyncLock
 
                     Dim mi As System.Reflection.MemberInfo = Nothing
@@ -167,7 +167,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
-            public class foo
+            public class SomeClass
             {
                 public void Test()
                 {
@@ -184,7 +184,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     lock ([|System.Threading.Thread.CurrentThread|]) { }
 
-                    lock ([|typeof(foo)|]) { }
+                    lock ([|typeof(SomeClass)|]) { }
 
                     System.Reflection.MemberInfo mi = null;
                     lock ([|mi|]) { }
@@ -205,7 +205,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
-            Public Class foo
+            Public Class SomeClass
                 Public Sub Test()
                     Dim s1 As String = """"
                     SyncLock [|s1|]
@@ -226,7 +226,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     SyncLock [|System.Threading.Thread.CurrentThread|]
                     End SyncLock
 
-                    SyncLock [|GetType (foo)|]
+                    SyncLock [|GetType (SomeClass)|]
                     End SyncLock
 
                     Dim mi As System.Reflection.MemberInfo = Nothing
@@ -261,7 +261,7 @@ using System.Threading;
 
 public class C
 {
-    public void Foo()
+    public void SomeMethod()
     {
         Monitor.Enter(this);
         Monitor.Enter(""test1"");
@@ -280,7 +280,7 @@ public class C
 Imports System.Threading
 
 Public Class C
-    Public Sub Foo()
+    Public Sub SomeMethod()
         Monitor.Enter(Me)
         Monitor.Enter(""test1"")
 
@@ -306,7 +306,7 @@ using System.Threading;
 
 public class C
 {
-    public void Foo()
+    public void SomeMethod()
     {
         Monitor.TryEnter(this);
         Monitor.TryEnter(""test1"");
@@ -341,7 +341,7 @@ Imports System
 Imports System.Threading
 
 Public Class C
-    Public Sub Foo()
+    Public Sub SomeMethod()
         Monitor.TryEnter(Me)
         Monitor.TryEnter(""test1"")
 

@@ -449,7 +449,7 @@ class Program
         }
         catch (Exception)
         { 
-            var finalException = new InvalidOperationException(""barf"", exception);
+            var finalException = new InvalidOperationException(""aaa"", exception);
             throw finalException;
         }
     }
@@ -473,7 +473,7 @@ class Program
         }
         catch
         { 
-            var finalException = new InvalidOperationException(""barf"", exception);
+            var finalException = new InvalidOperationException(""aaa"", exception);
             throw finalException;
         }
     }
@@ -487,7 +487,7 @@ Class Program
         Try
             
         Catch
-            Dim finalException = new InvalidOperationException(""barf"", exception)
+            Dim finalException = new InvalidOperationException(""aaa"", exception)
             Throw finalException
         End Try
     End Sub
