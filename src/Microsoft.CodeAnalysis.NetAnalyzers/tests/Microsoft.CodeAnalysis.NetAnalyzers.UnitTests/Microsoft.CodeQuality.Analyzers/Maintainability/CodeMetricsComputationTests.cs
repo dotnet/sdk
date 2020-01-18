@@ -600,6 +600,74 @@ Assembly: (Lines: 12, ExecutableLines: 4, MntIndex: 88, CycCxty: 2, CoupledTypes
             VerifyCSharp(source, expectedMetricsText, true);
         }
 
+        [Fact]
+        public void MethodWithClosureTypes()
+        {
+            var source = @"
+class C
+{
+    void M1()
+    {
+        C1 a = new C1();
+        new System.Action(() => {C2 b = new C2(a);})();
+    }
+}
+class C1{}
+class C2{ public C2(C1 a) {} }
+";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 11, ExecutableLines: 3, MntIndex: 93, CycCxty: 3, CoupledTypes: {C1, C2, System.Action}, DepthInherit: 1)
+   C: (Lines: 9, ExecutableLines: 3, MntIndex: 80, CycCxty: 1, CoupledTypes: {C1, C2, System.Action}, DepthInherit: 1)
+      C.M1(): (Lines: 5, ExecutableLines: 3, MntIndex: 80, CycCxty: 1, CoupledTypes: {C1, C2, System.Action})
+   C1: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+   C2: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {C1}, DepthInherit: 1)
+      C2.C2(C1): (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {C1})
+";
+
+            VerifyCSharp(source, expectedMetricsText);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public void MethodWithLinqExpression()
+        {
+            var source = @"
+using System.Linq;
+using System.Collections.Generic;
+class C
+{
+    IEnumerable<int> TestCa1506()
+    {
+        var ints = new[] { 1, 2 };
+        return from a in ints
+               from b in ints
+               from c in ints
+               from d in ints
+               from e in ints
+               from f in ints
+               from g in ints 
+               from h in ints
+               from i in ints
+               from j in ints
+               from k in ints
+               from l in ints
+               from m in ints
+               from n in ints
+               from o in ints
+               from p in ints
+               select p;
+    }
+}
+";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<>, System.Func<,,>, System.Func<,>, System.Linq.Enumerable}, DepthInherit: 1)
+   C: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<>, System.Func<,,>, System.Func<,>, System.Linq.Enumerable}, DepthInherit: 1)
+      C.TestCa1506(): (Lines: 21, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<>, System.Func<,,>, System.Func<,>, System.Linq.Enumerable})
+";
+
+            VerifyCSharp(source, expectedMetricsText);
+        }
 
         [Fact]
         public void MethodWithTypeReferencesInAttributes()
