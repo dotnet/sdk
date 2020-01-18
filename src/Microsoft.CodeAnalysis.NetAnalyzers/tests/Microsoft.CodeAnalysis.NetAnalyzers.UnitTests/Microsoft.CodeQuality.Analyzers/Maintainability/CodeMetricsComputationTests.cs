@@ -573,6 +573,33 @@ Assembly: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes:
             VerifyCSharp(source, expectedMetricsText, true);
         }
 
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public void MethodWithGenericTypes()
+        {
+            var source = @"
+class C
+{
+    void M1()
+    {
+        G<int> a = null;
+        G<string> b = null;
+        G<C1> c = null;
+        G<G<C2>> d = null;
+    }
+}
+class G<T> {}
+";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 12, ExecutableLines: 4, MntIndex: 88, CycCxty: 2, CoupledTypes: {C1, C2, G<>}, DepthInherit: 1)
+   C: (Lines: 11, ExecutableLines: 4, MntIndex: 77, CycCxty: 1, CoupledTypes: {C1, C2, G<>}, DepthInherit: 1)
+      C.M1(): (Lines: 7, ExecutableLines: 4, MntIndex: 77, CycCxty: 1, CoupledTypes: {C1, C2, G<>})
+   G<T>: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+";
+
+            VerifyCSharp(source, expectedMetricsText, true);
+        }
+
 
         [Fact]
         public void MethodWithTypeReferencesInAttributes()
