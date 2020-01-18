@@ -1072,6 +1072,28 @@ public class C
                 GetCSharpUnusedParameterResultAt(9, 32, "x", "LocalFunction"));
         }
 
+
+        [Fact]
+        public async Task DiagnosticForMethodsInNestedTypes()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public void OuterM(int [|x|])
+    {
+    }
+
+    public class NestedType
+    {
+        public void InnerM(int [|y|])
+        {
+        }
+    }
+}");
+        }
+
         #endregion
 
         #region Helpers
