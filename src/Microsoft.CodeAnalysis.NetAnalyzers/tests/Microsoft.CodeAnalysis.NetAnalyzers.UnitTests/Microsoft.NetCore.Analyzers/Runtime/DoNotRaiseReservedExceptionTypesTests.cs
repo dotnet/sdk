@@ -2,8 +2,6 @@
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.NetCore.CSharp.Analyzers.Runtime;
-using Microsoft.NetCore.VisualBasic.Analyzers.Runtime;
 using Test.Utilities;
 using Xunit;
 
@@ -56,7 +54,7 @@ namespace TestNamespace
         }
     }
 }",
-            GetTooGenericCSharpResultAt(10, 23, "System.Exception"));
+            GetTooGenericCSharpResultAt(10, 19, "System.Exception"));
 
             VerifyBasic(@"
 Imports System
@@ -68,7 +66,7 @@ Namespace TestNamespace
 		End Sub
 	End Class
 End Namespace",
-            GetTooGenericBasicResultAt(7, 23, "System.Exception"));
+            GetTooGenericBasicResultAt(7, 19, "System.Exception"));
         }
 
         [Fact]
@@ -87,7 +85,7 @@ namespace TestNamespace
         }
     }
 }",
-            GetReservedCSharpResultAt(10, 23, "System.StackOverflowException"));
+            GetReservedCSharpResultAt(10, 19, "System.StackOverflowException"));
 
             VerifyBasic(@"
 Imports System
@@ -99,37 +97,37 @@ Namespace TestNamespace
 		End Sub
 	End Class
 End Namespace",
-            GetReservedBasicResultAt(7, 23, "System.StackOverflowException"));
+            GetReservedBasicResultAt(7, 19, "System.StackOverflowException"));
         }
 
         private DiagnosticResult GetTooGenericCSharpResultAt(int line, int column, string callee)
         {
-            return GetCSharpResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule, callee);
+            return GetCSharpResultAt(line, column, DoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule, callee);
         }
 
         private DiagnosticResult GetReservedCSharpResultAt(int line, int column, string callee)
         {
-            return GetCSharpResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule, callee);
+            return GetCSharpResultAt(line, column, DoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule, callee);
         }
 
         private DiagnosticResult GetTooGenericBasicResultAt(int line, int column, string callee)
         {
-            return GetBasicResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule, callee);
+            return GetBasicResultAt(line, column, DoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule, callee);
         }
 
         private DiagnosticResult GetReservedBasicResultAt(int line, int column, string callee)
         {
-            return GetBasicResultAt(line, column, CSharpDoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule, callee);
+            return GetBasicResultAt(line, column, DoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule, callee);
         }
 
         protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
         {
-            return new BasicDoNotRaiseReservedExceptionTypesAnalyzer();
+            return new DoNotRaiseReservedExceptionTypesAnalyzer();
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new CSharpDoNotRaiseReservedExceptionTypesAnalyzer();
+            return new DoNotRaiseReservedExceptionTypesAnalyzer();
         }
     }
 }
