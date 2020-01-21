@@ -23,10 +23,10 @@ class C
 {
     C()
     {
-        Foo();
+        SomeMethod();
     }
 
-    protected virtual void Foo() { }
+    protected virtual void SomeMethod() { }
 }
 ",
             GetCA2214CSharpResultAt(6, 9));
@@ -40,10 +40,10 @@ class C
 {
     C()
     {
-        [|Foo()|];
+        [|SomeMethod()|];
     }
 
-    protected virtual void Foo() { }
+    protected virtual void SomeMethod() { }
 }
 ");
         }
@@ -54,9 +54,9 @@ class C
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Public Sub New()
-        Foo()
+        SomeMethod()
     End Sub
-    Overridable Sub Foo()
+    Overridable Sub SomeMethod()
     End Sub
 End Class
 ",
@@ -69,9 +69,9 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Public Sub New()
-        [|Foo()|]
+        [|SomeMethod()|]
     End Sub
-    Overridable Sub Foo()
+    Overridable Sub SomeMethod()
     End Sub
 End Class
 ");
@@ -85,10 +85,10 @@ abstract class C
 {
     C()
     {
-        Foo();
+        SomeMethod();
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 ",
             GetCA2214CSharpResultAt(6, 9));
@@ -100,9 +100,9 @@ abstract class C
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
     Public Sub New()
-        Foo()
+        SomeMethod()
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 ",
             GetCA2214BasicResultAt(4, 9));
@@ -116,12 +116,12 @@ abstract class C
 {
     C()
     {
-        Foo();
-        Bar();
+        SomeMethod();
+        SomeOtherMethod();
     }
 
-    protected abstract void Foo();
-    protected virtual void Bar() { }
+    protected abstract void SomeMethod();
+    protected virtual void SomeOtherMethod() { }
 }
 ",
             GetCA2214CSharpResultAt(6, 9),
@@ -134,11 +134,11 @@ abstract class C
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
     Public Sub New()
-        Foo()
-        Bar()
+        SomeMethod()
+        SomeOtherMethod()
     End Sub
-    MustOverride Sub Foo()
-    Overridable Sub Bar()
+    MustOverride Sub SomeMethod()
+    Overridable Sub SomeOtherMethod()
     End Sub
 End Class
 ",
@@ -156,16 +156,16 @@ abstract class C
     {
         if (true)
         {
-            Foo();
+            SomeMethod();
         }
 
         if (false)
         {
-            Foo(); // also check unreachable code
+            SomeMethod(); // also check unreachable code
         }
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 ",
             GetCA2214CSharpResultAt(8, 13),
@@ -179,14 +179,14 @@ abstract class C
 MustInherit Class C
     Public Sub New()
         If True Then
-            Foo()
+            SomeMethod()
         End If
 
         If False Then
-            Foo() ' also check unreachable code
+            SomeMethod() ' also check unreachable code
         End If
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 ",
             GetCA2214BasicResultAt(5, 13),
@@ -199,11 +199,11 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class C
 {
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 
     void Method()
     {
-        Foo();
+        SomeMethod();
     }
 }
 ");
@@ -214,10 +214,10 @@ abstract class C
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 
     Sub Method()
-        Foo()
+        SomeMethod()
     End Sub
 End Class
 ");
@@ -239,11 +239,11 @@ abstract class C : System.Web.UI.Control
     C()
     {
         // no diagnostics because we inherit from System.Web.UI.Control
-        Foo();
+        SomeMethod();
         OnLoad(null);
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 
 abstract class F : System.ComponentModel.Component
@@ -251,10 +251,10 @@ abstract class F : System.ComponentModel.Component
     F()
     {
         // no diagnostics because we inherit from System.ComponentModel.Component
-        Foo();
+        SomeMethod();
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 "
                     },
@@ -278,11 +278,11 @@ abstract class D : System.Windows.Forms.Control
     D()
     {
         // no diagnostics because we inherit from System.Windows.Forms.Control
-        Foo();
+        SomeMethod();
         OnPaint(null);
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 
 class ControlBase : System.Windows.Forms.Control
@@ -302,10 +302,10 @@ abstract class F : System.ComponentModel.Component
     F()
     {
         // no diagnostics because we inherit from System.ComponentModel.Component
-        Foo();
+        SomeMethod();
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 "
                     },
@@ -328,10 +328,10 @@ MustInherit Class D
     Inherits System.Windows.Forms.Control
     Public Sub New()
         ' no diagnostics because we inherit from System.Windows.Forms.Control
-        Foo()
+        SomeMethod()
         OnPaint(Nothing)
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 
 Class ControlBase
@@ -349,9 +349,9 @@ MustInherit Class F
     Inherits System.ComponentModel.Component
     Public Sub New()
         ' no diagnostics because we inherit from System.ComponentModel.Component
-        Foo()
+        SomeMethod()
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 "
                     },
@@ -374,19 +374,19 @@ MustInherit Class C
     Inherits System.Web.UI.Control
     Public Sub New()
         ' no diagnostics because we inherit from System.Web.UI.Control
-        Foo()
+        SomeMethod()
         OnLoad(Nothing)
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 
 MustInherit Class F
     Inherits System.ComponentModel.Component
     Public Sub New()
         ' no diagnostics because we inherit from System.ComponentModel.Component
-        Foo()
+        SomeMethod()
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 "
                     },
@@ -400,7 +400,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 class D
 {
-    public virtual void Foo() {}
+    public virtual void SomeMethod() {}
 }
 
 class C
@@ -409,7 +409,7 @@ class C
     {
         if (obj.Equals(d))
         {
-            d.Foo();
+            d.SomeMethod();
         }
     }
 }
@@ -421,14 +421,14 @@ class C
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class D
-    Public Overridable Sub Foo()
+    Public Overridable Sub SomeMethod()
     End Sub
 End Class
 
 Class C
     Public Sub New(obj As Object, d As D)
         If obj.Equals(d) Then
-            d.Foo()
+            d.SomeMethod()
         End If
     End Sub
 End Class

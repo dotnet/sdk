@@ -25,7 +25,7 @@ public class CultureInfoTestClass0
 {
     public string SpecifyCultureInfo01()
     {
-        return ""foo"".ToLower();
+        return ""aaa"".ToLower();
     }
 }",
             GetCSharpResultAt(9, 16, "string.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "string.ToLower(CultureInfo)"));
@@ -85,7 +85,7 @@ public class CultureInfoTestClass2
 {
     public static void Method()
     {
-        MethodOverloadHasCultureInfoAsFirstArgument(""Foo"");
+        MethodOverloadHasCultureInfoAsFirstArgument(""aaa"");
     }
 
     public static void MethodOverloadHasCultureInfoAsFirstArgument(string format)
@@ -139,7 +139,7 @@ public class CultureInfoTestClass2
 {
     public static void Method()
     {
-        MethodOverloadHasCultureInfoAsFirstArgument(""Foo"");
+        MethodOverloadHasCultureInfoAsFirstArgument(""aaa"");
     }
 
     public static void MethodOverloadHasCultureInfoAsFirstArgument(string format)
@@ -166,7 +166,7 @@ public class CultureInfoTestClass2
 {
     public static void Method()
     {
-        MethodOverloadHasCultureInfoAsLastArgument(""Foo"");
+        MethodOverloadHasCultureInfoAsLastArgument(""aaa"");
     }
 
     public static void MethodOverloadHasCultureInfoAsLastArgument(string format)
@@ -198,7 +198,7 @@ public class CultureInfoTestClass2
 {
     public static void Method()
     {
-        MethodOverloadHasCultureInfoAsLastArgument(""Foo"");
+        MethodOverloadHasCultureInfoAsLastArgument(""aaa"");
     }
 
     public static void MethodOverloadHasCultureInfoAsLastArgument(string format)
@@ -372,9 +372,9 @@ public class CultureInfoTestClass2
     public static void Method()
     {
         // No Diag - Inherited CultureInfo
-        MethodOverloadHasInheritedCultureInfo(""Foo"");
+        MethodOverloadHasInheritedCultureInfo(""aaa"");
         // No Diag - Since the overload has more parameters apart from CultureInfo
-        MethodOverloadHasMoreThanCultureInfo(""Foo"");
+        MethodOverloadHasMoreThanCultureInfo(""aaa"");
         // No Diag - Since the CultureInfo parameter is neither as the first parameter nor as the last parameter
         MethodOverloadWithJustCultureInfoAsInbetweenParameter("""", """");
         // No Diag - Since the non-CultureInfo parameter in the overload has RefKind != RefKind.None
@@ -440,7 +440,7 @@ Imports System.Globalization
 
 Public Class CultureInfoTestClass0
     Public Function SpecifyCultureInfo01() As String
-        Return ""foo"".ToLower()
+        Return ""aaa"".ToLower()
     End Function
 End Class",
             GetBasicResultAt(7, 16, "String.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "String.ToLower(CultureInfo)"));
@@ -489,7 +489,7 @@ Imports System.Globalization
 
 Public Class CultureInfoTestClass2
     Public Shared Sub Method()
-        MethodOverloadHasCultureInfoAsFirstArgument(""Foo"")
+        MethodOverloadHasCultureInfoAsFirstArgument(""aaa"")
     End Sub
 
     Public Shared Sub MethodOverloadHasCultureInfoAsFirstArgument(format As String)
@@ -512,7 +512,7 @@ Imports System.Globalization
 
 Public Class CultureInfoTestClass2
     Public Shared Sub Method()
-        MethodOverloadHasCultureInfoAsLastArgument(""Foo"")
+        MethodOverloadHasCultureInfoAsLastArgument(""aaa"")
     End Sub
 
     Public Shared Sub MethodOverloadHasCultureInfoAsLastArgument(format As String)
@@ -612,9 +612,9 @@ Imports System.Globalization
 Public Class CultureInfoTestClass2
     Public Shared Sub Method()
         ' No Diag - Inherited CultureInfo
-        MethodOverloadHasInheritedCultureInfo(""Foo"")
+        MethodOverloadHasInheritedCultureInfo(""aaa"")
         ' No Diag - There are more parameters apart from CultureInfo
-        MethodOverloadHasMoreThanCultureInfo(""Foo"")
+        MethodOverloadHasMoreThanCultureInfo(""aaa"")
         ' No Diag - The CultureInfo parameter is neither the first parameter nor the last parameter
         MethodOverloadWithJustCultureInfoAsInbetweenParameter("""", """")
     End Sub

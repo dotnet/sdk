@@ -1617,7 +1617,7 @@ Class Test
     Public Sub M()
         Dim disposeMe As IDisposable = Nothing
         Try
-            For Each c In ""Foo""
+            For Each c In ""aaa""
                 If disposeMe Is Nothing Then
                     disposeMe = New A()
                 End If
@@ -11477,7 +11477,7 @@ public class Consumer
         return new MyDisposable();
     }
 
-    public bool Foo()
+    public bool SomeMethod()
     {
         var myDisposable = CreateMyDisposable();
         return myDisposable.IsItFalse();

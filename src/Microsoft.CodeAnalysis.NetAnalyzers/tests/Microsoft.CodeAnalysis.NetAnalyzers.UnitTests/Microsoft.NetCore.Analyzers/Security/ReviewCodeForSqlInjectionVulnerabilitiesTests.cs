@@ -1094,7 +1094,7 @@ namespace VulnerableWebApp
         {
             SqlCommand sqlCommand = new SqlCommand()
             {
-                CommandText = ""SELECT * FROM users WHERE username = 'foo'"",
+                CommandText = ""SELECT * FROM users WHERE username = 'aaa'"",
                 CommandType = CommandType.Text,
             };
         }
@@ -1363,7 +1363,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string sqlCommandText = StillTainted(taintedInput, out string notTaintedSqlCommandText);
 
             ExecuteSql(notTaintedSqlCommandText);
@@ -1405,7 +1405,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string notTaintedSqlCommandText = taintedInput;
             string sqlCommandText = StillTainted(taintedInput, ref notTaintedSqlCommandText);
 
@@ -1448,7 +1448,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string sqlCommandText = StillTainted(taintedInput, out string taintedSqlCommandText);
 
             ExecuteSql(taintedSqlCommandText);
@@ -1491,7 +1491,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string taintedSqlCommandText = null;
             string sqlCommandText = StillTainted(taintedInput, ref taintedSqlCommandText);
 
@@ -3118,7 +3118,7 @@ namespace TestNamespace
                 StringProperty = ""This is tainted: "" + name,
             };
 
-            if ((new Random()).Next(6) == 4) 
+            if ((new Random()).Next(6) == 4)
             {
                 return null;
             }
@@ -3214,7 +3214,7 @@ namespace TestNamespace
                 StringProperty = ""This is tainted: "" + name,
             };
 
-            if ((new Random()).Next(6) == 4) 
+            if ((new Random()).Next(6) == 4)
             {
                 return null;
             }

@@ -812,13 +812,9 @@ End Namespace",
         }
 
         private static DiagnosticResult GetCA3075InnerXmlCSharpResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.DoNotUseSetInnerXmlMessage);
-        }
+            => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseSetInnerXml).WithLocation(line, column);
 
         private static DiagnosticResult GetCA3075InnerXmlBasicResultAt(int line, int column)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseInsecureDtdProcessing).WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.DoNotUseSetInnerXmlMessage);
-        }
+            => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseSetInnerXml).WithLocation(line, column);
     }
 }

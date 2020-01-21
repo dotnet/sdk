@@ -89,20 +89,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     public void Test(string first)
                     {
-                        var foo = new object();
-                        throw new System.ArgumentNullException(nameof(foo));
+                        var v = new object();
+                        throw new System.ArgumentNullException(nameof(v));
                     }
                 }",
-                GetCSharpIncorrectParameterNameExpectedResult(7, 31, "Test", "foo", "paramName", "ArgumentNullException"));
+                GetCSharpIncorrectParameterNameExpectedResult(7, 31, "Test", "v", "paramName", "ArgumentNullException"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
                     Public Sub Test(first As String)
-                        Dim foo As New Object()
-                        Throw New System.ArgumentNullException(NameOf(foo))
+                        Dim v As New Object()
+                        Throw New System.ArgumentNullException(NameOf(v))
                     End Sub
                 End Class",
-                GetBasicIncorrectParameterNameExpectedResult(5, 31, "Test", "foo", "paramName", "ArgumentNullException"));
+                GetBasicIncorrectParameterNameExpectedResult(5, 31, "Test", "v", "paramName", "ArgumentNullException"));
         }
 
         [Fact]

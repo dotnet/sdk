@@ -15,10 +15,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         private static DiagnosticResult GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(int line, int column)
-            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateWrongOverloadMessage);
+            => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlReaderCreateWrongOverload).WithLocation(line, column);
 
         private static DiagnosticResult GetCA3075XmlReaderCreateWrongOverloadBasicResultAt(int line, int column)
-            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateWrongOverloadMessage);
+            => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlReaderCreateWrongOverload).WithLocation(line, column);
 
         [Fact]
         public async Task UseXmlReaderCreateWrongOverloadShouldGenerateDiagnostic()

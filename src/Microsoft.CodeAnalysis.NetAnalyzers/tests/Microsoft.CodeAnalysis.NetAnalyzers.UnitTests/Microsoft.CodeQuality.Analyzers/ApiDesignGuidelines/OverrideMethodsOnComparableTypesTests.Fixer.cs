@@ -618,7 +618,7 @@ End Structure
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
-public class Foo : IComparable
+public class SomeClass : IComparable
 {
     public int CompareTo(object obj)
     {
@@ -626,7 +626,7 @@ public class Foo : IComparable
     }
 }
 
-public struct Bar : IComparable
+public struct SomeOtherClass : IComparable
 {
     public int CompareTo(object obj)
     {
@@ -635,13 +635,13 @@ public struct Bar : IComparable
 }",
                 new[]
                 {
-                    VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(4, 14, 4, 17).WithArguments("Foo", "==, !=, <, <=, >, >="),
-                    VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(12, 15, 12, 18).WithArguments("Bar", "==, !=, <, <=, >, >="),
+                    VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(4, 14, 4, 23).WithArguments("SomeClass", "==, !=, <, <=, >, >="),
+                    VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(12, 15, 12, 29).WithArguments("SomeOtherClass", "==, !=, <, <=, >, >="),
                 },
 @"
 using System;
 
-public class Foo : IComparable
+public class SomeClass : IComparable
 {
     public int CompareTo(object obj)
     {
@@ -668,7 +668,7 @@ public class Foo : IComparable
         throw new NotImplementedException();
     }
 
-    public static bool operator ==(Foo left, Foo right)
+    public static bool operator ==(SomeClass left, SomeClass right)
     {
         if (ReferenceEquals(left, null))
         {
@@ -678,33 +678,33 @@ public class Foo : IComparable
         return left.Equals(right);
     }
 
-    public static bool operator !=(Foo left, Foo right)
+    public static bool operator !=(SomeClass left, SomeClass right)
     {
         return !(left == right);
     }
 
-    public static bool operator <(Foo left, Foo right)
+    public static bool operator <(SomeClass left, SomeClass right)
     {
         return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
     }
 
-    public static bool operator <=(Foo left, Foo right)
+    public static bool operator <=(SomeClass left, SomeClass right)
     {
         return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
     }
 
-    public static bool operator >(Foo left, Foo right)
+    public static bool operator >(SomeClass left, SomeClass right)
     {
         return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
     }
 
-    public static bool operator >=(Foo left, Foo right)
+    public static bool operator >=(SomeClass left, SomeClass right)
     {
         return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
     }
 }
 
-public struct Bar : IComparable
+public struct SomeOtherClass : IComparable
 {
     public int CompareTo(object obj)
     {
@@ -721,32 +721,32 @@ public struct Bar : IComparable
         throw new NotImplementedException();
     }
 
-    public static bool operator ==(Bar left, Bar right)
+    public static bool operator ==(SomeOtherClass left, SomeOtherClass right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(Bar left, Bar right)
+    public static bool operator !=(SomeOtherClass left, SomeOtherClass right)
     {
         return !(left == right);
     }
 
-    public static bool operator <(Bar left, Bar right)
+    public static bool operator <(SomeOtherClass left, SomeOtherClass right)
     {
         return left.CompareTo(right) < 0;
     }
 
-    public static bool operator <=(Bar left, Bar right)
+    public static bool operator <=(SomeOtherClass left, SomeOtherClass right)
     {
         return left.CompareTo(right) <= 0;
     }
 
-    public static bool operator >(Bar left, Bar right)
+    public static bool operator >(SomeOtherClass left, SomeOtherClass right)
     {
         return left.CompareTo(right) > 0;
     }
 
-    public static bool operator >=(Bar left, Bar right)
+    public static bool operator >=(SomeOtherClass left, SomeOtherClass right)
     {
         return left.CompareTo(right) >= 0;
     }
@@ -759,7 +759,7 @@ public struct Bar : IComparable
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
 
-Public Class Foo : Implements IComparable
+Public Class SomeClass : Implements IComparable
 
     Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
         Return 1
@@ -767,7 +767,7 @@ Public Class Foo : Implements IComparable
 
 End Class
 
-Public Structure Bar : Implements IComparable
+Public Structure SomeOtherClass : Implements IComparable
 
     Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
         Return 1
@@ -776,13 +776,13 @@ Public Structure Bar : Implements IComparable
 End Structure",
                 new[]
                 {
-                    VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(4, 14, 4, 17).WithArguments("Foo", "=, <>, <, <=, >, >="),
-                    VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(12, 18, 12, 21).WithArguments("Bar", "=, <>, <, <=, >, >="),
+                    VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(4, 14, 4, 23).WithArguments("SomeClass", "=, <>, <, <=, >, >="),
+                    VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(12, 18, 12, 32).WithArguments("SomeOtherClass", "=, <>, <, <=, >, >="),
                 },
 @"
 Imports System
 
-Public Class Foo : Implements IComparable
+Public Class SomeClass : Implements IComparable
 
     Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
         Return 1
@@ -804,7 +804,7 @@ Public Class Foo : Implements IComparable
         Throw New NotImplementedException()
     End Function
 
-    Public Shared Operator =(left As Foo, right As Foo) As Boolean
+    Public Shared Operator =(left As SomeClass, right As SomeClass) As Boolean
         If ReferenceEquals(left, Nothing) Then
             Return ReferenceEquals(right, Nothing)
         End If
@@ -812,28 +812,28 @@ Public Class Foo : Implements IComparable
         Return left.Equals(right)
     End Operator
 
-    Public Shared Operator <>(left As Foo, right As Foo) As Boolean
+    Public Shared Operator <>(left As SomeClass, right As SomeClass) As Boolean
         Return Not left = right
     End Operator
 
-    Public Shared Operator <(left As Foo, right As Foo) As Boolean
+    Public Shared Operator <(left As SomeClass, right As SomeClass) As Boolean
         Return If(ReferenceEquals(left, Nothing), Not ReferenceEquals(right, Nothing), left.CompareTo(right) < 0)
     End Operator
 
-    Public Shared Operator <=(left As Foo, right As Foo) As Boolean
+    Public Shared Operator <=(left As SomeClass, right As SomeClass) As Boolean
         Return ReferenceEquals(left, Nothing) OrElse left.CompareTo(right) <= 0
     End Operator
 
-    Public Shared Operator >(left As Foo, right As Foo) As Boolean
+    Public Shared Operator >(left As SomeClass, right As SomeClass) As Boolean
         Return Not ReferenceEquals(left, Nothing) AndAlso left.CompareTo(right) > 0
     End Operator
 
-    Public Shared Operator >=(left As Foo, right As Foo) As Boolean
+    Public Shared Operator >=(left As SomeClass, right As SomeClass) As Boolean
         Return If(ReferenceEquals(left, Nothing), ReferenceEquals(right, Nothing), left.CompareTo(right) >= 0)
     End Operator
 End Class
 
-Public Structure Bar : Implements IComparable
+Public Structure SomeOtherClass : Implements IComparable
 
     Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
         Return 1
@@ -847,27 +847,27 @@ Public Structure Bar : Implements IComparable
         Throw New NotImplementedException()
     End Function
 
-    Public Shared Operator =(left As Bar, right As Bar) As Boolean
+    Public Shared Operator =(left As SomeOtherClass, right As SomeOtherClass) As Boolean
         Return left.Equals(right)
     End Operator
 
-    Public Shared Operator <>(left As Bar, right As Bar) As Boolean
+    Public Shared Operator <>(left As SomeOtherClass, right As SomeOtherClass) As Boolean
         Return Not left = right
     End Operator
 
-    Public Shared Operator <(left As Bar, right As Bar) As Boolean
+    Public Shared Operator <(left As SomeOtherClass, right As SomeOtherClass) As Boolean
         Return left.CompareTo(right) < 0
     End Operator
 
-    Public Shared Operator <=(left As Bar, right As Bar) As Boolean
+    Public Shared Operator <=(left As SomeOtherClass, right As SomeOtherClass) As Boolean
         Return left.CompareTo(right) <= 0
     End Operator
 
-    Public Shared Operator >(left As Bar, right As Bar) As Boolean
+    Public Shared Operator >(left As SomeOtherClass, right As SomeOtherClass) As Boolean
         Return left.CompareTo(right) > 0
     End Operator
 
-    Public Shared Operator >=(left As Bar, right As Bar) As Boolean
+    Public Shared Operator >=(left As SomeOtherClass, right As SomeOtherClass) As Boolean
         Return left.CompareTo(right) >= 0
     End Operator
 End Structure");

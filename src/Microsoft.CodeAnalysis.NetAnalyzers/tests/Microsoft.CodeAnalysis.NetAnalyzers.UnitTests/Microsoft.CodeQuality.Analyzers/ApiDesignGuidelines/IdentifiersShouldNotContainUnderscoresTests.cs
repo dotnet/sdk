@@ -451,14 +451,14 @@ public class Span
             await VerifyCS.VerifyAnalyzerAsync(@"
 public static class MyHelper
 {
-    public static int GetBar(this string _) => 42;
+    public static int GetSomething(this string _) => 42;
 
-    public static void Foo()
+    public static void SomeMethod()
     {
-        FooBar(out _);
+        SomeOtherMethod(out _);
     }
 
-    public static void FooBar(out int p)
+    public static void SomeOtherMethod(out int p)
     {
         p = 42;
     }
@@ -469,9 +469,9 @@ public static class MyHelper
         public async Task CA1707_CSharp_DiscardSymbolTuple_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public class Foo
+public class SomeClass
 {
-    public Foo()
+    public SomeClass()
     {
         var (_, d) = GetSomething();
     }
@@ -484,9 +484,9 @@ public class Foo
         public async Task CA1707_CSharp_DiscardSymbolPatternMatching_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public class Foo
+public class SomeClass
 {
-    public Foo(object o)
+    public SomeClass(object o)
     {
         switch (o)
         {
@@ -501,14 +501,14 @@ public class Foo
         public async Task CA1707_CSharp_StandaloneDiscardSymbol_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-public class Foo
+public class SomeClass
 {
-    public Foo(object o)
+    public SomeClass(object o)
     {
-        _ = GetBar();
+        _ = GetSomething();
     }
 
-    public int GetBar() => 42;
+    public int GetSomething() => 42;
 }");
         }
 

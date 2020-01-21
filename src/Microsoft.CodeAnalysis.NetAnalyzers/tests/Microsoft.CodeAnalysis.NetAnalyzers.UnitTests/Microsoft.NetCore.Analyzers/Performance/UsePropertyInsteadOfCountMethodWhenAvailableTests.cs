@@ -470,7 +470,7 @@ public static class C
 using System.Collections.Generic;
 using System.Linq;
 
-public class Foo
+public class SomeClass
 {
     public IReadOnlyCollection<int> GetData() => null;
     public int M() => GetData().Count();
