@@ -18,13 +18,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         private const string GCSuppressFinalizeMethodSignature_CSharp = "GC.SuppressFinalize(object)";
         private const string GCSuppressFinalizeMethodSignature_Basic = "GC.SuppressFinalize(Object)";
 
-        private static DiagnosticResult GetCA1816CSharpResultAt(int line, int column, DiagnosticDescriptor rule, string containingMethodName, string gcSuppressFinalizeMethodName)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetCA1816CSharpResultAt(int line, int column, DiagnosticDescriptor rule, string containingMethodName, string gcSuppressFinalizeMethodName) =>
+            VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
                 .WithArguments(containingMethodName, gcSuppressFinalizeMethodName);
 
-        private static DiagnosticResult GetCA1816BasicResultAt(int line, int column, DiagnosticDescriptor rule, string containingMethodName, string gcSuppressFinalizeMethodName)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetCA1816BasicResultAt(int line, int column, DiagnosticDescriptor rule, string containingMethodName, string gcSuppressFinalizeMethodName) =>
+            VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
                 .WithArguments(containingMethodName, gcSuppressFinalizeMethodName);
 

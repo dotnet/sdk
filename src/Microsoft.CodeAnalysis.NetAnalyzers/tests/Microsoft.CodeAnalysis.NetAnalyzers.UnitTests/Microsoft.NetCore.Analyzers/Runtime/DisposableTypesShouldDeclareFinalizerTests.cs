@@ -493,19 +493,10 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        private static DiagnosticResult GetCSharpDiagnostic(int line, int column)
-        {
-            return GetExpectedDiagnostic(line, column);
-        }
+        private static DiagnosticResult GetCSharpDiagnostic(int line, int column) =>
+            VerifyCS.Diagnostic().WithLocation(line, column);
 
-        private static DiagnosticResult GetBasicDiagnostic(int line, int column)
-        {
-            return GetExpectedDiagnostic(line, column);
-        }
-
-        private static DiagnosticResult GetExpectedDiagnostic(int line, int column)
-        {
-            return new DiagnosticResult(DisposableTypesShouldDeclareFinalizerAnalyzer.Rule).WithLocation(line, column);
-        }
+        private static DiagnosticResult GetBasicDiagnostic(int line, int column) =>
+            VerifyVB.Diagnostic().WithLocation(line, column);
     }
 }

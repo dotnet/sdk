@@ -116,7 +116,7 @@ End Class");
             var expected = Array.Empty<DiagnosticResult>();
             if (reportDiagnostic)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     GetCSharpDefaultResultAt(4, 26, "field")
                 };
@@ -144,7 +144,7 @@ public class Test
             expected = Array.Empty<DiagnosticResult>();
             if (reportDiagnostic)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     GetBasicDefaultResultAt(3, 22, "field")
                 };

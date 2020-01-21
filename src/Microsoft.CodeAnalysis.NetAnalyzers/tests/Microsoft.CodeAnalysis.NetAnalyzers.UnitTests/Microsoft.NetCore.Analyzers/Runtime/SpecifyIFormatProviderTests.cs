@@ -915,60 +915,44 @@ End Class
 ");
         }
 
-        private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
+        private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
 
-        private DiagnosticResult GetIFormatProviderAlternateRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+        private DiagnosticResult GetIFormatProviderAlternateRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
 
-        private DiagnosticResult GetIFormatProviderUICultureStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.UICultureStringRule)
+        private DiagnosticResult GetIFormatProviderUICultureStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.UICultureStringRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
 
-        private DiagnosticResult GetIFormatProviderUICultureRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.UICultureRule)
+        private DiagnosticResult GetIFormatProviderUICultureRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.UICultureRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
 
-        private DiagnosticResult GetIFormatProviderAlternateStringRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
+        private DiagnosticResult GetIFormatProviderAlternateStringRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
 
-        private DiagnosticResult GetIFormatProviderAlternateRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
+        private DiagnosticResult GetIFormatProviderAlternateRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
 
-        private DiagnosticResult GetIFormatProviderUICultureStringRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.UICultureStringRule)
+        private DiagnosticResult GetIFormatProviderUICultureStringRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.UICultureStringRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
 
-        private DiagnosticResult GetIFormatProviderUICultureRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return new DiagnosticResult(SpecifyIFormatProviderAnalyzer.UICultureRule)
+        private DiagnosticResult GetIFormatProviderUICultureRuleBasicResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.UICultureRule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2, arg3);
-        }
     }
 }

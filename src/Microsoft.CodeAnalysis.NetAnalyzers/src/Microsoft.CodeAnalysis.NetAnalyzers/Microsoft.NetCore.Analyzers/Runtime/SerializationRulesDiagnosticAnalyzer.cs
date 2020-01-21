@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -21,17 +20,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         private static readonly LocalizableString s_localizableDescriptionCA2229 =
-            new LocalizableResourceString(
-                nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RuleCA2229 = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
+        internal static DiagnosticDescriptor RuleCA2229Default = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
                                                                         s_localizableTitleCA2229,
-                                                                        "{0}",
+                                                                        MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageCreateMagicConstructor,
                                                                         DiagnosticCategory.Usage,
                                                                         RuleLevel.IdeHidden_BulkConfigurable,
                                                                         description: s_localizableDescriptionCA2229,
                                                                         isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
+
+        internal static DiagnosticDescriptor RuleCA2229Sealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
+                                                                            s_localizableTitleCA2229,
+                                                                            MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
+                                                                            DiagnosticCategory.Usage,
+                                                                            RuleLevel.IdeHidden_BulkConfigurable,
+                                                                            description: s_localizableDescriptionCA2229,
+                                                                            isPortedFxCopRule: true,
+                                                                        isDataflowRule: false);
+
+        internal static DiagnosticDescriptor RuleCA2229Unsealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
+                                                                                s_localizableTitleCA2229,
+                                                                                MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
+                                                                                DiagnosticCategory.Usage,
+                                                                                RuleLevel.IdeHidden_BulkConfigurable,
+                                                                                description: s_localizableDescriptionCA2229,
+                                                                                isPortedFxCopRule: true,
                                                                         isDataflowRule: false);
 
         // Mark ISerializable types with SerializableAttribute
@@ -46,8 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         private static readonly LocalizableString s_localizableDescriptionCA2237 =
-            new LocalizableResourceString(
-                nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor RuleCA2237 = DiagnosticDescriptorHelper.Create(RuleCA2237Id,
@@ -84,7 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                         isPortedFxCopRule: true,
                                                                         isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA2229, RuleCA2235, RuleCA2237);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA2229Default, RuleCA2229Sealed, RuleCA2229Unsealed, RuleCA2235, RuleCA2237);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -193,10 +208,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         // There is no serialization ctor - issue a diagnostic.
                         if (serializationCtor == null)
                         {
-                            context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleCA2229,
-                                string.Format(CultureInfo.CurrentCulture,
-                                    MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageCreateMagicConstructor,
-                                    namedTypeSymbol.Name)));
+                            context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleCA2229Default, namedTypeSymbol.Name));
                         }
                         else
                         {
@@ -205,19 +217,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             if (namedTypeSymbol.IsSealed &&
                                 serializationCtor.DeclaredAccessibility != Accessibility.Private)
                             {
-                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229,
-                                    string.Format(CultureInfo.CurrentCulture,
-                                        MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
-                                        namedTypeSymbol.Name)));
+                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229Sealed, namedTypeSymbol.Name));
                             }
 
                             if (!namedTypeSymbol.IsSealed &&
                                 serializationCtor.DeclaredAccessibility != Accessibility.Protected)
                             {
-                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229,
-                                    string.Format(CultureInfo.CurrentCulture,
-                                        MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
-                                        namedTypeSymbol.Name)));
+                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229Unsealed, namedTypeSymbol.Name));
                             }
                         }
                     }
