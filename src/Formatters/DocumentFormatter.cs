@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
@@ -21,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>
         /// </summary>
-        public async Task<Solution> FormatAsync(
+        public async Task<(Solution Solution, List<FormattedFile> FormattedFiles)> FormatAsync(
             Solution solution,
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions formatOptions,
@@ -89,20 +90,21 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="Document"/>.
         /// </summary>
-        private async Task<Solution> ApplyFileChangesAsync(
-            Solution solution,
+        private async Task<(Solution Solution, List<FormattedFile> FormattedFiles)> ApplyFileChangesAsync(
+           Solution solution,
             ImmutableArray<(Document, Task<(SourceText originalText, SourceText formattedText)>)> formattedDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            var formattedFiles = new List<FormattedFile>();
             var formattedSolution = solution;
 
             foreach (var (document, formatTask) in formattedDocuments)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    return formattedSolution;
+                    return (formattedSolution, formattedFiles);
                 }
 
                 var (originalText, formattedText) = await formatTask.ConfigureAwait(false);
@@ -111,37 +113,46 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     continue;
                 }
 
-                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Trace)
-                {
-                    // Log formatting changes as errors when we are doing a dry-run.
-                    LogFormattingChanges(formatOptions.WorkspaceFilePath, document.FilePath, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
-                }
+                var fileChanges = GetFileChanges(formatOptions, formatOptions.WorkspaceFilePath, document.FilePath, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
+                formattedFiles.Add(new FormattedFile(document, fileChanges));
 
                 formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
             }
 
-            return formattedSolution;
+            return (formattedSolution, formattedFiles);
         }
 
-        private void LogFormattingChanges(string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
+        private IEnumerable<FileChange> GetFileChanges(FormatOptions formatOptions, string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
         {
+            var fileChanges = new List<FileChange>();
             var workspaceFolder = Path.GetDirectoryName(workspacePath);
             var changes = formattedText.GetChangeRanges(originalText);
 
             foreach (var change in changes)
             {
-                // LinePosition is zero based so we need to increment to report numbers people expect.
                 var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
-                var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({changePosition.Line + 1},{changePosition.Character + 1}): {FormatWarningDescription}";
+                var fileChange = new FileChange(changePosition, FormatWarningDescription);
+                fileChanges.Add(fileChange);
 
-                if (changesAreErrors)
+                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Trace)
                 {
-                    logger.LogError(formatMessage);
+                    LogFormattingChanges(filePath, changesAreErrors, logger, workspaceFolder, fileChange);
                 }
-                else
-                {
-                    logger.LogWarning(formatMessage);
-                }
+            }
+
+            return fileChanges;
+        }
+
+        private static void LogFormattingChanges(string filePath, bool changesAreErrors, ILogger logger, string workspaceFolder, FileChange fileChange)
+        {
+            var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({fileChange.LineNumber},{fileChange.CharNumber}): {fileChange.FormatDescription}";
+            if (changesAreErrors)
+            {
+                logger.LogError(formatMessage);
+            }
+            else
+            {
+                logger.LogWarning(formatMessage);
             }
         }
     }

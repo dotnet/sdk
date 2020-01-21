@@ -91,15 +91,24 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 logLevel: LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                filesToFormat: ImmutableHashSet.Create(document.FilePath));
+                filesToFormat: ImmutableHashSet.Create(document.FilePath),
+                reportPath: string.Empty);
 
             var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
 
             var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default);
-            var formattedDocument = GetOnlyDocument(formattedSolution);
+            var formattedDocument = GetOnlyDocument(formattedSolution.Solution);
             var formattedText = await formattedDocument.GetTextAsync();
 
             Assert.Equal(expectedCode, formattedText.ToString());
+
+            if (testCode != expectedCode)
+            {
+                var formattedFile = formattedSolution.FormattedFiles.Single();
+                Assert.Equal(formattedDocument.Name, formattedFile.FileName);
+                Assert.Equal(formattedDocument.FilePath, formattedFile.FilePath);
+                Assert.Equal(formattedDocument.Id, formattedFile.DocumentId);
+            }
 
             return formattedText;
         }

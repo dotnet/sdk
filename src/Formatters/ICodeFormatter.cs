@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>.
         /// </summary>
-        Task<Solution> FormatAsync(
+        Task<(Solution Solution, List<FormattedFile> FormattedFiles)> FormatAsync(
             Solution solution,
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions options,

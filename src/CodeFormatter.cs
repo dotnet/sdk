@@ -15,6 +15,8 @@ using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.CodingConventions;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Microsoft.CodeAnalysis.Tools
 {
@@ -33,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat) = options;
+            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat, reportPath) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
@@ -72,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
 
-                var solutionChanges = formattedSolution.GetChanges(solution);
+                var solutionChanges = formattedSolution.Solution.GetChanges(solution);
 
                 var filesFormatted = 0;
                 foreach (var projectChanges in solutionChanges.GetProjectChanges())
@@ -87,10 +89,22 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 var exitCode = 0;
 
-                if (saveFormattedFiles && !workspace.TryApplyChanges(formattedSolution))
+                if (saveFormattedFiles && !workspace.TryApplyChanges(formattedSolution.Solution))
                 {
                     logger.LogError(Resources.Failed_to_save_formatting_changes);
                     exitCode = 1;
+                }
+
+                if (exitCode == 0 && !string.IsNullOrWhiteSpace(reportPath))
+                {
+                    var reportName = "format-report.json";
+                    var reportFilePath = new StringBuilder(reportPath);
+                    reportFilePath = reportPath.EndsWith('\\') ? reportFilePath.Append(reportName) : reportFilePath.Append($"\\{reportName}");
+
+                    logger.LogInformation(Resources.Writing_formatting_report_to_0, reportFilePath);
+                    var formattedFilesJson = JsonConvert.SerializeObject(formattedSolution.FormattedFiles, Newtonsoft.Json.Formatting.Indented);
+
+                    File.WriteAllText(reportFilePath.ToString(), formattedFilesJson);
                 }
 
                 logger.LogDebug(Resources.Formatted_0_of_1_files, filesFormatted, fileCount);
@@ -187,18 +201,20 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        private static async Task<Solution> RunCodeFormattersAsync(
+        private static async Task<(Solution Solution, List<FormattedFile> FormattedFiles)> RunCodeFormattersAsync(
             Solution solution,
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions options,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedSolution = solution;
+            var formattedSolution = (Solution: solution, FormattedFiles: new List<FormattedFile>());
 
             foreach (var codeFormatter in s_codeFormatters)
             {
-                formattedSolution = await codeFormatter.FormatAsync(formattedSolution, formattableDocuments, options, logger, cancellationToken).ConfigureAwait(false);
+                var formatterResponse = await codeFormatter.FormatAsync(formattedSolution.Solution, formattableDocuments, options, logger, cancellationToken).ConfigureAwait(false);
+                formattedSolution.Solution = formatterResponse.Solution;
+                formattedSolution.FormattedFiles.AddRange(formatterResponse.FormattedFiles);
             }
 
             return formattedSolution;

@@ -36,13 +36,14 @@ namespace Microsoft.CodeAnalysis.Tools
                 .AddOption(new Option(new[] { "--dry-run" }, Resources.Format_files_but_do_not_save_changes_to_disk, new Argument<bool>()))
                 .AddOption(new Option(new[] { "--check" }, Resources.Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted, new Argument<bool>()))
                 .AddOption(new Option(new[] { "--files" }, Resources.A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_if_empty, new Argument<string>(() => null)))
+                .AddOption(new Option(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory, new Argument<string>(() => null)))
                 .UseVersionOption()
                 .Build();
 
             return await parser.InvokeAsync(args).ConfigureAwait(false);
         }
 
-        public static async Task<int> Run(string folder, string workspace, string verbosity, bool dryRun, bool check, string files, IConsole console = null)
+        public static async Task<int> Run(string folder, string workspace, string verbosity, bool dryRun, bool check, string files, string report, IConsole console = null)
         {
             // Setup logging.
             var serviceCollection = new ServiceCollection();
@@ -120,7 +121,8 @@ namespace Microsoft.CodeAnalysis.Tools
                     logLevel,
                     saveFormattedFiles: !dryRun,
                     changesAreErrors: check,
-                    filesToFormat);
+                    filesToFormat,
+                    reportPath: report);
 
                 var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                     formatOptions,

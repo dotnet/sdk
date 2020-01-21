@@ -260,7 +260,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                filesToFormat);
+                filesToFormat,
+                reportPath: string.Empty);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
 
             Assert.Equal(expectedExitCode, formatResult.ExitCode);
