@@ -3,7 +3,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using System.Globalization;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHaveZeroValueAnalyzer,
@@ -19,12 +18,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [Fact]
         public async Task CSharp_EnumsShouldZeroValueFlagsRename()
         {
-            // In enum '{0}', change the name of '{1}' to 'None'.
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E", "A");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E2", "A2");
-            string expectedMessage3 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E3", "A3");
-            string expectedMessage4 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E4", "A4");
-
             var code = @"
 public class Outer
 {
@@ -64,10 +57,10 @@ public enum NoZeroValuedField
     B5 = 2
 }";
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpRenameResultAt(7, 9, expectedMessage1),
-                GetCSharpRenameResultAt(15, 5, expectedMessage2),
-                GetCSharpRenameResultAt(22, 5, expectedMessage3),
-                GetCSharpRenameResultAt(29, 5, expectedMessage4));
+                GetCSharpRenameResultAt(7, 9, "E", "A"),
+                GetCSharpRenameResultAt(15, 5, "E2", "A2"),
+                GetCSharpRenameResultAt(22, 5, "E3", "A3"),
+                GetCSharpRenameResultAt(29, 5, "E4", "A4"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -117,10 +110,6 @@ internal enum NoZeroValuedField
         [Fact]
         public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZero()
         {
-            // Remove all members that have the value zero from {0} except for one member that is named 'None'.
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros, "E");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros, "E2");
-
             var code = @"// Some comment
 public class Outer
 {
@@ -140,8 +129,8 @@ public enum E2
     A = None
 }";
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpMultipleZeroResultAt(5, 17, expectedMessage1),
-                GetCSharpMultipleZeroResultAt(14, 13, expectedMessage2));
+                GetCSharpMultipleZeroResultAt(5, 17, "E"),
+                GetCSharpMultipleZeroResultAt(14, 13, "E2"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -171,10 +160,6 @@ internal enum E2
         [Fact]
         public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValue()
         {
-            // Add a member to {0} that has a value of zero with a suggested name of 'None'.
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue, "E");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue, "E2");
-
             var code = @"
 public class Outer
 {
@@ -203,8 +188,8 @@ public enum E4
 }
 ";
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpNoZeroResultAt(4, 17, expectedMessage1),
-                GetCSharpNoZeroResultAt(9, 17, expectedMessage2));
+                GetCSharpNoZeroResultAt(4, 17, "E"),
+                GetCSharpNoZeroResultAt(9, 17, "E2"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -243,11 +228,6 @@ internal enum E4
         [Fact]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename()
         {
-            // In enum '{0}', change the name of '{1}' to 'None'.
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E", "A");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E2", "A2");
-            string expectedMessage3 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E3", "A3");
-
             var code = @"
 Public Class C
     <System.Flags>
@@ -276,9 +256,9 @@ Public Enum NoZeroValuedField
 End Enum
 ";
             await VerifyVB.VerifyAnalyzerAsync(code,
-                GetBasicRenameResultAt(5, 9, expectedMessage1),
-                GetBasicRenameResultAt(12, 5, expectedMessage2),
-                GetBasicRenameResultAt(18, 5, expectedMessage3));
+                GetBasicRenameResultAt(5, 9, "E", "A"),
+                GetBasicRenameResultAt(12, 5, "E2", "A2"),
+                GetBasicRenameResultAt(18, 5, "E3", "A3"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -318,11 +298,6 @@ End Enum
         [Fact]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTrivia()
         {
-            // In enum '{0}', change the name of '{1}' to 'None'.
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E", "A");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E2", "A2");
-            string expectedMessage3 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename, "E3", "A3");
-
             var code = @"
 Public Class Outer
     <System.Flags> _
@@ -351,19 +326,14 @@ Public Enum NoZeroValuedField
 End Enum
 ";
             await VerifyVB.VerifyAnalyzerAsync(code,
-                GetBasicRenameResultAt(5, 6, expectedMessage1),
-                GetBasicRenameResultAt(12, 2, expectedMessage2),
-                GetBasicRenameResultAt(18, 2, expectedMessage3));
+                GetBasicRenameResultAt(5, 6, "E", "A"),
+                GetBasicRenameResultAt(12, 2, "E2", "A2"),
+                GetBasicRenameResultAt(18, 2, "E3", "A3"));
         }
 
         [Fact]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZero()
         {
-            // Remove all members that have the value zero from {0} except for one member that is named 'None'.
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros, "E");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros, "E2");
-            string expectedMessage3 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros, "E3");
-
             var code = @"
 Public Class Outer
     <System.Flags>
@@ -386,9 +356,9 @@ Public Enum E3
 End Enum";
 
             await VerifyVB.VerifyAnalyzerAsync(code,
-                GetBasicMultipleZeroResultAt(4, 17, expectedMessage1),
-                GetBasicMultipleZeroResultAt(11, 13, expectedMessage2),
-                GetBasicMultipleZeroResultAt(17, 13, expectedMessage3));
+                GetBasicMultipleZeroResultAt(4, 17, "E"),
+                GetBasicMultipleZeroResultAt(11, 13, "E2"),
+                GetBasicMultipleZeroResultAt(17, 13, "E3"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -421,10 +391,6 @@ End Enum";
         [Fact]
         public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValue()
         {
-            // Add a member to {0} that has a value of zero with a suggested name of 'None'.
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue, "E");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue, "E2");
-
             var code = @"
 Public Class Outer
     Public Enum E
@@ -449,8 +415,8 @@ End Enum
 ";
 
             await VerifyVB.VerifyAnalyzerAsync(code,
-                GetBasicNoZeroResultAt(3, 17, expectedMessage1),
-                GetBasicNoZeroResultAt(7, 17, expectedMessage2));
+                GetBasicNoZeroResultAt(3, 17, "E"),
+                GetBasicNoZeroResultAt(7, 17, "E2"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -482,34 +448,34 @@ End Enum
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        private static DiagnosticResult GetCSharpMultipleZeroResultAt(int line, int column, string message)
+        private static DiagnosticResult GetCSharpMultipleZeroResultAt(int line, int column, string typeName)
             => VerifyCS.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleMultipleZero)
                 .WithLocation(line, column)
-                .WithMessage(message);
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetBasicMultipleZeroResultAt(int line, int column, string message)
+        private static DiagnosticResult GetBasicMultipleZeroResultAt(int line, int column, string typeName)
             => VerifyCS.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleMultipleZero)
                 .WithLocation(line, column)
-                .WithMessage(message);
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetCSharpNoZeroResultAt(int line, int column, string message)
+        private static DiagnosticResult GetCSharpNoZeroResultAt(int line, int column, string typeName)
             => VerifyCS.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleNoZero)
                 .WithLocation(line, column)
-                .WithMessage(message);
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetBasicNoZeroResultAt(int line, int column, string message)
+        private static DiagnosticResult GetBasicNoZeroResultAt(int line, int column, string typeName)
             => VerifyCS.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleNoZero)
                 .WithLocation(line, column)
-                .WithMessage(message);
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetCSharpRenameResultAt(int line, int column, string message)
+        private static DiagnosticResult GetCSharpRenameResultAt(int line, int column, string typeName, string newName)
             => VerifyCS.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename)
                 .WithLocation(line, column)
-                .WithMessage(message);
+                .WithArguments(typeName, newName);
 
-        private static DiagnosticResult GetBasicRenameResultAt(int line, int column, string message)
+        private static DiagnosticResult GetBasicRenameResultAt(int line, int column, string typeName, string newName)
             => VerifyCS.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename)
                 .WithLocation(line, column)
-                .WithMessage(message);
+                .WithArguments(typeName, newName);
     }
 }

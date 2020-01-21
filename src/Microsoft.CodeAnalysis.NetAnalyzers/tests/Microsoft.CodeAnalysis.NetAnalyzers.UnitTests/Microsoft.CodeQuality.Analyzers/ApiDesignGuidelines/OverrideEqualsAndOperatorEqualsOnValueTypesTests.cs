@@ -407,32 +407,24 @@ public ref struct A
             }.RunAsync();
         }
 
-        private static DiagnosticResult GetCSharpOverrideEqualsDiagnostic(int line, int column, string typeName)
-        {
-            return GetExpectedDiagnostic(line, column, typeName, MicrosoftCodeQualityAnalyzersResources.OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals);
-        }
-
-        private static DiagnosticResult GetCSharpOperatorEqualsDiagnostic(int line, int column, string typeName)
-        {
-            return GetExpectedDiagnostic(line, column, typeName, MicrosoftCodeQualityAnalyzersResources.OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality);
-        }
-
-        private static DiagnosticResult GetBasicOverrideEqualsDiagnostic(int line, int column, string typeName)
-        {
-            return GetExpectedDiagnostic(line, column, typeName, MicrosoftCodeQualityAnalyzersResources.OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals);
-        }
-
-        private static DiagnosticResult GetBasicOperatorEqualsDiagnostic(int line, int column, string typeName)
-        {
-            return GetExpectedDiagnostic(line, column, typeName, MicrosoftCodeQualityAnalyzersResources.OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality);
-        }
-
-        private static DiagnosticResult GetExpectedDiagnostic(int line, int column, string typeName, string messageFormat)
-        {
-            return new DiagnosticResult(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule)
+        private static DiagnosticResult GetCSharpOverrideEqualsDiagnostic(int line, int column, string typeName) =>
+            VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule)
                 .WithLocation(line, column)
-                .WithMessageFormat(messageFormat)
                 .WithArguments(typeName);
-        }
+
+        private static DiagnosticResult GetCSharpOperatorEqualsDiagnostic(int line, int column, string typeName) =>
+            VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName);
+
+        private static DiagnosticResult GetBasicOverrideEqualsDiagnostic(int line, int column, string typeName) =>
+            VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName);
+
+        private static DiagnosticResult GetBasicOperatorEqualsDiagnostic(int line, int column, string typeName) =>
+            VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName);
     }
 }
