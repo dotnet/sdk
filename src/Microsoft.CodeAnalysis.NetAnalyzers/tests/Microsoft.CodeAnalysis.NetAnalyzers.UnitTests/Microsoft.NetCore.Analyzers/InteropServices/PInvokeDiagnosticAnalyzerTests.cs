@@ -50,20 +50,20 @@ using System.Runtime.InteropServices;
 public class C
 {
     [DllImport(""user32.dll"")]
-    public static extern void Foo1(); // should not be public
+    public static extern void Method1(); // should not be public
 
     [DllImport(""user32.dll"")]
-    protected static extern void Foo2(); // should not be protected
+    protected static extern void Method2(); // should not be protected
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo3(); // private is OK
+    private static extern void Method3(); // private is OK
 
     [DllImport(""user32.dll"")]
-    static extern void Foo4(); // implicitly private is OK
+    static extern void Method4(); // implicitly private is OK
 }
 ",
-                CSharpResult1401(7, 31, "Foo1"),
-                CSharpResult1401(10, 34, "Foo2"));
+                CSharpResult1401(7, 31, "Method1"),
+                CSharpResult1401(10, 34, "Method2"));
         }
 
         [Fact]
@@ -75,16 +75,16 @@ using System.Runtime.InteropServices;
 public class C
 {
     [DllImport(""user32.dll"")]
-    public static extern void {|CA1401:Foo1|}(); // should not be public
+    public static extern void {|CA1401:Method1|}(); // should not be public
 
     [DllImport(""user32.dll"")]
-    protected static extern void {|CA1401:Foo2|}(); // should not be protected
+    protected static extern void {|CA1401:Method2|}(); // should not be protected
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo3(); // private is OK
+    private static extern void Method3(); // private is OK
 
     [DllImport(""user32.dll"")]
-    static extern void Foo4(); // implicitly private is OK
+    static extern void Method4(); // implicitly private is OK
 }
 ");
         }
@@ -97,25 +97,25 @@ Imports System.Runtime.InteropServices
 
 Public Class C
     <DllImport(""user32.dll"")>
-    Public Shared Sub Foo1() ' should not be public
+    Public Shared Sub Method1() ' should not be public
     End Sub
 
     <DllImport(""user32.dll"")>
-    Protected Shared Sub Foo2() ' should not be protected
+    Protected Shared Sub Method2() ' should not be protected
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo3() ' private is OK
+    Private Shared Sub Method3() ' private is OK
     End Sub
 
     <DllImport(""user32.dll"")>
-    Shared Sub Foo4() ' implicitly public is not OK
+    Shared Sub Method4() ' implicitly public is not OK
     End Sub
 End Class
 ",
-                BasicResult1401(6, 23, "Foo1"),
-                BasicResult1401(10, 26, "Foo2"),
-                BasicResult1401(18, 16, "Foo4"));
+                BasicResult1401(6, 23, "Method1"),
+                BasicResult1401(10, 26, "Method2"),
+                BasicResult1401(18, 16, "Method4"));
         }
 
         [Fact]
@@ -126,19 +126,19 @@ Imports System.Runtime.InteropServices
 
 Public Class C
     <DllImport(""user32.dll"")>
-    Public Shared Sub {|CA1401:Foo1|}() ' should not be public
+    Public Shared Sub {|CA1401:Method1|}() ' should not be public
     End Sub
 
     <DllImport(""user32.dll"")>
-    Protected Shared Sub {|CA1401:Foo2|}() ' should not be protected
+    Protected Shared Sub {|CA1401:Method2|}() ' should not be protected
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo3() ' private is OK
+    Private Shared Sub Method3() ' private is OK
     End Sub
 
     <DllImport(""user32.dll"")>
-    Shared Sub {|CA1401:Foo4|}() ' implicitly public is not OK
+    Shared Sub {|CA1401:Method4|}() ' implicitly public is not OK
     End Sub
 End Class
 ");
@@ -152,25 +152,25 @@ Imports System.Runtime.InteropServices
 
 Public Class C
     <DllImport(""user32.dll"")>
-    Public Shared Function Foo1() As Integer ' should not be public
+    Public Shared Function Method1() As Integer ' should not be public
     End Function
 
     <DllImport(""user32.dll"")>
-    Protected Shared Function Foo2() As Integer ' should not be protected
+    Protected Shared Function Method2() As Integer ' should not be protected
     End Function
 
     <DllImport(""user32.dll"")>
-    Private Shared Function Foo3() As Integer ' private is OK
+    Private Shared Function Method3() As Integer ' private is OK
     End Function
 
     <DllImport(""user32.dll"")>
-    Shared Function Foo4() As Integer ' implicitly public is not OK
+    Shared Function Method4() As Integer ' implicitly public is not OK
     End Function
 End Class
 ",
-                BasicResult1401(6, 28, "Foo1"),
-                BasicResult1401(10, 31, "Foo2"),
-                BasicResult1401(18, 21, "Foo4"));
+                BasicResult1401(6, 28, "Method1"),
+                BasicResult1401(10, 31, "Method2"),
+                BasicResult1401(18, 21, "Method4"));
         }
 
         [Fact]
@@ -180,18 +180,18 @@ End Class
 Imports System.Runtime.InteropServices
 
 Public Class C
-    Public Declare Sub Foo1 Lib ""user32.dll"" Alias ""Foo1"" () ' should not be public
+    Public Declare Sub Method1 Lib ""user32.dll"" Alias ""Method1"" () ' should not be public
 
-    Protected Declare Sub Foo2 Lib ""user32.dll"" Alias ""Foo2"" () ' should not be protected
+    Protected Declare Sub Method2 Lib ""user32.dll"" Alias ""Method2"" () ' should not be protected
 
-    Private Declare Sub Foo3 Lib ""user32.dll"" Alias ""Foo3"" () ' private is OK
+    Private Declare Sub Method3 Lib ""user32.dll"" Alias ""Method3"" () ' private is OK
 
-    Declare Sub Foo4 Lib ""user32.dll"" Alias ""Foo4"" () ' implicitly public is not OK
+    Declare Sub Method4 Lib ""user32.dll"" Alias ""Method4"" () ' implicitly public is not OK
 End Class
 ",
-                BasicResult1401(5, 24, "Foo1"),
-                BasicResult1401(7, 27, "Foo2"),
-                BasicResult1401(11, 17, "Foo4"));
+                BasicResult1401(5, 24, "Method1"),
+                BasicResult1401(7, 27, "Method2"),
+                BasicResult1401(11, 17, "Method4"));
         }
 
         [Fact]
@@ -201,18 +201,18 @@ End Class
 Imports System.Runtime.InteropServices
 
 Public Class C
-    Public Declare Function Foo1 Lib ""user32.dll"" Alias ""Foo1"" () As Integer ' should not be public
+    Public Declare Function Method1 Lib ""user32.dll"" Alias ""Method1"" () As Integer ' should not be public
 
-    Protected Declare Function Foo2 Lib ""user32.dll"" Alias ""Foo2"" () As Integer ' should not be protected
+    Protected Declare Function Method2 Lib ""user32.dll"" Alias ""Method2"" () As Integer ' should not be protected
 
-    Private Declare Function Foo3 Lib ""user32.dll"" Alias ""Foo3"" () As Integer ' private is OK
+    Private Declare Function Method3 Lib ""user32.dll"" Alias ""Method3"" () As Integer ' private is OK
 
-    Declare Function Foo4 Lib ""user32.dll"" Alias ""Foo4"" () As Integer ' implicitly public is not OK
+    Declare Function Method4 Lib ""user32.dll"" Alias ""Method4"" () As Integer ' implicitly public is not OK
 End Class
 ",
-                BasicResult1401(5, 29, "Foo1"),
-                BasicResult1401(7, 32, "Foo2"),
-                BasicResult1401(11, 22, "Foo4"));
+                BasicResult1401(5, 29, "Method1"),
+                BasicResult1401(7, 32, "Method2"),
+                BasicResult1401(11, 22, "Method4"));
         }
 
         [WorkItem(792, "https://github.com/dotnet/roslyn-analyzers/issues/792")]
@@ -261,16 +261,16 @@ using System.Text;
 class C
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo1(string s); // one string parameter
+    private static extern void Method1(string s); // one string parameter
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo2(string s, string t); // two string parameters, should be only 1 diagnostic
+    private static extern void Method2(string s, string t); // two string parameters, should be only 1 diagnostic
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo3(StringBuilder s); // one StringBuilder parameter
+    private static extern void Method3(StringBuilder s); // one StringBuilder parameter
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo4(StringBuilder s, StringBuilder t); // two StringBuilder parameters, should be only 1 diagnostic
+    private static extern void Method4(StringBuilder s, StringBuilder t); // two StringBuilder parameters, should be only 1 diagnostic
 }
 ",
                 CSharpResult2101(7, 6),
@@ -289,16 +289,16 @@ using System.Text;
 class C
 {
     [{|CA2101:DllImport(""user32.dll"")|}]
-    private static extern void Foo1(string s); // one string parameter
+    private static extern void Method1(string s); // one string parameter
 
     [{|CA2101:DllImport(""user32.dll"")|}]
-    private static extern void Foo2(string s, string t); // two string parameters, should be only 1 diagnostic
+    private static extern void Method2(string s, string t); // two string parameters, should be only 1 diagnostic
 
     [{|CA2101:DllImport(""user32.dll"")|}]
-    private static extern void Foo3(StringBuilder s); // one StringBuilder parameter
+    private static extern void Method3(StringBuilder s); // one StringBuilder parameter
 
     [{|CA2101:DllImport(""user32.dll"")|}]
-    private static extern void Foo4(StringBuilder s, StringBuilder t); // two StringBuilder parameters, should be only 1 diagnostic
+    private static extern void Method4(StringBuilder s, StringBuilder t); // two StringBuilder parameters, should be only 1 diagnostic
 }
 ");
         }
@@ -312,19 +312,19 @@ Imports System.Text
 
 Class C
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo1(s As String) ' one string parameter
+    Private Shared Sub Method1(s As String) ' one string parameter
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo2(s As String, t As String) ' two string parameters, should be only 1 diagnostic
+    Private Shared Sub Method2(s As String, t As String) ' two string parameters, should be only 1 diagnostic
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo3(s As StringBuilder) ' one StringBuilder parameter
+    Private Shared Sub Method3(s As StringBuilder) ' one StringBuilder parameter
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo4(s As StringBuilder, t As StringBuilder) ' two StringBuilder parameters, should be only 1 diagnostic
+    Private Shared Sub Method4(s As StringBuilder, t As StringBuilder) ' two StringBuilder parameters, should be only 1 diagnostic
     End Sub
 End Class
 ",
@@ -343,19 +343,19 @@ Imports System.Text
 
 Class C
     <{|CA2101:DllImport(""user32.dll"")|}>
-    Private Shared Sub Foo1(s As String) ' one string parameter
+    Private Shared Sub Method1(s As String) ' one string parameter
     End Sub
 
     <{|CA2101:DllImport(""user32.dll"")|}>
-    Private Shared Sub Foo2(s As String, t As String) ' two string parameters, should be only 1 diagnostic
+    Private Shared Sub Method2(s As String, t As String) ' two string parameters, should be only 1 diagnostic
     End Sub
 
     <{|CA2101:DllImport(""user32.dll"")|}>
-    Private Shared Sub Foo3(s As StringBuilder) ' one StringBuilder parameter
+    Private Shared Sub Method3(s As StringBuilder) ' one StringBuilder parameter
     End Sub
 
     <{|CA2101:DllImport(""user32.dll"")|}>
-    Private Shared Sub Foo4(s As StringBuilder, t As StringBuilder) ' two StringBuilder parameters, should be only 1 diagnostic
+    Private Shared Sub Method4(s As StringBuilder, t As StringBuilder) ' two StringBuilder parameters, should be only 1 diagnostic
     End Sub
 End Class
 ");
@@ -368,13 +368,13 @@ End Class
 Imports System.Text
 
 Class C
-    Private Declare Sub Foo1 Lib ""user32.dll"" (s As String) ' one string parameter
+    Private Declare Sub Method1 Lib ""user32.dll"" (s As String) ' one string parameter
 
-    Private Declare Sub Foo2 Lib ""user32.dll"" (s As String, t As String) ' two string parameters, should be only 1 diagnostic
+    Private Declare Sub Method2 Lib ""user32.dll"" (s As String, t As String) ' two string parameters, should be only 1 diagnostic
 
-    Private Declare Function Foo3 Lib ""user32.dll"" (s As StringBuilder) As Integer ' one StringBuilder parameter
+    Private Declare Function Method3 Lib ""user32.dll"" (s As StringBuilder) As Integer ' one StringBuilder parameter
 
-    Private Declare Function Foo4 Lib ""user32.dll"" (s As StringBuilder, t As StringBuilder) As Integer ' two StringBuilder parameters, should be only 1 diagnostic
+    Private Declare Function Method4 Lib ""user32.dll"" (s As StringBuilder, t As StringBuilder) As Integer ' two StringBuilder parameters, should be only 1 diagnostic
 End Class
 ",
                 BasicResult2101(5, 25),
@@ -393,48 +393,48 @@ using System.Text;
 class C
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo1([MarshalAs(UnmanagedType.LPWStr)] string s); // marshaling specified on parameter
+    private static extern void Method1([MarshalAs(UnmanagedType.LPWStr)] string s); // marshaling specified on parameter
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo2([MarshalAs(UnmanagedType.LPWStr)] StringBuilder s);
+    private static extern void Method2([MarshalAs(UnmanagedType.LPWStr)] StringBuilder s);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo3([MarshalAs(UnmanagedType.LPWStr)] string s, [MarshalAs(UnmanagedType.LPWStr)] string t);
+    private static extern void Method3([MarshalAs(UnmanagedType.LPWStr)] string s, [MarshalAs(UnmanagedType.LPWStr)] string t);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo4([MarshalAs(UnmanagedType.LPWStr)] StringBuilder s, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder t);
+    private static extern void Method4([MarshalAs(UnmanagedType.LPWStr)] StringBuilder s, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder t);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo5([MarshalAs(UnmanagedType.LPWStr)] string s, string t); // un-marshaled second parameter
+    private static extern void Method5([MarshalAs(UnmanagedType.LPWStr)] string s, string t); // un-marshaled second parameter
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo6([MarshalAs(UnmanagedType.LPWStr)] StringBuilder s, StringBuilder t);
+    private static extern void Method6([MarshalAs(UnmanagedType.LPWStr)] StringBuilder s, StringBuilder t);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo7([MarshalAs(UnmanagedType.LPStr)] string s); // marshaled, but as the wrong type
+    private static extern void Method7([MarshalAs(UnmanagedType.LPStr)] string s); // marshaled, but as the wrong type
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo8([MarshalAs(UnmanagedType.LPStr)] StringBuilder s);
+    private static extern void Method8([MarshalAs(UnmanagedType.LPStr)] StringBuilder s);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo9([MarshalAs(UnmanagedType.LPStr)] string s, [MarshalAs(UnmanagedType.LPStr)] string t); // two parameters marshaled as the wrong type
+    private static extern void Method9([MarshalAs(UnmanagedType.LPStr)] string s, [MarshalAs(UnmanagedType.LPStr)] string t); // two parameters marshaled as the wrong type
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo10([MarshalAs(UnmanagedType.LPStr)] StringBuilder s, [MarshalAs(UnmanagedType.LPStr)] StringBuilder t);
+    private static extern void Method10([MarshalAs(UnmanagedType.LPStr)] StringBuilder s, [MarshalAs(UnmanagedType.LPStr)] StringBuilder t);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo11([MarshalAs((short)0)] string s);
+    private static extern void Method11([MarshalAs((short)0)] string s);
 }
 ",
                 CSharpResult2101(19, 6),
                 CSharpResult2101(22, 6),
-                CSharpResult2101(26, 38),
-                CSharpResult2101(29, 38),
-                CSharpResult2101(32, 38),
-                CSharpResult2101(32, 81),
-                CSharpResult2101(35, 39),
-                CSharpResult2101(35, 89),
-                CSharpResult2101(38, 39));
+                CSharpResult2101(26, 41),
+                CSharpResult2101(29, 41),
+                CSharpResult2101(32, 41),
+                CSharpResult2101(32, 84),
+                CSharpResult2101(35, 42),
+                CSharpResult2101(35, 92),
+                CSharpResult2101(38, 42));
         }
 
         [Fact]
@@ -446,59 +446,59 @@ Imports System.Text
 
 Class C
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo1(<MarshalAs(UnmanagedType.LPWStr)> s As String) ' marshaling specified on parameter
+    Private Shared Sub Method1(<MarshalAs(UnmanagedType.LPWStr)> s As String) ' marshaling specified on parameter
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo2(<MarshalAs(UnmanagedType.LPWStr)> s As StringBuilder)
+    Private Shared Sub Method2(<MarshalAs(UnmanagedType.LPWStr)> s As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo3(<MarshalAs(UnmanagedType.LPWStr)> s As String, <MarshalAs(UnmanagedType.LPWStr)> t As String)
+    Private Shared Sub Method3(<MarshalAs(UnmanagedType.LPWStr)> s As String, <MarshalAs(UnmanagedType.LPWStr)> t As String)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo4(<MarshalAs(UnmanagedType.LPWStr)> s As StringBuilder, <MarshalAs(UnmanagedType.LPWStr)> t As StringBuilder)
+    Private Shared Sub Method4(<MarshalAs(UnmanagedType.LPWStr)> s As StringBuilder, <MarshalAs(UnmanagedType.LPWStr)> t As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo5(<MarshalAs(UnmanagedType.LPWStr)> s As String, t As String) ' un-marshaled second parameter
+    Private Shared Sub Method5(<MarshalAs(UnmanagedType.LPWStr)> s As String, t As String) ' un-marshaled second parameter
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo6(<MarshalAs(UnmanagedType.LPWStr)> s As StringBuilder, t As StringBuilder)
+    Private Shared Sub Method6(<MarshalAs(UnmanagedType.LPWStr)> s As StringBuilder, t As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo7(<MarshalAs(UnmanagedType.LPStr)> s As String) ' marshaled, but as the wrong type
+    Private Shared Sub Method7(<MarshalAs(UnmanagedType.LPStr)> s As String) ' marshaled, but as the wrong type
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo8(<MarshalAs(UnmanagedType.LPStr)> s As StringBuilder)
+    Private Shared Sub Method8(<MarshalAs(UnmanagedType.LPStr)> s As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo9(<MarshalAs(UnmanagedType.LPStr)> s As String, <MarshalAs(UnmanagedType.LPStr)> t As String) ' two parameters marshaled as the wrong type
+    Private Shared Sub Method9(<MarshalAs(UnmanagedType.LPStr)> s As String, <MarshalAs(UnmanagedType.LPStr)> t As String) ' two parameters marshaled as the wrong type
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo10(<MarshalAs(UnmanagedType.LPStr)> s As StringBuilder, <MarshalAs(UnmanagedType.LPStr)> t As StringBuilder)
+    Private Shared Sub Method10(<MarshalAs(UnmanagedType.LPStr)> s As StringBuilder, <MarshalAs(UnmanagedType.LPStr)> t As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo11(<MarshalAs(CShort(0))> s As String)
+    Private Shared Sub Method11(<MarshalAs(CShort(0))> s As String)
     End Sub
 End Class
 ",
                 BasicResult2101(22, 6),
                 BasicResult2101(26, 6),
-                BasicResult2101(31, 30),
-                BasicResult2101(35, 30),
-                BasicResult2101(39, 30),
-                BasicResult2101(39, 76),
-                BasicResult2101(43, 31),
-                BasicResult2101(43, 84),
-                BasicResult2101(47, 31));
+                BasicResult2101(31, 33),
+                BasicResult2101(35, 33),
+                BasicResult2101(39, 33),
+                BasicResult2101(39, 79),
+                BasicResult2101(43, 34),
+                BasicResult2101(43, 87),
+                BasicResult2101(47, 34));
         }
 
         [Fact]
@@ -511,28 +511,28 @@ using System.Text;
 class C
 {
     [DllImport(""user32.dll"", CharSet = CharSet.Auto)]
-    private static extern void Foo1(string s); // wrong marshaling
+    private static extern void Method1(string s); // wrong marshaling
 
     [DllImport(""user32.dll"", CharSet = CharSet.Auto)]
-    private static extern void Foo2(StringBuilder s);
+    private static extern void Method2(StringBuilder s);
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern void Foo3(string s); // correct marshaling
+    private static extern void Method3(string s); // correct marshaling
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern void Foo4(StringBuilder s);
+    private static extern void Method4(StringBuilder s);
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern void Foo5([MarshalAs(UnmanagedType.LPStr)] string s); // correct marshaling on method, not on parameter
+    private static extern void Method5([MarshalAs(UnmanagedType.LPStr)] string s); // correct marshaling on method, not on parameter
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern void Foo6([MarshalAs(UnmanagedType.LPStr)] StringBuilder s);
+    private static extern void Method6([MarshalAs(UnmanagedType.LPStr)] StringBuilder s);
 }
 ",
                 CSharpResult2101(7, 6),
                 CSharpResult2101(10, 6),
-                CSharpResult2101(20, 38),
-                CSharpResult2101(23, 38));
+                CSharpResult2101(20, 41),
+                CSharpResult2101(23, 41));
         }
 
         [Fact]
@@ -544,34 +544,34 @@ Imports System.Text
 
 Class C
     <DllImport(""user32.dll"", CharSet := CharSet.Auto)>
-    Private Shared Sub Foo1(s As String) ' wrong marshaling
+    Private Shared Sub Method1(s As String) ' wrong marshaling
     End Sub
 
     <DllImport(""user32.dll"", CharSet := CharSet.Auto)>
-    Private Shared Sub Foo2(s As StringBuilder)
+    Private Shared Sub Method2(s As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"", CharSet := CharSet.Unicode)>
-    Private Shared Sub Foo3(s As String) ' correct marshaling
+    Private Shared Sub Method3(s As String) ' correct marshaling
     End Sub
 
     <DllImport(""user32.dll"", CharSet := CharSet.Unicode)>
-    Private Shared Sub Foo4(s As StringBuilder)
+    Private Shared Sub Method4(s As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"", CharSet := CharSet.Unicode)>
-    Private Shared Sub Foo5(<MarshalAs(UnmanagedType.LPStr)> s As String) ' correct marshaling on method, not on parameter
+    Private Shared Sub Method5(<MarshalAs(UnmanagedType.LPStr)> s As String) ' correct marshaling on method, not on parameter
     End Sub
 
     <DllImport(""user32.dll"", CharSet := CharSet.Unicode)>
-    Private Shared Sub Foo6(<MarshalAs(UnmanagedType.LPStr)> s As StringBuilder)
+    Private Shared Sub Method6(<MarshalAs(UnmanagedType.LPStr)> s As StringBuilder)
     End Sub
 End Class
 ",
                 BasicResult2101(6, 6),
                 BasicResult2101(10, 6),
-                BasicResult2101(23, 30),
-                BasicResult2101(27, 30));
+                BasicResult2101(23, 33),
+                BasicResult2101(27, 33));
         }
 
         [Fact]
@@ -584,16 +584,16 @@ using System.Text;
 class C
 {
     [DllImport(""user32.dll"")]
-    private static extern string Foo1(); // wrong marshaling on return type
+    private static extern string Method1(); // wrong marshaling on return type
 
     [DllImport(""user32.dll"")]
-    private static extern StringBuilder Foo2();
+    private static extern StringBuilder Method2();
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern string Foo3(); // correct marshaling on return type
+    private static extern string Method3(); // correct marshaling on return type
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern StringBuilder Foo4();
+    private static extern StringBuilder Method4();
 }
 ",
                 CSharpResult2101(7, 6),
@@ -609,22 +609,22 @@ Imports System.Text
 
 Class C
     <DllImport(""user32.dll"")>
-    Private Shared Function Foo1() As String ' wrong marshaling on return type
+    Private Shared Function Method1() As String ' wrong marshaling on return type
     End Function
 
     <DllImport(""user32.dll"")>
-    Private Shared Function Foo2() As StringBuilder
+    Private Shared Function Method2() As StringBuilder
     End Function
 
     <DllImport(""user32.dll"", CharSet := CharSet.Unicode)>
-    Private Shared Function Foo3() As String ' correct marshaling on return type
+    Private Shared Function Method3() As String ' correct marshaling on return type
     End Function
 
     <DllImport(""user32.dll"", CharSet := CharSet.Unicode)>
-    Private Shared Function Foo4() As StringBuilder
+    Private Shared Function Method4() As StringBuilder
     End Function
 
-    Private Declare Function Foo5 Lib ""user32.dll"" () As String
+    Private Declare Function Method5 Lib ""user32.dll"" () As String
 End Class
 ",
                 BasicResult2101(6, 6),

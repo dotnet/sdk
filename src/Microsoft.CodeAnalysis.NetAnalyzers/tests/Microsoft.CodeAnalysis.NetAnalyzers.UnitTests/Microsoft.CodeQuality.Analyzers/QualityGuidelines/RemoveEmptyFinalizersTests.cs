@@ -224,10 +224,10 @@ public class Class2
 	~Class2()
 	{
 		Debug.Fail(""Class2 finalizer called!"");
-        Foo();
+        SomeMethod();
     }
 
-    void Foo()
+    void SomeMethod()
     {
     }
 }

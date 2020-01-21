@@ -27,8 +27,8 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Xml.Xsl
 
-Public Module Foobar
-    Friend Sub foo()
+Public Module SomeClass
+    Friend Sub method()
         Dim internalSettings As New XsltSettings(False, False)
     End Sub
 End Module
@@ -45,8 +45,8 @@ End Class");
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Xml.Xsl
 
-Public Module Foobar
-    Friend Sub foo()
+Public Module SomeClass
+    Friend Sub method()
         Dim internalSettings As New XsltSettings()
         internalSettings.EnableDocumentFunction = False
         internalSettings.EnableScript = False
@@ -65,8 +65,8 @@ End Class");
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Xml.Xsl
 
-Public Module Foobar
-    Friend Sub foo()
+Public Module SomeClass
+    Friend Sub method()
         Dim internalSettings = New XsltSettings(False, False)
     End Sub
 End Module

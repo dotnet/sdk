@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new System.Collections.Generic.Dictionary<int, string>();
     }
@@ -31,7 +31,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new System.Collections.Generic.Dictionary<int, string>
         {
@@ -51,7 +51,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new System.Collections.Generic.Dictionary<int, string>
         {
@@ -71,7 +71,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var dictionary = new System.Collections.Generic.Dictionary<string, int>
         {
@@ -91,7 +91,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new System.Collections.Generic.Dictionary<string, int>
         {
@@ -111,7 +111,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var dictionary = new System.Collections.Generic.Dictionary<System.DateTimeKind, int>
         {
@@ -132,7 +132,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new D
         {
@@ -162,7 +162,7 @@ class D
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new D
         {
@@ -192,7 +192,7 @@ class D
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new D
         {
@@ -222,7 +222,7 @@ class D
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var x = new D
         {
@@ -254,7 +254,7 @@ class D
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var dictionary = new System.Collections.Generic.Dictionary<string, int>
         {
@@ -274,7 +274,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var a1 = ""a"";
         var a2 = ""a"";
@@ -294,7 +294,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo()
+    void SomeMethod()
     {
         var a = ""a"";
         var dictionary = new System.Collections.Generic.Dictionary<string, int>
@@ -313,7 +313,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
-    void Foo(string a)
+    void SomeMethod(string a)
     {
         var b = ""b"";
         var dictionary = new System.Collections.Generic.Dictionary<string, int>

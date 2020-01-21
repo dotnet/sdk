@@ -778,7 +778,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
     }
 }
 
-namespace Foo
+namespace SomeNamespace
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -1038,9 +1038,9 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
-public class Foo {}
+public class SomeClass {}
 
-public class C : Foo
+public class C : SomeClass
 {
     protected void Application_Start() { }
     protected void Application_End() { }
@@ -1051,11 +1051,11 @@ public class C : Foo
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
-Public Class Foo
+Public Class SomeClass
 End Class
 
 Public Class C
-    Inherits Foo
+    Inherits SomeClass
 
     Protected Sub Application_Start()
     End Sub

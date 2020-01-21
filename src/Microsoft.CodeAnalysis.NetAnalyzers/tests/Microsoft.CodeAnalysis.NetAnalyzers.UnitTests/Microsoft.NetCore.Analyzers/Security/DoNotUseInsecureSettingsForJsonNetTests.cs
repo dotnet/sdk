@@ -898,7 +898,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-class Foo
+class SomeClass
 {
     public static Func<ISerializationBinder> GetBinder { get; set; }
 }
@@ -909,7 +909,7 @@ class Blah
     public static JsonSerializerSettings Settings { get; } = new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.Objects,
-            SerializationBinder = Foo.GetBinder(),
+            SerializationBinder = SomeClass.GetBinder(),
         };
 }",
                 GetCSharpResultAt(14, 60, MaybeRule));

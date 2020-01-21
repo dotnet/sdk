@@ -142,24 +142,24 @@ End Class");
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public int Foo { get; set; }
+    public int SomeProperty { get; set; }
 
     public int Abc
     {
         set
         {
-            this.Foo = value;
+            this.SomeProperty = value;
         }
     }
 }");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
-    Public Property Foo As Integer
+    Public Property SomeProperty As Integer
 
     Public WriteOnly Property Abc As Integer
         Set(ByVal value As Integer)
-            Me.Foo = value
+            Me.SomeProperty = value
         End Set
     End Property
 End Class");
@@ -289,9 +289,9 @@ public class A
     {
         set
         {
-            Foo();
+            SomeMethod();
 
-            void Foo()
+            void SomeMethod()
             {
                 this.Abc = value;
             }
