@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             symbolStartContext.RegisterOperationAction(_ => hasErrors = true, OperationKind.Invalid);
 
             // Disposable fields with initializer at declaration must be disposed.
-            symbolStartContext.RegisterOperationAction(OnFieldReference, OperationKind.FieldInitializer);
+            symbolStartContext.RegisterOperationAction(OnFieldInitializer, OperationKind.FieldInitializer);
 
             // Instance fields initialized in constructor/method body with a locally created disposable object must be disposed.
             symbolStartContext.RegisterOperationBlockStartAction(OnOperationBlockStart);
@@ -104,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            void OnFieldReference(OperationAnalysisContext operationContext)
+            void OnFieldInitializer(OperationAnalysisContext operationContext)
             {
                 RoslynDebug.Assert(disposeAnalysisHelper != null);
 
