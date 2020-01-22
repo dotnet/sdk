@@ -1948,13 +1948,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">不访问实例数据或调用实例方法的成员可标记为 static (在 Visual Basic 中为 Shared)。将方法标记为 static 后，编译器将向这些成员发出非虚拟调用站点。这样可以使对性能比较敏感的代码获得显著的性能提升。</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="needs-review-translation">不访问实例数据或调用实例方法的成员可标记为 static (在 Visual Basic 中为 Shared)。将方法标记为 static 后，编译器将向这些成员发出非虚拟调用站点。这样可以使对性能比较敏感的代码获得显著的性能提升。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">成员 {0} 不访问实例数据，可标记为 static (在 Visual Basic 中为 Shared)</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="needs-review-translation">成员 {0} 不访问实例数据，可标记为 static (在 Visual Basic 中为 Shared)</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

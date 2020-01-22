@@ -189,7 +189,7 @@ internal class MembersTests
         System.Action<System.Action> a = (System.Action m) => m();
         a(Method2);
 
-        // Method3 is dead code that is never invoked - should not be flagged.
+        // Method3 is dead code that is never invoked - it should still be flagged.
         // Method3();
 
         // Invoked within a lambda - must be flagged.
@@ -202,6 +202,7 @@ internal class MembersTests
     }
 }",
                 GetCSharpResultAt(7, 16, "Method1"),
+                GetCSharpResultAt(14, 17, "Method3"),
                 GetCSharpResultAt(19, 16, "Method4"),
                 GetCSharpResultAt(24, 16, "Property"),
                 GetCSharpResultAt(29, 16, "Property2"),
@@ -272,7 +273,7 @@ Friend Class MembersTests
         Dim a As System.Action(Of System.Action) = Sub(ByVal m As System.Action) m()
         a(AddressOf Method2)
 
-        ' Method3 is dead code that is never invoked - should not be flagged.
+        ' Method3 is dead code that is never invoked - it should still be flagged.
         'Method3()
 
         ' Invoked within a lambda - must be flagged.
@@ -287,6 +288,7 @@ End Sub
 End Class
 ",
                 GetBasicResultAt(8, 21, "Method1"),
+                GetBasicResultAt(15, 16, "Method3"),
                 GetBasicResultAt(19, 21, "Method4"),
                 GetBasicResultAt(23, 30, "Property1"),
                 GetBasicResultAt(29, 31, "Property2"),
@@ -631,7 +633,7 @@ public class Program
         var x = nameof(N);
     }
 
-    private void N()
+    private void [|N|]()
     {
     }
 }",
@@ -756,7 +758,7 @@ using System.IO;
 
 class C
 {
-    private void Validate()
+    private void [|Validate|]()
     {
         {|CS0156:throw|};
     }
@@ -1066,6 +1068,42 @@ End Class
 ",
                 GetBasicResultAt(10, 19, "Application_Start"),
                 GetBasicResultAt(13, 19, "Application_End"));
+        }
+
+        [Fact]
+        public async Task MethodsWithOptionalParameter()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+internal class C
+{
+    private int x;
+
+    public int M1(int y = 0)
+    {
+        return x;
+    }
+
+    public int [|M2|](int y = 0)
+    {
+        return 0;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Friend Class C
+    Private x As Integer
+
+    Public Function M1(Optional y As Integer = 0) As Integer
+        Return x
+    End Function
+
+    Public Function [|M2|](Optional y As Integer = 0) As Integer
+        Return 0
+    End Function
+End Class
+");
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)

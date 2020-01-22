@@ -89,6 +89,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         return;
                     }
 
+                    // Check to see if the method just throws a NotImplementedException/NotSupportedException
+                    // We shouldn't warn about parameters in that case
+                    if (startOperationBlockContext.IsMethodNotImplementedOrSupported())
+                    {
+                        return;
+                    }
+
                     AnalyzeMethod(method, startOperationBlockContext, unusedMethodParameters,
                         eventsArgSymbol, methodsUsedAsDelegates, attributeSetForMethodsToIgnore);
 
@@ -228,15 +235,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             #region End action
 
-            public void OperationBlockEndAction(OperationBlockAnalysisContext context)
+            public void OperationBlockEndAction(OperationBlockAnalysisContext _)
             {
-                // Check to see if the method just throws a NotImplementedException/NotSupportedException
-                // We shouldn't warn about parameters in that case
-                if (context.IsMethodNotImplementedOrSupported())
-                {
-                    return;
-                }
-
                 // Do not raise warning for unused 'this' parameter of an extension method.
                 if (_method.IsExtensionMethod)
                 {
