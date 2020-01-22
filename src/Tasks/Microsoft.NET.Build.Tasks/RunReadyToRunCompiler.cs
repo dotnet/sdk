@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -22,6 +23,7 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public ITaskItem[] ImplementationAssemblyReferences { get; set; }
         public bool ShowCompilerWarnings { get; set; }
+        public string DotNetHostDirectory { get; set; }
 
         [Output]
         public bool WarningsDetected { get; set; }
@@ -35,11 +37,15 @@ namespace Microsoft.NET.Build.Tasks
         private string _outputPDBImage;
         private string _createPDBCommand;
 
+        private bool _isCrossgen2;
+
         private bool IsPdbCompilation => !String.IsNullOrEmpty(_createPDBCommand);
 
-        protected override string ToolName => _crossgenPath;
+        private string DotNetHostFileName => Path.Combine(DotNetHostDirectory, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet");
 
-        protected override string GenerateFullPathToTool() => _crossgenPath;
+        protected override string ToolName => _isCrossgen2 ? DotNetHostFileName : _crossgenPath;
+
+        protected override string GenerateFullPathToTool() => ToolName;
 
         public RunReadyToRunCompiler()
         {
@@ -51,6 +57,7 @@ namespace Microsoft.NET.Build.Tasks
             _crossgenPath = CrossgenTool.ItemSpec;
             _clrjitPath = CrossgenTool.GetMetadata("JitPath");
             _diasymreaderPath = CrossgenTool.GetMetadata("DiaSymReader");
+            _isCrossgen2 = CrossgenTool.HasMetadataValue("UseCrossgen2");
 
             if (!File.Exists(_crossgenPath) || !File.Exists(_clrjitPath))
             {
@@ -98,14 +105,24 @@ namespace Microsoft.NET.Build.Tasks
                 // When generating PDBs, we must not add a reference to the IL version of the R2R image for which we're trying to generate a PDB
                 if (IsPdbCompilation && String.Equals(Path.GetFileName(reference.ItemSpec), Path.GetFileName(_outputR2RImage), StringComparison.OrdinalIgnoreCase))
                     continue;
-
-                result.AppendLine($"/r \"{reference}\"");
+                
+                result.AppendLine( $"-r{(_isCrossgen2 ? ":" : " ")}\"{reference}\"");
             }
 
             return result.ToString();
         }
 
         protected override string GenerateResponseFileCommands()
+        {
+            return _isCrossgen2 ? GenerateCrossgen2ResponseFile() : GenerateCrossgenResponseFile();
+        }
+
+        protected override string GenerateCommandLineCommands()
+        {
+            return _isCrossgen2 ? _crossgenPath : null;
+        }
+
+        private string GenerateCrossgenResponseFile()
         {
             StringBuilder result = new StringBuilder();
 
@@ -131,6 +148,21 @@ namespace Microsoft.NET.Build.Tasks
                 result.AppendLine($"/out \"{_outputR2RImage}\"");
                 result.AppendLine($"\"{_inputAssembly}\"");
             }
+
+            return result.ToString();
+        }
+
+        private string GenerateCrossgen2ResponseFile()
+        {
+            StringBuilder result = new StringBuilder();
+
+            result.AppendLine("-O");
+            result.AppendLine($"--jitpath:\"{_clrjitPath}\"");
+            result.Append(GetAssemblyReferencesCommands());
+            result.AppendLine($"--out:\"{_outputR2RImage}\"");
+            // Note: do not add double quotes around the input assembly, even if the file path contains spaces. The command line 
+            // parsing logic will append this string to the working directory if it's a relative path, so any double quotes will result in errors.
+            result.AppendLine($"{_inputAssembly}");
 
             return result.ToString();
         }

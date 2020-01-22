@@ -21,6 +21,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="ProcessFrameworkReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="ResolveAppHosts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
+  <ItemGroup>
+    <!-- TODO: This should be moved to Microsoft.NETCoreSdk.BundledVersions.props (src/redist/targets/GenerateBundledVersions.targets in dotnet/core-sdk) -->
+    <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
+                        TargetFramework="netcoreapp5.0"
+                        Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
+                        Crossgen2PackVersion="5.0.0-alpha.1.20067.8"
+                        Crossgen2RuntimeIdentifiers="linux-musl-x64;linux-x64;win-x64"
+                      />
+  </ItemGroup>
+
   <!--
     ============================================================
                                         ProcessFrameworkReferences
@@ -64,17 +74,21 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
+                                ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
                                 RuntimeFrameworkVersion="$(RuntimeFrameworkVersion)"
                                 TargetLatestRuntimePatch="$(TargetLatestRuntimePatch)"
                                 TargetLatestRuntimePatchIsDefault="$(_TargetLatestRuntimePatchIsDefault)"
-                                EnableTargetingPackDownload="$(EnableTargetingPackDownload)">
+                                EnableTargetingPackDownload="$(EnableTargetingPackDownload)"
+                                KnownCrossgen2Packs="@(KnownCrossgen2Pack)"
+                                NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)">
 
       <Output TaskParameter="PackagesToDownload" ItemName="_PackageToDownload" />
       <Output TaskParameter="RuntimeFrameworks" ItemName="RuntimeFramework" />
       <Output TaskParameter="TargetingPacks" ItemName="TargetingPack" />
       <Output TaskParameter="RuntimePacks" ItemName="RuntimePack" />
+      <Output TaskParameter="Crossgen2Packs" ItemName="Crossgen2Pack" />
       <Output TaskParameter="UnavailableRuntimePacks" ItemName="UnavailableRuntimePack" />
 
     </ProcessFrameworkReferences>
@@ -180,6 +194,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       PackageFolders="@(AssetsFilePackageFolder)">
 
       <Output TaskParameter="Output" ItemName="ResolvedAppHostPack" />
+
+    </GetPackageDirectory>
+
+    <GetPackageDirectory
+      Items="@(Crossgen2Pack)"
+      PackageFolders="@(AssetsFilePackageFolder)">
+
+      <Output TaskParameter="Output" ItemName="ResolvedCrossgen2Pack" />
 
     </GetPackageDirectory>
 

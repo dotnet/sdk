@@ -355,6 +355,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <PrepareForReadyToRunCompilation RuntimePacks="@(ResolvedRuntimePack)" 
+                                     Crossgen2Packs="@(ResolvedCrossgen2Pack)"                                     
                                      TargetingPacks="@(ResolvedTargetingPack)"
                                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
                                      NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
@@ -362,8 +363,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                                      Assemblies="@(_ReadyToRunImplementationAssemblies)"
                                      ExcludeList="@(PublishReadyToRunExclude)"
                                      EmitSymbols="$(PublishReadyToRunEmitSymbols)"
-                                     IncludeSymbolsInSingleFile="$(IncludeSymbolsInSingleFile)">
-
+                                     IncludeSymbolsInSingleFile="$(IncludeSymbolsInSingleFile)"
+                                     ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)">
+      
       <Output TaskParameter="CrossgenTool" ItemName="_CrossgenTool" />
 
       <Output TaskParameter="ReadyToRunCompileList" ItemName="_ReadyToRunCompileList" />
@@ -391,7 +393,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                            ImplementationAssemblyReferences="@(_ReadyToRunAssembliesToReference)"
                            ShowCompilerWarnings="$(PublishReadyToRunShowWarnings)"
                            CompilationEntry="@(_ReadyToRunCompileList)"
-                           ContinueOnError="ErrorAndContinue">
+                           ContinueOnError="ErrorAndContinue"
+                           DotNetHostDirectory="$(NetCoreRoot)">
       <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />
       <Output TaskParameter="WarningsDetected" PropertyName="_ReadyToRunWarningsDetected" />
     </RunReadyToRunCompiler>
@@ -422,7 +425,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                            ImplementationAssemblyReferences="@(_ReadyToRunAssembliesToReference)"
                            ShowCompilerWarnings="$(PublishReadyToRunShowWarnings)"
                            CompilationEntry="@(_ReadyToRunSymbolsCompileList)"
-                           ContinueOnError="ErrorAndContinue">
+                           ContinueOnError="ErrorAndContinue"
+                           DotNetHostDirectory="$(NetCoreRoot)">
       <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />
       <Output TaskParameter="WarningsDetected" PropertyName="_ReadyToRunWarningsDetected" />
     </RunReadyToRunCompiler>

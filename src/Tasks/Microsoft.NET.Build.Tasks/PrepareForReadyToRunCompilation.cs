@@ -20,11 +20,13 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] Assemblies { get; set; }
         public string[] ExcludeList { get; set; }
         public bool EmitSymbols { get; set; }
+        public bool ReadyToRunUseCrossgen2 { get; set; }
 
         [Required]
         public string OutputPath { get; set; }
         [Required]
         public ITaskItem[] RuntimePacks { get; set; }
+        public ITaskItem[] Crossgen2Packs { get; set; }
         [Required]
         public ITaskItem[] TargetingPacks { get; set; }
         [Required]
@@ -57,7 +59,10 @@ namespace Microsoft.NET.Build.Tasks
         private List<ITaskItem> _r2rFiles = new List<ITaskItem>();
         private List<ITaskItem> _r2rReferences = new List<ITaskItem>();
 
-        private string _runtimeIdentifier;
+        private ITaskItem _runtimePack;
+        private ITaskItem _crossgen2Pack;
+        private string _targetRuntimeIdentifier;
+        private string _hostRuntimeIdentifier;
         private string _packagePath;
         private string _crossgenPath;
         private string _clrjitPath;
@@ -67,9 +72,12 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            ITaskItem runtimePack = GetNETCoreAppRuntimePack();
-            _runtimeIdentifier = runtimePack?.GetMetadata(MetadataKeys.RuntimeIdentifier);
-            _packagePath = runtimePack?.GetMetadata(MetadataKeys.PackageDirectory);
+            _runtimePack = GetNETCoreAppRuntimePack();
+            _crossgen2Pack = Crossgen2Packs?.FirstOrDefault();
+            _targetRuntimeIdentifier = _runtimePack?.GetMetadata(MetadataKeys.RuntimeIdentifier);
+            _packagePath = ReadyToRunUseCrossgen2 ? 
+                _crossgen2Pack?.GetMetadata(MetadataKeys.PackageDirectory) :
+                _runtimePack?.GetMetadata(MetadataKeys.PackageDirectory);
 
             // Get the list of runtime identifiers that we support and can target 
             ITaskItem targetingPack = GetNETCoreAppTargetingPack();
@@ -79,40 +87,73 @@ namespace Microsoft.NET.Build.Tasks
             var supportedRIDsList = supportedRuntimeIdentifiers == null ? Array.Empty<string>() : supportedRuntimeIdentifiers.Split(';');
 
             // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
-            string hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(
+            _hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(
                 runtimeGraph,
                 NETCoreSdkRuntimeIdentifier,
                 supportedRIDsList,
                 out bool wasInGraph);
 
-            if (hostRuntimeIdentifier == null || _runtimeIdentifier == null || _packagePath == null)
+            if (_hostRuntimeIdentifier == null || _targetRuntimeIdentifier == null || _packagePath == null)
             {
                 Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                 return;
             }
 
-            if (!ExtractTargetPlatformAndArchitecture(_runtimeIdentifier, out string targetPlatform, out _targetArchitecture) ||
-                !ExtractTargetPlatformAndArchitecture(hostRuntimeIdentifier, out string hostPlatform, out Architecture hostArchitecture) ||
-                targetPlatform != hostPlatform)
+            if((ReadyToRunUseCrossgen2 ? ValidateCrossgen2Support() : ValidateCrossgenSupport()) == false)
             {
-                Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
-                return;
-            }
-
-            if (!GetCrossgenComponentsPaths() || !File.Exists(_crossgenPath) || !File.Exists(_clrjitPath))
-            {
-                Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
                 return;
             }
 
             // Create tool task item
             CrossgenTool = new TaskItem(_crossgenPath);
             CrossgenTool.SetMetadata("JitPath", _clrjitPath);
+            if (ReadyToRunUseCrossgen2)
+                CrossgenTool.SetMetadata("UseCrossgen2", "UseCrossgen2");
             if (!String.IsNullOrEmpty(_diasymreaderPath))
                 CrossgenTool.SetMetadata("DiaSymReader", _diasymreaderPath);
 
             // Process input lists of files
             ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences);
+        }
+
+        private bool ValidateCrossgenSupport()
+        {
+            if (!ExtractTargetPlatformAndArchitecture(_targetRuntimeIdentifier, out string targetPlatform, out _targetArchitecture) ||
+                !ExtractTargetPlatformAndArchitecture(_hostRuntimeIdentifier, out string hostPlatform, out Architecture hostArchitecture) ||
+                targetPlatform != hostPlatform)
+            {
+                Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
+                return false;
+            }
+
+            if (!GetCrossgenComponentsPaths())
+            {
+                Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateCrossgen2Support()
+        {
+            // Crossgen2 only supports the following host->target compilation scenarios in netcoreapp5.0:
+            //      win-x64 -> win-x64
+            //      linux-x64 -> linux-x64
+            //      linux-musl-x64 -> linux-musl-x64
+            if (_targetRuntimeIdentifier != _hostRuntimeIdentifier)
+            {
+                Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
+                return false;
+            }
+
+            if (!GetCrossgen2ComponentsPaths())
+            {
+                Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
+                return false;
+            }
+
+            return true;
         }
 
         private ITaskItem GetNETCoreAppRuntimePack()
@@ -178,7 +219,8 @@ namespace Microsoft.NET.Build.Tasks
                 // unless an explicit PublishReadyToRunEmitSymbols flag is enabled by the app developer. There is also another way to profile that the runtime supports, which does
                 // not rely on the native PDBs/Map files, so creating them is really an opt-in option, typically used by advanced users.
                 // For debugging, only the IL PDBs are required.
-                if (EmitSymbols)
+                // TODO: Need to figure out if we'll add the native symbol emission feature to crossgen2, or use crossgen to generate them
+                if (EmitSymbols && !ReadyToRunUseCrossgen2)
                 {
                     string outputPDBImageRelativePath = null, outputPDBImage = null, createPDBCommand = null;
 
@@ -400,19 +442,19 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (_targetArchitecture == Architecture.Arm)
                 {
-                    if (RuntimeInformation.OSArchitecture == _targetArchitecture || RuntimeInformation.OSArchitecture == Architecture.Arm64)
+                    if (RuntimeInformation.OSArchitecture == _targetArchitecture)
                     {
                         // We can run native arm32 bits on an arm64 host in WOW mode
                         _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen.exe");
-                        _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "clrjit.dll");
-                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.arm.dll");
+                        _clrjitPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "clrjit.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.arm.dll");
                     }
                     else
                     {
                         // We can use the x86-hosted crossgen compiler to target ARM
                         _crossgenPath = Path.Combine(_packagePath, "tools", "x86_arm", "crossgen.exe");
                         _clrjitPath = Path.Combine(_packagePath, "runtimes", "x86_arm", "native", "clrjit.dll");
-                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
                     }
                 }
                 else if (_targetArchitecture == Architecture.Arm64)
@@ -420,8 +462,8 @@ namespace Microsoft.NET.Build.Tasks
                     if (RuntimeInformation.OSArchitecture == _targetArchitecture)
                     {
                         _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen.exe");
-                        _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "clrjit.dll");
-                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.arm64.dll");
+                        _clrjitPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "clrjit.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.arm64.dll");
                     }
                     else
                     {
@@ -431,17 +473,17 @@ namespace Microsoft.NET.Build.Tasks
 
                         _crossgenPath = Path.Combine(_packagePath, "tools", "x64_arm64", "crossgen.exe");
                         _clrjitPath = Path.Combine(_packagePath, "runtimes", "x64_arm64", "native", "clrjit.dll");
-                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
                     }
                 }
                 else
                 {
                     _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen.exe");
-                    _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "clrjit.dll");
+                    _clrjitPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "clrjit.dll");
                     if (_targetArchitecture == Architecture.X64)
-                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
                     else
-                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
+                        _diasymreaderPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -451,7 +493,7 @@ namespace Microsoft.NET.Build.Tasks
                     if (RuntimeInformation.OSArchitecture == _targetArchitecture)
                     {
                         _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen");
-                        _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.so");
+                        _clrjitPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "libclrjit.so");
                     }
                     else if (RuntimeInformation.OSArchitecture == Architecture.X64)
                     {
@@ -467,7 +509,7 @@ namespace Microsoft.NET.Build.Tasks
                 else
                 {
                     _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen");
-                    _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.so");
+                    _clrjitPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "libclrjit.so");
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -477,7 +519,7 @@ namespace Microsoft.NET.Build.Tasks
                     return false;
 
                 _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen");
-                _clrjitPath = Path.Combine(_packagePath, "runtimes", _runtimeIdentifier, "native", "libclrjit.dylib");
+                _clrjitPath = Path.Combine(_packagePath, "runtimes", _targetRuntimeIdentifier, "native", "libclrjit.dylib");
             }
             else
             {
@@ -485,7 +527,23 @@ namespace Microsoft.NET.Build.Tasks
                 return false;
             }
 
-            return true;
+            return File.Exists(_crossgenPath) && File.Exists(_clrjitPath);
+        }
+
+        private bool GetCrossgen2ComponentsPaths()
+        {
+            _crossgenPath = Path.Combine(_packagePath, "tools", "crossgen2.dll");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _clrjitPath = Path.Combine(_packagePath, "tools", "clrjitilc.dll");
+            }
+            else
+            {
+                _clrjitPath = Path.Combine(_packagePath, "tools", "libclrjitilc.so");
+            }
+
+            return File.Exists(_crossgenPath) && File.Exists(_clrjitPath);
         }
     }
 }
