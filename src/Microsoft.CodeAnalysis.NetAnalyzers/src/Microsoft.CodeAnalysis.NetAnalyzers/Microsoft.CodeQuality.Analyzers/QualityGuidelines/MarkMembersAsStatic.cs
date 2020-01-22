@@ -89,6 +89,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         return;
                     }
 
+                    // Don't report methods which have a single throw statement
+                    // with NotImplementedException or NotSupportedException
+                    if (blockStartContext.IsMethodNotImplementedOrSupported())
+                    {
+                        return;
+                    }
+
                     bool isInstanceReferenced = false;
 
                     blockStartContext.RegisterOperationAction(operationContext =>
@@ -103,7 +110,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     {
                         // Methods referenced by other non static methods
                         // and methods containing only NotImplementedException should not considered for marking them as static
-                        if (!isInstanceReferenced && !blockEndContext.IsMethodNotImplementedOrSupported())
+                        if (!isInstanceReferenced)
                         {
                             if (methodSymbol.IsAccessorMethod())
                             {
