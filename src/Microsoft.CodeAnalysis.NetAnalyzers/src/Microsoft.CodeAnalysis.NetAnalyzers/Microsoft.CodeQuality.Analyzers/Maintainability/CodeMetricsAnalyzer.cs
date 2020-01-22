@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
         /// <summary>
         /// Configuration file to configure custom threshold values for supported code metrics.
         /// For example, the below entry changes the maximum allowed inheritance depth from the default value of 5 to 10:
-        /// 
+        ///
         ///     # FORMAT:
         ///     # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
         ///
@@ -144,7 +144,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 }
 
                 // Compute code metrics.
-                var computeTask = CodeAnalysisMetricData.ComputeAsync(compilationContext.Compilation, compilationContext.CancellationToken);
+                var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedTypeNamesOption(CA1501Rule, compilationContext.Compilation, compilationContext.CancellationToken);
+
+                var metricsAnalysisContext = new CodeMetricsAnalysisContext(compilationContext.Compilation, compilationContext.CancellationToken)
+                {
+                    IsExcludedFromInheritanceCountFunc = namedType => inheritanceExcludedTypes.Contains(namedType)
+                };
+                var computeTask = CodeAnalysisMetricData.ComputeAsync(metricsAnalysisContext);
                 computeTask.Wait(compilationContext.CancellationToken);
 
                 // Analyze code metrics tree and report diagnostics.
@@ -164,7 +170,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             var arg1 = symbol.Name;
                             var arg2 = codeAnalysisMetricData.DepthOfInheritance;
                             var arg3 = inheritanceThreshold + 1;
-                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes().Select(t => t.Name));
+                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes(t => !inheritanceExcludedTypes.Contains(t)).Select(t => t.Name));
                             var diagnostic = symbol.CreateDiagnostic(CA1501Rule, arg1, arg2, arg3, arg4);
                             compilationContext.ReportDiagnostic(diagnostic);
                         }

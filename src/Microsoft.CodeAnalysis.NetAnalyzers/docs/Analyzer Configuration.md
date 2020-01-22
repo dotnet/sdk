@@ -454,3 +454,30 @@ Examples:
 | --- | --- |
 |`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from MyClass are expected to have the 'Class' suffix |
 |`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class|MyNamespace.IPath->Path` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix AND all types implementing 'MyNamespace.IPath' are expected to have the 'Path' suffix. |
+
+### Inheritance excluded type or namespace names
+Option Name: `inheritance_excluded_type_names`
+
+Configurable Rules: [CA1501](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1501)
+
+Option Values: Names of types or namespaces (separated by '|'), such that the type or type's namespace doesn't count in the inheritance hierarchy tree.
+Allowed symbol name formats:
+  1. Type or namespace name (includes all types with the name, regardless of the containing type or namespace and all types whose namespace contains the name)
+  2. Type or namespace name ending with a wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace and all types whose namespace contains the name)
+  3. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix for types or "N:" prefix for namespaces.
+  4. Fully qualified wildcard names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix for types or "N:" prefix for namespaces and ending with the wildcard symbol.
+
+Default Value: `N:System.*`
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:NS` | Matches all types from the 'NS' namespace |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' |
+|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:My*` | Matches all types whose containing namespace starts with 'My' |

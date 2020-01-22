@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.CodeMetricsAnalyzer,
@@ -25,13 +26,13 @@ class FirstDerivedClass : BaseClass { }
 class SecondDerivedClass : FirstDerivedClass { }
 class ThirdDerivedClass : SecondDerivedClass { }
 class FourthDerivedClass : ThirdDerivedClass { }
+class FifthDerivedClass : FourthDerivedClass { }
 
 // This class violates the rule.
-class FifthDerivedClass : FourthDerivedClass { }
+class SixthDerivedClass : FifthDerivedClass { }
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.cs(9, 7): warning CA1501: 'FifthDerivedClass' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object'
-                GetCSharpCA1501ExpectedDiagnostic(9, 7, "FifthDerivedClass", 6, 6, "FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object")};
+                 GetCSharpCA1501ExpectedDiagnostic(10, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -61,10 +62,13 @@ End Class
 Class FifthDerivedClass
     Inherits FourthDerivedClass
 End Class
+
+Class SixthDerivedClass
+    Inherits FifthDerivedClass
+End Class
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.vb(21, 7): warning CA1501: 'FifthDerivedClass' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object'
-                GetBasicCA1501ExpectedDiagnostic(21, 7, "FifthDerivedClass", 6, 6, "FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object")};
+                 GetBasicCA1501ExpectedDiagnostic(25, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -79,11 +83,10 @@ class FirstDerivedClass : BaseClass { }
 # FORMAT:
 # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1501: 1
+CA1501: 0
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.cs(3, 7): warning CA1501: 'BaseClass' has an object hierarchy '2' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '2': 'BaseClass, Object'
-                GetCSharpCA1501ExpectedDiagnostic(3, 7, "FirstDerivedClass", 2, 2, "BaseClass, Object")};
+                GetCSharpCA1501ExpectedDiagnostic(3, 7, "FirstDerivedClass", 1, 1, "BaseClass")};
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
@@ -102,12 +105,345 @@ End Class
 # FORMAT:
 # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1501: 1
+CA1501: 0
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.vb(5, 7): warning CA1501: 'BaseClass' has an object hierarchy '2' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '2': 'BaseClass, Object'
-                GetBasicCA1501ExpectedDiagnostic(5, 7, "FirstDerivedClass", 2, 2, "BaseClass, Object")};
+                GetBasicCA1501ExpectedDiagnostic(5, 7, "FirstDerivedClass", 1, 1, "BaseClass")};
             await VerifyBasicAsync(source, additionalText, expected);
+        }
+
+        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        public async Task CA1501_ExcludesTypesInSystemNamespaceByDefault()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = "public class MyUC : System.Windows.Forms.UserControl {}",
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Public Class MyUC
+    Inherits System.Windows.Forms.UserControl
+End Class",
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        public async Task CA1501_UserConfigurationOverridesDefaultValue()
+        {
+            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:SomeClass";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { "public class MyUC : System.Windows.Forms.UserControl {}" },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpCA1501ExpectedDiagnostic(1, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
+                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class MyUC
+    Inherits System.Windows.Forms.UserControl
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetBasicCA1501ExpectedDiagnostic(2, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
+                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = *Contro*")]
+        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = User*ontrol")]
+        public async Task CA1501_InvalidUserConfigurationOverridesDefaultValueButIsIgnored(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { "public class MyUC : System.Windows.Forms.UserControl {}" },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpCA1501ExpectedDiagnostic(1, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
+                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class MyUC
+    Inherits System.Windows.Forms.UserControl
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetBasicCA1501ExpectedDiagnostic(2, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
+                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        public async Task CA1501_WildcardTypePrefixNoNamespace()
+        {
+            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:SomeClass*";
+
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 1
+";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyCompany.MyProduct.MyFunction
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+
+    public class SomeClass1 {}
+    public class SomeClass2 : SomeClass1 {}
+    public class C2 : SomeClass2 {}
+}
+
+public class SomeClass {}
+public class C1 : SomeClass {}
+
+public class SomeClass1 {}
+public class SomeClass2 : SomeClass1 {}
+public class C2 : SomeClass2 {}"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpCA1501ExpectedDiagnostic(5, 18, "C1", 2, 2, "SomeClass, Object"),
+                        GetCSharpCA1501ExpectedDiagnostic(8, 18, "SomeClass2", 2, 2, "SomeClass1, Object"),
+                        GetCSharpCA1501ExpectedDiagnostic(9, 18, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                    }
+                },
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        public async Task CA1501_WildcardTypePrefixWithNamespace()
+        {
+            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:MyCompany.MyProduct.MyFunction.SomeClass*";
+
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 1
+";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyCompany.MyProduct.MyFunction
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+
+    public class SomeClass1 {}
+    public class SomeClass2 : SomeClass1 {}
+    public class C2 : SomeClass2 {}
+}
+
+public class SomeClass {}
+public class C1 : SomeClass {}
+
+public class SomeClass1 {}
+public class SomeClass2 : SomeClass1 {}
+public class C2 : SomeClass2 {}"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpCA1501ExpectedDiagnostic(13, 14, "C1", 2, 2, "SomeClass, Object"),
+                        GetCSharpCA1501ExpectedDiagnostic(16, 14, "SomeClass2", 2, 2, "SomeClass1, Object"),
+                        GetCSharpCA1501ExpectedDiagnostic(17, 14, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                    }
+                },
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.*")]
+        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.MyProduct.*")]
+        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.MyProduct.MyFunction.*")]
+        public async Task CA1501_WildcardNamespacePrefix(string editorConfigText)
+        {
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 1
+";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyCompany.MyProduct.MyFunction
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+}
+
+public class SomeClass {}
+public class C1 : SomeClass {}
+"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpCA1501ExpectedDiagnostic(9, 14, "C1", 2, 2, "SomeClass, Object"),
+                    }
+                },
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.*")]
+        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany*")]
+        public async Task CA1501_WildcardNamespacePrefixDotMatters(string editorConfigText)
+        {
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 1
+";
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyCompany.MyProduct.MyFunction
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+}
+
+namespace MyCompany2.SomeOtherProduct
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+}
+"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                },
+            };
+
+            if (editorConfigText.EndsWith(".*", System.StringComparison.Ordinal))
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 2, 2, "SomeClass, Object"));
+            }
+
+            await csharpTest.RunAsync();
+        }
+
+        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        public async Task CA1501_WildcardNoPrefix()
+        {
+            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = Some*";
+
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 1
+";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace SomeNamespace
+{
+    public class C {}
+    public class C1 : C {}
+}
+
+namespace MyCompany.SomeProduct
+{
+    public class C {}
+    public class C1 : C {}
+}
+
+namespace MyNamespace
+{
+    public class SomeClass
+    {
+        public class C {}
+    }
+
+    public class C2 : SomeClass.C {} // excluded because C's containing type starts with 'Some'
+}
+
+public class SomeClass {}
+public class C1 : SomeClass {}
+"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                },
+            }.RunAsync();
         }
 
         #endregion
