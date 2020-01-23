@@ -1380,6 +1380,35 @@ End Class"
             }.RunAsync();
         }
 
+        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        public async Task CA1710_DefaultValueForExclusion()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+public class FreezableList : ReadOnlyCollection<int>
+{
+    public FreezableList(IList<int> list) : base(list)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Collections
+Imports System.Collections.Generic
+Imports System.Collections.ObjectModel
+
+Public Class FreezableList
+    Inherits ReadOnlyCollection(Of Integer)
+
+    Public Sub New(ByVal list As IList(Of Integer))
+        MyBase.New(list)
+    End Sub
+End Class");
+        }
+
         [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         [InlineData("")]
         [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
@@ -1422,14 +1451,7 @@ public class SomeSubSubClass : SomeSubClass {}"
                 }
             };
 
-            if (editorConfigText.Contains("exclude_indirect_base_types = true"))
-            {
-                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
-                {
-                    csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(18, 14, "SomeSubClass", "Suffix1"));
-                }
-            }
-            else
+            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -1444,6 +1466,13 @@ public class SomeSubSubClass : SomeSubClass {}"
                         GetCA1710CSharpResultAt(18, 14, "SomeSubClass", "Suffix1"),
                         GetCA1710CSharpResultAt(19, 14, "SomeSubSubClass", "Suffix1"),
                     });
+                }
+            }
+            else
+            {
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
+                {
+                    csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(18, 14, "SomeSubClass", "Suffix1"));
                 }
             }
 
@@ -1493,14 +1522,7 @@ End Class"
                 }
             };
 
-            if (editorConfigText.Contains("exclude_indirect_base_types = true"))
-            {
-                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
-                {
-                    vbTest.ExpectedDiagnostics.Add(GetCA1710BasicResultAt(26, 14, "SomeSubClass", "Suffix1"));
-                }
-            }
-            else
+            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
             {
                 vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -1515,6 +1537,13 @@ End Class"
                         GetCA1710BasicResultAt(26, 14, "SomeSubClass", "Suffix1"),
                         GetCA1710BasicResultAt(30, 14, "SomeSubSubClass", "Suffix1"),
                     });
+                }
+            }
+            else
+            {
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
+                {
+                    vbTest.ExpectedDiagnostics.Add(GetCA1710BasicResultAt(26, 14, "SomeSubClass", "Suffix1"));
                 }
             }
 
