@@ -1380,7 +1380,7 @@ End Class"
             }.RunAsync();
         }
 
-        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
         public async Task CA1710_DefaultValueForExclusion()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
