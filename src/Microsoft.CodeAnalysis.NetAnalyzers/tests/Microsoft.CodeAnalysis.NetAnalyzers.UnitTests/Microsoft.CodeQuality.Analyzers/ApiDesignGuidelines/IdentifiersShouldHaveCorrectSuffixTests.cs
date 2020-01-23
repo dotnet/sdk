@@ -1380,6 +1380,261 @@ End Class"
             }.RunAsync();
         }
 
+        [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        public async Task CA1710_AllowEmptySuffix()
+        {
+            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Data;
+
+public class SomeClass : IDataReader
+{
+    public object this[int i] => throw new NotImplementedException();
+
+    public object this[string name] => throw new NotImplementedException();
+
+    public int Depth => throw new NotImplementedException();
+
+    public bool IsClosed => throw new NotImplementedException();
+
+    public int RecordsAffected => throw new NotImplementedException();
+
+    public int FieldCount => throw new NotImplementedException();
+
+    public void Close() => throw new NotImplementedException();
+    public void Dispose() => throw new NotImplementedException();
+    public bool GetBoolean(int i) => throw new NotImplementedException();
+    public byte GetByte(int i) => throw new NotImplementedException();
+    public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
+    public char GetChar(int i) => throw new NotImplementedException();
+    public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
+    public IDataReader GetData(int i) => throw new NotImplementedException();
+    public string GetDataTypeName(int i) => throw new NotImplementedException();
+    public DateTime GetDateTime(int i) => throw new NotImplementedException();
+    public decimal GetDecimal(int i) => throw new NotImplementedException();
+    public double GetDouble(int i) => throw new NotImplementedException();
+    public Type GetFieldType(int i) => throw new NotImplementedException();
+    public float GetFloat(int i) => throw new NotImplementedException();
+    public Guid GetGuid(int i) => throw new NotImplementedException();
+    public short GetInt16(int i) => throw new NotImplementedException();
+    public int GetInt32(int i) => throw new NotImplementedException();
+    public long GetInt64(int i) => throw new NotImplementedException();
+    public string GetName(int i) => throw new NotImplementedException();
+    public int GetOrdinal(string name) => throw new NotImplementedException();
+    public DataTable GetSchemaTable() => throw new NotImplementedException();
+    public string GetString(int i) => throw new NotImplementedException();
+    public object GetValue(int i) => throw new NotImplementedException();
+    public int GetValues(object[] values) => throw new NotImplementedException();
+    public bool IsDBNull(int i) => throw new NotImplementedException();
+    public bool NextResult() => throw new NotImplementedException();
+    public bool Read() => throw new NotImplementedException();
+}
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+Imports System.Data
+
+Public Class SomeClass
+    Implements System.Data.IDataReader
+
+    Public ReadOnly Property Depth As Integer Implements IDataReader.Depth
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property IsClosed As Boolean Implements IDataReader.IsClosed
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property RecordsAffected As Integer Implements IDataReader.RecordsAffected
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property FieldCount As Integer Implements IDataRecord.FieldCount
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Default Public ReadOnly Property Item(i As Integer) As Object Implements IDataRecord.Item
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Default Public ReadOnly Property Item(name As String) As Object Implements IDataRecord.Item
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public Sub Close() Implements IDataReader.Close
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Function GetSchemaTable() As DataTable Implements IDataReader.GetSchemaTable
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function NextResult() As Boolean Implements IDataReader.NextResult
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function Read() As Boolean Implements IDataReader.Read
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetBoolean(i As Integer) As Boolean Implements IDataRecord.GetBoolean
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetByte(i As Integer) As Byte Implements IDataRecord.GetByte
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetBytes(i As Integer, fieldOffset As Long, buffer() As Byte, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetBytes
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetChar(i As Integer) As Char Implements IDataRecord.GetChar
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetChars(i As Integer, fieldoffset As Long, buffer() As Char, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetChars
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetData(i As Integer) As IDataReader Implements IDataRecord.GetData
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDataTypeName(i As Integer) As String Implements IDataRecord.GetDataTypeName
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDateTime(i As Integer) As Date Implements IDataRecord.GetDateTime
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDecimal(i As Integer) As Decimal Implements IDataRecord.GetDecimal
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDouble(i As Integer) As Double Implements IDataRecord.GetDouble
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetFieldType(i As Integer) As Type Implements IDataRecord.GetFieldType
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetFloat(i As Integer) As Single Implements IDataRecord.GetFloat
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetGuid(i As Integer) As Guid Implements IDataRecord.GetGuid
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetInt16(i As Integer) As Short Implements IDataRecord.GetInt16
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetInt32(i As Integer) As Integer Implements IDataRecord.GetInt32
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetInt64(i As Integer) As Long Implements IDataRecord.GetInt64
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetName(i As Integer) As String Implements IDataRecord.GetName
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetOrdinal(name As String) As Integer Implements IDataRecord.GetOrdinal
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetString(i As Integer) As String Implements IDataRecord.GetString
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetValue(i As Integer) As Object Implements IDataRecord.GetValue
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetValues(values() As Object) As Integer Implements IDataRecord.GetValues
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function IsDBNull(i As Integer) As Boolean Implements IDataRecord.IsDBNull
+        Throw New NotImplementedException()
+    End Function
+
+#Region ""IDisposable Support""
+    Private disposedValue As Boolean ' To detect redundant calls
+
+    ' IDisposable
+    Protected Overridable Sub Dispose(disposing As Boolean)
+        If Not disposedValue Then
+            If disposing Then
+                ' TODO: dispose managed state (managed objects).
+            End If
+
+            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+            ' TODO: set large fields to null.
+        End If
+        disposedValue = True
+    End Sub
+
+    ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
+    'Protected Overrides Sub Finalize()
+    '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+    '    Dispose(False)
+    '    MyBase.Finalize()
+    'End Sub
+
+    ' This code added by Visual Basic to correctly implement the disposable pattern.
+    Public Sub Dispose() Implements IDisposable.Dispose
+        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+        Dispose(True)
+        ' TODO: uncomment the following line if Finalize() is overridden above.
+        ' GC.SuppressFinalize(Me)
+    End Sub
+#End Region
+
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+        }
+
         [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         [InlineData("")]
         [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]

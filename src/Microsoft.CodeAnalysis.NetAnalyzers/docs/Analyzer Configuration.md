@@ -452,5 +452,6 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from MyClass are expected to have the 'Class' suffix |
+|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from' MyClass' are expected to have the 'Class' suffix |
 |`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class|MyNamespace.IPath->Path` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix AND all types implementing 'MyNamespace.IPath' are expected to have the 'Path' suffix. |
+|`dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->` | Allows to override built-in suffixes, in this case, all types implementing 'IDataReader' are no longer expected to end in 'Collection' |
