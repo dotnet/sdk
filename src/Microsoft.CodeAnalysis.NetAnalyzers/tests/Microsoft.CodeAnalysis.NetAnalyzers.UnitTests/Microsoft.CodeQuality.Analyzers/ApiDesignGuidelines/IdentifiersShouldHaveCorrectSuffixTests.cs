@@ -1383,7 +1383,7 @@ End Class"
         [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
         public async Task CA1710_AllowEmptySuffix()
         {
-            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->";
+            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}";
 
             await new VerifyCS.Test
             {
