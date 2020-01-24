@@ -62,10 +62,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var hasErrors = false;
                 compilationContext.RegisterOperationAction(_ => hasErrors = true, OperationKind.Invalid);
 
+                var compilation = compilationContext.Compilation;
+
                 // Disposable fields with initializer at declaration must be disposed.
                 compilationContext.RegisterOperationAction(operationContext =>
                 {
-                    if (!ShouldAnalyze(operationContext.ContainingSymbol.ContainingType))
+                    if (!ShouldAnalyze(operationContext.ContainingSymbol.ContainingType, operationContext.Options, operationContext.CancellationToken))
                     {
                         return;
                     }
@@ -86,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
-                        !ShouldAnalyze(containingMethod.ContainingType))
+                        !ShouldAnalyze(containingMethod.ContainingType, operationBlockStartContext.Options, operationBlockStartContext.CancellationToken))
                     {
                         return;
                     }
@@ -235,14 +237,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
 
                 // Local functions
-                bool ShouldAnalyze(INamedTypeSymbol namedType)
+                bool ShouldAnalyze(INamedTypeSymbol namedType, AnalyzerOptions options, CancellationToken cancellationToken)
                 {
                     // We only want to analyze types which are disposable (implement System.IDisposable directly or indirectly)
                     // and have at least one disposable field.
                     return !hasErrors &&
                         disposeAnalysisHelper!.IsDisposable(namedType) &&
                         !disposeAnalysisHelper.GetDisposableFields(namedType).IsEmpty &&
-                        !namedType.IsConfiguredToSkipAnalysis(compilationContext.Options, Rule, compilationContext.Compilation, compilationContext.CancellationToken);
+                        !namedType.IsConfiguredToSkipAnalysis(options, Rule, compilation, cancellationToken);
                 }
 
                 bool IsDisposeMethod(IMethodSymbol method)
