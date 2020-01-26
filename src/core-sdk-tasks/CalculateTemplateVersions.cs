@@ -29,6 +29,8 @@ namespace Microsoft.DotNet.Cli.Build
         [Output]
         public string BundledTemplateMajorMinorVersion { get; set; }
 
+        private const int _patchVersionResetOffset = 1;
+
         public override bool Execute()
         {
             var result = Calculate(AspNetCorePackageVersionTemplate, GitCommitCount, VersionSuffix);
@@ -47,8 +49,11 @@ namespace Microsoft.DotNet.Cli.Build
         {
             var aspNetCoreTemplate = NuGetVersion.Parse(aspNetCorePackageVersionTemplate);
 
+            // due to historical bug https://github.com/dotnet/core-sdk/issues/6243
+            // we need to increase patch version by one in order to "reset" existing install ComponentId
+            // more in the above bug's detail
             var baseMajorMinorPatch = new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor,
-                aspNetCoreTemplate.Patch);
+                aspNetCoreTemplate.Patch + _patchVersionResetOffset);
 
             string bundledTemplateInstallPath = aspNetCoreTemplate.IsPrerelease
                 ? $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}-{versionSuffix}"
