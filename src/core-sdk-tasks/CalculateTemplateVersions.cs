@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Build
 {
@@ -43,42 +45,19 @@ namespace Microsoft.DotNet.Cli.Build
             string BundledTemplateMajorMinorVersion) Calculate(string aspNetCorePackageVersionTemplate,
                 string gitCommitCount, string versionSuffix)
         {
-            (bool isStableVersion, string aspNetCoreVersionMajorMinorPatchVersion) =
-                GetAspNetCoreVersionMajorMinorPatchVersion(aspNetCorePackageVersionTemplate);
+            var aspNetCoreTemplate = NuGetVersion.Parse(aspNetCorePackageVersionTemplate);
 
-            var bundledTemplateMsiVersion = $"{aspNetCoreVersionMajorMinorPatchVersion}.{gitCommitCount}";
+            var baseMajorMinorPatch = new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor,
+                aspNetCoreTemplate.Patch);
 
-            string bundledTemplateInstallPath = isStableVersion
-                ? aspNetCoreVersionMajorMinorPatchVersion
-                : $"{aspNetCoreVersionMajorMinorPatchVersion}-{versionSuffix}";
-
-            var parsedAspNetCoreVersionMajorMinorPatchVersion =
-                System.Version.Parse(aspNetCoreVersionMajorMinorPatchVersion);
-            var bundledTemplateMajorMinorVersion =
-                $"{parsedAspNetCoreVersionMajorMinorPatchVersion.Major}.{parsedAspNetCoreVersionMajorMinorPatchVersion.Minor}";
+            string bundledTemplateInstallPath = aspNetCoreTemplate.IsPrerelease
+                ? $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}-{versionSuffix}"
+                : $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}";
 
             return (
-                bundledTemplateMsiVersion,
+                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}.{gitCommitCount}",
                 bundledTemplateInstallPath,
-                bundledTemplateMajorMinorVersion);
-        }
-
-        private static (bool isStableVersion, string aspNetCoreVersionMajorMinorPatchVersion)
-            GetAspNetCoreVersionMajorMinorPatchVersion(string aspNetCorePackageVersionTemplate)
-        {
-            var indexOfAspNetCoreVersionPreReleaseSeparator = aspNetCorePackageVersionTemplate.IndexOf('-');
-            string aspNetCoreVersionMajorMinorPatchVersion;
-            if (indexOfAspNetCoreVersionPreReleaseSeparator != -1)
-            {
-                aspNetCoreVersionMajorMinorPatchVersion =
-                    aspNetCorePackageVersionTemplate.Substring(0, indexOfAspNetCoreVersionPreReleaseSeparator);
-            }
-            else
-            {
-                aspNetCoreVersionMajorMinorPatchVersion = aspNetCorePackageVersionTemplate;
-            }
-
-            return (indexOfAspNetCoreVersionPreReleaseSeparator == -1, aspNetCoreVersionMajorMinorPatchVersion);
+                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}");
         }
     }
 }
