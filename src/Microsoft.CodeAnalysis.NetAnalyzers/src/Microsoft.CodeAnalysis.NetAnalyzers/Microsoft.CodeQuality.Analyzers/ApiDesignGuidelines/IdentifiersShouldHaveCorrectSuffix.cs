@@ -113,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var interfaceTypeSuffixMap = interfaceTypeSuffixMapBuilder.ToImmutable();
 
             var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
-                defaultValue: false, cancellationToken: context.CancellationToken);
+                defaultValue: true, cancellationToken: context.CancellationToken);
 
             context.RegisterSymbolAction((saContext) =>
             {
