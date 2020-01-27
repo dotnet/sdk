@@ -365,8 +365,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                                      EmitSymbols="$(PublishReadyToRunEmitSymbols)"
                                      IncludeSymbolsInSingleFile="$(IncludeSymbolsInSingleFile)"
                                      ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)">
-      
+
       <Output TaskParameter="CrossgenTool" ItemName="_CrossgenTool" />
+      <Output TaskParameter="Crossgen2Tool" ItemName="_Crossgen2Tool" />
 
       <Output TaskParameter="ReadyToRunCompileList" ItemName="_ReadyToRunCompileList" />
       <Output TaskParameter="ReadyToRunSymbolsCompileList" ItemName="_ReadyToRunSymbolsCompileList" />
@@ -390,6 +391,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           Outputs="%(_ReadyToRunCompileList.OutputR2RImage)">
 
     <RunReadyToRunCompiler CrossgenTool="@(_CrossgenTool)"
+                           Crossgen2Tool="@(_Crossgen2Tool)"
+                           UseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
                            ImplementationAssemblyReferences="@(_ReadyToRunAssembliesToReference)"
                            ShowCompilerWarnings="$(PublishReadyToRunShowWarnings)"
                            CompilationEntry="@(_ReadyToRunCompileList)"
@@ -422,6 +425,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           Outputs="%(_ReadyToRunSymbolsCompileList.OutputPDBImage)">
 
     <RunReadyToRunCompiler CrossgenTool="@(_CrossgenTool)"
+                           Crossgen2Tool="@(_Crossgen2Tool)"
+                           UseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
                            ImplementationAssemblyReferences="@(_ReadyToRunAssembliesToReference)"
                            ShowCompilerWarnings="$(PublishReadyToRunShowWarnings)"
                            CompilationEntry="@(_ReadyToRunSymbolsCompileList)"
