@@ -25,7 +25,7 @@ function RunHeat
     Write-Information "Running heat.."
 
     $heatOutput = .\heat.exe dir `"$inputDir`" -template fragment  `
-        -sreg -gg  `
+        -sreg -ag `
         -var var.DotnetSrc  `
         -cg InstallFiles  `
         -srd  `

@@ -1,47 +1,38 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="CalculateTemplatesVersions"
           DependsOnTargets="SetSdkVersionInfo">
-    <PropertyGroup>
-      <AspNetCore31VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor31Templates.IndexOf('-'))</AspNetCore31VersionPreReleaseSeparator>
-      <AspNetCore31VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor31Templates)</AspNetCore31VersionMajorMinorPatchVersion>
-      <AspNetCore31VersionMajorMinorPatchVersion Condition=" '$(AspNetCore31VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor31Templates.Substring(0, $(AspNetCore31VersionPreReleaseSeparator)))</AspNetCore31VersionMajorMinorPatchVersion>
-      <BundledTemplates31MSIVersion>$(AspNetCore31VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates31MSIVersion>
-      <BundledTemplates31InstallPath>$(AspNetCore31VersionMajorMinorPatchVersion)</BundledTemplates31InstallPath>
-      <BundledTemplates31InstallPath Condition=" '$(AspNetCore31VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates31InstallPath)-$(VersionSuffix)</BundledTemplates31InstallPath>
-      <Templates31VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore31VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates31VersionPatchSeparatorIndex>
-      <Templates31VersionPatchSeparatorIndex>$(AspNetCore31VersionMajorMinorPatchVersion.IndexOf('.', $(Templates31VersionPatchSeparatorIndex)))</Templates31VersionPatchSeparatorIndex>
-      <BundledTemplates31MajorMinorVersion>$(AspNetCore31VersionMajorMinorPatchVersion.Substring(0, $(Templates31VersionPatchSeparatorIndex)))</BundledTemplates31MajorMinorVersion>
 
-      <AspNetCore30VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor30Templates.IndexOf('-'))</AspNetCore30VersionPreReleaseSeparator>
-      <AspNetCore30VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor30Templates)</AspNetCore30VersionMajorMinorPatchVersion>
-      <AspNetCore30VersionMajorMinorPatchVersion Condition=" '$(AspNetCore30VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor30Templates.Substring(0, $(AspNetCore30VersionPreReleaseSeparator)))</AspNetCore30VersionMajorMinorPatchVersion>
-      <BundledTemplates30MSIVersion>$(AspNetCore30VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates30MSIVersion>
-      <BundledTemplates30InstallPath>$(AspNetCore30VersionMajorMinorPatchVersion)</BundledTemplates30InstallPath>
-      <BundledTemplates30InstallPath Condition=" '$(AspNetCore30VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates30InstallPath)-$(VersionSuffix)</BundledTemplates30InstallPath>
-      <Templates30VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore30VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates30VersionPatchSeparatorIndex>
-      <Templates30VersionPatchSeparatorIndex>$(AspNetCore30VersionMajorMinorPatchVersion.IndexOf('.', $(Templates30VersionPatchSeparatorIndex)))</Templates30VersionPatchSeparatorIndex>
-      <BundledTemplates30MajorMinorVersion>$(AspNetCore30VersionMajorMinorPatchVersion.Substring(0, $(Templates30VersionPatchSeparatorIndex)))</BundledTemplates30MajorMinorVersion>
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor31Templates)"
+                        GitCommitCount="$(GitCommitCount)"
+                        VersionSuffix="$(VersionSuffix)">
+      <Output TaskParameter="BundledTemplateMSIVersion" PropertyName="BundledTemplates31MSIVersion" />
+      <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates31InstallPath" />
+      <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates31MajorMinorVersion" />
+    </CalculateTemplateVersions>
 
-      <AspNetCore22VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor22Templates.IndexOf('-'))</AspNetCore22VersionPreReleaseSeparator>
-      <AspNetCore22VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor22Templates)</AspNetCore22VersionMajorMinorPatchVersion>
-      <AspNetCore22VersionMajorMinorPatchVersion Condition=" '$(AspNetCore22VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor22Templates.Substring(0, $(AspNetCore22VersionPreReleaseSeparator)))</AspNetCore22VersionMajorMinorPatchVersion>
-      <BundledTemplates22MSIVersion>$(AspNetCore22VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates22MSIVersion>
-      <BundledTemplates22InstallPath>$(AspNetCore22VersionMajorMinorPatchVersion)</BundledTemplates22InstallPath>
-      <BundledTemplates22InstallPath Condition=" '$(AspNetCore22VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates22InstallPath)-$(VersionSuffix)</BundledTemplates22InstallPath>
-      <Templates22VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore22VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates22VersionPatchSeparatorIndex>
-      <Templates22VersionPatchSeparatorIndex>$(AspNetCore22VersionMajorMinorPatchVersion.IndexOf('.', $(Templates22VersionPatchSeparatorIndex)))</Templates22VersionPatchSeparatorIndex>
-      <BundledTemplates22MajorMinorVersion>$(AspNetCore22VersionMajorMinorPatchVersion.Substring(0, $(Templates22VersionPatchSeparatorIndex)))</BundledTemplates22MajorMinorVersion>
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor30Templates)"
+                        GitCommitCount="$(GitCommitCount)"
+                        VersionSuffix="$(VersionSuffix)">
+      <Output TaskParameter="BundledTemplateMSIVersion" PropertyName="BundledTemplates30MSIVersion" />
+      <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates30InstallPath" />
+      <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates30MajorMinorVersion" />
+    </CalculateTemplateVersions>
 
-      <AspNetCore21VersionPreReleaseSeparator>$(AspNetCorePackageVersionFor21Templates.IndexOf('-'))</AspNetCore21VersionPreReleaseSeparator>
-      <AspNetCore21VersionMajorMinorPatchVersion>$(AspNetCorePackageVersionFor21Templates)</AspNetCore21VersionMajorMinorPatchVersion>
-      <AspNetCore21VersionMajorMinorPatchVersion Condition=" '$(AspNetCore21VersionPreReleaseSeparator)' != -1 ">$(AspNetCorePackageVersionFor21Templates.Substring(0, $(AspNetCore21VersionPreReleaseSeparator)))</AspNetCore21VersionMajorMinorPatchVersion>
-      <BundledTemplates21MSIVersion>$(AspNetCore21VersionMajorMinorPatchVersion).$(GitCommitCount)</BundledTemplates21MSIVersion>
-      <BundledTemplates21InstallPath>$(AspNetCore21VersionMajorMinorPatchVersion)</BundledTemplates21InstallPath>
-      <BundledTemplates21InstallPath Condition=" '$(AspNetCore21VersionPreReleaseSeparator)' != -1 ">$(BundledTemplates21InstallPath)-$(VersionSuffix)</BundledTemplates21InstallPath>
-      <Templates21VersionPatchSeparatorIndex>$([MSBuild]::Add($(AspNetCore21VersionMajorMinorPatchVersion.IndexOf('.')), 1))</Templates21VersionPatchSeparatorIndex>
-      <Templates21VersionPatchSeparatorIndex>$(AspNetCore21VersionMajorMinorPatchVersion.IndexOf('.', $(Templates21VersionPatchSeparatorIndex)))</Templates21VersionPatchSeparatorIndex>
-      <BundledTemplates21MajorMinorVersion>$(AspNetCore21VersionMajorMinorPatchVersion.Substring(0, $(Templates21VersionPatchSeparatorIndex)))</BundledTemplates21MajorMinorVersion>
-    </PropertyGroup>
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor22Templates)"
+                        GitCommitCount="$(GitCommitCount)"
+                        VersionSuffix="$(VersionSuffix)">
+      <Output TaskParameter="BundledTemplateMSIVersion" PropertyName="BundledTemplates22MSIVersion" />
+      <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates22InstallPath" />
+      <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates22MajorMinorVersion" />
+    </CalculateTemplateVersions>
+
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor21Templates)"
+                        GitCommitCount="$(GitCommitCount)"
+                        VersionSuffix="$(VersionSuffix)">
+      <Output TaskParameter="BundledTemplateMSIVersion" PropertyName="BundledTemplates21MSIVersion" />
+      <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates21InstallPath" />
+      <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates21MajorMinorVersion" />
+    </CalculateTemplateVersions>
   </Target>
 
   <ItemGroup>
