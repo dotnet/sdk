@@ -21,7 +21,7 @@
     <MicrosoftExtensionsDependencyInjectionVersion>2.1.1</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsLoggingVersion>2.1.1</MicrosoftExtensionsLoggingVersion>
     <MicrosoftVisualStudioCodingConventionsVersion>1.1.20180503.2</MicrosoftVisualStudioCodingConventionsVersion>
-    <MicrosoftCodeAnalysisAnalyzersVersion>2.9.6</MicrosoftCodeAnalysisAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0-beta2.20077.2</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftNETCoreCompilersPackageVersion)</MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
   <PropertyGroup>
