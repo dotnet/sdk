@@ -50,6 +50,7 @@ Options:
   --check            Terminates with a non-zero exit code if any files were formatted.
   --files            A comma separated list of relative file paths to format. All files are formatted if empty.
   --version          Display version information
+  --report           Writes a json file to the given directory. Defaults to 'format-report.json' if no filename given.
 ```
 
 Add `format` after `dotnet` and before the command arguments that you want to run:
@@ -62,6 +63,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | dotnet **format** -v diag                                | Formats with very verbose logging.                                                            |
 | dotnet **format** --files Programs.cs,Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
 | dotnet **format** --check --dry-run                      | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
+| dotnet **format** --report &lt;report-path&gt;           | Formats and saves a json report file to the given directory.                                  |
 
 ### How To Uninstall
 

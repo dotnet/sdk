@@ -96,19 +96,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
 
-            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default);
-            var formattedDocument = GetOnlyDocument(formattedSolution.Solution);
+            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default, new List<FormattedFile>());
+            var formattedDocument = GetOnlyDocument(formattedSolution);
             var formattedText = await formattedDocument.GetTextAsync();
 
             Assert.Equal(expectedCode, formattedText.ToString());
-
-            if (testCode != expectedCode)
-            {
-                var formattedFile = formattedSolution.FormattedFiles.Single();
-                Assert.Equal(formattedDocument.Name, formattedFile.FileName);
-                Assert.Equal(formattedDocument.FilePath, formattedFile.FilePath);
-                Assert.Equal(formattedDocument.Id, formattedFile.DocumentId);
-            }
 
             return formattedText;
         }
@@ -160,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalFiles">Additional documents to include in the project.</param>
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <returns>A solution containing a project with the specified sources and additional files.</returns>
-        private Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences)
+        private protected Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences)
         {
             var project = CreateProject(sources, additionalFiles, additionalMetadataReferences, Language);
             return project.Solution;

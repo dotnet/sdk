@@ -15,11 +15,12 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>.
         /// </summary>
-        Task<(Solution Solution, List<FormattedFile> FormattedFiles)> FormatAsync(
+        Task<Solution> FormatAsync(
             Solution solution,
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions options,
             ILogger logger,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken,
+            List<FormattedFile> formattedFiles);
     }
 }

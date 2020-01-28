@@ -22,15 +22,16 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>
         /// </summary>
-        public async Task<(Solution Solution, List<FormattedFile> FormattedFiles)> FormatAsync(
+        public async Task<Solution> FormatAsync(
             Solution solution,
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            List<FormattedFile> formattedFiles)
         {
             var formattedDocuments = FormatFiles(solution, formattableDocuments, formatOptions, logger, cancellationToken);
-            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, cancellationToken).ConfigureAwait(false);
+            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, cancellationToken, formattedFiles).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -90,21 +91,21 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies the changed <see cref="SourceText"/> to each formatted <see cref="Document"/>.
         /// </summary>
-        private async Task<(Solution Solution, List<FormattedFile> FormattedFiles)> ApplyFileChangesAsync(
+        private async Task<Solution> ApplyFileChangesAsync(
            Solution solution,
             ImmutableArray<(Document, Task<(SourceText originalText, SourceText formattedText)>)> formattedDocuments,
             FormatOptions formatOptions,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            List<FormattedFile> formattedFiles)
         {
-            var formattedFiles = new List<FormattedFile>();
             var formattedSolution = solution;
 
             foreach (var (document, formatTask) in formattedDocuments)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    return (formattedSolution, formattedFiles);
+                    return formattedSolution;
                 }
 
                 var (originalText, formattedText) = await formatTask.ConfigureAwait(false);
@@ -119,7 +120,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
             }
 
-            return (formattedSolution, formattedFiles);
+            return formattedSolution;
         }
 
         private IEnumerable<FileChange> GetFileChanges(FormatOptions formatOptions, string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)

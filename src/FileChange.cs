@@ -4,11 +4,11 @@ namespace Microsoft.CodeAnalysis.Tools
 {
     public class FileChange
     {
-        public int LineNumber { get; set; }
+        public int LineNumber { get; }
 
-        public int CharNumber { get; set; }
+        public int CharNumber { get; }
 
-        public string FormatDescription { get; set; }
+        public string FormatDescription { get; }
 
         public FileChange(LinePosition changePosition, string formatDescription)
         {
