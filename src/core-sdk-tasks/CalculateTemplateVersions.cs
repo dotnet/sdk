@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Versioning;
@@ -49,11 +47,7 @@ namespace Microsoft.DotNet.Cli.Build
         {
             var aspNetCoreTemplate = NuGetVersion.Parse(aspNetCorePackageVersionTemplate);
 
-            // due to historical bug https://github.com/dotnet/core-sdk/issues/6243
-            // we need to increase patch version by one in order to "reset" existing install ComponentId
-            // more in the above bug's detail
-            var baseMajorMinorPatch = new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor,
-                aspNetCoreTemplate.Patch + _patchVersionResetOffset);
+            NuGetVersion baseMajorMinorPatch = GetBaseMajorMinorPatch(aspNetCoreTemplate);
 
             string bundledTemplateInstallPath = aspNetCoreTemplate.IsPrerelease
                 ? $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}-{versionSuffix}"
@@ -63,6 +57,24 @@ namespace Microsoft.DotNet.Cli.Build
                 $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}.{gitCommitCount}",
                 bundledTemplateInstallPath,
                 $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}");
+        }
+
+        private static NuGetVersion GetBaseMajorMinorPatch(NuGetVersion aspNetCoreTemplate)
+        {
+            // due to historical bug https://github.com/dotnet/core-sdk/issues/6243
+            // we need to increase patch version by one in order to "reset" existing install ComponentId
+            // more in the above bug's detail.
+            // There is no non-deterministic existing ComponentId under Major version 5.
+            // so only apply the patch bump when below 5
+
+            int basePatch =
+                aspNetCoreTemplate.Major < 5
+                ? aspNetCoreTemplate.Patch + _patchVersionResetOffset
+                : aspNetCoreTemplate.Patch;
+
+            var baseMajorMinorPatch = new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor,
+                basePatch);
+            return baseMajorMinorPatch;
         }
     }
 }
