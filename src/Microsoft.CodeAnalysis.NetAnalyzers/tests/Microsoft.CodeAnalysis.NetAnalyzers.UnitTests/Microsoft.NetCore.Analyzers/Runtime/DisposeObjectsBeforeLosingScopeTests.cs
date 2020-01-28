@@ -11774,5 +11774,88 @@ class Test
     }
 }");
         }
+
+        [Fact, WorkItem(3085, "https://github.com/dotnet/roslyn-analyzers/issues/3085")]
+        public async Task LocalInvocationOfAnExcludedType_NoDiagnostic()
+        {
+            string editorConfigText = $"dotnet_code_quality.{DisposeObjectsBeforeLosingScope.RuleId}.excluded_symbol_names = T:A";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class B : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+        var b = new B();
+    }
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(23, 17, "new B()"),
+                    }
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class B
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class Test
+    Sub M1()
+        Dim a As New A()
+        Dim b As New B()
+    End Sub
+End Class",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(19, 18, "New B()"),
+                    }
+                }
+            }.RunAsync();
+        }
     }
 }
