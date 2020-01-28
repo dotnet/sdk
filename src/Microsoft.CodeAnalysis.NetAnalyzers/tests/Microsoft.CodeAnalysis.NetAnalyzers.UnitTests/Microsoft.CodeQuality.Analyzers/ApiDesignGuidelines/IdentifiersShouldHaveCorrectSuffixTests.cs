@@ -1452,12 +1452,20 @@ Public Class FreezableList
 End Class");
         }
 
-        [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
-        public async Task CA1710_AllowEmptySuffix()
+        [Theory, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        // Following values are ok
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {}")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{} ")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {} ")]
+        // Following values are not ok
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ }")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { }")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ } ")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { } ")]
+        public async Task CA1710_AllowEmptySuffix(string editorConfigText)
         {
-            var editorConfigText = @"dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}";
-
-            await new VerifyCS.Test
+            var csharpTest = new VerifyCS.Test
             {
                 TestState =
                 {
@@ -1513,9 +1521,16 @@ public class SomeClass : IDataReader
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                 }
-            }.RunAsync();
+            };
 
-            await new VerifyVB.Test
+            if (editorConfigText.Contains("{ }"))
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(5, 14, "SomeClass", "{ }"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
             {
                 TestState =
                 {
@@ -1704,7 +1719,14 @@ End Class"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText)  },
                 }
-            }.RunAsync();
+            };
+
+            if (editorConfigText.Contains("{ }"))
+            {
+                vbTest.ExpectedDiagnostics.Add(GetCA1710BasicResultAt(5, 14, "SomeClass", "{ }"));
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
