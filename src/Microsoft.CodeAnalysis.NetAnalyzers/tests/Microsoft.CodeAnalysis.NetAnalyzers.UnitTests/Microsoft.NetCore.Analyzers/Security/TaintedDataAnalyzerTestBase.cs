@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             await test.RunAsync();
         }
 
-        protected async Task VerifyCSharpWithDependenciesAsync(string source, FileAndSource additionalFile, params DiagnosticResult[] expected)
+        protected async Task VerifyCSharpWithDependenciesAsync(string source, (string additionalFile, string fileContent) file, params DiagnosticResult[] expected)
         {
             var test = new CSharpSecurityCodeFixVerifier<TCSharpAnalyzer, EmptyCodeFixProvider>.Test();
             test.ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis;
@@ -62,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 }
             }
 
-            test.TestState.AdditionalFiles.Add((additionalFile.FilePath, additionalFile.Source));
+            test.TestState.AdditionalFiles.Add(file);
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync();
