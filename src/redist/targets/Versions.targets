@@ -2,13 +2,13 @@
   <PropertyGroup>
     <VersionMajor>3</VersionMajor>
     <VersionMinor>1</VersionMinor>
-    <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionPatch>02</VersionPatch>
-    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">servicing</ReleaseSuffix>
+    <VersionSDKMinor>2</VersionSDKMinor>
+    <VersionPatch>00</VersionPatch>
+    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview</ReleaseSuffix>
     <!--
         When DropSuffix is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
-    <DropSuffix>true</DropSuffix>
+    <DropSuffix>false</DropSuffix>
   </PropertyGroup>
   
   <Target Name="GetCoreSdkGitCommitInfo">
