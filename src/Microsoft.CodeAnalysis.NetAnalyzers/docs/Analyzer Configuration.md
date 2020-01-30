@@ -417,7 +417,7 @@ Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-qualit
 
 Option Values: `true` or `false`
 
-Default Value: `false`
+Default Value: `true`
 
 Example: `dotnet_code_quality.CA1710.exclude_indirect_base_types = true`
 
