@@ -48,7 +48,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             NoVerbsMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -58,7 +58,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             NoVerbsNoTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -68,7 +68,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             GetAndTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -78,7 +78,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             GetAndOtherAndTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -88,7 +88,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             VerbsAndNoTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
