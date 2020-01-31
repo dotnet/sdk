@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
@@ -228,7 +227,7 @@ class TestClass
     {
         zipArchiveEntry.ExtractToFile(zipArchiveEntry.FullName);
     }
-}", DiagnosticAnalyzerTestBase.GetEditorConfigAdditionalFile(editorConfigText), expected);
+}", (".editorconfig", editorConfigText), expected);
         }
     }
 }
