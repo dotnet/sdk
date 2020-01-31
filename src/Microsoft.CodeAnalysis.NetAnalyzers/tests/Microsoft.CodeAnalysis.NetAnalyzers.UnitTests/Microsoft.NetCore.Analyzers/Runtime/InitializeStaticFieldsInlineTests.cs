@@ -3,6 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Runtime;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpInitializeStaticFieldsInlineAnalyzer,
@@ -153,6 +154,23 @@ Public Class Class1
 	End Sub
 End Class
 ");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_EventSubscriptionInConstructor()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class C
+{
+    private static string s;
+
+    static C()
+    {
+        Console.CancelKeyPress += (o, e) => s = string.Empty;
+    }
+}");
         }
 
         #endregion
