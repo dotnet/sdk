@@ -4,15 +4,6 @@
   "runs": [
     {
       "tool": {
-        "name": "Humanizer",
-        "version": "3.0.0",
-        "language": "en-US"
-      },
-      "rules": {
-      }
-    },
-    {
-      "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
         "version": "3.0.0",
         "language": "en-US"
@@ -1459,26 +1450,6 @@
             ]
           }
         },
-        "CA1714": {
-          "id": "CA1714",
-          "shortDescription": "Flags enums should have plural names",
-          "fullDescription": "A public enumeration has the System.FlagsAttribute attribute, and its name does not end in \"\"s\"\". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1714",
-          "properties": {
-            "category": "Naming",
-            "isEnabledByDefault": false,
-            "typeName": "EnumsShouldHavePluralNamesAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA1715": {
           "id": "CA1715",
           "shortDescription": "Identifiers should have correct prefix",
@@ -1509,26 +1480,6 @@
             "category": "Naming",
             "isEnabledByDefault": true,
             "typeName": "IdentifiersShouldNotMatchKeywordsAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
-        "CA1717": {
-          "id": "CA1717",
-          "shortDescription": "Only FlagsAttribute enums should have plural names",
-          "fullDescription": "Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1717",
-          "properties": {
-            "category": "Naming",
-            "isEnabledByDefault": false,
-            "typeName": "EnumsShouldHavePluralNamesAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
