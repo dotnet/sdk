@@ -171,6 +171,20 @@ class C
         Console.CancelKeyPress += (o, e) => s = string.Empty;
     }
 }");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Class C
+    Private Shared s As String
+
+    Shared Sub New()
+        AddHandler Console.CancelKeyPress,
+            Sub(o, e)
+                s = string.Empty
+            End Sub
+    End Sub
+End Class");
         }
 
         #endregion
