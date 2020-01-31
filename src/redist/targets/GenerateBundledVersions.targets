@@ -183,6 +183,13 @@ Copyright (c) .NET Foundation. All rights reserved.
                       AppHostPackVersion="$(_NETCoreAppPackageVersion)"
                       AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                       />
+
+    <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
+                        TargetFramework="netcoreapp5.0"
+                        Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
+                        Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                        Crossgen2RuntimeIdentifiers="linux-musl-x64;linux-x64;win-x64"
+                        />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp5.0"
