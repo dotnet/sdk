@@ -1948,13 +1948,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Члены, которые не обращаются к данным экземпляров и не вызывают методы экземпляров, можно пометить как статические (Shared в Visual Basic). После этого компилятор создаст невиртуальные места для вызова этих членов. Это может привести к ощутимому росту производительности для чувствительного к производительности кода.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="needs-review-translation">Члены, которые не обращаются к данным экземпляров и не вызывают методы экземпляров, можно пометить как статические (Shared в Visual Basic). После этого компилятор создаст невиртуальные места для вызова этих членов. Это может привести к ощутимому росту производительности для чувствительного к производительности кода.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Член {0} не обращается к данным экземпляров, поэтому его можно пометить как статический (Shared в Visual Basic).</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="needs-review-translation">Член {0} не обращается к данным экземпляров, поэтому его можно пометить как статический (Shared в Visual Basic).</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">
