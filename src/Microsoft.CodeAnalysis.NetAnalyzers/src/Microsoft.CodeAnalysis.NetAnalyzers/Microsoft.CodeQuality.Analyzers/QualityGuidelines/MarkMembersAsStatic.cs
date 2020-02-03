@@ -106,6 +106,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         return;
                     }
 
+                    // Don't report methods which have a single throw statement
+                    // with NotImplementedException or NotSupportedException
+                    if (blockStartContext.IsMethodNotImplementedOrSupported())
+                    {
+                        return;
+                    }
+
                     bool isInstanceReferenced = false;
 
                     blockStartContext.RegisterOperationAction(operationContext =>
