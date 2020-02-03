@@ -46,7 +46,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static void OnSymbolStart(SymbolStartAnalysisContext symbolStartContext)
         {
-            if (!DisposeAnalysisHelper.TryGetOrCreate(symbolStartContext.Compilation, out DisposeAnalysisHelper? disposeAnalysisHelper))
+            if (!DisposeAnalysisHelper.TryGetOrCreate(symbolStartContext.Compilation, out DisposeAnalysisHelper? disposeAnalysisHelper) ||
+                !ShouldAnalyze(symbolStartContext, disposeAnalysisHelper))
             {
                 return;
             }
@@ -78,12 +79,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     updateValueFactory: (f, currentValue) => currentValue || disposed);
             }
 
-            bool ShouldAnalyze(INamedTypeSymbol namedType)
+            static bool ShouldAnalyze(SymbolStartAnalysisContext symbolStartContext, DisposeAnalysisHelper disposeAnalysisHelper)
             {
                 // We only want to analyze types which are disposable (implement System.IDisposable directly or indirectly)
                 // and have at least one disposable field.
-                return !hasErrors &&
-                    disposeAnalysisHelper!.IsDisposable(namedType) &&
+                var namedType = (INamedTypeSymbol)symbolStartContext.Symbol;
+                return disposeAnalysisHelper.IsDisposable(namedType) &&
                     !disposeAnalysisHelper.GetDisposableFields(namedType).IsEmpty &&
                     !namedType.IsConfiguredToSkipAnalysis(symbolStartContext.Options, Rule, symbolStartContext.Compilation, symbolStartContext.CancellationToken);
             }
@@ -108,11 +109,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 RoslynDebug.Assert(disposeAnalysisHelper != null);
 
-                if (!ShouldAnalyze(operationContext.ContainingSymbol.ContainingType))
-                {
-                    return;
-                }
-
                 var initializedFields = ((IFieldInitializerOperation)operationContext.Operation).InitializedFields;
                 foreach (var field in initializedFields)
                 {
@@ -128,8 +124,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 RoslynDebug.Assert(disposeAnalysisHelper != null);
 
-                if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
-                    !ShouldAnalyze(containingMethod.ContainingType))
+                if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod))
                 {
                     return;
                 }
