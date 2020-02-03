@@ -1948,13 +1948,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">インスタンス データにアクセスしないメンバーまたはインスタンス メソッドを呼び出さないメンバーは、static (Visual Basic では Shared) に設定できます。メソッドを static に設定すると、コンパイラはこれらのメンバーに対する非仮想呼び出しサイトを出力します。これにより、パフォーマンスを要求されるコードでは、大幅にパフォーマンスが改善されます。</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="needs-review-translation">インスタンス データにアクセスしないメンバーまたはインスタンス メソッドを呼び出さないメンバーは、static (Visual Basic では Shared) に設定できます。メソッドを static に設定すると、コンパイラはこれらのメンバーに対する非仮想呼び出しサイトを出力します。これにより、パフォーマンスを要求されるコードでは、大幅にパフォーマンスが改善されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">メンバー {0} はインスタンス データにアクセスしないため、static (Visual Basic では Shared) に設定できます</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="needs-review-translation">メンバー {0} はインスタンス データにアクセスしないため、static (Visual Basic では Shared) に設定できます</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">
