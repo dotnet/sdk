@@ -949,6 +949,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                       Condition="'%(_ResolvedFileToPublishAlways.ExcludeFromSingleFile)' != 'true'"/>
     </ItemGroup>
 
+    <PropertyGroup>
+      <PublishedSingleFileName>$(AssemblyName)$(_NativeExecutableExtension)</PublishedSingleFileName>
+      <PublishedSingleFilePath>$(PublishDir)$(PublishedSingleFileName)</PublishedSingleFilePath>
+    </PropertyGroup>
+
   </Target>
 
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
@@ -956,10 +961,10 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(PublishSingleFile)' == 'true'"
           DependsOnTargets="_ComputeFilesToBundle" 
           Inputs="@(_FilesToBundle)"
-          Outputs="$(PublishDir)$(AssemblyName)$(_NativeExecutableExtension)">
+          Outputs="$(PublishedSingleFilePath)">
 
     <GenerateBundle FilesToBundle="@(_FilesToBundle)"
-                    AppHostName="$(AssemblyName)$(_NativeExecutableExtension)"
+                    AppHostName="$(PublishedSingleFileName)"
                     IncludeSymbols="$(IncludeSymbolsInSingleFile)"
                     OutputDir="$(PublishDir)"
                     ShowDiagnosticOutput="false"/>
@@ -1072,17 +1077,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(PublishItemsOutputGroupDependsOn);
       ResolveReferences;
       ComputeFilesToPublish;
+      BundlePublishDirectory;
     </PublishItemsOutputGroupDependsOn>
   </PropertyGroup>
 
   <Target Name="PublishItemsOutputGroup" DependsOnTargets="$(PublishItemsOutputGroupDependsOn)" Returns="@(PublishItemsOutputGroupOutputs)">
     <ItemGroup>
-      <PublishItemsOutputGroupOutputs Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true'"
+      <PublishItemsOutputGroupOutputs Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and '$(PublishSingleFile)' != 'true'"
                                       Include="$(PublishDepsFilePath)"
                                       TargetPath="$(ProjectDepsFileName)" />
       <PublishItemsOutputGroupOutputs Include="@(ResolvedFileToPublish->'%(FullPath)')"
                                       TargetPath="%(ResolvedFileToPublish.RelativePath)"
                                       IsKeyOutput="%(ResolvedFileToPublish.IsKeyOutput)"
+                                      Condition="'$(PublishSingleFile)' != 'true' or '%(ResolvedFileToPublish.ExcludeFromSingleFile)'=='true'"
+                                      OutputGroup="PublishItemsOutputGroup" />
+      <PublishItemsOutputGroupOutputs Include="$(PublishedSingleFilePath)"
+                                      TargetPath="$(PublishedSingleFileName)"
+                                      IsKeyOutput="true"
+                                      Condition="'$(PublishSingleFile)' == 'true'"
                                       OutputGroup="PublishItemsOutputGroup" />
     </ItemGroup>
   </Target>
