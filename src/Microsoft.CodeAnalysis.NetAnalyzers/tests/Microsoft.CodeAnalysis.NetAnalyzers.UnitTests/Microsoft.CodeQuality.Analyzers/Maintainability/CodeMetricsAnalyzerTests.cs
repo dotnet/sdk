@@ -115,6 +115,7 @@ CA1501: 0
         [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
         public async Task CA1501_ExcludesTypesInSystemNamespaceByDefault()
         {
+            // This test assumes that WinForms UserControl is over the default threshold.
             await new VerifyCS.Test
             {
                 TestCode = "public class MyUC : System.Windows.Forms.UserControl {}",
@@ -134,7 +135,7 @@ End Class",
         [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
         public async Task CA1501_UserConfigurationOverridesDefaultValue()
         {
-            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:SomeClass";
+            var editorConfigText = "dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass";
 
             await new VerifyCS.Test
             {
@@ -166,8 +167,8 @@ End Class"
         }
 
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = *Contro*")]
-        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = User*ontrol")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = *Contro*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = User*ontrol")]
         public async Task CA1501_InvalidUserConfigurationOverridesDefaultValueButIsIgnored(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -199,11 +200,11 @@ End Class"
             }.RunAsync();
         }
 
-        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        public async Task CA1501_WildcardTypePrefixNoNamespace()
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
+        public async Task CA1501_WildcardTypePrefixNoNamespace(string editorConfigText)
         {
-            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:SomeClass*";
-
             var codeMetricsConfigText = @"
 # FORMAT:
 # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
@@ -211,7 +212,7 @@ End Class"
 CA1501: 1
 ";
 
-            await new VerifyCS.Test
+            var csharpTest = new VerifyCS.Test
             {
                 TestState =
                 {
@@ -240,114 +241,112 @@ public class C2 : SomeClass2 {}"
                         (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
                     },
-                    ExpectedDiagnostics =
-                    {
-                        GetCSharpCA1501ExpectedDiagnostic(5, 18, "C1", 2, 2, "SomeClass, Object"),
-                        GetCSharpCA1501ExpectedDiagnostic(8, 18, "SomeClass2", 2, 2, "SomeClass1, Object"),
-                        GetCSharpCA1501ExpectedDiagnostic(9, 18, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
-                    }
                 },
-            }.RunAsync();
-        }
+            };
 
-        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        public async Task CA1501_WildcardTypePrefixWithNamespace()
-        {
-            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:MyCompany.MyProduct.MyFunction.SomeClass*";
+            if (editorConfigText.Contains("T:SomeClass"))
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(5, 18, "C1", 2, 2, "SomeClass, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(8, 18, "SomeClass2", 2, 2, "SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(9, 18, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                });
+            }
+            else
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(13, 14, "C1", 2, 2, "SomeClass, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(16, 14, "SomeClass2", 2, 2, "SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(17, 14, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                });
+            }
 
-            var codeMetricsConfigText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            await csharpTest.RunAsync();
 
-CA1501: 1
-";
-
-            await new VerifyCS.Test
+            var vbnetTest = new VerifyVB.Test
             {
                 TestState =
                 {
                     Sources =
                     {
                         @"
-namespace MyCompany.MyProduct.MyFunction
-{
-    public class SomeClass {}
-    public class C1 : SomeClass {}
+Namespace MyCompany.MyProduct.MyFunction
+    Public Class SomeClass
+    End Class
 
-    public class SomeClass1 {}
-    public class SomeClass2 : SomeClass1 {}
-    public class C2 : SomeClass2 {}
-}
+    Public Class C1
+        Inherits SomeClass
+    End Class
 
-public class SomeClass {}
-public class C1 : SomeClass {}
+    Public Class SomeClass1
+    End Class
 
-public class SomeClass1 {}
-public class SomeClass2 : SomeClass1 {}
-public class C2 : SomeClass2 {}"
+    Public Class SomeClass2
+        Inherits SomeClass1
+    End Class
+
+    Public Class C2
+        Inherits SomeClass2
+    End Class
+End Namespace
+
+Public Class SomeClass
+End Class
+
+Public Class C1
+    Inherits SomeClass
+End Class
+
+Public Class SomeClass1
+End Class
+
+Public Class SomeClass2
+    Inherits SomeClass1
+End Class
+
+Public Class C2
+    Inherits SomeClass2
+End Class"
                     },
                     AdditionalFiles =
                     {
                         (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
                     },
-                    ExpectedDiagnostics =
-                    {
-                        GetCSharpCA1501ExpectedDiagnostic(13, 14, "C1", 2, 2, "SomeClass, Object"),
-                        GetCSharpCA1501ExpectedDiagnostic(16, 14, "SomeClass2", 2, 2, "SomeClass1, Object"),
-                        GetCSharpCA1501ExpectedDiagnostic(17, 14, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
-                    }
                 },
-            }.RunAsync();
+            };
+
+            if (editorConfigText.Contains("T:SomeClass"))
+            {
+                vbnetTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(6, 18, "C1", 2, 2, "SomeClass, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(13, 18, "SomeClass2", 2, 2, "SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(17, 18, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                });
+            }
+            else
+            {
+                vbnetTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(25, 14, "C1", 2, 2, "SomeClass, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(32, 14, "SomeClass2", 2, 2, "SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(36, 14, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                });
+            }
+
+            await vbnetTest.RunAsync();
         }
 
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.*")]
-        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.MyProduct.*")]
-        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.MyProduct.MyFunction.*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunction.*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.*")]
+        // The presence of the '.' before the wildcard matters for the match
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany*")]
         public async Task CA1501_WildcardNamespacePrefix(string editorConfigText)
-        {
-            var codeMetricsConfigText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
-
-CA1501: 1
-";
-
-            await new VerifyCS.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        @"
-namespace MyCompany.MyProduct.MyFunction
-{
-    public class SomeClass {}
-    public class C1 : SomeClass {}
-}
-
-public class SomeClass {}
-public class C1 : SomeClass {}
-"
-                    },
-                    AdditionalFiles =
-                    {
-                        (".editorconfig", editorConfigText),
-                        (AdditionalFileName, codeMetricsConfigText),
-                    },
-                    ExpectedDiagnostics =
-                    {
-                        GetCSharpCA1501ExpectedDiagnostic(9, 14, "C1", 2, 2, "SomeClass, Object"),
-                    }
-                },
-            }.RunAsync();
-        }
-
-        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany.*")]
-        [InlineData("dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:MyCompany*")]
-        public async Task CA1501_WildcardNamespacePrefixDotMatters(string editorConfigText)
         {
             var codeMetricsConfigText = @"
 # FORMAT:
@@ -374,6 +373,9 @@ namespace MyCompany2.SomeOtherProduct
     public class SomeClass {}
     public class C1 : SomeClass {}
 }
+
+public class SomeClass {}
+public class C1 : SomeClass {}
 "
                     },
                     AdditionalFiles =
@@ -381,21 +383,76 @@ namespace MyCompany2.SomeOtherProduct
                         (".editorconfig", editorConfigText),
                         (AdditionalFileName, codeMetricsConfigText),
                     },
+                    ExpectedDiagnostics =
+                    {
+                         GetCSharpCA1501ExpectedDiagnostic(15, 14, "C1", 2, 2, "SomeClass, Object"),
+                    },
                 },
             };
 
-            if (editorConfigText.EndsWith(".*", System.StringComparison.Ordinal))
+            if (!editorConfigText.Contains("N:MyCompany*"))
             {
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 2, 2, "SomeClass, Object"));
             }
 
             await csharpTest.RunAsync();
+
+            var vbnetTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace MyCompany.MyProduct.MyFunction
+    Public Class SomeClass
+    End Class
+
+    Public Class C1
+        Inherits SomeClass
+    End Class
+End Namespace
+
+Namespace MyCompany2.SomeOtherProduct
+    Public Class SomeClass
+    End Class
+
+    Public Class C1
+        Inherits SomeClass
+    End Class
+End Namespace
+
+Public Class SomeClass
+End Class
+
+Public Class C1
+    Inherits SomeClass
+End Class"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    ExpectedDiagnostics =
+                    {
+                         GetBasicCA1501ExpectedDiagnostic(23, 14, "C1", 2, 2, "SomeClass, Object"),
+                    },
+                },
+            };
+
+            if (!editorConfigText.Contains("N:MyCompany*"))
+            {
+                vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 2, 2, "SomeClass, Object"));
+            }
+
+            await vbnetTest.RunAsync();
         }
 
         [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
         public async Task CA1501_WildcardNoPrefix()
         {
-            var editorConfigText = "dotnet_code_quality.CA1501.inheritance_excluded_type_names = Some*";
+            var editorConfigText = "dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = Some*";
 
             var codeMetricsConfigText = @"
 # FORMAT:
@@ -436,6 +493,57 @@ namespace MyNamespace
 public class SomeClass {}
 public class C1 : SomeClass {}
 "
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace SomeNamespace
+    Public Class C
+    End Class
+
+    Public Class C1
+        Inherits C
+    End Class
+End Namespace
+
+Namespace MyCompany.SomeProduct
+    Public Class C
+    End Class
+
+    Public Class C1
+        Inherits C
+    End Class
+End Namespace
+
+Namespace MyNamespace
+    Public Class SomeClass
+        Public Class C
+        End Class
+    End Class
+
+    Public Class C2
+        Inherits SomeClass.C
+    End Class
+End Namespace
+
+Public Class SomeClass
+End Class
+
+Public Class C1
+    Inherits SomeClass
+End Class"
                     },
                     AdditionalFiles =
                     {

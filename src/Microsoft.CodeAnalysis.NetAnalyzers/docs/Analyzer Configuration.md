@@ -457,7 +457,7 @@ Examples:
 |`dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}` | Allows to override built-in suffixes, in this case, all types implementing 'IDataReader' are no longer expected to end in 'Collection' |
 
 ### Inheritance excluded type or namespace names
-Option Name: `inheritance_excluded_type_names`
+Option Name: `additional_inheritance_excluded_symbol_names`
 
 Configurable Rules: [CA1501](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1501)
 
@@ -474,11 +474,11 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:NS` | Matches all types from the 'NS' namespace |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' |
-|`dotnet_code_quality.CA1501.inheritance_excluded_type_names = N:My*` | Matches all types whose containing namespace starts with 'My' |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:NS` | Matches all types from the 'NS' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' |
