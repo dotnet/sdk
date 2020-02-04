@@ -157,7 +157,7 @@ End Class
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_EventSubscriptionInConstructor()
+        public async Task CA1810_EventLambdas()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -169,6 +169,7 @@ class C
     static C()
     {
         Console.CancelKeyPress += (o, e) => s = string.Empty;
+        Console.CancelKeyPress -= (o, e) => s = string.Empty;
     }
 }");
 
@@ -183,6 +184,99 @@ Class C
             Sub(o, e)
                 s = string.Empty
             End Sub
+
+        RemoveHandler Console.CancelKeyPress,
+            Sub(o, e)
+                s = string.Empty
+            End Sub
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_TaskRunActionAndFunc()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Threading.Tasks;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        Task.Run(() => s = 3);
+
+        Task.Run(() =>
+        {
+            s = 3;
+            return 42;
+        });
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading.Tasks
+
+Class C
+    Private Shared s As Integer
+
+    Shared Sub New()
+        Task.Run(Sub()
+                    s = 3
+                 End Sub)
+
+        Task.Run(Function()
+                    s = 3
+                    Return 42
+                 End Function)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_EnumerableWhere()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        var result = new List<int>().Where(x =>
+        {
+            if (x > 10)
+            {
+                s = x;
+                return true;
+            }
+
+            return false;
+        });
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Class C
+    Private Shared s As Integer
+
+    Shared Sub New()
+        Dim list = New List(Of Integer)
+        Dim result = list.Where(Function(x)
+                                    If x > 10 Then
+                                        s = x
+                                        Return True
+                                    End if
+
+                                    Return False
+                                End Function)
     End Sub
 End Class");
         }

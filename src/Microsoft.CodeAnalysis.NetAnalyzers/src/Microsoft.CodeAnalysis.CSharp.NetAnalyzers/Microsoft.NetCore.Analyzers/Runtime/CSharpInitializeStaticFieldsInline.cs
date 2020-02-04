@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             var assignmentNode = (AssignmentExpressionSyntax)node;
 
-            return assignmentNode.FirstAncestorOrSelf<AssignmentExpressionSyntax>(x => x.IsKind(SyntaxKind.AddAssignmentExpression)) == null &&
+            return assignmentNode.FirstAncestorOrSelf<LambdaExpressionSyntax>() == null &&
                 semanticModel.GetSymbolInfo(assignmentNode.Left, cancellationToken).Symbol is IFieldSymbol leftSymbol &&
                 leftSymbol.IsStatic;
         }

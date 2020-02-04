@@ -21,16 +21,12 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         Protected Overrides Function InitialiesStaticField(node As SyntaxNode, semanticModel As SemanticModel, cancellationToken As CancellationToken) As Boolean
             Dim assignmentStatement = DirectCast(node, AssignmentStatementSyntax)
 
-            If assignmentStatement.FirstAncestorOrSelf(Of AddRemoveHandlerStatementSyntax)(AddressOf IsAddHandler) IsNot Nothing Then
+            If assignmentStatement.FirstAncestorOrSelf(Of LambdaExpressionSyntax)() IsNot Nothing Then
                 Return False
             End If
 
             Dim leftSymbol = TryCast(semanticModel.GetSymbolInfo(assignmentStatement.Left, cancellationToken).Symbol, IFieldSymbol)
             Return leftSymbol IsNot Nothing AndAlso leftSymbol.IsStatic
-        End Function
-
-        Private Function IsAddHandler(ByVal assignment As AddRemoveHandlerStatementSyntax) As Boolean
-            Return assignment.IsKind(SyntaxKind.AddHandlerStatement)
         End Function
     End Class
 End Namespace
