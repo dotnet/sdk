@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в десериализованном графе объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в десериализованном графе объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -274,12 +274,12 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">Используйте рекомендуемый шаблон освобождения, чтобы убедиться, что объект, созданный "{0}", удален по всем путям. Если это возможно, заключите создание в оператор "using" или объявление "using". В противном случае используйте шаблон try-finally с выделенной локальной переменной, объявляемой до области try, и безусловным вызовом Dispose для отличного от NULL значения в области "finally", например "x?.Dispose()". Если объект явно удаляется в области try или владение удаления передается другому объекту или методу, назначьте "null" локальной переменной сразу после подобной операции, чтобы предотвратить двойное удаление в "finally".</target>
+        <target state="translated">Используйте рекомендуемый шаблон удаления, чтобы убедиться, что объект, созданный "{0}", удален по всем путям. Если это возможно, заключите создание в оператор "using" или объявление "using". В противном случае используйте шаблон try-finally с выделенной локальной переменной, объявляемой до области try, и безусловным вызовом Dispose для отличного от NULL значения в области "finally", например "x?.Dispose()". Если объект явно удаляется в области try или владение удаления передается другому объекту или методу, назначьте "null" локальной переменной сразу после подобной операции, чтобы предотвратить двойное удаление в "finally".</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">Используйте рекомендуемый шаблон освобождения, чтобы убедиться, что объект, созданный "{0}", удален по всем путям исключений. Если это возможно, заключите создание в оператор "using" или объявление "using". В противном случае используйте шаблон try-finally с выделенной локальной переменной, объявляемой до области try, и безусловным вызовом Dispose для отличного от NULL значения в области "finally", например "x?.Dispose()". Если объект явно удаляется в области try или владение удаления передается другому объекту или методу, назначьте "null" локальной переменной сразу после подобной операции, чтобы предотвратить двойное удаление в "finally".</target>
+        <target state="translated">Используйте рекомендуемый шаблон удаления, чтобы убедиться, что объект, созданный "{0}", удален по всем путям исключений. Если это возможно, заключите создание в оператор "using" или объявление "using". В противном случае используйте шаблон try-finally с выделенной локальной переменной, объявляемой до области try, и безусловным вызовом Dispose для отличного от NULL значения в области "finally", например "x?.Dispose()". Если объект явно удаляется в области try или владение удаления передается другому объекту или методу, назначьте "null" локальной переменной сразу после подобной операции, чтобы предотвратить двойное удаление в "finally".</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
@@ -1219,7 +1219,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в десериализованном графе объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1229,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в десериализованном графе объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
