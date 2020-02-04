@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -1004,7 +1004,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 來將未受信任的資料還原序列化，方法 '{0}' 會不安全。請確認 JavaScriptSerializer 在初始化時未指定 JavaScriptTypeResolver，或使用在還原序列化物件圖形中限制該物件類型的 JavaScriptTypeResolver。</target>
+        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 將未受信任的資料還原序列化，方法 '{0}' 就不安全。請確認將 JavaScriptSerializer 初始化時，未指定 JavaScriptTypeResolver，或使用 JavaScriptTypeResolver 來限制已還原序列化物件圖中的物件類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1014,7 +1014,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 來將未受信任的資料還原序列化，方法 '{0}' 會不安全。請在未指定 JavaScriptTypeResolver 的情況下將 JavaScriptSerializer 初始化，或以在還原序列化物件圖形中限制該物件類型的 JavaScriptTypeResolver 初始化。</target>
+        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 將未受信任的資料還原序列化，方法 '{0}' 就不安全。將 JavaScriptSerializer 初始化時，請不要指定 JavaScriptTypeResolver，或使用 JavaScriptTypeResolver 來限制已還原序列化物件圖中的物件類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1219,7 +1219,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1229,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
@@ -1369,7 +1369,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 DLL 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 DLL 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
@@ -1379,7 +1379,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
         <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的檔案路徑插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入檔案路徑弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
@@ -1399,7 +1399,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
         <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 LDAP 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 LDAP 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
@@ -1409,7 +1409,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
         <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的開啟重新導向弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的開啟重新導向弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
@@ -1419,7 +1419,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
         <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的處理序命令插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入處理序命令弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
@@ -1429,7 +1429,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
         <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 regex 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 regex 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
@@ -1439,7 +1439,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
         <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 SQL 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 SQL 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
@@ -1449,7 +1449,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
         <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 XAML 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 XAML 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
@@ -1459,7 +1459,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
         <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 XML 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 XML 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
@@ -1469,7 +1469,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
         <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 XPath 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 XPath 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
@@ -1479,7 +1479,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
         <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的跨網站指令碼 (XSS) 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的跨網站指令碼 (XSS) 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">

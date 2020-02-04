@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Metoda „{0}” jest niezabezpieczona podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder do ograniczenia typu obiektów na wykresie obiektu po deserializacji.</target>
+        <target state="translated">Metoda „{0}” nie jest bezpieczna podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder w celu ograniczenia typu obiektów w zdeserializowanym grafie obiektów.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Metoda „{0}” jest niezabezpieczona podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder do ograniczenia typu obiektów na wykresie obiektu po deserializacji.</target>
+        <target state="translated">Metoda „{0}” nie jest bezpieczna podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder w celu ograniczenia typu obiektów w zdeserializowanym grafie obiektów.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -274,12 +274,12 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">Użyj zalecanego wzorca likwidacji, aby upewnić się, że obiekt utworzony przez „{0}” jest likwidowany we wszystkich ścieżkach. Jeśli to możliwe, opakuj tworzenie w instrukcji „using” lub deklaracji „using”. W przeciwnym razie użyj wzorca try-finally, z dedykowaną zmienną lokalną zadeklarowaną przed regionem try i bezwarunkowym wywołaniem metody Dispose dla wartości innej niż null w regionie „finally”, na przykład „x?.Dispose()”. Jeśli obiekt jest jawnie likwidowany w regionie try lub własność dispose jest przenoszona do innego obiektu lub metody, przypisz wartość „null” do zmiennej lokalnej zaraz po takiej operacji, aby zapobiec podwójnemu wywołaniu dispose w regionie „finally”.</target>
+        <target state="translated">Użyj zalecanego wzorca dispose, aby upewnić się, że obiekt utworzony przez „{0}” jest likwidowany we wszystkich ścieżkach. Jeśli to możliwe, opakuj tworzenie w instrukcji „using” lub deklaracji „using”. W przeciwnym razie użyj wzorca try-finally, z dedykowaną zmienną lokalną zadeklarowaną przed regionem try i bezwarunkowym wywołaniem metody Dispose dla wartości innej niż null w regionie „finally”, na przykład „x?.Dispose()”. Jeśli obiekt jest jawnie likwidowany w regionie try lub własność dispose jest przenoszona do innego obiektu lub metody, przypisz wartość „null” do zmiennej lokalnej zaraz po takiej operacji, aby zapobiec podwójnemu wywołaniu dispose w regionie „finally”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">Użyj zalecanego wzorca likwidacji, aby upewnić się, że obiekt utworzony przez „{0}” jest likwidowany we wszystkich ścieżkach wyjątków. Jeśli to możliwe, opakuj tworzenie w instrukcji „using” lub deklaracji „using”. W przeciwnym razie użyj wzorca try-finally, z dedykowaną zmienną lokalną zadeklarowaną przed regionem try i bezwarunkowym wywołaniem metody Dispose dla wartości innej niż null w regionie „finally”, na przykład „x?.Dispose()”. Jeśli obiekt jest jawnie likwidowany w regionie try lub własność dispose jest przenoszona do innego obiektu lub metody, przypisz wartość „null” do zmiennej lokalnej zaraz po takiej operacji, aby zapobiec podwójnemu wywołaniu dispose w regionie „finally”.</target>
+        <target state="translated">Użyj zalecanego wzorca dispose, aby upewnić się, że obiekt utworzony przez „{0}” jest likwidowany we wszystkich ścieżkach wyjątków. Jeśli to możliwe, opakuj tworzenie w instrukcji „using” lub deklaracji „using”. W przeciwnym razie użyj wzorca try-finally, z dedykowaną zmienną lokalną zadeklarowaną przed regionem try i bezwarunkowym wywołaniem metody Dispose dla wartości innej niż null w regionie „finally”, na przykład „x?.Dispose()”. Jeśli obiekt jest jawnie likwidowany w regionie try lub własność dispose jest przenoszona do innego obiektu lub metody, przypisz wartość „null” do zmiennej lokalnej zaraz po takiej operacji, aby zapobiec podwójnemu wywołaniu dispose w regionie „finally”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
@@ -1005,7 +1005,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">Metoda „{0}” jest niezabezpieczona podczas deserializacji niezaufanych danych za pomocą klasy JavaScriptSerializer zainicjowanej z klasą SimpleTypeResolver. Upewnij się, że klasa JavaScriptSerializer jest inicjowana bez określonej klasy JavaScriptTypeResolver lub inicjowana z klasą JavaScriptTypeResolver, która ogranicza typy obiektów na wykresie obiektu po deserializacji.</target>
+        <target state="translated">Metoda „{0}” nie jest bezpieczna podczas deserializacji niezaufanych danych za pomocą klasy JavaScriptSerializer zainicjowanej z klasą SimpleTypeResolver. Upewnij się, że klasa JavaScriptSerializer jest inicjowana bez określonej klasy JavaScriptTypeResolver lub inicjowana z klasą JavaScriptTypeResolver, która ogranicza typy obiektów w zdeserializowanym grafie obiektów.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1015,7 +1015,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">Metoda „{0}” jest niezabezpieczona podczas deserializacji niezaufanych danych za pomocą klasy JavaScriptSerializer zainicjowanej z klasą SimpleTypeResolver. Zainicjuj klasę JavaScriptSerializer bez określonej klasy JavaScriptTypeResolver lub zainicjuj ją z klasą JavaScriptTypeResolver, która ogranicza typy obiektów na wykresie obiektu po deserializacji.</target>
+        <target state="translated">Metoda „{0}” nie jest bezpieczna podczas deserializacji niezaufanych danych za pomocą klasy JavaScriptSerializer zainicjowanej z klasą SimpleTypeResolver. Zainicjuj klasę JavaScriptSerializer bez określonej klasy JavaScriptTypeResolver lub zainicjuj ją z klasą JavaScriptTypeResolver, która ogranicza typy obiektów w zzdeserializowanym grafie obiektów.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1220,7 +1220,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Metoda „{0}” jest niezabezpieczona podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder do ograniczenia typu obiektów na wykresie obiektu po deserializacji.</target>
+        <target state="translated">Metoda „{0}” nie jest bezpieczna podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder w celu ograniczenia typu obiektów w zdeserializowanym grafie obiektów.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1230,7 +1230,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Metoda „{0}” jest niezabezpieczona podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder do ograniczenia typu obiektów na wykresie obiektu po deserializacji.</target>
+        <target state="translated">Metoda „{0}” nie jest bezpieczna podczas deserializowania niezaufanych danych bez użycia elementu SerializationBinder w celu ograniczenia typu obiektów w zdeserializowanym grafie obiektów.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
@@ -1370,7 +1370,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie biblioteki DLL, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie biblioteki DLL, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
@@ -1380,7 +1380,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
         <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie ścieżki pliku, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie ścieżki pliku, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
@@ -1400,7 +1400,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
         <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie protokołu LDAP, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie protokołu LDAP, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
@@ -1420,7 +1420,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
         <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie polecenia procesu, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie polecenia procesu, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
@@ -1430,7 +1430,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
         <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie wyrażenia regularnego, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie wyrażenia regularnego, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
@@ -1440,7 +1440,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
         <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie kodu SQL, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie kodu SQL, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
@@ -1450,7 +1450,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
         <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie kodu XAML, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie kodu XAML, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
@@ -1460,7 +1460,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
         <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie kodu XML, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie kodu XML, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
@@ -1470,7 +1470,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
         <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Znaleziono potencjalną podatność na wstrzyknięcie wyrażenia XPath, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
+        <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie wyrażenia XPath, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">

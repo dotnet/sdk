@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer BinaryFormatter</source>
-        <target state="translated">Nicht den unsicheren BinaryFormatter-Deserialisierer verwenden</target>
+        <target state="translated">Nicht den unsicheren BinaryFormatter zur Deserialisierung verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -424,7 +424,7 @@
       </trans-unit>
       <trans-unit id="DoNotDisableHTTPHeaderCheckingDescription">
         <source>HTTP header checking enables encoding of the carriage return and newline characters, \r and \n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.</source>
-        <target state="translated">Durch die Überprüfung von HTTP-Headern wird die Codierung der Wagenrücklauf- und Zeilenvorschubzeichen (\r und \n) ermöglicht, die im Antwortheader enthalten sind. Durch diese Codierung können Angriffe durch Einschleusung von Befehlen vermieden werden, bei denen eine Anwendung ausgenutzt wird, die nicht vertrauenswürdige, im Header enthaltene Daten zurückgibt.</target>
+        <target state="translated">Durch die Überprüfung von HTTP-Headern wird die Codierung der Wagenrücklauf- und Zeilenumbruchzeichen (\r und \n) ermöglicht, die im Antwortheader enthalten sind. Durch diese Codierung können Angriffe durch Einschleusung von Befehlen vermieden werden, bei denen eine Anwendung ausgenutzt wird, die nicht vertrauenswürdige, im Header enthaltene Daten zurückgibt.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableHTTPHeaderCheckingMessage">
@@ -1084,7 +1084,7 @@
       </trans-unit>
       <trans-unit id="LosFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer LosFormatter</source>
-        <target state="translated">Nicht den unsicheren LosFormatter-Deserialisierer verwenden</target>
+        <target state="translated">Nicht den unsicheren LosFormatter zur Deserialisierung verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
@@ -1249,7 +1249,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerMethodUsedTitle">
         <source>Do not use insecure deserializer NetDataContractSerializer</source>
-        <target state="translated">Nicht den unsicheren NetDataContractSerializer-Deserialisierer verwenden</target>
+        <target state="translated">Nicht den unsicheren NetDataContractSerializer zur Deserialisierung verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseDescription">
@@ -1274,7 +1274,7 @@
       </trans-unit>
       <trans-unit id="ObjectStateFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer ObjectStateFormatter</source>
-        <target state="translated">Nicht den unsicheren ObjectStateFormatter-Deserialisierer verwenden</target>
+        <target state="translated">Nicht den unsicheren ObjectStateFormatter zur Deserialisierung verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1369,7 +1369,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer DLL-Einschleusung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch DLL-Einschleusung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
@@ -1379,7 +1379,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
         <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer Dateipfadeinschleusung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch Dateipfadeinschleusung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
@@ -1399,7 +1399,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
         <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer LDAP-Einschleusung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch LDAP-Einschleusung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
@@ -1409,7 +1409,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
         <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer offenen Umleitung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch offene Umleitung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
@@ -1419,7 +1419,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
         <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer Prozessbefehlseinschleusung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch Prozessbefehlseinschleusung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
@@ -1429,7 +1429,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
         <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer Einschleusung regulärer Ausdrücke ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch Einschleusung regulärer Ausdrücke gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
@@ -1439,7 +1439,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
         <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer Einschleusung von SQL-Befehlen ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch Einschleusung von SQL-Befehlen gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
@@ -1449,7 +1449,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
         <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer XAML-Einschleusung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch XAML-Einschleusung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" erweitert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
@@ -1459,7 +1459,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
         <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer XML-Einschleusung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch XML-Einschleusung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" erweitert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
@@ -1469,7 +1469,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
         <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko einer XPath-Einschleusung ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch XPath-Einschleusung gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" erweitert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
@@ -1479,7 +1479,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
         <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch XSS (Cross-Site Scripting) ermittelt. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" verfälscht.</target>
+        <target state="translated">Es wurde ein potenzielles Sicherheitsrisiko durch XSS (Cross-Site Scripting) gefunden. "{0}" in der Methode "{1}" wurde möglicherweise durch benutzergesteuerte Daten aus "{2}" in Methode "{3}" erweitert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">
