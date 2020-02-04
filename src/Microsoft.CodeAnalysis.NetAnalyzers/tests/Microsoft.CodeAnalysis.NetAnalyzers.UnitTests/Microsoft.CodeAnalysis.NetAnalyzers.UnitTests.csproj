@@ -2,7 +2,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <DefineConstants>$(DefineConstants),NET_ANALYZERS_TEST</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Core\Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" Link="Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Test.Utilities\Test.Utilities.csproj" />
     <ProjectReference Include="..\Core\Microsoft.CodeAnalysis.NetAnalyzers.csproj" />

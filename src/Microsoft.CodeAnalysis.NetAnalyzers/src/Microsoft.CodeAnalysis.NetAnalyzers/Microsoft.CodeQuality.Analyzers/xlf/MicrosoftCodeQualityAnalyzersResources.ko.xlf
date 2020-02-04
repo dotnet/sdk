@@ -1948,13 +1948,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static(Visual Basic의 경우 Shared)으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 멤버에 대한 비가상 호출 사이트를 내보냅니다. 따라서 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상시킬 수 있습니다.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="needs-review-translation">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static(Visual Basic의 경우 Shared)으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 멤버에 대한 비가상 호출 사이트를 내보냅니다. 따라서 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상시킬 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">{0} 멤버가 인스턴스 데이터에 액세스하지 않으며 static(Visual Basic의 경우 Shared)으로 표시될 수 있습니다.</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="needs-review-translation">{0} 멤버가 인스턴스 데이터에 액세스하지 않으며 static(Visual Basic의 경우 Shared)으로 표시될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">
