@@ -34,10 +34,15 @@
     <SdkTest Include="Build" />
     <SdkTest Include="Clean" />
     <SdkTest Include="Pack" />
-    <SdkTest Include="Publish" />
     <SdkTest Include="Rebuild" />
     <SdkTest Include="Restore" />
     <SdkTest Include="ToolPack" />
+  </ItemGroup>
+
+  <!-- Disable Publish tests on Windows x86 until we figure out why they were timing out
+        https://github.com/dotnet/core-sdk/issues/6285 -->
+  <ItemGroup Condition="('$(OS)' != 'Windows_NT') Or ('$(Architecture)' != 'x86')">
+    <SdkTest Include="Publish" />
   </ItemGroup>
 
   <Target Name="GetRuntimesToInstall">

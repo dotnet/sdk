@@ -45,7 +45,28 @@
   </TestList>
   
   <SkippedTests>
-	<Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToUseVB.It_builds_a_vb_wpf_app"
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_does_not_rewrite_the_single_file_unnecessarily"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/10602#pullrequestreview-353377225"
+            Reason="Waiting for code flow"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_defaults_keep_nonframework"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/10602#pullrequestreview-353377225"
+            Reason="Waiting for code flow"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_displays_informational_warning"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/10602#pullrequestreview-353377225"
+            Reason="Waiting for code flow"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_runs_incrementally"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/10602#pullrequestreview-353377225"
+            Reason="Waiting for code flow"/>
+    
+    
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToUseVB.It_builds_a_vb_wpf_app"
             Skip="true"
             Issue="https://github.com/dotnet/wpf/issues/1734"
             Reason="VB templates removed from wpf"/>
