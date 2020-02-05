@@ -13,6 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
         public ImmutableHashSet<string> FilesToFormat { get; }
+        public ImmutableHashSet<string> FilesToIgnore { get; }
         public string ReportPath { get; }
 
         public FormatOptions(
@@ -22,6 +23,7 @@ namespace Microsoft.CodeAnalysis.Tools
             bool saveFormattedFiles,
             bool changesAreErrors,
             ImmutableHashSet<string> filesToFormat,
+            ImmutableHashSet<string> filesToIgnore,
             string reportPath)
         {
             WorkspaceFilePath = workspaceFilePath;
@@ -30,6 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
             FilesToFormat = filesToFormat;
+            FilesToIgnore = filesToIgnore;
             ReportPath = reportPath;
         }
 
@@ -40,6 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools
             out bool saveFormattedFiles,
             out bool changesAreErrors,
             out ImmutableHashSet<string> filesToFormat,
+            out ImmutableHashSet<string> filesToIgnore,
             out string reportPath)
         {
             workspaceFilePath = WorkspaceFilePath;
@@ -48,6 +52,7 @@ namespace Microsoft.CodeAnalysis.Tools
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;
             filesToFormat = FilesToFormat;
+            filesToIgnore = FilesToIgnore;
             reportPath = ReportPath;
         }
     }

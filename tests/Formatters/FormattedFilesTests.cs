@@ -56,6 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 filesToFormat: ImmutableHashSet.Create(document.FilePath),
+                filesToIgnore: ImmutableHashSet.Create<string>(),
                 reportPath: string.Empty);
 
             var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);

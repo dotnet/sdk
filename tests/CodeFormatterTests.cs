@@ -261,6 +261,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 filesToFormat,
+                filesToIgnore: ImmutableHashSet.Create<string>(),
                 reportPath: string.Empty);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
 
