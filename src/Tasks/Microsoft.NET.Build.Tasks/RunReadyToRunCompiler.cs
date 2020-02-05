@@ -20,7 +20,6 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public ITaskItem[] ImplementationAssemblyReferences { get; set; }
         public bool ShowCompilerWarnings { get; set; }
-        public string DotNetHostDirectory { get; set; }
         public bool UseCrossgen2 { get; set; }
 
         [Output]
@@ -33,15 +32,13 @@ namespace Microsoft.NET.Build.Tasks
 
         private bool IsPdbCompilation => !String.IsNullOrEmpty(_createPDBCommand);
 
-        private string DotNetHostFileName => Path.Combine(DotNetHostDirectory, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet");
-
         protected override string ToolName
         {
             get
             {
                 // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
                 if (UseCrossgen2)
-                    return IsPdbCompilation ? CrossgenTool.ItemSpec : DotNetHostFileName;
+                    return IsPdbCompilation ? CrossgenTool.ItemSpec : Crossgen2Tool.ItemSpec;
                 else
                     return CrossgenTool.ItemSpec;
             }
@@ -125,8 +122,11 @@ namespace Microsoft.NET.Build.Tasks
                 // When generating PDBs, we must not add a reference to the IL version of the R2R image for which we're trying to generate a PDB
                 if (IsPdbCompilation && String.Equals(Path.GetFileName(reference.ItemSpec), Path.GetFileName(_outputR2RImage), StringComparison.OrdinalIgnoreCase))
                     continue;
-                
-                result.AppendLine( $"-r{(UseCrossgen2 && !IsPdbCompilation ? ":" : " ")}\"{reference}\"");
+
+                if (UseCrossgen2 && !IsPdbCompilation)
+                    result.AppendLine($"-r:\"{reference}\"");
+                else
+                    result.AppendLine($"-r \"{reference}\"");
             }
 
             return result.ToString();
@@ -139,15 +139,6 @@ namespace Microsoft.NET.Build.Tasks
                 return GenerateCrossgenResponseFile();
             else
                 return UseCrossgen2 ? GenerateCrossgen2ResponseFile() : GenerateCrossgenResponseFile();
-        }
-
-        protected override string GenerateCommandLineCommands()
-        {
-            // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
-            if (IsPdbCompilation)
-                return null;
-            else
-                return UseCrossgen2 ? Crossgen2Tool.ItemSpec : null;
         }
 
         private string GenerateCrossgenResponseFile()

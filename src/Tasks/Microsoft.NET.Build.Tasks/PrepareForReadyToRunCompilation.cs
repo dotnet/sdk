@@ -575,14 +575,14 @@ namespace Microsoft.NET.Build.Tasks
 
         private bool GetCrossgen2ComponentsPaths()
         {
-            _crossgen2Tool.ToolPath = Path.Combine(_crossgen2Tool.PackagePath, "tools", "crossgen2.dll");
-
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                _crossgen2Tool.ToolPath = Path.Combine(_crossgen2Tool.PackagePath, "tools", "crossgen2.exe");
                 _crossgen2Tool.ClrJitPath = Path.Combine(_crossgen2Tool.PackagePath, "tools", "clrjitilc.dll");
             }
             else
             {
+                _crossgen2Tool.ToolPath = Path.Combine(_crossgen2Tool.PackagePath, "tools", "crossgen2");
                 _crossgen2Tool.ClrJitPath = Path.Combine(_crossgen2Tool.PackagePath, "tools", "libclrjitilc.so");
             }
 
