@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,13 +31,36 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return Task.Run(() =>
             {
                 if (!TryGetCharset(codingConventions, out var encoding)
-                    || sourceText.Encoding.Equals(encoding))
+                    || sourceText.Encoding.Equals(encoding)
+                    || IsEncodingEquivalent(sourceText, encoding))
                 {
                     return sourceText;
                 }
 
                 return SourceText.From(sourceText.ToString(), encoding, sourceText.ChecksumAlgorithm);
             });
+        }
+
+        private static bool IsEncodingEquivalent(SourceText sourceText, Encoding encoding)
+        {
+            var text = sourceText.ToString();
+            var originalBytes = GetEncodedBytes(text, sourceText.Encoding);
+            var encodedBytes = GetEncodedBytes(text, encoding);
+
+            return originalBytes.Length == encodedBytes.Length
+                && originalBytes.SequenceEqual(encodedBytes);
+        }
+
+        private static byte[] GetEncodedBytes(string text, Encoding encoding)
+        {
+            // Start with a large initial capacity, double the character count with additional space for the BOM
+            using (var stream = new MemoryStream(text.Length * 2 + 3))
+            using (var streamWriter = new StreamWriter(stream, encoding))
+            {
+                streamWriter.Write(text);
+                streamWriter.Flush();
+                return stream.ToArray();
+            }
         }
 
         private static bool TryGetCharset(ICodingConventionsSnapshot codingConventions, out Encoding encoding)

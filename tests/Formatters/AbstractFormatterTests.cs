@@ -247,7 +247,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             foreach (var transform in OptionsTransforms)
             {
-                solution.Workspace.Options = transform(solution.Workspace.Options);
+                solution.Workspace.TryApplyChanges(solution.WithOptions(transform(solution.Workspace.Options)));
             }
 
             var parseOptions = solution.GetProject(projectId).ParseOptions;

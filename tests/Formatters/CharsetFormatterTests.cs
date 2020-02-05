@@ -38,10 +38,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var codeEncoding = CharsetFormatter.GetCharset(codeValue);
             var expectedEncoding = CharsetFormatter.GetCharset(expectedValue);
 
-            var testCode = "class C { }";
+            // Use unicode to ensure that "latin1" and "utf8" don't look equivalent.
+            var testCode = "class 🤵 { }";
 
             var editorConfig = new Dictionary<string, string>()
             {
+
                 ["charset"] = expectedValue,
             };
 
@@ -53,10 +55,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         [Fact]
         public async Task TestCharsetNotSpecified_NoChange()
         {
-            // This encoding is not supported by .editorconfig
+            // This encoding is not supported by .editorconfig, so if it roundtrips then there was no change.
             var codeEncoding = Encoding.UTF32;
 
-            var testCode = "class C { }";
+            var testCode = "class 🤵 { }";
 
             var editorConfig = new Dictionary<string, string>()
             {
