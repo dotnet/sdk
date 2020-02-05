@@ -91,11 +91,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 logLevel: LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                filesToFormat: ImmutableHashSet.Create(document.FilePath));
+                filesToFormat: ImmutableHashSet.Create(document.FilePath),
+                reportPath: string.Empty);
 
             var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
 
-            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default);
+            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, new List<FormattedFile>(), default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
             var formattedText = await formattedDocument.GetTextAsync();
 
@@ -151,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalFiles">Additional documents to include in the project.</param>
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <returns>A solution containing a project with the specified sources and additional files.</returns>
-        private Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences)
+        private protected Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences)
         {
             var project = CreateProject(sources, additionalFiles, additionalMetadataReferences, Language);
             return project.Solution;

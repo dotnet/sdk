@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,7 +46,7 @@
 
   <ItemGroup>
     <None Include="..\README.md" />
-    <None Include="..\packageicon.png" Pack="true" PackagePath="\"/>
+    <None Include="..\packageicon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

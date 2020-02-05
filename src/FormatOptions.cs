@@ -13,6 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
         public ImmutableHashSet<string> FilesToFormat { get; }
+        public string ReportPath { get; }
 
         public FormatOptions(
             string workspaceFilePath,
@@ -20,7 +21,8 @@ namespace Microsoft.CodeAnalysis.Tools
             LogLevel logLevel,
             bool saveFormattedFiles,
             bool changesAreErrors,
-            ImmutableHashSet<string> filesToFormat)
+            ImmutableHashSet<string> filesToFormat,
+            string reportPath)
         {
             WorkspaceFilePath = workspaceFilePath;
             WorkspaceType = workspaceType;
@@ -28,6 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
             FilesToFormat = filesToFormat;
+            ReportPath = reportPath;
         }
 
         public void Deconstruct(
@@ -36,7 +39,8 @@ namespace Microsoft.CodeAnalysis.Tools
             out LogLevel logLevel,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
-            out ImmutableHashSet<string> filesToFormat)
+            out ImmutableHashSet<string> filesToFormat,
+            out string reportPath)
         {
             workspaceFilePath = WorkspaceFilePath;
             workspaceType = WorkspaceType;
@@ -44,6 +48,7 @@ namespace Microsoft.CodeAnalysis.Tools
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;
             filesToFormat = FilesToFormat;
+            reportPath = ReportPath;
         }
     }
 }

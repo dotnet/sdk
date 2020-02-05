@@ -6,12 +6,13 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Options;
-using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Formatters;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.CodingConventions;
@@ -33,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat) = options;
+            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat, reportPath) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
@@ -66,8 +67,9 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 logger.LogTrace(Resources.Running_formatters);
 
+                var formattedFiles = new List<FormattedFile>();
                 var formattedSolution = await RunCodeFormattersAsync(
-                    solution, formatableFiles, options, logger, cancellationToken).ConfigureAwait(false);
+                    solution, formatableFiles, options, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
 
                 var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
@@ -93,11 +95,42 @@ namespace Microsoft.CodeAnalysis.Tools
                     exitCode = 1;
                 }
 
+                if (exitCode == 0 && !string.IsNullOrWhiteSpace(reportPath))
+                {
+                    var reportFilePath = GetReportFilePath(reportPath);
+
+                    logger.LogInformation(Resources.Writing_formatting_report_to_0, reportFilePath);
+                    var seralizerOptions = new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    };
+                    var formattedFilesJson = JsonSerializer.Serialize(formattedFiles, seralizerOptions);
+
+                    File.WriteAllText(reportFilePath, formattedFilesJson);
+                }
+
                 logger.LogDebug(Resources.Formatted_0_of_1_files, filesFormatted, fileCount);
 
                 logger.LogInformation(Resources.Format_complete_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
 
                 return new WorkspaceFormatResult(filesFormatted, fileCount, exitCode);
+            }
+        }
+
+        private static string GetReportFilePath(string reportPath)
+        {
+            var defaultReportName = "format-report.json";
+            if (reportPath.EndsWith(".json"))
+            {
+                return reportPath;
+            }
+            else if (reportPath == ".")
+            {
+                return Path.Combine(Environment.CurrentDirectory, defaultReportName);
+            }
+            else
+            {
+                return Path.Combine(reportPath, defaultReportName);
             }
         }
 
@@ -192,13 +225,14 @@ namespace Microsoft.CodeAnalysis.Tools
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions options,
             ILogger logger,
+            List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
         {
             var formattedSolution = solution;
 
             foreach (var codeFormatter in s_codeFormatters)
             {
-                formattedSolution = await codeFormatter.FormatAsync(formattedSolution, formattableDocuments, options, logger, cancellationToken).ConfigureAwait(false);
+                formattedSolution = await codeFormatter.FormatAsync(formattedSolution, formattableDocuments, options, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
             }
 
             return formattedSolution;

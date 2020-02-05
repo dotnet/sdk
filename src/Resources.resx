@@ -210,4 +210,10 @@
   <data name="Cannot_specify_both_folder_and_workspace_options" xml:space="preserve">
     <value>Cannot specify both folder and workspace options.</value>
   </data>
+  <data name="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory" xml:space="preserve">
+    <value>Accepts a file path, which if provided, will produce a json report in the given directory.</value>
+  </data>
+  <data name="Writing_formatting_report_to_0" xml:space="preserve">
+    <value>Writing formatting report to: '{0}'.</value>
+  </data>
 </root>

@@ -7,6 +7,11 @@
         <target state="new">A comma separated list of relative file paths to format. All files are formatted if empty.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
+        <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
+        <target state="new">Accepts a file path, which if provided, will produce a json report in the given directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Add_final_newline">
         <source>Add final newline.</source>
         <target state="new">Add final newline.</target>
@@ -155,6 +160,11 @@
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
         <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
         <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Writing_formatting_report_to_0">
+        <source>Writing formatting report to: '{0}'.</source>
+        <target state="new">Writing formatting report to: '{0}'.</target>
         <note />
       </trans-unit>
     </body>
