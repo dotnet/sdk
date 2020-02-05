@@ -96,7 +96,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
 
-            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, default, new List<FormattedFile>());
+            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, new List<FormattedFile>(), default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
             var formattedText = await formattedDocument.GetTextAsync();
 

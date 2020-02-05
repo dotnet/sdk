@@ -8,8 +8,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
-        <source>Accepts a file path, which if provided, will produce a `format-report.json` file in the given directory.</source>
-        <target state="new">Accepts a file path, which if provided, will produce a `format-report.json` file in the given directory.</target>
+        <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
+        <target state="new">Accepts a file path, which if provided, will produce a json report in the given directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="Add_final_newline">

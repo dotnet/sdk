@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions options,
             ILogger logger,
-            CancellationToken cancellationToken,
-            List<FormattedFile> formattedFiles);
+            List<FormattedFile> formattedFiles,
+            CancellationToken cancellationToken);
     }
 }

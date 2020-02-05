@@ -15,6 +15,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
     {
         private protected override ICodeFormatter Formatter => new FinalNewlineFormatter();
 
+        private readonly Dictionary<string, string> editorConfig = new Dictionary<string, string>()
+        {
+            ["insert_final_newline"] = "true",
+            ["end_of_line"] = "lf",
+        };
+
         [Fact]
         public async Task ReturnsItem_WhenFileFormatted()
         {
@@ -51,16 +57,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 changesAreErrors: false,
                 filesToFormat: ImmutableHashSet.Create(document.FilePath),
                 reportPath: string.Empty);
-            var editorConfig = new Dictionary<string, string>()
-            {
-                ["insert_final_newline"] = "true",
-                ["end_of_line"] = "lf",
-            };
 
             var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
 
             var formattedFiles = new List<FormattedFile>();
-            await Formatter.FormatAsync(solution, filesToFormat, formatOptions, new TestLogger(), default, formattedFiles);
+            await Formatter.FormatAsync(solution, filesToFormat, formatOptions, new TestLogger(), formattedFiles, default);
 
             return formattedFiles;
         }

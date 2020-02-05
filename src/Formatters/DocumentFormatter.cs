@@ -27,11 +27,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
-            CancellationToken cancellationToken,
-            List<FormattedFile> formattedFiles)
+            List<FormattedFile> formattedFiles,
+            CancellationToken cancellationToken)
         {
             var formattedDocuments = FormatFiles(solution, formattableDocuments, formatOptions, logger, cancellationToken);
-            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, cancellationToken, formattedFiles).ConfigureAwait(false);
+            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -96,8 +96,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             ImmutableArray<(Document, Task<(SourceText originalText, SourceText formattedText)>)> formattedDocuments,
             FormatOptions formatOptions,
             ILogger logger,
-            CancellationToken cancellationToken,
-            List<FormattedFile> formattedFiles)
+            List<FormattedFile> formattedFiles,
+            CancellationToken cancellationToken)
         {
             var formattedSolution = solution;
 
