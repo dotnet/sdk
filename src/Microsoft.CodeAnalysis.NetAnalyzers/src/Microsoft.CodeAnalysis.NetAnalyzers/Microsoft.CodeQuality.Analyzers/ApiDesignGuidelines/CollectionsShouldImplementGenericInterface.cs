@@ -110,7 +110,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            using var allInterfaces = PooledHashSet<INamedTypeSymbol>.GetInstance(namedTypeSymbol.AllInterfaces.Select(i => i.OriginalDefinition));
+            using var allInterfaces = PooledHashSet<INamedTypeSymbol>.GetInstance();
+            foreach (var @interface in namedTypeSymbol.AllInterfaces.Select(i => i.OriginalDefinition))
+            {
+                allInterfaces.Add(@interface);
+            }
 
             // First we need to try to match all types from the user definition...
             if (!userMap.IsEmpty)
