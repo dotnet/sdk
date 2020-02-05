@@ -54,32 +54,32 @@
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
         <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call might result in an infinite recursion.</target>
+        <target state="translated">Не присваивайте свойство в его методе задания. Такой вызов может привести к бесконечной рекурсии.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageSure">
         <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call will result in an infinite recursion.</target>
+        <target state="translated">Не присваивайте свойство в его методе задания. Такой вызов приведет к бесконечной рекурсии.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionTitle">
         <source>Avoid infinite recursion</source>
-        <target state="new">Avoid infinite recursion</target>
+        <target state="translated">Избегайте бесконечной рекурсии</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</target>
+        <target state="translated">Для передачи типов по ссылке (с использованием "out" или "ref") необходим опыт работы с указателями, понимание различий между типами значений и ссылочными типами, а также использование методов с несколькими возвращаемыми значениями. Кроме того, разница между параметрами "out" и "ref" не является очевидной.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
         <source>Avoid 'out' parameters as they are not designed for general audience.</source>
-        <target state="new">Avoid 'out' parameters as they are not designed for general audience.</target>
+        <target state="translated">Избегайте параметров "out", так как они не предназначены для общей аудитории.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
-        <target state="new">Avoid out parameters</target>
+        <target state="translated">Не используйте параметры out</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -144,22 +144,22 @@
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
         <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
-        <target state="new">The field reference '{0}' is duplicated in this bitwise initialization.</target>
+        <target state="translated">Ссылка на поле "{0}" дублируется в этой побитовой инициализации.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
         <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
-        <target state="new">The enum member '{0}' has the same constant value '{1}' as member '{2}'.</target>
+        <target state="translated">Элемент перечисления "{0}" имеет то же постоянное значение "{1}", что и элемент "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
         <source>Enums values should not be duplicated</source>
-        <target state="new">Enums values should not be duplicated</target>
+        <target state="translated">Значения перечислений не должны повторяться</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
-        <target state="translated">Удалите метод завершения из типа '{0}', переопределите Dispose(bool disposing) и поместите логику завершения в путь к коду, туда где 'disposing' имеет значение false. В противном случае это может привести к дублированию вызовов метода Dispose, так как базовый тип '{1}' также предоставляет метод завершения.</target>
+        <target state="translated">Удалите метод завершения из типа '{0}', переопределите Dispose(bool disposing) и поместите логику завершения в путь кода, туда где 'disposing' имеет значение false. В противном случае это может привести к дублированию вызовов метода Dispose, так как базовый тип '{1}' также предоставляет метод завершения.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
@@ -934,7 +934,7 @@
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyDescription">
         <source>All IDisposable types should implement the Dispose pattern correctly.</source>
-        <target state="translated">Во всех типах IDisposable шаблон освобождения должен быть реализован правильно.</target>
+        <target state="translated">Во всех типах IDisposable шаблон Dispose должен быть реализован правильно.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
@@ -944,7 +944,7 @@
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
         <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.</source>
-        <target state="translated">Удалите '{0}', переопределите Dispose(bool disposing) и поместите логику метода dispose в пути к коду, там где 'disposing' имеет значение true.</target>
+        <target state="translated">Удалите '{0}', переопределите Dispose(bool disposing) и поместите логику метода dispose в пути кода, там где 'disposing' имеет значение true.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
@@ -1948,13 +1948,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Члены, которые не обращаются к данным экземпляров и не вызывают методы экземпляров, можно пометить как статические (Shared в Visual Basic). После этого компилятор создаст невиртуальные места для вызова этих членов. Это может привести к ощутимому росту производительности для чувствительного к производительности кода.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="new">Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Член {0} не обращается к данным экземпляров, поэтому его можно пометить как статический (Shared в Visual Basic).</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="new">Member '{0}' does not access instance data and can be marked as static</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

@@ -1354,7 +1354,7 @@
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsDescription">
         <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">Viene generata di nuovo un'eccezione, specificata in modo esplicito nell'istruzione throw. Se viene generata di nuovo un'eccezione specificandola nell'istruzione throw, l'elenco di chiamate a un metodo tra il metodo originale che ha generato l'eccezione e il metodo corrente viene perso.</target>
+        <target state="translated">Viene generata di nuovo un'eccezione, specificata in modo esplicito nell'istruzione throw. Se viene generata di nuovo un'eccezione specificandola nell'istruzione throw, l'elenco di chiamate del metodo tra il metodo originale che ha generato l'eccezione e il metodo corrente viene perso.</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsMessage">
@@ -1604,7 +1604,7 @@
       </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
         <source>Specify marshaling for P/Invoke string arguments</source>
-        <target state="translated">Specificare il marshalling per gli argomenti di stringa P/Invoke</target>
+        <target state="translated">Specificare il marshalling per gli argomenti stringa P/Invoke</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonDescription">

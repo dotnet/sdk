@@ -54,32 +54,32 @@
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
         <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call might result in an infinite recursion.</target>
+        <target state="translated">Non assegnare la proprietà all'interno del relativo setter. Questa chiamata potrebbe causare una ricorsione infinita.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageSure">
         <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call will result in an infinite recursion.</target>
+        <target state="translated">Non assegnare la proprietà all'interno del relativo setter. Questa chiamata causerà una ricorsione infinita.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionTitle">
         <source>Avoid infinite recursion</source>
-        <target state="new">Avoid infinite recursion</target>
+        <target state="translated">Evitare la ricorsione infinita</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</target>
+        <target state="translated">Oltre all'esperienza con i puntatori, per passare tipi per riferimento (con 'out' o 'ref'), è necessario comprendere le differenze tra tipi valore e tipi riferimento e gestire i metodi con più valori restituiti. Anche la differenza tra parametri 'out' e 'ref' non è del tutto compresa.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
         <source>Avoid 'out' parameters as they are not designed for general audience.</source>
-        <target state="new">Avoid 'out' parameters as they are not designed for general audience.</target>
+        <target state="translated">Evitare i parametri 'out' perché non sono progettati per utenti generici.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
-        <target state="new">Avoid out parameters</target>
+        <target state="translated">Evitare parametri out</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -144,17 +144,17 @@
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
         <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
-        <target state="new">The field reference '{0}' is duplicated in this bitwise initialization.</target>
+        <target state="translated">Il riferimento al campo '{0}' è duplicato in questa inizializzazione bit per bit.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
         <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
-        <target state="new">The enum member '{0}' has the same constant value '{1}' as member '{2}'.</target>
+        <target state="translated">Il membro di enumerazione '{0}' ha lo stesso valore costante '{1}' del membro '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
         <source>Enums values should not be duplicated</source>
-        <target state="new">Enums values should not be duplicated</target>
+        <target state="translated">I valori di enumerazione non devono essere duplicati</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -1489,7 +1489,7 @@
       </trans-unit>
       <trans-unit id="DoNotDirectlyAwaitATaskDescription">
         <source>When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.</source>
-        <target state="translated">Quando un metodo asincrono attende direttamente un elemento Task, la continuazione avviene nello stesso thread che ha creato l'attività. Provare a chiamare Task.ConfigureAwait(Boolean) per segnalare l'intenzione di continuare. Chiamare ConfigureAwait(false) sull'attività per pianificare le continuazioni nel pool di thread, evitando così un deadlock nel thread di UI. È consigliabile passare false per le librerie indipendenti dall'app. Chiamare ConfigureAwait(true) sull'attività per ottenere lo stesso comportamento di quando ConfigureAwait non viene chiamato in modo esplicito. Se si chiama questo metodo in modo esplicito, si consente ai lettori di sapere che si intende intenzionalmente eseguire la continuazione nel contesto di sincronizzazione originale.</target>
+        <target state="translated">Quando un metodo asincrono attende direttamente un elemento Task, la continuazione avviene nello stesso thread che ha creato l'attività. Provare a chiamare Task.ConfigureAwait(Boolean) per segnalare l'intenzione di continuare. Chiamare ConfigureAwait(false) sull'attività per pianificare le continuazioni nel pool di thread, evitando così un deadlock nel thread dell'interfaccia utente. È consigliabile passare false per le librerie indipendenti dall'app. Chiamare ConfigureAwait(true) sull'attività per ottenere lo stesso comportamento di quando ConfigureAwait non viene chiamato in modo esplicito. Se si chiama questo metodo in modo esplicito, si consente ai lettori di sapere che si intende intenzionalmente eseguire la continuazione nel contesto di sincronizzazione originale.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDirectlyAwaitATaskMessage">
@@ -1948,13 +1948,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">I membri che non accedono ai dati di istanza o non chiamano metodi di istanza possono essere contrassegnati come static (Shared in Visual Basic). Dopo aver contrassegnato i metodi come static, il compilatore creerà siti di chiamata non virtual per questi membri. Si potrà così ottenere un sensibile miglioramento delle prestazioni per il codice sensibile alle prestazioni.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="new">Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Il membro {0} non accede ai dati di istanza e può essere contrassegnato come static (Shared in VisualBasic)</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="new">Member '{0}' does not access instance data and can be marked as static</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">
