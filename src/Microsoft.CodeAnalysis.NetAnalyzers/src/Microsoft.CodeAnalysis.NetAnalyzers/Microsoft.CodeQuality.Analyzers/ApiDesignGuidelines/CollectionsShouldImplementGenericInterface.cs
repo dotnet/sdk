@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -97,7 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableArray<KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>> interfacePairs,
-            SymbolNamesOption<INamedTypeSymbol> userMap)
+            SymbolNamesWithValueOption<INamedTypeSymbol> userMap)
         {
             Debug.Assert(interfacePairs.All(kvp => kvp.Key.TypeKind == TypeKind.Interface && kvp.Value.TypeKind == TypeKind.Interface));
 
@@ -109,7 +110,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var allInterfaces = ImmutableHashSet.CreateRange(namedTypeSymbol.AllInterfaces.Select(i => i.OriginalDefinition));
+            using var allInterfaces = PooledHashSet<INamedTypeSymbol>.GetInstance(namedTypeSymbol.AllInterfaces.Select(i => i.OriginalDefinition));
 
             // First we need to try to match all types from the user definition...
             if (!userMap.IsEmpty)

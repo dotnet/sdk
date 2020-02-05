@@ -601,7 +601,7 @@ namespace Blah
         [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = D
                       dotnet_code_quality.CA2322.excluded_symbol_names = D")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = D")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var test = new VerifyCS.Test
             {
