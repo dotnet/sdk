@@ -112,89 +112,37 @@ CA1501: 0
             await VerifyBasicAsync(source, additionalText, expected);
         }
 
-        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        public async Task CA1501_ExcludesTypesInSystemNamespaceByDefault()
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass")]
+        // The following entries are invalid but won't remove the default filter
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = *Contro*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = User*ontrol")]
+        public async Task CA1501_AlwaysExcludesTypesInSystemNamespace(string editorConfigText)
         {
             // This test assumes that WinForms UserControl is over the default threshold.
             await new VerifyCS.Test
             {
-                TestCode = "public class MyUC : System.Windows.Forms.UserControl {}",
+                TestState =
+                {
+                    Sources = { "public class MyUC : System.Windows.Forms.UserControl {}", },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
             }.RunAsync();
 
             await new VerifyVB.Test
             {
-                TestCode = @"
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class MyUC
     Inherits System.Windows.Forms.UserControl
 End Class",
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync();
-        }
-
-        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        public async Task CA1501_UserConfigurationOverridesDefaultValue()
-        {
-            var editorConfigText = "dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass";
-
-            await new VerifyCS.Test
-            {
-                TestState =
-                {
-                    Sources = { "public class MyUC : System.Windows.Forms.UserControl {}" },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
-                    ExpectedDiagnostics = { GetCSharpCA1501ExpectedDiagnostic(1, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
-                },
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync();
-
-            await new VerifyVB.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        @"
-Public Class MyUC
-    Inherits System.Windows.Forms.UserControl
-End Class"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText) },
-                    ExpectedDiagnostics = { GetBasicCA1501ExpectedDiagnostic(2, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
-                },
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync();
-        }
-
-        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = *Contro*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = User*ontrol")]
-        public async Task CA1501_InvalidUserConfigurationOverridesDefaultValueButIsIgnored(string editorConfigText)
-        {
-            await new VerifyCS.Test
-            {
-                TestState =
-                {
-                    Sources = { "public class MyUC : System.Windows.Forms.UserControl {}" },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
-                    ExpectedDiagnostics = { GetCSharpCA1501ExpectedDiagnostic(1, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
-                },
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync();
-
-            await new VerifyVB.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        @"
-Public Class MyUC
-    Inherits System.Windows.Forms.UserControl
-End Class"
-                    },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) },
-                    ExpectedDiagnostics = { GetBasicCA1501ExpectedDiagnostic(2, 14, "MyUC", 7, 6, "UserControl, ContainerControl, ScrollableControl, Control, Component, MarshalByRefObject, Object") },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
             }.RunAsync();
@@ -209,7 +157,7 @@ End Class"
 # FORMAT:
 # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1501: 1
+CA1501: 0
 ";
 
             var csharpTest = new VerifyCS.Test
@@ -248,18 +196,18 @@ public class C2 : SomeClass2 {}"
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCSharpCA1501ExpectedDiagnostic(5, 18, "C1", 2, 2, "SomeClass, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(8, 18, "SomeClass2", 2, 2, "SomeClass1, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(9, 18, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(5, 18, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(8, 18, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(9, 18, "C2", 2, 1, "SomeClass2, SomeClass1"),
                 });
             }
             else
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCSharpCA1501ExpectedDiagnostic(13, 14, "C1", 2, 2, "SomeClass, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(16, 14, "SomeClass2", 2, 2, "SomeClass1, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(17, 14, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(13, 14, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(16, 14, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(17, 14, "C2", 2, 1, "SomeClass2, SomeClass1"),
                 });
             }
 
@@ -322,18 +270,18 @@ End Class"
             {
                 vbnetTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCSharpCA1501ExpectedDiagnostic(6, 18, "C1", 2, 2, "SomeClass, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(13, 18, "SomeClass2", 2, 2, "SomeClass1, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(17, 18, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(6, 18, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(13, 18, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(17, 18, "C2", 2, 1, "SomeClass2, SomeClass1"),
                 });
             }
             else
             {
                 vbnetTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    GetCSharpCA1501ExpectedDiagnostic(25, 14, "C1", 2, 2, "SomeClass, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(32, 14, "SomeClass2", 2, 2, "SomeClass1, Object"),
-                    GetCSharpCA1501ExpectedDiagnostic(36, 14, "C2", 3, 2, "SomeClass2, SomeClass1, Object"),
+                    GetCSharpCA1501ExpectedDiagnostic(25, 14, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(32, 14, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(36, 14, "C2", 2, 1, "SomeClass2, SomeClass1"),
                 });
             }
 
@@ -352,7 +300,7 @@ End Class"
 # FORMAT:
 # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1501: 1
+CA1501: 0
 ";
 
             var csharpTest = new VerifyCS.Test
@@ -385,14 +333,14 @@ public class C1 : SomeClass {}
                     },
                     ExpectedDiagnostics =
                     {
-                         GetCSharpCA1501ExpectedDiagnostic(15, 14, "C1", 2, 2, "SomeClass, Object"),
+                         GetCSharpCA1501ExpectedDiagnostic(15, 14, "C1", 1, 1, "SomeClass"),
                     },
                 },
             };
 
             if (!editorConfigText.Contains("N:MyCompany*"))
             {
-                csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 2, 2, "SomeClass, Object"));
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 1, 1, "SomeClass"));
             }
 
             await csharpTest.RunAsync();
@@ -436,14 +384,14 @@ End Class"
                     },
                     ExpectedDiagnostics =
                     {
-                         GetBasicCA1501ExpectedDiagnostic(23, 14, "C1", 2, 2, "SomeClass, Object"),
+                         GetBasicCA1501ExpectedDiagnostic(23, 14, "C1", 1, 1, "SomeClass"),
                     },
                 },
             };
 
             if (!editorConfigText.Contains("N:MyCompany*"))
             {
-                vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 2, 2, "SomeClass, Object"));
+                vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 1, 1, "SomeClass"));
             }
 
             await vbnetTest.RunAsync();

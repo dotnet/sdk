@@ -468,17 +468,17 @@ Allowed symbol name formats:
   3. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix for types or "N:" prefix for namespaces.
   4. Fully qualified wildcard names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix for types or "N:" prefix for namespaces and ending with the wildcard symbol.
 
-Default Value: `N:System.*`
+Default Value: `N:System.*` (note that this value is always automatically added to the value provided)
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:NS` | Matches all types from the 'NS' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' and all types from the 'System' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' and all types from the 'System' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' and all types from the 'System' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all types from the 'System' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:NS` | Matches all types from the 'NS' namespace and all types from the 'System' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' and all types from the 'System' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' and all types from the 'System' namespace |
+|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' and all types from the 'System' namespace |
