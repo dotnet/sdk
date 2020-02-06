@@ -143,6 +143,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
             }
 
+            return;
+
             void ReportDiagnostic(INamedTypeSymbol @interface, INamedTypeSymbol genericInterface)
             {
                 context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(Rule, namedTypeSymbol.Name,
