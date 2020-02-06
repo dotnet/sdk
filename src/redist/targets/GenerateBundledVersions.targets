@@ -72,6 +72,8 @@
         linux-arm64;
         " />
 
+      <Crossgen2SupportedRids Include="linux-musl-x64;linux-x64;win-x64" />
+
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore31RuntimePackRids)" />
 
@@ -188,7 +190,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="netcoreapp5.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                        Crossgen2RuntimeIdentifiers="linux-musl-x64;linux-x64;win-x64"
+                        Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
