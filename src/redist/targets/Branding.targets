@@ -15,7 +15,6 @@
       <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
       <BundledTemplates31BrandName>Microsoft .NET Core 3.1 Templates $(CliBrandingVersion)</BundledTemplates31BrandName>
       <BundledTemplates30BrandName>Microsoft .NET Core 3.0 Templates $(CliBrandingVersion)</BundledTemplates30BrandName>
-      <BundledTemplates22BrandName>Microsoft .NET Core 2.2 Templates $(CliBrandingVersion)</BundledTemplates22BrandName>
       <BundledTemplates21BrandName>Microsoft .NET Core 2.1 Templates $(CliBrandingVersion)</BundledTemplates21BrandName>
     </PropertyGroup>
   </Target>

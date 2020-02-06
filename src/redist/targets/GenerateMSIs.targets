@@ -41,7 +41,6 @@
       <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
       <Templates31MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-31templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates31MSIInstallerFile>
       <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
-      <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-22templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
       <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-21templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
       <SdkPlaceholderMSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
       <SdkPlaceholderDependencyKeyName>NetCore_SdkPlaceholder</SdkPlaceholderDependencyKeyName>
@@ -60,7 +59,7 @@
           DependsOnTargets="GenerateLayout;SetupWixProperties;GetCoreSdkGitCommitInfo">
     <!-- Consumed By Publish -->
     <ItemGroup>
-      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
+      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
     </ItemGroup>
 
     <GenerateMsiVersion CommitCount="$(GitCommitCount)"
@@ -83,11 +82,6 @@
     <GenerateGuidFromName Name="$(Templates30MSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="Templates30InstallerUpgradeCode" />
-    </GenerateGuidFromName>
-
-    <GenerateGuidFromName Name="$(Templates22MSIInstallerFile)">
-      <Output TaskParameter="OutputGuid"
-          PropertyName="Templates22InstallerUpgradeCode" />
     </GenerateGuidFromName>
 
     <GenerateGuidFromName Name="$(Templates21MSIInstallerFile)">
@@ -214,14 +208,6 @@
         <UpgradeCode>$(Templates30InstallerUpgradeCode)</UpgradeCode>
         <DependencyKeyName>NetCore_Templates_3.0</DependencyKeyName>
       </TemplatesMsiComponent>
-      <TemplatesMsiComponent Include="NetCore22TemplatesMsi">
-        <LayoutPath>$(Templates22LayoutPath.TrimEnd('\'))</LayoutPath>
-        <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
-        <BrandName>$(BundledTemplates22BrandName)</BrandName>
-        <MsiVersion>$(BundledTemplates22MsiVersion)</MsiVersion>
-        <UpgradeCode>$(Templates22InstallerUpgradeCode)</UpgradeCode>
-        <DependencyKeyName>NetCore_Templates_2.2</DependencyKeyName>
-      </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore21TemplatesMsi">
         <LayoutPath>$(Templates21LayoutPath.TrimEnd('\'))</LayoutPath>
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
@@ -344,11 +330,6 @@
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates30MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
         <MajorMinorVersion>$(BundledTemplates30MajorMinorVersion)</MajorMinorVersion>
-      </TemplatesNupkgComponent>
-      <TemplatesNupkgComponent Include="NetCore22TemplatesNupkg">
-        <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates22MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
-        <MajorMinorVersion>$(BundledTemplates22MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore21TemplatesNupkg">
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>

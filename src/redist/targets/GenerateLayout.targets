@@ -4,7 +4,6 @@
     <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
     <Templates31LayoutPath>$(BaseOutputPath)$(Configuration)\templates-3.1\</Templates31LayoutPath>
     <Templates30LayoutPath>$(BaseOutputPath)$(Configuration)\templates-3.0\</Templates30LayoutPath>
-    <Templates22LayoutPath>$(BaseOutputPath)$(Configuration)\templates-2.2\</Templates22LayoutPath>
     <Templates21LayoutPath>$(BaseOutputPath)$(Configuration)\templates-2.1\</Templates21LayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
