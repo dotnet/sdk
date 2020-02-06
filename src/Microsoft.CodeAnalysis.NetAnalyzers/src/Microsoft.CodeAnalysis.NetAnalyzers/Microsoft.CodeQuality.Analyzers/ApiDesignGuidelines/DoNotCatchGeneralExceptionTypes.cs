@@ -2,10 +2,10 @@
 
 using System.Collections.Immutable;
 using System.Threading;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return true;
             }
 
-            var symbolNamesOption = analyzerOptions.GetDisallowedSymbolNamesOption(Rule, compilation, cancellationToken);
+            var symbolNamesOption = analyzerOptions.GetDisallowedSymbolNamesWithValueOption(Rule, compilation, cancellationToken);
             return symbolNamesOption.Contains(namedTypeSymbol);
         }
     }

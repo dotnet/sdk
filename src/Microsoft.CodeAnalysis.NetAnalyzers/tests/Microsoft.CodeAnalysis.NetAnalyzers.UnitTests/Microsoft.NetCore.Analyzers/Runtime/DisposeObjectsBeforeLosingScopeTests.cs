@@ -11275,7 +11275,7 @@ public class C
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + DisposeObjectsBeforeLosingScope.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -11358,7 +11358,7 @@ End Class"
         [InlineData("")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M2")]
         [InlineData("dotnet_code_quality.interproceduraldataflow.excluded_symbol_names = M2")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption_InterproceduralDataflow(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption_InterproceduralDataflow(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

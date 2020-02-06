@@ -456,6 +456,25 @@ Examples:
 |`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class|MyNamespace.IPath->Path` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix AND all types implementing 'MyNamespace.IPath' are expected to have the 'Path' suffix. |
 |`dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}` | Allows to override built-in suffixes, in this case, all types implementing 'IDataReader' are no longer expected to end in 'Collection' |
 
+### Additional required generic interfaces
+Option Name: `additional_required_generic_interfaces`
+
+Configurable Rules: [CA1010](https://docs.microsoft.com/visualstudio/code-quality/ca1010)
+
+Option Values: List (separated by '|') of interface names with their required generic fully qualified interface (separated by '->').
+Allowed interface formats:
+  1. Interface name only (includes all interfaces with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix.
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.CA1010.additional_required_generic_interfaces = ISomething->System.Collections.Generic.IEnumerable`\``1` | All types implementing 'ISomething' regardless of its namespace are expected to also implement 'System.Collections.Generic.IEnumerable`1'. |
+|`dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`\``2` | All types implementing 'System.Collections.Generic.IDictionary' are expected to also implement 'System.Collections.Generic.IDictionary`2'. |
+
 ### Inheritance excluded type or namespace names
 Option Name: `additional_inheritance_excluded_symbol_names`
 

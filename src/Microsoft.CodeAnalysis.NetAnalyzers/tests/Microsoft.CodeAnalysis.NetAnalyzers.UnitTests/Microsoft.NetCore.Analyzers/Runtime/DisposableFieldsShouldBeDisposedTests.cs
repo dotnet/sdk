@@ -3059,7 +3059,7 @@ class C : B
         [InlineData("dotnet_code_quality.excluded_symbol_names = B")]
         [InlineData("dotnet_code_quality." + DisposableFieldsShouldBeDisposed.RuleId + ".excluded_symbol_names = B")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = B")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
