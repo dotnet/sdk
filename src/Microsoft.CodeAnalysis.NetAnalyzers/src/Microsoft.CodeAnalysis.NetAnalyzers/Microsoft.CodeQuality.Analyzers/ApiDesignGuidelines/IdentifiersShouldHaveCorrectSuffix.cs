@@ -176,7 +176,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static bool TryGetTypeSuffix(IEnumerable<INamedTypeSymbol> typeSymbols, ImmutableDictionary<INamedTypeSymbol, SuffixInfo> hardcodedMap,
-            SymbolNamesOption userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
+            SymbolNamesWithValueOption<string> userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
         {
             foreach (var type in typeSymbols)
             {
