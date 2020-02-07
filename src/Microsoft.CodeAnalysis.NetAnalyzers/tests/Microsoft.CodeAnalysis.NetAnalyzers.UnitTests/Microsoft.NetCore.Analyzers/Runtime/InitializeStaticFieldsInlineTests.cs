@@ -157,7 +157,7 @@ End Class
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_EventLambdas()
+        public async Task CA1810_EventLambdas_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -194,7 +194,24 @@ End Class");
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_TaskRunActionAndFunc()
+        public async Task CA1810_EventDelegate_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class C
+{
+    private static string s;
+
+    static C()
+    {
+        Console.CancelKeyPress += delegate { s = string.Empty; };
+    }
+}");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_TaskRunActionAndFunc_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading.Tasks;
@@ -235,7 +252,7 @@ End Class");
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_EnumerableWhere()
+        public async Task CA1810_EnumerableWhere_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -279,6 +296,51 @@ Class C
                                 End Function)
     End Sub
 End Class");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_LocalFunc_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        void LocalFunc()
+        {
+            s = 1;
+        }
+    }
+}",
+                GetCA1810CSharpDefaultResultAt(9, 12, "C"));
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_StaticLocalFunc_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        static void StaticLocalFunc()
+        {
+            s = 2;
+        }
+    }
+}",
+                GetCA1810CSharpDefaultResultAt(9, 12, "C"),
+                DiagnosticResult.CompilerError("CS8652").WithSpan(11, 9, 11, 15));
         }
 
         #endregion
