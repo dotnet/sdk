@@ -145,7 +145,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                 // Compute code metrics.
                 var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule, compilationContext.Compilation,
-                    compilationContext.CancellationToken);
+                    defaultForcedValue: "N:System.*", compilationContext.CancellationToken);
 
                 var metricsAnalysisContext = new CodeMetricsAnalysisContext(compilationContext.Compilation, compilationContext.CancellationToken,
                     namedType => inheritanceExcludedTypes.Contains(namedType));
