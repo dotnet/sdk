@@ -339,11 +339,11 @@ namespace N1
 }";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 8, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, CoupledTypes: {N1.C1, N1.C2<>}, DepthInherit: 2)
-   N1: (Lines: 8, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, CoupledTypes: {N1.C1, N1.C2<>}, DepthInherit: 2)
+Assembly: (Lines: 8, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, CoupledTypes: {N1.C1, N1.C2<T>}, DepthInherit: 2)
+   N1: (Lines: 8, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, CoupledTypes: {N1.C1, N1.C2<T>}, DepthInherit: 2)
       C1: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
       C2<T>: (Lines: 2, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
-      C3: (Lines: 2, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {N1.C1, N1.C2<>}, DepthInherit: 2)
+      C3: (Lines: 2, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {N1.C1, N1.C2<T>}, DepthInherit: 2)
 ";
 
             VerifyCSharp(source, expectedMetricsText);
@@ -557,7 +557,7 @@ Assembly: (Lines: 17, ExecutableLines: 2, MntIndex: 100, CycCxty: 5, CoupledType
             var source = @"
 class C
 {
-    object M1(C1 c)
+    object M1()
     {
         return new {a = 1};
     }
@@ -565,12 +565,12 @@ class C
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1}, DepthInherit: 1)
-   C: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1}, DepthInherit: 1)
-      C.M1(C1): (Lines: 4, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1})
+Assembly: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, DepthInherit: 1)
+   C: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, DepthInherit: 1)
+      C.M1(): (Lines: 4, ExecutableLines: 1, MntIndex: 94, CycCxty: 1)
 ";
 
-            VerifyCSharp(source, expectedMetricsText, true);
+            VerifyCSharp(source, expectedMetricsText);
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
@@ -585,19 +585,24 @@ class C
         G<string> b = null;
         G<C1> c = null;
         G<G<C2>> d = null;
+        new object[]{a, b, c, d}.ToString(); // Avoid unused variable diagnostics
     }
 }
 class G<T> {}
+class C1 {}
+class C2 {}
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 12, ExecutableLines: 4, MntIndex: 88, CycCxty: 2, CoupledTypes: {C1, C2, G<>}, DepthInherit: 1)
-   C: (Lines: 11, ExecutableLines: 4, MntIndex: 77, CycCxty: 1, CoupledTypes: {C1, C2, G<>}, DepthInherit: 1)
-      C.M1(): (Lines: 7, ExecutableLines: 4, MntIndex: 77, CycCxty: 1, CoupledTypes: {C1, C2, G<>})
+Assembly: (Lines: 15, ExecutableLines: 5, MntIndex: 93, CycCxty: 4, CoupledTypes: {C1, C2, G<T>}, DepthInherit: 1)
+   C: (Lines: 12, ExecutableLines: 5, MntIndex: 73, CycCxty: 1, CoupledTypes: {C1, C2, G<T>}, DepthInherit: 1)
+      C.M1(): (Lines: 8, ExecutableLines: 5, MntIndex: 73, CycCxty: 1, CoupledTypes: {C1, C2, G<T>})
+   C1: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+   C2: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
    G<T>: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
 ";
 
-            VerifyCSharp(source, expectedMetricsText, true);
+            VerifyCSharp(source, expectedMetricsText);
         }
 
         [Fact]
@@ -661,9 +666,9 @@ class C
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<>, System.Func<,,>, System.Func<,>, System.Linq.Enumerable}, DepthInherit: 1)
-   C: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<>, System.Func<,,>, System.Func<,>, System.Linq.Enumerable}, DepthInherit: 1)
-      C.TestCa1506(): (Lines: 21, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<>, System.Func<,,>, System.Func<,>, System.Linq.Enumerable})
+Assembly: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<T>, System.Func<T, TResult>, System.Func<T1, T2, TResult>, System.Linq.Enumerable}, DepthInherit: 1)
+   C: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<T>, System.Func<T, TResult>, System.Func<T1, T2, TResult>, System.Linq.Enumerable}, DepthInherit: 1)
+      C.TestCa1506(): (Lines: 21, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<T>, System.Func<T, TResult>, System.Func<T1, T2, TResult>, System.Linq.Enumerable})
 ";
 
             VerifyCSharp(source, expectedMetricsText);
@@ -1543,15 +1548,15 @@ class C2 { public readonly bool B = false; }
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 36, ExecutableLines: 11, MntIndex: 90, CycCxty: 26, CoupledTypes: {C2, T?}, DepthInherit: 1)
-   C: (Lines: 34, ExecutableLines: 10, MntIndex: 87, CycCxty: 25, CoupledTypes: {C2, T?}, DepthInherit: 1)
+Assembly: (Lines: 36, ExecutableLines: 11, MntIndex: 90, CycCxty: 26, CoupledTypes: {C2, System.Nullable<T>}, DepthInherit: 1)
+   C: (Lines: 34, ExecutableLines: 10, MntIndex: 87, CycCxty: 25, CoupledTypes: {C2, System.Nullable<T>}, DepthInherit: 1)
       C.c2: (Lines: 1, ExecutableLines: 1, MntIndex: 93, CycCxty: 0, CoupledTypes: {C2})
       C.b: (Lines: 1, ExecutableLines: 1, MntIndex: 93, CycCxty: 0)
-      C.SimpleCoalesce(bool?): (Lines: 5, ExecutableLines: 1, MntIndex: 93, CycCxty: 2, CoupledTypes: {T?})
-      C.SimpleConditionalAccess(C): (Lines: 5, ExecutableLines: 1, MntIndex: 93, CycCxty: 2, CoupledTypes: {T?})
-      C.NestedCoalesce(bool?, bool?): (Lines: 5, ExecutableLines: 1, MntIndex: 92, CycCxty: 3, CoupledTypes: {T?})
-      C.NestedConditionalAccess(C): (Lines: 5, ExecutableLines: 1, MntIndex: 91, CycCxty: 3, CoupledTypes: {C2, T?})
-      C.MultipleCoalesceAndConditionalAccess(C, C, C, C, C): (Lines: 8, ExecutableLines: 4, MntIndex: 69, CycCxty: 15, CoupledTypes: {C2, T?})
+      C.SimpleCoalesce(bool?): (Lines: 5, ExecutableLines: 1, MntIndex: 93, CycCxty: 2, CoupledTypes: {System.Nullable<T>})
+      C.SimpleConditionalAccess(C): (Lines: 5, ExecutableLines: 1, MntIndex: 93, CycCxty: 2, CoupledTypes: {System.Nullable<T>})
+      C.NestedCoalesce(bool?, bool?): (Lines: 5, ExecutableLines: 1, MntIndex: 92, CycCxty: 3, CoupledTypes: {System.Nullable<T>})
+      C.NestedConditionalAccess(C): (Lines: 5, ExecutableLines: 1, MntIndex: 91, CycCxty: 3, CoupledTypes: {C2, System.Nullable<T>})
+      C.MultipleCoalesceAndConditionalAccess(C, C, C, C, C): (Lines: 8, ExecutableLines: 4, MntIndex: 69, CycCxty: 15, CoupledTypes: {C2, System.Nullable<T>})
    C2: (Lines: 2, ExecutableLines: 1, MntIndex: 93, CycCxty: 1, DepthInherit: 1)
       C2.B: (Lines: 1, ExecutableLines: 1, MntIndex: 93, CycCxty: 0)
 ";
