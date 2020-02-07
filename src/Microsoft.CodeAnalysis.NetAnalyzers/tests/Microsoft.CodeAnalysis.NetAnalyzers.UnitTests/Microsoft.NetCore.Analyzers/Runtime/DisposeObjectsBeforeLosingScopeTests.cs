@@ -6,7 +6,6 @@ using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -1881,7 +1880,13 @@ End Class");
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAssignment_DisposeAsyncCall_NoDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposable : IAsyncDisposable
 {
     public ValueTask DisposeAsync()
@@ -1898,9 +1903,16 @@ class Test
         await e.DisposeAsync();
     }
 }
-");
+"
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposable
     Implements IAsyncDisposable
 
@@ -1914,13 +1926,20 @@ Class Test
         Dim e = New AsyncDisposable()
         Await e.DisposeAsync()
     End Function
-End Class");
+End Class"
+            }.RunAsync();
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAssignment_NoDisposeAsyncCall_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposable : IAsyncDisposable
 {
     public ValueTask DisposeAsync()
@@ -1937,10 +1956,19 @@ class Test
     }
 }
 ",
-            // Test0.cs(43,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposable()' before all references to it are out of scope.
-            GetCSharpResultAt(43, 17, "new AsyncDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(17, 17, "new AsyncDisposable()"),
+                }
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposable
     Implements IAsyncDisposable
 
@@ -1954,14 +1982,23 @@ Class Test
         Dim e = New AsyncDisposable()
     End Function
 End Class",
-            // Test0.vb(43,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'New AsyncDisposable()' before all references to it are out of scope.
-            GetBasicResultAt(43, 17, "New AsyncDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(15, 17, "New AsyncDisposable()"),
+                }
+            }.RunAsync();
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAndDisposableAssignment_Disposed_NoDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposableAndDisposable : IAsyncDisposable, IDisposable
 {
     public ValueTask DisposeAsync()
@@ -1987,9 +2024,16 @@ class Test
         using (var e3 = new AsyncDisposableAndDisposable()) { }
     }
 }
-");
+"
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposableAndDisposable
     Implements IAsyncDisposable
     Implements IDisposable
@@ -2013,13 +2057,20 @@ Class Test
         Using e3 As New AsyncDisposableAndDisposable()
         End Using
     End Function
-End Class");
+End Class"
+            }.RunAsync();
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAndDisposableAssignment_NotDisposed_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposableAndDisposable : IAsyncDisposable, IDisposable
 {
     public ValueTask DisposeAsync()
@@ -2040,10 +2091,19 @@ class Test
     }
 }
 ",
-            // Test0.cs(47,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposableAndDisposable()' before all references to it are out of scope.
-            GetCSharpResultAt(47, 17, "new AsyncDisposableAndDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(21, 17, "new AsyncDisposableAndDisposable()"),
+                }
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposableAndDisposable
     Implements IAsyncDisposable
     Implements IDisposable
@@ -2061,8 +2121,11 @@ Class Test
         Dim e = New AsyncDisposableAndDisposable()
     End Function
 End Class",
-            // Test0.vb(47,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'New AsyncDisposableAndDisposable()' before all references to it are out of scope.
-            GetBasicResultAt(47, 17, "New AsyncDisposableAndDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(19, 17, "New AsyncDisposableAndDisposable()"),
+                }
+            }.RunAsync();
         }
 
         [Fact]
