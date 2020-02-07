@@ -674,6 +674,52 @@ Assembly: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledType
             VerifyCSharp(source, expectedMetricsText);
         }
 
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public void MethodWithAsyncAwait()
+        {
+            var source = @"
+using System.Threading.Tasks;
+class C
+{
+    async Task M()
+    {
+        await Task.Yield();
+    }
+}
+";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 7, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Runtime.CompilerServices.YieldAwaitable, System.Threading.Tasks.Task}, DepthInherit: 1)
+   C: (Lines: 7, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Runtime.CompilerServices.YieldAwaitable, System.Threading.Tasks.Task}, DepthInherit: 1)
+      C.M(): (Lines: 4, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Runtime.CompilerServices.YieldAwaitable, System.Threading.Tasks.Task})
+";
+
+            VerifyCSharp(source, expectedMetricsText);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public void MethodWithYieldReturn()
+        {
+            var source = @"
+using System.Collections.Generic;
+class C
+{
+    IEnumerable<int> M()
+    {
+        yield return 1;
+    }
+}
+";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 7, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<T>}, DepthInherit: 1)
+   C: (Lines: 7, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<T>}, DepthInherit: 1)
+      C.M(): (Lines: 4, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Collections.Generic.IEnumerable<T>})
+";
+
+            VerifyCSharp(source, expectedMetricsText);
+        }
+
         [Fact]
         public void MethodWithTypeReferencesInAttributes()
         {
