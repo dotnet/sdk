@@ -25,25 +25,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_CA1810_LocalizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InitializeReferenceTypeStaticFieldsInlineDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_CA2207_LocalizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InitializeValueTypeStaticFieldsInlineDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor CA1810Rule = new DiagnosticDescriptor(CA1810RuleId,
+        internal static DiagnosticDescriptor CA1810Rule = DiagnosticDescriptorHelper.Create(CA1810RuleId,
                                                                              s_CA1810_LocalizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Performance,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,    // May tie this to performance sensitive attribute.
                                                                              description: s_CA1810_LocalizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1810-initialize-reference-type-static-fields-inline",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
-        internal static DiagnosticDescriptor CA2207Rule = new DiagnosticDescriptor(CA2207RuleId,
+        internal static DiagnosticDescriptor CA2207Rule = DiagnosticDescriptorHelper.Create(CA2207RuleId,
                                                                              s_CA2207_LocalizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.Disabled,    // May tie this to performance sensitive attribute.
                                                                              description: s_CA2207_LocalizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2207-initialize-value-type-static-fields-inline",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1810Rule, CA2207Rule);
 

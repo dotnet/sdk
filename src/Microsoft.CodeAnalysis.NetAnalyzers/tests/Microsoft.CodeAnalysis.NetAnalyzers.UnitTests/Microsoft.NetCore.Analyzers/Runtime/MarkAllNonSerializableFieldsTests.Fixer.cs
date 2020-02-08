@@ -4,16 +4,13 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.VisualBasic.Testing;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.NetCore.CSharp.Analyzers.Runtime;
 using Microsoft.NetCore.VisualBasic.Analyzers.Runtime;
-using Test.Utilities;
 using Xunit;
-using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpMarkAllNonSerializableFieldsFixer>;
-using VerifyVB = Microsoft.CodeAnalysis.VisualBasic.Testing.XUnit.CodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicMarkAllNonSerializableFieldsFixer>;
 
@@ -172,7 +169,7 @@ End Class");
 using System;
 public partial class NonSerializableType { }
 
-public partial class NonSerializableType { public void baz() { } }
+public partial class NonSerializableType { public void method() { } }
 
 [Serializable]
 public class CA2235WithNonPublicNonSerializableFields
@@ -185,7 +182,7 @@ using System;
 [Serializable]
 public partial class NonSerializableType { }
 
-public partial class NonSerializableType { public void baz() { } }
+public partial class NonSerializableType { public void method() { } }
 
 [Serializable]
 public class CA2235WithNonPublicNonSerializableFields
@@ -203,7 +200,7 @@ Public Partial Class NonSerializableType
 End Class
 
 Public Class NonSerializableType
-    Sub foo()
+    Sub method()
     End Sub
 End Class
 
@@ -219,7 +216,7 @@ Public Partial Class NonSerializableType
 End Class
 
 Public Class NonSerializableType
-    Sub foo()
+    Sub method()
     End Sub
 End Class
 

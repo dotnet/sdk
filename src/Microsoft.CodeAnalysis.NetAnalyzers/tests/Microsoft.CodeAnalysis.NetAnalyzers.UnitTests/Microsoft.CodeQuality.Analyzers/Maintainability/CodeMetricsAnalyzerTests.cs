@@ -1,19 +1,23 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Analyzer.Utilities;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.CodeMetricsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.CodeMetricsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.UnitTests
 {
-    public class CodeMetricsAnalyzerTests : DiagnosticAnalyzerTestBase
+    public class CodeMetricsAnalyzerTests
     {
         #region CA1501: Avoid excessive inheritance
 
         [Fact]
-        public void CA1501_CSharp_VerifyDiagnostic()
+        public async Task CA1501_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class BaseClass { }
@@ -28,11 +32,11 @@ class FifthDerivedClass : FourthDerivedClass { }
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(9, 7): warning CA1501: 'FifthDerivedClass' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object'
                 GetCSharpCA1501ExpectedDiagnostic(9, 7, "FifthDerivedClass", 6, 6, "FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object")};
-            VerifyCSharp(source, expected);
+            await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
         [Fact]
-        public void CA1501_Basic_VerifyDiagnostic()
+        public async Task CA1501_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class BaseClass
@@ -61,11 +65,11 @@ End Class
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(21, 7): warning CA1501: 'FifthDerivedClass' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object'
                 GetBasicCA1501ExpectedDiagnostic(21, 7, "FifthDerivedClass", 6, 6, "FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object")};
-            VerifyBasic(source, expected);
+            await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
         [Fact]
-        public void CA1501_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1501_Configuration_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class BaseClass { }
@@ -80,11 +84,11 @@ CA1501: 1
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(3, 7): warning CA1501: 'BaseClass' has an object hierarchy '2' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '2': 'BaseClass, Object'
                 GetCSharpCA1501ExpectedDiagnostic(3, 7, "FirstDerivedClass", 2, 2, "BaseClass, Object")};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1501_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1501_Configuration_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class BaseClass
@@ -103,7 +107,7 @@ CA1501: 1
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(5, 7): warning CA1501: 'BaseClass' has an object hierarchy '2' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '2': 'BaseClass, Object'
                 GetBasicCA1501ExpectedDiagnostic(5, 7, "FirstDerivedClass", 2, 2, "BaseClass, Object")};
-            VerifyBasic(source, GetAdditionalFile(additionalText), expected);
+            await VerifyBasicAsync(source, additionalText, expected);
         }
 
         #endregion
@@ -111,7 +115,7 @@ CA1501: 1
         #region CA1502: Avoid excessive complexity
 
         [Fact]
-        public void CA1502_CSharp_VerifyDiagnostic()
+        public async Task CA1502_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class C
@@ -129,11 +133,11 @@ class C
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(4,10): warning CA1502: 'M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
                 GetCSharpCA1502ExpectedDiagnostic(4, 10, "M", 28, 26)};
-            VerifyCSharp(source, expected);
+            await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
         [Fact]
-        public void CA1502_Basic_VerifyDiagnostic()
+        public async Task CA1502_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class C
@@ -148,11 +152,11 @@ End Class
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(3,17): warning CA1502: 'M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
                 GetBasicCA1502ExpectedDiagnostic(3, 17, "M", 28, 26)};
-            VerifyBasic(source, expected);
+            await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
         [Fact]
-        public void CA1502_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1502_Configuration_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class C
@@ -176,13 +180,13 @@ class C
 CA1502: 2
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.cs(4,10): warning CA1502: 'M1' has a cyclomatic complexity of '4'. Rewrite or refactor the code to decrease its complexity below '3'.                
+                // Test0.cs(4,10): warning CA1502: 'M1' has a cyclomatic complexity of '4'. Rewrite or refactor the code to decrease its complexity below '3'.
                 GetCSharpCA1502ExpectedDiagnostic(4, 10, "M1", 4, 3)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1502_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1502_Configuration_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class C
@@ -204,11 +208,11 @@ CA1502: 2
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(3,17): warning CA1502: 'M1' has a cyclomatic complexity of '4'. Rewrite or refactor the code to decrease its complexity below '3'.
                 GetBasicCA1502ExpectedDiagnostic(3, 17, "M1", 4, 3)};
-            VerifyBasic(source, GetAdditionalFile(additionalText), expected);
+            await VerifyBasicAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1502_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
+        public async Task CA1502_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class C
@@ -233,15 +237,15 @@ CA1502(Type): 4
 CA1502(Method): 2
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.cs(2,7): warning CA1502: 'C' has a cyclomatic complexity of '6'. Rewrite or refactor the code to decrease its complexity below '5'.                
+                // Test0.cs(2,7): warning CA1502: 'C' has a cyclomatic complexity of '6'. Rewrite or refactor the code to decrease its complexity below '5'.
                 GetCSharpCA1502ExpectedDiagnostic(2, 7, "C", 6, 5),
                 // Test0.cs(4,10): warning CA1502: 'M1' has a cyclomatic complexity of '4'. Rewrite or refactor the code to decrease its complexity below '3'.
                 GetCSharpCA1502ExpectedDiagnostic(4, 10, "M1", 4, 3)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1502_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
+        public async Task CA1502_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class C
@@ -266,7 +270,7 @@ CA1502(Method): 2
                 GetBasicCA1502ExpectedDiagnostic(2, 7, "C", 6, 5),
                 // Test0.vb(3,17): warning CA1502: 'M1' has a cyclomatic complexity of '4'. Rewrite or refactor the code to decrease its complexity below '3'.
                 GetBasicCA1502ExpectedDiagnostic(3, 17, "M1", 4, 3)};
-            VerifyBasic(source, GetAdditionalFile(additionalText), expected);
+            await VerifyBasicAsync(source, additionalText, expected);
         }
 
         #endregion
@@ -274,7 +278,7 @@ CA1502(Method): 2
         #region CA1505: Avoid unmaintainable code
 
         [Fact]
-        public void CA1505_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1505_Configuration_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class C
@@ -297,11 +301,11 @@ CA1505: 95
                 GetCSharpCA1505ExpectedDiagnostic(2, 7, "C", 91, 94),
                 // Test0.cs(4,10): warning CA1505: 'M1' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetCSharpCA1505ExpectedDiagnostic(4, 10, "M1", 91, 94)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1505_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1505_Configuration_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class C
@@ -322,11 +326,11 @@ CA1505: 95
                 GetBasicCA1505ExpectedDiagnostic(2, 7, "C", 91, 94),
                 // Test0.vb(3,17): warning CA1505: 'M1' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetBasicCA1505ExpectedDiagnostic(3, 17, "M1", 91, 94)};
-            VerifyBasic(source, GetAdditionalFile(additionalText), expected);
+            await VerifyBasicAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1505_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
+        public async Task CA1505_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class C
@@ -347,11 +351,11 @@ CA1505(Type): 95
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(2,7): warning CA1505: 'C' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetCSharpCA1505ExpectedDiagnostic(2, 7, "C", 91, 94)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1505_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
+        public async Task CA1505_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class C
@@ -370,7 +374,7 @@ CA1505(Type): 95
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(2,7): warning CA1505: 'C' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetBasicCA1505ExpectedDiagnostic(2, 7, "C", 91, 94)};
-            VerifyBasic(source, GetAdditionalFile(additionalText), expected);
+            await VerifyBasicAsync(source, additionalText, expected);
         }
 
         #endregion
@@ -378,7 +382,7 @@ CA1505(Type): 95
         #region CA1506: Avoid excessive class coupling
 
         [Fact]
-        public void CA1506_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1506_Configuration_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class C
@@ -404,7 +408,7 @@ CA1506: 2
                 GetCSharpCA1506ExpectedDiagnostic(2, 7, "C", 4, 2, 3),
                 // Test0.cs(4,10): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetCSharpCA1506ExpectedDiagnostic(4, 10, "M1", 4, 2, 3)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
@@ -453,7 +457,7 @@ CA1506: 2
         }
 
         [Fact]
-        public void CA1506_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1506_Configuration_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class C
@@ -486,11 +490,11 @@ CA1506: 2
                 GetBasicCA1506ExpectedDiagnostic(2, 7, "C", 4, 2, 3),
                 // Test0.vb(3,17): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetBasicCA1506ExpectedDiagnostic(3, 17, "M1", 4, 2, 3)};
-            VerifyBasic(source, GetAdditionalFile(additionalText), expected);
+            await VerifyBasicAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1506_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
+        public async Task CA1506_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
         {
             var source = @"
 class C
@@ -515,11 +519,11 @@ CA1506(Type): 10
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(4,10): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetCSharpCA1506ExpectedDiagnostic(4, 10, "M1", 4, 2, 3)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1506_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
+        public async Task CA1506_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
         {
             var source = @"
 Class C
@@ -551,7 +555,7 @@ CA1506(Type): 10
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(3,17): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetBasicCA1506ExpectedDiagnostic(3, 17, "M1", 4, 2, 3)};
-            VerifyBasic(source, GetAdditionalFile(additionalText), expected);
+            await VerifyBasicAsync(source, additionalText, expected);
         }
 
         #endregion
@@ -559,7 +563,7 @@ CA1506(Type): 10
         #region CA1509: Invalid entry in code metrics rule specification file
 
         [Fact]
-        public void CA1509_VerifyDiagnostics()
+        public async Task CA1509_VerifyDiagnostics()
         {
             var source = @"";
 
@@ -613,11 +617,11 @@ CA1501
                 GetCA1509ExpectedDiagnostic(27, 1, "CA1501(Method)(Type): 1", AdditionalFileName),
                 // CodeMetricsConfig.txt(30,1): warning CA1509: Invalid entry 'CA1501' in code metrics rule specification file 'CodeMetricsConfig.txt'
                 GetCA1509ExpectedDiagnostic(30, 1, "CA1501", AdditionalFileName)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
-        public void CA1509_NoDiagnostics()
+        public async Task CA1509_NoDiagnostics()
         {
             var source = @"";
 
@@ -648,11 +652,11 @@ CA1502(Event): 1
 # 5. Whitespaces before and after the colon are allowed.
 CA1501    :    1
 ";
-            VerifyCSharp(source, GetAdditionalFile(additionalText));
+            await VerifyCSharpAsync(source, additionalText);
         }
 
         [Fact]
-        public void CA1509_VerifyNoMetricDiagnostics()
+        public async Task CA1509_VerifyNoMetricDiagnostics()
         {
             // Ensure we don't report any code metric diagnostics when we have invalid entries in code metrics configuration file.
             var source = @"
@@ -674,109 +678,90 @@ CA 1501: 10
             DiagnosticResult[] expected = new[] {
                 // CodeMetricsConfig.txt(5,1): warning CA1509: Invalid entry 'CA 1501: 10' in code metrics rule specification file 'CodeMetricsConfig.txt'
                 GetCA1509ExpectedDiagnostic(5, 1, "CA 1501: 10", AdditionalFileName)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         #endregion
 
         #region Helpers
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CodeMetricsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new CodeMetricsAnalyzer();
-        }
-
         private static DiagnosticResult GetCSharpCA1501ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold, string baseTypes)
-        {
-            return GetCA1501ExpectedDiagnostic(line, column, symbolName, metricValue, threshold, baseTypes);
-        }
+            => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1501Rule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, metricValue, threshold, baseTypes);
 
         private static DiagnosticResult GetBasicCA1501ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold, string baseTypes)
-        {
-            return GetCA1501ExpectedDiagnostic(line, column, symbolName, metricValue, threshold, baseTypes);
-        }
+            => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1501Rule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, metricValue, threshold, baseTypes);
 
         private static DiagnosticResult GetCSharpCA1502ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
-        {
-            return GetCA1502ExpectedDiagnostic(line, column, symbolName, metricValue, threshold);
-        }
+            => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1502Rule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetBasicCA1502ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
-        {
-            return GetCA1502ExpectedDiagnostic(line, column, symbolName, metricValue, threshold);
-        }
+            => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1502Rule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetCSharpCA1505ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
-        {
-            return GetCA1505ExpectedDiagnostic(line, column, symbolName, metricValue, threshold);
-        }
+            => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1505Rule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetBasicCA1505ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
-        {
-            return GetCA1505ExpectedDiagnostic(line, column, symbolName, metricValue, threshold);
-        }
+            => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1505Rule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetCSharpCA1506ExpectedDiagnostic(int line, int column, string symbolName, int coupledTypesCount, int namespaceCount, int threshold)
-        {
-            return GetCA1506ExpectedDiagnostic(line, column, symbolName, coupledTypesCount, namespaceCount, threshold);
-        }
+            => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1506Rule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName, coupledTypesCount, namespaceCount, threshold);
 
         private static DiagnosticResult GetBasicCA1506ExpectedDiagnostic(int line, int column, string symbolName, int coupledTypesCount, int namespaceCount, int threshold)
-        {
-            return GetCA1506ExpectedDiagnostic(line, column, symbolName, coupledTypesCount, namespaceCount, threshold);
-        }
-
-        // '{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'
-        private static DiagnosticResult GetCA1501ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold, string baseTypes)
-        {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1501RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
+            => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1506Rule)
                 .WithLocation(line, column)
-                .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveInheritanceMessage)
-                .WithArguments(symbolName, metricValue, threshold, baseTypes);
-        }
-
-        // '{0}' has a cyclomatic complexity of '{1}'. Rewrite or refactor the code to decrease its complexity below '{2}'.
-        private static DiagnosticResult GetCA1502ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
-        {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1502RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
-                .WithLocation(line, column)
-                .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveComplexityMessage)
-                .WithArguments(symbolName, metricValue, threshold);
-        }
-
-        // '{0}' has a maintainability index of '{1}'. Rewrite or refactor the code to increase its maintainability index (MI) above '{2}'.
-        private static DiagnosticResult GetCA1505ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
-        {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1505RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
-                .WithLocation(line, column)
-                .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidUnmantainableCodeMessage)
-                .WithArguments(symbolName, metricValue, threshold);
-        }
-
-        // '{0}' is coupled with '{1}' different types from '{2}' different namespaces. Rewrite or refactor the code to decrease its class coupling below '{3}'.
-        private static DiagnosticResult GetCA1506ExpectedDiagnostic(int line, int column, string symbolName, int coupledTypesCount, int namespaceCount, int threshold)
-        {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1506RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
-                .WithLocation(line, column)
-                .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveClassCouplingMessage)
                 .WithArguments(symbolName, coupledTypesCount, namespaceCount, threshold);
-        }
 
         private static DiagnosticResult GetCA1509ExpectedDiagnostic(int line, int column, string entry, string additionalFile)
-        {
-            return new DiagnosticResult(CodeMetricsAnalyzer.CA1509RuleId, DiagnosticHelpers.DefaultDiagnosticSeverity)
-                .WithLocation(AdditionalFileName, line, column)
-                .WithMessageFormat(MicrosoftCodeQualityAnalyzersResources.InvalidEntryInCodeMetricsConfigFileMessage)
+            => VerifyCS.Diagnostic(CodeMetricsAnalyzer.InvalidEntryInCodeMetricsConfigFileRule)
+                .WithLocation(additionalFile, line, column)
                 .WithArguments(entry, additionalFile);
-        }
 
         private const string AdditionalFileName = "CodeMetricsConfig.txt";
-        private FileAndSource GetAdditionalFile(string source)
-            => new FileAndSource() { Source = source, FilePath = AdditionalFileName };
+
+        private async Task VerifyCSharpAsync(string source, string codeMetricsConfigSource, params DiagnosticResult[] expected)
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (AdditionalFileName, codeMetricsConfigSource) }
+                }
+            };
+
+            csharpTest.ExpectedDiagnostics.AddRange(expected);
+
+            await csharpTest.RunAsync();
+        }
+
+        private async Task VerifyBasicAsync(string source, string codeMetricsConfigSource, params DiagnosticResult[] expected)
+        {
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (AdditionalFileName, codeMetricsConfigSource) }
+                }
+            };
+
+            vbTest.ExpectedDiagnostics.AddRange(expected);
+
+            await vbTest.RunAsync();
+        }
 
         #endregion
     }

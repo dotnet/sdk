@@ -347,97 +347,97 @@ End Class
         private static DiagnosticResult GetCSharpCollectionBaseResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsCollectionBase, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicCollectionBaseResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsCollectionBase, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetCSharpDictionaryBaseResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsDictionaryBase, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicDictionaryBaseResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsDictionaryBase, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetCSharpQueueResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsQueue, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicQueueResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsQueue, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetCSharpReadOnlyCollectionResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsReadOnlyCollectionBase, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicReadOnlyCollectionBaseResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsReadOnlyCollectionBase, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetCSharpSortedListResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsSortedList, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicSortedListResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsSortedList, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetCSharpStackResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsStack, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicStackResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemCollectionsStack, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetCSharpApplicationExceptionResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemApplicationException, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicApplicationExceptionResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemApplicationException, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetCSharpXmlDocumentResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemXmlXmlDocument, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
 
         private static DiagnosticResult GetBasicXmlDocumentResultAt(int line, int column, string declaredTypeName, string badBaseTypeName)
         {
             string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.TypesShouldNotExtendCertainBaseTypesMessageSystemXmlXmlDocument, declaredTypeName, badBaseTypeName);
-            return new DiagnosticResult(TypesShouldNotExtendCertainBaseTypesAnalyzer.Rule).WithLocation(line, column).WithArguments(message);
+            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(message);
         }
     }
 }

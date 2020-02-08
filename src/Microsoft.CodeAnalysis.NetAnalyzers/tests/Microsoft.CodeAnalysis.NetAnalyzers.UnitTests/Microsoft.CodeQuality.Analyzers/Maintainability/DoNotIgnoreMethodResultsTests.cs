@@ -487,7 +487,7 @@ public class Test
                 },
                 ExpectedDiagnostics =
                 {
-                    GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test")
+                    GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test"),
                 }
             }.RunAsync();
 
@@ -515,7 +515,7 @@ End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
                 },
                 ExpectedDiagnostics =
                 {
-                    GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower")
+                    GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower"),
                 }
             }.RunAsync();
         }
@@ -553,7 +553,7 @@ public class Test
                 },
                 ExpectedDiagnostics =
                 {
-                    GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test")
+                    GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test"),
                 }
             }.RunAsync();
 
@@ -581,7 +581,7 @@ End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
                 },
                 ExpectedDiagnostics =
                 {
-                    GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower")
+                    GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower"),
                 }
             }.RunAsync();
         }
@@ -612,7 +612,7 @@ public class Test
                 },
                 ExpectedDiagnostics =
                 {
-                    GetCSharpObjectCreationResultAt(9, 9, "ThrowsException", "Test")
+                    GetCSharpObjectCreationResultAt(9, 9, "ThrowsException", "Test"),
                 }
             }.RunAsync();
 
@@ -640,7 +640,7 @@ End Class", MSTestAttributes.VisualBasic
                 },
                 ExpectedDiagnostics =
                 {
-                    GetBasicStringCreationResultAt(11, 9, "ThrowsException", "ToLower")
+                    GetBasicStringCreationResultAt(11, 9, "ThrowsException", "ToLower"),
                 }
             }.RunAsync();
         }
@@ -658,10 +658,10 @@ public class A
 
 public class B
 {
-    public string GetBar()
+    public string GetSomething()
     {
-        WriteToDmm(""foo"");
-        return ""bar"";
+        WriteToDmm(""a"");
+        return ""something"";
     }
 
     [Pure]
@@ -678,9 +678,9 @@ Public Class A
 End Class
 
 Public Class B
-    Public Function GetBar() As String
-        WriteToDmm(""foo"")
-        Return ""bar""
+    Public Function GetSomething() As String
+        WriteToDmm(""a"")
+        Return ""something""
     End Function
 
     <Pure>

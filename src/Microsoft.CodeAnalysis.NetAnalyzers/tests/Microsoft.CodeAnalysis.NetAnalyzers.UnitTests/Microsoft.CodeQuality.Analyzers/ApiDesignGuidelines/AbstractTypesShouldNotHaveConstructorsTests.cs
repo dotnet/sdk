@@ -181,12 +181,12 @@ End Class
         }
 
         private static DiagnosticResult GetCA1012CSharpResultAt(int line, int column, string objectName)
-            => new DiagnosticResult(AbstractTypesShouldNotHaveConstructorsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName);
 
         private static DiagnosticResult GetCA1012BasicResultAt(int line, int column, string objectName)
-            => new DiagnosticResult(AbstractTypesShouldNotHaveConstructorsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(objectName);
     }

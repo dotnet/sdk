@@ -27,16 +27,15 @@ namespace Microsoft.NetCore.Analyzers.Security
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
                 s_Title,
                 s_Message,
                 DiagnosticCategory.Security,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_Description,
-                helpLinkUri: null,
-                customTags: WellKnownDiagnosticTags.Telemetry);
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

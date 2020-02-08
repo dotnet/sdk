@@ -155,13 +155,13 @@ End Class
                 GetBasicResultAt(3, 21, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "C.Protected", "Protected"));
         }
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2) =>
-            new DiagnosticResult(rule)
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
+            => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2) =>
-            new DiagnosticResult(rule)
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
+            => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
                 .WithArguments(arg1, arg2);
     }

@@ -2,21 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class DoNotAddArchiveItemPathToTheTargetFileSystemPathTests : TaintedDataAnalyzerTestBase
+    public class DoNotAddArchiveItemPathToTheTargetFileSystemPathTests : TaintedDataAnalyzerTestBase<DoNotAddArchiveItemPathToTheTargetFileSystemPath, DoNotAddArchiveItemPathToTheTargetFileSystemPath>
     {
-        public DoNotAddArchiveItemPathToTheTargetFileSystemPathTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => DoNotAddArchiveItemPathToTheTargetFileSystemPath.Rule;
 
         protected override IEnumerable<string> AdditionalCSharpSources => new string[] { zipArchiveEntryAndZipFileExtensionsCSharpSourceCode };
@@ -38,9 +32,9 @@ namespace System.IO.Compression
 }";
 
         [Fact]
-        public void Test_Sink_ZipArchiveEntry_ExtractToFile_Diagnostic()
+        public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO.Compression;
 
 class TestClass
@@ -54,9 +48,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_File_Open_WithStringAndFileModeParameters_Diagnostic()
+        public async Task Test_Sink_File_Open_WithStringAndFileModeParameters_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
 using System.IO.Compression;
 
@@ -71,9 +65,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_File_Open_WithStringAndFileModeAndFileAccessParameters_Diagnostic()
+        public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessParameters_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
 using System.IO.Compression;
 
@@ -88,9 +82,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_File_Open_WithStringAndFileModeAndFileAccessAndFileShareParamters_Diagnostic()
+        public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessAndFileShareParamters_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
 using System.IO.Compression;
 
@@ -105,9 +99,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_FileStream_Diagnostic()
+        public async Task Test_Sink_FileStream_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
 using System.IO.Compression;
 
@@ -122,9 +116,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_FileInfo_Diagnostic()
+        public async Task Test_Sink_FileInfo_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
 using System.IO.Compression;
 
@@ -139,9 +133,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sanitizer_String_StartsWith_NoDiagnostic()
+        public async Task Test_Sanitizer_String_StartsWith_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO.Compression;
 
@@ -160,9 +154,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_ZipArchiveEntry_ExtractToFile_NoDiagnostic()
+        public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO.Compression;
 
 class TestClass
@@ -175,9 +169,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sanitizer_Path_GetFileName_NoDiagnostic()
+        public async Task Test_Sanitizer_Path_GetFileName_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
 using System.IO.Compression;
 
@@ -192,9 +186,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sanitizer_String_Substring_Diagnostic()
+        public async Task Test_Sanitizer_String_Substring_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.IO.Compression;
 
@@ -213,7 +207,7 @@ class TestClass
         [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality." + DoNotAddArchiveItemPathToTheTargetFileSystemPath.RuleId + ".excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public void EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
@@ -224,7 +218,7 @@ class TestClass
                 };
             }
 
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System.IO.Compression;
 
 class TestClass
@@ -233,17 +227,7 @@ class TestClass
     {
         zipArchiveEntry.ExtractToFile(zipArchiveEntry.FullName);
     }
-}", GetEditorConfigAdditionalFile(editorConfigText), expected);
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotAddArchiveItemPathToTheTargetFileSystemPath();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotAddArchiveItemPathToTheTargetFileSystemPath();
+}", (".editorconfig", editorConfigText), expected);
         }
     }
 }

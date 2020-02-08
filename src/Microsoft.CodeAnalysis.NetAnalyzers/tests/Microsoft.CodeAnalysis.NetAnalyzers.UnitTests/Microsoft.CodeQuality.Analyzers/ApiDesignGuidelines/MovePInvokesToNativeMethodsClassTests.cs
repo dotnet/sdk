@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MovePInvokesToNativeMethodsClassAnalyzer,
@@ -14,19 +12,9 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class MovePInvokesToNativeMethodsClassTests : DiagnosticAnalyzerTestBase
+    public class MovePInvokesToNativeMethodsClassTests
     {
         #region Verifiers
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new MovePInvokesToNativeMethodsClassAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new MovePInvokesToNativeMethodsClassAnalyzer();
-        }
 
         private static DiagnosticResult CSharpResult(int line, int column)
             => VerifyCS.Diagnostic().WithLocation(line, column);
@@ -45,19 +33,19 @@ using System.Runtime.InteropServices;
 class NativeMethods
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
 class SafeNativeMethods
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
 class UnsafeNativeMethods
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 ");
         }
@@ -70,19 +58,19 @@ Imports System.Runtime.InteropServices
 
 Class NativeMethods
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
 Class SafeNativeMethods
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
 Class UnsafeNativeMethods
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 ");
@@ -94,22 +82,22 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
-class FooClass
+class FirstClass
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
-class BarClass
+class SecondClass
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
-class BazClass
+class ThirdClass
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 ",
             CSharpResult(4, 7),
@@ -118,30 +106,29 @@ class BazClass
         }
 
         [Fact]
-        public void CA1060ImproperlyNamedClassCSharpWithScope()
+        public async Task CA1060ImproperlyNamedClassCSharpWithScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
-class FooClass
+class [|FirstClass|]
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
 
-[|class BarClass
+class [|SecondClass|]
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo();
-}|]
-
-class BazClass
-{
-    [DllImport(""user32.dll"")]
-    private static extern void Foo();
+    private static extern void SomeExternMethod();
 }
-",
-            CSharpResult(10, 7));
+
+class [|ThirdClass|]
+{
+    [DllImport(""user32.dll"")]
+    private static extern void SomeExternMethod();
+}
+");
         }
 
         [Fact]
@@ -150,21 +137,21 @@ class BazClass
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
-Class FooClass
+Class FirstClass
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
-Class BarClass
+Class SecondClass
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
-Class BazClass
+Class ThirdClass
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 ",
@@ -174,30 +161,29 @@ End Class
         }
 
         [Fact]
-        public void CA1060ImproperlyNamedClassBasicWithScope()
+        public async Task CA1060ImproperlyNamedClassBasicWithScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
-Class FooClass
+Class [|FirstClass|]
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
 
-[|Class BarClass
+Class [|SecondClass|]
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
-    End Sub
-End Class|]
-
-Class BazClass
-    <DllImport(""user32.dll"")>
-    Private Shared Sub Foo()
+    Private Shared Sub SomeExternMethod()
     End Sub
 End Class
-",
-            BasicResult(10, 7));
+
+Class [|ThirdClass|]
+    <DllImport(""user32.dll"")>
+    Private Shared Sub SomeExternMethod()
+    End Sub
+End Class
+");
         }
 
         [Fact]
@@ -211,13 +197,13 @@ namespace MyNamespace
     class NativeMethods
     {
         [DllImport(""user32.dll"")]
-        private static extern void Foo();
+        private static extern void SomeExternMethod();
     }
 
-    class BarClass
+    class SomeClass
     {
         [DllImport(""user32.dll"")]
-        private static extern void Foo();
+        private static extern void SomeExternMethod();
     }
 }
 ",
@@ -233,13 +219,13 @@ Imports System.Runtime.InteropServices
 Namespace MyNamespace
     Class NativeMethods
         <DllImport(""user32.dll"")>
-        Private Shared Sub Foo()
+        Private Shared Sub SomeExternMethod()
         End Sub
     End Class
 
-    Class BarClass
+    Class SomeClass
         <DllImport(""user32.dll"")>
-        Private Shared Sub Foo()
+        Private Shared Sub SomeExternMethod()
         End Sub
     End Class
 End Namespace
@@ -255,10 +241,10 @@ using System.Runtime.InteropServices;
 
 class Outer
 {
-    class BarClass
+    class SomeClass
     {
         [DllImport(""user32.dll"")]
-        private static extern void Foo();
+        private static extern void SomeExternMethod();
     }
 }
 ",
@@ -272,9 +258,9 @@ class Outer
 Imports System.Runtime.InteropServices
 
 Class Outer
-    Class BarClass
+    Class SomeClass
         <DllImport(""user32.dll"")>
-        Private Shared Sub Foo()
+        Private Shared Sub SomeExternMethod()
         End Sub
     End Class
 End Class

@@ -140,7 +140,7 @@ public interface IPath
     string UrlPathSegment { get; }
 }
 
-public class Foo : IPath
+public class SomeClass : IPath
 {
     public string UrlPathSegment { get; }
 }",
@@ -151,7 +151,7 @@ Public Interface IPath
     Property UrlPathSegment As String
 End Interface
 
-Public Class Foo
+Public Class SomeClass
     Implements IPath
 
     Public Property UrlPathSegment As String Implements IPath.UrlPathSegment
@@ -160,12 +160,12 @@ End Class",
         }
 
         private static DiagnosticResult GetCA1056CSharpResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriPropertiesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
 
         private static DiagnosticResult GetCA1056BasicResultAt(int line, int column, params string[] args)
-            => new DiagnosticResult(UriPropertiesShouldNotBeStringsAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(args);
     }

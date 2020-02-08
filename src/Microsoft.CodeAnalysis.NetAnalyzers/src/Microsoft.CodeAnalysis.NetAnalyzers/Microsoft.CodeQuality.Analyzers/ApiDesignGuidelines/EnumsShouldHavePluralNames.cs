@@ -1,5 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+// Enable "Humanizer" based rules only in FxCopAnalyzers package.
+// We do not have separate tests for FxCopAnalyzers package, so also keep it enabled for NetAnalyzers test project to retain test coverage.
+#if FXCOP_ANALYZERS || NET_ANALYZERS_TEST
+
+#nullable enable
+
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -18,7 +24,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class EnumsShouldHavePluralNamesAnalyzer : DiagnosticAnalyzer
     {
-        #region CA1714
         internal const string RuleId_Plural = "CA1714";
 
         private static readonly LocalizableString s_localizableTitle_CA1714 =
@@ -40,20 +45,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule_CA1714 =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 RuleId_Plural,
                 s_localizableTitle_CA1714,
                 s_localizableMessage_CA1714,
                 DiagnosticCategory.Naming,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.Disabled,
                 description: s_localizableDescription_CA1714,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1714-flags-enums-should-have-plural-names",
-                customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                isPortedFxCopRule: true,
+                isDataflowRule: false);
 
-        #endregion
-
-        #region CA1717
         internal const string RuleId_NoPlural = "CA1717";
 
         private static readonly LocalizableString s_localizableTitle_CA1717 =
@@ -75,18 +76,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule_CA1717 =
-            new DiagnosticDescriptor(
+            DiagnosticDescriptorHelper.Create(
                 RuleId_NoPlural,
                 s_localizableTitle_CA1717,
                 s_localizableMessage_CA1717,
                 DiagnosticCategory.Naming,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.Disabled,
                 description: s_localizableDescription_CA1717,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1717-only-flagsattribute-enums-should-have-plural-names",
-                customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-
-        #endregion
+                isPortedFxCopRule: true,
+                isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1714, Rule_CA1717);
 
@@ -157,3 +155,4 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     }
 }
 
+#endif

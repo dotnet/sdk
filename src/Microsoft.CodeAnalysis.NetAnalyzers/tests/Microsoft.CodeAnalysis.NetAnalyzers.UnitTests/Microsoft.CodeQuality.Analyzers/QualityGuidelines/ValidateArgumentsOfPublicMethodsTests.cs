@@ -2,7 +2,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -20,18 +19,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-    public partial class ValidateArgumentsOfPublicMethodsTests : DiagnosticAnalyzerTestBase
+    public class ValidateArgumentsOfPublicMethodsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer() => new ValidateArgumentsOfPublicMethods();
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ValidateArgumentsOfPublicMethods();
-
-        private static new DiagnosticResult GetCSharpResultAt(int line, int column, string methodSignature, string parameterName)
-            => new DiagnosticResult(ValidateArgumentsOfPublicMethods.Rule)
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string methodSignature, string parameterName)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(methodSignature, parameterName);
 
-        private static new DiagnosticResult GetBasicResultAt(int line, int column, string methodSignature, string parameterName)
-            => new DiagnosticResult(ValidateArgumentsOfPublicMethods.Rule)
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string methodSignature, string parameterName)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(methodSignature, parameterName);
 
@@ -793,9 +789,15 @@ End Class",
         }
 
         [Fact]
-        public void ConditionalButDefiniteNonNullAssigned_BeforeHazardousUsages_NoDiagnostic_CopyAnalysis()
+        public async Task ConditionalButDefiniteNonNullAssigned_BeforeHazardousUsages_NoDiagnostic_CopyAnalysis()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class C
 {
     public int X;
@@ -855,9 +857,19 @@ public class Test
         var z = c.X;
     }
 }
-", GetEditorConfigToEnableCopyAnalysis());
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class C
     Public X As Integer
 End Class
@@ -908,7 +920,11 @@ Public Class Test
         Dim z = c.X
     End Sub
 
-End Class", GetEditorConfigToEnableCopyAnalysis());
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
         }
 
         [Fact]
@@ -1256,9 +1272,15 @@ End Class");
         }
 
         [Fact]
-        public void ContractCheck_NoDiagnostic_CopyAnalysis()
+        public async Task ContractCheck_NoDiagnostic_CopyAnalysis()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class C
 {
     public int X;
@@ -1301,9 +1323,19 @@ public class Test
         var z = c.X;
     }
 }
-", GetEditorConfigToEnableCopyAnalysis());
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class C
 
     Public X As Integer
@@ -1341,7 +1373,11 @@ Public Class Test
         Dim z = c.X
     End Sub
 End Class
-", GetEditorConfigToEnableCopyAnalysis());
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
@@ -1972,7 +2008,7 @@ public class C
                 ExpectedDiagnostics =
                 {
                     // Test0.cs(14,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-                    GetCSharpResultAt(14, 13, "void C.M1(C c1, C c2)", "c2")
+                    GetCSharpResultAt(14, 13, "void C.M1(C c1, C c2)", "c2"),
                 }
             }.RunAsync();
         }
@@ -2007,10 +2043,10 @@ public static class Issue2578Test
         Param.RequireNotNull(input);
 
         // This line still generates a CA1062 error.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(DataThing input)
+    private static void SomeMethod(DataThing input)
     {
         input.Items.Any();
     }
@@ -2057,10 +2093,10 @@ public static class Issue2578Test
         Param.RequireNotNull(input);
 
         // This line still generates a CA1062 error.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(DataThing input)
+    private static void SomeMethod(DataThing input)
     {
         input.Items.Any();
     }
@@ -2148,7 +2184,7 @@ internal static class Helper<T>
                     // Test0.cs(19,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c5' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(19, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c5"),
                     // Test0.cs(22,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c6' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-                    GetCSharpResultAt(22, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c6")
+                    GetCSharpResultAt(22, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c6"),
                 }
             }.RunAsync();
         }
@@ -4054,7 +4090,7 @@ public class Class1
                     // Test0.cs(115,28): warning CA1062: In externally visible method 'void Class1.Method(IContext aContext)', validate parameter 'aContext' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(115, 28, "void Class1.Method(IContext aContext)", "aContext"),
                     // Test0.cs(156,13): warning CA1062: In externally visible method 'bool Class1.HasUrl(IContext filterContext)', validate parameter 'filterContext' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-                    GetCSharpResultAt(156, 13, "bool Class1.HasUrl(IContext filterContext)", "filterContext")
+                    GetCSharpResultAt(156, 13, "bool Class1.HasUrl(IContext filterContext)", "filterContext"),
                 }
             }.RunAsync();
         }
@@ -5976,10 +6012,10 @@ public class Class1
     public static void DoSomething(object input)
     {
         // Ensure no diagnostic here.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1)
         {
@@ -6000,10 +6036,10 @@ public class Class1
     public static void DoSomething(object input)
     {
         // Ensure diagnostic here.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1)
         {
@@ -6017,7 +6053,7 @@ public class Class1
     }
 }",
             // Test0.cs(7,13): warning CA1062: In externally visible method 'void Class1.DoSomething(object input)', validate parameter 'input' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(7, 13, "void Class1.DoSomething(object input)", "input"));
+            GetCSharpResultAt(7, 20, "void Class1.DoSomething(object input)", "input"));
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
@@ -6030,10 +6066,10 @@ public class Class1
     public static void DoSomething(object input)
     {
         // Ensure no diagnostic here.
-        Bar2(input);
+        SomeMethod(input);
     }
 
-    private static void Bar2(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1 c)
         {
@@ -6048,12 +6084,12 @@ public class Class1
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + ValidateArgumentsOfPublicMethods.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(string str)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(6, 17, "void Test.M1(string str)", "str")
@@ -6086,7 +6122,7 @@ public class Test
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.vb(4,17): warning CA1062: In externally visible method 'Sub Test.M1(str As String)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetBasicResultAt(4, 17, "Sub Test.M1(str As String)", "str")
@@ -6125,7 +6161,7 @@ End Class
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(string str)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(6, 17, "void Test.M1(string str)", "str")
@@ -6157,7 +6193,7 @@ public static class Test
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.vb(7,17): warning CA1062: In externally visible method 'Sub Test.M1(str As String)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetBasicResultAt(7, 17, "Sub Test.M1(str As String)", "str")

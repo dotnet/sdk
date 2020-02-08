@@ -1,21 +1,23 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.NetCore.CSharp.Analyzers.Runtime;
-using Microsoft.NetCore.VisualBasic.Analyzers.Runtime;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DoNotRaiseReservedExceptionTypesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DoNotRaiseReservedExceptionTypesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class DoNotRaiseReservedExceptionTypesTests : DiagnosticAnalyzerTestBase
+    public class DoNotRaiseReservedExceptionTypesTests
     {
         [Fact]
-        public void CreateSystemNotImplementedException()
+        public async Task CreateSystemNotImplementedException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 namespace TestNamespace
@@ -29,7 +31,7 @@ namespace TestNamespace
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Namespace TestNamespace
@@ -42,9 +44,9 @@ End Namespace");
         }
 
         [Fact]
-        public void CreateSystemException()
+        public async Task CreateSystemException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 namespace TestNamespace
@@ -57,9 +59,9 @@ namespace TestNamespace
         }
     }
 }",
-            GetTooGenericCSharpResultAt(10, 23, "System.Exception"));
+            GetTooGenericCSharpResultAt(10, 19, "System.Exception"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Namespace TestNamespace
@@ -69,13 +71,13 @@ Namespace TestNamespace
 		End Sub
 	End Class
 End Namespace",
-            GetTooGenericBasicResultAt(7, 23, "System.Exception"));
+            GetTooGenericBasicResultAt(7, 19, "System.Exception"));
         }
 
         [Fact]
-        public void CreateSystemStackOverflowException()
+        public async Task CreateSystemStackOverflowException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 namespace TestNamespace
@@ -88,9 +90,9 @@ namespace TestNamespace
         }
     }
 }",
-            GetReservedCSharpResultAt(10, 23, "System.StackOverflowException"));
+            GetReservedCSharpResultAt(10, 19, "System.StackOverflowException"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Namespace TestNamespace
@@ -100,39 +102,27 @@ Namespace TestNamespace
 		End Sub
 	End Class
 End Namespace",
-            GetReservedBasicResultAt(7, 23, "System.StackOverflowException"));
+            GetReservedBasicResultAt(7, 19, "System.StackOverflowException"));
         }
-
-        private const string RuleId = CSharpDoNotRaiseReservedExceptionTypesAnalyzer.RuleId;
 
         private DiagnosticResult GetTooGenericCSharpResultAt(int line, int column, string callee)
-        {
-            return GetCSharpResultAt(line, column, RuleId, string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageTooGeneric, callee));
-        }
-
-        private DiagnosticResult GetReservedCSharpResultAt(int line, int column, string callee)
-        {
-            return GetCSharpResultAt(line, column, RuleId, string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageReserved, callee));
-        }
+            => VerifyCS.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule)
+                .WithLocation(line, column)
+                .WithArguments(callee);
 
         private DiagnosticResult GetTooGenericBasicResultAt(int line, int column, string callee)
-        {
-            return GetBasicResultAt(line, column, RuleId, string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageTooGeneric, callee));
-        }
+            => VerifyVB.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule)
+                .WithLocation(line, column)
+                .WithArguments(callee);
+
+        private DiagnosticResult GetReservedCSharpResultAt(int line, int column, string callee)
+           => VerifyCS.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule)
+               .WithLocation(line, column)
+               .WithArguments(callee);
 
         private DiagnosticResult GetReservedBasicResultAt(int line, int column, string callee)
-        {
-            return GetBasicResultAt(line, column, RuleId, string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageReserved, callee));
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicDoNotRaiseReservedExceptionTypesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpDoNotRaiseReservedExceptionTypesAnalyzer();
-        }
+            => VerifyVB.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule)
+                .WithLocation(line, column)
+                .WithArguments(callee);
     }
 }

@@ -171,9 +171,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(@"
     public class Months<T>
     {
-        public enum Foo { }
+        public enum SomeEnum { }
 
-        public string this[Foo index]
+        public string this[SomeEnum index]
         {
             get
             {
@@ -188,11 +188,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
     Public Class Months(Of T)
-        Public Enum Foo
+        Public Enum SomeEnum
             Val1
         End Enum
 
-        Default Public ReadOnly Property Item(index As Foo)
+        Default Public ReadOnly Property Item(index As SomeEnum)
             Get
                 Return Nothing
             End Get
@@ -201,13 +201,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)
-            => new DiagnosticResult(UseIntegralOrStringArgumentForIndexersAnalyzer.Rule)
-                .WithLocation(line, col)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.UseIntegralOrStringArgumentForIndexersMessage);
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, col);
 
         private static DiagnosticResult CreateBasicResult(int line, int col)
-            => new DiagnosticResult(UseIntegralOrStringArgumentForIndexersAnalyzer.Rule)
-                .WithLocation(line, col)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.UseIntegralOrStringArgumentForIndexersMessage);
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, col);
     }
 }

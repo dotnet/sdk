@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldDifferByMoreThanCaseAnalyzer,
@@ -14,18 +11,8 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class IdentifiersShouldDifferByMoreThanCaseTests : DiagnosticAnalyzerTestBase
+    public class IdentifiersShouldDifferByMoreThanCaseTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldDifferByMoreThanCaseAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldDifferByMoreThanCaseAnalyzer();
-        }
-
         #region Namespace Level
 
         [Fact]
@@ -41,7 +28,7 @@ namespace n
     public class C { }
 }
 ",
-                GetCA1708CSharpResult(Namespace, GetSymbolDisplayString("n", "N")));
+                GetGlobalCA1708CSharpResult(Namespace, GetSymbolDisplayString("n", "N")));
         }
 
         [Fact]
@@ -67,7 +54,7 @@ namespace n
     }
 }
 ",
-                GetCA1708CSharpResult(Namespace, GetSymbolDisplayString("n", "N")));
+                GetGlobalCA1708CSharpResult(Namespace, GetSymbolDisplayString("n", "N")));
         }
 
         [Fact]
@@ -84,7 +71,7 @@ public interface nI
 {
 }
 ",
-                GetCA1708CSharpResult(Type, GetSymbolDisplayString("nI", "ni", "Ni")));
+                GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("nI", "ni", "Ni")));
         }
 
         [Fact]
@@ -104,15 +91,19 @@ public class C<T,X>
 {
 }
 ",
-                GetCA1708CSharpResult(Type, GetSymbolDisplayString("c<S>", "C<T>")));
+                GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("c<S>", "C<T>")));
         }
 
         [Fact]
-        public void TestPartialTypes()
+        public async Task TestPartialTypes()
         {
-            VerifyCSharp(new[]
+            await new VerifyCS.Test
+            {
+                TestState =
                 {
-                    @"
+                    Sources =
+                    {
+                        @"
 namespace N
 {
     public partial class C
@@ -129,7 +120,7 @@ namespace N
     }
 }
 ",
-                    @"
+                        @"
 namespace N
 {
     public class c
@@ -140,10 +131,15 @@ namespace N
         public int X;
     }
 }"
-                },
-                GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("N.C", "N.c")),
-                GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.C.x", "N.C.X"), "Test0.cs(4,26)", "Test0.cs(8,26)"),
-                GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), "Test0.cs(12,26)", "Test1.cs(7,26)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("N.C", "N.c")),
+                        GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.C.x", "N.C.X"), ("Test0.cs", 4, 26), ("Test0.cs", 8, 26)),
+                        GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), ("Test0.cs", 12, 26), ("Test1.cs", 7, 26)),
+                    }
+                }
+            }.RunAsync();
         }
 
         #endregion
@@ -151,9 +147,9 @@ namespace N
         #region Type Level
 
         [Fact]
-        public void TestNestedTypeNames()
+        public async Task TestNestedTypeNames()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace NI
 {
     public class Ni
@@ -173,8 +169,8 @@ namespace NI
                 }
                 public interface Ci 
                 {
-                    void foo();
-                    void Foo();
+                    void method();
+                    void Method();
                 }
            }
         }
@@ -189,18 +185,18 @@ namespace NI
     }
 }
 ",
-            GetCA1708CSharpResult(Type, GetSymbolDisplayString("NI.Ni", "NI.NI")),
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("NI.Ni.Nd", "NI.Ni.nd"), 4, 18),
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("NI.Ni.C.nD", "NI.Ni.C.nd"), 8, 22),
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("NI.Ni.C.nd.CI", "NI.Ni.C.nd.ci", "NI.Ni.C.nd.Ci"), 11, 26),
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("NI.Ni.C.nd.ci.x", "NI.Ni.C.nd.ci.X()"), 14, 31),
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.foo()", "NI.Ni.C.nd.Ci.Foo()"), 19, 34));
+            GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("NI.Ni", "NI.NI")),
+            GetCA1708CSharpResultAt(4, 18, Member, GetSymbolDisplayString("NI.Ni.Nd", "NI.Ni.nd")),
+            GetCA1708CSharpResultAt(8, 22, Member, GetSymbolDisplayString("NI.Ni.C.nD", "NI.Ni.C.nd")),
+            GetCA1708CSharpResultAt(11, 26, Member, GetSymbolDisplayString("NI.Ni.C.nd.CI", "NI.Ni.C.nd.ci", "NI.Ni.C.nd.Ci")),
+            GetCA1708CSharpResultAt(14, 31, Member, GetSymbolDisplayString("NI.Ni.C.nd.ci.x", "NI.Ni.C.nd.ci.X()")),
+            GetCA1708CSharpResultAt(19, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.method()", "NI.Ni.C.nd.Ci.Method()")));
         }
 
         [Fact]
-        public void TestNestedTypeNamesWithScope()
+        public async Task TestNestedTypeNamesWithScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 namespace NI
 {
@@ -221,23 +217,28 @@ namespace NI
                 }
                 public interface Ci 
                 {
-                    void foo();
-                    void Foo();
+                    void method();
+                    void Method();
                 }
            }
         }
     }
    
-    [|class NI
+    class NI
     {
         public class N 
         {
         }
         public class n { }
-    }|]
+    }
 }
 ",
-            GetCA1708CSharpResult(Type, GetSymbolDisplayString("NI.Ni", "NI.NI")));
+            GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("NI.Ni", "NI.NI")),
+            GetCA1708CSharpResultAt(5, 18, Member, GetSymbolDisplayString("NI.Ni.Nd", "NI.Ni.nd")),
+            GetCA1708CSharpResultAt(9, 22, Member, GetSymbolDisplayString("NI.Ni.C.nD", "NI.Ni.C.nd")),
+            GetCA1708CSharpResultAt(12, 26, Member, GetSymbolDisplayString("NI.Ni.C.nd.CI", "NI.Ni.C.nd.Ci", "NI.Ni.C.nd.ci")),
+            GetCA1708CSharpResultAt(15, 31, Member, GetSymbolDisplayString("NI.Ni.C.nd.ci.X()", "NI.Ni.C.nd.ci.x")),
+            GetCA1708CSharpResultAt(20, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.Method()", "NI.Ni.C.nd.Ci.method()")));
         }
 
         [Fact]
@@ -248,9 +249,9 @@ namespace NI
 {
     public class C
     {
-        public void foo() { }
-        public void foo(int x) { }
-        public void foo<T>(T x) { }
+        public void method() { }
+        public void method(int x) { }
+        public void method<T>(T x) { }
     }
 }
 ");
@@ -264,15 +265,15 @@ namespace NI
 {
     public class C
     {
-        public void foo() { }
-        public void foO(int x) { }
-        public void fOo(int x) { }
-        public void FOO<T>(T x) { }
-        public void fOo<T, X>(T x, X y) { }
+        public void method() { }
+        public void methoD(int x) { }
+        public void mEthod(int x) { }
+        public void METHOD<T>(T x) { }
+        public void mEthod<T, X>(T x, X y) { }
     }
 }
 ",
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("NI.C.foo()", "NI.C.foO(int)", "NI.C.fOo(int)", "NI.C.FOO<T>(T)"), 4, 18));
+            GetCA1708CSharpResultAt(4, 18, Member, GetSymbolDisplayString("NI.C.method()", "NI.C.methoD(int)", "NI.C.mEthod(int)", "NI.C.METHOD<T>(T)")));
         }
 
         [Fact]
@@ -307,7 +308,7 @@ namespace NI
     }
 }
 ",
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayStringNoSorting("NI.CASE1.CASe1", "NI.CASE1.CAsE1", "NI.CASE1.CAse1(int)", "NI.CASE1.CaSe1<T>(T)", "NI.CASE1.CasE1", "NI.CASE1.Case1", "NI.CASE1.caSE1"), 4, 18));
+            GetCA1708CSharpResultAt(4, 18, Member, GetSymbolDisplayStringNoSorting("NI.CASE1.CASe1", "NI.CASE1.CAsE1", "NI.CASE1.CAse1(int)", "NI.CASE1.CaSe1<T>(T)", "NI.CASE1.CasE1", "NI.CASE1.Case1", "NI.CASE1.caSE1")));
         }
 
         [Fact]
@@ -320,7 +321,7 @@ public class C
     public int Γ;
 }
 ",
-            GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("C.\u03B3", "C.\u0393"), 2, 14));
+            GetCA1708CSharpResultAt(2, 14, Member, GetSymbolDisplayString("C.\u03B3", "C.\u0393")));
         }
 
         [Fact]
@@ -355,24 +356,21 @@ namespace N
     }
     public partial class D
     {
-        public delegate void Foo(int x, int X);
+        public delegate void SomeDelegate(int x, int X);
     }
 }
 ",
-            GetCA1708CSharpResultAt(Parameter, "N.C.Delegate", 7, 30),
-            GetCA1708CSharpResultAt(Parameter, "N.C.Method(int, int)", 8, 21),
-            GetCA1708CSharpResultAt(Parameter, "N.C.C(int, int)", 9, 16),
-            GetCA1708CSharpResultAt(Parameter, "N.C.operator +(N.C, int)", 12, 36),
-            GetCA1708CSharpResultAt(Parameter, "N.C.this[int, int]", 18, 20),
-            GetCA1708CSharpResultAt(Parameter, "N.D.Foo", 30, 30));
+            GetCA1708CSharpResultAt(7, 30, Parameter, "N.C.Delegate"),
+            GetCA1708CSharpResultAt(8, 21, Parameter, "N.C.Method(int, int)"),
+            GetCA1708CSharpResultAt(9, 16, Parameter, "N.C.C(int, int)"),
+            GetCA1708CSharpResultAt(12, 36, Parameter, "N.C.operator +(N.C, int)"),
+            GetCA1708CSharpResultAt(18, 20, Parameter, "N.C.this[int, int]"),
+            GetCA1708CSharpResultAt(30, 30, Parameter, "N.D.SomeDelegate"));
         }
 
         #endregion
 
         #region Helper Methods
-
-        private const string RuleName = IdentifiersShouldDifferByMoreThanCaseAnalyzer.RuleId;
-        private static readonly string s_message = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseMessage;
 
         private const string Namespace = IdentifiersShouldDifferByMoreThanCaseAnalyzer.Namespace;
         private const string Type = IdentifiersShouldDifferByMoreThanCaseAnalyzer.Type;
@@ -389,20 +387,27 @@ namespace N
             return string.Join(", ", objectName);
         }
 
-        private static DiagnosticResult GetCA1708CSharpResult(string typeName, string objectName)
-            => VerifyCS.Diagnostic(RuleName)
-                .WithMessage(string.Format(CultureInfo.CurrentCulture, s_message, typeName, objectName));
-
         private static DiagnosticResult GetGlobalCA1708CSharpResult(string typeName, string objectName)
-            => GetGlobalResult(RuleName, string.Format(CultureInfo.CurrentCulture, s_message, typeName, objectName));
+            => VerifyCS.Diagnostic()
+                .WithNoLocation()
+                .WithArguments(typeName, objectName);
 
-        private static DiagnosticResult GetCA1708CSharpResultAt(string typeName, string objectName, int line, int column)
-            => VerifyCS.Diagnostic(RuleName)
+        private static DiagnosticResult GetCA1708CSharpResultAt(int line, int column, string typeName, string objectName)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-                .WithMessage(string.Format(CultureInfo.CurrentCulture, s_message, typeName, objectName));
+                .WithArguments(typeName, objectName);
 
-        private static DiagnosticResult GetCA1708CSharpResultAt(string typeName, string objectName, params string[] locations)
-            => GetCSharpResultAt(RuleName, string.Format(CultureInfo.CurrentCulture, s_message, typeName, objectName), locations);
+        private static DiagnosticResult GetCA1708CSharpResultAt(string typeName, string objectName, params (string file, int line, int column)[] locations)
+        {
+            var diagnosticResult = VerifyCS.Diagnostic().WithArguments(typeName, objectName);
+
+            foreach (var (file, line, column) in locations)
+            {
+                diagnosticResult = diagnosticResult.WithLocation(file, line, column);
+            }
+
+            return diagnosticResult;
+        }
 
         #endregion
     }

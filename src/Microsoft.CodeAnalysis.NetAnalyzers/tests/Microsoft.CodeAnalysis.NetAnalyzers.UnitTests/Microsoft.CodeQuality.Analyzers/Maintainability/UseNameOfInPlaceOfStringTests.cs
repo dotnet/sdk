@@ -265,7 +265,7 @@ class C
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp6,
                 ExpectedDiagnostics =
                 {
-                    GetCSharpNameofResultAt(7, 41, "x")
+                    GetCSharpNameofResultAt(7, 41, "x"),
                 }
             }.RunAsync();
         }
@@ -305,7 +305,7 @@ End Module",
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic14,
                 ExpectedDiagnostics =
                 {
-                    GetBasicNameofResultAt(6, 41, "s")
+                    GetBasicNameofResultAt(6, 41, "s"),
                 }
             }.RunAsync();
         }
@@ -615,13 +615,13 @@ namespace ConsoleApp14
 
         #endregion
 
-        private DiagnosticResult GetBasicNameofResultAt(int line, int column, string name)
-            => VerifyVB.Diagnostic(UseNameofInPlaceOfStringAnalyzer.RuleWithSuggestion)
+        private static DiagnosticResult GetBasicNameofResultAt(int line, int column, string name)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(name);
 
-        private DiagnosticResult GetCSharpNameofResultAt(int line, int column, string name)
-            => VerifyCS.Diagnostic(UseNameofInPlaceOfStringAnalyzer.RuleWithSuggestion)
+        private static DiagnosticResult GetCSharpNameofResultAt(int line, int column, string name)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(name);
     }

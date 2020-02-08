@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' metodu güvenli değil.</target>
+        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' yöntemi güvenli değildir.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' metodu güvenli değil.</target>
+        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' yöntemi güvenli değildir.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -939,7 +939,7 @@
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
-        <target state="translated">{0} OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğu için, static (Visual Basic'te Shared) yerine bir örnek yöntemi olarak değiştirin.</target>
+        <target state="translated">{0} OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğu için, static (Visual Basic'te Shared) yerine bir örnek metodu olarak değiştirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
@@ -1004,7 +1004,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">'{0}' metodu, SimpleTypeResolver ile başlatılmış bir JavaScriptSerializer ile güvenilmeyen veriler seri durumdan çıkarılırken güvenli değil. JavaScriptSerializer'ın JavaScriptTypeResolver belirtilmeden başlatıldığından veya seri durumdan çıkarılan nesne grafındaki nesne türlerini sınırlayan bir JavaScriptTypeResolver ile başlatıldığından emin olun.</target>
+        <target state="translated">'{0}' yöntemi, SimpleTypeResolver ile başlatılmış bir JavaScriptSerializer ile güvenilmeyen veriler seri durumdan çıkarılırken güvenli değildir. JavaScriptSerializer'ın bir JavaScriptTypeResolver belirtilmeden başlatıldığından veya seri durumdan çıkarılan nesne grafındaki nesne türlerini sınırlayan bir JavaScriptTypeResolver ile başlatıldığından emin olun.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1014,7 +1014,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">'{0}' metodu, SimpleTypeResolver ile başlatılmış bir JavaScriptSerializer ile güvenilmeyen veriler seri durumdan çıkarılırken güvenli değil. JavaScriptSerializer'ı JavaScriptTypeResolver belirtilmeden başlatın veya seri durumdan çıkarılan nesne grafındaki nesne türlerini sınırlayan bir JavaScriptTypeResolver ile başlatın.</target>
+        <target state="translated">'{0}' yöntemi, SimpleTypeResolver ile başlatılmış bir JavaScriptSerializer ile güvenilmeyen veriler seri durumdan çıkarılırken güvenli değildir. JavaScriptSerializer'ı JavaScriptTypeResolver belirtmeden veya seri durumdan çıkarılan nesne grafındaki nesne türlerini sınırlayan bir JavaScriptTypeResolver ile başlatın.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1219,7 +1219,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' metodu güvenli değil.</target>
+        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' yöntemi güvenli değildir.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1229,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' metodu güvenli değil.</target>
+        <target state="translated">Güvenilmeyen veriler, seri durumdan çıkarılmış nesne grafındaki nesnelerin türünü kısıtlamak için SerializationBinder kullanılmadan seri durumdan çıkarılırken '{0}' yöntemi güvenli değildir.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">

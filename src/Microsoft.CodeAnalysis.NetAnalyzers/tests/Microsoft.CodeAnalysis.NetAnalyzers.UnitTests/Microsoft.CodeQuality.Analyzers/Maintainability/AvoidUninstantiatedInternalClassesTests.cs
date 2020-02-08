@@ -23,7 +23,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal class C { }
 ",
-                GetCSharpResultAt(1, 16, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C"));
+                GetCSharpResultAt(1, 16, "C"));
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Class C
 End Class",
-                GetBasicResultAt(1, 14, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C"));
+                GetBasicResultAt(1, 14, "C"));
         }
 
         [Fact]
@@ -97,7 +97,7 @@ End Class");
 {
     internal class D { }
 }",
-                GetCSharpResultAt(3, 20, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C.D"));
+                GetCSharpResultAt(3, 20, "C.D"));
         }
 
         [Fact]
@@ -108,7 +108,7 @@ End Class");
     Friend Class D
     End Class
 End Class",
-                GetBasicResultAt(2, 18, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C.D"));
+                GetBasicResultAt(2, 18, "C.D"));
         }
 
         [Fact]
@@ -363,7 +363,7 @@ internal static class C
 {
     private void Main() {}
 }",
-                GetCSharpResultAt(1, 16, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C"));
+                GetCSharpResultAt(1, 16, "C"));
         }
 
         [Fact]
@@ -374,7 +374,7 @@ internal static class C
     Private Sub Main()
     End Sub
 End Class",
-                GetBasicResultAt(1, 14, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C"));
+                GetBasicResultAt(1, 14, "C"));
         }
 
         [Fact]
@@ -413,7 +413,7 @@ End Class",
 {
     internal class C { }
 }",
-                GetCSharpResultAt(3, 20, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C"));
+                GetCSharpResultAt(3, 20, "C"));
         }
 
         [Fact]
@@ -424,7 +424,7 @@ End Class",
     Friend Class C
     End Class
 End Namespace",
-                GetBasicResultAt(2, 18, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C"));
+                GetBasicResultAt(2, 18, "C"));
         }
 
         [Fact]
@@ -438,7 +438,7 @@ End Namespace",
         internal class D { }
     }
 }",
-                GetCSharpResultAt(5, 24, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C.D"));
+                GetCSharpResultAt(5, 24, "C.D"));
         }
 
         [Fact]
@@ -451,7 +451,7 @@ End Namespace",
         End Class
     End Class
 End Namespace",
-                GetBasicResultAt(3, 22, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "C.D"));
+                GetBasicResultAt(3, 22, "C.D"));
         }
 
         [Fact]
@@ -716,10 +716,7 @@ End Class");
     {
     } 
 }",
-                GetCSharpResultAt(
-                    3, 20,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "C.C2"));
+                GetCSharpResultAt(3, 20, "C.C2"));
         }
 
         [Fact]
@@ -730,10 +727,7 @@ End Class");
     Friend Class C2
     End Class
 End Class",
-                GetBasicResultAt(
-                    2, 18,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "C.C2"));
+                GetBasicResultAt(2, 18, "C.C2"));
         }
 
         [Fact]
@@ -747,10 +741,7 @@ End Class",
     {
     } 
 }",
-                GetCSharpResultAt(
-                    1, 16,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "C"));
+                GetCSharpResultAt(1, 16, "C"));
         }
 
         [Fact]
@@ -763,10 +754,7 @@ End Class",
     Private Class C2
     End Class
 End Class",
-                GetBasicResultAt(
-                    1, 14,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "C"));
+                GetBasicResultAt(1, 14, "C"));
         }
 
         [Fact]
@@ -867,10 +855,7 @@ End Module");
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal static class S { }",
 
-                GetCSharpResultAt(
-                    1, 23,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "S"));
+                GetCSharpResultAt(1, 23, "S"));
         }
 
         [Fact]
@@ -1207,14 +1192,8 @@ internal class Program
         var list = new List<Factory<InstantiatedType>>();
     }
 }",
-                GetCSharpResultAt(
-                    4, 16,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "InstantiatedType"),
-                GetCSharpResultAt(
-                    8, 16,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "Factory<T>"));
+                GetCSharpResultAt(4, 16, "InstantiatedType"),
+                GetCSharpResultAt(8, 16, "Factory<T>"));
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
@@ -1234,14 +1213,8 @@ Module Library
         Dim a = New List(Of Factory(Of InstantiatedType))
     End Sub
 End Module",
-                GetBasicResultAt(
-                    5, 18,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "Library.InstantiatedType"),
-                GetBasicResultAt(
-                    8, 18,
-                    AvoidUninstantiatedInternalClassesAnalyzer.Rule,
-                    "Library.Factory(Of T)"));
+                GetBasicResultAt(5, 18, "Library.InstantiatedType"),
+                GetBasicResultAt(8, 18, "Library.Factory(Of T)"));
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
@@ -1319,10 +1292,10 @@ public class JobStateChangeHandler<TState>
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
 
-[CoClass(typeof(CFoo))]
-internal interface IFoo {}
+[CoClass(typeof(CSomeClass))]
+internal interface ISomeInterface {}
 
-internal class CFoo {}
+internal class CSomeClass {}
 ");
         }
 
@@ -1333,20 +1306,21 @@ internal class CFoo {}
 using System.Runtime.InteropServices;
 
 [{|CS7036:CoClass|}]
-internal interface IFoo1 {}
+internal interface ISomeInterface1 {}
 
-[CoClass({|CS0119:CFoo|})]
-internal interface IFoo2 {}
+[CoClass({|CS0119:CSomeClass|})]
+internal interface ISomeInterface2 {}
 
-[{|CS1729:CoClass(typeof(CFoo), null)|}]
-internal interface IFoo3 {}
+[{|CS1729:CoClass(typeof(CSomeClass), null)|}]
+internal interface ISomeInterface3 {}
 
-[CoClass(typeof(IFoo3))] // This isn't a class-type
-internal interface IFoo4 {}
+[CoClass(typeof(ISomeInterface3))] // This isn't a class-type
+internal interface ISomeInterface4 {}
 
-internal class CFoo {}
+internal class CSomeClass {}
 ",
-                GetCSharpResultAt(16, 16, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "CFoo"));
+                // Test0.cs(16,16): warning CA1812: CSomeClass is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).
+                GetCSharpResultAt(16, 16, "CSomeClass"));
         }
 
         [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
@@ -1356,11 +1330,11 @@ internal class CFoo {}
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject"")]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"")]
     public class MyTextBox { }
 }");
         }
@@ -1372,11 +1346,11 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
     public class MyTextBox { }
 }");
         }
@@ -1401,7 +1375,7 @@ public class MyTextBox { }");
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
@@ -1417,12 +1391,12 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     public class SomeBaseType { }
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject"", ""Foo.SomeBaseType"")]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"", ""SomeNamespace.SomeBaseType"")]
     public class MyTextBox { }
 }");
         }
@@ -1434,12 +1408,12 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     public class SomeBaseType { }
     internal class MyTextBoxDesigner { }
 
-    [Designer(""Foo.MyTextBoxDesigner, TestProject"", typeof(SomeBaseType))]
+    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"", typeof(SomeBaseType))]
     public class MyTextBox { }
 }");
         }
@@ -1451,12 +1425,12 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
     public class SomeBaseType { }
     internal class MyTextBoxDesigner { }
 
-    [Designer(typeof(Foo.MyTextBoxDesigner), typeof(SomeBaseType))]
+    [Designer(typeof(SomeNamespace.MyTextBoxDesigner), typeof(SomeBaseType))]
     public class MyTextBox { }
 }");
         }
@@ -1468,16 +1442,16 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
-    [Designer(""Foo.MyTextBox.MyTextBoxDesigner, TestProject"")]
+    [Designer(""SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject"")]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }
     }
 }",
                 // False-Positive: when evaluating the string of the DesignerAttribute the type symbol doesn't exist yet
-                GetCSharpResultAt(10, 24, AvoidUninstantiatedInternalClassesAnalyzer.Rule, "MyTextBox.MyTextBoxDesigner"));
+                GetCSharpResultAt(10, 24, "MyTextBox.MyTextBoxDesigner"));
         }
 
         [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
@@ -1487,9 +1461,9 @@ namespace Foo
 using System;
 using System.ComponentModel;
 
-namespace Foo
+namespace SomeNamespace
 {
-    [Designer(typeof(Foo.MyTextBox.MyTextBoxDesigner))]
+    [Designer(typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }
@@ -1497,14 +1471,14 @@ namespace Foo
 }");
         }
 
-        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-                .WithArguments(arguments);
+                .WithArguments(className);
 
-        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string className)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-                .WithArguments(arguments);
+                .WithArguments(className);
     }
 }

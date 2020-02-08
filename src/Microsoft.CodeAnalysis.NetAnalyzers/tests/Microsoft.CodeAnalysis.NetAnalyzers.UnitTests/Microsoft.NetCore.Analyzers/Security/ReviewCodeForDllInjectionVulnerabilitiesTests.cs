@@ -1,35 +1,21 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForDllInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForDllInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForDllInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForDllInjectionVulnerabilities, ReviewCodeForDllInjectionVulnerabilities>
     {
-        public ReviewCodeForDllInjectionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForDllInjectionVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForDllInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForDllInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void Assembly_LoadFrom_Diagnostic()
+        public async Task Assembly_LoadFrom_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -50,9 +36,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Reflection;
 
@@ -69,9 +55,16 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Reflection
 
@@ -84,13 +77,19 @@ Public Partial Class WebForm
         Assembly.Load(rawAssembly)
     End Sub
 End Class",
-                GetBasicResultAt(11, 9, 9, 31, "Function Assembly.Load(rawAssembly As Byte()) As Assembly", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(11, 9, 9, 31, "Function Assembly.Load(rawAssembly As Byte()) As Assembly", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void Assembly_LoadFrom_NoDiagnostic()
+        public async Task Assembly_LoadFrom_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -104,15 +103,15 @@ public partial class WebForm : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         string input = Request.Form[""in""];
-        Assembly.LoadFrom(""foo.dll"");
+        Assembly.LoadFrom(""myassembly.dll"");
     }
 }");
         }
 
         [Fact]
-        public void AppDomain_ExecuteAssembly_Diagnostic()
+        public async Task AppDomain_ExecuteAssembly_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;

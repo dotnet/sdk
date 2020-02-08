@@ -15,16 +15,15 @@ namespace Microsoft.NetCore.Analyzers.Security
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor RealRule = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor RealRule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
                 s_Title,
                 Message,
                 DiagnosticCategory.Security,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: Description,
-                helpLinkUri: null,
-                customTags: WellKnownDiagnosticTags.Telemetry);
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
         protected override string TypeMetadataName => WellKnownTypeNames.SystemDataDataSet;
 

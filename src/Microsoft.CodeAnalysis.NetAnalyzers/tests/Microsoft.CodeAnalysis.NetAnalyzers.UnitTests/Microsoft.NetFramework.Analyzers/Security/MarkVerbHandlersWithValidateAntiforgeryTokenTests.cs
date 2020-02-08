@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-using VerifyVB = Microsoft.CodeAnalysis.VisualBasic.Testing.XUnit.CodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
@@ -18,54 +18,34 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         #region Boilerplate
 
         private static DiagnosticResult GetCA3147CSharpNoVerbs(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147CSharpNoVerbsNoToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147CSharpGetAndToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147CSharpGetAndOtherToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndOtherAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndOtherAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147CSharpVerbsAndNoToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.VerbsAndNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.VerbsAndNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147BasicNoVerbs(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147BasicNoVerbsNoToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147BasicGetAndToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147BasicGetAndOtherToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndOtherAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndOtherAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         private static DiagnosticResult GetCA3147BasicVerbsAndNoToken(int line, int column, string controllerAction)
-        {
-            return new DiagnosticResult(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.VerbsAndNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
-        }
+            => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.VerbsAndNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
 
         #endregion
 

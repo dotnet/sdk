@@ -747,7 +747,7 @@ using System;
 
 public class C
 {
-    public void Foo(string bar, string baz = null)
+    public void SomeMethod(string p1, string p2 = null)
     {
         throw new NotImplementedException();
     }
@@ -757,7 +757,7 @@ public class C
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Class C
-    Public Sub Test(bar As String, Optional baz As String = Nothing)
+    Public Sub Test(p1 As String, Optional p2 As String = Nothing)
         Throw New NotImplementedException()
     End Sub
 End Class");
@@ -871,7 +871,7 @@ namespace Windows.UI.Xaml
     public class WindowCreatedEventArgs {}
 }
 
-namespace Foo
+namespace SomeNamespace
 {
     public class MyCustomEventArgs {}
 }
@@ -882,7 +882,7 @@ public class C
     private void OnSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e) {}
     private void OnWindowCreated(object sender, Windows.UI.Xaml.WindowCreatedEventArgs e) {}
 
-    private void OnSomething(object sender, Foo.MyCustomEventArgs e) {}
+    private void OnSomething(object sender, SomeNamespace.MyCustomEventArgs e) {}
 }");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -899,7 +899,7 @@ Namespace Windows.UI.Xaml
     End Class
 End Namespace
 
-Namespace Foo
+Namespace SomeNamespace
     Public Class MyCustomEventArgs
     End Class
 End Namespace
@@ -914,7 +914,7 @@ Public Class C
     Private Sub OnWindowCreated(ByVal sender As Object, ByVal e As Windows.UI.Xaml.WindowCreatedEventArgs)
     End Sub
 
-    Private Sub OnSomething(ByVal sender As Object, ByVal e As Foo.MyCustomEventArgs)
+    Private Sub OnSomething(ByVal sender As Object, ByVal e As SomeNamespace.MyCustomEventArgs)
     End Sub
 End Class");
         }
@@ -1072,17 +1072,39 @@ public class C
                 GetCSharpUnusedParameterResultAt(9, 32, "x", "LocalFunction"));
         }
 
+
+        [Fact]
+        public async Task DiagnosticForMethodsInNestedTypes()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public void OuterM(int [|x|])
+    {
+    }
+
+    public class NestedType
+    {
+        public void InnerM(int [|y|])
+        {
+        }
+    }
+}");
+        }
+
         #endregion
 
         #region Helpers
 
         private static DiagnosticResult GetCSharpUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
-            => VerifyCS.Diagnostic(ReviewUnusedParametersAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(parameterName, methodName);
 
         private static DiagnosticResult GetBasicUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
-            => VerifyVB.Diagnostic(ReviewUnusedParametersAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(parameterName, methodName);
 

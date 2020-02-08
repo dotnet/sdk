@@ -31,16 +31,16 @@ namespace Microsoft.NetCore.Analyzers.Security
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
                 s_Title,
                 s_Message,
                 DiagnosticCategory.Security,
-                DiagnosticHelpers.DefaultDiagnosticSeverity,
-                isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
+                RuleLevel.Disabled,
                 description: s_Description,
-                helpLinkUri: null,
-                customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                isPortedFxCopRule: false,
+                isDataflowRule: true,
+                isEnabledByDefaultInFxCopAnalyzers: false);
 
         internal static ImmutableArray<(string nspace, string policyIdentifierName)> NamespaceAndPolicyIdentifierNamePairs = ImmutableArray.Create(
                                                                                                     ("Blob", "groupPolicyIdentifier"),

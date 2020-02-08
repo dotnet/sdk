@@ -27,28 +27,28 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethodOneA()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InvariantCulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InvariantCulture));
     }
 
     public void TestMethodOneB()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentCulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentCulture));
     }
 
     public void TestMethodOneC()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentUICulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentUICulture));
     }
 
     public void TestMethodOneD()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InstalledUICulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InstalledUICulture));
     }
 
     public void TestMethodOneE()
     {
         var dynamicCulture = CultureInfo.CurrentCulture;
-        Console.WriteLine(""FOO"".ToUpper(dynamicCulture));
+        Console.WriteLine(""AAA"".ToUpper(dynamicCulture));
     }
 }
 ");
@@ -59,24 +59,24 @@ Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethodOneA()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InvariantCulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InvariantCulture))
     End Sub
 
     Public Sub TestMethodOneB()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentCulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentCulture))
     End Sub
 
     Public Sub TestMethodOneC()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentUICulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentUICulture))
     End Sub
 
     Public Sub TestMethodOneD()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InstalledUICulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InstalledUICulture))
     End Sub
 
     Public Sub TestMethodOneE()
         Dim dynamicCulture = CultureInfo.CurrentCulture
-        Console.WriteLine(""FOO"".ToUpper(dynamicCulture))
+        Console.WriteLine(""AAA"".ToUpper(dynamicCulture))
     End Sub
 End Class
 ");
@@ -93,28 +93,28 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethodTwoA()
     {
-        Console.WriteLine(""FOO"".ToLower());
+        Console.WriteLine(""AAA"".ToLower());
     }
 
     public void TestMethodTwoB()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentCulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentCulture));
     }
 
     public void TestMethodTwoC()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentUICulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentUICulture));
     }
 
     public void TestMethodTwoD()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InstalledUICulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InstalledUICulture));
     }
 
     public void TestMethodTwoE()
     {
         var dynamicCulture = CultureInfo.CurrentCulture;
-        Console.WriteLine(""FOO"".ToLower(dynamicCulture));
+        Console.WriteLine(""AAA"".ToLower(dynamicCulture));
     }
 }
 ");
@@ -125,24 +125,24 @@ Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethodTwoA()
-        Console.WriteLine(""FOO"".ToLower())
+        Console.WriteLine(""AAA"".ToLower())
     End Sub
 
     Public Sub TestMethodTwoB()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentCulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentCulture))
     End Sub
 
     Public Sub TestMethodTwoC()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentUICulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentUICulture))
     End Sub
 
     Public Sub TestMethodTwoD()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InstalledUICulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InstalledUICulture))
     End Sub
 
     Public Sub TestMethodTwoE()
         Dim dynamicCulture = CultureInfo.CurrentCulture
-        Console.WriteLine(""FOO"".ToLower(dynamicCulture))
+        Console.WriteLine(""AAA"".ToLower(dynamicCulture))
     End Sub
 End Class
 ");
@@ -159,7 +159,7 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethodThree()
     {
-        Console.WriteLine(""FOO"".ToUpperInvariant());
+        Console.WriteLine(""AAA"".ToUpperInvariant());
     }
 }
 ");
@@ -170,7 +170,7 @@ Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethodThree()
-        Console.WriteLine(""FOO"".ToUpperInvariant())
+        Console.WriteLine(""AAA"".ToUpperInvariant())
     End Sub
 End Class
 ");
@@ -191,7 +191,7 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethod()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InvariantCulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InvariantCulture));
     }
 }
 ",
@@ -203,7 +203,7 @@ Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethod()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InvariantCulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InvariantCulture))
     End Sub
 End Class
 ",
@@ -221,7 +221,7 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethod()
     {
-        Console.WriteLine(""FOO"".ToLowerInvariant());
+        Console.WriteLine(""AAA"".ToLowerInvariant());
     }
 }
 ",
@@ -233,7 +233,7 @@ Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethod()
-        Console.WriteLine(""FOO"".ToLowerInvariant())
+        Console.WriteLine(""AAA"".ToLowerInvariant())
     End Sub
 End Class
 ",

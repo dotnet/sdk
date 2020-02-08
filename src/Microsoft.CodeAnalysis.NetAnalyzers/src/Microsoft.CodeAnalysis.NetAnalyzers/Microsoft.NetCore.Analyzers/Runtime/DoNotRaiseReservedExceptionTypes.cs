@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -29,9 +30,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     ///     System.AccessViolationException
     ///     
     /// </summary>
-    public abstract class DoNotRaiseReservedExceptionTypesAnalyzer<TLanguageKindEnum, TObjectCreationExpressionSyntax> : DiagnosticAnalyzer
-        where TLanguageKindEnum : struct
-        where TObjectCreationExpressionSyntax : SyntaxNode
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class DoNotRaiseReservedExceptionTypesAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2201";
 
@@ -54,32 +54,28 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessageReserved = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesMessageReserved), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotRaiseReservedExceptionTypesDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor TooGenericRule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor TooGenericRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageTooGeneric,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2201-do-not-raise-reserved-exception-types",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
-        internal static DiagnosticDescriptor ReservedRule = new DiagnosticDescriptor(RuleId,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+        internal static DiagnosticDescriptor ReservedRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageReserved,
                                                                              DiagnosticCategory.Usage,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: false,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2201-do-not-raise-reserved-exception-types",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false,
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
 
         private static readonly SymbolDisplayFormat s_symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(TooGenericRule, ReservedRule);
-
-        public abstract TLanguageKindEnum ObjectCreationExpressionKind { get; }
-
-        public abstract SyntaxNode GetTypeSyntaxNode(TObjectCreationExpressionSyntax node);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -97,12 +93,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    compilationStartContext.RegisterSyntaxNodeAction(
-                    syntaxNodeContext =>
-                    {
-                        Analyze(syntaxNodeContext, tooGenericExceptionSymbols, reservedExceptionSymbols);
-                    },
-                    ObjectCreationExpressionKind);
+                    compilationStartContext.RegisterOperationAction(
+                        context => AnalyzeObjectCreation(context, tooGenericExceptionSymbols, reservedExceptionSymbols),
+                        OperationKind.ObjectCreation);
                 });
         }
 
@@ -126,27 +119,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return set != null ? set.ToImmutableHashSet() : ImmutableHashSet<INamedTypeSymbol>.Empty;
         }
 
-        private void Analyze(
-            SyntaxNodeAnalysisContext context,
+        private void AnalyzeObjectCreation(
+            OperationAnalysisContext context,
             ImmutableHashSet<INamedTypeSymbol> tooGenericExceptionSymbols,
             ImmutableHashSet<INamedTypeSymbol> reservedExceptionSymbols)
         {
-            var objectCreationNode = (TObjectCreationExpressionSyntax)context.Node;
-            SyntaxNode targetType = GetTypeSyntaxNode(objectCreationNode);
-
-            // GetSymbolInfo().Symbol might return an error type symbol 
-            if (!(context.SemanticModel.GetSymbolInfo(targetType).Symbol is INamedTypeSymbol typeSymbol))
-            {
-                return;
-            }
-
+            var objectCreation = (IObjectCreationOperation)context.Operation;
+            var typeSymbol = objectCreation.Constructor.ContainingType;
             if (tooGenericExceptionSymbols.Contains(typeSymbol))
             {
-                context.ReportDiagnostic(Diagnostic.Create(TooGenericRule, targetType.GetLocation(), typeSymbol.ToDisplayString(s_symbolDisplayFormat)));
+                context.ReportDiagnostic(objectCreation.CreateDiagnostic(TooGenericRule, typeSymbol.ToDisplayString(s_symbolDisplayFormat)));
             }
             else if (reservedExceptionSymbols.Contains(typeSymbol))
             {
-                context.ReportDiagnostic(Diagnostic.Create(ReservedRule, targetType.GetLocation(), typeSymbol.ToDisplayString(s_symbolDisplayFormat)));
+                context.ReportDiagnostic(objectCreation.CreateDiagnostic(ReservedRule, typeSymbol.ToDisplayString(s_symbolDisplayFormat)));
             }
         }
     }

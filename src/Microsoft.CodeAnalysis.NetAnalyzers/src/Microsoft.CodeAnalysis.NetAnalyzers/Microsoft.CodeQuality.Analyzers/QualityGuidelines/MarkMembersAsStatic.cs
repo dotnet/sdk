@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -26,51 +25,83 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(RuleId,
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Performance,
-                                                                             DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                                                             isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultForVsixAndNuget,
+                                                                             RuleLevel.IdeSuggestion,
                                                                              description: s_localizableDescription,
-                                                                             helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca1822-mark-members-as-static",
-                                                                             customTags: FxCopWellKnownDiagnosticTags.PortedFxCopRule);
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-#pragma warning disable RS1026 // Enable concurrent execution
         public override void Initialize(AnalysisContext analysisContext)
-#pragma warning restore RS1026 // Enable concurrent execution
         {
-            // TODO: Consider making this analyzer thread-safe.
-            //analysisContext.EnableConcurrentExecution();
+            analysisContext.EnableConcurrentExecution();
 
             // Don't report in generated code since that's not actionable.
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
             analysisContext.RegisterCompilationStartAction(compilationContext =>
             {
-                // Since property/event accessors cannot be marked static themselves and the associated symbol (property/event)
-                // has to be marked static, we want to report the diagnostic on the property/event.
-                // So we make a note of the property/event symbols which have at least one accessor with no instance access.
-                // At compilation end, we report candidate property/event symbols whose all accessors are candidates to be marked static.
-                var propertyOrEventCandidates = new HashSet<ISymbol>();
-                var accessorCandidates = new HashSet<IMethodSymbol>();
-
-                // For candidate methods that are not externally visible, we only report a diagnostic if they are actually invoked via a method call in the compilation.
-                // This prevents us from incorrectly flagging methods that are only invoked via delegate invocations: https://github.com/dotnet/roslyn-analyzers/issues/1511
-                // and also reduces noise by not flagging dead code.
-                var internalCandidates = new HashSet<IMethodSymbol>();
-                var invokedInternalMethods = new HashSet<IMethodSymbol>();
-
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationContext.Compilation);
 
                 // Get the list of all method' attributes for which the rule shall not be triggered.
                 ImmutableArray<INamedTypeSymbol> skippedAttributes = GetSkippedAttributes(wellKnownTypeProvider);
 
-                compilationContext.RegisterOperationBlockStartAction(blockStartContext =>
+                compilationContext.RegisterSymbolStartAction(
+                    symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes),
+                    SymbolKind.NamedType);
+            });
+
+            return;
+
+            static void OnSymbolStart(
+                SymbolStartAnalysisContext symbolStartContext,
+                WellKnownTypeProvider wellKnownTypeProvider,
+                ImmutableArray<INamedTypeSymbol> skippedAttributes)
+            {
+                // Since property/event accessors cannot be marked static themselves and the associated symbol (property/event)
+                // has to be marked static, we want to report the diagnostic on the property/event.
+                // So we make a note of the property/event symbols which have at least one accessor with no instance access.
+                // At symbol end, we report candidate property/event symbols whose all accessors are candidates to be marked static.
+                var propertyOrEventCandidates = PooledConcurrentSet<ISymbol>.GetInstance();
+                var accessorCandidates = PooledConcurrentSet<IMethodSymbol>.GetInstance();
+
+                var methodCandidates = PooledConcurrentSet<IMethodSymbol>.GetInstance();
+
+                // Do not flag methods that are used as delegates: https://github.com/dotnet/roslyn-analyzers/issues/1511
+                var methodsUsedAsDelegates = PooledConcurrentSet<IMethodSymbol>.GetInstance();
+
+                symbolStartContext.RegisterOperationAction(OnMethodReference, OperationKind.MethodReference);
+                symbolStartContext.RegisterOperationBlockStartAction(OnOperationBlockStart);
+                symbolStartContext.RegisterSymbolEndAction(OnSymbolEnd);
+
+                return;
+
+                void OnMethodReference(OperationAnalysisContext operationContext)
                 {
-                    if (!(blockStartContext.OwningSymbol is IMethodSymbol methodSymbol) || !ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes))
+                    var methodReference = (IMethodReferenceOperation)operationContext.Operation;
+                    methodsUsedAsDelegates.Add(methodReference.Method);
+                }
+
+                void OnOperationBlockStart(OperationBlockStartAnalysisContext blockStartContext)
+                {
+                    if (!(blockStartContext.OwningSymbol is IMethodSymbol methodSymbol))
+                    {
+                        return;
+                    }
+
+                    // Don't run any other check for this method if it isn't a valid analysis context
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes))
+                    {
+                        return;
+                    }
+
+                    // Don't report methods which have a single throw statement
+                    // with NotImplementedException or NotSupportedException
+                    if (blockStartContext.IsMethodNotImplementedOrSupported())
                     {
                         return;
                     }
@@ -85,20 +116,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         }
                     }, OperationKind.InstanceReference);
 
-                    blockStartContext.RegisterOperationAction(operationContext =>
-                    {
-                        var invocation = (IInvocationOperation)operationContext.Operation;
-                        if (!invocation.TargetMethod.IsExternallyVisible())
-                        {
-                            invokedInternalMethods.Add(invocation.TargetMethod);
-                        }
-                    }, OperationKind.Invocation);
-
                     blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                     {
-                        // Methods referenced by other non static methods
-                        // and methods containing only NotImplementedException should not considered for marking them as static
-                        if (!isInstanceReferenced && !blockEndContext.IsMethodNotImplementedOrSupported())
+                        if (!isInstanceReferenced)
                         {
                             if (methodSymbol.IsAccessorMethod())
                             {
@@ -111,20 +131,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             }
                             else
                             {
-                                internalCandidates.Add(methodSymbol);
+                                methodCandidates.Add(methodSymbol);
                             }
                         }
                     });
-                });
+                }
 
-                compilationContext.RegisterCompilationEndAction(compilationEndContext =>
+                void OnSymbolEnd(SymbolAnalysisContext symbolEndContext)
                 {
-                    foreach (var candidate in internalCandidates)
+                    foreach (var candidate in methodCandidates)
                     {
-                        if (invokedInternalMethods.Contains(candidate))
+                        if (methodsUsedAsDelegates.Contains(candidate))
                         {
-                            compilationEndContext.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
+                            continue;
                         }
+
+                        symbolEndContext.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
                     }
 
                     foreach (var candidatePropertyOrEvent in propertyOrEventCandidates)
@@ -141,11 +163,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                         if (allAccessorsAreCandidates)
                         {
-                            compilationEndContext.ReportDiagnostic(candidatePropertyOrEvent.CreateDiagnostic(Rule, candidatePropertyOrEvent.Name));
+                            symbolEndContext.ReportDiagnostic(candidatePropertyOrEvent.CreateDiagnostic(Rule, candidatePropertyOrEvent.Name));
                         }
                     }
-                });
-            });
+
+                    propertyOrEventCandidates.Free();
+                    accessorCandidates.Free();
+                    methodCandidates.Free();
+                    methodsUsedAsDelegates.Free();
+                }
+            }
         }
 
         private static bool ShouldAnalyze(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<INamedTypeSymbol> skippedAttributes)

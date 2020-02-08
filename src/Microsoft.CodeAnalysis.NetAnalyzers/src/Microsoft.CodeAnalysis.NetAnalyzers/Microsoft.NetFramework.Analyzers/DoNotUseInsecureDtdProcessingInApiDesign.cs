@@ -19,11 +19,9 @@ namespace Microsoft.NetFramework.Analyzers
     public abstract class DoNotUseInsecureDtdProcessingInApiDesignAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3077";
-        private const string HelpLink = "https://docs.microsoft.com/visualstudio/code-quality/ca3077-insecure-processing-in-api-design-xml-document-and-xml-text-reader";
 
         internal static DiagnosticDescriptor RuleDoNotUseInsecureDtdProcessingInApiDesign = CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
-                                                                                                                        SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingInApiDesignDescription)),
-                                                                                                                         HelpLink);
+                                                                                                                       SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingInApiDesignDescription)));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDoNotUseInsecureDtdProcessingInApiDesign);
 
@@ -63,17 +61,16 @@ namespace Microsoft.NetFramework.Analyzers
                 || types.XmlTextReader != null;
         }
 
-        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description, string helpLink = null)
+        private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description)
         {
-            return new DiagnosticDescriptor(RuleId,
+            return DiagnosticDescriptorHelper.Create(RuleId,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureDtdProcessingInApiDesign)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            DiagnosticHelpers.DefaultDiagnosticSeverity,
-                                            isEnabledByDefault: DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX,
-                                            description: description,
-                                            helpLinkUri: helpLink,
-                                            customTags: WellKnownDiagnosticTags.Telemetry);
+                                            RuleLevel.IdeHidden_BulkConfigurable,
+                                            description,
+                                            isPortedFxCopRule: false,
+                                            isDataflowRule: false);
         }
 
         protected abstract SymbolAndNodeAnalyzer GetAnalyzer(CompilationStartAnalysisContext context, CompilationSecurityTypes types, Version targetFrameworkVersion);

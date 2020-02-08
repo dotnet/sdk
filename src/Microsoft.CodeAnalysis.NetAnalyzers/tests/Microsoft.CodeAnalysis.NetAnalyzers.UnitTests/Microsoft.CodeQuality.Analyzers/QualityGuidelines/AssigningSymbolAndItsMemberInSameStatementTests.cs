@@ -2,7 +2,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.Analyzers.QualityGuidelines;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -333,7 +332,7 @@ public struct Test
             await VerifyCS.VerifyAnalyzerAsync(@"
 public static class Class1
 {
-    public static void Foo()
+    public static void SomeMethod()
     {
         var u = new System.UriBuilder();
         u.Host = u.Path = string.Empty;
@@ -343,7 +342,7 @@ public static class Class1
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
-            => new DiagnosticResult(AssigningSymbolAndItsMemberInSameStatement.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arguments);
     }

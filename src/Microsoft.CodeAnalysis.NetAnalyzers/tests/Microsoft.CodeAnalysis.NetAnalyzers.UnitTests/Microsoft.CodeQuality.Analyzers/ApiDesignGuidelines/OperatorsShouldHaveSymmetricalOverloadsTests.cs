@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -21,7 +20,7 @@ public class A
 {
     public static bool operator{|CS0216:==|}(A a1, A a2) { return false; }
 }",
-                GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "==", "!="));
+                GetCSharpResultAt(4, 32, "A", "==", "!="));
         }
 
         [Fact]
@@ -32,7 +31,7 @@ public class A
 {
     public static bool operator{|CS0216:!=|}(A a1, A a2) { return false; }
 }",
-                GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "!=", "=="));
+                GetCSharpResultAt(4, 32, "A", "!=", "=="));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -103,7 +102,7 @@ public class A
 {
     public static bool operator{|CS0216:<|}(A a1, A a2) { return false; }   // error CS0216: The operator requires a matching operator '>' to also be defined
 }",
-                GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "<", ">"));
+                GetCSharpResultAt(4, 32, "A", "<", ">"));
         }
 
         [Fact]
@@ -125,7 +124,7 @@ public class A
 {
     public static bool operator{|CS0216:<=|}(A a1, A a2) { return false; }
 }",
-                GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "<=", ">="));
+                GetCSharpResultAt(4, 32, "A", "<=", ">="));
         }
 
         [Fact]
@@ -150,12 +149,12 @@ public class A
     public static bool operator{|CS0216:==|}(A a1, int a2) { return false; }
     public static bool operator{|CS0216:!=|}(A a1, string a2) { return false; }
 }",
-                GetCSharpResultAt(6, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "==", "!="),
-                GetCSharpResultAt(7, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "!=", "=="));
+                GetCSharpResultAt(6, 32, "A", "==", "!="),
+                GetCSharpResultAt(7, 32, "A", "!=", "=="));
         }
 
-        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arguments);
     }

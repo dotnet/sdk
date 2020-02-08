@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -14,22 +14,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class IdentifiersShouldHaveCorrectPrefixTests : DiagnosticAnalyzerTestBase
+    public class IdentifiersShouldHaveCorrectPrefixTests
     {
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldHaveCorrectPrefixAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldHaveCorrectPrefixAnalyzer();
-        }
-
         [Fact]
-        public void TestInterfaceNamesCSharp()
+        public async Task TestInterfaceNamesCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public interface Controller
 {
     void SomeMethod();
@@ -73,19 +63,19 @@ public interface IAmAnInterface
     void SomeMethod();
 }
 ",
-                GetCA1715CSharpResultAt(2, 18, CA1715InterfaceMessage, "Controller"),
-                GetCA1715CSharpResultAt(7, 18, CA1715InterfaceMessage, "\u65E5\u672C\u8A9E"),
-                GetCA1715CSharpResultAt(12, 18, CA1715InterfaceMessage, "_Controller"),
-                GetCA1715CSharpResultAt(17, 18, CA1715InterfaceMessage, "_\u65E5\u672C\u8A9E"),
-                GetCA1715CSharpResultAt(22, 18, CA1715InterfaceMessage, "Internet"),
-                GetCA1715CSharpResultAt(27, 18, CA1715InterfaceMessage, "Iinternet"),
-                GetCA1715CSharpResultAt(34, 22, CA1715InterfaceMessage, "Controller"));
+                GetCA1715CSharpResultAt(2, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Controller"),
+                GetCA1715CSharpResultAt(7, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "\u65E5\u672C\u8A9E"),
+                GetCA1715CSharpResultAt(12, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "_Controller"),
+                GetCA1715CSharpResultAt(17, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "_\u65E5\u672C\u8A9E"),
+                GetCA1715CSharpResultAt(22, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Internet"),
+                GetCA1715CSharpResultAt(27, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Iinternet"),
+                GetCA1715CSharpResultAt(34, 22, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Controller"));
         }
 
         [Fact]
-        public void TestTypeParameterNamesCSharp()
+        public async Task TestTypeParameterNamesCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class IInterface<VSome>
@@ -152,31 +142,31 @@ public class Class6<TTypeParameter>
 {
 }
 ",
-                GetCA1715CSharpResultAt(4, 25, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(8, 32, CA1715TypeParameterMessage, "\u672C\u8A9E"),
-                GetCA1715CSharpResultAt(12, 31, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(14, 21, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(18, 24, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715CSharpResultAt(22, 21, CA1715TypeParameterMessage, "Type"),
-                GetCA1715CSharpResultAt(26, 24, CA1715TypeParameterMessage, "Type"),
-                GetCA1715CSharpResultAt(30, 19, CA1715TypeParameterMessage, "Key"),
-                GetCA1715CSharpResultAt(30, 24, CA1715TypeParameterMessage, "Value"),
-                GetCA1715CSharpResultAt(34, 22, CA1715TypeParameterMessage, "Key"),
-                GetCA1715CSharpResultAt(34, 27, CA1715TypeParameterMessage, "Value"),
-                GetCA1715CSharpResultAt(38, 21, CA1715TypeParameterMessage, "Type1"),
-                GetCA1715CSharpResultAt(40, 31, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715CSharpResultAt(45, 24, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715CSharpResultAt(50, 24, CA1715TypeParameterMessage, "KType"),
-                GetCA1715CSharpResultAt(50, 31, CA1715TypeParameterMessage, "VType"),
-                GetCA1715CSharpResultAt(56, 21, CA1715TypeParameterMessage, "_Type1"),
-                GetCA1715CSharpResultAt(58, 24, CA1715TypeParameterMessage, "_K"),
-                GetCA1715CSharpResultAt(58, 28, CA1715TypeParameterMessage, "_V"));
+                GetCA1715CSharpResultAt(4, 25, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715CSharpResultAt(8, 32, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "\u672C\u8A9E"),
+                GetCA1715CSharpResultAt(12, 31, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715CSharpResultAt(14, 21, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715CSharpResultAt(18, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715CSharpResultAt(22, 21, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type"),
+                GetCA1715CSharpResultAt(26, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type"),
+                GetCA1715CSharpResultAt(30, 19, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Key"),
+                GetCA1715CSharpResultAt(30, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Value"),
+                GetCA1715CSharpResultAt(34, 22, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Key"),
+                GetCA1715CSharpResultAt(34, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Value"),
+                GetCA1715CSharpResultAt(38, 21, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type1"),
+                GetCA1715CSharpResultAt(40, 31, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type2"),
+                GetCA1715CSharpResultAt(45, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type2"),
+                GetCA1715CSharpResultAt(50, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "KType"),
+                GetCA1715CSharpResultAt(50, 31, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VType"),
+                GetCA1715CSharpResultAt(56, 21, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_Type1"),
+                GetCA1715CSharpResultAt(58, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_K"),
+                GetCA1715CSharpResultAt(58, 28, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_V"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestInternalInterfaceNamesCSharp_NoDiagnostic()
+        public async Task TestInternalInterfaceNamesCSharp_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal interface Controller
 {
     void SomeMethod();
@@ -201,9 +191,9 @@ public class C2
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestTypeParameterNamesInternalCSharp_NoDiagnostic()
+        public async Task TestTypeParameterNamesInternalCSharp_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 internal class IInterface<VSome>
@@ -226,9 +216,9 @@ public class C2
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
         [Fact]
-        public void TestTypeParameterNamesCSharp_SingleLetterCases_Default()
+        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_Default()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class IInterface<V>
@@ -253,11 +243,11 @@ public class Class6<TTypeParameter>
 {
 }
 ",
-            GetCA1715CSharpResultAt(4, 25, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(8, 31, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(10, 24, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(16, 24, CA1715TypeParameterMessage, "K"),
-            GetCA1715CSharpResultAt(16, 27, CA1715TypeParameterMessage, "V"));
+            GetCA1715CSharpResultAt(4, 25, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+            GetCA1715CSharpResultAt(8, 31, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+            GetCA1715CSharpResultAt(10, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+            GetCA1715CSharpResultAt(16, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "K"),
+            GetCA1715CSharpResultAt(16, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"));
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -267,9 +257,15 @@ public class Class6<TTypeParameter>
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
-        public void TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_Diagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_Diagnostic(string editorConfigText)
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public class IInterface<V>
@@ -293,13 +289,19 @@ public class Class4<T>
 public class Class6<TTypeParameter>
 {
 }
-",
-            GetEditorConfigAdditionalFile(editorConfigText),
-            GetCA1715CSharpResultAt(4, 25, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(8, 31, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(10, 24, CA1715TypeParameterMessage, "V"),
-            GetCA1715CSharpResultAt(16, 24, CA1715TypeParameterMessage, "K"),
-            GetCA1715CSharpResultAt(16, 27, CA1715TypeParameterMessage, "V"));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1715CSharpResultAt(4, 25, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                        GetCA1715CSharpResultAt(8, 31, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                        GetCA1715CSharpResultAt(10, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                        GetCA1715CSharpResultAt(16, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "K"),
+                        GetCA1715CSharpResultAt(16, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                    }
+                }
+            }.RunAsync();
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -308,9 +310,15 @@ public class Class6<TTypeParameter>
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
-        public void TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_NoDiagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_NoDiagnostic(string editorConfigText)
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public class IInterface<V>
@@ -334,13 +342,17 @@ public class Class4<T>
 public class Class6<TTypeParameter>
 {
 }
-", GetEditorConfigAdditionalFile(editorConfigText));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void TestInterfaceNamesBasic()
+        public async Task TestInterfaceNamesBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface Controller
     Sub SomeMethod()
 End Interface
@@ -375,19 +387,19 @@ Public Interface IAmAnInterface
     Sub SomeMethod()
 End Interface
 ",
-                GetCA1715BasicResultAt(2, 18, CA1715InterfaceMessage, "Controller"),
-                GetCA1715BasicResultAt(6, 18, CA1715InterfaceMessage, "\u65E5\u672C\u8A9E"),
-                GetCA1715BasicResultAt(10, 18, CA1715InterfaceMessage, "_Controller"),
-                GetCA1715BasicResultAt(14, 18, CA1715InterfaceMessage, "_\u65E5\u672C\u8A9E"),
-                GetCA1715BasicResultAt(18, 18, CA1715InterfaceMessage, "Internet"),
-                GetCA1715BasicResultAt(22, 18, CA1715InterfaceMessage, "Iinternet"),
-                GetCA1715BasicResultAt(27, 22, CA1715InterfaceMessage, "Controller"));
+                GetCA1715BasicResultAt(2, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Controller"),
+                GetCA1715BasicResultAt(6, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "\u65E5\u672C\u8A9E"),
+                GetCA1715BasicResultAt(10, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "_Controller"),
+                GetCA1715BasicResultAt(14, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "_\u65E5\u672C\u8A9E"),
+                GetCA1715BasicResultAt(18, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Internet"),
+                GetCA1715BasicResultAt(22, 18, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Iinternet"),
+                GetCA1715BasicResultAt(27, 22, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Controller"));
         }
 
         [Fact]
-        public void TestTypeParameterNamesBasic()
+        public async Task TestTypeParameterNamesBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class IInterface(Of VSome)
@@ -440,31 +452,31 @@ End Class
 Public Class Class6(Of TTypeParameter)
 End Class
 ",
-                GetCA1715BasicResultAt(4, 28, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(7, 35, CA1715TypeParameterMessage, "\u672C\u8A9E"),
-                GetCA1715BasicResultAt(10, 33, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(12, 24, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(15, 27, CA1715TypeParameterMessage, "VSome"),
-                GetCA1715BasicResultAt(18, 24, CA1715TypeParameterMessage, "Type"),
-                GetCA1715BasicResultAt(21, 27, CA1715TypeParameterMessage, "Type"),
-                GetCA1715BasicResultAt(24, 22, CA1715TypeParameterMessage, "Key"),
-                GetCA1715BasicResultAt(24, 27, CA1715TypeParameterMessage, "Value"),
-                GetCA1715BasicResultAt(27, 25, CA1715TypeParameterMessage, "Key"),
-                GetCA1715BasicResultAt(27, 30, CA1715TypeParameterMessage, "Value"),
-                GetCA1715BasicResultAt(31, 24, CA1715TypeParameterMessage, "Type1"),
-                GetCA1715BasicResultAt(32, 33, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715BasicResultAt(36, 26, CA1715TypeParameterMessage, "Type2"),
-                GetCA1715BasicResultAt(40, 26, CA1715TypeParameterMessage, "KType"),
-                GetCA1715BasicResultAt(40, 33, CA1715TypeParameterMessage, "VType"),
-                GetCA1715BasicResultAt(45, 24, CA1715TypeParameterMessage, "_Type1"),
-                GetCA1715BasicResultAt(46, 26, CA1715TypeParameterMessage, "_K"),
-                GetCA1715BasicResultAt(46, 30, CA1715TypeParameterMessage, "_V"));
+                GetCA1715BasicResultAt(4, 28, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715BasicResultAt(7, 35, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "\u672C\u8A9E"),
+                GetCA1715BasicResultAt(10, 33, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715BasicResultAt(12, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715BasicResultAt(15, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VSome"),
+                GetCA1715BasicResultAt(18, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type"),
+                GetCA1715BasicResultAt(21, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type"),
+                GetCA1715BasicResultAt(24, 22, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Key"),
+                GetCA1715BasicResultAt(24, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Value"),
+                GetCA1715BasicResultAt(27, 25, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Key"),
+                GetCA1715BasicResultAt(27, 30, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Value"),
+                GetCA1715BasicResultAt(31, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type1"),
+                GetCA1715BasicResultAt(32, 33, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type2"),
+                GetCA1715BasicResultAt(36, 26, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "Type2"),
+                GetCA1715BasicResultAt(40, 26, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "KType"),
+                GetCA1715BasicResultAt(40, 33, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "VType"),
+                GetCA1715BasicResultAt(45, 24, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_Type1"),
+                GetCA1715BasicResultAt(46, 26, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_K"),
+                GetCA1715BasicResultAt(46, 30, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_V"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestInterfaceNamesInternalBasic_NoDiagnostic()
+        public async Task TestInterfaceNamesInternalBasic_NoDiagnostic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface Controller
     Sub SomeMethod()
 End Interface
@@ -484,9 +496,9 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestTypeParameterNamesInternalBasic_NoDiagnostic()
+        public async Task TestTypeParameterNamesInternalBasic_NoDiagnostic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Friend Class IInterface(Of VSome)
@@ -505,9 +517,9 @@ End Class
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
         [Fact]
-        public void TestTypeParameterNamesBasic_SingleLetterCases_Default()
+        public async Task TestTypeParameterNamesBasic_SingleLetterCases_Default()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class IInterface(Of V)
@@ -527,11 +539,11 @@ End Class
 Public Class Class6(Of TTypeParameter)
 End Class
 ",
-            GetCA1715BasicResultAt(4, 28, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(7, 33, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(9, 27, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(13, 26, CA1715TypeParameterMessage, "K"),
-            GetCA1715BasicResultAt(13, 29, CA1715TypeParameterMessage, "V"));
+            GetCA1715BasicResultAt(4, 28, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+            GetCA1715BasicResultAt(7, 33, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+            GetCA1715BasicResultAt(9, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+            GetCA1715BasicResultAt(13, 26, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "K"),
+            GetCA1715BasicResultAt(13, 29, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"));
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -541,9 +553,15 @@ End Class
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
-        public void TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_Diagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_Diagnostic(string editorConfigText)
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Public Class IInterface(Of V)
@@ -562,13 +580,19 @@ End Class
 
 Public Class Class6(Of TTypeParameter)
 End Class
-",
-            GetEditorConfigAdditionalFile(editorConfigText),
-            GetCA1715BasicResultAt(4, 28, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(7, 33, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(9, 27, CA1715TypeParameterMessage, "V"),
-            GetCA1715BasicResultAt(13, 26, CA1715TypeParameterMessage, "K"),
-            GetCA1715BasicResultAt(13, 29, CA1715TypeParameterMessage, "V"));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1715BasicResultAt(4, 28, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                        GetCA1715BasicResultAt(7, 33, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                        GetCA1715BasicResultAt(9, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                        GetCA1715BasicResultAt(13, 26, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "K"),
+                        GetCA1715BasicResultAt(13, 29, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
+                    }
+                }
+            }.RunAsync();
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -577,9 +601,15 @@ End Class
         [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
         [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
-        public void TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_NoDiagnostic(string editorConfigText)
+        public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_NoDiagnostic(string editorConfigText)
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Public Class IInterface(Of V)
@@ -598,20 +628,21 @@ End Class
 
 Public Class Class6(Of TTypeParameter)
 End Class
-", GetEditorConfigAdditionalFile(editorConfigText));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
 
-        internal static readonly string CA1715InterfaceMessage = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageInterface;
-        internal static readonly string CA1715TypeParameterMessage = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageTypeParameter;
+        private static DiagnosticResult GetCA1715CSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+           => VerifyCS.Diagnostic(rule)
+               .WithLocation(line, column)
+               .WithArguments(arguments);
 
-        private static DiagnosticResult GetCA1715CSharpResultAt(int line, int column, string message, string name)
-        {
-            return GetCSharpResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.RuleId, string.Format(CultureInfo.CurrentCulture, message, name));
-        }
-
-        private static DiagnosticResult GetCA1715BasicResultAt(int line, int column, string message, string name)
-        {
-            return GetBasicResultAt(line, column, IdentifiersShouldHaveCorrectPrefixAnalyzer.RuleId, string.Format(CultureInfo.CurrentCulture, message, name));
-        }
+        private static DiagnosticResult GetCA1715BasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+           => VerifyVB.Diagnostic(rule)
+               .WithLocation(line, column)
+               .WithArguments(arguments);
     }
 }

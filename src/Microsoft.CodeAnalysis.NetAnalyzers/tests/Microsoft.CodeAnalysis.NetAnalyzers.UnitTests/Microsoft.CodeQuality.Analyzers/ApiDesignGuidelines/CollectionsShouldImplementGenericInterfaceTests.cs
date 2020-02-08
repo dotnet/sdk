@@ -15,15 +15,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public class CollectionsShouldImplementGenericInterfaceTests
     {
-        private DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName)
+        private static DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName, string genericInterfaceName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-                .WithArguments(typeName, interfaceName, $"{interfaceName}<T>");
+                .WithArguments(typeName, interfaceName, genericInterfaceName);
 
-        private DiagnosticResult GetCA1010BasicResultAt(int line, int column, string typeName, string interfaceName)
+        private static DiagnosticResult GetCA1010BasicResultAt(int line, int column, string typeName, string interfaceName, string genericInterfaceName)
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-                .WithArguments(typeName, interfaceName, $"{interfaceName}(Of T)");
+                .WithArguments(typeName, interfaceName, genericInterfaceName);
 
         [Fact]
         public async Task Test_WithCollectionBase()
@@ -32,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 using System.Collections;
 
 public class TestClass : CollectionBase { }",
-                GetCA1010CSharpResultAt(4, 14, "TestClass", "IList"));
+                GetCA1010CSharpResultAt(4, 14, "TestClass", "IList", "IList<T>"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Collections
@@ -41,7 +41,7 @@ Public Class TestClass
     Inherits CollectionBase
 End Class
 ",
-                GetCA1010BasicResultAt(4, 14, "TestClass", "IList"));
+                GetCA1010BasicResultAt(4, 14, "TestClass", "IList", "IList(Of T)"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -78,7 +78,7 @@ public class TestClass : ICollection
     public void CopyTo(Array array, int index) { throw new NotImplementedException(); }
 }
 ",
-                GetCA1010CSharpResultAt(5, 14, "TestClass", "ICollection"));
+                GetCA1010CSharpResultAt(5, 14, "TestClass", "ICollection", "ICollection<T>"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -100,7 +100,7 @@ Public Class TestClass
     End Sub
 End Class
 ",
-                GetCA1010BasicResultAt(5, 14, "TestClass", "ICollection"));
+                GetCA1010BasicResultAt(5, 14, "TestClass", "ICollection", "ICollection(Of T)"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -155,7 +155,7 @@ public class TestClass : IEnumerable
     public IEnumerator GetEnumerator() { throw new NotImplementedException(); }
 }
 ",
-                GetCA1010CSharpResultAt(5, 14, "TestClass", "IEnumerable"));
+                GetCA1010CSharpResultAt(5, 14, "TestClass", "IEnumerable", "IEnumerable<T>"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -169,7 +169,7 @@ Public Class TestClass
     End Function
 End Class
 ",
-                GetCA1010BasicResultAt(5, 14, "TestClass", "IEnumerable"));
+                GetCA1010BasicResultAt(5, 14, "TestClass", "IEnumerable", "IEnumerable(Of T)"));
         }
 
         [Fact]
@@ -204,7 +204,7 @@ public class TestClass : IList
     public void RemoveAt(int index) { throw new NotImplementedException(); }
 }
 ",
-                GetCA1010CSharpResultAt(5, 14, "TestClass", "IList"));
+                GetCA1010CSharpResultAt(5, 14, "TestClass", "IList", "IList<T>"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -265,7 +265,7 @@ Public Class TestClass
     End Sub
 End Class
 ",
-                GetCA1010BasicResultAt(5, 14, "TestClass", "IList"));
+                GetCA1010BasicResultAt(5, 14, "TestClass", "IList", "IList(Of T)"));
         }
 
         [Fact]
@@ -665,8 +665,8 @@ public class IntCollection : BaseClass
 {
 }
 ",
-                GetCA1010CSharpResultAt(5, 14, "BaseClass", "ICollection"),
-                GetCA1010CSharpResultAt(15, 14, "IntCollection", "ICollection"));
+                GetCA1010CSharpResultAt(5, 14, "BaseClass", "ICollection", "ICollection<T>"),
+                GetCA1010CSharpResultAt(15, 14, "IntCollection", "ICollection", "ICollection<T>"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -692,8 +692,8 @@ Public Class IntCollection
 	Inherits BaseClass
 End Class
 ",
-                GetCA1010BasicResultAt(5, 14, "BaseClass", "ICollection"),
-                GetCA1010BasicResultAt(21, 14, "IntCollection", "ICollection"));
+                GetCA1010BasicResultAt(5, 14, "BaseClass", "ICollection", "ICollection(Of T)"),
+                GetCA1010BasicResultAt(21, 14, "IntCollection", "ICollection", "ICollection(Of T)"));
         }
 
         [Fact]
@@ -706,8 +706,8 @@ public class C : CollectionBase { }
 
 public class R : ReadOnlyCollectionBase { }
 ",
-                GetCA1010CSharpResultAt(4, 14, "C", "IList"),
-                GetCA1010CSharpResultAt(6, 14, "R", "ICollection"));
+                GetCA1010CSharpResultAt(4, 14, "C", "IList", "IList<T>"),
+                GetCA1010CSharpResultAt(6, 14, "R", "ICollection", "ICollection<T>"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Collections
@@ -720,8 +720,8 @@ Public Class R
     Inherits ReadOnlyCollectionBase
 End Class
 ",
-                GetCA1010BasicResultAt(4, 14, "C", "IList"),
-                GetCA1010BasicResultAt(8, 14, "R", "ICollection"));
+                GetCA1010BasicResultAt(4, 14, "C", "IList", "IList(Of T)"),
+                GetCA1010BasicResultAt(8, 14, "R", "ICollection", "ICollection(Of T)"));
         }
 
         [Fact]
@@ -771,8 +771,8 @@ public class R : ReadOnlyCollectionBase, IEnumerable<int>
     }
 }
 ",
-                GetCA1010CSharpResultAt(6, 14, "C", "IList"),
-                GetCA1010CSharpResultAt(37, 14, "R", "ICollection"));
+                GetCA1010CSharpResultAt(6, 14, "C", "IList", "IList<T>"),
+                GetCA1010CSharpResultAt(37, 14, "R", "ICollection", "ICollection<T>"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -829,8 +829,8 @@ Public Class R
     End Function
 End Class
 ",
-                GetCA1010BasicResultAt(6, 14, "C", "IList"),
-                GetCA1010BasicResultAt(47, 14, "R", "ICollection"));
+                GetCA1010BasicResultAt(6, 14, "C", "IList", "IList(Of T)"),
+                GetCA1010BasicResultAt(47, 14, "R", "ICollection", "ICollection(Of T)"));
         }
 
 
@@ -882,5 +882,352 @@ End Class
 ");
         }
 
+        [Theory, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = invalid")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary`2->System.Collections.Generic.IDictionary`2")]
+        // Not fully qualified
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->IDictionary`2")]
+        // Not an interface
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->N:System.Collections")]
+        // Not a generic interface
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.IDictionary")]
+        // Cannot use <T>
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary<TKey, TValue>")]
+        public async Task AdditionalGenericInterfaces_InvalidSyntax_NoDiagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Collections;
+
+public class C : IDictionary
+{
+    public object this[object key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+    public ICollection Keys => throw new NotImplementedException();
+
+    public ICollection Values => throw new NotImplementedException();
+
+    public bool IsReadOnly => throw new NotImplementedException();
+
+    public bool IsFixedSize => throw new NotImplementedException();
+
+    public int Count => throw new NotImplementedException();
+
+    public object SyncRoot => throw new NotImplementedException();
+
+    public bool IsSynchronized => throw new NotImplementedException();
+
+    public void Add(object key, object value) => throw new NotImplementedException();
+    public void Clear() => throw new NotImplementedException();
+    public bool Contains(object key) => throw new NotImplementedException();
+    public void CopyTo(Array array, int index) => throw new NotImplementedException();
+    public IDictionaryEnumerator GetEnumerator() => throw new NotImplementedException();
+    public void Remove(object key) => throw new NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "ICollection", "ICollection<T>") },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+Imports System.Collections
+
+Public Class C
+    Implements System.Collections.IDictionary
+
+    Public ReadOnly Property IsFixedSize As Boolean Implements IDictionary.IsFixedSize
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property IsReadOnly As Boolean Implements IDictionary.IsReadOnly
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Default Public Property Item(key As Object) As Object Implements IDictionary.Item
+        Get
+            Throw New NotImplementedException()
+        End Get
+        Set(value As Object)
+            Throw New NotImplementedException()
+        End Set
+    End Property
+
+    Public ReadOnly Property Keys As ICollection Implements IDictionary.Keys
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property Values As ICollection Implements IDictionary.Values
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property Count As Integer Implements ICollection.Count
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property IsSynchronized As Boolean Implements ICollection.IsSynchronized
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property SyncRoot As Object Implements ICollection.SyncRoot
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public Sub Add(key As Object, value As Object) Implements IDictionary.Add
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Sub Clear() Implements IDictionary.Clear
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Sub Remove(key As Object) Implements IDictionary.Remove
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Sub CopyTo(array As Array, index As Integer) Implements ICollection.CopyTo
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Function Contains(key As Object) As Boolean Implements IDictionary.Contains
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetEnumerator() As IDictionaryEnumerator Implements IDictionary.GetEnumerator
+        Throw New NotImplementedException()
+    End Function
+
+    Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+        Throw New NotImplementedException()
+    End Function
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "ICollection", "ICollection(Of T)") },
+                }
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary`2")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary ->System.Collections.Generic.IDictionary`2")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary-> System.Collections.Generic.IDictionary`2")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary -> System.Collections.Generic.IDictionary`2")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->T:System.Collections.Generic.IDictionary`2")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->System.Collections.Generic.IDictionary`2")]
+        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2")]
+        public async Task AdditionalGenericInterfaces_Diagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Collections;
+
+public class C : IDictionary
+{
+    public object this[object key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+    public ICollection Keys => throw new NotImplementedException();
+
+    public ICollection Values => throw new NotImplementedException();
+
+    public bool IsReadOnly => throw new NotImplementedException();
+
+    public bool IsFixedSize => throw new NotImplementedException();
+
+    public int Count => throw new NotImplementedException();
+
+    public object SyncRoot => throw new NotImplementedException();
+
+    public bool IsSynchronized => throw new NotImplementedException();
+
+    public void Add(object key, object value) => throw new NotImplementedException();
+    public void Clear() => throw new NotImplementedException();
+    public bool Contains(object key) => throw new NotImplementedException();
+    public void CopyTo(Array array, int index) => throw new NotImplementedException();
+    public IDictionaryEnumerator GetEnumerator() => throw new NotImplementedException();
+    public void Remove(object key) => throw new NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "IDictionary", "IDictionary<TKey, TValue>") },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+Imports System.Collections
+
+Public Class C
+    Implements System.Collections.IDictionary
+
+    Public ReadOnly Property IsFixedSize As Boolean Implements IDictionary.IsFixedSize
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property IsReadOnly As Boolean Implements IDictionary.IsReadOnly
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Default Public Property Item(key As Object) As Object Implements IDictionary.Item
+        Get
+            Throw New NotImplementedException()
+        End Get
+        Set(value As Object)
+            Throw New NotImplementedException()
+        End Set
+    End Property
+
+    Public ReadOnly Property Keys As ICollection Implements IDictionary.Keys
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property Values As ICollection Implements IDictionary.Values
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property Count As Integer Implements ICollection.Count
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property IsSynchronized As Boolean Implements ICollection.IsSynchronized
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property SyncRoot As Object Implements ICollection.SyncRoot
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public Sub Add(key As Object, value As Object) Implements IDictionary.Add
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Sub Clear() Implements IDictionary.Clear
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Sub Remove(key As Object) Implements IDictionary.Remove
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Sub CopyTo(array As Array, index As Integer) Implements ICollection.CopyTo
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Function Contains(key As Object) As Boolean Implements IDictionary.Contains
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetEnumerator() As IDictionaryEnumerator Implements IDictionary.GetEnumerator
+        Throw New NotImplementedException()
+    End Function
+
+    Private Function IEnumerable_GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+        Throw New NotImplementedException()
+    End Function
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCA1010CSharpResultAt(5, 14, "C", "IDictionary", "IDictionary(Of TKey, TValue)") },
+                }
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task UserMappingWinsOverHardcoded_NoDiagnostic()
+        {
+            const string editorConfigText = "dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IList->T:System.Collections.Generic.IDictionary`2";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Collections;
+
+public class TestClass : CollectionBase { }"
+},
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCA1010CSharpResultAt(4, 14, "TestClass", "IList", "IDictionary<TKey, TValue>") },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System.Collections
+
+Public Class TestClass
+    Inherits CollectionBase
+End Class
+"
+    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCA1010BasicResultAt(4, 14, "TestClass", "IList", "IDictionary(Of TKey, TValue)") },
+                }
+            }.RunAsync();
+        }
     }
 }

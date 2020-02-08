@@ -12,7 +12,6 @@ namespace Microsoft.NetFramework.Analyzers
     public partial class MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3147";
-        private const string HelpLinkUri = "https://docs.microsoft.com/visualstudio/code-quality/ca3147-mark-verb-handlers-with-validateantiforgerytoken";
 
         private static readonly LocalizableString Title = new LocalizableResourceString(
             nameof(MicrosoftNetFrameworkAnalyzersResources.MarkVerbHandlersWithValidateAntiforgeryTokenTitle),
@@ -44,50 +43,55 @@ namespace Microsoft.NetFramework.Analyzers
             MicrosoftNetFrameworkAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetFrameworkAnalyzersResources));
 
-        internal static readonly DiagnosticDescriptor NoVerbsRule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor NoVerbsRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             Title,
             NoVerbsMessage,
             DiagnosticCategory.Security,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: true,
-            helpLinkUri: HelpLinkUri);
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor NoVerbsNoTokenRule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor NoVerbsNoTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             Title,
             NoVerbsNoTokenMessage,
             DiagnosticCategory.Security,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: true,
-            helpLinkUri: HelpLinkUri);
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor GetAndTokenRule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor GetAndTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             Title,
             GetAndTokenMessage,
             DiagnosticCategory.Security,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: true,
-            helpLinkUri: HelpLinkUri);
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor GetAndOtherAndTokenRule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor GetAndOtherAndTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             Title,
             GetAndOtherAndTokenMessage,
             DiagnosticCategory.Security,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: true,
-            helpLinkUri: HelpLinkUri);
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor VerbsAndNoTokenRule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor VerbsAndNoTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             Title,
             VerbsAndNoTokenMessage,
             DiagnosticCategory.Security,
-            DiagnosticHelpers.DefaultDiagnosticSeverity,
-            isEnabledByDefault: true,
-            helpLinkUri: HelpLinkUri);
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(NoVerbsRule, NoVerbsNoTokenRule, GetAndTokenRule, GetAndOtherAndTokenRule, VerbsAndNoTokenRule);
 

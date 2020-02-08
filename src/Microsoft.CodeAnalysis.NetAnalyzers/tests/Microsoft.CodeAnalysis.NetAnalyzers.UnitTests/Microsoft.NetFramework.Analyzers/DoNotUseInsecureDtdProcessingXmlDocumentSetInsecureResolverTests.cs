@@ -39,7 +39,7 @@ namespace TestNamespace
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Xml
 
-Module foo
+Module SomeClass
     Public Sub LoadXmlSafe(resolver As XmlResolver)
         Dim doc As New XmlDocument()
         doc.XmlResolver = resolver

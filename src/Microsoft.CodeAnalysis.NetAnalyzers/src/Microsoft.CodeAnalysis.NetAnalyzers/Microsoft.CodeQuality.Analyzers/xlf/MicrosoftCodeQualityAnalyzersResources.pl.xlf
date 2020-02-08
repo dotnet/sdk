@@ -54,32 +54,32 @@
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
         <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call might result in an infinite recursion.</target>
+        <target state="translated">Nie przypisuj właściwości za pomocą jej metody ustawiającej. To wywołanie może spowodować nieskończoną rekursję.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageSure">
         <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call will result in an infinite recursion.</target>
+        <target state="translated">Nie przypisuj właściwości za pomocą jej metody ustawiającej. To wywołanie spowoduje nieskończoną rekursję.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionTitle">
         <source>Avoid infinite recursion</source>
-        <target state="new">Avoid infinite recursion</target>
+        <target state="translated">Unikaj nieskończonej rekursji</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</target>
+        <target state="translated">Przekazywanie typów przez odwołanie (zastosowanie parametrów „out” lub „ref”) wymaga doświadczenia w pracy ze wskaźnikami, rozumienia różnic między typami wartości i typami odwołań oraz umiejętności stosowania metod z wieloma wartościami zwracanymi. Ponadto różnice między parametrami „out” i „ref” nie są powszechnie zrozumiałe.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
         <source>Avoid 'out' parameters as they are not designed for general audience.</source>
-        <target state="new">Avoid 'out' parameters as they are not designed for general audience.</target>
+        <target state="translated">Unikaj parametrów „out”, ponieważ nie są one przeznaczone dla wszystkich.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
-        <target state="new">Avoid out parameters</target>
+        <target state="translated">Unikaj parametrów out</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -142,9 +142,24 @@
         <target state="translated">Nie przechowuj asynchronicznych wyrażeń lambda jako typów delegatów zwracających typ void</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
+        <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
+        <target state="translated">Odwołanie do pola „{0}” jest zduplikowane w tym inicjowaniu bitowym.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
+        <target state="translated">Składowa wyliczenia „{0}” ma tę samą stałą wartość „{1}” co składowa „{2}”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
+        <source>Enums values should not be duplicated</source>
+        <target state="translated">Wartości wyliczenia nie powinny być duplikowane</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
-        <target state="translated">Usuń finalizator z typu „{0}”, przesłoń funkcję Dispose(bool disposing) i umieść logikę finalizacji na ścieżce w kodzie, gdzie element „disposing” ma wartość false. W przeciwnym razie mogą pojawić się zduplikowane wywołania funkcji Dispose, ponieważ typ bazowy „{1}” także udostępnia finalizator.</target>
+        <target state="translated">Usuń finalizator z typu „{0}”, przesłoń funkcję Dispose(bool disposing) i umieść logikę finalizacji w ścieżce kodu, gdzie element „disposing” ma wartość false. W przeciwnym razie mogą pojawić się zduplikowane wywołania funkcji Dispose, ponieważ typ bazowy „{1}” także udostępnia finalizator.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
@@ -919,7 +934,7 @@
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyDescription">
         <source>All IDisposable types should implement the Dispose pattern correctly.</source>
-        <target state="translated">Wszystkie typy IDisposable powinny poprawnie implementować wzorzec likwidacji.</target>
+        <target state="translated">Wszystkie typy IDisposable powinny poprawnie implementować wzorzec Dispose.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
@@ -929,7 +944,7 @@
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
         <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.</source>
-        <target state="translated">Usuń funkcję „{0}”, przesłoń funkcję Dispose(bool disposing) i umieść logikę usuwania na ścieżce w kodzie, gdzie element „disposing” ma wartość true.</target>
+        <target state="translated">Usuń funkcję „{0}”, przesłoń funkcję Dispose(bool disposing) i umieść logikę usuwania w ścieżce kodu, gdzie element „disposing” ma wartość true.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
@@ -1594,7 +1609,7 @@
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket">
         <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</source>
-        <target state="translated">Element {0} jest deklaracją P/Invoke dla interfejsu API OLE32, który nie może być niezawodnie wywoływany dla wywoływalnej otoki środowiska uruchomieniowego (obiekt zarządzany owija obiekt COM). Wywoływalne otoki środowiska uruchomieniowego dynamicznie pobierają wskaźniki interfejsu, więc efekt wywołania może zostać arbitralnie utracony. Wywoływalne otoki środowiska uruchomieniowego dla danego obiektu COM są również udostępniane w domenie aplikacji, więc wywołanie może ewentualnie mieć wpływ na innych użytkowników. Zastąp to wywołanie natywną otoką obiektu COM dla wskaźnika interfejsu, który wykonuje odpowiednie wywołania CoSetProxyBlanket.</target>
+        <target state="translated">Element {0} jest deklaracją P/Invoke dla interfejsu API OLE32, który nie może być niezawodnie wywoływany dla wywoływalnego programu owijania środowiska uruchomieniowego (obiekt zarządzany owija obiekt COM). Wywoływalne programy owijania środowiska uruchomieniowego dynamicznie pobierają wskaźniki interfejsu, więc efekt wywołania może zostać arbitralnie utracony. Wywoływalne programy owijania środowiska uruchomieniowego dla danego obiektu COM są również udostępniane w domenie aplikacji, więc wywołanie może ewentualnie mieć wpływ na innych użytkowników. Zastąp to wywołanie natywnym programem owijania obiektu COM dla wskaźnika interfejsu, który wykonuje odpowiednie wywołania CoSetProxyBlanket.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
@@ -1933,13 +1948,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Elementy członkowskie, które nie uzyskują dostępu do danych wystąpienia lub metod wywołania wystąpienia można oznaczyć jako statyczne (Shared w języku Visual Basic). Po oznaczeniu metod jako statyczne kompilator będzie emitować niewirtualne miejsca wywołań do tych elementów członkowskich. Może to spowodować wymierną poprawę wydajności kodu wrażliwego na zmiany wydajności.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="new">Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Element członkowski {0} nie uzyskuje dostępu do danych wystąpień i może zostać oznaczony jako statyczny (Shared w języku VisualBasic).</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="new">Member '{0}' does not access instance data and can be marked as static</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

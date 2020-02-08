@@ -1,35 +1,29 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForRegexInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForRegexInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForRegexInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForRegexInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForRegexInjectionVulnerabilities, ReviewCodeForRegexInjectionVulnerabilities>
     {
-        public ReviewCodeForRegexInjectionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForRegexInjectionVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForRegexInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForRegexInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Text.RegularExpressions;
 
@@ -43,13 +37,26 @@ public partial class WebForm : System.Web.UI.Page
         Match m = Regex.Match(SearchableText, ""^term="" + findTerm);
     }
 }",
-                GetCSharpResultAt(12, 19, 11, 27, "Match Regex.Match(string input, string pattern)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(12, 19, 11, 27, "Match Regex.Match(string input, string pattern)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Text.RegularExpressions
 
@@ -63,13 +70,19 @@ Public Partial Class WebForm
         Dim m As Match = Regex.Match(SearchableText, ""^term="" + findTerm)
     End Sub
 End Class",
-                GetBasicResultAt(12, 26, 11, 34, "Function Regex.Match(input As String, pattern As String) As Match", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(12, 26, 11, 34, "Function Regex.Match(input As String, pattern As String) As Match", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void Constructor_Diagnostic()
+        public async Task Constructor_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Text.RegularExpressions;
@@ -86,9 +99,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void Constructor_NoDiagnostic()
+        public async Task Constructor_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Text.RegularExpressions;
@@ -104,9 +117,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void IsMatch_Static_Diagnostic()
+        public async Task IsMatch_Static_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Text.RegularExpressions;
@@ -123,9 +136,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void IsMatch_Static_NoDiagnostic()
+        public async Task IsMatch_Static_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Text.RegularExpressions;
@@ -141,9 +154,9 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public void IsMatch_Instance_NoDiagnostic()
+        public async Task IsMatch_Instance_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Web;
 using System.Text.RegularExpressions;

@@ -1,27 +1,21 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.DoNotHardCodeCertificate, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class DoNotHardCodeCertificateTests : TaintedDataAnalyzerTestBase
+    public class DoNotHardCodeCertificateTests : TaintedDataAnalyzerTestBase<DoNotHardCodeCertificate, DoNotHardCodeCertificate>
     {
-        public DoNotHardCodeCertificateTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => DoNotHardCodeCertificate.Rule;
 
         [Fact]
-        public void Test_Source_ContantByteArray_Diagnostic()
+        public async Task Test_Source_ContantByteArray_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -38,9 +32,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Source_ConvertFromBase64String_WithConstantString_Diagnostic()
+        public async Task Test_Source_ConvertFromBase64String_WithConstantString_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -58,9 +52,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Source_ASCIIEncodingGetBytes_WithConstantString_Diagnostic()
+        public async Task Test_Source_ASCIIEncodingGetBytes_WithConstantString_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
@@ -78,9 +72,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Source_EncodingUTF8GetBytes_WithConstantString_Diagnostic()
+        public async Task Test_Source_EncodingUTF8GetBytes_WithConstantString_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
@@ -98,9 +92,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Source_ASCIIEncodingGetBytes_WithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantString_Diagnostic()
+        public async Task Test_Source_ASCIIEncodingGetBytes_WithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantString_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
@@ -118,9 +112,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithStringAndSecureStringAndX509KeyStorageFlagsParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndSecureStringAndX509KeyStorageFlagsParameters_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -138,9 +132,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithByteArrayAndStringAndX509KeyStorageFlagsParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayAndStringAndX509KeyStorageFlagsParameters_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -157,9 +151,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithStringAndStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndStringParameters_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -176,9 +170,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithStringAndSecureStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndSecureStringParameters_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -196,9 +190,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithStringAndStringAndX509KeyStorageFlagsParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithStringAndStringAndX509KeyStorageFlagsParameters_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -215,9 +209,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithByteArrayAndSecureStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayAndSecureStringParameters_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -235,9 +229,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithByteArrayParameter_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -254,9 +248,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Sink_X509Certificate_WithByteArrayAndStringParameters_Diagnostic()
+        public async Task Test_Sink_X509Certificate_WithByteArrayAndStringParameters_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -273,9 +267,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_X509Certificates2_Diagnostic()
+        public async Task Test_X509Certificates2_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -293,9 +287,9 @@ class TestClass
 
         // For now, we didn't take serialization into consideration.
         [Fact]
-        public void Test_Sink_X509Certificate_WithSerializationInfoAndStreamingContextParameters_NoDiagnostic()
+        public async Task Test_Sink_X509Certificate_WithSerializationInfoAndStreamingContextParameters_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Runtime.Serialization;
 using System.Security;
@@ -311,9 +305,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Source_NotContantByteArray_NoDiagnostic()
+        public async Task Test_Source_NotContantByteArray_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -328,9 +322,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Source_ConvertFromBase64String_WithNotConstantString_NoDiagnostic()
+        public async Task Test_Source_ConvertFromBase64String_WithNotConstantString_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -347,9 +341,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_X509Certificate2_NoDiagnostic()
+        public async Task Test_X509Certificate2_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -364,9 +358,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_Source_ASCIIEncodingGetBytes_WithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantCharArray_NoDiagnostic()
+        public async Task Test_Source_ASCIIEncodingGetBytes_WithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantCharArray_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Text;
 
@@ -386,9 +380,9 @@ class TestClass
 
         // Didn't find out what causes NRE.
         [Fact, WorkItem(3012, "https://github.com/dotnet/roslyn-analyzers/issues/3012")]
-        public void Test_ExampleCodeFromTheIssue_NoDiagnostic()
+        public async Task Test_ExampleCodeFromTheIssue_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 using System.IO;
@@ -435,9 +429,9 @@ class TestClass
         }
 
         [Fact]
-        public void Test_NullCfg_NoDiagnostic()
+        public async Task Test_NullCfg_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class TestClass
@@ -446,16 +440,6 @@ public class TestClass
 
     public static readonly byte[] ByteArray = Convert.FromBase64String(""Some strings."");
 }");
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotHardCodeCertificate();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotHardCodeCertificate();
         }
     }
 }

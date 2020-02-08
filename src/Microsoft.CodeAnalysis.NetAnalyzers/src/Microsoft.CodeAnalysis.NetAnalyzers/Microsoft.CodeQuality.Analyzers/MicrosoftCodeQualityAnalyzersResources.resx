@@ -1239,10 +1239,10 @@
     <value>Mark members as static</value>
   </data>
   <data name="MarkMembersAsStaticDescription" xml:space="preserve">
-    <value>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</value>
+    <value>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</value>
   </data>
   <data name="MarkMembersAsStaticMessage" xml:space="preserve">
-    <value>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</value>
+    <value>Member '{0}' does not access instance data and can be marked as static</value>
   </data>
   <data name="ReviewVisibleEventHandlersTitle" xml:space="preserve">
     <value>Review visible event handlers</value>
@@ -1360,5 +1360,14 @@
   </data>
   <data name="AvoidOutParametersTitle" xml:space="preserve">
     <value>Avoid out parameters</value>
+  </data>
+  <data name="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart" xml:space="preserve">
+    <value>The field reference '{0}' is duplicated in this bitwise initialization.</value>
+  </data>
+  <data name="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue" xml:space="preserve">
+    <value>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</value>
+  </data>
+  <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
+    <value>Enums values should not be duplicated</value>
   </data>
 </root>

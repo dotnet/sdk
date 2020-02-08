@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotPrefixEnumValuesWithTypeNameAnalyzer,
@@ -144,7 +143,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         // No data
         [InlineData("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = FOO")]
+        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue, AllEnumValues")]
         // Valid options
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
@@ -213,7 +212,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         // No data
         [InlineData("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = FOO")]
+        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         // Valid options
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
@@ -281,7 +280,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         // No data
         [InlineData("")]
         // Invalid option
-        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = FOO")]
+        [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = invalid")]
         // Valid options
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue")]
         [InlineData("dotnet_code_quality.CA1712.enum_values_prefix_trigger = AllEnumValues")]
@@ -358,12 +357,12 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
-            => new DiagnosticResult(DoNotPrefixEnumValuesWithTypeNameAnalyzer.Rule)
+            => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
-            => new DiagnosticResult(DoNotPrefixEnumValuesWithTypeNameAnalyzer.Rule)
+            => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
                 .WithArguments(arguments);
     }

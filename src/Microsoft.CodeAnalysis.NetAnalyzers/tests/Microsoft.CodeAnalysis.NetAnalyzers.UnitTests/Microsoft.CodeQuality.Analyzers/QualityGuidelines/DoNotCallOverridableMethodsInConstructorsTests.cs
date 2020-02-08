@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -16,18 +13,8 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
-    public partial class DoNotCallOverridableMethodsInConstructorsTests : DiagnosticAnalyzerTestBase
+    public class DoNotCallOverridableMethodsInConstructorsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotCallOverridableMethodsInConstructorsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotCallOverridableMethodsInConstructorsAnalyzer();
-        }
-
         [Fact]
         public async Task CA2214VirtualMethodCSharp()
         {
@@ -36,27 +23,27 @@ class C
 {
     C()
     {
-        Foo();
+        SomeMethod();
     }
 
-    protected virtual void Foo() { }
+    protected virtual void SomeMethod() { }
 }
 ",
             GetCA2214CSharpResultAt(6, 9));
         }
 
         [Fact]
-        public void CA2214VirtualMethodCSharpWithScope()
+        public async Task CA2214VirtualMethodCSharpWithScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     C()
     {
-        Foo();
+        [|SomeMethod()|];
     }
 
-    [|protected virtual void Foo() { }|]
+    protected virtual void SomeMethod() { }
 }
 ");
         }
@@ -67,9 +54,9 @@ class C
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Public Sub New()
-        Foo()
+        SomeMethod()
     End Sub
-    Overridable Sub Foo()
+    Overridable Sub SomeMethod()
     End Sub
 End Class
 ",
@@ -77,15 +64,15 @@ End Class
         }
 
         [Fact]
-        public void CA2214VirtualMethodBasicwithScope()
+        public async Task CA2214VirtualMethodBasicwithScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Public Sub New()
-        Foo()
+        [|SomeMethod()|]
     End Sub
-    [|Overridable Sub Foo()
-    End Sub|]
+    Overridable Sub SomeMethod()
+    End Sub
 End Class
 ");
         }
@@ -98,10 +85,10 @@ abstract class C
 {
     C()
     {
-        Foo();
+        SomeMethod();
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 ",
             GetCA2214CSharpResultAt(6, 9));
@@ -113,9 +100,9 @@ abstract class C
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
     Public Sub New()
-        Foo()
+        SomeMethod()
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 ",
             GetCA2214BasicResultAt(4, 9));
@@ -129,12 +116,12 @@ abstract class C
 {
     C()
     {
-        Foo();
-        Bar();
+        SomeMethod();
+        SomeOtherMethod();
     }
 
-    protected abstract void Foo();
-    protected virtual void Bar() { }
+    protected abstract void SomeMethod();
+    protected virtual void SomeOtherMethod() { }
 }
 ",
             GetCA2214CSharpResultAt(6, 9),
@@ -147,11 +134,11 @@ abstract class C
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
     Public Sub New()
-        Foo()
-        Bar()
+        SomeMethod()
+        SomeOtherMethod()
     End Sub
-    MustOverride Sub Foo()
-    Overridable Sub Bar()
+    MustOverride Sub SomeMethod()
+    Overridable Sub SomeOtherMethod()
     End Sub
 End Class
 ",
@@ -169,16 +156,16 @@ abstract class C
     {
         if (true)
         {
-            Foo();
+            SomeMethod();
         }
 
         if (false)
         {
-            Foo(); // also check unreachable code
+            SomeMethod(); // also check unreachable code
         }
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 ",
             GetCA2214CSharpResultAt(8, 13),
@@ -192,14 +179,14 @@ abstract class C
 MustInherit Class C
     Public Sub New()
         If True Then
-            Foo()
+            SomeMethod()
         End If
 
         If False Then
-            Foo() ' also check unreachable code
+            SomeMethod() ' also check unreachable code
         End If
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 ",
             GetCA2214BasicResultAt(5, 13),
@@ -212,11 +199,11 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 abstract class C
 {
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 
     void Method()
     {
-        Foo();
+        SomeMethod();
     }
 }
 ");
@@ -227,41 +214,75 @@ abstract class C
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 MustInherit Class C
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 
     Sub Method()
-        Foo()
+        SomeMethod()
     End Sub
 End Class
 ");
         }
 
         [Fact]
-        public void CA2214SpecialInheritanceCSharp()
+        public async Task CA2214SpecialInheritanceCSharp_Web()
         {
-            var source = @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithSystemWeb,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 abstract class C : System.Web.UI.Control
 {
     C()
     {
         // no diagnostics because we inherit from System.Web.UI.Control
-        Foo();
+        SomeMethod();
         OnLoad(null);
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 
+abstract class F : System.ComponentModel.Component
+{
+    F()
+    {
+        // no diagnostics because we inherit from System.ComponentModel.Component
+        SomeMethod();
+    }
+
+    protected abstract void SomeMethod();
+}
+"
+                    },
+                }
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task CA2214SpecialInheritanceCSharp_WinForms()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 abstract class D : System.Windows.Forms.Control
 {
     D()
     {
         // no diagnostics because we inherit from System.Windows.Forms.Control
-        Foo();
+        SomeMethod();
         OnPaint(null);
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
 
 class ControlBase : System.Windows.Forms.Control
@@ -281,41 +302,36 @@ abstract class F : System.ComponentModel.Component
     F()
     {
         // no diagnostics because we inherit from System.ComponentModel.Component
-        Foo();
+        SomeMethod();
     }
 
-    protected abstract void Foo();
+    protected abstract void SomeMethod();
 }
-";
-            Document document = CreateDocument(source, LanguageNames.CSharp);
-            Project project = document.Project.AddMetadataReference(MetadataReference.CreateFromFile(typeof(System.Web.UI.Control).Assembly.Location));
-            project = project.AddMetadataReference(MetadataReference.CreateFromFile(typeof(System.Windows.Forms.Control).Assembly.Location));
-            DiagnosticAnalyzer analyzer = GetCSharpDiagnosticAnalyzer();
-            GetSortedDiagnostics(analyzer, project.Documents.Single()).Verify(analyzer, GetDefaultPath(LanguageNames.CSharp));
+"
+                    },
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA2214SpecialInheritanceBasic()
+        public async Task CA2214SpecialInheritanceBasic_WinForms()
         {
-            var source = @"
-MustInherit Class C
-    Inherits System.Web.UI.Control
-    Public Sub New()
-        ' no diagnostics because we inherit from System.Web.UI.Control
-        Foo()
-        OnLoad(Nothing)
-    End Sub
-    MustOverride Sub Foo()
-End Class
-
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 MustInherit Class D
     Inherits System.Windows.Forms.Control
     Public Sub New()
         ' no diagnostics because we inherit from System.Windows.Forms.Control
-        Foo()
+        SomeMethod()
         OnPaint(Nothing)
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
 
 Class ControlBase
@@ -333,16 +349,49 @@ MustInherit Class F
     Inherits System.ComponentModel.Component
     Public Sub New()
         ' no diagnostics because we inherit from System.ComponentModel.Component
-        Foo()
+        SomeMethod()
     End Sub
-    MustOverride Sub Foo()
+    MustOverride Sub SomeMethod()
 End Class
-";
-            Document document = CreateDocument(source, LanguageNames.VisualBasic);
-            Project project = document.Project.AddMetadataReference(MetadataReference.CreateFromFile(typeof(System.Web.UI.Control).Assembly.Location));
-            project = project.AddMetadataReference(MetadataReference.CreateFromFile(typeof(System.Windows.Forms.Control).Assembly.Location));
-            DiagnosticAnalyzer analyzer = GetBasicDiagnosticAnalyzer();
-            GetSortedDiagnostics(analyzer, project.Documents.Single()).Verify(analyzer, GetDefaultPath(LanguageNames.VisualBasic));
+"
+                    },
+                }
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task CA2214SpecialInheritanceBasic_Web()
+        {
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithSystemWeb,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+MustInherit Class C
+    Inherits System.Web.UI.Control
+    Public Sub New()
+        ' no diagnostics because we inherit from System.Web.UI.Control
+        SomeMethod()
+        OnLoad(Nothing)
+    End Sub
+    MustOverride Sub SomeMethod()
+End Class
+
+MustInherit Class F
+    Inherits System.ComponentModel.Component
+    Public Sub New()
+        ' no diagnostics because we inherit from System.ComponentModel.Component
+        SomeMethod()
+    End Sub
+    MustOverride Sub SomeMethod()
+End Class
+"
+                    },
+                }
+            }.RunAsync();
         }
 
         [Fact]
@@ -351,7 +400,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 class D
 {
-    public virtual void Foo() {}
+    public virtual void SomeMethod() {}
 }
 
 class C
@@ -360,7 +409,7 @@ class C
     {
         if (obj.Equals(d))
         {
-            d.Foo();
+            d.SomeMethod();
         }
     }
 }
@@ -372,14 +421,14 @@ class C
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class D
-    Public Overridable Sub Foo()
+    Public Overridable Sub SomeMethod()
     End Sub
 End Class
 
 Class C
     Public Sub New(obj As Object, d As D)
         If obj.Equals(d) Then
-            d.Foo()
+            d.SomeMethod()
         End If
     End Sub
 End Class
@@ -424,13 +473,11 @@ End Class
         }
 
         private static DiagnosticResult GetCA2214CSharpResultAt(int line, int column)
-            => new DiagnosticResult(DoNotCallOverridableMethodsInConstructorsAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.DoNotCallOverridableMethodsInConstructors);
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetCA2214BasicResultAt(int line, int column)
-            => new DiagnosticResult(DoNotCallOverridableMethodsInConstructorsAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.DoNotCallOverridableMethodsInConstructors);
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

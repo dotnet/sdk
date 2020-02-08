@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -49,9 +48,8 @@ struct S
     }
 }
 ";
-            string expectedMessage = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsMessage, "S");
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpResultAt(2, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, expectedMessage));
+                GetCSharpResultAt(2, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, "S"));
         }
 
         [Fact]
@@ -83,9 +81,8 @@ struct S : IEquatable<S>
     }
 }
 ";
-            string expectedMessage = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsMessage, "S");
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpResultAt(4, 8, EquatableAnalyzer.OverridesObjectEqualsDescriptor, expectedMessage));
+                GetCSharpResultAt(4, 8, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "S"));
         }
 
         [Fact]
@@ -102,9 +99,8 @@ class C : IEquatable<C>
     }
 }
 ";
-            string expectedMessage = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsMessage, "C");
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, expectedMessage));
+                GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "C"));
         }
 
         [Fact]
@@ -220,9 +216,8 @@ class C : IEquatable<C>
     public bool {|CS0501:Equals|}(C other){|CS1002:|}
 }
 ";
-            string expectedMessage = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsMessage, "C");
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, expectedMessage));
+                GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "C"));
         }
 
         [Fact]
@@ -273,9 +268,8 @@ class C : IEquatable<C>
     }
 }
 ";
-            string expectedMessage = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsMessage, "C");
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, expectedMessage));
+                GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "C"));
         }
 
         [Fact]
@@ -300,11 +294,10 @@ struct C : {|CS0527:B|}
     }
 }
 ";
-            string expectedMessage1 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsMessage, "B");
-            string expectedMessage2 = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsMessage, "C");
             await VerifyCS.VerifyAnalyzerAsync(code,
-                GetCSharpResultAt(4, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, expectedMessage1),
-                GetCSharpResultAt(12, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, expectedMessage2));
+                GetCSharpResultAt(4, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, "B"),
+                // Test0.cs(12,8): warning CA1066: Implement IEquatable when overriding Object.Equals
+                GetCSharpResultAt(12, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, "C"));
         }
 
         [Fact, WorkItem(1914, "https://github.com/dotnet/roslyn-analyzers/issues/1914")]
@@ -395,9 +388,9 @@ public ref struct S
             }.RunAsync();
         }
 
-        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string message)
-            => new DiagnosticResult(rule)
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string typeName)
+            => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
-                .WithMessage(message);
+                .WithArguments(typeName);
     }
 }

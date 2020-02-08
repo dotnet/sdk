@@ -4,10 +4,10 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.NetCore.CSharp.Analyzers.Runtime;
 using Microsoft.NetCore.VisualBasic.Analyzers.Runtime;
 using Test.Utilities;
-using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpProvideDeserializationMethodsForOptionalFieldsAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpProvideDeserializationMethodsForOptionalFieldsFixer>;
-using VerifyVB = Microsoft.CodeAnalysis.VisualBasic.Testing.XUnit.CodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicProvideDeserializationMethodsForOptionalFieldsAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicProvideDeserializationMethodsForOptionalFieldsFixer>;
 

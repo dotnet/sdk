@@ -31,17 +31,17 @@ namespace Microsoft.NetCore.Analyzers.Security
                 "CA2327",
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSettingsTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSettingsMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2327",
-                customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true);
         internal static readonly DiagnosticDescriptor MaybeInsecureSettings =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2328",
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSettingsTitle),
                 nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSettingsMessage),
-                isEnabledByDefault: false,
-                helpLinkUri: "https://docs.microsoft.com/visualstudio/code-quality/ca2328",
-                customTags: WellKnownDiagnosticTagsExtensions.DataflowAndTelemetry);
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(

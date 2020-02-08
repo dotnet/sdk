@@ -7,10 +7,10 @@ using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHavePluralNamesAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumsShouldHavePluralNamesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHavePluralNamesAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicEnumsShouldHavePluralNamesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
@@ -555,23 +555,19 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpPluralResultAt(int line, int column)
-            => new DiagnosticResult(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1714)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.FlagsEnumsShouldHavePluralNamesMessage);
+            => VerifyCS.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1714)
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicPluralResultAt(int line, int column)
-            => new DiagnosticResult(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1714)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.FlagsEnumsShouldHavePluralNamesMessage);
+            => VerifyVB.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1714)
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetCSharpNoPluralResultAt(int line, int column)
-            => new DiagnosticResult(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1717)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.OnlyFlagsEnumsShouldHavePluralNamesMessage);
+            => VerifyCS.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1717)
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicNoPluralResultAt(int line, int column)
-            => new DiagnosticResult(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1717)
-                .WithLocation(line, column)
-                .WithMessage(MicrosoftCodeQualityAnalyzersResources.OnlyFlagsEnumsShouldHavePluralNamesMessage);
+            => VerifyVB.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1717)
+                .WithLocation(line, column);
     }
 }

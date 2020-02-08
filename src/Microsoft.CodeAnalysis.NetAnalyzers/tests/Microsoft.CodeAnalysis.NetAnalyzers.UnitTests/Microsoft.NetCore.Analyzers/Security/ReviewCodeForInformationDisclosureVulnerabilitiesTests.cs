@@ -1,36 +1,29 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForInformationDisclosureVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForInformationDisclosureVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForInformationDisclosureVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForInformationDisclosureVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForInformationDisclosureVulnerabilities, ReviewCodeForInformationDisclosureVulnerabilities>
     {
-        public ReviewCodeForInformationDisclosureVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForInformationDisclosureVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForInformationDisclosureVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForInformationDisclosureVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            this.VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public partial class WebForm : System.Web.UI.Page
@@ -48,13 +41,26 @@ public partial class WebForm : System.Web.UI.Page
         }
     }
 }",
-                GetCSharpResultAt(15, 13, 15, 33, "void HttpResponse.Write(string s)", "void WebForm.Page_Load(object sender, EventArgs eventArgs)", "string Exception.ToString()", "void WebForm.Page_Load(object sender, EventArgs eventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(15, 13, 15, 33, "void HttpResponse.Write(string s)", "void WebForm.Page_Load(object sender, EventArgs eventArgs)", "string Exception.ToString()", "void WebForm.Page_Load(object sender, EventArgs eventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            this.VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Partial Public Class WebForm 
@@ -69,13 +75,26 @@ Partial Public Class WebForm
         End Try
     End Sub
 End Class",
-                GetBasicResultAt(12, 13, 12, 31, "Sub HttpResponse.Write(s As String)", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)", "Function Exception.ToString() As String", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(12, 13, 12, 31, "Sub HttpResponse.Write(s As String)", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)", "Function Exception.ToString() As String", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample1_CSharp_Solution_NoDiagnostic()
         {
-            this.VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public partial class WebForm : System.Web.UI.Page
@@ -92,13 +111,23 @@ public partial class WebForm : System.Web.UI.Page
             this.Response.Write(""An error occurred. Please try again later."");
         }
     }
-}");
+}",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void DocSample1_VB_Solution_NoDiagnostic()
+        public async Task DocSample1_VB_Solution_NoDiagnostic()
         {
-            this.VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Partial Public Class WebForm 
@@ -112,13 +141,16 @@ Partial Public Class WebForm
             Me.Response.Write(""An error occurred. Please try again later."")
         End Try
     End Sub
-End Class");
+End Class",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void ExceptionToString_ConsoleOutWriteLine()
+        public async Task ExceptionToString_ConsoleOutWriteLine()
         {
-            this.VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class Class
@@ -140,9 +172,16 @@ public class Class
         }
 
         [Fact]
-        public void NullReferenceExceptionToString_HttpResponseWrite()
+        public async Task NullReferenceExceptionToString_HttpResponseWrite()
         {
-            this.VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Web;
 
@@ -162,13 +201,26 @@ public class Class
     }
 }
 ",
-                GetCSharpResultAt(16, 13, 16, 28, "void HttpResponse.Write(string s)", "void Class.Blah(HttpResponse response)", "string Exception.ToString()", "void Class.Blah(HttpResponse response)"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(16, 13, 16, 28, "void HttpResponse.Write(string s)", "void Class.Blah(HttpResponse response)", "string Exception.ToString()", "void Class.Blah(HttpResponse response)"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void NullReferenceExceptionMessage_HtmlSelectInnerHtml()
+        public async Task NullReferenceExceptionMessage_HtmlSelectInnerHtml()
         {
-            this.VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Web.UI.HtmlControls;
 
@@ -189,13 +241,26 @@ public class Class
     }
 }
 ",
-                GetCSharpResultAt(17, 13, 17, 32, "string HtmlSelect.InnerHtml", "void Class.Blah()", "string Exception.Message", "void Class.Blah()"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(17, 13, 17, 32, "string HtmlSelect.InnerHtml", "void Class.Blah()", "string Exception.Message", "void Class.Blah()"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void NullReferenceExceptionStackTrace_BulletedListText()
+        public async Task NullReferenceExceptionStackTrace_BulletedListText()
         {
-            this.VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Web.UI.WebControls;
 
@@ -216,13 +281,26 @@ public class Class
     }
 }
 ",
-                GetCSharpResultAt(17, 13, 17, 38, "string BulletedList.Text", "void Class.Blah()", "string Exception.StackTrace", "void Class.Blah()"));
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(17, 13, 17, 38, "string BulletedList.Text", "void Class.Blah()", "string Exception.StackTrace", "void Class.Blah()"),
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void TryUsingTryUsingTry_NoDiagnostic()
+        public async Task TryUsingTryUsingTry_NoDiagnostic()
         {
-            this.VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -270,13 +348,23 @@ public class Class
         }
     }
 }
-");
+",
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact, WorkItem(2457, "https://github.com/dotnet/roslyn-analyzers/issues/2457")]
-        public void PredicateAnalysisAssert_PredicatedOnNonBoolEntity()
+        public async Task PredicateAnalysisAssert_PredicatedOnNonBoolEntity()
         {
-            this.VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Web.UI.WebControls;
 
@@ -313,7 +401,10 @@ public class Class
     {
         Console.WriteLine(""c was null = {0}, c.AProperty = {1}"", c == null, c == null ? ""(null)"" : c.AProperty.GetValueOrDefault(-1).ToString());
     }
-}");
+}",
+                    },
+                },
+            }.RunAsync();
         }
     }
 }

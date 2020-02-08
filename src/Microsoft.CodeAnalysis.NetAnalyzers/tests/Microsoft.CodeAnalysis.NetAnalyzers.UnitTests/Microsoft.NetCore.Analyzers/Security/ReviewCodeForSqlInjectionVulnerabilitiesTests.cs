@@ -1,35 +1,21 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForSqlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class ReviewCodeForSqlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase
+    public class ReviewCodeForSqlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForSqlInjectionVulnerabilities, ReviewCodeForSqlInjectionVulnerabilities>
     {
-        public ReviewCodeForSqlInjectionVulnerabilitiesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         protected override DiagnosticDescriptor Rule => ReviewCodeForSqlInjectionVulnerabilities.Rule;
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForSqlInjectionVulnerabilities();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewCodeForSqlInjectionVulnerabilities();
-        }
-
         [Fact]
-        public void DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -61,9 +47,9 @@ namespace TestNamespace
         }
 
         [Fact]
-        public void DocSample1_CSharp_ParameterizedSolution_NoDiagnostic()
+        public async Task DocSample1_CSharp_ParameterizedSolution_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -96,9 +82,9 @@ namespace TestNamespace
         }
 
         [Fact]
-        public void DocSample1_CSharp_StoredProcedureSolution_NoDiagnostic()
+        public async Task DocSample1_CSharp_StoredProcedureSolution_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -131,9 +117,9 @@ namespace TestNamespace
         }
 
         [Fact]
-        public void DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_Diagnostic()
         {
-            VerifyBasicWithDependencies(@"
+            await VerifyVisualBasicWithDependenciesAsync(@"
 Imports System
 Imports System.Data
 Imports System.Data.SqlClient
@@ -160,9 +146,9 @@ End Namespace
         }
 
         [Fact]
-        public void DocSample1_VB_ParameterizedSolution_NoDiagnostic()
+        public async Task DocSample1_VB_ParameterizedSolution_NoDiagnostic()
         {
-            VerifyBasicWithDependencies(@"
+            await VerifyVisualBasicWithDependenciesAsync(@"
 Imports System
 Imports System.Data
 Imports System.Data.SqlClient
@@ -189,9 +175,9 @@ End Namespace
         }
 
         [Fact]
-        public void DocSample1_VB_StoredProcedureSolution_NoDiagnostic()
+        public async Task DocSample1_VB_StoredProcedureSolution_NoDiagnostic()
         {
-            VerifyBasicWithDependencies(@"
+            await VerifyVisualBasicWithDependenciesAsync(@"
 Imports System
 Imports System.Data
 Imports System.Data.SqlClient
@@ -218,9 +204,9 @@ End Namespace
         }
 
         [Fact]
-        public void HttpRequest_Form_LocalString_Diagnostic()
+        public async Task HttpRequest_Form_LocalString_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -251,9 +237,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_LocalString_VB_Diagnostic()
+        public async Task HttpRequest_Form_LocalString_VB_Diagnostic()
         {
-            VerifyBasicWithDependencies(@"
+            await VerifyVisualBasicWithDependenciesAsync(@"
 Imports System
 Imports System.Data
 Imports System.Data.SqlClient
@@ -279,9 +265,9 @@ End Namespace
         }
 
         [Fact]
-        public void HttpRequest_Form_DelegateInvocation_OutParam_LocalString_Diagnostic()
+        public async Task HttpRequest_Form_DelegateInvocation_OutParam_LocalString_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -316,9 +302,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_InterfaceInvocation_OutParam_LocalString_Diagnostic()
+        public async Task HttpRequest_Form_InterfaceInvocation_OutParam_LocalString_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -353,9 +339,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_LocalStringMoreBlocks_Diagnostic()
+        public async Task HttpRequest_Form_LocalStringMoreBlocks_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -392,9 +378,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_And_QueryString_LocalStringMoreBlocks_Diagnostic()
+        public async Task HttpRequest_Form_And_QueryString_LocalStringMoreBlocks_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -432,9 +418,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_Direct_Diagnostic()
+        public async Task HttpRequest_Form_Direct_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -461,9 +447,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_Substring_Diagnostic()
+        public async Task HttpRequest_Form_Substring_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -491,9 +477,9 @@ namespace VulnerableWebApp
 
 
         [Fact]
-        public void Sanitized_HttpRequest_Form_Direct_NoDiagnostic()
+        public async Task Sanitized_HttpRequest_Form_Direct_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -519,9 +505,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void Sanitized_HttpRequest_Form_TryParse_NoDiagnostic()
+        public async Task Sanitized_HttpRequest_Form_TryParse_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -551,9 +537,9 @@ namespace VulnerableWebApp
 
 
         [Fact]
-        public void HttpRequest_Form_Item_Diagnostic()
+        public async Task HttpRequest_Form_Item_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -580,9 +566,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_Item_Enters_SqlParameters_NoDiagnostic()
+        public async Task HttpRequest_Form_Item_Enters_SqlParameters_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -612,9 +598,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_Item_Sql_Constructor_Diagnostic()
+        public async Task HttpRequest_Form_Item_Sql_Constructor_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -638,9 +624,9 @@ namespace VulnerableWebApp
 
 
         [Fact]
-        public void HttpRequest_Form_Method_Diagnostic()
+        public async Task HttpRequest_Form_Method_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -668,9 +654,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_LocalNameValueCollectionString_Diagnostic()
+        public async Task HttpRequest_Form_LocalNameValueCollectionString_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -699,9 +685,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_List_Diagnostic()
+        public async Task HttpRequest_Form_List_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -731,11 +717,11 @@ namespace VulnerableWebApp
         }
 
         [Fact(Skip = "Would be nice to distinguish between tainted and non-tainted elements in the List, but for now we taint the entire List from its construction.  FxCop also has a false positive.")]
-        public void HttpRequest_Form_List_SafeElement_Diagnostic()
+        public async Task HttpRequest_Form_List_SafeElement_Diagnostic()
         {
             // Would be nice to distinguish between tainted and non-tainted elements in the List, but for now we taint the entire List from its construction.  FxCop also has a false positive.
 
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -765,9 +751,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_Array_List_Diagnostic()
+        public async Task HttpRequest_Form_Array_List_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -799,9 +785,9 @@ namespace VulnerableWebApp
 
 
         [Fact]
-        public void HttpRequest_Form_Array_Diagnostic()
+        public async Task HttpRequest_Form_Array_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -831,9 +817,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_LocalStructNameValueCollectionString_Diagnostic()
+        public async Task HttpRequest_Form_LocalStructNameValueCollectionString_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -871,9 +857,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_LocalStructConstructorNameValueCollectionString_Diagnostic()
+        public async Task HttpRequest_Form_LocalStructConstructorNameValueCollectionString_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 
 namespace VulnerableWebApp
 {
@@ -918,9 +904,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_Form_LocalStructConstructorNameValueCollectionString_VB_Diagnostic()
+        public async Task HttpRequest_Form_LocalStructConstructorNameValueCollectionString_VB_Diagnostic()
         {
-            VerifyBasicWithDependencies(@"
+            await VerifyVisualBasicWithDependenciesAsync(@"
 Imports System
 Imports System.Collections.Specialized
 Imports System.Data
@@ -960,9 +946,9 @@ End Namespace
         }
 
         [Fact]
-        public void HttpRequest_UserLanguages_Direct_Diagnostic()
+        public async Task HttpRequest_UserLanguages_Direct_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -989,9 +975,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_UserLanguages_LocalStringArray_Diagnostic()
+        public async Task HttpRequest_UserLanguages_LocalStringArray_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1019,9 +1005,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HttpRequest_UserLanguages_LocalStringModified_Diagnostic()
+        public async Task HttpRequest_UserLanguages_LocalStringModified_Diagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1049,9 +1035,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void OkayInputLocalStructNameValueCollectionString_NoDiagnostic()
+        public async Task OkayInputLocalStructNameValueCollectionString_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1090,9 +1076,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void OkayInputConst_NoDiagnostic()
+        public async Task OkayInputConst_NoDiagnostic()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1108,7 +1094,7 @@ namespace VulnerableWebApp
         {
             SqlCommand sqlCommand = new SqlCommand()
             {
-                CommandText = ""SELECT * FROM users WHERE username = 'foo'"",
+                CommandText = ""SELECT * FROM users WHERE username = 'aaa'"",
                 CommandType = CommandType.Text,
             };
         }
@@ -1118,9 +1104,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void DataBoundLiteralControl_DirectImplementation_Text()
+        public async Task DataBoundLiteralControl_DirectImplementation_Text()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1147,9 +1133,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void DataBoundLiteralControl_Interface_Text()
+        public async Task DataBoundLiteralControl_Interface_Text()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1176,10 +1162,10 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void HtmlInputButton_Value()
+        public async Task HtmlInputButton_Value()
         {
             // HtmlInputButton derives from HtmlInputControl, and HtmlInputControl.Value is a tainted data source.
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1206,9 +1192,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void SimpleInterprocedural()
+        public async Task SimpleInterprocedural()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1244,9 +1230,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void SimpleInterproceduralTwice()
+        public async Task SimpleInterproceduralTwice()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1283,9 +1269,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void SimpleLocalFunction()
+        public async Task SimpleLocalFunction()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1318,9 +1304,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodReturnsTainted()
+        public async Task IntermediateMethodReturnsTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1360,9 +1346,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodReturnsTaintedButOutputUntainted()
+        public async Task IntermediateMethodReturnsTaintedButOutputUntainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1377,7 +1363,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string sqlCommandText = StillTainted(taintedInput, out string notTaintedSqlCommandText);
 
             ExecuteSql(notTaintedSqlCommandText);
@@ -1402,9 +1388,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodReturnsTaintedButRefUntainted()
+        public async Task IntermediateMethodReturnsTaintedButRefUntainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1419,7 +1405,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string notTaintedSqlCommandText = taintedInput;
             string sqlCommandText = StillTainted(taintedInput, ref notTaintedSqlCommandText);
 
@@ -1445,9 +1431,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodReturnsUntaintedButOutputTainted()
+        public async Task IntermediateMethodReturnsUntaintedButOutputTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1462,7 +1448,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string sqlCommandText = StillTainted(taintedInput, out string taintedSqlCommandText);
 
             ExecuteSql(taintedSqlCommandText);
@@ -1488,9 +1474,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodReturnsUntaintedButRefTainted()
+        public async Task IntermediateMethodReturnsUntaintedButRefTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1505,7 +1491,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string taintedSqlCommandText = null;
             string sqlCommandText = StillTainted(taintedInput, ref taintedSqlCommandText);
 
@@ -1532,9 +1518,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodReturnsNotTainted()
+        public async Task IntermediateMethodReturnsNotTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1573,9 +1559,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodSanitizesTainted()
+        public async Task IntermediateMethodSanitizesTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1614,9 +1600,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodOutParameterTainted()
+        public async Task IntermediateMethodOutParameterTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1656,9 +1642,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodOutParameterNotTainted()
+        public async Task IntermediateMethodOutParameterNotTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1697,9 +1683,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void IntermediateMethodOutParameterSanitizesTainted()
+        public async Task IntermediateMethodOutParameterSanitizesTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1738,9 +1724,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinaryReturnsDefaultStillTainted()
+        public async Task CrossBinaryReturnsDefaultStillTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1784,9 +1770,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinaryReturnsInputStillTainted()
+        public async Task CrossBinaryReturnsInputStillTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1829,9 +1815,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinarySetsOutputToDefaultStillTainted()
+        public async Task CrossBinarySetsOutputToDefaultStillTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1875,9 +1861,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinarySetsReferenceToDefaultStillTainted()
+        public async Task CrossBinarySetsReferenceToDefaultStillTainted()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1922,9 +1908,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Property_ConstructedInput()
+        public async Task CrossBinary_TaintedObject_Property_ConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -1962,9 +1948,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Property_Default()
+        public async Task CrossBinary_TaintedObject_Property_Default()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2003,9 +1989,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Method_ReturnsConstructedInput()
+        public async Task CrossBinary_TaintedObject_Method_ReturnsConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2043,9 +2029,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Method_SetsOutputToConstructedInput()
+        public async Task CrossBinary_TaintedObject_Method_SetsOutputToConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2085,9 +2071,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Method_SetsReferenceToConstructedInput()
+        public async Task CrossBinary_TaintedObject_Method_SetsReferenceToConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2128,9 +2114,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Method_ReturnsDefault()
+        public async Task CrossBinary_TaintedObject_Method_ReturnsDefault()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2169,9 +2155,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Method_SetsReferenceToDefault()
+        public async Task CrossBinary_TaintedObject_Method_SetsReferenceToDefault()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2213,9 +2199,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_TaintedObject_Method_ReturnsDefault_UntaintedInput()
+        public async Task CrossBinary_TaintedObject_Method_ReturnsDefault_UntaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2254,9 +2240,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Property_ConstructedInput()
+        public async Task CrossBinary_UntaintedObject_Property_ConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2293,9 +2279,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Property_Default()
+        public async Task CrossBinary_UntaintedObject_Property_Default()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2332,9 +2318,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_ReturnsConstructedInput()
+        public async Task CrossBinary_UntaintedObject_Method_ReturnsConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2371,9 +2357,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_SetsOutputToConstructedInput()
+        public async Task CrossBinary_UntaintedObject_Method_SetsOutputToConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2412,9 +2398,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_SetsReferenceToConstructedInput()
+        public async Task CrossBinary_UntaintedObject_Method_SetsReferenceToConstructedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2454,9 +2440,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_ReturnsDefault()
+        public async Task CrossBinary_UntaintedObject_Method_ReturnsDefault()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2494,9 +2480,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_SetsReferenceToDefault()
+        public async Task CrossBinary_UntaintedObject_Method_SetsReferenceToDefault()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2536,9 +2522,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_ReturnsDefault_UntaintedInput()
+        public async Task CrossBinary_UntaintedObject_Method_ReturnsDefault_UntaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2575,9 +2561,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_ReturnsDefault_TaintedInput()
+        public async Task CrossBinary_UntaintedObject_Method_ReturnsDefault_TaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2616,9 +2602,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_ReturnsInput_TaintedInput()
+        public async Task CrossBinary_UntaintedObject_Method_ReturnsInput_TaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2656,9 +2642,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_ReturnsRandom_TaintedInput()
+        public async Task CrossBinary_UntaintedObject_Method_ReturnsRandom_TaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2697,9 +2683,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_SetsOutputToDefault_TaintedInput()
+        public async Task CrossBinary_UntaintedObject_Method_SetsOutputToDefault_TaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2739,9 +2725,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_SetsOutputToInput_TaintedInput()
+        public async Task CrossBinary_UntaintedObject_Method_SetsOutputToInput_TaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2780,9 +2766,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void CrossBinary_UntaintedObject_Method_SetsOutputToRandom_TaintedInput()
+        public async Task CrossBinary_UntaintedObject_Method_SetsOutputToRandom_TaintedInput()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 namespace VulnerableWebApp
 {
     using System;
@@ -2822,9 +2808,9 @@ namespace VulnerableWebApp
         }
 
         [Fact]
-        public void NonMonotonicMergeAssert()
+        public async Task NonMonotonicMergeAssert()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -2900,9 +2886,16 @@ public class Class1
         }
 
         [Fact]
-        public void PointsToAnalysisAssertsLocationSetsComparison()
+        public async Task PointsToAnalysisAssertsLocationSetsComparison()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithSystemWeb,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.IO;
 using System.Threading;
@@ -3064,13 +3057,19 @@ public class Class1
         return true;
     }
 }
-");
+"
+                    },
+                    ExpectedDiagnostics =
+                    {
+                    },
+                },
+            }.RunAsync();
         }
 
         [Fact]
-        public void LotsOfAnalysisEntities_1()
+        public async Task LotsOfAnalysisEntities_1()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -3119,7 +3118,7 @@ namespace TestNamespace
                 StringProperty = ""This is tainted: "" + name,
             };
 
-            if ((new Random()).Next(6) == 4) 
+            if ((new Random()).Next(6) == 4)
             {
                 return null;
             }
@@ -3164,9 +3163,9 @@ namespace TestNamespace
         }
 
         [Fact]
-        public void LotsOfAnalysisEntities_2()
+        public async Task LotsOfAnalysisEntities_2()
         {
-            VerifyCSharpWithDependencies(@"
+            await VerifyCSharpWithDependenciesAsync(@"
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -3215,7 +3214,7 @@ namespace TestNamespace
                 StringProperty = ""This is tainted: "" + name,
             };
 
-            if ((new Random()).Next(6) == 4) 
+            if ((new Random()).Next(6) == 4)
             {
                 return null;
             }

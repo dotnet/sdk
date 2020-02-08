@@ -3,8 +3,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.NetFramework.CSharp.Analyzers;
-using Microsoft.NetFramework.VisualBasic.Analyzers;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.CSharp.Analyzers.CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer,
@@ -18,14 +16,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureXSLTScriptExecutionAnalyzerTests
     {
         private static DiagnosticResult GetCA3076LoadCSharpResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer.RuleDoNotUseInsecureXSLTScriptExecution).WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
-        }
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
 
         private static DiagnosticResult GetCA3076LoadBasicResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(BasicDoNotUseInsecureXSLTScriptExecutionAnalyzer.RuleDoNotUseInsecureXSLTScriptExecution).WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
-        }
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage, name));
 
         [Fact]
         public async Task Issue2752()
@@ -33,8 +27,8 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Xml.Xsl
 
-Public Module Foobar
-    Friend Sub foo()
+Public Module SomeClass
+    Friend Sub method()
         Dim internalSettings As New XsltSettings(False, False)
     End Sub
 End Module
@@ -51,8 +45,8 @@ End Class");
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Xml.Xsl
 
-Public Module Foobar
-    Friend Sub foo()
+Public Module SomeClass
+    Friend Sub method()
         Dim internalSettings As New XsltSettings()
         internalSettings.EnableDocumentFunction = False
         internalSettings.EnableScript = False
@@ -71,8 +65,8 @@ End Class");
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Xml.Xsl
 
-Public Module Foobar
-    Friend Sub foo()
+Public Module SomeClass
+    Friend Sub method()
         Dim internalSettings = New XsltSettings(False, False)
     End Sub
 End Module
