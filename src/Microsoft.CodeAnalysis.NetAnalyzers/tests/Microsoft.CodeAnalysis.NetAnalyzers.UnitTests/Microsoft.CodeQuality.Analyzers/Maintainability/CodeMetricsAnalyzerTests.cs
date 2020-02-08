@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.CodeMetricsAnalyzer,
@@ -412,7 +413,7 @@ CA1506: 2
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
-        public void CA1506_Configuration_CSharp_Linq()
+        public async Task CA1506_Configuration_CSharp_Linq()
         {
             var source = @"
 using System.Linq;
@@ -453,7 +454,7 @@ CA1506: 2
                 GetCSharpCA1506ExpectedDiagnostic(4, 7, "C", 4, 3, 3),
                 // Test0.cs(4,10): warning CA1506: 'TestCa1506' is coupled with '4' different types from '3' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetCSharpCA1506ExpectedDiagnostic(6, 22, "TestCa1506", 4, 3, 3)};
-            VerifyCSharp(source, GetAdditionalFile(additionalText), expected);
+            await VerifyCSharpAsync(source, additionalText, expected);
         }
 
         [Fact]
