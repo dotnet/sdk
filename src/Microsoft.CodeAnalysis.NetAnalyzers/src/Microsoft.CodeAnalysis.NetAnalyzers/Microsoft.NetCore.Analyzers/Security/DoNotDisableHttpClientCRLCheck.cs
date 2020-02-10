@@ -105,8 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         private static readonly ImmutableHashSet<string> typeToTrackMetadataNames = ImmutableHashSet.Create<string>(
             WellKnownTypeNames.SystemNetHttpWinHttpHandler,
-            WellKnownTypeNames.SystemNetHttpHttpClientHandler,
-            WellKnownTypeNames.SystemNetHttpCurlHandler);
+            WellKnownTypeNames.SystemNetHttpHttpClientHandler);
 
         public override void Initialize(AnalysisContext context)
         {
