@@ -13,28 +13,28 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     /// <summary>
-    /// CA1010: Collections should implement generic interface
+    /// CA1010: Generic interfaces should also be implemented
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class CollectionsShouldImplementGenericInterfaceAnalyzer : DiagnosticAnalyzer
+    public sealed class GenericInterfacesShouldAlsoBeImplemented : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1010";
 
         private static readonly LocalizableString s_localizableTitle =
             new LocalizableResourceString(
-                nameof(MicrosoftCodeQualityAnalyzersResources.CollectionsShouldImplementGenericInterfaceTitle),
+                nameof(MicrosoftCodeQualityAnalyzersResources.GenericInterfacesShouldAlsoBeImplementedTitle),
                 MicrosoftCodeQualityAnalyzersResources.ResourceManager,
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 
         private static readonly LocalizableString s_localizableStandardMessage =
             new LocalizableResourceString(
-                nameof(MicrosoftCodeQualityAnalyzersResources.CollectionsShouldImplementGenericInterfaceMessage),
+                nameof(MicrosoftCodeQualityAnalyzersResources.GenericInterfacesShouldAlsoBeImplementedMessage),
                 MicrosoftCodeQualityAnalyzersResources.ResourceManager,
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 
         private static readonly LocalizableString s_localizableDescription =
             new LocalizableResourceString(
-                nameof(MicrosoftCodeQualityAnalyzersResources.CollectionsShouldImplementGenericInterfaceDescription),
+                nameof(MicrosoftCodeQualityAnalyzersResources.GenericInterfacesShouldAlsoBeImplementedDescription),
                 MicrosoftCodeQualityAnalyzersResources.ResourceManager,
                 typeof(MicrosoftCodeQualityAnalyzersResources));
 

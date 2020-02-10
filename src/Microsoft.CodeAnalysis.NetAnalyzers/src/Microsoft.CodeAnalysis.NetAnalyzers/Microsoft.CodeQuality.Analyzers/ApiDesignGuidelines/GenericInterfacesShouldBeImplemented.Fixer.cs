@@ -7,9 +7,9 @@ using Microsoft.CodeAnalysis.CodeFixes;
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     /// <summary>
-    /// CA1010: Collections should implement generic interface
+    /// CA1010: Generic interfaces should also be implemented
     /// </summary>
-    public abstract class CollectionsShouldImplementGenericInterfaceFixer : CodeFixProvider
+    public abstract class GenericInterfacesShouldAlsoBeImplementedFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray<string>.Empty;
 

@@ -157,6 +157,21 @@
         <target state="translated">Wartości wyliczenia nie powinny być duplikowane</target>
         <note />
       </trans-unit>
+      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedDescription">
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="new">To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="new">Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedTitle">
+        <source>Generic interface should also be implemented</source>
+        <target state="new">Generic interface should also be implemented</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Usuń finalizator z typu „{0}”, przesłoń funkcję Dispose(bool disposing) i umieść logikę finalizacji w ścieżce kodu, gdzie element „disposing” ma wartość false. W przeciwnym razie mogą pojawić się zduplikowane wywołania funkcji Dispose, ponieważ typ bazowy „{1}” także udostępnia finalizator.</target>
@@ -715,21 +730,6 @@
       <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesMessage">
         <source>Do not declare static members on generic types</source>
         <target state="translated">Nie deklaruj statycznych elementów członkowskich dla typów ogólnych</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">Kolekcje powinny implementować interfejs ogólny</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Aby zwiększyć użyteczność kolekcji, zaimplementuj jeden z ogólnych interfejsów kolekcji. Wtedy w kolekcji będzie można umieszczać typy ogólne.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">Kolekcja „{0}” bezpośrednio lub pośrednio dziedziczy element „{1}” bez implementowania elementu „{2}”. Kolekcje widoczne publicznie powinny dziedziczyć wersję ogólną w celu rozszerzenia użyteczności.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">

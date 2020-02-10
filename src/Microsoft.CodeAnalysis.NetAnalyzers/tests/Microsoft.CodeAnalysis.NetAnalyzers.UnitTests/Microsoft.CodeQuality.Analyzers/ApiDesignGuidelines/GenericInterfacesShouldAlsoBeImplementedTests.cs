@@ -5,15 +5,15 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CollectionsShouldImplementGenericInterfaceAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpCollectionsShouldImplementGenericInterfaceFixer>;
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.GenericInterfacesShouldAlsoBeImplemented,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpGenericInterfacesShouldAlsoBeImplementedFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CollectionsShouldImplementGenericInterfaceAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicCollectionsShouldImplementGenericInterfaceFixer>;
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.GenericInterfacesShouldAlsoBeImplemented,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicGenericInterfacesShouldAlsoBeImplementedFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class CollectionsShouldImplementGenericInterfaceTests
+    public class GenericInterfacesShouldAlsoBeImplementedTests
     {
         private static DiagnosticResult GetCA1010CSharpResultAt(int line, int column, string typeName, string interfaceName, string genericInterfaceName)
             => VerifyCS.Diagnostic()

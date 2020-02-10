@@ -505,14 +505,14 @@
   <data name="DoNotDeclareStaticMembersOnGenericTypesMessage" xml:space="preserve">
     <value>Do not declare static members on generic types</value>
   </data>
-  <data name="CollectionsShouldImplementGenericInterfaceTitle" xml:space="preserve">
-    <value>Collections should implement generic interface</value>
+  <data name="GenericInterfacesShouldAlsoBeImplementedTitle" xml:space="preserve">
+    <value>Generic interface should also be implemented</value>
   </data>
-  <data name="CollectionsShouldImplementGenericInterfaceDescription" xml:space="preserve">
-    <value>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</value>
+  <data name="GenericInterfacesShouldAlsoBeImplementedDescription" xml:space="preserve">
+    <value>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</value>
   </data>
-  <data name="CollectionsShouldImplementGenericInterfaceMessage" xml:space="preserve">
-    <value>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</value>
+  <data name="GenericInterfacesShouldAlsoBeImplementedMessage" xml:space="preserve">
+    <value>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</value>
   </data>
   <data name="EnumStorageShouldBeInt32Title" xml:space="preserve">
     <value>Enum Storage should be Int32</value>

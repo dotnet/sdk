@@ -157,6 +157,21 @@
         <target state="translated">Os valores de enumerações não devem ser duplicados</target>
         <note />
       </trans-unit>
+      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedDescription">
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="new">To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="new">Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedTitle">
+        <source>Generic interface should also be implemented</source>
+        <target state="new">Generic interface should also be implemented</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Remova o finalizador do tipo '{0}', substitua Dispose(bool disposing) e coloque a lógica de finalização no caminho do código em que 'disposing' é false. Caso contrário, ele poderá duplicar invocações Dispose, já que o tipo Base '{1}' também fornece um finalizador.</target>
@@ -715,21 +730,6 @@
       <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesMessage">
         <source>Do not declare static members on generic types</source>
         <target state="translated">Não declarar membros estáticos em tipos genéricos</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">Coleções devem implementar interface genérica</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Para ampliar a usabilidade de uma coleção, implemente uma das interfaces de coleção genérica. Em seguida, a coleção poderá ser usada para popular os tipos de coleção genérica.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">A coleção '{0}' herda diretamente ou indiretamente '{1}' sem implementar '{2}'. As coleções visíveis publicamente devem implementar a versão genérica para ampliar a usabilidade.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
