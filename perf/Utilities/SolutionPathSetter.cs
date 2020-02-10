@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
             if (Interlocked.Increment(ref _registered) == 1)
             {
                 _currentDirectory = Environment.CurrentDirectory;
-                var solutionPath = @"C:\source\dotnet-format";
+                var solutionPath = Directory.GetParent(_currentDirectory).Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
                 Environment.CurrentDirectory = solutionPath;
             }
         }
