@@ -1,21 +1,21 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
     public class ReviewCodeForXmlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXmlInjectionVulnerabilities, ReviewCodeForXmlInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForXmlInjectionVulnerabilities.Rule;
-
-        protected override IEnumerable<string> AdditionalCSharpSources => new string[] { AntiXssApis.CSharp };
 
         [Fact]
         public async Task DocSample1_CSharp_Violation_Diagnostic()

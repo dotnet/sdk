@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableHttpClientCRLCheck,
@@ -22,10 +21,8 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         {
             var csharpTest = new VerifyCS.Test
             {
-                TestState =
-                {
-                    Sources = { source, SystemNetHttpApis.CSharp },
-                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinHttpHandler,
+                TestCode = source,
             };
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
