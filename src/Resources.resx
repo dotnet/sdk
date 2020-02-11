@@ -216,4 +216,7 @@
   <data name="Writing_formatting_report_to_0" xml:space="preserve">
     <value>Writing formatting report to: '{0}'.</value>
   </data>
+  <data name="A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting" xml:space="preserve">
+    <value>A comma separated list of relative file/folder paths to exclude from formatting</value>
+  </data>
 </root>
