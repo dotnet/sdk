@@ -38,10 +38,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void FilesFormattedDirectorySeparatorInsensitive()
         {
             var filePath = $"other_items{Path.DirectorySeparatorChar}OtherClass.cs";
-            var files = Program.GetFilesToFormat(filePath, folder: null);
+            var files = Program.GetFiles(filePath, folder: null);
 
             var filePathAlt = $"other_items{Path.AltDirectorySeparatorChar}OtherClass.cs";
-            var filesAlt = Program.GetFilesToFormat(filePathAlt, folder: null);
+            var filesAlt = Program.GetFiles(filePathAlt, folder: null);
 
             Assert.True(files.IsSubsetOf(filesAlt));
         }

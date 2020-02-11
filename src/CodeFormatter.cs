@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat, reportPath) = options;
+            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat, filesToIgnore, reportPath) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 logger.LogTrace(Resources.Determining_formattable_files);
 
                 var (fileCount, formatableFiles) = await DetermineFormattableFiles(
-                    solution, projectPath, filesToFormat, logger, cancellationToken).ConfigureAwait(false);
+                    solution, projectPath, filesToFormat, filesToIgnore, logger, cancellationToken).ConfigureAwait(false);
 
                 var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
@@ -242,6 +242,7 @@ namespace Microsoft.CodeAnalysis.Tools
             Solution solution,
             string projectPath,
             ImmutableHashSet<string> filesToFormat,
+            ImmutableHashSet<string> filesToIgnore,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -271,7 +272,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 // Get project documents and options with .editorconfig settings applied.
                 var getProjectDocuments = project.DocumentIds.Select(documentId => GetDocumentAndOptions(
-                    project, documentId, filesToFormat, codingConventionsManager, optionsApplier, cancellationToken));
+                    project, documentId, filesToFormat, filesToIgnore, codingConventionsManager, optionsApplier, cancellationToken));
                 getDocumentsAndOptions.AddRange(getProjectDocuments);
             }
 
@@ -310,25 +311,14 @@ namespace Microsoft.CodeAnalysis.Tools
             Project project,
             DocumentId documentId,
             ImmutableHashSet<string> filesToFormat,
+            ImmutableHashSet<string> filesToIgnore,
             ICodingConventionsManager codingConventionsManager,
             EditorConfigOptionsApplier optionsApplier,
             CancellationToken cancellationToken)
         {
             var document = project.Solution.GetDocument(documentId);
 
-            // If a files list was passed in, then ignore files not present in the list.
-            if (!filesToFormat.IsEmpty && !filesToFormat.Contains(document.FilePath))
-            {
-                return (null, null, null, false);
-            }
-
-            if (!document.SupportsSyntaxTree)
-            {
-                return (null, null, null, false);
-            }
-
-            // Ignore generated code files.
-            if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(document, cancellationToken).ConfigureAwait(false))
+            if (await ShouldIgnoreDocument(document, filesToFormat, filesToIgnore, cancellationToken))
             {
                 return (null, null, null, false);
             }
@@ -346,6 +336,37 @@ namespace Microsoft.CodeAnalysis.Tools
 
             options = optionsApplier.ApplyConventions(options, context.CurrentConventions, project.Language);
             return (document, options, context.CurrentConventions, true);
+        }
+
+        private static async Task<bool> ShouldIgnoreDocument(
+            Document document, 
+            ImmutableHashSet<string> filesToFormat,
+            ImmutableHashSet<string> filesToIgnore,
+            CancellationToken cancellationToken)
+        {
+            if (!filesToFormat.IsEmpty && !filesToFormat.Contains(document.FilePath))
+            {
+               // If a files list was passed in, then ignore files not present in the list.
+                return true;
+            }
+            else if (!document.SupportsSyntaxTree)
+            {
+                return true;
+            }
+            else if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(document, cancellationToken).ConfigureAwait(false))
+            {
+                // Ignore generated code files.
+                return true;
+            }
+            else if (!filesToIgnore.IsEmpty && filesToIgnore.Any(f => document.FilePath.Contains(f, StringComparison.OrdinalIgnoreCase)))
+            {
+                // Ignore file in, or under a folder in the list to exclude
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
