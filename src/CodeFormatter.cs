@@ -358,7 +358,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 // Ignore generated code files.
                 return true;
             }
-            else if (!filesToIgnore.IsEmpty && filesToIgnore.Any(f => document.FilePath.Contains(f, StringComparison.OrdinalIgnoreCase)))
+            else if (!filesToIgnore.IsEmpty && filesToIgnore.Any(f => document.FilePath.StartsWith(f)))
             {
                 // Ignore file in, or under a folder in the list to exclude
                 return true;

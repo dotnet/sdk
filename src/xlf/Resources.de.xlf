@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="de" original="../Resources.resx">
     <body>
       <trans-unit id="A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting">
-        <source>A comma separated list of relative file/folder paths to exclude from formatting</source>
-        <target state="new">A comma separated list of relative file/folder paths to exclude from formatting</target>
+        <source>A comma separated list of relative file or folder paths to exclude from formatting</source>
+        <target state="new">A comma separated list of relative file or folder paths to exclude from formatting</target>
         <note />
       </trans-unit>
       <trans-unit id="A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_if_empty">

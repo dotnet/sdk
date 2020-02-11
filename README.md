@@ -49,7 +49,7 @@ Options:
   --dry-run          Format files, but do not save changes to disk.
   --check            Terminates with a non-zero exit code if any files were formatted.
   --files            A comma separated list of relative file paths to format. All files are formatted if empty.
-  --exclude          A comma separated list of relative file/folder paths to exclude from formatting.
+  --exclude          A comma separated list of relative file or folder paths to exclude from formatting.
   --version          Display version information
   --report           Writes a json file to the given directory. Defaults to 'format-report.json' if no filename given.
 ```
