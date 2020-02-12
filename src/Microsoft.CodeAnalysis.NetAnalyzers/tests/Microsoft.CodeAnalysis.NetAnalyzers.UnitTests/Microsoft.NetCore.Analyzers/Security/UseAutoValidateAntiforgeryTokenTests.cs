@@ -1425,9 +1425,7 @@ class BlahClass
 using System;
 using Microsoft.AspNetCore.Mvc;
 
-public class MyValidateAntiForgeryAttribute : Attribute
-{
-}
+public class MyValidateAntiForgeryAttribute : Attribute {}
 
 [MyValidateAntiForgeryAttribute]
 class MakeSureValidateAntiForgeryAttributeIsUsedSomeWhereClass : ControllerBase

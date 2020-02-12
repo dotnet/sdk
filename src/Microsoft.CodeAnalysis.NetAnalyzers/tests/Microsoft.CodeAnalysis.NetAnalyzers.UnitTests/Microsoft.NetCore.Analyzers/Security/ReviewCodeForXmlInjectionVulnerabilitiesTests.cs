@@ -4,8 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
