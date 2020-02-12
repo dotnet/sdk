@@ -55,14 +55,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 logLevel: LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                filesToFormat: ImmutableHashSet.Create(document.FilePath),
-                filesToIgnore: ImmutableHashSet.Create<string>(),
+                pathsToInclude: ImmutableHashSet.Create(document.FilePath),
+                pathsToExclude: ImmutableHashSet.Create<string>(),
                 reportPath: string.Empty);
 
-            var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
+            var pathsToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
 
             var formattedFiles = new List<FormattedFile>();
-            await Formatter.FormatAsync(solution, filesToFormat, formatOptions, new TestLogger(), formattedFiles, default);
+            await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, new TestLogger(), formattedFiles, default);
 
             return formattedFiles;
         }

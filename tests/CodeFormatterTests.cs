@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -44,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             await TestFormatWorkspaceAsync(
                 FormattedProjectFilePath,
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
@@ -56,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             await TestFormatWorkspaceAsync(
                 FormattedSolutionFilePath,
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
@@ -68,7 +67,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             await TestFormatWorkspaceAsync(
                 UnformattedProjectFilePath,
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
@@ -80,13 +79,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 5);
         }
-
 
         [Fact]
         public async Task FilesFormattedInUnformattedProjectFolder()
@@ -94,7 +92,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Since the code files are beneath the project folder, files are found and formatted.
             await TestFormatWorkspaceAsync(
                 Path.GetDirectoryName(UnformattedProjectFilePath),
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
@@ -107,7 +105,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Since the code files are outside the solution folder, no files are found or formatted.
             await TestFormatWorkspaceAsync(
                 Path.GetDirectoryName(UnformattedSolutionFilePath),
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
@@ -119,7 +117,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             var log = await TestFormatWorkspaceAsync(
                 FSharpProjectFilePath,
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 1,
                 expectedFilesFormatted: 0,
@@ -133,13 +131,27 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
-        public async Task OnlyFormatFilesFromList()
+        public async Task OnlyFormatPathsFromList()
         {
-            var filesToFormat = new[] { UnformattedProgramFilePath };
+            var include = new[] { UnformattedProjectPath };
 
             await TestFormatWorkspaceAsync(
                 UnformattedProjectFilePath,
-                filesToFormat,
+                include,
+                exclude: EmptyFilesList,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 2,
+                expectedFileCount: 5);
+        }
+
+        [Fact]
+        public async Task OnlyFormatFilesFromList()
+        {
+            var include = new[] { UnformattedProgramFilePath };
+
+            await TestFormatWorkspaceAsync(
+                UnformattedProjectFilePath,
+                include,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
@@ -149,11 +161,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedWhenNotInList()
         {
-            var files = new[] { Path.Combine(UnformattedProjectPath, "does_not_exist.cs") };
+            var include = new[] { Path.Combine(UnformattedProjectPath, "does_not_exist.cs") };
 
             await TestFormatWorkspaceAsync(
                 UnformattedProjectFilePath,
-                files,
+                include,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
@@ -163,11 +175,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task OnlyLogFormattedFiles()
         {
-            var files = new[] { UnformattedProgramFilePath };
+            var include = new[] { UnformattedProgramFilePath };
 
             var log = await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
-                files,
+                include,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
@@ -185,7 +197,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             var log = await TestFormatWorkspaceAsync(
                 UnformattedProjectFilePath,
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
@@ -235,7 +247,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             var log = await TestFormatWorkspaceAsync(
                 FormattedProjectFilePath,
-                files: EmptyFilesList,
+                include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
@@ -250,12 +262,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task LogFilesThatDontMatchExclude()
         {
-            var files = new[] { UnformattedProgramFilePath };
-            var exclude = new[] { FormattedProjectPath };
+            var include = new[] { UnformattedProgramFilePath };
 
             var log = await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
-                files,
+                include,
                 exclude: EmptyFilesList,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
@@ -275,7 +286,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var log = await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
-                files: files,
+                include: files,
                 exclude: files,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
@@ -295,7 +306,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             var log = await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
-                files: files,
+                include: files,
                 exclude: exclude,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
@@ -307,7 +318,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.False(match.Success, log);
         }
 
-        public async Task<string> TestFormatWorkspaceAsync(string workspaceFilePath, IEnumerable<string> files, IEnumerable<string> exclude, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
+        public async Task<string> TestFormatWorkspaceAsync(string workspaceFilePath, IEnumerable<string> include, IEnumerable<string> exclude, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
         {
             var workspacePath = Path.GetFullPath(workspaceFilePath);
 
@@ -323,8 +334,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                     : WorkspaceType.Project;
             }
 
-            var filesToFormat = files.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
-            var filesToIgnore = exclude.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+            var pathsToInclude = include.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+            var pathsToExclude = exclude.Select(Path.GetFullPath).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
 
             var logger = new TestLogger();
             var formatOptions = new FormatOptions(
@@ -333,8 +344,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                filesToFormat,
-                filesToIgnore,
+                pathsToInclude,
+                pathsToExclude,
                 reportPath: string.Empty);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
 

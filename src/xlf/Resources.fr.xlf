@@ -3,13 +3,13 @@
   <file datatype="xml" source-language="en" target-language="fr" original="../Resources.resx">
     <body>
       <trans-unit id="A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting">
-        <source>A comma separated list of relative file or folder paths to exclude from formatting</source>
-        <target state="new">A comma separated list of relative file or folder paths to exclude from formatting</target>
+        <source>A comma separated list of relative file or folder paths to exclude from formatting.</source>
+        <target state="new">A comma separated list of relative file or folder paths to exclude from formatting.</target>
         <note />
       </trans-unit>
-      <trans-unit id="A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_if_empty">
-        <source>A comma separated list of relative file paths to format. All files are formatted if empty.</source>
-        <target state="new">A comma separated list of relative file paths to format. All files are formatted if empty.</target>
+      <trans-unit id="A_comma_separated_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty">
+        <source>A comma separated list of relative file or folder paths to include in formatting. All files are formatted if empty.</source>
+        <target state="new">A comma separated list of relative file or folder paths to include in formatting. All files are formatted if empty.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">

@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             return new FolderWorkspace(hostServices);
         }
 
-        public async Task<Solution> OpenFolder(string folderPath, ImmutableHashSet<string> filesToInclude, CancellationToken cancellationToken)
+        public async Task<Solution> OpenFolder(string folderPath, ImmutableHashSet<string> pathsToInclude, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
             {
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
             ClearSolution();
 
-            var solutionInfo = await FolderSolutionLoader.LoadSolutionInfoAsync(folderPath, filesToInclude, cancellationToken).ConfigureAwait(false);
+            var solutionInfo = await FolderSolutionLoader.LoadSolutionInfoAsync(folderPath, pathsToInclude, cancellationToken).ConfigureAwait(false);
 
             OnSolutionAdded(solutionInfo);
 

@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, filesToFormat, filesToIgnore, reportPath) = options;
+            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, pathsToInclude, pathsToExclude, reportPath) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using (var workspace = await OpenWorkspaceAsync(
-                workspaceFilePath, workspaceType, filesToFormat, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
+                workspaceFilePath, workspaceType, pathsToInclude, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
             {
                 if (workspace is null)
                 {
@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 logger.LogTrace(Resources.Determining_formattable_files);
 
                 var (fileCount, formatableFiles) = await DetermineFormattableFiles(
-                    solution, projectPath, filesToFormat, filesToIgnore, logger, cancellationToken).ConfigureAwait(false);
+                    solution, projectPath, pathsToInclude, pathsToExclude, logger, cancellationToken).ConfigureAwait(false);
 
                 var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<Workspace> OpenWorkspaceAsync(
             string workspacePath,
             WorkspaceType workspaceType,
-            ImmutableHashSet<string> filesToFormat,
+            ImmutableHashSet<string> pathsToInclude,
             bool logWorkspaceWarnings,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -145,7 +145,7 @@ namespace Microsoft.CodeAnalysis.Tools
             if (workspaceType == WorkspaceType.Folder)
             {
                 var folderWorkspace = FolderWorkspace.Create();
-                await folderWorkspace.OpenFolder(workspacePath, filesToFormat, cancellationToken);
+                await folderWorkspace.OpenFolder(workspacePath, pathsToInclude, cancellationToken);
                 return folderWorkspace;
             }
 
@@ -241,8 +241,8 @@ namespace Microsoft.CodeAnalysis.Tools
         internal static async Task<(int, ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)>)> DetermineFormattableFiles(
             Solution solution,
             string projectPath,
-            ImmutableHashSet<string> filesToFormat,
-            ImmutableHashSet<string> filesToIgnore,
+            ImmutableHashSet<string> pathsToInclude,
+            ImmutableHashSet<string> pathsToExclude,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -272,7 +272,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 // Get project documents and options with .editorconfig settings applied.
                 var getProjectDocuments = project.DocumentIds.Select(documentId => GetDocumentAndOptions(
-                    project, documentId, filesToFormat, filesToIgnore, codingConventionsManager, optionsApplier, cancellationToken));
+                    project, documentId, pathsToInclude, pathsToExclude, codingConventionsManager, optionsApplier, cancellationToken));
                 getDocumentsAndOptions.AddRange(getProjectDocuments);
             }
 
@@ -307,18 +307,18 @@ namespace Microsoft.CodeAnalysis.Tools
             return (fileCount, formattableFiles.ToImmutableArray());
         }
 
-        private static async    Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)> GetDocumentAndOptions(
+        private static async Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)> GetDocumentAndOptions(
             Project project,
             DocumentId documentId,
-            ImmutableHashSet<string> filesToFormat,
-            ImmutableHashSet<string> filesToIgnore,
+            ImmutableHashSet<string> pathsToInclude,
+            ImmutableHashSet<string> pathsToExclude,
             ICodingConventionsManager codingConventionsManager,
             EditorConfigOptionsApplier optionsApplier,
             CancellationToken cancellationToken)
         {
             var document = project.Solution.GetDocument(documentId);
 
-            if (await ShouldIgnoreDocument(document, filesToFormat, filesToIgnore, cancellationToken))
+            if (await ShouldIgnoreDocument(document, pathsToInclude, pathsToExclude, cancellationToken))
             {
                 return (null, null, null, false);
             }
@@ -339,14 +339,14 @@ namespace Microsoft.CodeAnalysis.Tools
         }
 
         private static async Task<bool> ShouldIgnoreDocument(
-            Document document, 
-            ImmutableHashSet<string> filesToFormat,
-            ImmutableHashSet<string> filesToIgnore,
+            Document document,
+            ImmutableHashSet<string> pathsToInclude,
+            ImmutableHashSet<string> pathsToExclude,
             CancellationToken cancellationToken)
         {
-            if (!filesToFormat.IsEmpty && !filesToFormat.Contains(document.FilePath))
+            if (!pathsToInclude.IsEmpty && !pathsToInclude.Any(path => document.FilePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
             {
-               // If a files list was passed in, then ignore files not present in the list.
+                // If a files list was passed in, then ignore files not present in the list.
                 return true;
             }
             else if (!document.SupportsSyntaxTree)
@@ -358,7 +358,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 // Ignore generated code files.
                 return true;
             }
-            else if (!filesToIgnore.IsEmpty && filesToIgnore.Any(f => document.FilePath.StartsWith(f, StringComparison.OrdinalIgnoreCase)))
+            else if (!pathsToExclude.IsEmpty && pathsToExclude.Any(path => document.FilePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
             {
                 // Ignore file in, or under a folder in the list to exclude
                 return true;

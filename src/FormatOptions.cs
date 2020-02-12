@@ -12,8 +12,8 @@ namespace Microsoft.CodeAnalysis.Tools
         public LogLevel LogLevel { get; }
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
-        public ImmutableHashSet<string> FilesToFormat { get; }
-        public ImmutableHashSet<string> FilesToIgnore { get; }
+        public ImmutableHashSet<string> PathsToInclude { get; }
+        public ImmutableHashSet<string> PathsToExclude { get; }
         public string ReportPath { get; }
 
         public FormatOptions(
@@ -22,8 +22,8 @@ namespace Microsoft.CodeAnalysis.Tools
             LogLevel logLevel,
             bool saveFormattedFiles,
             bool changesAreErrors,
-            ImmutableHashSet<string> filesToFormat,
-            ImmutableHashSet<string> filesToIgnore,
+            ImmutableHashSet<string> pathsToInclude,
+            ImmutableHashSet<string> pathsToExclude,
             string reportPath)
         {
             WorkspaceFilePath = workspaceFilePath;
@@ -31,8 +31,8 @@ namespace Microsoft.CodeAnalysis.Tools
             LogLevel = logLevel;
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
-            FilesToFormat = filesToFormat;
-            FilesToIgnore = filesToIgnore;
+            PathsToInclude = pathsToInclude;
+            PathsToExclude = pathsToExclude;
             ReportPath = reportPath;
         }
 
@@ -42,8 +42,8 @@ namespace Microsoft.CodeAnalysis.Tools
             out LogLevel logLevel,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
-            out ImmutableHashSet<string> filesToFormat,
-            out ImmutableHashSet<string> filesToIgnore,
+            out ImmutableHashSet<string> pathsToInclude,
+            out ImmutableHashSet<string> pathsToExclude,
             out string reportPath)
         {
             workspaceFilePath = WorkspaceFilePath;
@@ -51,8 +51,8 @@ namespace Microsoft.CodeAnalysis.Tools
             logLevel = LogLevel;
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;
-            filesToFormat = FilesToFormat;
-            filesToIgnore = FilesToIgnore;
+            pathsToInclude = PathsToInclude;
+            pathsToExclude = PathsToExclude;
             reportPath = ReportPath;
         }
     }

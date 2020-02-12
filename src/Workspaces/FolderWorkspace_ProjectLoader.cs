@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -16,11 +17,11 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             public abstract string FileExtension { get; }
             public virtual string ProjectName => $"{Language}{FileExtension}proj";
 
-            public virtual async Task<ProjectInfo> LoadProjectInfoAsync(string folderPath, ImmutableHashSet<string> filesToInclude, CancellationToken cancellationToken)
+            public virtual async Task<ProjectInfo> LoadProjectInfoAsync(string folderPath, ImmutableHashSet<string> pathsToInclude, CancellationToken cancellationToken)
             {
                 var projectId = ProjectId.CreateNewId(debugName: folderPath);
 
-                var documents = await LoadDocumentInfosAsync(projectId, folderPath, FileExtension, filesToInclude);
+                var documents = await LoadDocumentInfosAsync(projectId, folderPath, FileExtension, pathsToInclude);
                 if (documents.IsDefaultOrEmpty)
                 {
                     return null;
@@ -36,19 +37,15 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                     documents: documents);
             }
 
-            private static Task<ImmutableArray<DocumentInfo>> LoadDocumentInfosAsync(ProjectId projectId, string folderPath, string fileExtension, ImmutableHashSet<string> filesToInclude)
+            private static Task<ImmutableArray<DocumentInfo>> LoadDocumentInfosAsync(ProjectId projectId, string folderPath, string fileExtension, ImmutableHashSet<string> pathsToInclude)
             {
                 return Task.Run(() =>
                 {
-                    string[] filePaths;
-                    if (filesToInclude.Count == 0)
+                    var filePaths = Directory.GetFiles(folderPath, $"*{fileExtension}", SearchOption.AllDirectories);
+                    if (!pathsToInclude.IsEmpty)
                     {
-                        filePaths = Directory.GetFiles(folderPath, $"*{fileExtension}", SearchOption.AllDirectories);
-                    }
-                    else
-                    {
-                        filePaths = filesToInclude.Where(
-                            filePath => filePath.EndsWith(fileExtension) && File.Exists(filePath)).ToArray();
+                        filePaths = filePaths.Where(filePath =>
+                            pathsToInclude.Any(path => filePath.StartsWith(path, StringComparison.OrdinalIgnoreCase))).ToArray();
                     }
 
                     if (filePaths.Length == 0)
