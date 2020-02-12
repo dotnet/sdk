@@ -91,13 +91,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 logLevel: LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                filesToFormat: ImmutableHashSet.Create(document.FilePath),
-                filesToIgnore: ImmutableHashSet.Create<string>(),
+                pathsToInclude: ImmutableHashSet.Create(document.FilePath),
+                pathsToExclude: ImmutableHashSet.Create<string>(),
                 reportPath: string.Empty);
 
-            var filesToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
+            var pathsToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
 
-            var formattedSolution = await Formatter.FormatAsync(solution, filesToFormat, formatOptions, Logger, new List<FormattedFile>(), default);
+            var formattedSolution = await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, Logger, new List<FormattedFile>(), default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
             var formattedText = await formattedDocument.GetTextAsync();
 

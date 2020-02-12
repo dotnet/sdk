@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             private static ImmutableArray<ProjectLoader> ProjectLoaders
                 => ImmutableArray.Create<ProjectLoader>(new CSharpProjectLoader(), new VisualBasicProjectLoader());
 
-            public static async Task<SolutionInfo> LoadSolutionInfoAsync(string folderPath, ImmutableHashSet<string> filesToInclude, CancellationToken cancellationToken)
+            public static async Task<SolutionInfo> LoadSolutionInfoAsync(string folderPath, ImmutableHashSet<string> pathsToInclude, CancellationToken cancellationToken)
             {
                 var absoluteFolderPath = Path.IsPathFullyQualified(folderPath)
                     ? folderPath
@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 // Create projects for each of the supported languages.
                 foreach (var loader in ProjectLoaders)
                 {
-                    var projectInfo = await loader.LoadProjectInfoAsync(folderPath, filesToInclude, cancellationToken);
+                    var projectInfo = await loader.LoadProjectInfoAsync(folderPath, pathsToInclude, cancellationToken);
                     if (projectInfo is null)
                     {
                         continue;

@@ -5,7 +5,7 @@
 
 [![MyGet](https://img.shields.io/dotnet.myget/format/vpre/dotnet-format.svg?label=myget)](https://dotnet.myget.org/feed/format/package/nuget/dotnet-format)
 
-|Branch| Windows (Debug)| Windows (Release)| Linux (Debug) | Linux (Release) | Localization (Debug) | Localization (Release) | 
+|Branch| Windows (Debug)| Windows (Release)| Linux (Debug) | Linux (Release) | Localization (Debug) | Localization (Release) |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
 [master](https://github.com/dotnet/format/tree/master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows_Spanish&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows_Spanish&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|
 
@@ -41,14 +41,15 @@ Usage:
   dotnet-format [options]
 
 Options:
-  -f, --folder       The folder to operate on. Cannot be used with the `--workspace` option.
-  -w, --workspace    The solution or project file to operate on. If a file is not specified, the command will search
+  --folder, -f       The folder to operate on. Cannot be used with the `--workspace` option.
+  --workspace, -w    The solution or project file to operate on. If a file is not specified, the command will search
                      the current directory for one.
-  -v, --verbosity    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
+  --verbosity, -v    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
                      diag[nostic]
   --dry-run          Format files, but do not save changes to disk.
   --check            Terminates with a non-zero exit code if any files were formatted.
-  --files            A comma separated list of relative file paths to format. All files are formatted if empty.
+  --include, --files A comma separated list of relative file or folder paths to include in formatting. All files are
+                     formatted if empty.
   --exclude          A comma separated list of relative file or folder paths to exclude from formatting.
   --version          Display version information
   --report           Writes a json file to the given directory. Defaults to 'format-report.json' if no filename given.
@@ -56,15 +57,15 @@ Options:
 
 Add `format` after `dotnet` and before the command arguments that you want to run:
 
-| Examples                                                 | Description                                                                                   |
-| -------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
-| dotnet **format**                                        | Formats the project or solution in the current directory.                                     |
-| dotnet **format** -f &lt;folder&gt;                      | Formats a particular folder and subfolders.
-| dotnet **format** -w &lt;workspace&gt;                   | Formats a specific project or solution.                                                       | 
-| dotnet **format** -v diag                                | Formats with very verbose logging.                                                            |
-| dotnet **format** --files Programs.cs,Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
-| dotnet **format** --check --dry-run                      | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
-| dotnet **format** --report &lt;report-path&gt;           | Formats and saves a json report file to the given directory.                                  |
+| Examples                                                   | Description                                                                                   |
+| ---------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
+| dotnet **format**                                          | Formats the project or solution in the current directory.                                     |
+| dotnet **format** -f &lt;folder&gt;                        | Formats a particular folder and subfolders.                                                   |
+| dotnet **format** -w &lt;workspace&gt;                     | Formats a specific project or solution.                                                       |
+| dotnet **format** -v diag                                  | Formats with very verbose logging.                                                            |
+| dotnet **format** --include Programs.cs,Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
+| dotnet **format** --check --dry-run                        | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
+| dotnet **format** --report &lt;report-path&gt;             | Formats and saves a json report file to the given directory.                                  |
 
 ### How To Uninstall
 
@@ -82,7 +83,7 @@ You can build and package the tool using the following commands. The instruction
 build -pack
 # The final line from the build will read something like
 # Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.3.0.0-dev.nupkg'.
-# Use the value that is in the form `3.0.0-dev` as the version in the next command.
+# Use the value that is in the form `3.2.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```
