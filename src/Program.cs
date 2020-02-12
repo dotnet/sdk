@@ -36,6 +36,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 .AddOption(new Option(new[] { "--dry-run" }, Resources.Format_files_but_do_not_save_changes_to_disk, new Argument<bool>()))
                 .AddOption(new Option(new[] { "--check" }, Resources.Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted, new Argument<bool>()))
                 .AddOption(new Option(new[] { "--files" }, Resources.A_comma_separated_list_of_relative_file_paths_to_format_All_files_are_formatted_if_empty, new Argument<string>(() => null)))
+                .AddOption(new Option(new[] { "--exclude" }, Resources.A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting, new Argument<string>(() => null)))
                 .AddOption(new Option(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory, new Argument<string>(() => null)))
                 .UseVersionOption()
                 .Build();
@@ -43,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return await parser.InvokeAsync(args).ConfigureAwait(false);
         }
 
-        public static async Task<int> Run(string folder, string workspace, string verbosity, bool dryRun, bool check, string files, string report, IConsole console = null)
+        public static async Task<int> Run(string folder, string workspace, string verbosity, bool dryRun, bool check, string files, string exclude, string report, IConsole console = null)
         {
             // Setup logging.
             var serviceCollection = new ServiceCollection();
@@ -101,7 +102,8 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 Environment.CurrentDirectory = workspaceDirectory;
 
-                var filesToFormat = GetFilesToFormat(files, folder);
+                var filesToFormat = GetFiles(files, folder);
+                var filesToIgnore = GetFiles(exclude, folder);
 
                 // Since we are running as a dotnet tool we should be able to find an instance of
                 // MSBuild in a .NET Core SDK.
@@ -122,6 +124,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     saveFormattedFiles: !dryRun,
                     changesAreErrors: check,
                     filesToFormat,
+                    filesToIgnore,
                     reportPath: report);
 
                 var formatResult = await CodeFormatter.FormatWorkspaceAsync(
@@ -192,7 +195,7 @@ namespace Microsoft.CodeAnalysis.Tools
         /// <summary>
         /// Converts a comma-separated list of relative file paths to a hashmap of full file paths.
         /// </summary>
-        internal static ImmutableHashSet<string> GetFilesToFormat(string files, string folder)
+        internal static ImmutableHashSet<string> GetFiles(string files, string folder)
         {
             if (string.IsNullOrEmpty(files))
             {
