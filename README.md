@@ -12,6 +12,12 @@
 
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used. At this time `dotnet-format` is able to format C# and Visual Basic projects with a subset of [supported .editorconfig options](https://github.com/dotnet/format/wiki/Supported-.editorconfig-options).
 
+### New in v3.3.111304
+- [Enhance --files option to support folder paths and add --include alias (533)](https://github.com/dotnet/format/pull/533)
+- [format-500: Add `--exclude` option to ignore given files/folders (529)](https://github.com/dotnet/format/pull/529)
+- [format-379: Add `--report` command line argument to export json format report to given directory (495)](https://github.com/dotnet/format/pull/495)
+- [Update charset formatter to check for equivalent encodings (508)](https://github.com/dotnet/format/pull/508)
+
 ### How To Install
 
 The `dotnet-format` nuget package is [published to nuget.org](https://www.nuget.org/packages/dotnet-format/).
