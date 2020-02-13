@@ -272,7 +272,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlNotation_InnerXml_Sanitized_NoDiagnostic()
+        public async Task XmlNotation_InnerXml_AntiXssXmlEncode_NoDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -288,6 +288,27 @@ public partial class WebForm : System.Web.UI.Page
         XmlDocument d = new XmlDocument();
         XmlNotation n = (XmlNotation) d.CreateNode(XmlNodeType.Notation, String.Empty, String.Empty);
         n.InnerXml = AntiXss.XmlEncode(input);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task XmlNotation_InnerXml_AntiXssEncoderXmlEncode_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
+using System.Xml;
+using System.Web.Security.AntiXss;
+
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string input = Request.Form[""in""];
+        XmlDocument d = new XmlDocument();
+        XmlNotation n = (XmlNotation) d.CreateNode(XmlNodeType.Notation, String.Empty, String.Empty);
+        n.InnerXml = AntiXssEncoder.XmlEncode(input);
     }
 }");
         }
