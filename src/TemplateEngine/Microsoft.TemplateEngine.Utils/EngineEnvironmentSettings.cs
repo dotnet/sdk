@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -101,6 +101,8 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             public string NewLine { get; }
+
+            public int ConsoleBufferWidth => Console.BufferWidth;
 
             public string ExpandEnvironmentVariables(string name)
             {
