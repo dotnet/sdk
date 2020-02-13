@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <MajorVersion>3</MajorVersion>
-    <MinorVersion>3</MinorVersion>
+    <MajorVersion>4</MajorVersion>
+    <MinorVersion>0</MinorVersion>
     <!-- Build release-only package. -->
     <PreReleaseVersionLabel />
   </PropertyGroup>

@@ -1,6 +1,9 @@
 # Changelog
 All changes to the project will be documented in this file.
 
+## [4.0.x] - Not Yet Released
+### Merged PRs:
+
 ## [3.3.111304] - 2020-02-13
 [View Complete Diff of Changes](https://github.com/dotnet/format/compare/3ecea99de4bb82b724bf11134279b5aaf8dd1f2f...7c8f67a570f5fde6a247704733d6742f93c0fa48)
 ### Merged PRs:
