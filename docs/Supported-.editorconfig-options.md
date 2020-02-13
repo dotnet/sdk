@@ -1,9 +1,10 @@
-The dotnet-format global tool supports the following core set of EditorConfig properties:
+The dotnet-format global tool supports the core set of EditorConfig properties:
 
 - indent_style
 - indent_size
 - tab_width
 - end_of_line
+- charset
 - insert_final_newline
 - trim_trailing_whitespace
 - root
@@ -17,10 +18,10 @@ Most of the rules for formatting conventions have the following format:
 
 You specify either `true` (prefer this style) or `false` (do not prefer this style). You do not specify a severity. For a few rules, instead of `true` or `false`, you specify other values to describe when and where to apply the rule.
 
-## C# formatting settings  
+## C# formatting settings
 The formatting rules in this section apply only to C# code.
 
-**Newline options**  
+**Newline options**
 These formatting rules concern the use of new lines to format code.
 
 - csharp_new_line_before_open_brace (default value: `all`)
@@ -31,14 +32,14 @@ These formatting rules concern the use of new lines to format code.
 - csharp_new_line_before_members_in_anonymous_types (default value: `true`)
 - csharp_new_line_between_query_expression_clauses (default value: `true`)
 
-**Indentation options**  
+**Indentation options**
 These formatting rules concern the use of indentation to format code.
 
 - csharp_indent_case_contents (default value: `true`)
 - csharp_indent_switch_labels (default value: `true`)
 - csharp_indent_labels (default value: `no_change`)
 
-**Spacing options**  
+**Spacing options**
 These formatting rules concern the use of space characters to format code.
 
 - csharp_space_after_cast (default value: `false`)
@@ -53,7 +54,7 @@ These formatting rules concern the use of space characters to format code.
 - csharp_space_between_method_call_name_and_opening_parenthesis (default value: `false`)
 - csharp_space_between_method_call_empty_parameter_list_parentheses (default value: `false`)
 
-**Wrapping options**  
+**Wrapping options**
 These formatting rules concern the use of single lines versus separate lines for statements and code blocks.
 
 - csharp_preserve_single_line_statements (default value: `true`)
