@@ -144,6 +144,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 }
 
                 // Compute code metrics.
+                // For the calculation of the inheritance tree, we are allowing specific exclusions:
+                //   - all types from System namespaces
+                //   - all types/namespaces provided by the user
+                // so that the calculation isn't unfair.
+                // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold, yet there isn't anything you can do about it.
                 var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule, compilationContext.Compilation,
                     defaultForcedValue: "N:System.*", compilationContext.CancellationToken);
 
