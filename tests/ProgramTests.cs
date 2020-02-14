@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatResult = new WorkspaceFormatResult(filesFormatted: 1, fileCount: 0, exitCode: 0);
             var exitCode = Program.GetExitCode(formatResult, check: true);
 
-            Assert.Equal(1, exitCode);
+            Assert.Equal(Program.CheckFailedExitCode, exitCode);
         }
 
         [Fact]

@@ -82,6 +82,11 @@
         <target state="translated">Formatuj pliki, ale nie zapisuj zmian na dysku.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted">
+        <source>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</source>
+        <target state="new">Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Formatted_0_of_1_files">
         <source>Formatted {0} of {1} files.</source>
         <target state="new">Formatted {0} of {1} files.</target>
@@ -125,11 +130,6 @@
       <trans-unit id="Skipping_referenced_project_0">
         <source>Skipping referenced project '{0}'.</source>
         <target state="translated">Pomijanie przywoływanego projektu „{0}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted">
-        <source>Terminates with a non-zero exit code if any files were formatted.</source>
-        <target state="new">Terminates with a non-zero exit code if any files were formatted.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">

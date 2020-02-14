@@ -58,12 +58,13 @@ try {
                 Write-Output "$(Get-Date) - $solutionFile - Formatting Workspace"
                 $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -w $solution -v d --dry-run | Out-String
                 Write-Output $output.TrimEnd()
-                
-                if ($LastExitCode -ne 0) {
+
+                # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
+                if ($LastExitCode -ne 0 -and $LastExitCode -ne 2) {
                     Write-Output "$(Get-Date) - Formatting failed with error code $LastExitCode."
                     exit -1
                 }
-                
+
                 if (($output -notmatch "(?m)Formatted \d+ of (\d+) files") -or ($Matches[1] -eq "0")) {
                     Write-Output "$(Get-Date) - No files found for solution."
                     exit -1
@@ -78,12 +79,13 @@ try {
         Write-Output "$(Get-Date) - $folderName - Formatting Folder"
         $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -f $repoPath -v d --dry-run | Out-String
         Write-Output $output.TrimEnd()
-        
-        if ($LastExitCode -ne 0) {
+
+        # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
+        if ($LastExitCode -ne 0 -and $LastExitCode -ne 2) {
             Write-Output "$(Get-Date) - Formatting failed with error code $LastExitCode."
             exit -1
         }
-        
+
         if (($output -notmatch "(?m)Formatted \d+ of (\d+) files") -or ($Matches[1] -eq "0")) {
             Write-Output "$(Get-Date) - No files found for solution."
             exit -1
@@ -91,6 +93,8 @@ try {
 
         Write-Output "$(Get-Date) - $folderName - Complete"
     }
+
+    exit 0
 }
 catch {
     exit -1

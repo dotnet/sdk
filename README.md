@@ -52,8 +52,8 @@ Options:
                      the current directory for one.
   --verbosity, -v    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
                      diag[nostic]
-  --dry-run          Format files, but do not save changes to disk.
-  --check            Terminates with a non-zero exit code if any files were formatted.
+  --check, --dry-run Formats files without saving changes to disk. Terminates with a non-zero exit code if any files
+                     were formatted.
   --include, --files A comma separated list of relative file or folder paths to include in formatting. All files are
                      formatted if empty.
   --exclude          A comma separated list of relative file or folder paths to exclude from formatting.
@@ -70,7 +70,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | dotnet **format** -w &lt;workspace&gt;                     | Formats a specific project or solution.                                                       |
 | dotnet **format** -v diag                                  | Formats with very verbose logging.                                                            |
 | dotnet **format** --include Programs.cs,Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
-| dotnet **format** --check --dry-run                        | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
+| dotnet **format** --check                                  | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
 | dotnet **format** --report &lt;report-path&gt;             | Formats and saves a json report file to the given directory.                                  |
 
 ### How To Uninstall
