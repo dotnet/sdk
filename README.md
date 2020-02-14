@@ -35,12 +35,12 @@ Development builds of `dotnet-format` are being hosted on myget. You can visit t
 You can install the tool using the following command.
 
 ```console
-dotnet tool install -g dotnet-format --version 3.0.5-prerelease.19203.5 --add-source https://dotnet.myget.org/F/format/api/v3/index.json
+dotnet tool install -g dotnet-format --version 4.0.111308 --add-source https://dotnet.myget.org/F/format/api/v3/index.json
 ```
 
 ### How To Use
 
-By default `dotnet-format` will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory you will need to specify the workspace to format using the `-w` option. You can control how verbose the output will be by using the `-v` option.
+By default `dotnet-format` will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory you will need to specify the workspace to format using the `-w` or `-f` options. You can control how verbose the output will be by using the `-v` option.
 
 ```
 Usage:
@@ -50,15 +50,15 @@ Options:
   --folder, -f       The folder to operate on. Cannot be used with the `--workspace` option.
   --workspace, -w    The solution or project file to operate on. If a file is not specified, the command will search
                      the current directory for one.
-  --verbosity, -v    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
-                     diag[nostic]
-  --check, --dry-run Formats files without saving changes to disk. Terminates with a non-zero exit code if any files
-                     were formatted.
-  --include, --files A comma separated list of relative file or folder paths to include in formatting. All files are
+  --include          A comma separated list of relative file or folder paths to include in formatting. All files are
                      formatted if empty.
   --exclude          A comma separated list of relative file or folder paths to exclude from formatting.
-  --version          Display version information
+  --check            Formats files without saving changes to disk. Terminates with a non-zero exit code if any files
+                     were formatted.
   --report           Writes a json file to the given directory. Defaults to 'format-report.json' if no filename given.
+  --verbosity, -v    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
+                     diag[nostic]
+  --version          Display version information
 ```
 
 Add `format` after `dotnet` and before the command arguments that you want to run:
@@ -88,8 +88,8 @@ You can build and package the tool using the following commands. The instruction
 ```console
 build -pack
 # The final line from the build will read something like
-# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.3.0.0-dev.nupkg'.
-# Use the value that is in the form `3.2.0-dev` as the version in the next command.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.4.0.0-dev.nupkg'.
+# Use the value that is in the form `4.0.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```

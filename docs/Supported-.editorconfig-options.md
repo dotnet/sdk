@@ -1,4 +1,4 @@
-The dotnet-format global tool supports the core set of EditorConfig properties:
+The dotnet-format global tool supports the core set of EditorConfig options*:
 
 - indent_style
 - indent_size
@@ -6,8 +6,9 @@ The dotnet-format global tool supports the core set of EditorConfig properties:
 - end_of_line
 - charset
 - insert_final_newline
-- trim_trailing_whitespace
 - root
+
+[*] The option trim_trailing_whitespace is not supported. Currently insignificant whitespace is **always** removed by the formatter.
 
 In addition dotnet-format supports a subset of the [.NET coding convention settings for EditorConfig](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference?view=vs-2017).
 
