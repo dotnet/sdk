@@ -2128,6 +2128,64 @@ End Class",
             }.RunAsync();
         }
 
+        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        public async Task LocalWithRefStructDisposableAssignment_NotDisposed_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+
+ref struct RefStructDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    public static void M1()
+    {
+        var e = new RefStructDisposable();
+    }
+}
+",
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(15, 17, "new RefStructDisposable()"),
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        public async Task LocalWithRefStructDisposableAssignment_Disposed_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+
+ref struct RefStructDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    public static void M1()
+    {
+        var e = new RefStructDisposable();
+        e.Dispose();
+    }
+}"
+            }.RunAsync();
+        }
+
         [Fact]
         public async Task ArrayElementWithDisposableAssignment_NoDiagnostic()
         {
