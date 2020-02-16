@@ -2,8 +2,8 @@
 
 using System;
 using System.Text;
+using Microsoft.CodeAnalysis.Tools.Logging;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions.Internal;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {

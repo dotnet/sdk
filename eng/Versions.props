@@ -9,19 +9,20 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
     <MicrosoftNETCoreCompilersPackageVersion>3.6.0-1.20114.6</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftExtensionsVersion>3.1.1</MicrosoftExtensionsVersion>
   </PropertyGroup>
   <!--
     Other Dependency versions
   -->
   <PropertyGroup>
-    <SystemCommandLineExperimentalVersion>0.1.0-alpha-63729-01</SystemCommandLineExperimentalVersion>
-    <SystemCommandLineRenderingVersion>0.1.0-alpha-63729-01</SystemCommandLineRenderingVersion>
-    <MicrosoftBuildLocatorVersion>1.2.2</MicrosoftBuildLocatorVersion>
-    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.0.0-beta1-63812-02</MicrosoftCodeAnalysisAnalyzerTestingVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>2.1.1</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsLoggingVersion>2.1.1</MicrosoftExtensionsLoggingVersion>
+    <SystemCommandLineVersion>2.0.0-beta1.20104.2</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.3.0-alpha.20104.2</SystemCommandLineRenderingVersion>
+    <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
+    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.0.1-beta1.20114.4</MicrosoftCodeAnalysisAnalyzerTestingVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsLoggingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsLoggingVersion>
     <MicrosoftVisualStudioCodingConventionsVersion>1.1.20180503.2</MicrosoftVisualStudioCodingConventionsVersion>
-    <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0-beta2.20077.2</MicrosoftCodeAnalysisAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0-beta2.20114.1</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftNETCoreCompilersPackageVersion)</MicrosoftCodeAnalysisVersion>
     <SystemTextJsonVersion>4.7.0</SystemTextJsonVersion>
   </PropertyGroup>

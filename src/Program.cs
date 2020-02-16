@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Immutable;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
@@ -24,25 +23,43 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static async Task<int> Main(string[] args)
         {
-            var parser = new CommandLineBuilder(new Command("dotnet-format", handler: CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)))))
-                .UseParseDirective()
-                .UseHelp()
-                .UseDebugDirective()
-                .UseSuggestDirective()
-                .RegisterWithDotnetSuggest()
-                .UseParseErrorReporting()
-                .UseExceptionHandler()
-                .AddOption(new Option(new[] { "--folder", "-f" }, Resources.The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option, new Argument<string>(() => null)))
-                .AddOption(new Option(new[] { "--workspace", "-w" }, Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one, new Argument<string>(() => null)))
-                .AddOption(new Option(new[] { "--include", "--files" }, Resources.A_comma_separated_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty, new Argument<string>(() => null)))
-                .AddOption(new Option(new[] { "--exclude" }, Resources.A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting, new Argument<string>(() => null)))
-                .AddOption(new Option(new[] { "--check", "--dry-run" }, Resources.Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted, new Argument<bool>()))
-                .AddOption(new Option(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory, new Argument<string>(() => null)))
-                .AddOption(new Option(new[] { "--verbosity", "-v" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic, new Argument<string>() { Arity = ArgumentArity.ExactlyOne }.FromAmong(_verbosityLevels)))
-                .UseVersionOption()
-                .Build();
+            var rootCommand = new RootCommand
+            {
+                new Option(new[] { "--folder", "-f" }, Resources.The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option)
+                {
+                    Argument = new Argument<string>(() => null)
+                },
+                new Option(new[] { "--workspace", "-w" }, Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one)
+                {
+                    Argument = new Argument<string>(() => null)
+                },
+                new Option(new[] { "--include", "--files" }, Resources.A_comma_separated_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
+                {
+                    Argument = new Argument<string>(() => null)
+                },
+                new Option(new[] { "--exclude" }, Resources.A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)
+                {
+                    Argument = new Argument<string>(() => null)
+                },
+                new Option(new[] { "--check", "--dry-run" }, Resources.Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted)
+                {
+                    Argument = new Argument<bool>()
+                },
+                new Option(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory)
+                {
+                    Argument = new Argument<string>(() => null)
+                },
+                new Option(new[] { "--verbosity", "-v" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic)
+                {
+                    Argument = new Argument<string>() { Arity = ArgumentArity.ExactlyOne }.FromAmong(_verbosityLevels)
+                },
+            };
 
-            return await parser.InvokeAsync(args).ConfigureAwait(false);
+            rootCommand.Description = "dotnet-format";
+            rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)));
+
+            // Parse the incoming args and invoke the handler
+            return await rootCommand.InvokeAsync(args);
         }
 
         public static async Task<int> Run(string folder, string workspace, string verbosity, bool check, string include, string exclude, string report, IConsole console = null)

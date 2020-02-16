@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Rendering;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions.Internal;
 
 namespace Microsoft.CodeAnalysis.Tools.Logging
 {
@@ -71,13 +70,13 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
         {
             var messageColor = _logLevelColorMap[logLevel];
             _terminal.ForegroundColor = messageColor;
-            _terminal.Out.WriteLine($"  {message}");
+            _terminal.Out.Write($"  {message}{Environment.NewLine}");
             _terminal.ResetColor();
         }
 
         void LogToConsole(string message)
         {
-            _console.Out.WriteLine($"  {message}");
+            _console.Out.Write($"  {message}{Environment.NewLine}");
         }
     }
 }

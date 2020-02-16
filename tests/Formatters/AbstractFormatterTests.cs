@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,6 +16,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Utilities;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.CodingConventions;
 using Microsoft.VisualStudio.Composition;
@@ -24,6 +26,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public abstract class AbstractFormatterTest
     {
+        private static readonly MetadataReference CorlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location).WithAliases(ImmutableArray.Create("global", "corlib"));
+        private static readonly MetadataReference SystemReference = MetadataReference.CreateFromFile(typeof(System.Diagnostics.Debug).Assembly.Location).WithAliases(ImmutableArray.Create("global", "system"));
+        private static readonly MetadataReference SystemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
+        private static readonly MetadataReference CodeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
+
+        private static readonly MetadataReference SystemCollectionsImmutableReference = MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location);
+        private static readonly MetadataReference MicrosoftVisualBasicReference = MetadataReference.CreateFromFile(typeof(Microsoft.VisualBasic.Strings).Assembly.Location);
+
         private static readonly Lazy<IExportProviderFactory> ExportProviderFactory;
 
         static AbstractFormatterTest()
@@ -235,15 +245,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 .CurrentSolution
                 .AddProject(ProjectInfo.Create(projectId, VersionStamp.Create(), DefaultTestProjectName, DefaultTestProjectName, language, filePath: DefaultTestProjectPath))
                 .WithProjectCompilationOptions(projectId, compilationOptions)
-                .AddMetadataReference(projectId, MetadataReferences.CorlibReference)
-                .AddMetadataReference(projectId, MetadataReferences.SystemReference)
-                .AddMetadataReference(projectId, MetadataReferences.SystemCoreReference)
-                .AddMetadataReference(projectId, MetadataReferences.CodeAnalysisReference)
-                .AddMetadataReference(projectId, MetadataReferences.SystemCollectionsImmutableReference);
+                .AddMetadataReference(projectId, CorlibReference)
+                .AddMetadataReference(projectId, SystemReference)
+                .AddMetadataReference(projectId, SystemCoreReference)
+                .AddMetadataReference(projectId, CodeAnalysisReference)
+                .AddMetadataReference(projectId, SystemCollectionsImmutableReference);
 
             if (language == LanguageNames.VisualBasic)
             {
-                solution = solution.AddMetadataReference(projectId, MetadataReferences.MicrosoftVisualBasicReference);
+                solution = solution.AddMetadataReference(projectId, MicrosoftVisualBasicReference);
             }
 
             foreach (var transform in OptionsTransforms)
