@@ -174,8 +174,8 @@
   <data name="Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted" xml:space="preserve">
     <value>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</value>
   </data>
-  <data name="A_comma_separated_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty" xml:space="preserve">
-    <value>A comma separated list of relative file or folder paths to include in formatting. All files are formatted if empty.</value>
+  <data name="A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty" xml:space="preserve">
+    <value>A list of relative file or folder paths to include in formatting. All files are formatted if empty.</value>
   </data>
   <data name="Formatted_code_file_0" xml:space="preserve">
     <value>Formatted code file '{0}'.</value>
@@ -216,7 +216,7 @@
   <data name="Writing_formatting_report_to_0" xml:space="preserve">
     <value>Writing formatting report to: '{0}'.</value>
   </data>
-  <data name="A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting" xml:space="preserve">
-    <value>A comma separated list of relative file or folder paths to exclude from formatting.</value>
+  <data name="A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting" xml:space="preserve">
+    <value>A list of relative file or folder paths to exclude from formatting.</value>
   </data>
 </root>

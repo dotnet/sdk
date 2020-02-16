@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     foreach (var changedDocumentId in projectChanges.GetChangedDocuments())
                     {
                         var changedDocument = solution.GetDocument(changedDocumentId);
-                        logger.LogInformation(Resources.Formatted_code_file_0, Path.GetFileName(changedDocument.FilePath));
+                        logger.LogInformation(Resources.Formatted_code_file_0, changedDocument.FilePath);
                         filesFormatted++;
                     }
                 }

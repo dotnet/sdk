@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
 
             Assert.True(match.Success, log);
-            Assert.Equal("Program.cs", match.Groups[1].Value);
+            Assert.EndsWith("Program.cs", match.Groups[1].Value);
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
 
             Assert.True(match.Success, log);
-            Assert.Equal("Program.cs", match.Groups[1].Value);
+            Assert.EndsWith("Program.cs", match.Groups[1].Value);
         }
 
         [Fact]

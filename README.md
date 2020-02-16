@@ -42,23 +42,19 @@ dotnet tool install -g dotnet-format --version 4.0.111308 --add-source https://d
 
 By default `dotnet-format` will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory you will need to specify the workspace to format using the `-w` or `-f` options. You can control how verbose the output will be by using the `-v` option.
 
-```
+```sh
 Usage:
   dotnet-format [options]
 
 Options:
-  --folder, -f       The folder to operate on. Cannot be used with the `--workspace` option.
-  --workspace, -w    The solution or project file to operate on. If a file is not specified, the command will search
-                     the current directory for one.
-  --include          A comma separated list of relative file or folder paths to include in formatting. All files are
-                     formatted if empty.
-  --exclude          A comma separated list of relative file or folder paths to exclude from formatting.
-  --check            Formats files without saving changes to disk. Terminates with a non-zero exit code if any files
-                     were formatted.
-  --report           Writes a json file to the given directory. Defaults to 'format-report.json' if no filename given.
-  --verbosity, -v    Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and
-                     diag[nostic]
-  --version          Display version information
+  -f, --folder <FOLDER>           The folder to operate on. Cannot be used with the `--workspace` option.
+  -w, --workspace <WORKSPACE>     The solution or project file to operate on. If a file is not specified, the command will search the current directory for one.
+  --files, --include <INCLUDE>    A list of relative file or folder paths to include in formatting. All files are formatted if empty.
+  --exclude <EXCLUDE>             A list of relative file or folder paths to exclude from formatting.
+  --check, --dry-run <CHECK>      Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
+  --report <REPORT>               Accepts a file path, which if provided, will produce a json report in the given directory.
+  -v, --verbosity <VERBOSITY>     Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+  --version                       Display version information
 ```
 
 Add `format` after `dotnet` and before the command arguments that you want to run:
@@ -69,7 +65,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | dotnet **format** -f &lt;folder&gt;                        | Formats a particular folder and subfolders.                                                   |
 | dotnet **format** -w &lt;workspace&gt;                     | Formats a specific project or solution.                                                       |
 | dotnet **format** -v diag                                  | Formats with very verbose logging.                                                            |
-| dotnet **format** --include Programs.cs,Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
+| dotnet **format** --include Programs.cs Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
 | dotnet **format** --check                                  | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
 | dotnet **format** --report &lt;report-path&gt;             | Formats and saves a json report file to the given directory.                                  |
 

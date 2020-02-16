@@ -33,13 +33,13 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     Argument = new Argument<string>(() => null)
                 },
-                new Option(new[] { "--include", "--files" }, Resources.A_comma_separated_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
+                new Option(new[] { "--include", "--files" }, Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
                 {
-                    Argument = new Argument<string>(() => null)
+                    Argument = new Argument<string[]>(() => null)
                 },
-                new Option(new[] { "--exclude" }, Resources.A_comma_separated_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)
+                new Option(new[] { "--exclude" }, Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)
                 {
-                    Argument = new Argument<string>(() => null)
+                    Argument = new Argument<string[]>(() => null)
                 },
                 new Option(new[] { "--check", "--dry-run" }, Resources.Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted)
                 {
@@ -62,7 +62,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return await rootCommand.InvokeAsync(args);
         }
 
-        public static async Task<int> Run(string folder, string workspace, string verbosity, bool check, string include, string exclude, string report, IConsole console = null)
+        public static async Task<int> Run(string folder, string workspace, string verbosity, bool check, string[] include, string[] exclude, string report, IConsole console = null)
         {
             // Setup logging.
             var serviceCollection = new ServiceCollection();
@@ -211,24 +211,24 @@ namespace Microsoft.CodeAnalysis.Tools
         }
 
         /// <summary>
-        /// Converts a comma-separated list of relative file paths to a hashmap of full file paths.
+        /// Converts array of relative file paths to a hashmap of full file paths.
         /// </summary>
-        internal static ImmutableHashSet<string> GetRootedPaths(string paths, string folder)
+        internal static ImmutableHashSet<string> GetRootedPaths(string[] paths, string folder)
         {
-            if (string.IsNullOrEmpty(paths))
+            if (paths == null)
             {
-                return ImmutableHashSet.Create<string>();
+                return ImmutableHashSet<string>.Empty;
             }
 
             if (string.IsNullOrEmpty(folder))
             {
-                return paths.Split(',')
+                return paths
                     .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
                     .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
             }
             else
             {
-                return paths.Split(',')
+                return paths
                     .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
                     .Where(path => path.StartsWith(folder))
                     .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
