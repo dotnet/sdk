@@ -8,13 +8,14 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
     {
         private static int _registered = 0;
         private static string _currentDirectory;
+        public static string RepositoryRootDirectory => Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
 
         public static void SetCurrentDirectory()
         {
             if (Interlocked.Increment(ref _registered) == 1)
             {
                 _currentDirectory = Environment.CurrentDirectory;
-                var solutionPath = Directory.GetParent(_currentDirectory).Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
+                var solutionPath = RepositoryRootDirectory;
                 Environment.CurrentDirectory = solutionPath;
             }
         }
