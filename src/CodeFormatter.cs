@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.CodingConventions;
 
@@ -34,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, pathsToInclude, pathsToExclude, reportPath) = options;
+            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, fileMatcher, reportPath) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
@@ -44,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using (var workspace = await OpenWorkspaceAsync(
-                workspaceFilePath, workspaceType, pathsToInclude, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
+                workspaceFilePath, workspaceType, fileMatcher, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
             {
                 if (workspace is null)
                 {
@@ -60,7 +61,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 logger.LogTrace(Resources.Determining_formattable_files);
 
                 var (fileCount, formatableFiles) = await DetermineFormattableFiles(
-                    solution, projectPath, pathsToInclude, pathsToExclude, logger, cancellationToken).ConfigureAwait(false);
+                    solution, projectPath, fileMatcher, logger, cancellationToken).ConfigureAwait(false);
 
                 var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
@@ -98,6 +99,12 @@ namespace Microsoft.CodeAnalysis.Tools
                 if (exitCode == 0 && !string.IsNullOrWhiteSpace(reportPath))
                 {
                     var reportFilePath = GetReportFilePath(reportPath);
+                    var reportFolderPath = Path.GetDirectoryName(reportFilePath);
+
+                    if (!Directory.Exists(reportFolderPath))
+                    {
+                        Directory.CreateDirectory(reportFolderPath);
+                    }
 
                     logger.LogInformation(Resources.Writing_formatting_report_to_0, reportFilePath);
                     var seralizerOptions = new JsonSerializerOptions
@@ -137,7 +144,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<Workspace> OpenWorkspaceAsync(
             string workspacePath,
             WorkspaceType workspaceType,
-            ImmutableHashSet<string> pathsToInclude,
+            Matcher fileMatcher,
             bool logWorkspaceWarnings,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -145,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Tools
             if (workspaceType == WorkspaceType.Folder)
             {
                 var folderWorkspace = FolderWorkspace.Create();
-                await folderWorkspace.OpenFolder(workspacePath, pathsToInclude, cancellationToken);
+                await folderWorkspace.OpenFolder(workspacePath, fileMatcher, cancellationToken);
                 return folderWorkspace;
             }
 
@@ -241,8 +248,7 @@ namespace Microsoft.CodeAnalysis.Tools
         internal static async Task<(int, ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)>)> DetermineFormattableFiles(
             Solution solution,
             string projectPath,
-            ImmutableHashSet<string> pathsToInclude,
-            ImmutableHashSet<string> pathsToExclude,
+            Matcher fileMatcher,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -272,7 +278,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 // Get project documents and options with .editorconfig settings applied.
                 var getProjectDocuments = project.DocumentIds.Select(documentId => GetDocumentAndOptions(
-                    project, documentId, pathsToInclude, pathsToExclude, codingConventionsManager, optionsApplier, cancellationToken));
+                    project, documentId, fileMatcher, codingConventionsManager, optionsApplier, cancellationToken));
                 getDocumentsAndOptions.AddRange(getProjectDocuments);
             }
 
@@ -310,15 +316,14 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)> GetDocumentAndOptions(
             Project project,
             DocumentId documentId,
-            ImmutableHashSet<string> pathsToInclude,
-            ImmutableHashSet<string> pathsToExclude,
+            Matcher fileMatcher,
             ICodingConventionsManager codingConventionsManager,
             EditorConfigOptionsApplier optionsApplier,
             CancellationToken cancellationToken)
         {
             var document = project.Solution.GetDocument(documentId);
 
-            if (await ShouldIgnoreDocument(document, pathsToInclude, pathsToExclude, cancellationToken))
+            if (await ShouldIgnoreDocument(document, fileMatcher, cancellationToken))
             {
                 return (null, null, null, false);
             }
@@ -340,11 +345,10 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static async Task<bool> ShouldIgnoreDocument(
             Document document,
-            ImmutableHashSet<string> pathsToInclude,
-            ImmutableHashSet<string> pathsToExclude,
+            Matcher fileMatcher,
             CancellationToken cancellationToken)
         {
-            if (!pathsToInclude.IsEmpty && !pathsToInclude.Any(path => document.FilePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
+            if (!fileMatcher.Match(document.FilePath).HasMatches)
             {
                 // If a files list was passed in, then ignore files not present in the list.
                 return true;
@@ -356,11 +360,6 @@ namespace Microsoft.CodeAnalysis.Tools
             else if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(document, cancellationToken).ConfigureAwait(false))
             {
                 // Ignore generated code files.
-                return true;
-            }
-            else if (!pathsToExclude.IsEmpty && pathsToExclude.Any(path => document.FilePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
-            {
-                // Ignore file in, or under a folder in the list to exclude
                 return true;
             }
             else

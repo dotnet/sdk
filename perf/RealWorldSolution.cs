@@ -1,10 +1,13 @@
-﻿using System.Collections.Immutable;
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
+using System;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
+using Microsoft.CodeAnalysis.Tools.Utilities;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Perf
@@ -12,9 +15,11 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
     [Config(typeof(RealWorldConfig))]
     public class RealWorldSolution
     {
-        private const string UnformattedSolutionFilePath = "temp/project-system/ProjectSystem.sln";
-        private const string UnformattedFolderFilePath = "temp/project-system";
+        private const string UnformattedFolderFilePath = "temp/project-system/";
+        private const string UnformattedSolutionFilePath = UnformattedFolderFilePath + "ProjectSystem.sln";
+
         private static EmptyLogger EmptyLogger = new EmptyLogger();
+        private static readonly Matcher AllFileMatcher = SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>());
 
         [IterationSetup]
         public void RealWorldSolutionIterationSetup()
@@ -33,8 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                 LogLevel.Error,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                ImmutableHashSet<string>.Empty,
-                ImmutableHashSet<string>.Empty,
+                AllFileMatcher,
                 reportPath: string.Empty);
             _ = CodeFormatter.FormatWorkspaceAsync(options, EmptyLogger, default).GetAwaiter().GetResult();
         }
@@ -49,8 +53,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                 LogLevel.Error,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                ImmutableHashSet<string>.Empty,
-                ImmutableHashSet<string>.Empty,
+                AllFileMatcher,
                 reportPath: string.Empty);
             _ = CodeFormatter.FormatWorkspaceAsync(options, EmptyLogger, default).GetAwaiter().GetResult();
         }

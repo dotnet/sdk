@@ -33,17 +33,5 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             Assert.Equal(formatResult.ExitCode, exitCode);
         }
-
-        [Fact]
-        public void FilesFormattedDirectorySeparatorInsensitive()
-        {
-            var filePath = $"other_items{Path.DirectorySeparatorChar}OtherClass.cs";
-            var files = Program.GetRootedPaths(new[] { filePath }, folder: null);
-
-            var filePathAlt = $"other_items{Path.AltDirectorySeparatorChar}OtherClass.cs";
-            var filesAlt = Program.GetRootedPaths(new[] { filePathAlt }, folder: null);
-
-            Assert.True(files.IsSubsetOf(filesAlt));
-        }
     }
 }

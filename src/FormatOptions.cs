@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Immutable;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools
@@ -12,8 +12,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public LogLevel LogLevel { get; }
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
-        public ImmutableHashSet<string> PathsToInclude { get; }
-        public ImmutableHashSet<string> PathsToExclude { get; }
+        public Matcher FileMatcher { get; }
         public string ReportPath { get; }
 
         public FormatOptions(
@@ -22,8 +21,7 @@ namespace Microsoft.CodeAnalysis.Tools
             LogLevel logLevel,
             bool saveFormattedFiles,
             bool changesAreErrors,
-            ImmutableHashSet<string> pathsToInclude,
-            ImmutableHashSet<string> pathsToExclude,
+            Matcher fileMatcher,
             string reportPath)
         {
             WorkspaceFilePath = workspaceFilePath;
@@ -31,8 +29,7 @@ namespace Microsoft.CodeAnalysis.Tools
             LogLevel = logLevel;
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
-            PathsToInclude = pathsToInclude;
-            PathsToExclude = pathsToExclude;
+            FileMatcher = fileMatcher;
             ReportPath = reportPath;
         }
 
@@ -42,8 +39,7 @@ namespace Microsoft.CodeAnalysis.Tools
             out LogLevel logLevel,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
-            out ImmutableHashSet<string> pathsToInclude,
-            out ImmutableHashSet<string> pathsToExclude,
+            out Matcher fileMatcher,
             out string reportPath)
         {
             workspaceFilePath = WorkspaceFilePath;
@@ -51,8 +47,7 @@ namespace Microsoft.CodeAnalysis.Tools
             logLevel = LogLevel;
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;
-            pathsToInclude = PathsToInclude;
-            pathsToExclude = PathsToExclude;
+            fileMatcher = FileMatcher;
             reportPath = ReportPath;
         }
     }

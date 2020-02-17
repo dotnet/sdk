@@ -15,20 +15,19 @@ It is required to specify a workspace when running dotnet-format. Choosing a wor
 
 ### Filter files to format
 
-You can further narrow the list of files to be formatted by limiting to set of included files that are not excluded.
+You can further narrow the list of files to be formatted by limiting to set of included files that are not excluded. File globbing is supported.
 
-- `--include` - A comma separated list of relative file or folder paths to include in formatting.
-- `--exclude` - A comma separated list of relative file or folder paths to exclude from formatting.
+- `--include` - A list of relative file or folder paths to include in formatting.
+- `--exclude` - A list of relative file or folder paths to exclude from formatting.
 
 *Example:*
 
-Other repos built as part of your project can be included using git submodules. These submodules likely contain their own .editorconfig files that are set as `root = true`. This
-makes it difficult to validate formatting for your project as formatting mistakes in submodules are treated as errors.
+Other repos built as part of your project can be included using git submodules. These submodules likely contain their own .editorconfig files that are set as `root = true`. This makes it difficult to validate formatting for your project as formatting mistakes in submodules are treated as errors.
 
-The following command sets the repo folder as the workspace. It then includes the `./src` and `./tests` folders for formatting. The `submodule-a` folder is excluded from the formatting validation.
+The following command sets the repo folder as the workspace. It then includes the `src` and `tests` folders for formatting. The `submodule-a` folder is excluded from the formatting validation.
 
 ```console
-dotnet format -f . --include ./src,./tests --exclude ./src/submodule-a --check
+dotnet format -f . --include ./src/ ./tests/ --exclude ./src/submodule-a/ --check
 ```
 
 ### Logging and Reports

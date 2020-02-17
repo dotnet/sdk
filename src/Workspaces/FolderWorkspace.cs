@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
@@ -32,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             return new FolderWorkspace(hostServices);
         }
 
-        public async Task<Solution> OpenFolder(string folderPath, ImmutableHashSet<string> pathsToInclude, CancellationToken cancellationToken)
+        public async Task<Solution> OpenFolder(string folderPath, Matcher fileMatcher, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
             {
@@ -41,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
             ClearSolution();
 
-            var solutionInfo = await FolderSolutionLoader.LoadSolutionInfoAsync(folderPath, pathsToInclude, cancellationToken).ConfigureAwait(false);
+            var solutionInfo = await FolderSolutionLoader.LoadSolutionInfoAsync(folderPath, fileMatcher, cancellationToken).ConfigureAwait(false);
 
             OnSolutionAdded(solutionInfo);
 

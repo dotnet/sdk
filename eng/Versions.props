@@ -20,6 +20,7 @@
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.0.1-beta1.20114.4</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsLoggingVersion>
     <MicrosoftVisualStudioCodingConventionsVersion>1.1.20180503.2</MicrosoftVisualStudioCodingConventionsVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0-beta2.20114.1</MicrosoftCodeAnalysisAnalyzersVersion>

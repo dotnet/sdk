@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
@@ -14,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             private static ImmutableArray<ProjectLoader> ProjectLoaders
                 => ImmutableArray.Create<ProjectLoader>(new CSharpProjectLoader(), new VisualBasicProjectLoader());
 
-            public static async Task<SolutionInfo> LoadSolutionInfoAsync(string folderPath, ImmutableHashSet<string> pathsToInclude, CancellationToken cancellationToken)
+            public static async Task<SolutionInfo> LoadSolutionInfoAsync(string folderPath, Matcher fileMatcher, CancellationToken cancellationToken)
             {
                 var absoluteFolderPath = Path.IsPathFullyQualified(folderPath)
                     ? folderPath
@@ -25,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 // Create projects for each of the supported languages.
                 foreach (var loader in ProjectLoaders)
                 {
-                    var projectInfo = await loader.LoadProjectInfoAsync(folderPath, pathsToInclude, cancellationToken);
+                    var projectInfo = await loader.LoadProjectInfoAsync(folderPath, fileMatcher, cancellationToken);
                     if (projectInfo is null)
                     {
                         continue;

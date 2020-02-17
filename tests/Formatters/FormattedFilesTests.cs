@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -49,14 +50,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray());
             var project = solution.Projects.Single();
             var document = project.Documents.Single();
+            var fileMatcher = SourceFileMatcher.CreateMatcher(new[] { document.FilePath }, exclude: Array.Empty<string>());
             var formatOptions = new FormatOptions(
                 workspaceFilePath: project.FilePath,
                 workspaceType: WorkspaceType.Folder,
                 logLevel: LogLevel.Trace,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
-                pathsToInclude: ImmutableHashSet.Create(document.FilePath),
-                pathsToExclude: ImmutableHashSet.Create<string>(),
+                fileMatcher,
                 reportPath: string.Empty);
 
             var pathsToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);

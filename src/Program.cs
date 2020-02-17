@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
@@ -10,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Logging;
 using Microsoft.CodeAnalysis.Tools.MSBuild;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -35,11 +35,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 },
                 new Option(new[] { "--include", "--files" }, Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
                 {
-                    Argument = new Argument<string[]>(() => null)
+                    Argument = new Argument<string[]>(() => Array.Empty<string>())
                 },
                 new Option(new[] { "--exclude" }, Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)
                 {
-                    Argument = new Argument<string[]>(() => null)
+                    Argument = new Argument<string[]>(() => Array.Empty<string>())
                 },
                 new Option(new[] { "--check", "--dry-run" }, Resources.Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted)
                 {
@@ -120,9 +120,6 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 Environment.CurrentDirectory = workspaceDirectory;
 
-                var pathsToInclude = GetRootedPaths(include, folder);
-                var pathsToExclude = GetRootedPaths(exclude, folder);
-
                 // Since we are running as a dotnet tool we should be able to find an instance of
                 // MSBuild in a .NET Core SDK.
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
@@ -135,14 +132,15 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
 
+                var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
+
                 var formatOptions = new FormatOptions(
                     workspacePath,
                     workspaceType,
                     logLevel,
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
-                    pathsToInclude,
-                    pathsToExclude,
+                    fileMatcher,
                     reportPath: report);
 
                 var formatResult = await CodeFormatter.FormatWorkspaceAsync(
@@ -208,31 +206,6 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             serviceCollection.AddSingleton(new LoggerFactory().AddSimpleConsole(console, logLevel));
             serviceCollection.AddLogging();
-        }
-
-        /// <summary>
-        /// Converts array of relative file paths to a hashmap of full file paths.
-        /// </summary>
-        internal static ImmutableHashSet<string> GetRootedPaths(string[] paths, string folder)
-        {
-            if (paths == null)
-            {
-                return ImmutableHashSet<string>.Empty;
-            }
-
-            if (string.IsNullOrEmpty(folder))
-            {
-                return paths
-                    .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
-                    .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                return paths
-                    .Select(path => Path.GetFullPath(path, Environment.CurrentDirectory))
-                    .Where(path => path.StartsWith(folder))
-                    .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
-            }
         }
     }
 }
