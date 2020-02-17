@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-HANT" original="../Strings.resx">
     <body>
@@ -144,33 +144,33 @@
       </trans-unit>
       <trans-unit id="CanOnlyHaveSingleFileWithNetCoreApp">
         <source>NETSDK1125: Publishing to a single-file is only supported for netcoreapp target.</source>
-        <target state="new">NETSDK1125: Publishing to a single-file is only supported for netcoreapp target.</target>
+        <target state="translated">NETSDK1125: 發佈至單一檔案僅支援 netcoreapp 目標。</target>
         <note>{StrBegin="NETSDK1125: "}</note>
       </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
         <source>Choosing '{0}' because AssemblyVersion '{1}' is greater than '{2}'.</source>
         <target state="translated">因為 AssemblyVersion '{1}' 大於 '{2}'，所以選擇 '{0}'。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="ChoosingCopyLocalArbitrarily_Info">
         <source>Choosing '{0}' arbitrarily as both items are copy-local and have equal file and assembly versions.</source>
         <target state="translated">因為兩個項目都是複製到本機，而且具有相同的檔案和組件版本，所以任意選擇 '{0}'。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="ChoosingFileVersion_Info">
         <source>Choosing '{0}' because file version '{1}' is greater than '{2}'.</source>
         <target state="translated">因為檔案版本 '{1}' 大於 '{2}'，所以選擇 '{0}'。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="ChoosingPlatformItem_Info">
         <source>Choosing '{0}' because it is a platform item.</source>
         <target state="translated">因為 '{0}' 為平台項目，所以選擇它。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="ChoosingPreferredPackage_Info">
         <source>Choosing '{0}' because it comes from a package that is preferred.</source>
         <target state="translated">因為 '{0}' 來自慣用的套件，所以選擇它。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="ClsidMapConflictingGuids">
         <source>NETSDK1089: The '{0}' and '{1}' types have the same CLSID '{2}' set in their GuidAttribute. Each COMVisible class needs to have a distinct guid for their CLSID.</source>
@@ -205,22 +205,22 @@
       <trans-unit id="CouldNotDetermineWinner_DoesNotExist_Info">
         <source>Could not determine winner because '{0}' does not exist.</source>
         <target state="translated">因為 '{0}' 不存在，所以無法判斷成功者。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="CouldNotDetermineWinner_EqualVersions_Info">
         <source>Could not determine winner due to equal file and assembly versions.</source>
         <target state="translated">因為檔案和組件版本相同，所以無法判斷成功者。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="CouldNotDetermineWinner_NoFileVersion_Info">
         <source>Could not determine a winner because '{0}' has no file version.</source>
         <target state="translated">因為 '{0}' 沒有檔案版本，所以無法判斷成功者。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="CouldNotDetermineWinner_NotAnAssembly_Info">
         <source>Could not determine a winner because '{0}' is not an assembly.</source>
         <target state="translated">因為 '{0}' 並非組件，所以無法判斷成功者。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="CouldNotLoadPlatformManifest">
         <source>NETSDK1042: Could not load PlatformManifest from '{0}' because it did not exist.</source>
@@ -260,7 +260,7 @@
       <trans-unit id="EncounteredConflict_Info">
         <source>Encountered conflict between '{0}' and '{1}'.</source>
         <target state="translated">'{0}' 與 '{1}' 之間發生衝突。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="ErrorParsingFrameworkListInvalidValue">
         <source>NETSDK1051: Error parsing FrameworkList from '{0}'.  {1} '{2}' was invalid.</source>
@@ -335,7 +335,7 @@
       <trans-unit id="ILLink_Info">
         <source>Optimizing assemblies for size, which may change the behavior of the app. Be sure to test after publishing. See: https://aka.ms/dotnet-illink</source>
         <target state="translated">最佳化組件的大小可能會變更應用程式的行為。發佈後請務必加以測試。請參閱: https://aka.ms/dotnet-illink</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
         <source>NETSDK1020: Package Root {0} was incorrectly given for Resolved library {1}</source>
@@ -443,7 +443,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="NoSupportCppSelfContained">
         <source>NETSDK1121: C++/CLI projects targeting .NET Core cannot use SelfContained=true.</source>
-        <target state="new">NETSDK1121: C++/CLI projects targeting .NET Core cannot use SelfContained=true.</target>
+        <target state="translated">NETSDK1121: 目標為 .NET Core 的 C++/CLI 專案不能使用 SelfContained=true。</target>
         <note>{StrBegin="NETSDK1121: "}</note>
       </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
@@ -483,17 +483,17 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PublishReadyToRunRequiresVersion30">
         <source>NETSDK1122: ReadyToRun compilation will be skipped because it is only supported for .NET Core 3.0 or higher.</source>
-        <target state="new">NETSDK1122: ReadyToRun compilation will be skipped because it is only supported for .NET Core 3.0 or higher.</target>
+        <target state="translated">NETSDK1122: 因為 ReadyToRun 編譯只支援 .NET Core 3.0 或更高版本而會跳過。</target>
         <note>{StrBegin="NETSDK1122: "}</note>
       </trans-unit>
       <trans-unit id="PublishSingleFileRequiresVersion30">
         <source>NETSDK1123: Publishing an application to a single-file requires .NET Core 3.0 or higher.</source>
-        <target state="new">NETSDK1123: Publishing an application to a single-file requires .NET Core 3.0 or higher.</target>
+        <target state="translated">NETSDK1123: 需要 .NET Core 3.0 或更新版本才能發佈應用程式至單一檔案。</target>
         <note>{StrBegin="NETSDK1123: "}</note>
       </trans-unit>
       <trans-unit id="PublishTrimmedRequiresVersion30">
         <source>NETSDK1124: Trimming assemblies requires .NET Core 3.0 or higher.</source>
-        <target state="new">NETSDK1124: Trimming assemblies requires .NET Core 3.0 or higher.</target>
+        <target state="translated">NETSDK1124: 需要 .NET Core 3.0 或更新版本才能修剪組件。</target>
         <note>{StrBegin="NETSDK1124: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunCompilationFailed">
@@ -504,7 +504,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="ReadyToRunCompilationHasWarnings_Info">
         <source>Some ReadyToRun compilations emitted warnings, indicating potential missing dependencies. Missing dependencies could potentially cause runtime failures. To show the warnings, set the PublishReadyToRunShowWarnings property to true.</source>
         <target state="translated">部分 ReadyToRun 編譯發出了警告，指出可能缺少相依性。缺少相依性可能會導致執行階段失敗。若要顯示警告，請將 PublishReadyToRunShowWarnings 屬性設為 true。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="ReadyToRunNoValidRuntimePackageError">
         <source>NETSDK1094: Unable to optimize assemblies for performance: a valid runtime package was not found. Either set the PublishReadyToRun property to false, or use a supported runtime identifier when publishing.</source>
@@ -559,7 +559,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="UnableToUsePackageAssetsCache_Info">
         <source>Unable to use package assets cache due to I/O error. This can occur when the same project is built more than once in parallel. Performance may be degraded, but the build result will not be impacted.</source>
         <target state="translated">因為發生 I/O 錯誤，所以無法使用套件資產。多次平行建置相同的專案，即可能發生此情況。效能可能會有所減損，但建置結果不會受到影響。</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="UnexpectedFileType">
         <source>NETSDK1012: Unexpected file type for '{0}'. Type is both '{1}' and '{2}'.</source>
@@ -609,7 +609,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="UsingPreviewSdk_Info">
         <source>You are using a preview version of .NET Core. See: https://aka.ms/dotnet-core-preview</source>
         <target state="translated">您目前使用 .NET Core 預覽版。請參閱: https://aka.ms/dotnet-core-preview</target>
-        <note />
+        <note/>
       </trans-unit>
       <trans-unit id="WindowsDesktopFrameworkRequiresUseWpfOrUseWindowsForms">
         <source>NETSDK1106: Microsoft.NET.Sdk.WindowsDesktop requires 'UseWpf' or 'UseWindowsForms' to be set to 'true'</source>
