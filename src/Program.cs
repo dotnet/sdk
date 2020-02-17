@@ -51,7 +51,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 },
                 new Option(new[] { "--verbosity", "-v" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic)
                 {
-                    Argument = new Argument<string>() { Arity = ArgumentArity.ExactlyOne }.FromAmong(_verbosityLevels)
+                    Argument = new Argument<string>() { Arity = ArgumentArity.ExactlyOne }
                 },
             };
 
