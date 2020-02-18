@@ -1,0 +1,9 @@
+--folder
+.
+--exclude
+./tests/projects/
+--check
+--report
+./artifacts/log/
+-v
+diag

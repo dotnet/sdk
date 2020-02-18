@@ -111,7 +111,7 @@ jobs:
     vmImage: 'vs2017-win2016'
   timeoutInMinutes: 5
   steps:
-    - script: dotnet run --project ./src/dotnet-format.csproj -- --folder . --exclude ./tests/projects/ --check --report ./artifacts/log/ -v diag
+    - script: dotnet run --project ./src/dotnet-format.csproj -- @validate.rsp
       displayName: Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
