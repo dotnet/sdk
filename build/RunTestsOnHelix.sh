@@ -8,4 +8,5 @@ export PATH=$DOTNET_ROOT:$PATH
 
 export TestExecutionDirectory=$(pwd)/testExecutionDirectory
 mkdir $TestExecutionDirectory
+export DOTNET_CLI_HOME=$(pwd)/testExecutionDirectory/dotnethome
 cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionDirectory/
