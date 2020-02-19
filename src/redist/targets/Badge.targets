@@ -13,7 +13,7 @@
       InputFiles="$(VersionSvgTemplate)"
       DestinationFiles="$(VersionBadge)"
       ReplacementPatterns="ver_number"
-      ReplacementStrings="$(SdkVersion)" />
+      ReplacementStrings="$(Version)" />
   </Target>
 
   <Target Name="SetBadgeProps" DependsOnTargets="GetCurrentRuntimeInformation">

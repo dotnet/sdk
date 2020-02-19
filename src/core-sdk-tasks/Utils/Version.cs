@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.Build
         public virtual int Major { get; set; }
         public virtual int Minor { get; set; }
         public virtual int Patch { get; set; }
-        public virtual int CommitCount { get; set; }
+        public virtual int VersionRevision { get; set; }
 
         public string GenerateMsiVersion()
         {
@@ -22,11 +22,11 @@ namespace Microsoft.DotNet.Cli.Build
             // CLI major  -> 6 bits
             // CLI minor  -> 6 bits
             // CLI patch  -> 6 bits
-            // CLI commitcount -> 14 bits
+            // CLI VersionRevision -> 14 bits
             var major = Major << 26;
             var minor = Minor << 20;
             var patch = Patch << 14;
-            var msiVersionNumber = major | minor | patch | CommitCount;
+            var msiVersionNumber = major | minor | patch | VersionRevision;
 
             var msiMajor = (msiVersionNumber >> 24) & 0xFF;
             var msiMinor = (msiVersionNumber >> 16) & 0xFF;

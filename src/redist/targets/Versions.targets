@@ -1,55 +1,16 @@
 <Project>
-  <PropertyGroup>
-    <VersionMajor>3</VersionMajor>
-    <VersionMinor>1</VersionMinor>
-    <VersionSDKMinor>2</VersionSDKMinor>
-    <VersionPatch>00</VersionPatch>
-    <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview</ReleaseSuffix>
-    <!--
-        When DropSuffix is set to 'true', this branch will produce stable outputs for 'Shipping' packages
-    -->
-    <DropSuffix>false</DropSuffix>
-  </PropertyGroup>
-  
-  <Target Name="GetCoreSdkGitCommitInfo">
-    <Exec Command="git rev-list --count HEAD"
-          ConsoleToMSBuild="true"
-          Condition=" '$(GitCommitCount)' == '' ">
-      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
-    </Exec>
+  <Target Name="GenerateFullNuGetVersion">
+    <PropertyGroup>
+      <FullNugetVersion>$(VersionPrefix)-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</FullNugetVersion>
+      <FullNugetVersion Condition=" '$(VersionSuffixDateStamp)' != '' And '$(VersionSuffixBuildOfTheDay)' != '' ">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
+    </PropertyGroup>
+  </Target>
 
+  <Target Name="GetCommitHash">
     <Exec Command="git rev-parse HEAD"
           ConsoleToMSBuild="true"
           Condition=" '$(GitCommitHash)' == '' ">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
     </Exec>
-
-    <PropertyGroup>
-      <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
-    </PropertyGroup>
   </Target>
-
-  <Target Name="SetSdkVersionInfo" DependsOnTargets="GetCoreSdkGitCommitInfo">
-    <PropertyGroup>
-      <MajorMinorVersion>$(VersionMajor).$(VersionMinor)</MajorMinorVersion>
-      <CliProductBandVersion>$(MajorMinorVersion).$(VersionSDKMinor)</CliProductBandVersion>
-      <CliVersionNoSuffix>$(CliProductBandVersion)$(VersionPatch)</CliVersionNoSuffix>
-      <CliVersionPrefix>$(CliVersionNoSuffix)-$(ReleaseSuffix)</CliVersionPrefix>
-      <CliBrandingVersion Condition=" '$(DropSuffix)' != 'true' ">$(CliVersionNoSuffix) - $(ReleaseSuffix)</CliBrandingVersion>
-      <CliBrandingVersion Condition=" '$(DropSuffix)' == 'true' ">$(CliVersionNoSuffix)</CliBrandingVersion>
-      <SDKBundleVersion>$(CliVersionNoSuffix).$(GitCommitCount)</SDKBundleVersion>
-
-      <VersionSuffix Condition=" '$(DropSuffix)' != 'true' ">$(ReleaseSuffix)-$(GitCommitCount)</VersionSuffix>
-
-      <FullNugetVersion>$(CliVersionNoSuffix)-$(ReleaseSuffix)-$(GitCommitCount)</FullNugetVersion>
-
-      <NugetVersion Condition=" '$(DropSuffix)' != 'true' ">$(FullNugetVersion)</NugetVersion>
-      <NugetVersion Condition=" '$(NugetVersion)' == '' ">$(CliVersionNoSuffix)</NugetVersion>
-
-      <SdkVersion>$(NugetVersion)</SdkVersion>
-      <SdkNugetVersion>$(NugetVersion)</SdkNugetVersion>
-
-    </PropertyGroup>
-  </Target>
-  
 </Project>

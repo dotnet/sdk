@@ -5,14 +5,14 @@
     
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
-      <_crossDir Condition="'$(Architecture)' == 'arm64'">/x64_arm64</_crossDir>
+      <_crossDir Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' != 'arm64'">/x64_arm64</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">/x64_arm</_crossDir>
       <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
-      <LibCLRJitRid Condition="!$(Architecture.StartsWith('arm'))">$(SharedFrameworkRid)</LibCLRJitRid>
-      <LibCLRJitRid Condition="'$(Architecture)' == 'arm64'">x64_arm64</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' == 'x64'">x64_arm64</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86_arm</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">x64_arm</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(LibCLRJitRid)' == ''">$(SharedFrameworkRid)</LibCLRJitRid>
       <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
       <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
       <DIASymReaderCrossgenFilter>*</DIASymReaderCrossgenFilter>
@@ -134,7 +134,7 @@
 
     <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
     <Move SourceFiles="@(PdbsToMove)"
-          DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(SdkVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="ChmodLayout"

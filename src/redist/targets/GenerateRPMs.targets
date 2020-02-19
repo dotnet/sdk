@@ -111,7 +111,7 @@
         <ReplacementString>$(AspNetTargetingPackRpmPackageName)</ReplacementString>
       </SDKTokenValue>
       <SDKTokenValue Include="%SDK_NUGET_VERSION%">
-        <ReplacementString>$(SdkVersion)</ReplacementString>
+        <ReplacementString>$(Version)</ReplacementString>
       </SDKTokenValue>
       <SDKTokenValue Include="%CLI_SDK_BRAND_NAME%">
         <ReplacementString>$(SdkBrandName)</ReplacementString>
@@ -121,7 +121,7 @@
       </SDKTokenValue>
 
       <AfterInstallHostTokenValue  Include="%SDK_VERSION%">
-        <ReplacementString>$(SdkVersion)</ReplacementString>
+        <ReplacementString>$(Version)</ReplacementString>
       </AfterInstallHostTokenValue>
     </ItemGroup>
 
@@ -175,11 +175,11 @@
   </Target>
 
   <Target Name="SetupRpmProps"
-          DependsOnTargets="SetSdkVersionInfo;CalculateLinuxNativeInstallerDependencyVersions;GetCurrentRuntimeInformation;SetupFileExtensions">
+          DependsOnTargets="CalculateLinuxNativeInstallerDependencyVersions;GetCurrentRuntimeInformation;SetupFileExtensions">
     <PropertyGroup>
       <SdkRpmPackageVersion>$(MajorMinorVersion)</SdkRpmPackageVersion>
       <SdkRpmPackageName>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(SdkRpmPackageVersion)</SdkRpmPackageName>
-      <RpmPackageVersion>$(SdkVersion)</RpmPackageVersion>
+      <RpmPackageVersion>$(Version)</RpmPackageVersion>
       <InputRoot>$(RedistLayoutPath)sdk/</InputRoot>
       <DotnetNewTemplatesRoot>$(RedistLayoutPath)templates/</DotnetNewTemplatesRoot>
       <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
@@ -288,6 +288,7 @@
           Outputs="$(RpmTestResultsXmlFile)" >
 
     <!-- Install Dependencies and SDK Packages -->
+    <Exec Command="sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc" />
     <Exec Command="sudo rpm -iv $(DownloadedRuntimeDepsInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppHostPackInstallerFile)" />
     <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />

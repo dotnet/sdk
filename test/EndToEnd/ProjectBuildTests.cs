@@ -36,8 +36,9 @@ namespace EndToEnd.Tests
             var runCommand = new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
-                .Should().Pass()
-                .And.HaveStdOutContaining("Hello World!");
+                // Templates are still at 3.1 and will not run on 5.0, revert to commented out assertion when 5.0 templates land
+                //.Should().Pass().And.HaveStdOutContaining("Hello World!");
+                .Should().Fail().And.HaveStdErrContaining("https://aka.ms/dotnet-core-applaunch");
 
             var binDirectory = new DirectoryInfo(projectDirectory).Sub("bin");
             binDirectory.Should().HaveFilesMatching("*.dll", SearchOption.AllDirectories);
@@ -79,8 +80,10 @@ namespace EndToEnd.Tests
             var runCommand = new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
-                .Should().Pass()
-                .And.HaveStdOutContaining("Hello World!");
+                // Templates are still at 3.1 and will not run on 5.0, revert to commented out assertion when 5.0 templates land
+                //.Should().Pass().And.HaveStdOutContaining("Hello World!");
+                .Should().Fail().And.HaveStdErrContaining("https://aka.ms/dotnet-core-applaunch");
+
         }
 
         [Theory]
@@ -96,15 +99,15 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf")]
-        [InlineData("winforms")]
+        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
+        [InlineData("winforms", Skip = "https://github.com/dotnet/wpf/issues/2363")]
         public void ItCanBuildDesktopTemplates(string templateName)
         {
             TestTemplateBuild(templateName);
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf")]
+        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName)
         {
             TestTemplateBuild(templateName);

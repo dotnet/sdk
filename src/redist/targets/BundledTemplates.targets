@@ -25,6 +25,21 @@
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates21InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates21MajorMinorVersion" />
     </CalculateTemplateVersions>
+    <GenerateMsiVersionFromFullVersion VersionRevision="$(CombinedBuildNumberAndRevision)"
+                                       VersionMajorMinorPatch="$(AspNetCore31VersionMajorMinorPatchVersion)">
+      <Output TaskParameter="MsiVersion" PropertyName="BundledTemplates31MSIVersion" />
+    </GenerateMsiVersionFromFullVersion>
+
+    <GenerateMsiVersionFromFullVersion VersionRevision="$(CombinedBuildNumberAndRevision)"
+                                       VersionMajorMinorPatch="$(AspNetCore30VersionMajorMinorPatchVersion)">
+      <Output TaskParameter="MsiVersion" PropertyName="BundledTemplates30MSIVersion" />
+    </GenerateMsiVersionFromFullVersion>
+
+
+    <GenerateMsiVersionFromFullVersion VersionRevision="$(CombinedBuildNumberAndRevision)"
+                                       VersionMajorMinorPatch="$(AspNetCore21VersionMajorMinorPatchVersion)">
+      <Output TaskParameter="MsiVersion" PropertyName="BundledTemplates21MSIVersion" />
+    </GenerateMsiVersionFromFullVersion>
   </Target>
 
   <ItemGroup>
@@ -34,8 +49,8 @@
     <Bundled31Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates31PackageVersion)" />
     <Bundled31Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates31PackageVersion)" />
     <Bundled31Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
-    <Bundled31Templates Include="Microsoft.DotNet.Web.ProjectTemplates.3.1" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
-    <Bundled31Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
+    <Bundled31Templates Include="Microsoft.DotNet.Web.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
+    <Bundled31Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
     <Bundled31Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates31PackageVersion)" />
   </ItemGroup>
   <ItemGroup>

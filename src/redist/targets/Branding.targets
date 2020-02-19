@@ -1,9 +1,9 @@
 <Project>
-  <Target Name="SetSdkBrandingInfo" DependsOnTargets="SetSdkVersionInfo">
+  <Target Name="SetSdkBrandingInfo">
     <PropertyGroup>
       <BuildName>cli</BuildName>
-      <SdkBrandName>Microsoft .NET Core SDK $(CliBrandingVersion)</SdkBrandName>
-      <ToolsetBrandName>Microsoft .NET Core Toolset $(CliBrandingVersion)</ToolsetBrandName>
+      <SdkBrandName>Microsoft .NET Core SDK $(Version)</SdkBrandName>
+      <ToolsetBrandName>Microsoft .NET Core Toolset $(Version)</ToolsetBrandName>
       <MSBuildExtensionsBrandName>.NET Standard Support for Visual Studio 2015</MSBuildExtensionsBrandName>
       <SharedFrameworkBrandName>Microsoft .NET Core Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
       <NetCoreAppTargetingPackBrandName>Microsoft .NET Core Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
@@ -13,9 +13,9 @@
       <HostFxrBrandName>Microsoft .NET Core Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
       <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
       <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
-      <BundledTemplates31BrandName>Microsoft .NET Core 3.1 Templates $(CliBrandingVersion)</BundledTemplates31BrandName>
-      <BundledTemplates30BrandName>Microsoft .NET Core 3.0 Templates $(CliBrandingVersion)</BundledTemplates30BrandName>
-      <BundledTemplates21BrandName>Microsoft .NET Core 2.1 Templates $(CliBrandingVersion)</BundledTemplates21BrandName>
+      <BundledTemplates31BrandName>Microsoft .NET Core 3.1 Templates $(Version)</BundledTemplates31BrandName>
+      <BundledTemplates30BrandName>Microsoft .NET Core 3.0 Templates $(Version)</BundledTemplates30BrandName>
+      <BundledTemplates21BrandName>Microsoft .NET Core 2.1 Templates $(Version)</BundledTemplates21BrandName>
     </PropertyGroup>
   </Target>
   
