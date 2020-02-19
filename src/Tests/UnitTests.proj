@@ -34,6 +34,11 @@
       <DotToolsFolder Include="$(RepoRoot)\.tools\**\*.*"/>
       <GlobalJson Include="$(RepoRoot)\global.json"/>
       <!-- Get full framework msbuild end -->
+      
+      <!-- include .dotnet folder. So there is no extra first run experience run during the test -->
+      <DotnetCliHome Include="$(ArtifactsTmpDir).dotnet\**\*.*"/>
+
+      <Testpackages Include="$(ArtifactsTmpDir)testpackages\**\*.*"/>
 
       <!-- Files in testExecutionDirectory to prevent environment interference -->
       <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)NuGet.config"/>
@@ -56,6 +61,8 @@
     <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(TestExecutionDirectoryFiles)" DestinationFiles="@(TestExecutionDirectoryFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(DotnetCliHome)" DestinationFiles="@(DotnetCliHome->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\.dotnet\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(Testpackages)" DestinationFiles="@(Testpackages->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Testpackages\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 
