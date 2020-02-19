@@ -34,7 +34,7 @@
       <DotToolsFolder Include="$(RepoRoot)\.tools\**\*.*"/>
       <GlobalJson Include="$(RepoRoot)\global.json"/>
       <!-- Get full framework msbuild end -->
-      
+
       <!-- include .dotnet folder. So there is no extra first run experience run during the test -->
       <DotnetCliHome Include="$(ArtifactsTmpDir).dotnet\**\*.*"/>
 
