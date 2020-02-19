@@ -28,7 +28,7 @@
   </Target>
 
   <ItemGroup>
-    <Bundled31Templates Include="Microsoft.AspNetCore.Blazor.Templates" PackageVersion="$(MicrosoftAspNetCoreBlazorTemplatesPackageVersion)" />
+    <Bundled31Templates Include="Microsoft.AspNetCore.Components.WebAssembly.Templates" PackageVersion="$(MicrosoftAspNetCoreComponentsWebAssemblyTemplatesPackageVersion)" />
     <Bundled31Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates31PackageVersion)" />
     <Bundled31Templates Include="Microsoft.DotNet.Common.ProjectTemplates.3.1" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates31PackageVersion)" />
     <Bundled31Templates Include="Microsoft.DotNet.Test.ProjectTemplates.3.1" PackageVersion="$(MicrosoftDotNetTestProjectTemplates31PackageVersion)" />
