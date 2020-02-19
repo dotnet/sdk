@@ -605,7 +605,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1125: "}</comment>
   </data>
   <data name="Crossgen2RequiresSelfContained" xml:space="preserve">
-    <value>NETSDK1126: Publishing ReadyToRun using Crossgen2 is only supported for self-contained applications for now.</value>
-    <comment>{StrBegin="NETSDK9999: "}</comment>
+    <value>NETSDK1126: Publishing ReadyToRun using Crossgen2 is only supported for self-contained applications.</value>
+    <comment>{StrBegin="NETSDK1126: "}</comment>
   </data>
 </root>

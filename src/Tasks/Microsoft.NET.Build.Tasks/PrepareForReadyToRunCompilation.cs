@@ -17,14 +17,6 @@ namespace Microsoft.NET.Build.Tasks
 {
     public class PrepareForReadyToRunCompilation : TaskBase
     {
-        internal struct CrossgenToolInfo
-        {
-            public string ToolPath;
-            public string PackagePath;
-            public string ClrJitPath;
-            public string DiaSymReaderPath;
-        }
-
         public ITaskItem[] Assemblies { get; set; }
         public string[] ExcludeList { get; set; }
         public bool EmitSymbols { get; set; }
@@ -63,6 +55,14 @@ namespace Microsoft.NET.Build.Tasks
 
         [Output]
         public ITaskItem[] ReadyToRunAssembliesToReference => _r2rReferences.ToArray();
+
+        internal struct CrossgenToolInfo
+        {
+            public string ToolPath;
+            public string PackagePath;
+            public string ClrJitPath;
+            public string DiaSymReaderPath;
+        }
 
         private List<ITaskItem> _compileList = new List<ITaskItem>();
         private List<ITaskItem> _symbolsCompileList = new List<ITaskItem>();
@@ -108,17 +108,23 @@ namespace Microsoft.NET.Build.Tasks
             if (ReadyToRunUseCrossgen2)
             {
                 if (!ValidateCrossgen2Support())
+                {
                     return;
+                }
 
                 // NOTE: Crossgen2 does not yet currently support emitting native symbols, and until this feature
                 // is implemented, we will use crossgen for it. This should go away in the future when crossgen2 supports the feature.
                 if (EmitSymbols && !ValidateCrossgenSupport())
+                {
                     return;
+                }
             }
             else
             {
                 if (!ValidateCrossgenSupport())
+                {
                     return;
+                }
             }
 
             // Future: check DiaSymReaderPath in the _crossgen2Tool info when crossgen2 starts supporting emitting native symbols
@@ -155,7 +161,9 @@ namespace Microsoft.NET.Build.Tasks
             CrossgenTool = new TaskItem(_crossgenTool.ToolPath);
             CrossgenTool.SetMetadata("JitPath", _crossgenTool.ClrJitPath);
             if (!String.IsNullOrEmpty(_crossgenTool.DiaSymReaderPath))
+            {
                 CrossgenTool.SetMetadata("DiaSymReader", _crossgenTool.DiaSymReaderPath);
+            }
 
             return true;
         }
@@ -189,7 +197,9 @@ namespace Microsoft.NET.Build.Tasks
             Crossgen2Tool = new TaskItem(_crossgen2Tool.ToolPath);
             Crossgen2Tool.SetMetadata("JitPath", _crossgen2Tool.ClrJitPath);
             if (!String.IsNullOrEmpty(_crossgen2Tool.DiaSymReaderPath))
+            {
                 Crossgen2Tool.SetMetadata("DiaSymReader", _crossgen2Tool.DiaSymReaderPath);
+            }
 
             return true;
         }
@@ -424,7 +434,9 @@ namespace Microsoft.NET.Build.Tasks
             {
                 AssemblyReference assemblyRef = mdReader.GetAssemblyReference(assemblyRefHandle);
                 if ((assemblyRef.Flags & AssemblyFlags.WindowsRuntime) == AssemblyFlags.WindowsRuntime)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -512,7 +524,9 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         // We only have 64-bit hosted compilers for ARM64.
                         if (RuntimeInformation.OSArchitecture != Architecture.X64)
+                        {
                             return false;
+                        }
 
                         _crossgenTool.ToolPath = Path.Combine(_crossgenTool.PackagePath, "tools", "x64_arm64", "crossgen.exe");
                         _crossgenTool.ClrJitPath = Path.Combine(_crossgenTool.PackagePath, "runtimes", "x64_arm64", "native", "clrjit.dll");
@@ -524,9 +538,13 @@ namespace Microsoft.NET.Build.Tasks
                     _crossgenTool.ToolPath = Path.Combine(_crossgenTool.PackagePath, "tools", "crossgen.exe");
                     _crossgenTool.ClrJitPath = Path.Combine(_crossgenTool.PackagePath, "runtimes", _targetRuntimeIdentifier, "native", "clrjit.dll");
                     if (_targetArchitecture == Architecture.X64)
+                    {
                         _crossgenTool.DiaSymReaderPath = Path.Combine(_crossgenTool.PackagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.amd64.dll");
+                    }
                     else
+                    {
                         _crossgenTool.DiaSymReaderPath = Path.Combine(_crossgenTool.PackagePath, "runtimes", _targetRuntimeIdentifier, "native", "Microsoft.DiaSymReader.Native.x86.dll");
+                    }
                 }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -559,7 +577,9 @@ namespace Microsoft.NET.Build.Tasks
             {
                 // Only x64 supported for OSX
                 if (_targetArchitecture != Architecture.X64 || RuntimeInformation.OSArchitecture != Architecture.X64)
+                {
                     return false;
+                }
 
                 _crossgenTool.ToolPath = Path.Combine(_crossgenTool.PackagePath, "tools", "crossgen");
                 _crossgenTool.ClrJitPath = Path.Combine(_crossgenTool.PackagePath, "runtimes", _targetRuntimeIdentifier, "native", "libclrjit.dylib");

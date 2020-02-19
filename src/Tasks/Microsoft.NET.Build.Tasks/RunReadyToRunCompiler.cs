@@ -39,9 +39,13 @@ namespace Microsoft.NET.Build.Tasks
             {
                 // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
                 if (UseCrossgen2)
+                {
                     return IsPdbCompilation ? CrossgenTool.ItemSpec : Crossgen2Tool.ItemSpec;
+                }
                 else
+                {
                     return CrossgenTool.ItemSpec;
+                }
             }
         }
 
@@ -125,9 +129,13 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
 
                 if (UseCrossgen2 && !IsPdbCompilation)
+                {
                     result.AppendLine($"-r:\"{reference}\"");
+                }
                 else
+                {
                     result.AppendLine($"-r \"{reference}\"");
+                }
             }
 
             return result.ToString();
@@ -137,9 +145,13 @@ namespace Microsoft.NET.Build.Tasks
         {
             // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
             if (IsPdbCompilation)
+            {
                 return GenerateCrossgenResponseFile();
+            }
             else
+            {
                 return UseCrossgen2 ? GenerateCrossgen2ResponseFile() : GenerateCrossgenResponseFile();
+            }
         }
 
         private string GenerateCrossgenResponseFile()
@@ -181,7 +193,9 @@ namespace Microsoft.NET.Build.Tasks
             result.Append(GetAssemblyReferencesCommands());
             result.AppendLine($"--out:\"{_outputR2RImage}\"");
             if (!String.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
+            {
                 result.AppendLine(Crossgen2ExtraCommandLineArgs);
+            }
             // Note: do not add double quotes around the input assembly, even if the file path contains spaces. The command line 
             // parsing logic will append this string to the working directory if it's a relative path, so any double quotes will result in errors.
             result.AppendLine($"{_inputAssembly}");

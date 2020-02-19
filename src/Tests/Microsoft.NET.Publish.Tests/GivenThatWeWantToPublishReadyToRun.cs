@@ -27,7 +27,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "CrossgenTest1";
 
             var testProject = CreateTestProjectForR2RTesting(
-                EnvironmentInfo.GetCompatibleRid(targetFramework),
+                targetFramework,
                 projectName,
                 "ClassLib");
 
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "CrossgenTest2";
 
             var testProject = CreateTestProjectForR2RTesting(
-                EnvironmentInfo.GetCompatibleRid(targetFramework),
+                targetFramework,
                 projectName, 
                 "ClassLib");
 
@@ -233,8 +233,6 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContainingIgnoreCase("NETSDK1126");
         }
 
-        #region Helpers
-
         private void TestProjectPublishing_Internal(string projectName, string targetFramework, bool makeExeProject = true, bool isSelfContained = true, bool emitNativeSymbols = false, bool useCrossgen2 = false)
         {
             var testProject = CreateTestProjectForR2RTesting(
@@ -350,6 +348,5 @@ public class Program
                 }
             }
         }
-        #endregion
     }
 }
