@@ -185,11 +185,11 @@ namespace Microsoft.DotNet.InstallationScript.Tests
             {
                 path = "powershell.exe";
                 finalArgs = "-ExecutionPolicy Bypass -NoProfile -NoLogo -Command \"" +
-                    Path.Combine(TestContext.GetRepoRoot(), "scripts", "obtain", "dotnet-install.ps1") + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args) + "\"";
+                    Path.Combine(AppContext.BaseDirectory, "dotnet-install.ps1") + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args) + "\"";
             }
             else
             {
-                path = Path.Combine(TestContext.GetRepoRoot(), "scripts", "obtain", "dotnet-install.sh");
+                path = Path.Combine(AppContext.BaseDirectory, "dotnet-install.sh");
                 finalArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
             }
 
