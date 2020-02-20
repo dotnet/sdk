@@ -17,7 +17,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.HostModel" Version="3.1.3">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>6eadd02645d29519b449dd4946a5858991bca06d</Sha>
+      <Sha>34f6927fe83b2d6cb2003d6577853482ceee25ec</Sha>
     </Dependency>
     <Dependency Name="NuGet.Build.Tasks" Version="5.4.0-rtm.6292">
       <Uri>https://github.com/NuGet/NuGet.Client</Uri>
