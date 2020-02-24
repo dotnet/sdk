@@ -552,28 +552,6 @@ Assembly: (Lines: 17, ExecutableLines: 2, MntIndex: 100, CycCxty: 5, CoupledType
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
-        public void MethodWithAnonymousType()
-        {
-            var source = @"
-class C
-{
-    object M1()
-    {
-        return new {a = 1};
-    }
-}
-";
-
-            var expectedMetricsText = @"
-Assembly: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, DepthInherit: 1)
-   C: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, DepthInherit: 1)
-      C.M1(): (Lines: 4, ExecutableLines: 1, MntIndex: 94, CycCxty: 1)
-";
-
-            VerifyCSharp(source, expectedMetricsText);
-        }
-
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void MethodWithGenericTypes()
         {
             var source = @"
@@ -1898,6 +1876,28 @@ Assembly: (Lines: 157, ExecutableLines: 123, MntIndex: 27, CycCxty: 4, DepthInhe
 ";
 
             VerifyCSharp(source, expectedMetricsText);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public void MethodWithAnonymousType()
+        {
+            var source = @"
+class C
+{
+    object M1(C1 c)
+    {
+        return new {a = 1};
+    }
+}
+";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1}, DepthInherit: 1)
+    C: (Lines: 8, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1}, DepthInherit: 1)
+        C.M1(C1): (Lines: 4, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, CoupledTypes: {C1})
+";
+
+            VerifyCSharp(source, expectedMetricsText, true);
         }
 
         [Fact]
