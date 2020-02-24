@@ -50,23 +50,23 @@
   <String Id="FirstTimeWelcomeMessage">A instalação foi bem-sucedida.
 
 O seguinte foi instalado em: '[DOTNETHOME]'
-    • SDK do .NET Core [DOTNETSDKVERSION]
-    • Runtime do .NET Core [DOTNETRUNTIMEVERSION]
+    • SDK do .NET [DOTNETSDKVERSION]
+    • Runtime do .NET [DOTNETRUNTIMEVERSION]
     • Runtime do ASP.NET Core [ASPNETCOREVERSION]
-    • Runtime da Área de Trabalho do Windows do .NET Core [WINFORMSANDWPFVERSION]
+    • Runtime da Área de Trabalho do Windows do .NET [WINFORMSANDWPFVERSION]
 
 Este produto coleta dados de uso
     • Para obter mais informações e recusar, acesse https://aka.ms/dotnet-cli-telemetry
 
 Recursos
-    • Documentação do .NET Core: https://aka.ms/dotnet-docs
+    • Documentação do .NET: https://aka.ms/dotnet-docs
     • Documentação do SDK: https://aka.ms/dotnet-sdk-docs
     • Notas sobre a Versão: https://aka.ms/netcore3releasenotes
     • Tutoriais: https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">SDK do .NET Core</String>
+  <String Id="WelcomeHeaderMessage">SDK do .NET</String>
   <String Id="WelcomeDescription">
-    O .NET Core é um software livre, multiplataforma e com suporte da Microsoft. Você pode usá-lo para criar seu próximo aplicativo, com C#, F# ou VB. Esperamos que você goste!</String>
-  <String Id="LearnMoreTitle">Saiba mais sobre o .NET Core</String>
+    O .NET é um software livre, multiplataforma e com suporte da Microsoft. Você pode usá-lo para criar seu próximo aplicativo, com C#, F# ou VB. Esperamos que você goste!</String>
+  <String Id="LearnMoreTitle">Saiba mais sobre o .NET</String>
   <String Id="ResourcesHeader">Recursos</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentação Principal&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentação do SDK&lt;/A&gt;</String>

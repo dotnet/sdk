@@ -50,23 +50,23 @@
   <String Id="FirstTimeWelcomeMessage">설치가 완료되었습니다.
 
 다음이 '[DOTNETHOME]'에 설치되었습니다.
-    • .NET Core SDK [DOTNETSDKVERSION]
-    • .NET Core 런타임 [DOTNETRUNTIMEVERSION]
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET 런타임 [DOTNETRUNTIMEVERSION]
     • ASP.NET Core 런타임 [ASPNETCOREVERSION]
-    • .NET Core Windows 데스크톱 런타임 [WINFORMSANDWPFVERSION]
+    • .NET Windows 데스크톱 런타임 [WINFORMSANDWPFVERSION]
 
 이 제품은 사용량 데이터를 수집합니다.
     • 추가 정보 및 옵트아웃 https://aka.ms/dotnet-cli-telemetry
 
 리소스
-    • .NET Core 설명서 https://aka.ms/dotnet-docs
+    • .NET 설명서 https://aka.ms/dotnet-docs
     • SDK 설명서 https://aka.ms/dotnet-sdk-docs
     • 릴리스 정보 https://aka.ms/netcore3releasenotes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
+  <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    Microsoft가 지원하는 플랫폼 간 오픈 소스인 .NET Core를 사용하여 C#, F# 또는 VB로 다음 앱을 빌드할 수 있습니다. .NET Core를 유용하게 사용하시길 바랍니다.</String>
-  <String Id="LearnMoreTitle">.NET Core에 대한 자세한 정보</String>
+    Microsoft가 지원하는 플랫폼 간 오픈 소스인 .NET를 사용하여 C#, F# 또는 VB로 다음 앱을 빌드할 수 있습니다. .NET를 유용하게 사용하시길 바랍니다.</String>
+  <String Id="LearnMoreTitle">.NET 에 대한 자세한 정보</String>
   <String Id="ResourcesHeader">리소스</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Core 설명서&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK 설명서&lt;/A&gt;</String>

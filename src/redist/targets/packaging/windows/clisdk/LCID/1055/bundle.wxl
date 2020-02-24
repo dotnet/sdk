@@ -50,23 +50,23 @@
   <String Id="FirstTimeWelcomeMessage">Yükleme başarılı oldu.
 
 Aşağıdakiler şu konumda yüklü: '[DOTNETHOME]'
-    • .NET Core SDK [DOTNETSDKVERSION]
-    • .NET Core Çalışma Zamanı [DOTNETRUNTIMEVERSION]
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET Çalışma Zamanı [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Çalışma Zamanı [ASPNETCOREVERSION]
-    • .NET Core Windows Masaüstü Çalışma Zamanı [WINFORMSANDWPFVERSION]
+    • .NET Windows Masaüstü Çalışma Zamanı [WINFORMSANDWPFVERSION]
 
 Bu ürün, kullanım verilerini toplar
     • Daha fazla bilgi ve katılmamayı seçmek için bkz. https://aka.ms/dotnet-cli-telemetry
 
 Kaynaklar
-    • .NET Core Belgeleri https://aka.ms/dotnet-docs
+    • .NET Belgeleri https://aka.ms/dotnet-docs
     • SDK Belgeleri https://aka.ms/dotnet-sdk-docs
     • Sürüm Notları https://aka.ms/netcore3releasenotes
     • Öğreticiler https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">.NET Core SDK'sı</String>
+  <String Id="WelcomeHeaderMessage">.NET SDK'sı</String>
   <String Id="WelcomeDescription">
-    .NET Core açık kaynaktır, platformlar arası çalışır ve Microsoft tarafından desteklenir. C#, F# veya VB kullanarak sonraki uygulamanızı geliştirmek için .NET Core'u kullanabilirsiniz. Keyifle kullanmanızı dileriz!</String>
-  <String Id="LearnMoreTitle">.NET Core hakkında daha fazla bilgi edinin</String>
+    .NET açık kaynaktır, platformlar arası çalışır ve Microsoft tarafından desteklenir. C#, F# veya VB kullanarak sonraki uygulamanızı geliştirmek için .NET'u kullanabilirsiniz. Keyifle kullanmanızı dileriz!</String>
+  <String Id="LearnMoreTitle">.NET hakkında daha fazla bilgi edinin</String>
   <String Id="ResourcesHeader">Kaynaklar</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Çekirdek Belgeler&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK Belgeleri&lt;/A&gt;</String>

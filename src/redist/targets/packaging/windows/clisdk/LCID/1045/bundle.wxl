@@ -50,23 +50,23 @@
   <String Id="FirstTimeWelcomeMessage">Instalacja zakończyła się pomyślnie.
 
 Następujące elementy zostały zainstalowane w: „[DOTNETHOME]”
-    • Zestaw .NET Core SDK [DOTNETSDKVERSION]
-    • Środowisko uruchomieniowe platformy .NET Core [DOTNETRUNTIMEVERSION]
+    • Zestaw .NET SDK [DOTNETSDKVERSION]
+    • Środowisko uruchomieniowe platformy .NET [DOTNETRUNTIMEVERSION]
     • Środowisko uruchomieniowe platformy ASP.NET Core [ASPNETCOREVERSION]
-    • Środowisko uruchomieniowe platformy .NET Core systemu Windows Desktop [WINFORMSANDWPFVERSION]
+    • Środowisko uruchomieniowe platformy .NET systemu Windows Desktop [WINFORMSANDWPFVERSION]
 
 Ten produkt gromadzi dane dotyczące użycia
     • Więcej informacji i rezygnacja: https://aka.ms/dotnet-cli-telemetry
 
 Zasoby
-    • Dokumentacja platformy .NET Core: https://aka.ms/dotnet-docs
+    • Dokumentacja platformy .NET: https://aka.ms/dotnet-docs
     • Dokumentacja zestawu SDK: https://aka.ms/dotnet-sdk-docs
     • Informacje o wersji: https://aka.ms/netcore3releasenotes
     • Samouczki: https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">Zestaw .NET Core SDK</String>
+  <String Id="WelcomeHeaderMessage">Zestaw .NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET Core to przeznaczone na wiele platform rozwiązanie typu open source obsługiwane przez firmę Microsoft. Za jego pomocą możesz utworzyć swoją następną aplikację, korzystając z języka C#, F# lub VB. Mamy nadzieję, że Ci się spodoba.</String>
-  <String Id="LearnMoreTitle">Dowiedz się więcej o platformie .NET Core</String>
+    .NET to przeznaczone na wiele platform rozwiązanie typu open source obsługiwane przez firmę Microsoft. Za jego pomocą możesz utworzyć swoją następną aplikację, korzystając z języka C#, F# lub VB. Mamy nadzieję, że Ci się spodoba.</String>
+  <String Id="LearnMoreTitle">Dowiedz się więcej o platformie .NET</String>
   <String Id="ResourcesHeader">Zasoby</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Dokumentacja programu Core&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Dokumentacja zestawu SDK&lt;/A&gt;</String>
