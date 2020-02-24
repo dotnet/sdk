@@ -40,7 +40,7 @@
 
   <ItemGroup>
     <Bundled31Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates31PackageVersion)" />
-    <Bundled31Templates Include="Microsoft.DotNet.Common.ProjectTemplates.3.1" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates31PackageVersion)" />
+    <Bundled31Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates31PackageVersion)" />
     <Bundled31Templates Include="Microsoft.DotNet.Test.ProjectTemplates.3.1" PackageVersion="$(MicrosoftDotNetTestProjectTemplates31PackageVersion)" />
     <Bundled31Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates31PackageVersion)" />
     <Bundled31Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates31PackageVersion)" />
