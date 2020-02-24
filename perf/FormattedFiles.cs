@@ -16,8 +16,8 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
         private const string UnformattedProjectFilePath = UnformattedProjectPath + "unformatted_project.csproj";
         private const string UnformattedSolutionFilePath = "tests/projects/for_code_formatter/unformatted_solution/unformatted_solution.sln";
 
-        private static readonly EmptyLogger EmptyLogger = new EmptyLogger();
-        private static readonly Matcher AllFileMatcher = SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>());
+        private static EmptyLogger EmptyLogger => new EmptyLogger();
+        private static Matcher AllFileMatcher => SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>());
 
         [IterationSetup]
         public void NoFilesFormattedSetup()

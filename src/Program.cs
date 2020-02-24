@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Tools
 {
     internal class Program
     {
-        private static readonly string[] _verbosityLevels = new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
+        private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
         internal const int UnhandledExceptionExitCode = 1;
         internal const int CheckFailedExitCode = 2;
 

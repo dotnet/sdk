@@ -24,15 +24,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public abstract class AbstractFormatterTest
     {
-        private static readonly MetadataReference CorlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location).WithAliases(ImmutableArray.Create("global", "corlib"));
-        private static readonly MetadataReference SystemReference = MetadataReference.CreateFromFile(typeof(System.Diagnostics.Debug).Assembly.Location).WithAliases(ImmutableArray.Create("global", "system"));
-        private static readonly MetadataReference SystemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
-        private static readonly MetadataReference CodeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
+        private static MetadataReference CorlibReference => MetadataReference.CreateFromFile(typeof(object).Assembly.Location).WithAliases(ImmutableArray.Create("global", "corlib"));
+        private static MetadataReference SystemReference => MetadataReference.CreateFromFile(typeof(System.Diagnostics.Debug).Assembly.Location).WithAliases(ImmutableArray.Create("global", "system"));
+        private static MetadataReference SystemCoreReference => MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
+        private static MetadataReference CodeAnalysisReference => MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
 
-        private static readonly MetadataReference SystemCollectionsImmutableReference = MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location);
-        private static readonly MetadataReference MicrosoftVisualBasicReference = MetadataReference.CreateFromFile(typeof(Microsoft.VisualBasic.Strings).Assembly.Location);
+        private static MetadataReference SystemCollectionsImmutableReference => MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location);
+        private static MetadataReference MicrosoftVisualBasicReference => MetadataReference.CreateFromFile(typeof(Microsoft.VisualBasic.Strings).Assembly.Location);
 
-        private static readonly Lazy<IExportProviderFactory> ExportProviderFactory;
+        private static Lazy<IExportProviderFactory> ExportProviderFactory { get; }
 
         static AbstractFormatterTest()
         {
@@ -183,7 +183,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// strings.</returns>
         protected Project CreateProject((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language)
         {
-            language = language ?? language;
+            language ??= Language;
             return CreateProjectImpl(sources, additionalFiles, additionalMetadataReferences, language);
         }
 

@@ -8,11 +8,11 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
 {
     public static class MSBuildRegister
     {
-        private static int _registered = 0;
+        private static int s_registered = 0;
 
         public static void RegisterInstance()
         {
-            if (Interlocked.Exchange(ref _registered, 1) == 0)
+            if (Interlocked.Exchange(ref s_registered, 1) == 0)
             {
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
                 LooseVersionAssemblyLoader.Register(msBuildInstance.MSBuildPath);

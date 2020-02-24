@@ -11,25 +11,25 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
     /// </summary>
     public class SolutionPathFixture : IDisposable
     {
-        private static int _registered = 0;
-        private static string _currentDirectory;
+        private static int s_registered = 0;
+        private static string s_currentDirectory;
 
         public void SetCurrentDirectory()
         {
-            if (Interlocked.Increment(ref _registered) == 1)
+            if (Interlocked.Increment(ref s_registered) == 1)
             {
-                _currentDirectory = Environment.CurrentDirectory;
-                var solutionPath = Directory.GetParent(_currentDirectory).Parent.Parent.Parent.Parent.FullName;
+                s_currentDirectory = Environment.CurrentDirectory;
+                var solutionPath = Directory.GetParent(s_currentDirectory).Parent.Parent.Parent.Parent.FullName;
                 Environment.CurrentDirectory = solutionPath;
             }
         }
 
         public void Dispose()
         {
-            if (Interlocked.Decrement(ref _registered) == 0)
+            if (Interlocked.Decrement(ref s_registered) == 0)
             {
-                Environment.CurrentDirectory = _currentDirectory;
-                _currentDirectory = null;
+                Environment.CurrentDirectory = s_currentDirectory;
+                s_currentDirectory = null;
             }
         }
     }

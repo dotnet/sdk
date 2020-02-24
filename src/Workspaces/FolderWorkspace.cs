@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
     internal sealed partial class FolderWorkspace : Workspace
     {
-        private static readonly Encoding DefaultEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        private static Encoding DefaultEncoding => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         private FolderWorkspace(HostServices hostServices)
             : base(hostServices, "Folder")
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
         protected override void ApplyDocumentTextChanged(DocumentId documentId, SourceText text)
         {
-            var document = this.CurrentSolution.GetDocument(documentId);
+            var document = CurrentSolution.GetDocument(documentId);
             if (document != null)
             {
                 SaveDocumentText(documentId, document.FilePath, text, text.Encoding);

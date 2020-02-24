@@ -18,8 +18,8 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
         private const string UnformattedFolderFilePath = "temp/project-system/";
         private const string UnformattedSolutionFilePath = UnformattedFolderFilePath + "ProjectSystem.sln";
 
-        private static EmptyLogger EmptyLogger = new EmptyLogger();
-        private static readonly Matcher AllFileMatcher = SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>());
+        private static EmptyLogger EmptyLogger => new EmptyLogger();
+        private static Matcher AllFileMatcher => SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>());
 
         [IterationSetup]
         public void RealWorldSolutionIterationSetup()

@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
         private readonly ITerminal _terminal;
         private readonly LogLevel _logLevel;
 
-        private static readonly ImmutableDictionary<LogLevel, ConsoleColor> _logLevelColorMap = new Dictionary<LogLevel, ConsoleColor>
+        private static ImmutableDictionary<LogLevel, ConsoleColor> LogLevelColorMap => new Dictionary<LogLevel, ConsoleColor>
         {
             [LogLevel.Critical] = ConsoleColor.Red,
             [LogLevel.Error] = ConsoleColor.Red,
@@ -68,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
 
         void LogToTerminal(string message, LogLevel logLevel)
         {
-            var messageColor = _logLevelColorMap[logLevel];
+            var messageColor = LogLevelColorMap[logLevel];
             _terminal.ForegroundColor = messageColor;
             _terminal.Out.Write($"  {message}{Environment.NewLine}");
             _terminal.ResetColor();
