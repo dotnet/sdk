@@ -586,6 +586,180 @@ End Class
             GetCA1721BasicResultAt(line: 15, column: 33, identifierName: "Something", otherIdentifierName: "GetSomething"));
         }
 
+        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        public async Task CA1721_Obsolete_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C1
+{
+    [Obsolete(""Use the method."")]
+    public int PropertyValue => 1;
+
+    public int GetPropertyValue()
+    {
+        return 1;
+    }
+}
+
+public class C2
+{
+    public int PropertyValue => 1;
+
+    [Obsolete(""Use the property."")]
+    public int GetPropertyValue()
+    {
+        return 1;
+    }
+}
+
+public class C3
+{
+    [Obsolete(""Deprecated"")]
+    public int PropertyValue => 1;
+
+    [Obsolete(""Deprecated"")]
+    public int GetPropertyValue()
+    {
+        return 1;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C1
+    <Obsolete(""Use the method."")>
+    Public ReadOnly Property PropertyValue As Integer
+        Get
+            Return 1
+        End Get
+    End Property
+
+    Public Function GetPropertyValue() As Integer
+        Return 1
+    End Function
+End Class
+
+Public Class C2
+    Public ReadOnly Property PropertyValue As Integer
+        Get
+            Return 1
+        End Get
+    End Property
+
+    <Obsolete(""Use the property."")>
+    Public Function GetPropertyValue() As Integer
+        Return 1
+    End Function
+End Class
+
+Public Class C3
+    <Obsolete(""Deprecated"")>
+    Public ReadOnly Property PropertyValue As Integer
+        Get
+            Return 1
+        End Get
+    End Property
+
+    <Obsolete(""Deprecated"")>
+    Public Function GetPropertyValue() As Integer
+        Return 1
+    End Function
+End Class");
+        }
+
+        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        public async Task CA1721_OnlyOneOverloadObsolete_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public int PropertyValue => 1;
+
+    [Obsolete(""Use the property."")]
+    public int GetPropertyValue()
+    {
+        return 1;
+    }
+
+    public int GetPropertyValue(int i)
+    {
+        return i;
+    }
+}",
+                GetCA1721CSharpResultAt(6, 16, "PropertyValue", "GetPropertyValue"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Public ReadOnly Property PropertyValue As Integer
+        Get
+            Return 1
+        End Get
+    End Property
+
+    <Obsolete(""Use the property."")>
+    Public Function GetPropertyValue() As Integer
+        Return 1
+    End Function
+
+    Public Function GetPropertyValue(i As Integer) As Integer
+        Return i
+    End Function
+End Class",
+                GetCA1721BasicResultAt(5, 30, "PropertyValue", "GetPropertyValue"));
+        }
+
+        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        public async Task CA1721_AllOverloadsObsolete_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public int PropertyValue => 1;
+
+    [Obsolete(""Use the property."")]
+    public int GetPropertyValue()
+    {
+        return 1;
+    }
+
+    [Obsolete(""Use the property."")]
+    public int GetPropertyValue(int i)
+    {
+        return i;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Public ReadOnly Property PropertyValue As Integer
+        Get
+            Return 1
+        End Get
+    End Property
+
+    <Obsolete(""Use the property."")>
+    Public Function GetPropertyValue() As Integer
+        Return 1
+    End Function
+
+    <Obsolete(""Use the property."")>
+    Public Function GetPropertyValue(i As Integer) As Integer
+        Return i
+    End Function
+End Class");
+        }
+
         #region Helpers
 
         private static DiagnosticResult GetCA1721CSharpResultAt(int line, int column, string identifierName, string otherIdentifierName)
