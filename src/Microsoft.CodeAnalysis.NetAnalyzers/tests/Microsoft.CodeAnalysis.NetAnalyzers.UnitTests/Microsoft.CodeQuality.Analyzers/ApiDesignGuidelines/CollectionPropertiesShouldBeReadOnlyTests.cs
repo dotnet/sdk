@@ -217,20 +217,30 @@ public class A
         [WorkItem(3313, "https://github.com/dotnet/roslyn-analyzers/issues/3313")]
         public async Task CA2227_ReadOnlyCollections()
         {
+            // Readonly interfaces don't implement ICollection/ICollection<T> so won't report a diagnostic
+
             await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 public class C
 {
+    public IReadOnlyCollection<string> PI1 { get; protected set; }
+    public IReadOnlyDictionary<string, int> PI2 { get; protected set; }
+
     public ReadOnlyCollection<string> P1 { get; protected set; }
     public ReadOnlyDictionary<string, int> P2 { get; protected set; }
     public ReadOnlyObservableCollection<string> P3 { get; protected set; }
 }");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Collections.Generic
 Imports System.Collections.ObjectModel
 
 Public Class C
+    Public Property PI1 As IReadOnlyCollection(Of String)
+    Public Property PI2 As IReadOnlyDictionary(Of String, Integer)
+
     Public Property P1 As ReadOnlyCollection(Of String)
     Public Property P2 As ReadOnlyDictionary(Of String, Integer)
     Public Property P3 As ReadOnlyObservableCollection(Of String)
