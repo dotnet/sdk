@@ -11920,5 +11920,41 @@ End Class",
                 }
             }.RunAsync();
         }
+
+        [Fact, WorkItem(3297, "https://github.com/dotnet/roslyn-analyzers/issues/3297")]
+        public async Task NameOfInsideTheScope_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+    }
+
+    void M2()
+    {
+        var a = new A();
+        var b = nameof(Test);
+    }
+}
+",
+                // Test0.cs(16,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                GetCSharpResultAt(16, 17, "new A()"),
+
+                // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                GetCSharpResultAt(21, 17, "new A()")
+            );
+        }
     }
 }
