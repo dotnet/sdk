@@ -212,26 +212,29 @@ public class A
 ");
         }
 
-        [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public async Task CSharp_CA2227_ReadOnlyCollections()
+        [Fact]
+        [WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
+        [WorkItem(3313, "https://github.com/dotnet/roslyn-analyzers/issues/3313")]
+        public async Task CA2227_ReadOnlyCollections()
         {
-            // NOTE: ReadOnlyCollection<T> and ReadOnlyDictionary<Key, Value> implement ICollection and hence are flagged.
-            //       IReadOnlyCollection<T> does not implement ICollection or ICollection<T>, hence is not flagged.
             await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-public class A
+public class C
 {
-    public IReadOnlyCollection<byte> P1 { get; set; }
-    public ReadOnlyCollection<byte> P2 { get; set; }
-    public ReadOnlyDictionary<string, byte> P3 { get; set; }
-}
-",
-            // Test0.cs(8,37): warning CA2227: Change 'P2' to be read-only by removing the property setter.
-            GetCSharpResultAt(8, 37, "P2"),
-            // Test0.cs(9,45): warning CA2227: Change 'P3' to be read-only by removing the property setter.
-            GetCSharpResultAt(9, 45, "P3"));
+    public ReadOnlyCollection<string> P1 { get; protected set; }
+    public ReadOnlyDictionary<string, int> P2 { get; protected set; }
+    public ReadOnlyObservableCollection<string> P3 { get; protected set; }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Collections.ObjectModel
+
+Public Class C
+    Public Property P1 As ReadOnlyCollection(Of String)
+    Public Property P2 As ReadOnlyDictionary(Of String, Integer)
+    Public Property P3 As ReadOnlyObservableCollection(Of String)
+End Class");
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
