@@ -656,12 +656,15 @@ End Class");
         [Theory, WorkItem(3204, "https://github.com/dotnet/roslyn-analyzers/issues/3204")]
         // Diagnostics
         [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = T:C")]
         // No diagnostics
         [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M:C.M1(System.String)")]
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M:NS.C.M1(System.String)")]
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = T:NS.C")]
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = N:NS")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M:C.M1(System.String)")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = N:NS")]
         public async Task CA1034_ExcludedSymbolsOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -673,14 +676,17 @@ End Class");
                         @"
 using System.Globalization;
 
-public class C
+namespace NS
 {
-    public void M1(string s) {}
-    public void M1(string s, CultureInfo ci) {}
-
-    public void M()
+    public class C
     {
-        M1(""aaa"");
+        public void M1(string s) {}
+        public void M1(string s, CultureInfo ci) {}
+
+        public void M()
+        {
+            M1(""aaa"");
+        }
     }
 }",
                     },
@@ -688,9 +694,9 @@ public class C
                 },
             };
 
-            if (!editorConfigText.Contains("M1"))
+            if (editorConfigText.Length == 0)
             {
-                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(11, 9, "C.M1(string)", "C.M()", "C.M1(string, CultureInfo)"));
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(13, 13, "C.M1(string)", "C.M()", "C.M1(string, CultureInfo)"));
             }
 
             await csharpTest.RunAsync();
@@ -704,25 +710,27 @@ public class C
                         @"
 Imports System.Globalization
 
-Public Class C
-    Public Sub M1(ByVal s As String)
-    End Sub
+Namespace NS
+    Public Class C
+        Public Sub M1(ByVal s As String)
+        End Sub
 
-    Public Sub M1(ByVal s As String, ByVal ci As CultureInfo)
-    End Sub
+        Public Sub M1(ByVal s As String, ByVal ci As CultureInfo)
+        End Sub
 
-    Public Sub M()
-        M1(""aaa"")
-    End Sub
-End Class",
+        Public Sub M()
+            M1(""aaa"")
+        End Sub
+    End Class
+End Namespace",
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText), },
                 },
             };
 
-            if (!editorConfigText.Contains("M1"))
+            if (editorConfigText.Length == 0)
             {
-                vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(12, 9, "C.M1(String)", "C.M()", "C.M1(String, CultureInfo)"));
+                vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(13, 13, "C.M1(String)", "C.M()", "C.M1(String, CultureInfo)"));
             }
 
             await vbTest.RunAsync();
