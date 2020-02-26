@@ -157,21 +157,6 @@
         <target state="translated">Hodnoty výčtů by neměly být duplicitní</target>
         <note />
       </trans-unit>
-      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedDescription">
-        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="new">To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedMessage">
-        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="new">Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedTitle">
-        <source>Generic interface should also be implemented</source>
-        <target state="new">Generic interface should also be implemented</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Odeberte finalizační metodu z typu {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty false. V opačném případě by to mohlo vést k duplicitním voláním Dispose, protože základní typ {1} také poskytuje finalizační metodu.</target>
@@ -730,6 +715,21 @@
       <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesMessage">
         <source>Do not declare static members on generic types</source>
         <target state="translated">Nedeklarujte statické členy u obecných typů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
+        <source>Generic interface should also be implemented</source>
+        <target state="needs-review-translation">Kolekce mají implementovat obecné rozhraní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="needs-review-translation">Kvůli rozšíření použitelnosti kolekce implementujte některé z obecných rozhraní kolekce. Tato kolekce se pak dá použít k naplnění obecných typů kolekcí.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="needs-review-translation">Kolekce {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné kolekce by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">

@@ -157,21 +157,6 @@
         <target state="translated">열거형 값은 중복되어서는 안 됨</target>
         <note />
       </trans-unit>
-      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedDescription">
-        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="new">To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedMessage">
-        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="new">Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="GenericInterfacesShouldAlsoBeImplementedTitle">
-        <source>Generic interface should also be implemented</source>
-        <target state="new">Generic interface should also be implemented</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">'{0}' 형식에서 종료자를 제거하고 Dispose(bool disposing)를 재정의한 후 종료 논리를 'disposing'이 false인 코드 경로에 추가하세요. 그렇지 않으면, 기본 형식 '{1}'도 종료자를 제공할 때 중복된 Dispose 호출이 발생할 수 있습니다.</target>
@@ -730,6 +715,21 @@
       <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesMessage">
         <source>Do not declare static members on generic types</source>
         <target state="translated">제네릭 형식에서 정적 멤버를 선언하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
+        <source>Generic interface should also be implemented</source>
+        <target state="needs-review-translation">컬렉션은 제네릭 인터페이스를 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="needs-review-translation">컬렉션의 유용성을 확대하려면 제네릭 컬렉션 인터페이스 중 하나를 구현하세요. 그러면 컬렉션을 제네릭 컬렉션 형식을 전파하는 데 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="needs-review-translation">컬렉션 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 컬렉션의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
