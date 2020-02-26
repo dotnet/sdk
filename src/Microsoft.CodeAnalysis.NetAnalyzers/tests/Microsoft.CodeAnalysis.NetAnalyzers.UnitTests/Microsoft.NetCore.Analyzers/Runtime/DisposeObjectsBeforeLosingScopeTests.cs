@@ -11920,5 +11920,128 @@ End Class",
                 }
             }.RunAsync();
         }
+
+        [Fact, WorkItem(3297, "https://github.com/dotnet/roslyn-analyzers/issues/3297")]
+        public async Task NameOfInsideTheScope_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+    }
+
+    void M2()
+    {
+        var a = new A();
+        var b = nameof(Test);
+    }
+}
+",
+                // Test0.cs(16,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                GetCSharpResultAt(16, 17, "new A()"),
+
+                // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                GetCSharpResultAt(21, 17, "new A()")
+            );
+        }
+
+        [Fact, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
+        public async Task StringReader_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class C
+{
+    public C()
+    {
+        var x = new StringReader(""abc"");
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class C
+    Public Sub New()
+        Dim x = new StringReader(""abc"")
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
+        public async Task StringReader_CustomSymbolExclusion_NoDiagnostic()
+        {
+            string editorConfigText = $"dotnet_code_quality.{DisposeObjectsBeforeLosingScope.RuleId}.excluded_symbol_names = T:A";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.IO;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+public class C
+{
+    public C()
+    {
+        var x = new StringReader(""abc"");
+        var a = new A();
+    }
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+Imports System.IO
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Public Class C
+    Public Sub New()
+        Dim x = new StringReader(""abc"")
+        Dim a = new A()
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            }.RunAsync();
+        }
     }
 }

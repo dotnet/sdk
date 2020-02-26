@@ -1949,12 +1949,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="new">Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</target>
+        <target state="translated">Členy, které nemají přístup k datům instance nebo volají metody instance, je možné označit jako statické. Po označení metod jako statických bude kompilátor pro tyto členy generovat nevirtuální lokality volání. Tím u kódu citlivého na výkon získáte měřitelný nárůst výkonu.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member '{0}' does not access instance data and can be marked as static</source>
-        <target state="new">Member '{0}' does not access instance data and can be marked as static</target>
+        <target state="translated">Člen {0} nemá přístup k datům instance a je možné ho označit jako statický.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">
