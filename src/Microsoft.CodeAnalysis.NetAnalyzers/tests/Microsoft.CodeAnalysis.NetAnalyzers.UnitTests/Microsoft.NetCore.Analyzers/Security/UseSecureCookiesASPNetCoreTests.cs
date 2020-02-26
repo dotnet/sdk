@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities.MinimalImplementations;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseSecureCookiesASPNetCore,
@@ -26,7 +26,7 @@ class TestClass
     {
         var cookieOptions = new CookieOptions();
         cookieOptions.Secure = false;
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -54,7 +54,7 @@ class TestClass
             cookieOptions.Secure = true;
         }
 
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -82,7 +82,7 @@ class TestClass
             cookieOptions.Secure = false;
         }
 
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -110,7 +110,7 @@ class TestClass
             cookieOptions.Secure = false;
         }
 
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -138,7 +138,7 @@ class TestClass
             cookieOptions.Secure = true;
         }
 
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -167,7 +167,7 @@ class TestClass
         }
         
         cookieOptions.Secure = secure;
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -186,7 +186,7 @@ class TestClass
     public void TestMethod(string key, string value)
     {
         var cookieOptions = new CookieOptions() { Secure = false };
-        var responseCookies = new ResponseCookies();
+        var responseCookies = new ResponseCookies(null, null);
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -205,7 +205,7 @@ class TestClass
     public void TestMethod(string key, string value)
     {
         var cookieOptions = new CookieOptions();
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -223,7 +223,7 @@ class TestClass
 {
     public void TestMethod(string key, string value)
     {
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value);
     }
 }",
@@ -241,7 +241,7 @@ class TestClass
 {
     public void TestMethod(string key, string value)
     {
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, GetCookieOptions());
     }
 
@@ -274,7 +274,7 @@ class TestClass
 
     public void TestMethod2(string key, string value, CookieOptions cookieOptions)
     {
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }",
@@ -294,7 +294,7 @@ class TestClass
     {
         var cookieOptions = new CookieOptions();
         cookieOptions.Secure = true;
-        var responseCookies = new ResponseCookies(); 
+        var responseCookies = new ResponseCookies(null, null); 
         responseCookies.Append(key, value, cookieOptions);
     }
 }");
@@ -312,7 +312,7 @@ class TestClass
     public void TestMethod(string key, string value)
     {
         var cookieOptions = new CookieOptions() { Secure = true };
-        var responseCookies = new ResponseCookies();
+        var responseCookies = new ResponseCookies(null, null);
         responseCookies.Append(key, value, cookieOptions);
     }
 }");
@@ -322,10 +322,8 @@ class TestClass
         {
             var csharpTest = new VerifyCS.Test
             {
-                TestState =
-                {
-                    Sources = { source,  ASPNetCoreApis.CSharp }
-                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAspNetCoreMvc,
+                TestCode = source,
             };
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);

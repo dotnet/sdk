@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.CodeMetricsAnalyzer,
@@ -408,6 +409,51 @@ CA1506: 2
                 GetCSharpCA1506ExpectedDiagnostic(2, 7, "C", 4, 2, 3),
                 // Test0.cs(4,10): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetCSharpCA1506ExpectedDiagnostic(4, 10, "M1", 4, 2, 3)};
+            await VerifyCSharpAsync(source, additionalText, expected);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_Configuration_CSharp_Linq()
+        {
+            var source = @"
+using System.Linq;
+using System.Collections.Generic;
+class C
+{
+    IEnumerable<int> TestCa1506()
+    {
+        var ints = new[] { 1, 2 };
+        return from a in ints
+               from b in ints
+               from c in ints
+               from d in ints
+               from e in ints
+               from f in ints
+               from g in ints 
+               from h in ints
+               from i in ints
+               from j in ints
+               from k in ints
+               from l in ints
+               from m in ints
+               from n in ints
+               from o in ints
+               from p in ints
+               select p;
+    }
+}
+";
+            string additionalText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+";
+            DiagnosticResult[] expected = new[] {
+                // Test0.cs(4,7): warning CA1506: 'C' is coupled with '4' different types from '3' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
+                GetCSharpCA1506ExpectedDiagnostic(4, 7, "C", 4, 3, 3),
+                // Test0.cs(4,10): warning CA1506: 'TestCa1506' is coupled with '4' different types from '3' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
+                GetCSharpCA1506ExpectedDiagnostic(6, 22, "TestCa1506", 4, 3, 3)};
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 

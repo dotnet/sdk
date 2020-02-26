@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                                                                          s_localizableTitle,
                                                                          s_localizableMessage,
                                                                          DiagnosticCategory.Performance,
-                                                                         RuleLevel.BuildWarning,
+                                                                         RuleLevel.BuildWarningCandidate,
                                                                          description: s_localizableDescription,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false);
