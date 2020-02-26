@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -471,6 +472,226 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicCA1034ResultAt(5, 18, "MyDataTable"),
                 GetBasicCA1034ResultAt(9, 18, "MyDataRow"));
+        }
+
+        public enum BuilderPatternVariant
+        {
+            Correct,
+            CorrectWithNameEndsInBuilder,
+            IncorrectWithPublicOuterConstructor,
+            IncorrectWithProtectedOuterConstructor,
+            IncorrectNotNamedBuilder,
+        }
+
+        [Theory, WorkItem(3033, "https://github.com/dotnet/roslyn-analyzers/issues/3033")]
+        [InlineData(BuilderPatternVariant.Correct)]
+        [InlineData(BuilderPatternVariant.CorrectWithNameEndsInBuilder)]
+        [InlineData(BuilderPatternVariant.IncorrectWithPublicOuterConstructor)]
+        [InlineData(BuilderPatternVariant.IncorrectWithProtectedOuterConstructor)]
+        [InlineData(BuilderPatternVariant.IncorrectNotNamedBuilder)]
+        public async Task CA1034_BuilderPatternVariants(BuilderPatternVariant variant)
+        {
+            string builderName = "Builder";
+            string outerClassCtorAccessibility = "private";
+            DiagnosticResult[] csharpExpectedDiagnostics = Array.Empty<DiagnosticResult>();
+            DiagnosticResult[] vbnetExpectedDiagnostics = Array.Empty<DiagnosticResult>();
+
+            switch (variant)
+            {
+                case BuilderPatternVariant.Correct:
+                    break;
+
+                case BuilderPatternVariant.CorrectWithNameEndsInBuilder:
+                    builderName = "PizzaBuilder";
+                    break;
+
+                case BuilderPatternVariant.IncorrectWithPublicOuterConstructor:
+                case BuilderPatternVariant.IncorrectWithProtectedOuterConstructor:
+                    csharpExpectedDiagnostics = new[] { GetCSharpCA1034ResultAt(13, 25, builderName), };
+                    vbnetExpectedDiagnostics = new[] { GetBasicCA1034ResultAt(11, 33, builderName), };
+                    outerClassCtorAccessibility = variant == BuilderPatternVariant.IncorrectWithProtectedOuterConstructor ? "protected" : "public";
+                    break;
+
+                case BuilderPatternVariant.IncorrectNotNamedBuilder:
+                    builderName = "InnerClass";
+                    csharpExpectedDiagnostics = new[] { GetCSharpCA1034ResultAt(13, 25, builderName), };
+                    vbnetExpectedDiagnostics = new[] { GetBasicCA1034ResultAt(11, 33, builderName), };
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(variant));
+            }
+
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Pizza
+{{
+    public bool HasCheese {{ get; }}
+    public bool HasBacon {{ get; }}
+
+    {outerClassCtorAccessibility} Pizza(bool hasCheese, bool hasBacon)
+    {{
+        HasCheese = hasCheese;
+        HasBacon = hasBacon;
+    }}
+
+    public sealed class {builderName}
+    {{
+        private bool hasCheese;
+        private bool hasBacon;
+
+        private {builderName}() {{ }}
+
+        public static {builderName} Create()
+        {{
+            return new {builderName}();
+        }}
+
+        public {builderName} WithCheese()
+        {{
+            hasCheese = true;
+            return this;
+        }}
+
+        public {builderName} WithBacon()
+        {{
+            hasBacon = true;
+            return this;
+        }}
+
+        public Pizza ToPizza()
+        {{
+            return new Pizza(hasCheese, hasBacon);
+        }}
+    }}
+}}", csharpExpectedDiagnostics);
+
+            await VerifyVB.VerifyAnalyzerAsync($@"
+Public Class Pizza
+    Public ReadOnly Property HasCheese As Boolean
+    Public ReadOnly Property HasBacon As Boolean
+
+    {outerClassCtorAccessibility} Sub New(ByVal hasCheese As Boolean, ByVal hasBacon As Boolean)
+        Me.HasCheese = hasCheese
+        Me.HasBacon = hasBacon
+    End Sub
+
+    Public NotInheritable Class {builderName}
+        Private hasCheese As Boolean
+        Private hasBacon As Boolean
+
+        Private Sub New()
+        End Sub
+
+        Public Shared Function Create() As {builderName}
+            Return New {builderName}()
+        End Function
+
+        Public Function WithCheese() As {builderName}
+            hasCheese = True
+            Return Me
+        End Function
+
+        Public Function WithBacon() As {builderName}
+            hasBacon = True
+            Return Me
+        End Function
+
+        Public Function ToPizza() As Pizza
+            Return New Pizza(hasCheese, hasBacon)
+        End Function
+    End Class
+End Class
+", vbnetExpectedDiagnostics);
+        }
+
+        [Fact, WorkItem(3033, "https://github.com/dotnet/roslyn-analyzers/issues/3033")]
+        public async Task CA1034_BuilderPatternTooDeep_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Outer
+{
+    public class Pizza
+    {
+        public bool HasCheese { get; }
+        public bool HasBacon { get; }
+
+        protected Pizza(bool hasCheese, bool hasBacon)
+        {
+            HasCheese = hasCheese;
+            HasBacon = hasBacon;
+        }
+
+        public sealed class Builder
+        {
+            private bool hasCheese;
+            private bool hasBacon;
+
+            private Builder() { }
+
+            public static Builder Create()
+            {
+                return new Builder();
+            }
+
+            public Builder WithCheese()
+            {
+                hasCheese = true;
+                return this;
+            }
+
+            public Builder WithBacon()
+            {
+                hasBacon = true;
+                return this;
+            }
+
+            public Pizza ToPizza()
+            {
+                return new Pizza(hasCheese, hasBacon);
+            }
+        }
+    }
+}", GetCSharpCA1034ResultAt(4, 18, "Pizza"), GetCSharpCA1034ResultAt(15, 29, "Builder"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class Outer
+    Public Class Pizza
+        Public ReadOnly Property HasCheese As Boolean
+        Public ReadOnly Property HasBacon As Boolean
+
+         Protected Sub New(ByVal hasCheese As Boolean, ByVal hasBacon As Boolean)
+            Me.HasCheese = hasCheese
+            Me.HasBacon = hasBacon
+        End Sub
+
+        Public NotInheritable Class Builder
+            Private hasCheese As Boolean
+            Private hasBacon As Boolean
+
+            Private Sub New()
+            End Sub
+
+            Public Shared Function Create() As Builder
+                Return New Builder()
+            End Function
+
+            Public Function WithCheese() As Builder
+                hasCheese = True
+                Return Me
+            End Function
+
+            Public Function WithBacon() As Builder
+                hasBacon = True
+                Return Me
+            End Function
+
+            Public Function ToPizza() As Pizza
+                Return New Pizza(hasCheese, hasBacon)
+            End Function
+        End Class
+    End Class
+End Class
+", GetBasicCA1034ResultAt(3, 18, "Pizza"), GetBasicCA1034ResultAt(12, 37, "Builder"));
         }
 
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)
