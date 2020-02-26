@@ -41,43 +41,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             analysisContext.RegisterCompilationStartAction(csaContext =>
             {
-                var obsoleteAttributeType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(csaContext.Compilation);
+                var obsoleteAttributeType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+                var cultureInfoType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
 
-                var cultureInfoType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
-                if (cultureInfoType != null)
+                if (cultureInfoType == null)
                 {
-                    csaContext.RegisterOperationAction(oaContext =>
-                    {
-                        var invocationExpression = (IInvocationOperation)oaContext.Operation;
-                        var targetMethod = invocationExpression.TargetMethod;
-                        if (targetMethod.ContainingType == null || targetMethod.ContainingType.IsErrorType() || targetMethod.IsGenericMethod)
-                        {
-                            return;
-                        }
-
-                        IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType).ToList();
-                        if (methodsWithSameNameAsTargetMethod.HasFewerThan(2))
-                        {
-                            return;
-                        }
-
-                        var correctOverloads = methodsWithSameNameAsTargetMethod.GetMethodOverloadsWithDesiredParameterAtLeadingOrTrailing(targetMethod, cultureInfoType).ToList();
-
-                        // If there are two matching overloads, one with CultureInfo as the first parameter and one with CultureInfo as the last parameter,
-                        // report the diagnostic on the overload with CultureInfo as the last parameter, to match the behavior of FxCop.
-                        var correctOverload = correctOverloads.FirstOrDefault(overload => overload.Parameters.Last().Type.Equals(cultureInfoType)) ?? correctOverloads.FirstOrDefault();
-
-                        if (correctOverload != null)
-                        {
-                            oaContext.ReportDiagnostic(
-                                invocationExpression.Syntax.CreateDiagnostic(
-                                    Rule,
-                                    targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                                    oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                                    correctOverload.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
-                        }
-                    }, OperationKind.Invocation);
+                    return;
                 }
+
+                var excludedSymbols = csaContext.Options.GetExcludedSymbolNamesWithValueOption(Rule, csaContext.Compilation, csaContext.CancellationToken);
+
+                csaContext.RegisterOperationAction(oaContext =>
+                {
+                    var invocationExpression = (IInvocationOperation)oaContext.Operation;
+                    var targetMethod = invocationExpression.TargetMethod;
+                    if (targetMethod.ContainingType == null || targetMethod.ContainingType.IsErrorType() || targetMethod.IsGenericMethod || excludedSymbols.Contains(targetMethod))
+                    {
+                        return;
+                    }
+
+                    IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType).ToList();
+                    if (methodsWithSameNameAsTargetMethod.HasFewerThan(2))
+                    {
+                        return;
+                    }
+
+                    var correctOverloads = methodsWithSameNameAsTargetMethod.GetMethodOverloadsWithDesiredParameterAtLeadingOrTrailing(targetMethod, cultureInfoType).ToList();
+
+                    // If there are two matching overloads, one with CultureInfo as the first parameter and one with CultureInfo as the last parameter,
+                    // report the diagnostic on the overload with CultureInfo as the last parameter, to match the behavior of FxCop.
+                    var correctOverload = correctOverloads.FirstOrDefault(overload => overload.Parameters.Last().Type.Equals(cultureInfoType)) ?? correctOverloads.FirstOrDefault();
+
+                    if (correctOverload != null)
+                    {
+                        oaContext.ReportDiagnostic(
+                            invocationExpression.Syntax.CreateDiagnostic(
+                                Rule,
+                                targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                                oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                                correctOverload.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                    }
+                }, OperationKind.Invocation);
             });
         }
     }

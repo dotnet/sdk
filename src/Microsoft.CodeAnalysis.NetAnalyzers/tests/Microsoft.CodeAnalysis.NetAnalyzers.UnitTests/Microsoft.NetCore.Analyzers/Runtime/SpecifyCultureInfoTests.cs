@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SpecifyCultureInfoAnalyzer,
@@ -652,14 +653,89 @@ Public Class DerivedCultureInfo
 End Class");
         }
 
-        private static DiagnosticResult GetCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+        [Theory, WorkItem(3204, "https://github.com/dotnet/roslyn-analyzers/issues/3204")]
+        // Diagnostics
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = T:C")]
+        // No diagnostics
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M:C.M1(System.String)")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = M:C.M1(System.String)")]
+        public async Task CA1034_ExcludedSymbolsOption(string editorConfigText)
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Globalization;
+
+public class C
+{
+    public void M1(string s) {}
+    public void M1(string s, CultureInfo ci) {}
+
+    public void M()
+    {
+        M1(""aaa"");
+    }
+}",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            };
+
+            if (!editorConfigText.Contains("M1"))
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(11, 9, "C.M1(string)", "C.M()", "C.M1(string, CultureInfo)"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System.Globalization
+
+Public Class C
+    Public Sub M1(ByVal s As String)
+    End Sub
+
+    Public Sub M1(ByVal s As String, ByVal ci As CultureInfo)
+    End Sub
+
+    Public Sub M()
+        M1(""aaa"")
+    End Sub
+End Class",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            };
+
+            if (!editorConfigText.Contains("M1"))
+            {
+                vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(12, 9, "C.M1(String)", "C.M()", "C.M1(String, CultureInfo)"));
+            }
+
+            await vbTest.RunAsync();
+        }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string invocation, string containingMethod, string preferredOverload) =>
             VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-                .WithArguments(arg1, arg2, arg3);
+                .WithArguments(invocation, containingMethod, preferredOverload);
 
-        private static DiagnosticResult GetBasicResultAt(int line, int column, string arg1, string arg2, string arg3) =>
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string invocation, string containingMethod, string preferredOverload) =>
             VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-                .WithArguments(arg1, arg2, arg3);
+                .WithArguments(invocation, containingMethod, preferredOverload);
     }
 }
