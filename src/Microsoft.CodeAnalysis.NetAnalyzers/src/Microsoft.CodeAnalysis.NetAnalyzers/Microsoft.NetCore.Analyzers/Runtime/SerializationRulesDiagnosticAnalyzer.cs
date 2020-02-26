@@ -200,10 +200,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         // Look for a serialization constructor.
                         // A serialization constructor takes two params of type SerializationInfo and StreamingContext.
                         IMethodSymbol serializationCtor = namedTypeSymbol.Constructors
-                            .FirstOrDefault(
-                                c => c.Parameters.Length == 2 &&
-                                     c.Parameters[0].Type.Equals(_serializationInfoTypeSymbol) &&
-                                     c.Parameters[1].Type.Equals(_streamingContextTypeSymbol));
+                            .FirstOrDefault(c => c.IsSerializationConstructor(_serializationInfoTypeSymbol, _streamingContextTypeSymbol));
 
                         // There is no serialization ctor - issue a diagnostic.
                         if (serializationCtor == null)
