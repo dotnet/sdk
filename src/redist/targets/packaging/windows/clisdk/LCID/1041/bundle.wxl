@@ -50,23 +50,23 @@
   <String Id="FirstTimeWelcomeMessage">インストールが成功しました。
 
 '[DOTNETHOME]' に以下がインストールされました
-    • .NET Core SDK [DOTNETSDKVERSION]
-    • .NET Core Runtime [DOTNETRUNTIMEVERSION]
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
-    • .NET Core Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 この製品は使用データを収集します
     • 詳細およびオプトアウト https://aka.ms/dotnet-cli-telemetry
 
 リソース
-    • .NET Core ドキュメント https://aka.ms/dotnet-docs
+    • .NET ドキュメント https://aka.ms/dotnet-docs
     • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
     • リリース ノート https://aka.ms/netcore3releasenotes
     • チュートリアル https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
+  <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET Core は、オープンソースまたはクロスプラットフォームで、Microsoft によってサポートされています。これを使用して、C#、F # または VB で次のアプリをビルドできます。お楽しみいただければ幸いです。</String>
-  <String Id="LearnMoreTitle">.Net Core の詳細</String>
+    .NET は、オープンソースまたはクロスプラットフォームで、Microsoft によってサポートされています。これを使用して、C#、F # または VB で次のアプリをビルドできます。お楽しみいただければ幸いです。</String>
+  <String Id="LearnMoreTitle">.Net の詳細</String>
   <String Id="ResourcesHeader">リソース</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;コア ドキュメント&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK ドキュメント&lt;/A&gt;</String>

@@ -2,15 +2,15 @@
   <Target Name="SetSdkBrandingInfo">
     <PropertyGroup>
       <BuildName>cli</BuildName>
-      <SdkBrandName>Microsoft .NET Core SDK $(Version)</SdkBrandName>
-      <ToolsetBrandName>Microsoft .NET Core Toolset $(Version)</ToolsetBrandName>
+      <SdkBrandName>Microsoft .NET SDK $(Version)</SdkBrandName>
+      <ToolsetBrandName>Microsoft .NET Toolset $(Version)</ToolsetBrandName>
       <MSBuildExtensionsBrandName>.NET Standard Support for Visual Studio 2015</MSBuildExtensionsBrandName>
-      <SharedFrameworkBrandName>Microsoft .NET Core Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
-      <NetCoreAppTargetingPackBrandName>Microsoft .NET Core Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
+      <SharedFrameworkBrandName>Microsoft .NET Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
+      <NetCoreAppTargetingPackBrandName>Microsoft .NET Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
       <NetStandardTargetingPackBrandName>Microsoft .NET Standard 2.1 Targeting Pack $(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackBrandName>
       <NetCoreAppHostPackBrandName>Microsoft .NET AppHost Pack $(MicrosoftNETCoreAppHostHostPackageVersion)</NetCoreAppHostPackBrandName>
-      <SharedHostBrandName>Microsoft .NET Core Host $(SharedHostVersion)</SharedHostBrandName>
-      <HostFxrBrandName>Microsoft .NET Core Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
+      <SharedHostBrandName>Microsoft .NET Host $(SharedHostVersion)</SharedHostBrandName>
+      <HostFxrBrandName>Microsoft .NET Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
       <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
       <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
       <BundledTemplates31BrandName>Microsoft .NET Core 3.1 Templates $(Version)</BundledTemplates31BrandName>

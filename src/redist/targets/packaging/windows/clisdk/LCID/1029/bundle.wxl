@@ -50,23 +50,23 @@
   <String Id="FirstTimeWelcomeMessage">Instalace proběhla úspěšně.
 
 Do [DOTNETHOME] byly nainstalovány tyto součásti:
-    • Sada .NET Core SDK [DOTNETSDKVERSION]
-    • Modul runtime .NET Core [DOTNETRUNTIMEVERSION]
+    • Sada .NET SDK [DOTNETSDKVERSION]
+    • Modul runtime .NET [DOTNETRUNTIMEVERSION]
     • Modul runtime ASP.NET Core [ASPNETCOREVERSION]
-    • Modul runtime .NET Core Windows Desktop [WINFORMSANDWPFVERSION]
+    • Modul runtime .NET Windows Desktop [WINFORMSANDWPFVERSION]
 
 Tento produkt shromažďuje data o využití.
     • Další informace a vyjádření výslovného nesouhlasu: https://aka.ms/dotnet-cli-telemetry
 
 Zdroje informací
-    • Dokumentace k .NET Core: https://aka.ms/dotnet-docs
+    • Dokumentace k .NET: https://aka.ms/dotnet-docs
     • Dokumentace k sadě SDK: https://aka.ms/dotnet-sdk-docs
     • Zpráva k vydání verze: https://aka.ms/netcore3releasenotes
     • Kurzy: https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">Sada .NET Core SDK</String>
+  <String Id="WelcomeHeaderMessage">Sada .NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET Core je opensourcová, víceplatformová architektura podporovaná společností Microsoft. Můžete ji použít k vytvoření své další aplikace v jazyce C#, F # nebo VB. Věříme, že s ní budete spokojeni.</String>
-  <String Id="LearnMoreTitle">Další informace o .NET Core</String>
+    .NET je opensourcová, víceplatformová architektura podporovaná společností Microsoft. Můžete ji použít k vytvoření své další aplikace v jazyce C#, F # nebo VB. Věříme, že s ní budete spokojeni.</String>
+  <String Id="LearnMoreTitle">Další informace o .NET</String>
   <String Id="ResourcesHeader">Prostředky</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Dokumentace k platformě Core&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Dokumentace k sadě SDK&lt;/A&gt;</String>
