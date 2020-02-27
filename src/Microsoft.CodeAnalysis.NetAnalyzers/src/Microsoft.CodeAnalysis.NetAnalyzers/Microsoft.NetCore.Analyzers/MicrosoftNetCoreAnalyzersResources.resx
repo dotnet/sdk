@@ -1071,6 +1071,24 @@
   <data name="DoNotCreateTasksWithoutPassingATaskSchedulerMessage" xml:space="preserve">
     <value>Do not create tasks without passing a TaskScheduler</value>
   </data>
+  <data name="UseValueTasksCorrectlyTitle" xml:space="preserve">
+    <value>Use ValueTasks correctly</value>
+  </data>
+  <data name="UseValueTasksCorrectlyDescription" xml:space="preserve">
+    <value>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</value>
+  </data>
+  <data name="UseValueTasksCorrectlyMessage_General" xml:space="preserve">
+    <value>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</value>
+  </data>
+  <data name="UseValueTasksCorrectlyMessage_Unconsumed" xml:space="preserve">
+    <value>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</value>
+  </data>
+  <data name="UseValueTasksCorrectlyMessage_DoubleConsumption" xml:space="preserve">
+    <value>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</value>
+  </data>
+  <data name="UseValueTasksCorrectlyMessage_AccessingIncompleteResult" xml:space="preserve">
+    <value>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</value>
+  </data>
   <data name="JsonNetInsecureSerializerMessage" xml:space="preserve">
     <value>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</value>
   </data>
