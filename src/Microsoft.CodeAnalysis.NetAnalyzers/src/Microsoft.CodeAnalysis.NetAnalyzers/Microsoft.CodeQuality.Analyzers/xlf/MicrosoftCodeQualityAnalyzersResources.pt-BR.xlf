@@ -718,18 +718,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">Coleções devem implementar interface genérica</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="needs-review-translation">Coleções devem implementar interface genérica</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Para ampliar a usabilidade de uma coleção, implemente uma das interfaces de coleção genérica. Em seguida, a coleção poderá ser usada para popular os tipos de coleção genérica.</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="needs-review-translation">Para ampliar a usabilidade de uma coleção, implemente uma das interfaces de coleção genérica. Em seguida, a coleção poderá ser usada para popular os tipos de coleção genérica.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">A coleção '{0}' herda diretamente ou indiretamente '{1}' sem implementar '{2}'. As coleções visíveis publicamente devem implementar a versão genérica para ampliar a usabilidade.</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="needs-review-translation">A coleção '{0}' herda diretamente ou indiretamente '{1}' sem implementar '{2}'. As coleções visíveis publicamente devem implementar a versão genérica para ampliar a usabilidade.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
