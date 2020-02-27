@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # Copyright (c) .NET Foundation and contributors. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 #
@@ -7,12 +7,9 @@
 set -e
 # Stop script if unbound variable found (use ${var:-} if intentional)
 set -u
-# By default cmd1 | cmd2 returns exit code of cmd2 regardless of cmd1 success
-# This is causing it to fail
-set -o pipefail
 
-# Use in the the functions: eval $invocation
-invocation='say_verbose "Calling: ${yellow:-}${FUNCNAME[0]} ${green:-}$*${normal:-}"'
+# Use in the the functions: FUNCTION_NAME=<function name> eval "$invocation"
+invocation='say_verbose "Calling: ${yellow:-}${FUNCTION_NAME} ${green:-}$*${normal:-}"'
 
 # standard output may be used as a return value in the functions
 # we need a way to write text on the screen in the functions so that
@@ -25,7 +22,7 @@ exec 3>&1
 if [ -t 1 ] && command -v tput > /dev/null; then
     # see if it supports colors
     ncolors=$(tput colors)
-    if [ -n "$ncolors" ] && [ $ncolors -ge 8 ]; then
+    if [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
         bold="$(tput bold       || echo)"
         normal="$(tput sgr0     || echo)"
         black="$(tput setaf 0   || echo)"
@@ -63,7 +60,7 @@ say_verbose() {
 #   then and only then should the Linux distribution appear in this list.
 # Adding a Linux distribution to this list does not imply distribution-specific support.
 get_legacy_os_name_from_platform() {
-    eval $invocation
+    FUNCTION_NAME=get_legacy_os_name_from_platform eval "$invocation"
 
     platform="$1"
     case "$platform" in
@@ -136,7 +133,7 @@ get_legacy_os_name_from_platform() {
 }
 
 get_linux_platform_name() {
-    eval $invocation
+    FUNCTION_NAME=get_linux_platform_name eval "$invocation"
 
     if [ -n "$runtime_id" ]; then
         echo "${runtime_id%-*}"
@@ -147,11 +144,11 @@ get_linux_platform_name() {
             echo "$ID${VERSION_ID:+.${VERSION_ID}}"
             return 0
         elif [ -e /etc/redhat-release ]; then
-            local redhatRelease=$(</etc/redhat-release)
-            if [[ $redhatRelease == "CentOS release 6."* || $redhatRelease == "Red Hat Enterprise Linux "*" release 6."* ]]; then
+            redhatRelease=$(cat /etc/redhat-release)
+            case $redhatRelease in "CentOS release 6."*|"Red Hat Enterprise Linux "*" release 6."*)
                 echo "rhel.6"
-                return 0
-            fi
+                return 0;;
+            esac
         fi
     fi
 
@@ -164,21 +161,20 @@ is_musl_based_distro() {
 }
 
 get_current_os_name() {
-    eval $invocation
+    FUNCTION_NAME=get_current_os_name eval "$invocation"
 
-    local uname=$(uname)
+    uname=$(uname)
     if [ "$uname" = "Darwin" ]; then
         echo "osx"
         return 0
     elif [ "$uname" = "FreeBSD" ]; then
         echo "freebsd"
-        return 0        
+        return 0
     elif [ "$uname" = "Linux" ]; then
-        local linux_platform_name
         linux_platform_name="$(get_linux_platform_name)" || { echo "linux" && return 0 ; }
 
         if [ "$linux_platform_name" = "rhel.6" ]; then
-            echo $linux_platform_name
+            echo "$linux_platform_name"
             return 0
         elif is_musl_based_distro; then
             echo "linux-musl"
@@ -194,14 +190,14 @@ get_current_os_name() {
 }
 
 get_legacy_os_name() {
-    eval $invocation
+    FUNCTION_NAME=get_legacy_os_name eval "$invocation"
 
-    local uname=$(uname)
+    uname=$(uname)
     if [ "$uname" = "Darwin" ]; then
         echo "osx"
         return 0
     elif [ -n "$runtime_id" ]; then
-        echo $(get_legacy_os_name_from_platform "${runtime_id%-*}" || echo "${runtime_id%-*}")
+        get_legacy_os_name_from_platform "${runtime_id%-*}" || echo "${runtime_id%-*}"
         return 0
     else
         if [ -e /etc/os-release ]; then
@@ -219,7 +215,7 @@ get_legacy_os_name() {
 }
 
 machine_has() {
-    eval $invocation
+    FUNCTION_NAME=machine_has eval "$invocation"
 
     hash "$1" > /dev/null 2>&1
     return $?
@@ -227,7 +223,7 @@ machine_has() {
 
 
 check_min_reqs() {
-    local hasMinimum=false
+    hasMinimum=false
     if machine_has "curl"; then
         hasMinimum=true
     elif machine_has "wget"; then
@@ -242,7 +238,7 @@ check_min_reqs() {
 }
 
 check_pre_reqs() {
-    eval $invocation
+    FUNCTION_NAME=check_pre_reqs eval "$invocation"
 
     if [ "${DOTNET_INSTALL_SKIP_PREREQS:-}" = "1" ]; then
         return 0
@@ -255,7 +251,8 @@ check_pre_reqs() {
                 return 0
             fi
             LDCONFIG_COMMAND="scanelf --ldpath -BF '%f'"
-            [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep libintl)" ] && say_warning "Unable to locate libintl. Probable prerequisite missing; install libintl (or gettext)."
+            LDCONFIG_RESULT="$(eval "$LDCONFIG_COMMAND" 2>/dev/null)"
+            ! (echo "$LDCONFIG_RESULT" | grep -q libintl) && say_warning "Unable to locate libintl. Probable prerequisite missing; install libintl (or gettext)."
         else
             if [ ! -x "$(command -v ldconfig)" ]; then
                 say_verbose "ldconfig is not in PATH, trying /sbin/ldconfig."
@@ -263,15 +260,16 @@ check_pre_reqs() {
             else
                 LDCONFIG_COMMAND="ldconfig"
             fi
-            local librarypath=${LD_LIBRARY_PATH:-}
-            LDCONFIG_COMMAND="$LDCONFIG_COMMAND -NXv ${librarypath//:/ }"
+            librarypath="${LD_LIBRARY_PATH:-}"
+            LDCONFIG_COMMAND="$LDCONFIG_COMMAND -NXv $(echo "$librarypath" | sed s'/:/ /g')"
+            LDCONFIG_RESULT="$(eval "$LDCONFIG_COMMAND" 2>/dev/null)"
         fi
 
-        [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep zlib)" ] && say_warning "Unable to locate zlib. Probable prerequisite missing; install zlib."
-        [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep ssl)" ] && say_warning "Unable to locate libssl. Probable prerequisite missing; install libssl."
-        [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep libicu)" ] && say_warning "Unable to locate libicu. Probable prerequisite missing; install libicu."
-        [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep lttng)" ] && say_warning "Unable to locate liblttng. Probable prerequisite missing; install libcurl."
-        [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep libcurl)" ] && say_warning "Unable to locate libcurl. Probable prerequisite missing; install libcurl."
+        ! (echo "$LDCONFIG_RESULT" | grep -q zlib) && say_warning "Unable to locate zlib. Probable prerequisite missing; install zlib."
+        ! (echo "$LDCONFIG_RESULT" | grep -q ssl) && say_warning "Unable to locate libssl. Probable prerequisite missing; install libssl."
+        ! (echo "$LDCONFIG_RESULT" | grep -q libicu) && say_warning "Unable to locate libicu. Probable prerequisite missing; install libicu."
+        ! (echo "$LDCONFIG_RESULT" | grep -q lttng) && say_warning "Unable to locate liblttng. Probable prerequisite missing; install libcurl."
+        ! (echo "$LDCONFIG_RESULT" | grep -q libcurl) && say_warning "Unable to locate libcurl. Probable prerequisite missing; install libcurl."
     fi
 
     return 0
@@ -280,7 +278,7 @@ check_pre_reqs() {
 # args:
 # input - $1
 to_lowercase() {
-    #eval $invocation
+    #FUNCTION_NAME=to_lowercase eval $invocation
 
     echo "$1" | tr '[:upper:]' '[:lower:]'
     return 0
@@ -289,9 +287,9 @@ to_lowercase() {
 # args:
 # input - $1
 remove_trailing_slash() {
-    #eval $invocation
+    #FUNCTION_NAME=remove_trailing_slash eval $invocation
 
-    local input="${1:-}"
+    input="${1:-}"
     echo "${input%/}"
     return 0
 }
@@ -299,9 +297,9 @@ remove_trailing_slash() {
 # args:
 # input - $1
 remove_beginning_slash() {
-    #eval $invocation
+    #FUNCTION_NAME=remove_beginning_slah eval $invocation
 
-    local input="${1:-}"
+    input="${1:-}"
     echo "${input#/}"
     return 0
 }
@@ -310,16 +308,16 @@ remove_beginning_slash() {
 # root_path - $1
 # child_path - $2 - this parameter can be empty
 combine_paths() {
-    eval $invocation
+    FUNCTION_NAME=combine_paths eval "$invocation"
 
     # TODO: Consider making it work with any number of paths. For now:
-    if [ ! -z "${3:-}" ]; then
+    if [ -n "${3:-}" ]; then
         say_err "combine_paths: Function takes two parameters."
         return 1
     fi
 
-    local root_path="$(remove_trailing_slash "$1")"
-    local child_path="$(remove_beginning_slash "${2:-}")"
+    root_path="$(remove_trailing_slash "$1")"
+    child_path="$(remove_beginning_slash "${2:-}")"
     say_verbose "combine_paths: root_path=$root_path"
     say_verbose "combine_paths: child_path=$child_path"
     echo "$root_path/$child_path"
@@ -327,7 +325,7 @@ combine_paths() {
 }
 
 get_machine_architecture() {
-    eval $invocation
+    FUNCTION_NAME=get_machine_architecture eval "$invocation"
 
     if command -v uname > /dev/null; then
         CPUName=$(uname -m)
@@ -351,12 +349,12 @@ get_machine_architecture() {
 # args:
 # architecture - $1
 get_normalized_architecture_from_architecture() {
-    eval $invocation
+    FUNCTION_NAME=get_normalized_architecture_from_architecture eval "$invocation"
 
-    local architecture="$(to_lowercase "$1")"
+    architecture="$(to_lowercase "$1")"
     case "$architecture" in
         \<auto\>)
-            echo "$(get_normalized_architecture_from_architecture "$(get_machine_architecture)")"
+            get_normalized_architecture_from_architecture "$(get_machine_architecture)"
             return 0
             ;;
         amd64|x64)
@@ -387,7 +385,7 @@ get_normalized_architecture_from_architecture() {
 # args:
 # version_text - stdin
 get_version_from_version_info() {
-    eval $invocation
+    FUNCTION_NAME=get_version_from_version_info eval "$invocation"
 
     cat | tail -n 1 | sed 's/\r$//'
     return 0
@@ -398,13 +396,13 @@ get_version_from_version_info() {
 # relative_path_to_package - $2
 # specific_version - $3
 is_dotnet_package_installed() {
-    eval $invocation
+    FUNCTION_NAME=is_dotnet_package_installed eval "$invocation"
 
-    local install_root="$1"
-    local relative_path_to_package="$2"
-    local specific_version="${3//[$'\t\r\n']}"
+    install_root="$1"
+    relative_path_to_package="$2"
+    specific_version="$(echo "$3" | sed s'/[\t\r\n]//g')"
 
-    local dotnet_package_path="$(combine_paths "$(combine_paths "$install_root" "$relative_path_to_package")" "$specific_version")"
+    dotnet_package_path="$(combine_paths "$(combine_paths "$install_root" "$relative_path_to_package")" "$specific_version")"
     say_verbose "is_dotnet_package_installed: dotnet_package_path=$dotnet_package_path"
 
     if [ -d "$dotnet_package_path" ]; then
@@ -420,17 +418,17 @@ is_dotnet_package_installed() {
 # normalized_architecture - $3
 # coherent - $4
 get_latest_version_info() {
-    eval $invocation
+    FUNCTION_NAME=get_latest_version_info eval "$invocation"
 
-    local azure_feed="$1"
-    local channel="$2"
-    local normalized_architecture="$3"
-    local coherent="$4"
+    azure_feed="$1"
+    channel="$2"
+    normalized_architecture="$3"
+    coherent="$4"
 
-    local version_file_url=null
-    if [[ "$runtime" == "dotnet" ]]; then
+    version_file_url=null
+    if [ "$runtime" = "dotnet" ]; then
         version_file_url="$uncached_feed/Runtime/$channel/latest.version"
-    elif [[ "$runtime" == "aspnetcore" ]]; then
+    elif [ "$runtime" = "aspnetcore" ]; then
         version_file_url="$uncached_feed/aspnetcore/Runtime/$channel/latest.version"
     elif [ -z "$runtime" ]; then
         if [ "$coherent" = true ]; then
@@ -451,40 +449,28 @@ get_latest_version_info() {
 # args:
 # json_file - $1
 parse_jsonfile_for_version() {
-    eval $invocation
+    FUNCTION_NAME=parse_jsonfile_for_version eval "$invocation"
 
-    local json_file="$1"
+    json_file="$1"
     if [ ! -f "$json_file" ]; then
         say_err "Unable to find \`$json_file\`"
         return 1
     fi
 
-    sdk_section=$(cat $json_file | awk '/"sdk"/,/}/')
-    if [ -z "$sdk_section" ]; then
-        say_err "Unable to parse the SDK node in \`$json_file\`"
+    if machine_has "jq"; then
+        version_info="$(jq -r '.sdk.version' "$json_file")"
+    else
+        json_sh="/tmp/JSON.sh"
+        download "https://raw.githubusercontent.com/dominictarr/JSON.sh/master/JSON.sh" "$json_sh" 2>&1 || { say_err "Unable to download JSON.sh"; return 1; }
+        version_info="$(awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' "$json_file" | sh "$json_sh" | grep 'sdk","version' | sed 's/.*sdk.*version.*\s"\(.*\)".*/\1/')"
+    fi
+
+    # jq returns null and from JSON.sh branch we get empty string when property is not found
+    if [ "$version_info" = "null" ] || [ -z "$version_info" ]; then
+        say_err "Unable to find 'sdk' or 'sdk.version' property in '$json_file'"
         return 1
     fi
 
-    sdk_list=$(echo $sdk_section | awk -F"[{}]" '{print $2}')
-    sdk_list=${sdk_list//[\" ]/}
-    sdk_list=${sdk_list//,/$'\n'}
-    sdk_list="$(echo -e "${sdk_list}" | tr -d '[[:space:]]')"
-
-    local version_info=""
-    while read -r line; do
-      IFS=:
-      while read -r key value; do
-        if [[ "$key" == "version" ]]; then
-          version_info=$value
-        fi
-      done <<< "$line"
-    done <<< "$sdk_list"
-    if [ -z "$version_info" ]; then
-        say_err "Unable to find the SDK:version node in \`$json_file\`"
-        return 1
-    fi
-
-    unset IFS;
     echo "$version_info"
     return 0
 }
@@ -496,25 +482,23 @@ parse_jsonfile_for_version() {
 # version - $4
 # json_file - $5
 get_specific_version_from_version() {
-    eval $invocation
+    FUNCTION_NAME=get_specific_version_from_version eval "$invocation"
 
-    local azure_feed="$1"
-    local channel="$2"
-    local normalized_architecture="$3"
-    local version="$(to_lowercase "$4")"
-    local json_file="$5"
+    azure_feed="$1"
+    channel="$2"
+    normalized_architecture="$3"
+    version="$(to_lowercase "$4")"
+    json_file="$5"
 
     if [ -z "$json_file" ]; then
         case "$version" in
             latest)
-                local version_info
                 version_info="$(get_latest_version_info "$azure_feed" "$channel" "$normalized_architecture" false)" || return 1
                 say_verbose "get_specific_version_from_version: version_info=$version_info"
                 echo "$version_info" | get_version_from_version_info
                 return 0
                 ;;
             coherent)
-                local version_info
                 version_info="$(get_latest_version_info "$azure_feed" "$channel" "$normalized_architecture" true)" || return 1
                 say_verbose "get_specific_version_from_version: version_info=$version_info"
                 echo "$version_info" | get_version_from_version_info
@@ -526,7 +510,6 @@ get_specific_version_from_version() {
                 ;;
         esac
     else
-        local version_info
         version_info="$(parse_jsonfile_for_version "$json_file")" || return 1
         echo "$version_info"
         return 0
@@ -539,20 +522,18 @@ get_specific_version_from_version() {
 # normalized_architecture - $3
 # specific_version - $4
 construct_download_link() {
-    eval $invocation
+    FUNCTION_NAME=construct_download_link eval "$invocation"
 
-    local azure_feed="$1"
-    local channel="$2"
-    local normalized_architecture="$3"
-    local specific_version="${4//[$'\t\r\n']}"
-
-    local osname
+    azure_feed="$1"
+    channel="$2"
+    normalized_architecture="$3"
+    specific_version="$(echo "$4" | sed s'/[\t\r\n]//g')"
     osname="$(get_current_os_name)" || return 1
 
-    local download_link=null
-    if [[ "$runtime" == "dotnet" ]]; then
+    download_link=null
+    if [ "$runtime" = "dotnet" ]; then
         download_link="$azure_feed/Runtime/$specific_version/dotnet-runtime-$specific_version-$osname-$normalized_architecture.tar.gz"
-    elif [[ "$runtime" == "aspnetcore" ]]; then
+    elif [ "$runtime" = "aspnetcore" ]; then
         download_link="$azure_feed/aspnetcore/Runtime/$specific_version/aspnetcore-runtime-$specific_version-$osname-$normalized_architecture.tar.gz"
     elif [ -z "$runtime" ]; then
         download_link="$azure_feed/Sdk/$specific_version/dotnet-sdk-$specific_version-$osname-$normalized_architecture.tar.gz"
@@ -570,18 +551,16 @@ construct_download_link() {
 # normalized_architecture - $3
 # specific_version - $4
 construct_legacy_download_link() {
-    eval $invocation
+    FUNCTION_NAME=construct_legacy_download_link eval "$invocation"
 
-    local azure_feed="$1"
-    local channel="$2"
-    local normalized_architecture="$3"
-    local specific_version="${4//[$'\t\r\n']}"
-
-    local distro_specific_osname
+    azure_feed="$1"
+    channel="$2"
+    normalized_architecture="$3"
+    specific_version="$(echo "$4" | sed s'/[\t\r\n]//g')"
     distro_specific_osname="$(get_legacy_os_name)" || return 1
 
-    local legacy_download_link=null
-    if [[ "$runtime" == "dotnet" ]]; then
+    legacy_download_link=null
+    if [ "$runtime" = "dotnet" ]; then
         legacy_download_link="$azure_feed/Runtime/$specific_version/dotnet-$distro_specific_osname-$normalized_architecture.$specific_version.tar.gz"
     elif [ -z "$runtime" ]; then
         legacy_download_link="$azure_feed/Sdk/$specific_version/dotnet-dev-$distro_specific_osname-$normalized_architecture.$specific_version.tar.gz"
@@ -594,9 +573,9 @@ construct_legacy_download_link() {
 }
 
 get_user_install_path() {
-    eval $invocation
+    FUNCTION_NAME=get_user_install_path eval "$invocation"
 
-    if [ ! -z "${DOTNET_INSTALL_DIR:-}" ]; then
+    if [ -n "${DOTNET_INSTALL_DIR:-}" ]; then
         echo "$DOTNET_INSTALL_DIR"
     else
         echo "$HOME/.dotnet"
@@ -607,11 +586,11 @@ get_user_install_path() {
 # args:
 # install_dir - $1
 resolve_installation_path() {
-    eval $invocation
+    FUNCTION_NAME=resolve_installation_path eval "$invocation"
 
-    local install_dir=$1
+    install_dir=$1
     if [ "$install_dir" = "<auto>" ]; then
-        local user_install_path="$(get_user_install_path)"
+        user_install_path="$(get_user_install_path)"
         say_verbose "resolve_installation_path: user_install_path=$user_install_path"
         echo "$user_install_path"
         return 0
@@ -624,10 +603,10 @@ resolve_installation_path() {
 # args:
 # relative_or_absolute_path - $1
 get_absolute_path() {
-    eval $invocation
+    FUNCTION_NAME=get_absolute_path eval "$invocation"
 
-    local relative_or_absolute_path=$1
-    echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"
+    relative_or_absolute_path=$1
+    echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$relative_or_absolute_path")"
     return 0
 }
 
@@ -637,13 +616,13 @@ get_absolute_path() {
 # out_path - $2
 # override - $3
 copy_files_or_dirs_from_list() {
-    eval $invocation
+    FUNCTION_NAME=copy_files_or_dirs_from_list eval "$invocation"
 
-    local root_path="$(remove_trailing_slash "$1")"
-    local out_path="$(remove_trailing_slash "$2")"
-    local override="$3"
-    local osname="$(get_current_os_name)"
-    local override_switch=$(
+    root_path="$(remove_trailing_slash "$1")"
+    out_path="$(remove_trailing_slash "$2")"
+    override="$3"
+    osname="$(get_current_os_name)"
+    override_switch=$(
         if [ "$override" = false ]; then
             if [ "$osname" = "linux-musl" ]; then
                 printf -- "-u";
@@ -653,14 +632,14 @@ copy_files_or_dirs_from_list() {
         fi)
 
     cat | uniq | while read -r file_path; do
-        local path="$(remove_beginning_slash "${file_path#$root_path}")"
-        local target="$out_path/$path"
-        if [ "$override" = true ] || (! ([ -d "$target" ] || [ -e "$target" ])); then
+        path="$(remove_beginning_slash "${file_path#$root_path}")"
+        target="$out_path/$path"
+        if [ "$override" = true ] || { ! { [ -d "$target" ] || [ -e "$target" ]; } }; then
             mkdir -p "$out_path/$(dirname "$path")"
             if [ -d "$target" ]; then
                 rm -rf "$target"
             fi
-            cp -R $override_switch "$root_path/$path" "$target"
+            cp -R "$override_switch" "$root_path/$path" "$target"
         fi
     done
 }
@@ -669,17 +648,17 @@ copy_files_or_dirs_from_list() {
 # zip_path - $1
 # out_path - $2
 extract_dotnet_package() {
-    eval $invocation
+    FUNCTION_NAME=extract_dotnet_package eval "$invocation"
 
-    local zip_path="$1"
-    local out_path="$2"
+    zip_path="$1"
+    out_path="$2"
 
-    local temp_out_path="$(mktemp -d "$temporary_file_template")"
+    temp_out_path="$(mktemp -d "$temporary_file_template")"
 
-    local failed=false
+    failed=false
     tar -xzf "$zip_path" -C "$temp_out_path" > /dev/null || failed=true
 
-    local folders_with_version_regex='^.*/[0-9]+\.[0-9]+[^/]+/'
+    folders_with_version_regex='^.*/[0-9]+\.[0-9]+[^/]+/'
     find "$temp_out_path" -type f | grep -Eo "$folders_with_version_regex" | sort | copy_files_or_dirs_from_list "$temp_out_path" "$out_path" false
     find "$temp_out_path" -type f | grep -Ev "$folders_with_version_regex" | copy_files_or_dirs_from_list "$temp_out_path" "$out_path" "$override_non_versioned_files"
 
@@ -695,17 +674,19 @@ extract_dotnet_package() {
 # remote_path - $1
 # [out_path] - $2 - stdout if not provided
 download() {
-    eval $invocation
+    FUNCTION_NAME=download eval "$invocation"
 
-    local remote_path="$1"
-    local out_path="${2:-}"
+    remote_path="$1"
+    out_path="${2:-}"
 
-    if [[ "$remote_path" != "http"* ]]; then
-        cp "$remote_path" "$out_path"
-        return $?
-    fi
+    case "$remote_path" in
+        "http"*);;
+        *)
+           cp "$remote_path" "$out_path";
+           return $?;;
+    esac
 
-    local failed=false
+    failed=false
     if machine_has "curl"; then
         downloadcurl "$remote_path" "$out_path" || failed=true
     elif machine_has "wget"; then
@@ -721,14 +702,14 @@ download() {
 }
 
 downloadcurl() {
-    eval $invocation
-    local remote_path="$1"
-    local out_path="${2:-}"
+    FUNCTION_NAME=downloadcurl eval "$invocation"
+    remote_path="$1"
+    out_path="${2:-}"
 
     # Append feed_credential as late as possible before calling curl to avoid logging feed_credential
     remote_path="${remote_path}${feed_credential}"
 
-    local failed=false
+    failed=false
     if [ -z "$out_path" ]; then
         curl --retry 10 -sSL -f --create-dirs "$remote_path" || failed=true
     else
@@ -742,14 +723,14 @@ downloadcurl() {
 }
 
 downloadwget() {
-    eval $invocation
-    local remote_path="$1"
-    local out_path="${2:-}"
+    FUNCTION_NAME=downloadwget eval "$invocation"
+    remote_path="$1"
+    out_path="${2:-}"
 
     # Append feed_credential as late as possible before calling wget to avoid logging feed_credential
     remote_path="${remote_path}${feed_credential}"
 
-    local failed=false
+    failed=false
     if [ -z "$out_path" ]; then
         wget -q --tries 10 -O - "$remote_path" || failed=true
     else
@@ -763,7 +744,7 @@ downloadwget() {
 }
 
 calculate_vars() {
-    eval $invocation
+    FUNCTION_NAME=calculate_vars eval "$invocation"
     valid_legacy_download_link=true
 
     normalized_architecture="$(get_normalized_architecture_from_architecture "$architecture")"
@@ -792,15 +773,15 @@ calculate_vars() {
 }
 
 install_dotnet() {
-    eval $invocation
-    local download_failed=false
-    local asset_name=''
-    local asset_relative_path=''
+    FUNCTION_NAME=install_dotnet eval "$invocation"
+    download_failed=false
+    asset_name=''
+    asset_relative_path=''
 
-    if [[ "$runtime" == "dotnet" ]]; then
+    if [ "$runtime" = "dotnet" ]; then
         asset_relative_path="shared/Microsoft.NETCore.App"
         asset_name=".NET Core Runtime"
-    elif [[ "$runtime" == "aspnetcore" ]]; then
+    elif [ "$runtime" = "aspnetcore" ]; then
         asset_relative_path="shared/Microsoft.AspNetCore.App"
         asset_name="ASP.NET Core Runtime"
     elif [ -z "$runtime" ]; then
@@ -811,7 +792,7 @@ install_dotnet() {
         return 1
     fi
 
-    #  Check if the SDK version is already installed.
+    # Check if the SDK version is already installed.
     if is_dotnet_package_installed "$install_root" "$asset_relative_path" "$specific_version"; then
         say "$asset_name version $specific_version is already installed."
         return 0
@@ -855,35 +836,25 @@ install_dotnet() {
     extract_dotnet_package "$zip_path" "$install_root"
 
     #  Check if the SDK version is installed; if not, fail the installation.
-    is_asset_installed=false
-
     # if the version contains "RTM" or "servicing"; check if a 'release-type' SDK version is installed.
-    if [[ $specific_version == *"rtm"* || $specific_version == *"servicing"* ]]; then
-        IFS='-'
-        read -ra verArr <<< "$specific_version"
-        release_version="${verArr[0]}"
-        unset IFS;
+    case "$specific_version" in *"rtm"*|*"servicing"*)
+        release_version="${specific_version%%-*}"
         say_verbose "Checking installation: version = $release_version"
-        is_asset_installed="$(is_dotnet_package_installed "$install_root" "$asset_relative_path" "$release_version")"
+        if is_dotnet_package_installed "$install_root" "$asset_relative_path" "$release_version"; then
+            return 0
+        fi;;
+    esac
+
+    #  Check if the standard SDK version is installed.
+    say_verbose "Checking installation: version = $specific_version"
+    if is_dotnet_package_installed "$install_root" "$asset_relative_path" "$specific_version"; then
+        return 0
     fi
 
-    #  Check if the SDK version is installed.
-    if [ "$is_asset_installed" = false ]; then
-        say_verbose "Checking installation: version = $specific_version"
-        is_asset_installed="$(is_dotnet_package_installed "$install_root" "$asset_relative_path" "$specific_version")"
-    fi
-
-    if [ "$is_asset_installed" = false ]; then
-        say_err "\`$asset_name\` with version = $specific_version failed to install with an unknown error."
-        return 1
-    fi
-
-    return 0
+    say_err "\`$asset_name\` with version = $specific_version failed to install with an unknown error."
+    return 1
 }
 
-args=("$@")
-
-local_version_file_relative_path="/.version"
 bin_folder_relative_path=""
 temporary_file_template="${TMPDIR:-/tmp}/dotnet.XXXXXXXXX"
 
@@ -933,9 +904,9 @@ do
         --runtime|-[Rr]untime)
             shift
             runtime="$1"
-            if [[ "$runtime" != "dotnet" ]] && [[ "$runtime" != "aspnetcore" ]]; then
+            if [ "$runtime" != "dotnet" ] && [ "$runtime" != "aspnetcore" ]; then
                 say_err "Unsupported value for --runtime: '$1'. Valid values are 'dotnet' and 'aspnetcore'."
-                if [[ "$runtime" == "windowsdesktop" ]]; then
+                if [ "$runtime" = "windowsdesktop" ]; then
                     say_err "WindowsDesktop archives are manufactured for Windows platforms only."
                 fi
                 exit 1
@@ -946,35 +917,35 @@ do
             ;;
         --no-path|-[Nn]o[Pp]ath)
             no_path=true
-            non_dynamic_parameters+=" $name"
+            non_dynamic_parameters="$non_dynamic_parameters $name"
             ;;
         --verbose|-[Vv]erbose)
             verbose=true
-            non_dynamic_parameters+=" $name"
+            non_dynamic_parameters="$non_dynamic_parameters $name"
             ;;
         --no-cdn|-[Nn]o[Cc]dn)
             no_cdn=true
-            non_dynamic_parameters+=" $name"
+            non_dynamic_parameters="$non_dynamic_parameters $name"
             ;;
         --azure-feed|-[Aa]zure[Ff]eed)
             shift
             azure_feed="$1"
-            non_dynamic_parameters+=" $name "\""$1"\"""
+            non_dynamic_parameters="$non_dynamic_parameters $name \"$1\""
             ;;
         --uncached-feed|-[Uu]ncached[Ff]eed)
             shift
             uncached_feed="$1"
-            non_dynamic_parameters+=" $name "\""$1"\"""
+            non_dynamic_parameters="$non_dynamic_parameters $name \"$1\""
             ;;
         --feed-credential|-[Ff]eed[Cc]redential)
             shift
             feed_credential="$1"
-            non_dynamic_parameters+=" $name "\""$1"\"""
+            non_dynamic_parameters="$non_dynamic_parameters $name \"$1\""
             ;;
         --runtime-id|-[Rr]untime[Ii]d)
             shift
             runtime_id="$1"
-            non_dynamic_parameters+=" $name "\""$1"\"""
+            non_dynamic_parameters="$non_dynamic_parameters $name \"$1\""
             ;;
         --jsonfile|-[Jj][Ss]on[Ff]ile)
             shift
@@ -982,9 +953,9 @@ do
             ;;
         --skip-non-versioned-files|-[Ss]kip[Nn]on[Vv]ersioned[Ff]iles)
             override_non_versioned_files=false
-            non_dynamic_parameters+=" $name"
+            non_dynamic_parameters="$non_dynamic_parameters $name"
             ;;
-        -?|--?|-h|--help|-[Hh]elp)
+        "-?"|-h|--help|-[Hh]elp)
             script_name="$(basename "$0")"
             echo ".NET Tools Installer"
             echo "Usage: $script_name [-c|--channel <CHANNEL>] [-v|--version <VERSION>] [-p|--prefix <DESTINATION>]"
@@ -1071,13 +1042,13 @@ if [ "$dry_run" = true ]; then
     if [ "$valid_legacy_download_link" = true ]; then
         say "Legacy named payload URL: $legacy_download_link"
     fi
-    repeatable_command="./$script_name --version "\""$specific_version"\"" --install-dir "\""$install_root"\"" --architecture "\""$normalized_architecture"\"""
-    if [[ "$runtime" == "dotnet" ]]; then
-        repeatable_command+=" --runtime "\""dotnet"\"""
-    elif [[ "$runtime" == "aspnetcore" ]]; then
-        repeatable_command+=" --runtime "\""aspnetcore"\"""
+    repeatable_command="./$script_name --version \"$specific_version\" --install-dir \"$install_root\" --architecture \"$normalized_architecture\""
+    if [ "$runtime" = "dotnet" ]; then
+        repeatable_command="$repeatable_command --runtime \"dotnet\""
+    elif [ "$runtime" = "aspnetcore" ]; then
+        repeatable_command="$repeatable_command --runtime \"aspnetcore\""
     fi
-    repeatable_command+="$non_dynamic_parameters"
+    repeatable_command="$repeatable_command$non_dynamic_parameters"
     say "Repeatable invocation: $repeatable_command"
     exit 0
 fi
