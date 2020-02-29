@@ -41,9 +41,4 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IntermediateOutputPath Condition="!HasTrailingSlash('$(IntermediateOutputPath)')">$(IntermediateOutputPath)\</IntermediateOutputPath>
   </PropertyGroup>
 
-  <!-- Set the package output path (for nuget pack target) now, before the TargetFramework is appended -->
-  <PropertyGroup>
-    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(OutputPath)</PackageOutputPath>
-  </PropertyGroup>
-
 </Project>
