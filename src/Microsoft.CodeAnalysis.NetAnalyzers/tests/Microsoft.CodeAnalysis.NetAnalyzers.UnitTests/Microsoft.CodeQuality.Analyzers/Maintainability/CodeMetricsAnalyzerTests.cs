@@ -559,6 +559,128 @@ CA1506(Type): 10
             await VerifyBasicAsync(source, additionalText, expected);
         }
 
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_CountCorrectlyGenericTypes()
+        {
+            await VerifyCSharpAsync(@"
+using System.Collections.Generic;
+
+public class A {}
+public class B {}
+
+public class C
+{
+    private IEnumerable<A> a;
+    private IEnumerable<B> b;
+}",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+",
+                GetCSharpCA1506ExpectedDiagnostic(7, 14, "C", 3, 2, 3));
+
+            await VerifyBasicAsync(@"
+Imports System.Collections.Generic
+
+Public Class A
+End Class
+
+Public Class B
+End Class
+
+Public Class C
+    Private a As IEnumerable(Of A)
+    Private b As IEnumerable(Of B)
+End Class",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+",
+    GetCSharpCA1506ExpectedDiagnostic(10, 14, "C", 3, 2, 3));
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_LinqAnonymousType()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+public static class Ca1506Tester
+{
+    public static IEnumerable<int> TestCa1506()
+    {
+        var ints = new[] { 1, 2 };
+        return from a in ints
+               from b in ints
+               from c in ints
+               from d in ints
+               from e in ints
+               from f in ints
+               from g in ints
+               from h in ints
+               from i in ints
+               from j in ints
+               from k in ints
+               from l in ints
+               from m in ints
+               from n in ints
+               from o in ints
+               from p in ints
+               select p;
+    }
+}");
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_ExcludeCompilerGeneratedTypes()
+        {
+            await VerifyCSharpAsync(@"
+[System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+public class A {}
+
+[System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")]
+public class B {}
+
+public class C
+{
+    private A a;
+    private B b;
+}",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 1
+");
+
+            await VerifyBasicAsync(@"
+Imports System.Collections.Generic
+
+<System.Runtime.CompilerServices.CompilerGeneratedAttribute>
+Public Class A
+End Class
+
+<System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")>
+Public Class B
+End Class
+
+Public Class C
+    Private a As A
+    Private b As B
+End Class",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 1
+");
+        }
+
         #endregion
 
         #region CA1509: Invalid entry in code metrics rule specification file
