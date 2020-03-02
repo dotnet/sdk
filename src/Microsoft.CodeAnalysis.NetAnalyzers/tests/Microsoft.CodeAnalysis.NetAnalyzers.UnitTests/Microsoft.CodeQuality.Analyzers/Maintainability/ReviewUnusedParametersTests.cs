@@ -919,6 +919,52 @@ Public Class C
 End Class");
         }
 
+        [Fact, WorkItem(3039, "https://github.com/dotnet/roslyn-analyzers/issues/3039")]
+        public async Task SerializationConstructorParameters_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+public class C
+{
+    protected C(SerializationInfo info, StreamingContext context)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.Serialization
+
+Public Class C
+    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3039, "https://github.com/dotnet/roslyn-analyzers/issues/3039")]
+        public async Task GetObjectDataParameters_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+public class C
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.Serialization
+
+Public Class C
+    Public Sub GetObjectData(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+    End Sub
+End Class");
+        }
+
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
