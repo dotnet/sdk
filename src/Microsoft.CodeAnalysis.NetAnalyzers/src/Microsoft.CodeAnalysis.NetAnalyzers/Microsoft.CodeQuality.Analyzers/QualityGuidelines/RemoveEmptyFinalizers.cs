@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -34,45 +33,29 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationBlockStartAction(obsac =>
+            analysisContext.RegisterCompilationStartAction(context =>
             {
-                if (!obsac.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute, out var conditionalAttributeType) ||
-                    obsac.OperationBlocks.Length != 1 ||
-                    !(obsac.OperationBlocks[0] is IBlockOperation blockOperation) ||
-                    !(obsac.OwningSymbol is IMethodSymbol methodSymbol) ||
-                    !methodSymbol.IsDestructor())
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute, out var conditionalAttributeType))
                 {
                     return;
                 }
 
-                const int IS_EMPTY = 0;
-                const int IS_NOT_EMPTY = 1;
-                var state = IS_EMPTY;
-
-                obsac.RegisterOperationAction(oac =>
+                context.RegisterOperationBlockAction(context =>
                 {
-                    if (Interlocked.CompareExchange(ref state, IS_EMPTY, IS_EMPTY) == IS_EMPTY &&
-                    !((IInvocationOperation)oac.Operation).TargetMethod.HasAttribute(conditionalAttributeType))
+                    if (context.OperationBlocks.Length == 1 &&
+                        context.OperationBlocks[0] is IBlockOperation blockOperation &&
+                        context.OwningSymbol is IMethodSymbol methodSymbol &&
+                        methodSymbol.IsDestructor() &&
+                        !blockOperation.HasAnyExplicitDescendant(op => CanDescendIntoOperation(op, conditionalAttributeType)))
                     {
-                        Interlocked.Exchange(ref state, IS_NOT_EMPTY);
-                    }
-                }, OperationKind.Invocation);
-
-                obsac.RegisterOperationAction(oac => Interlocked.Exchange(ref state, IS_NOT_EMPTY),
-                    OperationKind.SimpleAssignment,
-                    OperationKind.VariableDeclaration,
-                    OperationKind.Loop,
-                    OperationKind.Conditional,
-                    OperationKind.Invalid);
-
-                obsac.RegisterOperationBlockEndAction(obac =>
-                {
-                    if (state == IS_EMPTY)
-                    {
-                        obac.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
+                        context.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
                     }
                 });
             });
         }
+
+        private static bool CanDescendIntoOperation(IOperation operation, INamedTypeSymbol conditionalAttributeType)
+            => operation.Kind != OperationKind.Throw &&
+                (operation.Kind != OperationKind.Invocation || !((IInvocationOperation)operation).TargetMethod.HasAttribute(conditionalAttributeType));
     }
 }
