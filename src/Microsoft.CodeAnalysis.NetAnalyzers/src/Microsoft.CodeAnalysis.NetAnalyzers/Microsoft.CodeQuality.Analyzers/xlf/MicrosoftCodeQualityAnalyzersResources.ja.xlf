@@ -718,18 +718,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">コレクションは、ジェネリック インターフェイスを実装しなければなりません</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="needs-review-translation">コレクションは、ジェネリック インターフェイスを実装しなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">コレクションの操作性を拡充するために、ジェネリック コレクション インターフェイスの 1 つを実装します。次に、コレクションを使用して、ジェネリック コレクション型を設定できます。</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="needs-review-translation">コレクションの操作性を拡充するために、ジェネリック コレクション インターフェイスの 1 つを実装します。次に、コレクションを使用して、ジェネリック コレクション型を設定できます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">コレクション '{0}' は、'{2}' を実装することなく '{1}' を直接または間接的に継承します。公開されているコレクションは、操作性の拡充のためジェネリック バージョンを実装する必要があります。</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="needs-review-translation">コレクション '{0}' は、'{2}' を実装することなく '{1}' を直接または間接的に継承します。公開されているコレクションは、操作性の拡充のためジェネリック バージョンを実装する必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">

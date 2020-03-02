@@ -718,18 +718,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">Koleksiyonlar genel arabirim uygulamalıdır</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="needs-review-translation">Koleksiyonlar genel arabirim uygulamalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Bir koleksiyonun kullanılabilirliğini genişletmek için genel koleksiyon arabirimlerinden birini uygulayın. Daha sonra, genel koleksiyon türlerinin doldurulması için koleksiyon kullanılabilir.</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="needs-review-translation">Bir koleksiyonun kullanılabilirliğini genişletmek için genel koleksiyon arabirimlerinden birini uygulayın. Daha sonra, genel koleksiyon türlerinin doldurulması için koleksiyon kullanılabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">'{0}' koleksiyonu, '{2}' uygulamaksızın doğrudan veya dolaylı olarak '{1}' devralır. Genel olarak görülebilir koleksiyonlar, kullanılabilirliği genişletmek için genel sürümü uygulamalıdır.</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="needs-review-translation">'{0}' koleksiyonu, '{2}' uygulamaksızın doğrudan veya dolaylı olarak '{1}' devralır. Genel olarak görülebilir koleksiyonlar, kullanılabilirliği genişletmek için genel sürümü uygulamalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
