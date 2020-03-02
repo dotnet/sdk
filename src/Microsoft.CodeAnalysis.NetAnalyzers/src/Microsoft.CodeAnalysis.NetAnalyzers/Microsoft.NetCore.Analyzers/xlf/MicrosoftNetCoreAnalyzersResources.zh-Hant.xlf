@@ -1,0 +1,1862 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-HANT" original="../MicrosoftNetCoreAnalyzersResources.resx">
+    <body>
+      <trans-unit id="AddNonSerializedAttributeCodeActionTitle">
+        <source>Add the 'NonSerialized' attribute to this field.</source>
+        <target state="translated">將 'NonSerialized' 屬性新增至此欄位。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddSerializableAttributeCodeActionTitle">
+        <source>Add Serializable attribute</source>
+        <target state="translated">新增可序列化屬性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
+        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
+        <target state="translated">PreserveSigAttribute 表示方法會傳回 HRESULT，而非擲回例外狀況。因此，請務必使用該方法所傳回的 HRESULT，才可偵測到錯誤。一般來說，上述作業可透過呼叫 Marshal.ThrowExceptionForHR 完成。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
+        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
+        <target state="translated">使用 '{0}' 方法傳回的 hresult，並呼叫 Marshal.ThrowExceptionForHR。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
+        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
+        <target state="translated">一律使用標記有 PreserveSigAttribute 的方法所傳回的值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherMode">
+        <source>Do Not Use Unsafe Cipher Modes</source>
+        <target state="translated">不要使用不安全的 Cipher 模式</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherModeDescription">
+        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
+        <target state="translated">這些模式容易受到攻擊。請只使用經過核准的模式 (CBC，CTS)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherModeMessage">
+        <source>It uses an unsafe Cipher Mode {0}</source>
+        <target state="translated">它會使用不安全的 Cipher 模式 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
+        <source>The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.</source>
+        <target state="translated">屬性的字串常值參數並未正確剖析 URL、GUID 或版本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
+        <target state="translated">在 '{0}' 的建構函式中，將目前為 "{2}" 的引數值 '{1}'，變更為可正確剖析成 '{3}' 的值。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
+        <target state="translated">在 '{0}' 的建構函式中，將目前為空字串 ("") 的引數值 '{1}'，變更為可正確剖析成 '{2}' 的值。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
+        <source>Attribute string literals should parse correctly</source>
+        <target state="translated">屬性字串常值應正確剖析</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesDescription">
+        <source>The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.</source>
+        <target state="translated">.NET Framework 類別庫可提供擷取自訂屬性的方法。根據預設，這些方法會搜尋屬性繼承階層。使用密封屬性可免於搜尋整個繼承階層，因而能提升效能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesMessage">
+        <source>Avoid unsealed attributes</source>
+        <target state="translated">避免非密封屬性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesTitle">
+        <source>Avoid unsealed attributes</source>
+        <target state="translated">避免非密封屬性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidZeroLengthArrayAllocationsMessage">
+        <source>Avoid unnecessary zero-length array allocations.  Use {0} instead.</source>
+        <target state="translated">避免非必要長度為零的陣列配置。改為使用 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
+        <source>Avoid zero-length array allocations.</source>
+        <target state="translated">避免長度為零的陣列配置。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
+        <source>Ensure BinaryFormatter.Binder is set before calling BinaryFormatter.Deserialize</source>
+        <target state="translated">呼叫 BinaryFormatter.Deserialize 之前，請務必先設定 BinaryFormatter.Binder</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
+        <source>Do not call BinaryFormatter.Deserialize without first setting BinaryFormatter.Binder</source>
+        <target state="translated">未先設定 BinaryFormatter.Binder 之前，請勿呼叫 BinaryFormatter.Deserialize</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedDescription">
+        <source>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.</source>
+        <target state="translated">將不受信任的資料還原序列化時，方法 '{0}' 不安全。如果您需要改為偵測 BinaryFormatter 還原序列化，而不想要設定 SerializationBinder，則請停用規則 CA2300，並啟用規則 CA2301 和 CA2302。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">將不受信任的資料還原序列化時，方法 '{0}' 不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer BinaryFormatter</source>
+        <target state="translated">請勿使用不安全的還原序列化程式 BinaryFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
+        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</source>
+        <target state="translated">其為 Dispose 實作的方法，不會呼叫 GC.SuppressFinalize; 或其並非是 Dispose 實作的方法，會呼叫 GC.SuppressFinalize; 或方法會呼叫 GC.SuppressFinalize 並傳遞並非 'this' (在 Visual Basic 中為 Me) 的其他內容。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotCalled">
+        <source>Change {0} to call {1}. This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.</source>
+        <target state="translated">將 {0} 變更為呼叫 {1}。如此一來，引進完成項的衍生類型即無須重新實作 'IDisposable' 就可呼叫它。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotCalledWithFinalizer">
+        <source>Change {0} to call {1}. This will prevent unnecessary finalization of the object once it has been disposed and it has fallen out of scope.</source>
+        <target state="translated">將 {0} 變更為呼叫 {1}。如此一來，可避免在物件處置過後或不在範圍內時，產生不必要的完成項。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotPassedThis">
+        <source>{0} calls {1} on something other than itself. Change the call site to pass 'this' ('Me' in Visual Basic) instead.</source>
+        <target state="translated">{0} 於本身以外的其他項目上呼叫了 {1}。變更呼叫位置以傳遞 'this' (在 Visual Basic 中為 'Me')。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageOutsideDispose">
+        <source>{0} calls {1}, a method that is typically only called within an implementation of 'IDisposable.Dispose'. Refer to the IDisposable pattern for more information.</source>
+        <target state="translated">{0} 呼叫了 {1}，但此方法通常只在 'IDisposable.Dispose' 的實作內呼叫。如需詳細資訊，請參閱 IDisposable 模式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyTitle">
+        <source>Dispose methods should call SuppressFinalize</source>
+        <target state="translated">Dispose 方法應該呼叫 SuppressFinalize</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CategoryReliability">
+        <source>Reliability</source>
+        <target state="translated">可靠性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
+        <source>HttpClients should enable certificate revocation list checks</source>
+        <target state="translated">HttpClients 應啟用憑證撤銷清單檢查</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyDisableHttpClientCRLCheckMessage">
+        <source>HttpClient is created without enabling CheckCertificateRevocationList</source>
+        <target state="translated">已建立 HttpClient，但未啟用 CheckCertificateRevocationList</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyInstallRootCert">
+        <source>Do Not Add Certificates To Root Store</source>
+        <target state="translated">請勿將憑證新增至根存放區</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyInstallRootCertMessage">
+        <source>Adding certificates to the operating system's trusted root certificates increases the risk of incorrectly authenticating an illegitimate certificate</source>
+        <target state="translated">將憑證新增至作業系統的受信任根憑證，會增加驗證非法憑證不正確的風險</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIV">
+        <source>Do not use CreateEncryptor with non-default IV</source>
+        <target state="translated">請勿使用具有非預設 IV 的 CreateEncryptor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage">
+        <source>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</source>
+        <target state="translated">對稱式加密使用可能可重複的非預設初始化向量</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
+        <source>Use Secure Cookies In ASP.Net Core</source>
+        <target state="translated">在 ASP.Net Core 中使用安全 Cookie</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
+        <source>Set CookieOptions.Secure = true when setting a cookie</source>
+        <target state="translated">在設定 Cookie 時設定 CookieOptions.Secure = true</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseWeakKDFInsufficientIterationCount">
+        <source>Do Not Use Weak Key Derivation Function With Insufficient Iteration Count</source>
+        <target state="translated">不要使用反覆運算計數不足的弱式金鑰衍生函數 (Key Derivation Function)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseWeakKDFInsufficientIterationCountMessage">
+        <source>Use at least {0} iterations when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
+        <target state="translated">當從密碼衍生密碼編譯金鑰時，請至少使用 {0} 個反覆項目。根據預設，Rfc2898DeriveByte 的 IterationCount 只有 1000</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsDescription">
+        <source>Older protocol versions of Transport Layer Security (TLS) are less secure than TLS 1.2 and TLS 1.3, and are more likely to have new vulnerabilities. Avoid older protocol versions to minimize risk.</source>
+        <target state="translated">較舊的通訊協定版本的傳輸層安全性 (TLS) 比 TLS 1.2 和 TLS 1.3 不安全，而且更可能有新的弱點。請避免較舊的通訊協定版本，以將風險降至最低。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsMessage">
+        <source>Transport Layer Security protocol version '{0}' is deprecated.  Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">傳輸層安全性通訊協定版本 '{0}' 已淘汰。請使用 'None' 讓作業系統選擇版本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsTitle">
+        <source>Do not use deprecated SslProtocols values</source>
+        <target state="translated">不要使用已淘汰的 SslProtocols 值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
+        <source>A type that implements System.IDisposable declares fields that are of types that also implement IDisposable. The Dispose method of the field is not called by the Dispose method of the declaring type. To fix a violation of this rule, call Dispose on fields that are of types that implement IDisposable if you are responsible for allocating and releasing the unmanaged resources held by the field.</source>
+        <target state="translated">實作 System.IDisposable 的類型，宣告的欄位會是也實作 IDisposable 的類型。該欄位的 Dispose 方法，並非由宣告類型的 Dispose 方法呼叫。若要修正此規則違規，如果由您負責配置及釋放由該欄位所保留的非受控資源，則請在會實作 IDisposable 的欄位類型欄位上，呼叫 Dispose。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedMessage">
+        <source>'{0}' contains field '{1}' that is of IDisposable type '{2}', but it is never disposed. Change the Dispose method on '{0}' to call Close or Dispose on this field.</source>
+        <target state="translated">'{0}' 包含 IDisposable 類型 '{2}' 的欄位 '{1}'，但從未處置過該欄位。請變更 '{0}' 上的 Dispose 方法，在此欄位上呼叫 Close 或 Dispose。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedTitle">
+        <source>Disposable fields should be disposed</source>
+        <target state="translated">可處置的欄位應受到處置</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerDescription">
+        <source>A type that implements System.IDisposable and has fields that suggest the use of unmanaged resources does not implement a finalizer, as described by Object.Finalize.</source>
+        <target state="translated">實作 System.IDisposable 且有欄位會建議使用非受控資源的類型，不會實作完成項 (如 Object.Finalize 所述)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerMessage">
+        <source>Disposable types should declare finalizer</source>
+        <target state="translated">可處置的類型應宣告完成項</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerTitle">
+        <source>Disposable types should declare finalizer</source>
+        <target state="translated">可處置的類型應宣告完成項</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeDescription">
+        <source>A type that implements System.IDisposable inherits from a type that also implements IDisposable. The Dispose method of the inheriting type does not call the Dispose method of the parent type. To fix a violation of this rule, call base.Dispose in your Dispose method.</source>
+        <target state="translated">實作 System.IDisposable 的類型，會繼承自也實作 IDisposable 的類型。但繼承類型的 Dispose 方法，並未呼叫父類型的 Dispose 方法。若要修正此規則違規，請在 Dispose 方法中呼叫 base.Dispose。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
+        <target state="translated">確認方法 '{0}' 呼叫了所有可能的控制流程路徑中的 '{1}'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
+        <source>Dispose methods should call base class dispose</source>
+        <target state="translated">Dispose 方法應該呼叫基底類別處置</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeDescription">
+        <source>If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.</source>
+        <target state="translated">如果未在可處置物件的所有參考都超出範圍前明確處置掉該物件，則該物件將在記憶體回收行程執行該物件的完成項時，於某個不定時間被處置掉。因為可能發生例外事件，導致物件的完成項無法執行，所以應改為明確處置掉物件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <target state="translated">請使用建議的處置模式，確認會在所有路徑上，處置由 '{0}' 所建立的物件。在可能的情況下，請將建立包在 'using' 陳述式或 'using' 宣告內。否則，請使用 try-finally 模式，同時在 try 區域之前先宣告專用的區域變數，並在 'finally' 區域中的非 null 值上，設定無條件 Dispose 引動過程，比如 'x?.Dispose()'。如果 try 區域內已明確地處置了該物件，或是處置擁有權已轉移到另一個物件或方法，則請在這類作業之後，對區域變數指派 'null'，以避免在 'finally' 中發生雙重處置。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <target state="translated">請使用建議的處置模式，確認會在所有例外狀況路徑上，處置由 '{0}' 所建立的物件。在可能的情況下，請將建立包在 'using' 陳述式或 'using' 宣告內。否則，請使用 try-finally 模式，同時在 try 區域之前先宣告專用的區域變數，並在 'finally' 區域中的非 null 值上，設定無條件 Dispose 引動過程，比如 'x?.Dispose()'。如果 try 區域內已明確地處置了該物件，或是處置擁有權已轉移到另一個物件或方法，則請在這類作業之後，對區域變數指派 'null'，以避免在 'finally' 中發生雙重處置。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
+        <target state="translated">在 '{0}' 所建立的物件上，於所有參考 System.IDisposable.Dispose 的項目前呼叫它，超出範圍。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
+        <source>Object created by '{0}' is not disposed along all exception paths. Call System.IDisposable.Dispose on the object before all references to it are out of scope.</source>
+        <target state="translated">由 {0} 所建立的物件，並非隨著所有例外狀況路徑處置。於物件的所有參考之前呼叫 System.IDisposable.Dispose，超出範圍。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeTitle">
+        <source>Dispose objects before losing scope</source>
+        <target state="translated">必須在超出範圍前處置物件</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPath">
+        <source>Do Not Add Archive Item's Path To The Target File System Path</source>
+        <target state="translated">請勿將封存項目的路徑新增到目標檔案系統路徑</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathDescription">
+        <source>When extracting files from an archive and using the archive item's path, check if the path is safe. Archive path can be relative and can lead to file system access outside of the expected file system target path, leading to malicious config changes and remote code execution via lay-and-wait technique.</source>
+        <target state="translated">從封存擷取檔案並使用封存項目的路徑時，請檢查路徑是否安全。封存路徑可以是相對路徑，可能導致從預期的檔案系統目標路徑外存取檔案系統，從而引發透過偷襲技術進行的惡意組態變更及遠端程式碼執行。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage">
+        <source>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</source>
+        <target state="translated">在從相對封存項目路徑建立「方法 {1} 中的 {0}」路徑以擷取檔案，而且來源是未受信任的 ZIP 封存時，請務必處理相對封存項目路徑「方法 {3} 中的 {2}」</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURL">
+        <source>Do Not Add Schema By URL</source>
+        <target state="translated">請勿利用 URL 新增結構描述</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURLDescription">
+        <source>This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">XmlSchemaCollection.Add 方法的此項多載，會在使用的 XML 讀取器執行個體上，從內部啟用 DTD 處理，然後使用 UrlResolver 解析外部 XML 實體。而結果就是會導致資訊外洩。攻擊者有可能會看到來自檔案系統或網路共用要進行機器處理 XML 的內容。此外，攻擊者也可將其用作為 DoS 向量。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURLMessage">
+        <source>This overload of the Add method is potentially unsafe because it may resolve dangerous external references</source>
+        <target state="translated">因為 Add 方法的此項多載可能解析了危險的外部參考，而有可能不安全</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="translated">不要在還原序列化期間呼叫危險的方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
+        <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
+        <target state="translated">不安全的還原序列化是一種弱點，會在有人使用未受信任的資料來不當使用應用程式的邏輯、發動拒絕服務的攻擊 (DoS)，甚至是在任何程式碼的還原序列化期間執行該程式碼時出現。惡意使用者經常會在應用程式將他們控制的未受信任資料還原序列化時，濫用這些還原序列化功能 (基本上就是在還原序列化期間叫用危險的方法)。不安全的還原序列化攻擊一旦成功，攻擊者就有機會發動後續攻擊，例如 DoS 攻擊、驗證略過和遠端程式碼執行。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
+        <target state="translated">將類別 {0} 的執行個體還原序列化時，方法 {1} 可以呼叫危險的方法 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
+        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
+        <target state="translated">當建構函式呼叫虛擬方法時，可能尚未執行叫用方法之執行個體的建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">請勿呼叫建構函式中的可覆寫方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">請勿呼叫建構函式中的可覆寫方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
+        <source>Do not call {0} on an {1} value</source>
+        <target state="translated">請勿對 {1} 值呼叫 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
+        <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
+        <target state="translated">請勿對 ImmutableCollection 值呼叫 TolmmutableCollection</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
+        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
+        <target state="translated">請勿在接收損毀狀態例外狀況的程式碼中，撰寫一般的 catch 處理常式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
+        <source>Do not catch corrupted state exceptions in general handlers.</source>
+        <target state="translated">請勿在一般處理常式中擷取損毀狀態例外狀況。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
+        <source>Do not catch corrupted state exceptions in general handlers.</source>
+        <target state="translated">請勿在一般處理常式中擷取損毀狀態例外狀況。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
+        <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
+        <target state="translated">建立工作時，請務必使用採用 TaskScheduler 的其中一個多載。預設會在 TaskScheduler.Current 上排程，但如此會造成死結。您可以使用 TaskScheduler.Default 在執行緒集區上進行排程，或明確傳遞 TaskScheduler.Current 以讓目的更加明確。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerMessage">
+        <source>Do not create tasks without passing a TaskScheduler</source>
+        <target state="translated">建立工作時請務必傳遞 TaskScheduler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
+        <source>Do not create tasks without passing a TaskScheduler</source>
+        <target state="translated">建立工作時請務必傳遞 TaskScheduler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidation">
+        <source>Do Not Disable Certificate Validation</source>
+        <target state="translated">請勿停用憑證驗證</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidationDescription">
+        <source>A certificate can help authenticate the identity of the server. Clients should validate the server certificate to ensure requests are sent to the intended server. If the ServerCertificateValidationCallback always returns 'true', any certificate will pass validation.</source>
+        <target state="translated">憑證可協助驗證伺服器的身分識別。用戶端應該驗證伺服器憑證來確保要求會傳送到正確的伺服器。如果 ServerCertificateValidationCallback 一律傳回 'true'，則所有憑證都會通過驗證。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidationMessage">
+        <source>The ServerCertificateValidationCallback is set to a function that accepts any server certificate, by always returning true. Ensure that server certificates are validated to verify the identity of the server receiving requests.</source>
+        <target state="translated">ServerCertificateValidationCallback 已設定為會一律傳回 true 來接受所有伺服器憑證的函式。請確保伺服器憑證經過驗證，以驗證收到要求之伺服器的身分識別。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHttpClientCRLCheckDescription">
+        <source>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</source>
+        <target state="translated">當 CheckCertificateRevocationList 屬性設為 true 時，使用 HttpClient 而不提供平台特定處理常式 (WinHttpHandler 或 CurlHandler 或 HttpClientHandler)，將允許 HttpClient 接受已撤銷的憑證為有效。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderChecking">
+        <source>Do Not Disable HTTP Header Checking</source>
+        <target state="translated">請勿停用 HTTP 標頭檢查</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderCheckingDescription">
+        <source>HTTP header checking enables encoding of the carriage return and newline characters, \r and \n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.</source>
+        <target state="translated">利用 HTTP 標頭檢查可編碼回應標頭中所發現的歸位字元與換行字元 (\r 與 \n)。此編碼方式有助於避開插入式攻擊，這類攻擊會惡意探索應用程式是否會回應標頭所包含的不受信任資料。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderCheckingMessage">
+        <source>Do not disable HTTP header checking</source>
+        <target state="translated">請勿停用 HTTP 標頭檢查</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidation">
+        <source>Do Not Disable Request Validation</source>
+        <target state="translated">請勿停用要求驗證</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidationDescription">
+        <source>Request validation is a feature in ASP.NET that examines HTTP requests and determines whether they contain potentially dangerous content. This check adds protection from markup or code in the URL query string, cookies, or posted form values that might have been added for malicious purposes. So, it is generally desirable and should be left enabled for defense in depth.</source>
+        <target state="translated">要求驗證是 ASP.NET 中的功能，其會檢查 HTTP 要求，並會決定其是否包含具潛在危險性的內容。這項檢查對標記或程式碼的 URL 查詢字串、Cookie 或因惡意目的而可能新增的張貼表單值，提供更佳的安全性。因此，一般最好能使用，且應持續啟用以達到全面性防禦。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidationMessage">
+        <source>{0} has request validation disabled</source>
+        <target state="translated">{0} 已停用要求驗證</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCrypto">
+        <source>Do Not Disable SChannel Use of Strong Crypto</source>
+        <target state="translated">請勿停用 SChannel 使用強式加密</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCryptoDescription">
+        <source>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</source>
+        <target state="translated">自 .NET Framework 4.6 起，即建議 System.Net.ServicePointManager 及 System.Net.Security.SslStream 類別使用新的通訊協定。舊通訊協定包含通訊協定弱點，已不予支援。將 Switch.System.Net.DontEnableSchUseStrongCrypto 設定為 true 將會使用舊的弱式密碼編譯檢查，並會選擇退出通訊協定移轉。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
+        <source>{0} disables TLS 1.2 and enables SSLv3</source>
+        <target state="translated">{0} 停用 TLS 1.2 並啟用 SSLv3</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">
+        <source>Do not set Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols to true.  Setting this switch limits Windows Communication Framework (WCF) to using Transport Layer Security (TLS) 1.0, which is insecure and obsolete.</source>
+        <target state="translated">不要將 Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols 設定為 true。設定此參數會限制 Windows Communication Framework (WCF) 使用不安全且已淘汰的傳輸層安全性 (TLS) 1.0。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsTitle">
+        <source>Do not disable ServicePointManagerSecurityProtocols</source>
+        <target state="translated">不要停用 ServicePointManagerSecurityProtocols</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificate">
+        <source>Do not hard-code certificate</source>
+        <target state="translated">不要硬式編碼憑證</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificateDescription">
+        <source>Hard-coded certificates in source code are vulnerable to being exploited.</source>
+        <target state="translated">原始程式碼中的硬式編碼憑證容易受到攻擊。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificateMessage">
+        <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</source>
+        <target state="translated">發現潛在的安全性弱點，方法 '{1}' 中的 '{0}' 可能受來自方法 '{3}' 中 '{2}' 由硬式編碼的憑證所感染</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKey">
+        <source>Do not hard-code encryption key</source>
+        <target state="translated">不要硬式編碼加密金鑰</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKeyDescription">
+        <source>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</source>
+        <target state="translated">SymmetricAlgorithm 的 .Key 屬性，或方法的 rgbKey 參數不應為硬式編碼值。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKeyMessage">
+        <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</source>
+        <target state="translated">發現潛在的安全性弱點，方法 '{1}' 中的 '{0}' 可能受來自方法 '{3}' 中 '{2}' 由硬式編碼的金鑰所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInstallRootCertDescription">
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="translated">根據預設，信任的根憑證授權單位的憑證存放區，設定有一組符合 Microsoft 根憑證計劃需求的公開 CA。因為所有信任的根 CA，都可以為任何所有發出憑證，所以攻擊者可以挑選一個您自行安裝的弱式 CA 或強迫式 CA，發動攻擊 – 而只要一個弱式、惡意或強迫式 CA，就會侵害整個系統的安全性。而且，這些攻擊還很可能輕易地就被忽略，而讓事情變得更糟。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
+        <source>An object is said to have a weak identity when it can be directly accessed across application domain boundaries. A thread that tries to acquire a lock on an object that has a weak identity can be blocked by a second thread in a different application domain that has a lock on the same object.</source>
+        <target state="translated">若可以跨應用程式定義域界限直接存取某個物件，該物件即為弱式識別。嘗試取得弱式識別物件的鎖定之執行緒，有可能會被具有相同物件鎖定之不同應用程式定義域中的第二個執行緒封鎖。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityMessage">
+        <source>Do not lock on objects with weak identity</source>
+        <target state="translated">請勿鎖定弱式識別的物件</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityTitle">
+        <source>Do not lock on objects with weak identity</source>
+        <target state="translated">請勿鎖定弱式識別的物件</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersDescription">
+        <source>A method passes a string literal as a parameter to a constructor or method in the .NET Framework class library and that string should be localizable. To fix a violation of this rule, replace the string literal with a string retrieved through an instance of the ResourceManager class.</source>
+        <target state="translated">方法會將字串常值以參數方式傳遞到 .NET Framework 類別庫中的建構函式或方法，且該字串應當地語系化。若要修正此規則的違規，請以透過 ResourceManager 類別的執行個體所擷取的字串，取代字串常值。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersMessage">
+        <source>Method '{0}' passes a literal string as parameter '{1}' of a call to '{2}'. Retrieve the following string(s) from a resource table instead: "{3}".</source>
+        <target state="translated">方法 '{0}' 在呼叫 '{2}' 時傳遞了常值字串做為參數 '{1}'。請改為從資源表格擷取下列字串: "{3}"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersTitle">
+        <source>Do not pass literals as localized parameters</source>
+        <target state="translated">不要將常值當做已當地語系化的參數傳遞</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesDescription">
+        <source>An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.</source>
+        <target state="translated">明確度不足或由執行階段所保留的例外狀況類型，一律不應由使用者程式碼引發。這會讓原始錯誤的偵測與偵錯更加困難。如果可能會擲回此例外狀況執行個體，請使用其他例外狀況類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
+        <source>Exception type {0} is reserved by the runtime.</source>
+        <target state="translated">例外狀況類型 {0} 由執行階段所保留。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
+        <source>Exception type {0} is not sufficiently specific.</source>
+        <target state="translated">例外狀況類型 {0} 不夠明確。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
+        <source>Do not raise reserved exception types</source>
+        <target state="translated">請勿引發保留的例外狀況類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClass">
+        <source>Do Not Refer Self In Serializable Class</source>
+        <target state="translated">請勿在可序列化類別中參考自己</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClassDescription">
+        <source>This can allow an attacker to DOS or exhaust the memory of the process.</source>
+        <target state="translated">這可能會允許攻擊者發動 DOS 攻擊，或耗盡處理序的記憶體。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClassMessage">
+        <source>{0} participates in a potential reference cycle</source>
+        <target state="translated">{0} 參與了可能的參照循環</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFields">
+        <source>Do Not Serialize Types With Pointer Fields</source>
+        <target state="translated">請勿將類型序列化為指標欄位</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFieldsDescription">
+        <source>Pointers are not "type safe" in the sense that you cannot guarantee the correctness of the memory they point at. So, serializing types with pointer fields is dangerous, as it may allow an attacker to control the pointer.</source>
+        <target state="translated">指標並非「安全類型」意味著您無法保證其所指向的記憶體是否正確。因此，指標欄位若為序列化類型很危險，因為如此可能會讓攻擊者能控制指標。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
+        <source>Pointer field {0} on serializable type.</source>
+        <target state="translated">可序列化類型上的指標欄位 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSAS">
+        <source>Do Not Use Account Shared Access Signature</source>
+        <target state="translated">不要使用帳戶共用存取簽章</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSASDescription">
+        <source>Shared Access Signatures(SAS) are a vital part of the security model for any application using Azure Storage, they should provide limited and safe permissions to your storage account to clients that don't have the account key. All of the operations available via a service SAS are also available via an account SAS, that is, account SAS is too powerful. So it is recommended to use Service SAS to delegate access more carefully.</source>
+        <target state="translated">共用存取簽章 (SAS) 對於使用 Azure 儲存體的任何應用程式而言，都是資訊安全模型至關重要的一部份，應向不具帳戶金鑰的用戶端提供儲存體帳戶有限且安全的權限。只要是可以透過服務 SAS 提供的作業，就也可以透過帳戶 SAS 提供，這意味著帳戶 SAS 的權限過大。因此建議您使用服務 SAS，更謹慎地委派存取權。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSASMessage">
+        <source>Use Service SAS instead of Account SAS for fine grained access control and container-level access policy</source>
+        <target state="translated">請使用服務 SAS 而非帳戶 SAS，以執行微調的存取控制和容器層級存取原則</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
+        <source>Do Not Use Broken Cryptographic Algorithms</source>
+        <target state="translated">請勿使用損壞的密碼編譯演算法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithmsDescription">
+        <source>An attack making it computationally feasible to break this algorithm exists. This allows attackers to break the cryptographic guarantees it is designed to provide. Depending on the type and application of this cryptographic algorithm, this may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA512, SHA384, or SHA256. Replace digital signature uses with RSA with a key length greater than or equal to 2048-bits, or ECDSA with a key length greater than or equal to 256 bits.</source>
+        <target state="translated">目前出現可用運算方式中斷此演算法的攻擊。如此會讓攻擊者能破壞原設計保證提供的密碼編譯。視此密碼編譯演算法的類型及應用方式之不同，會讓攻擊者能讀取加密的訊息、竄改加密的訊息、偽造數位簽章、竄改雜湊內容，或危害任何以此演算法為基礎的密碼系統。以長度大於或等於 128 位元的金鑰，取代搭配 AES (可接受 AES-256、AES-192 和 AES-128) 演算法的加密。以 SHA512、SHA384 或 SHA256 等 SHA-2 系列中的雜湊函數，取代雜湊用法。以長度大於或等於 2048 位元的金鑰，或金鑰長度大於或等於 256 位元的 ECDSA，取代搭配 RSA 的數位簽章。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithmsMessage">
+        <source>{0} uses a broken cryptographic algorithm {1}</source>
+        <target state="translated">{0} 使用損壞的密碼編譯演算法 {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
+        <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
+        <target state="translated">對於非空白集合，CountAsync() 和 LongCountAsync() 會列舉整個序列，而 AnyAsync() 則會停止於第一個項目或第一個符合條件的項目。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
+        <target state="translated">會在可使用 AnyAsync() 的地方改用 {0}() 來提升效能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
+        <source>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</source>
+        <target state="translated">不要在可使用 AnyAsync() 時使用 CountAsync() 或 LongCountAsync()</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedDescription">
+        <source>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</source>
+        <target state="translated">對於非空白集合，Count() 和 LongCount() 會列舉整個序列，而 Any() 則會停止於第一個項目或第一個符合條件的項目。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
+        <source>{0}() is used where Any() could be used instead to improve performance.</source>
+        <target state="translated">會在可使用 Any() 的地方改用 {0}() 來提升效能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
+        <source>Do not use Count() or LongCount() when Any() can be used</source>
+        <target state="translated">不要在可使用 Any() 時使用 Count() 或 LongCount()</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
+        <source>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</source>
+        <target state="translated">對稱式加密應永遠使用不可重複的初始化向量以防止字典攻擊。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocols">
+        <source>Do Not Use Deprecated Security Protocols</source>
+        <target state="translated">請勿使用已淘汰的安全性通訊協定</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocolsDescription">
+        <source>Using a deprecated security protocol rather than the system default is risky.</source>
+        <target state="translated">使用了已淘汰的安全性通訊協定而非系統預設值，相當具風險。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocolsMessage">
+        <source>Hard-coded use of deprecated security protocol {0}</source>
+        <target state="translated">硬式編碼使用了已淘汰的安全性通訊協定 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSA">
+        <source>Do Not Use Digital Signature Algorithm (DSA)</source>
+        <target state="translated">請勿使用數位簽章演算法 (DSA)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSADescription">
+        <source>DSA is too weak to use.</source>
+        <target state="translated">DSA 太弱，所以無法使用。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSAMessage">
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
+        <target state="translated">非對稱式加密演算法 {0} 是弱式加密。請改為切換成至少有 2048 金鑰大小的 RSA、ECDH 或 ECDSA 演算法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
+        <source>This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.</source>
+        <target state="translated">此集合是可直接編製索引的集合。完成此處的 LINQ 會導致不必要的配置與 CPU 工作。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
+        <target state="translated">請勿在可編製索引的集合上，使用 Enumerable 方法。改為使用直接收集</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
+        <target state="translated">請勿在可編製索引的集合上，使用 Enumerable 方法。改為使用直接收集</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomness">
+        <source>Do not use insecure randomness</source>
+        <target state="translated">不要使用不安全的隨機性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomnessDescription">
+        <source>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</source>
+        <target state="translated">使用密碼編譯弱式虛擬亂數產生器可能會讓攻擊者得以預測將要產生的安全性敏感性值。如果需要無法預測的值，或是要確保未以安全性敏感性方式使用弱式虛擬亂數時，請使用密碼編譯強式亂數產生器。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomnessMessage">
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
+        <target state="translated">{0} 是不安全的亂數產生器。當安全性需要隨機性時，使用密碼編譯亂數產生器</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseMD5">
+        <source>Do not use insecure cryptographic algorithm MD5.</source>
+        <target state="translated">請勿使用不安全的密碼編譯演算法 MD5。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseMD5Description">
+        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
+        <target state="translated">此類型會實作 MD5，此雜湊函數在密碼編譯方面有安全性疑慮。MD5 與 HMACMD5 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
+        <source>Do not use obsolete key derivation function</source>
+        <target state="translated">請勿使用已淘汰的金鑰衍生函數</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithmDescription">
+        <source>Password-based key derivation should use PBKDF2 with SHA-2. Avoid using PasswordDeriveBytes since it generates a PBKDF1 key. Avoid using Rfc2898DeriveBytes.CryptDeriveKey since it doesn't use the iteration count or salt.</source>
+        <target state="translated">以密碼為基礎的金鑰衍生應搭配 SHA-2 使用 PBKDF2。請避免使用 PasswordDeriveBytes，因為這會產生 PBKDF1 金鑰。請避免使用 Rfc2898DeriveBytes.CryptDeriveKey，因為其未使用反覆運算次數或 Salt。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithmMessage">
+        <source>Call to obsolete key derivation function {0}.{1}</source>
+        <target state="translated">呼叫已淘汰的金鑰衍生函數 {0}.{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseSHA1">
+        <source>Do not use insecure cryptographic algorithm SHA1.</source>
+        <target state="translated">請勿使用不安全的密碼編譯演算法 SHA1。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseSHA1Description">
+        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
+        <target state="translated">此類型會實作 SHA1，此雜湊函數在密碼編譯方面有安全性疑慮。SHA-1 與 SHA-0 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
+        <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
+        <target state="translated">更高頻率的週期性活動，會讓 CPU 一直處於忙碌狀態，且會干擾關閉顯示器與硬碟的省電閒置計時器。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesMessage">
+        <source>Do not use timers that prevent power state changes</source>
+        <target state="translated">請勿使用會讓電源狀態無法變更的計時器</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesTitle">
+        <source>Do not use timers that prevent power state changes</source>
+        <target state="translated">請勿使用會讓電源狀態無法變更的計時器</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPath">
+        <source>Do not use unsafe DllImportSearchPath value</source>
+        <target state="translated">不要使用不安全的 DllImportSearchPath 值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPathDescription">
+        <source>There could be a malicious DLL in the default DLL search directories. Or, depending on where your application is run from, there could be a malicious DLL in the application's directory. Use a DllImportSearchPath value that specifies an explicit search path instead. The DllImportSearchPath flags that this rule looks for can be configured in .editorconfig.</source>
+        <target state="translated">預設 DLL 搜尋目錄中可能有惡意的 DLL。或者，視應用程式的執行位置而定，應用程式的目錄中可能有惡意的 DLL。請改用指定明確搜尋路徑的 DllImportSearchPath 值。此規則尋找的 DllImportSearchPath 旗標可在 .editorconfig 中設定。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPathMessage">
+        <source>Use of unsafe DllImportSearchPath value {0}</source>
+        <target state="translated">使用不安全的 DllImportSearchPath 值 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
+        <source>Do Not Use Weak Cryptographic Algorithms</source>
+        <target state="translated">請勿使用弱式密碼編譯演算法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithmsDescription">
+        <source>Cryptographic algorithms degrade over time as attacks become for advances to attacker get access to more computation. Depending on the type and application of this cryptographic algorithm, further degradation of the cryptographic strength of it may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA-2 512, SHA-2 384, or SHA-2 256.</source>
+        <target state="translated">因為攻擊者取得更多的運算存取，讓攻擊升級，以致密碼編譯演算法隨著時間減弱。視此密碼編譯演算法的類型及應用方式之不同，密碼編譯強度日益減弱，會讓攻擊者能讀取加密的訊息、竄改加密的訊息、偽造數位簽章、竄改雜湊內容，或危害任何以此演算法為基礎的密碼系統。以長度大於或等於 128 位元的金鑰，取代搭配 AES (可接受 AES-256、AES-192 和 AES-128) 演算法的加密。以 SHA-2 512、SHA-2 384 或 SHA-2 256 等 SHA-2 系列中的雜湊函數，取代雜湊用途。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithmsMessage">
+        <source>{0} uses a weak cryptographic algorithm {1}</source>
+        <target state="translated">{0} 使用弱式密碼編譯演算法 {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithm">
+        <source>Do Not Use Weak Key Derivation Function Algorithm</source>
+        <target state="translated">不要使用弱式金鑰衍生函數 (Key Derivation Function) 演算法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithmDescription">
+        <source>Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.</source>
+        <target state="translated">Rfc2898DeriveBytes 類別的部分實作使雜湊演算法能在建構函式參數中指定，或在 HashAlgorithm 屬性中覆寫。如果指定雜湊演算法，則其應為 SHA-256 以上 (含)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
+        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
+        <target state="translated">{0} 是以弱式雜湊演算法建立而成。請使用 SHA256、SHA384 或 SHA512 來從密碼建立強式金鑰</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
+        <source>When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).</source>
+        <target state="translated">當從密碼等使用者提供的輸入衍生密碼編譯金鑰時，請使用足夠的反覆項目計數 (至少 100k)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseXslTransform">
+        <source>Do Not Use XslTransform</source>
+        <target state="translated">請勿使用 XslTransform</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseXslTransformMessage">
+        <source>Do not use XslTransform. It does not restrict potentially dangerous external references.</source>
+        <target state="translated">請勿使用 XslTransform。它不會限制可能引發危險的外部參考。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
+        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
+        <target state="translated">完成項必須傳播到整個繼承階層。為確保上述作業，類型必須呼叫其本身 Finalize 方法中的基底類別 Finalize 方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
+        <source>Finalizers should call base class finalizer</source>
+        <target state="translated">完成項應呼叫基底類別完成項</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
+        <source>Finalizers should call base class finalizer</source>
+        <target state="translated">完成項應呼叫基底類別完成項</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardCodedSecurityProtocolMessage">
+        <source>Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.</source>
+        <target state="translated">請避免對 SecurityProtocolType {0} 進行硬式編碼，並改為使用 SecurityProtocolType.SystemDefault 以便作業系統針對要使用的傳輸層安全性通訊協定進行最佳選擇。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardCodedSecurityProtocolTitle">
+        <source>Avoid hardcoding SecurityProtocolType value</source>
+        <target state="translated">請避免對 SecurityProtocolType 值進行硬式編碼</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsDescription">
+        <source>Current Transport Layer Security protocol versions may become deprecated if vulnerabilities are found. Avoid hardcoding SslProtocols values to keep your application secure. Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">若發現弱點，則目前的傳輸層安全性通訊協定版本可能會受到淘汰。請避免硬式編碼 SslProtocols 值來確保應用程式安全。請使用 'None' 讓作業系統選擇版本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsMessage">
+        <source>Avoid hardcoding SslProtocols '{0}' to ensure your application remains secure in the future. Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">請避免硬式編碼 SslProtocols '{0}'，以確保應用程式在未來的安全性。請使用 'None' 讓作業系統選擇版本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsTitle">
+        <source>Avoid hardcoded SslProtocols values</source>
+        <target state="translated">避免硬式編碼 SslProtocols 值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyDescription">
+        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
+        <target state="translated">若要修正此規則違規，請將 GetObjectData 方法設定為可見且可覆寫，並確定所有執行個體欄位都包含在序列化程序中，或是使用 NonSerializedAttribute 屬性明確地標記。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
+        <source>Add an implementation of GetObjectData to type {0}.</source>
+        <target state="translated">將 GetObjectData 的實作加入類型 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
+        <source>Make {0}.GetObjectData virtual and overridable.</source>
+        <target state="translated">請將 {0}.GetObjectData 設定成虛擬和可覆寫。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
+        <target state="translated">增大 {0}.GetObjectData 的存取範圍，讓它對衍生類型而言為可見的。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyTitle">
+        <source>Implement ISerializable correctly</source>
+        <target state="translated">必須正確實作 ISerializable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
+        <source>Implement Serialization constructor</source>
+        <target state="translated">實作序列化建構函式</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsDescription">
+        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
+        <target state="translated">若要修正此規則違規，請實作序列化建構函式。若是密封類別，請將其設定為私人建構函式; 否則，請將其設定為受保護。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
+        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
+        <target state="translated">使用下列簽章將建構函式加入 {0}: 'protected {0}(SerializationInfo info, StreamingContext context)'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
+        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
+        <target state="translated">將 {0} 的序列化建構函式 (sealed 類型) 宣告為 private。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
+        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
+        <target state="translated">將 {0} 的序列化建構函式 (unsealed 類型) 宣告為 protected。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsTitle">
+        <source>Implement serialization constructors</source>
+        <target state="translated">必須實作序列化建構函式</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
+        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
+        <target state="translated">處理序列化事件的方法，沒有正確的簽章、傳回型別或可見度。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的簽章變更，使其不再是泛型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的簽章變更，使其接受 'System.Runtime.Serialization.StreamingContext' 類型的單一參數。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的傳回類型從 {1} 變更成 void (Visual Basic 中為 Sub)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它從 static (Visual Basic 中為 Shared) 變更成執行個體方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的存取範圍變更成 private。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
+        <source>Implement serialization methods correctly</source>
+        <target state="translated">必須正確實作序列化方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
+        <source>A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
+        <target state="translated">參考型別會宣告明確的靜態建構函式。若要修正此規則的違規，請於宣告所有靜態資料時將其初始化，並移除靜態建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeReferenceTypeStaticFieldsInlineTitle">
+        <source>Initialize reference type static fields inline</source>
+        <target state="translated">初始化參考型別靜態欄位內嵌</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeStaticFieldsInlineMessage">
+        <source>Initialize all static fields in '{0}' when those fields are declared and remove the explicit static constructor</source>
+        <target state="translated">在宣告 {0} 中的所有靜態欄位時，將其初始化，並移除明確的靜態建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeValueTypeStaticFieldsInlineDescription">
+        <source>A value type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
+        <target state="translated">實值型別會宣告明確的靜態建構函式。若要修正此規則的違規，請於宣告所有靜態資料時將其初始化，並移除靜態建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeValueTypeStaticFieldsInlineTitle">
+        <source>Initialize value type static fields inline</source>
+        <target state="translated">初始化實值型別靜態欄位內嵌</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
+        <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
+        <target state="translated">已呼叫例外狀況類型為 ArgumentException 或由其衍生的預設 (無參數) 建構函式; 或將不正確的字串引數傳遞到例外狀況類型為 ArgumentException 或由其衍生的參數化建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
+        <source>Method {0} passes parameter name '{1}' as the {2} argument to a {3} constructor. Replace this argument with a descriptive message and pass the parameter name in the correct position.</source>
+        <target state="translated">方法 {0} 會將參數名稱 '{1}' 以 {2} 引數傳遞到 {3} 建構函式。請以描述性訊息取代此引數，並將該參數名稱傳遞到正確的位置。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName">
+        <source>Method {0} passes '{1}' as the {2} argument to a {3} constructor. Replace this argument with one of the method's parameter names. Note that the provided parameter name should have the exact casing as declared on the method.</source>
+        <target state="translated">方法 {0} 會將 '{1}' 以 {2} 引數傳遞到 {3} 建構函式。請以此方法的其中一個參數名稱，取代此引數。請注意，提供的參數名稱大小寫必須和該方法上宣告的大小寫完全一樣。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
+        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
+        <target state="translated">請呼叫包含 message 及 (或) paramName 參數的 {0} 建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
+        <source>Instantiate argument exceptions correctly</source>
+        <target state="translated">正確地將引數例外狀況具現化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
+        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 將未受信任的資料還原序列化，方法 '{0}' 就不安全。請確認將 JavaScriptSerializer 初始化時，未指定 JavaScriptTypeResolver，或使用 JavaScriptTypeResolver 來限制已還原序列化物件圖中的物件類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
+        <source>Ensure JavaScriptSerializer is not initialized with SimpleTypeResolver before deserializing</source>
+        <target state="translated">請確認 JavaScriptSerializer 在還原序列化之前未以 SimpleTypeResolver 初始化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
+        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 將未受信任的資料還原序列化，方法 '{0}' 就不安全。將 JavaScriptSerializer 初始化時，請不要指定 JavaScriptTypeResolver，或使用 JavaScriptTypeResolver 來限制已還原序列化物件圖中的物件類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
+        <source>Do not deserialize with JavaScriptSerializer using a SimpleTypeResolver</source>
+        <target state="translated">無法以使用了 SimpleTypeResolver 的 JavaScriptSerializer 還原序列化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSerializerMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">將不信任的輸入還原序列化時，允許將任意類型還原序列化是不安全的。當使用還原序列化 JsonSerializer 時，請使用 TypeNameHandling.None，或對 None 以外的值使用 SerializationBinder 來限制還原序列化類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSerializerTitle">
+        <source>Do not deserialize with JsonSerializer using an insecure configuration</source>
+        <target state="translated">不要使用不安全的組態以 JsonSerializer 還原序列化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSettingsMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">將不信任的輸入還原序列化時，允許將任意類型還原序列化是不安全的。當使用 JsonSerializerSettings 時，請使用 TypeNameHandling.None，或對 None 以外的值使用 SerializationBinder 來限制還原序列化類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSettingsTitle">
+        <source>Do not use insecure JsonSerializerSettings</source>
+        <target state="translated">請勿使用不安全的 JsonSerializerSettings</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSerializerMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">將不信任的輸入還原序列化時，允許將任意類型還原序列化是不安全的。當使用還原序列化 JsonSerializer 時，請使用 TypeNameHandling.None，或對 None 以外的值使用 SerializationBinder 來限制還原序列化類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSerializerTitle">
+        <source>Ensure that JsonSerializer has a secure configuration when deserializing</source>
+        <target state="translated">還原序列化時，請確認 JsonSerializer 有安全的組態</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSettingsMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, ensure TypeNameHandling.None is specified, or for values other than None, ensure a SerializationBinder is specified to restrict deserialized types.</source>
+        <target state="translated">將不信任的輸入還原序列化時，允許將任意類型還原序列化是不安全的。當使用 JsonSerializerSettings 時，請確保指定 TypeNameHandling.None，或對 None 以外的值確保指定 SerializationBinder 來限制還原序列化類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSettingsTitle">
+        <source>Ensure that JsonSerializerSettings are secure</source>
+        <target state="translated">確保 JsonSerializerSettings 是安全的</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingDescription">
+        <source>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.  If you need to instead detect Json.NET deserialization when a SerializationBinder isn't specified, then disable rule CA2326, and enable rules CA2327, CA2328, CA2329, and CA2330.</source>
+        <target state="translated">使用非 None 的 TypeNameHandling 值時，將 JSON 還原序列化可能不安全。若您需要在未指定 SerializationBinder 時，偵測 Json.NET 還原序列化，請停用規則 CA2326，並啟用規則 CA2327、CA2328、CA2329 及 CA2330。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingMessage">
+        <source>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.</source>
+        <target state="translated">使用非 None 的 TypeNameHandling 值時，將 JSON 還原序列化可能不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingTitle">
+        <source>Do not use TypeNameHandling values other than None</source>
+        <target state="translated">請勿使用非 None 的 TypeNameHandling 值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LosFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">將不受信任的資料還原序列化時，方法 '{0}' 不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LosFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer LosFormatter</source>
+        <target state="translated">請勿使用不安全的還原序列化程式 LosFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsDescription">
+        <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
+        <target state="translated">非可序列化類型的執行個體欄位，被宣告為可序列化的類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsMessage">
+        <source>Field {0} is a member of type {1} which is serializable but is of type {2} which is not serializable</source>
+        <target state="translated">欄位 {0} 是可序列化類型 {1} 的成員，但其所屬類型 {2} 則不可序列化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsTitle">
+        <source>Mark all non-serializable fields</source>
+        <target state="translated">必須標記所有不可序列化的欄位</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageDescription">
+        <source>The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.</source>
+        <target state="translated">NeutralResourcesLanguage 屬性會通知 ResourceManager 用於顯示組件之中性文化特性 (Culture) 資源的語言。如此可改善載入第一項源的查閱效能，且可減少您的工作集。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageMessage">
+        <source>Mark assemblies with NeutralResourcesLanguageAttribute</source>
+        <target state="translated">將組件標記為 NeutralResourcesLanguageAttribute</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageTitle">
+        <source>Mark assemblies with NeutralResourcesLanguageAttribute</source>
+        <target state="translated">將組件標記為 NeutralResourcesLanguageAttribute</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsDescription">
+        <source>The Boolean data type has multiple representations in unmanaged code.</source>
+        <target state="translated">布林值資料類型在非受控的程式碼中有多種表示法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsMessageDefault">
+        <source>Add the MarshalAsAttribute to parameter {0} of P/Invoke {1}. If the corresponding unmanaged parameter is a 4-byte Win32 'BOOL', use [MarshalAs(UnmanagedType.Bool)]. For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</source>
+        <target state="translated">將 MarshalAsAttribute 新增至 P/Invoke {1} 的參數 {0}。若相對應的非受控參數為 4 位元組的 Win32 'BOOL'，請使用 [MarshalAs(UnmanagedType.Bool)]。若為 1 位元組的 C++ 'bool'，請使用 MarshalAs(UnmanagedType.U1)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsMessageReturn">
+        <source>Add the MarshalAsAttribute to the return type of P/Invoke {0}. If the corresponding unmanaged return type is a 4-byte Win32 'BOOL', use MarshalAs(UnmanagedType.Bool). For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</source>
+        <target state="translated">將 MarshalAsAttribute 新增至 P/Invoke {0} 的傳回型別。若相對應的非受控傳回型別為 4 位元組的 Win32 'BOOL'，請使用 MarshalAs(UnmanagedType.Bool)。若為 1 位元組的 C++ 'bool'，請使用 MarshalAs(UnmanagedType.U1)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsTitle">
+        <source>Mark boolean PInvoke arguments with MarshalAs</source>
+        <target state="translated">將布林值 PInvoke 引數標記為 MarshalAs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableDescription">
+        <source>To be recognized by the common language runtime as serializable, types must be marked by using the SerializableAttribute attribute even when the type uses a custom serialization routine through implementation of the ISerializable interface.</source>
+        <target state="translated">若要通用語言執行階段將其辨識為可序列化，即使類型透過實作 ISerializable 介面使用自訂序列化常式，也必須使用 SerializableAttribute 屬性來標示類型。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableMessage">
+        <source>Add [Serializable] to {0} as this type implements ISerializable</source>
+        <target state="translated">將 [Serializable] 新增至 {0}，因為這個類型會實作 ISerializable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableTitle">
+        <source>Mark ISerializable types with serializable</source>
+        <target state="translated">將 ISerializable 類型標示為可序列化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeDisableHttpClientCRLCheck">
+        <source>Ensure HttpClient certificate revocation list check is not disabled</source>
+        <target state="translated">確認未停用 HttpClient 憑證撤銷清單檢查</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeDisableHttpClientCRLCheckMessage">
+        <source>HttpClient may be created without enabling CheckCertificateRevocationList</source>
+        <target state="translated">可在不啟用 CheckCertificateRevocationList 的情況下建立 HttpClient</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeInstallRootCert">
+        <source>Ensure Certificates Are Not Added To Root Store</source>
+        <target state="translated">請確認憑證不會新增至根存放區</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeInstallRootCertMessage">
+        <source>Adding certificates to the operating system's trusted root certificates is insecure. Ensure that the target store is not root store.</source>
+        <target state="translated">將憑證新增至作業系統的受信任根憑證並不安全。請確認目標存放區並非根存放區。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
+        <source>Use CreateEncryptor with the default IV </source>
+        <target state="translated">使用具有預設 IV 的 CreateEncryptor </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
+        <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
+        <target state="translated">加密中使用了可能可重複的非預設初始化向量。請確認使用預設。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseSecureCookiesASPNetCore">
+        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
+        <target state="translated">請確認在 ASP.Net Core 中使用安全 Cookie</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
+        <source>Ensure that CookieOptions.Secure = true when setting a cookie</source>
+        <target state="translated">請確認設定 Cookie 時，CookieOptions.Secure = true</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseWeakKDFInsufficientIterationCount">
+        <source>Ensure Sufficient Iteration Count When Using Weak Key Derivation Function</source>
+        <target state="translated">使用弱式金鑰衍生函數 (Key Derivation Function) 時，請確保反覆項目計量足夠</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseWeakKDFInsufficientIterationCountMessage">
+        <source>Ensure that the iteration count is at least {0} when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
+        <target state="translated">當從密碼衍生密碼編譯金鑰時，請確保反覆項目計數至少為 {0}。根據預設，Rfc2898DeriveByte 的 IterationCount 只有 1000</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttribute">
+        <source>Miss HttpVerb attribute for action methods</source>
+        <target state="translated">缺少動作方法的 HttpVerb 屬性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttributeDescription">
+        <source>All the methods that create, edit, delete, or otherwise modify data do so in the [HttpPost] overload of the method, which needs to be protected with the anti forgery attribute from request forgery. Performing a GET operation should be a safe operation that has no side effects and doesn't modify your persisted data.</source>
+        <target state="translated">建立、編輯、刪除或修改資料的所有方法，都會在方法的 [HttpPost] 多載中進行，其需要由反偽造屬性保護免受偽造要求侵害。執行 GET 作業是安全的操作，沒有任何副作用且不會修改保存的資料。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttributeMessage">
+        <source>Action method {0} needs to specify the Http request kind explictly</source>
+        <target state="translated">動作方法 {0} 必須明確指定 Http 要求類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
+        <source>Ensure NetDataContractSerializer.Binder is set before deserializing</source>
+        <target state="translated">還原序列化之前，請務必先設定 NetDataContractSerializer.Binder</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
+        <source>Do not deserialize without first setting NetDataContractSerializer.Binder</source>
+        <target state="translated">未先設定 NetDataContractSerializer.Binder 之前，請勿還原序列化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedDescription">
+        <source>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect NetDataContractSerializer deserialization without a SerializationBinder set, then disable rule CA2310, and enable rules CA2311 and CA2312.</source>
+        <target state="translated">將不受信任的資料還原序列化時，方法 '{0}' 不安全。如果您需要改為偵測 NetDataContractSerializer 還原序列化，而不想要設定 SerializationBinder，則請停用規則 CA2310，並啟用規則 CA2311 和 CA2312。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">將不受信任的資料還原序列化時，方法 '{0}' 不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedTitle">
+        <source>Do not use insecure deserializer NetDataContractSerializer</source>
+        <target state="translated">請勿使用不安全的還原序列化程式 NetDataContractSerializer</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseDescription">
+        <source>Strings should be normalized to uppercase. A small group of characters cannot make a round trip when they are converted to lowercase. To make a round trip means to convert the characters from one locale to another locale that represents character data differently, and then to accurately retrieve the original characters from the converted characters.</source>
+        <target state="translated">字串應標準化為大寫。如果有一小組的字元轉換為小寫，這些字元就無法再轉換回來。進行來回行程即表示會將字元從某個地區設定轉換成其他地區設定 (以不同的方式呈現字元資料)，然後精確地擷取來自轉換字元的原始字元。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
+        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
+        <target state="translated">在方法 '{0}' 中，以 '{2}' 取代對 '{1}' 的呼叫。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseTitle">
+        <source>Normalize strings to uppercase</source>
+        <target state="translated">將字串標準化為大寫</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ObjectStateFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">將不受信任的資料還原序列化時，方法 '{0}' 不安全。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ObjectStateFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer ObjectStateFormatter</source>
+        <target state="translated">請勿使用不安全的還原序列化程式 ObjectStateFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
+        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
+        <target state="translated">此規則會評估 P/Invoke 每個參數的大小以及傳回值，並會在參數於 32 位元和 64 位元作業系統上封送處理成非受控程式碼時，驗證其大小是否正確。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
+        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
+        <target state="translated">因為其宣告於您的程式碼中，所以 P/Invoke {1} 的參數 {0} 在 {3} 平台上將會是 {2} 個位元組寬。但這是錯誤的，因為此 API 的實際原生宣告指出，其在 {3} 平台上應為 {4} 個位元組寬。請參閱 MSDN Platform SDK 文件中的說明，決定應使用何種資料類型來取代 {5}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
+        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
+        <target state="translated">因為其宣告於您的程式碼中，因此 P/Invoke {0} 的傳回型別在 {2} 平台上將會是 {1} 個位元組寬。但這是錯誤的，因為此 API 的實際原生宣告指出，其在 {2} 平台上應為 {3} 個位元組寬。請參閱 MSDN Platform SDK 文件中的說明，決定應使用何種資料類型來取代 {4}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
+        <source>PInvoke declarations should be portable</source>
+        <target state="translated">PInvoke 宣告應可攜</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleDescription">
+        <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
+        <target state="translated">公用類型中的公用方法或受保護方法，具有 System.Runtime.InteropServices.DllImportAttribute 屬性 (也由 Visual Basic 中的 Declare 關鍵字實作)。這類方法不應公開。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleMessage">
+        <source>P/Invoke method '{0}' should not be visible</source>
+        <target state="translated">不應看得見 P/Invokes 方法 '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleTitle">
+        <source>P/Invokes should not be visible</source>
+        <target state="translated">不應看得見 P/Invoke</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
+        <source>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</source>
+        <target state="translated">傳遞給 System.String.Format 的格式化引數，並未包含與每個物件引數相對應的格式項目，反之亦然。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
+        <source>Provide correct arguments to formatting methods</source>
+        <target state="translated">為格式化方法提供正確的引數</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
+        <source>Provide correct arguments to formatting methods</source>
+        <target state="translated">為格式化方法提供正確的引數</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
+        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
+        <target state="translated">類型的欄位已使用 System.Runtime.Serialization.OptionalFieldAttribute 屬性進行標記，但該類型不提供還原序列化事件處理方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
+        <target state="translated">將 'private void OnDeserialized(StreamingContext)' 方法加入類型 {0}，並為它加上 System.Runtime.Serialization.OnDeserializedAttribute 屬性。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
+        <target state="translated">將 'private void OnDeserializing(StreamingContext)' 方法加入類型 {0}，並為它加上 System.Runtime.Serialization.OnDeserializingAttribute 屬性。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
+        <source>Provide deserialization methods for optional fields</source>
+        <target state="translated">必須為選擇性欄位提供還原序列化方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveRedundantCall">
+        <source>Remove redundant call</source>
+        <target state="translated">移除冗餘的呼叫</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsDescription">
+        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
+        <target state="translated">會再次擲回例外狀況，並在 throw 陳述式中明確指定該例外狀況。如果在 throw 陳述式中指定例外狀況，而再次擲回了例外狀況，則方法清單會呼叫之前擲回例外狀況的原始方法，而目前的方法則會遺失。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsMessage">
+        <source>Rethrow to preserve stack details</source>
+        <target state="translated">重新擲回以保存堆疊詳細資料</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsTitle">
+        <source>Rethrow to preserve stack details</source>
+        <target state="translated">重新擲回以保存堆疊詳細資料</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
+        <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入 DLL 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
+        <source>Review code for DLL injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有 DLL 插入弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
+        <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入檔案路徑弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
+        <source>Review code for file path injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入檔案路徑弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForInformationDisclosureVulnerabilitiesMessage">
+        <source>Potential information disclosure vulnerability was found where '{0}' in method '{1}' may contain unintended information from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的資訊洩漏弱點，方法 '{1}' 中的 '{0}' 可能包含來自方法 '{3}' 中 '{2}' 誤用的資訊</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForInformationDisclosureVulnerabilitiesTitle">
+        <source>Review code for information disclosure vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有資訊洩漏弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
+        <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入 LDAP 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
+        <source>Review code for LDAP injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入 LDAP 弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
+        <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的開啟重新導向弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
+        <source>Review code for open redirect vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有開啟重新導向弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
+        <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入處理序命令弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
+        <source>Review code for process command injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入處理序命令弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
+        <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入 regex 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
+        <source>Review code for regex injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入 regex 弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
+        <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入 SQL 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
+        <source>Review code for SQL injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入 SQL 弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
+        <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入 XAML 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
+        <source>Review code for XAML injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入 XAML 弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
+        <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入 XML 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
+        <source>Review code for XML injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入 XML 弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
+        <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的插入 XPath 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
+        <source>Review code for XPath injection vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有插入 XPath 弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
+        <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">發現潛在的跨網站指令碼 (XSS) 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">
+        <source>Review code for XSS vulnerabilities</source>
+        <target state="translated">檢閱程式碼以了解是否有 XSS 弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesDescription">
+        <source>SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.</source>
+        <target state="translated">直接利用使用者輸入的 SQL 查詢，有可能會受到插入 SQL 的攻擊。請檢閱此 SQL 查詢是否有潛在的弱點，並請考慮使用參數化的 SQL 查詢。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
+        <target state="translated">檢閱查詢字串是否已傳遞到 '{1}' 中的 '{0}'，接受所有使用者輸入。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
+        <source>Review SQL queries for security vulnerabilities</source>
+        <target state="translated">必須檢閱 SQL 查詢中是否有安全性弱點</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookie">
+        <source>Set HttpOnly to true for HttpCookie</source>
+        <target state="translated">針對 HttpCookie 將 HttpOnly 設為 true</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookieDescription">
+        <source>As a defense in depth measure, ensure security sensitive HTTP cookies are marked as HttpOnly. This indicates web browsers should disallow scripts from accessing the cookies. Injected malicious scripts are a common way of stealing cookies.</source>
+        <target state="translated">請確保安全性敏感性 HTTP Cookie 已標記為 HttpOnly，以防止全面性的測量。這代表 Web 瀏覽器應禁止指令碼存取 Cookie。插入的惡意指令碼是竊取 Cookie 的常見方式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookieMessage">
+        <source>HttpCookie.HttpOnly is set to false or not set at all when using an HttpCookie. Ensure security sensitive cookies are marked as HttpOnly to prevent malicious scripts from stealing the cookies</source>
+        <target state="translated">使用 HttpCookie 時，HttpCookie.HttpOnly 設為 false 或完全未設定。請確保安全性敏感性 Cookie 已標記為 HttpOnly，以避免惡意指令碼竊取 Cookie。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKey">
+        <source>Set ViewStateUserKey For Classes Derived From Page</source>
+        <target state="translated">設定頁面衍生類別的 ViewStateUserKey</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKeyDescription">
+        <source>Setting the ViewStateUserKey property can help you prevent attacks on your application by allowing you to assign an identifier to the view-state variable for individual users so that they cannot use the variable to generate an attack. Otherwise, there will be cross-site request forgery vulnerabilities.</source>
+        <target state="translated">設定 ViewStateUserKey 屬性可藉由讓您能為各個使用者的檢視狀態變數，指派識別碼，使其無法使用變數來產生攻擊，因而有助於避免應用程式受到攻擊。否則，將會出現跨網站偽造要求弱點。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKeyMessage">
+        <source>The class {0} derived from System.Web.UI.Page does not set the ViewStateUserKey property in the OnInit method or Page_Init method</source>
+        <target state="translated">衍生自 System.Web.UI.Page 的 {0} 類別未在 OnInit 方法或 Page_Init 方法中設定 ViewStateUserKey 屬性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoDescription">
+        <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="translated">方法或建構函式會呼叫其多載接受 System.Globalization.CultureInfo 參數的成員，但方法或建構函式不會呼叫接受 CultureInfo 參數的多載。未提供 CultureInfo 或 System.IFormatProvider 物件時，多載成員提供的預設值可能無法在所有地區設定中呈現您想要的效果。如果要對使用者顯示此結果，請將 'CultureInfo.CurrentCulture' 指定為 'CultureInfo' 參數。否則，若將由軟體儲存結果及進行存取 (例如，要保存到磁碟或資料庫時)，請指定 'CultureInfo.InvariantCulture'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoMessage">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' 的行為可能會因目前使用者的地區設定而異。以呼叫 '{2}' 來取代 '{1}' 中的此呼叫。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoTitle">
+        <source>Specify CultureInfo</source>
+        <target state="translated">指定 CultureInfo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderDescription">
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
+        <target state="translated">方法或建構函式會呼叫一或多個其多載接受 System.IFormatProvider 參數的成員，但方法或建構函式不會呼叫接受 IFormatProvider 參數的多載。未提供 System.Globalization.CultureInfo 或 IFormatProvider 物件時，多載成員提供的預設值可能無法在所有地區設定中呈現您想要的效果。如果結果將取決於輸入來源/對使用者顯示的輸出，請將 'CultureInfo.CurrentCulture' 指定為 'IFormatProvider'。否則，若將由軟體儲存結果及進行存取 (例如，從磁碟/資料庫載入時，以及要保存到磁碟/資料庫時)，請指定 'CultureInfo.InvariantCulture'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' 的行為可能會因目前使用者的地區設定而異。以呼叫 '{2}' 來取代 '{1}' 中的此呼叫。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternateString">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' 的行為可能會因目前使用者的地區設定而異。以呼叫 '{2}' 來取代 '{1}' 中的此呼叫。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageUICulture">
+        <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
+        <target state="translated">'{0}' 會將 '{1}' 以 'IFormatProvider' 參數的形式傳遞給 '{2}'。此屬性會傳回不適合格式化方法的文化特性 (Culture)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageUICultureString">
+        <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
+        <target state="translated">'{0}' 會將 '{1}' 以 'IFormatProvider' 參數的形式傳遞給 '{2}'。此屬性會傳回不適合格式化方法的文化特性 (Culture)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderTitle">
+        <source>Specify IFormatProvider</source>
+        <target state="translated">指定 IFormatProvider</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsDescription">
+        <source>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</source>
+        <target state="translated">平台叫用成員允許部分信任的呼叫端、具有字串參數，且不會明確地封送處理字串。如此可能會造成資訊安全漏洞。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
+        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
+        <target state="translated">為降低安全性風險，請將欄位 {0} 封送處理為 Unicode，方法是將 {1} 上的 StructLayout.CharSet 設為 CharSet.Unicode，或將該欄位明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，請使用 BestFitMapping 屬性關閉自動調整對應，此外為增加安全性，請確認已開啟 ThrowOnUnmappableChar。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
+        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
+        <target state="translated">為降低安全性風險，請將欄位 {0} 封送處理為 Unicode，方法是將 {1} 上的 StructLayout.CharSet 設為 CharSet.Unicode，或將該欄位明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可明確地指定 MarshalAs 並使用 BestFitMapping 屬性關閉自動調整對應，此外為增加安全性，請將 ThrowOnUnmappableChar 開啟。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
+        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
+        <target state="translated">為降低安全性風險，請將參數 {0} 封送處理為 Unicode，方法是將 DllImport.CharSet 設為 CharSet.Unicode，或將該參數明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可以設定 BestFitMapping=false; 此外為增加安全性，也可設定 ThrowOnUnmappableChar=true。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
+        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
+        <target state="translated">為降低安全性風險，請將參數 {0} 封送處理為 Unicode，方法是將 DllImport.CharSet 設為 CharSet.Unicode，或將該參數明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可明確地指定 MarshalAs 並設定 BestFitMapping=false; 此外為增加安全性，也可設定 ThrowOnUnmappableChar=true。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
+        <source>Specify marshaling for P/Invoke string arguments</source>
+        <target state="translated">指定 P/Invoke 字串引數的封送處理</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonDescription">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="translated">字串比較作業使用不會設定 StringComparison 參數的方法多載。如果要對使用者顯示此結果 (例如，排序項目清單以顯示於清單方塊中)，請將 'StringComparison.CurrentCulture' 或 'StringComparison.CurrentCultureIgnoreCase' 指定為 'StringComparison' 參數。如果要比較不區分大小寫的識別項 (例如檔案路徑、環境變數或登錄機碼與值)，請指定 'StringComparison.OrdinalIgnoreCase'。否則，若為比較區分大小寫的識別項，請指定 'StringComparison.Ordinal'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonMessage">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' 的行為可能會因目前使用者的地區設定而異。以呼叫 '{2}' 來取代 '{1}' 中的此呼叫。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonTitle">
+        <source>Specify StringComparison</source>
+        <target state="translated">指定 StringComparison</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
+        <source>Comparing strings by using the String.Length property or the String.IsNullOrEmpty method is significantly faster than using Equals.</source>
+        <target state="translated">使用 String.Length 屬性或 String.IsNullOrEmpty 方法來比較字串的速度，大幅快過於使用 Equals。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
+        <target state="translated">請使用 'string.Length' 屬性或 'string.IsNullOrEmpty' 方法測試空白字串，而非使用相等檢查。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
+        <source>Test for empty strings using string length</source>
+        <target state="translated">使用字串長度測試空白字串</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyDescription">
+        <source>This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.</source>
+        <target state="translated">此運算式會對 Single.Nan 或 Double.Nan 測試值。使用 Single.IsNan(Single) 或 Double.IsNan(Double) 來測試該值。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyMessage">
+        <source>Test for NaN correctly</source>
+        <target state="translated">正確地測試 NaN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyTitle">
+        <source>Test for NaN correctly</source>
+        <target state="translated">正確地測試 NaN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArrayEmpty">
+        <source>Use Array.Empty</source>
+        <target state="translated">使用 Array.Empty</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryToken">
+        <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
+        <target state="translated">使用 ASP.NET Core MVC 控制器中的 antiforgery 權杖</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryTokenDescription">
+        <source>Handling a POST, PUT, PATCH, or DELETE request without validating an antiforgery token may be vulnerable to cross-site request forgery attacks. A cross-site request forgery attack can send malicious requests from an authenticated user to your ASP.NET Core MVC controller.</source>
+        <target state="translated">在不驗證 antiforgery 權杖的情況下處理 POST、PUT、PATCH 或 DELETE 要求，可能會容易受到跨站台偽造要求攻擊。跨站台偽造要求攻擊可將惡意要求從已驗證的使用者傳送到 ASP.NET Core MVC 控制器。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryTokenMessage">
+        <source>Method {0} handles a {1} request without performing antiforgery token validation. You also need to ensure that your HTML form sends an antiforgery token.</source>
+        <target state="translated">方法 {0} 會在不驗證 antiforgery 權杖的情況下處理 {1} 要求。您也必須確保 HTML 表單傳送 antiforgery 權杖。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicy">
+        <source>Use Container Level Access Policy</source>
+        <target state="translated">使用容器層級存取原則</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicyDescription">
+        <source>No access policy identifier is specified, making tokens non-revocable.</source>
+        <target state="translated">因為未指定任何存取原則識別碼，所以使權杖無法撤銷。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicyMessage">
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
+        <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請於建立 SAS 時使用容器層級存取原則</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
+        <source>Use DefaultDllImportSearchPaths attribute for P/Invokes</source>
+        <target state="translated">針對 P/Invoke 使用 DefaultDllImportSearchPaths 屬性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttributeDescription">
+        <source>By default, P/Invokes using DllImportAttribute probe a number of directories, including the current working directory for the library to load. This can be a security issue for certain applications, leading to DLL hijacking.</source>
+        <target state="translated">根據預設，使用 DllImportAttribute 的 P/Invoke 會探查許多目錄，包括目前正在運作的目錄以供程式庫載入。這可能成為部分應用程式的安全性問題，導致 DLL 劫持。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
+        <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
+        <target state="translated">方法 {0} 未針對 P/Invoke 使用 DefaultDllImportSearchPaths 屬性。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIndexer">
+        <source>Use indexer</source>
+        <target state="translated">使用索引子</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
+        <source>An operating system invoke method is defined and a method that has the equivalent functionality is located in the .NET Framework class library.</source>
+        <target state="translated">定義有作業系統叫用方法，且在 .NET Framework 類別庫中具有對等的功能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiMessage">
+        <source>Use managed equivalents of win32 api</source>
+        <target state="translated">使用 Win32 API 的受控對等項</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiTitle">
+        <source>Use managed equivalents of win32 api</source>
+        <target state="translated">使用 Win32 API 的受控對等項</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonDescription">
+        <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
+        <target state="translated">非語言的字串比較作業不會將 StringComparison 參數設為 Ordinal 或 OrdinalIgnoreCase。將參數明確設定為 StringComparison.Ordinal 或 StringComparison.OrdinalIgnoreCase 時，程式碼通常會更快速、精確且更可靠。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
+        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
+        <target state="translated">{0} 會以 'StringComparison' 參數形式將 '{1}' 傳遞給 {2}。若要執行非語言比較，請改為指定 'StringComparer.Ordinal' 或 'StringComparer.OrdinalIgnoreCase'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
+        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
+        <target state="translated">{0} 會以 'StringComparison' 參數形式將 '{1}' 傳遞給 {2}。若要執行非語言比較，請改為指定 'StringComparison.Ordinal' 或 'StringComparison.OrdinalIgnoreCase'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonTitle">
+        <source>Use ordinal stringcomparison</source>
+        <target state="translated">使用循序的 StringComparison</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
+        <source>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</source>
+        <target state="translated">當長度/計數屬性為直接存取時，Enumerable.Count() 可能會列舉序列。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
+        <source>Use the "{0}" property instead of Enumerable.Count().</source>
+        <target state="translated">使用 "{0}" 屬性而非 Enumerable.Count()。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
+        <source>Use Length/Count property instead of Count() when available</source>
+        <target state="translated">可行時，使用長度/計數屬性而非 Count()</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySize">
+        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="translated">使用有足夠金鑰大小的 Rivest–Shamir–Adleman (RSA) 加密演算法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySizeDescription">
+        <source>Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.</source>
+        <target state="translated">當使用的金鑰大小太小時，加密演算法易面臨暴力密碼破解攻擊。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySizeMessage">
+        <source>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="translated">非對稱式加密演算法 {0} 的金鑰大小小於 2048。請改為切換成至少有 2048 金鑰大小的 RSA、ECDH 或 ECDSA 演算法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSecureCookiesASPNetCoreDescription">
+        <source>Applications available over HTTPS must use secure cookies.</source>
+        <target state="translated">透過 HTTPS 使用的應用程式必須使用安全 Cookie。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnly">
+        <source>Use SharedAccessProtocol HttpsOnly</source>
+        <target state="translated">使用 SharedAccessProtocol HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnlyDescription">
+        <source>HTTPS encrypts network traffic. Use HttpsOnly, rather than HttpOrHttps, to ensure network traffic is always encrypted to help prevent disclosure of sensitive data.</source>
+        <target state="translated">HTTPS 會加密網路流量。請使用 HttpsOnly 而非 HttpOrHttps，以確保網路流量一律會經過加密來避免敏感性資料洩漏。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
+        <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="new">Use ValueTasks correctly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderDescription">
+        <source>Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.</source>
+        <target state="translated">處理不受信任資料的 XML，可能會載入危險的外部參考，應使用具有安全解析程式或已停用 DTD 處理的 XmlReader，加以限制。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXml">
+        <source>Use XmlReader For DataSet Read Xml</source>
+        <target state="translated">請為讀取資料集 XML 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDeserialize">
+        <source>Use XmlReader For Deserialize</source>
+        <target state="translated">請為還原序列化使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForSchemaRead">
+        <source>Use XmlReader For Schema Read</source>
+        <target state="translated">請為讀取結構描述使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForValidatingReader">
+        <source>Use XmlReader For Validating Reader</source>
+        <target state="translated">請為驗證讀取器使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForXPathDocument">
+        <source>Use XmlReader For XPathDocument</source>
+        <target state="translated">請為 XPathDocument 使用 XmlReader</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderMessage">
+        <source>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</source>
+        <target state="translated">{0}.{1} 方法的此多載有可能不安全，請改為使用接受 XmlReader 執行個體的多載</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

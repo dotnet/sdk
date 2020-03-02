@@ -1,0 +1,2092 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="cs" original="../MicrosoftCodeQualityAnalyzersResources.resx">
+    <body>
+      <trans-unit id="AppendConfigureAwaitTrue">
+        <source>Append .ConfigureAwait(true)</source>
+        <target state="translated">Připojit .ConfigureAwait(true)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
+        <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
+        <target state="translated">Přiřazení symbolu a jeho členu (pole/vlastnost) ve stejném příkazu se nedoporučuje. Není jasné, zda by měl přístup člena v tomto příkazu použít starou hodnotu symbolu před přiřazením nebo novou hodnotu z přiřazení. Kvůli lepší přehlednosti zvažte rozdělení přiřazení do samostatných příkazů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
+        <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
+        <target state="translated">Symbol {0} a jeho člen {1} jsou oba přiřazeny ve stejném příkazu. Hrozí riziko přiřazení člena nezamýšleného objektu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
+        <source>Assigning symbol and its member in the same statement.</source>
+        <target state="translated">Přiřazení symbolu a jeho členu v témže příkazu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAsyncVoidTitle">
+        <source>Avoid Async Void</source>
+        <target state="translated">Vyhněte se Async Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAsyncVoidDescription">
+        <source>#N/A</source>
+        <target state="translated">Není k dispozici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAsyncVoidMessage">
+        <source>Avoid Async Void</source>
+        <target state="translated">Vyhněte se Async Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AsyncMethodNamesShouldEndInAsyncTitle">
+        <source>Async Method Names Should End in Async</source>
+        <target state="translated">Názvy asynchronních metod mají končit na Async.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AsyncMethodNamesShouldEndInAsyncDescription">
+        <source>#N/A</source>
+        <target state="translated">Není k dispozici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AsyncMethodNamesShouldEndInAsyncMessage">
+        <source>Async Method Names Should End in Async</source>
+        <target state="translated">Názvy asynchronních metod mají končit na Async.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
+        <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
+        <target state="translated">Nepřiřazujte vlastnost v její metodě setter. Toto volání může způsobit nekonečnou rekurzi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageSure">
+        <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
+        <target state="translated">Nepřiřazujte vlastnost v její metodě setter. Toto volání způsobí nekonečnou rekurzi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionTitle">
+        <source>Avoid infinite recursion</source>
+        <target state="translated">Zabránit nekonečné rekurzi</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersDescription">
+        <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
+        <target state="translated">Předávání typů podle odkazu (jako out nebo ref) vyžaduje zkušenost s ukazateli, porozumění rozdílu mezi hodnotovými a odkazovými typy a obeznámenost s metodami s více návratovými hodnotami. Navíc není široce rozšířeno chápání rozdílu mezi parametry out a ref.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersMessage">
+        <source>Avoid 'out' parameters as they are not designed for general audience.</source>
+        <target state="translated">Nenastavujte parametry out, protože nejsou určené pro širokou cílovou skupinu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersTitle">
+        <source>Avoid out parameters</source>
+        <target state="translated">Vyhněte se výstupním parametrům</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
+        <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
+        <target state="translated">Obecná výjimka, třeba System.Exception, System.SystemException, nebo nepovolený typ výjimky se zachytávají příkazem catch nebo se používá obecná klauzule catch. Obecné a nepovolené výjimky by se neměly zachytávat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
+        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
+        <target state="translated">Pokud chcete zachytit konkrétnější povolený typ výjimky, upravte {0} nebo výjimku vyvolejte znovu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
+        <source>Do not catch general exception types</source>
+        <target state="translated">Nezachytávejte obecné typy výjimek</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
+        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">Nepředávejte asynchronní výrazy lambda jako typy delegátů vracející hodnotu Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesDescription">
+        <source>#N/A</source>
+        <target state="translated">Není k dispozici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
+        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">Nepředávejte asynchronní výrazy lambda jako typy delegátů vracející hodnotu Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
+        <source>An enumeration's values should not start with the type name of the enumeration.</source>
+        <target state="translated">Hodnoty výčtu by neměly začínat názvem typu výčtu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
+        <source>Do not prefix enum values with the name of the enum type '{0}'. </source>
+        <target state="translated">Nepřidávejte před hodnoty výčtu název typu výčtu {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
+        <source>Do not prefix enum values with type name</source>
+        <target state="translated">Nepřidávejte před hodnoty výčtu název typu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesTitle">
+        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">Neukládejte asynchronní výrazy lambda jako typy delegátů vracející hodnotu Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesDescription">
+        <source>#N/A</source>
+        <target state="translated">Není k dispozici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage">
+        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">Neukládejte asynchronní výrazy lambda jako typy delegátů vracející hodnotu Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
+        <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
+        <target state="translated">Odkaz na pole {0} je v této bitové inicializaci duplicitní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
+        <target state="translated">Člen výčtu {0} má stejnou konstantní hodnotu {1} jako člen {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
+        <source>Enums values should not be duplicated</source>
+        <target state="translated">Hodnoty výčtů by neměly být duplicitní</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
+        <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
+        <target state="translated">Odeberte finalizační metodu z typu {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty false. V opačném případě by to mohlo vést k duplicitním voláním Dispose, protože základní typ {1} také poskytuje finalizační metodu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
+        <source>Propagate CancellationTokens When Possible</source>
+        <target state="translated">Když je to možné, rozšiřte objekty CancellationToken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropagateCancellationTokensWhenPossibleDescription">
+        <source>#N/A</source>
+        <target state="translated">Není k dispozici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropagateCancellationTokensWhenPossibleMessage">
+        <source>Propagate CancellationTokens When Possible</source>
+        <target state="translated">Když je to možné, rozšiřte objekty CancellationToken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMixBlockingAndAsyncTitle">
+        <source>Don't Mix Blocking and Async</source>
+        <target state="translated">Nekombinujte blokující a asynchronní metody.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMixBlockingAndAsyncDescription">
+        <source>#N/A</source>
+        <target state="translated">Není k dispozici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMixBlockingAndAsyncMessage">
+        <source>Don't Mix Blocking and Async</source>
+        <target state="translated">Nekombinujte blokující a asynchronní metody.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
+        <source>Types that own disposable fields should be disposable</source>
+        <target state="translated">Typy, které vlastní jednoúčelová pole, mají být jednoúčelové.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableDescription">
+        <source>A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.</source>
+        <target state="translated">Třída deklaruje a implementuje pole instance, které je typu System.IDisposable, přičemž tato třída neimplementuje IDisposable. Třída, která deklaruje pole IDisposable nepřímo, vlastní nespravovaný prostředek a měla by implementovat rozhraní IDisposable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableMessageNonBreaking">
+        <source>Type '{0}' owns disposable field(s) '{1}' but is not disposable</source>
+        <target state="translated">Typ {0} vlastní jednoúčelová pole {1}, ale není jednoúčelový.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesTitle">
+        <source>Use generic event handler instances</source>
+        <target state="translated">Použijte obecné instance obslužné rutiny události.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueTitle">
+        <source>Enums should have zero value</source>
+        <target state="translated">Výčty mají mít nulovou hodnotu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueDescription">
+        <source>The default value of an uninitialized enumeration, just as other value types, is zero. A nonflags-attributed enumeration should define a member by using the value of zero so that the default value is a valid value of the enumeration. If an enumeration that has the FlagsAttribute attribute applied defines a zero-valued member, its name should be ""None"" to indicate that no values have been set in the enumeration.</source>
+        <target state="translated">Výchozí hodnota neinicializovaného výčtu, stejně jako jiných typů hodnot, je nulová. Výčet s atributy bez příznaků by měl definovat člena pomocí nulové hodnoty, aby výchozí hodnota byla platnou hodnotou tohoto výčtu. Pokud výčet, u kterého se používá atribut FlagsAttribute, definuje člena s nulovou hodnotou, měl by mít název None, což značí, že v tomto výčtu nejsou nastavené žádné hodnoty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsRename">
+        <source>In enum {0}, change the name of {1} to 'None'.</source>
+        <target state="translated">Ve výčtu {0} změňte název pro {1} na None.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsMultipleZeros">
+        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'.</source>
+        <target state="translated">Odeberte z {0} všechny členy, které mají nulovou hodnotu, s výjimkou jednoho člena s názvem None.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue">
+        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'.</source>
+        <target state="translated">Přidejte do {0} člena, který má nulovou hodnotu, s navrženým názvem None.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
+        <source>Abstract types should not have constructors</source>
+        <target state="translated">Abstraktní typy nemají mít konstruktory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
+        <source>Constructors on abstract types can be called only by derived types. Because public constructors create instances of a type, and you cannot create instances of an abstract type, an abstract type that has a public constructor is incorrectly designed.</source>
+        <target state="translated">Konstruktory u abstraktních typů mohou být volány jen odvozenými typy. Protože veřejné konstruktory vytvářejí instance typu, přičemž nemůžete vytvářet instance abstraktního typu, je abstraktní typ, který má veřejný konstruktor, nesprávně navržený.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
+        <source>Abstract type {0} should not have constructors</source>
+        <target state="translated">Abstraktní typ {0} nemá mít konstruktory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithClsCompliantTitle">
+        <source>Mark assemblies with CLSCompliant</source>
+        <target state="translated">Označte sestavení atributem CLSCompliant.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithClsCompliantDescription">
+        <source>The Common Language Specification (CLS) defines naming restrictions, data types, and rules to which assemblies must conform if they will be used across programming languages. Good design dictates that all assemblies explicitly indicate CLS compliance by using CLSCompliantAttribute . If this attribute is not present on an assembly, the assembly is not compliant.</source>
+        <target state="translated">CLS (Common Language Specification) definuje omezení názvů, datových typů a pravidel, kterým musí sestavení vyhovovat, pokud se budou používat v různých programovacích jazycích. Správný návrh vyžaduje, aby všechna sestavení explicitně označovala vyhovění standardu CSL atributem CLSCompliant. Pokud tento atribut u sestavení neexistuje, není toto sestavení vyhovující.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithClsCompliantMessage">
+        <source>Mark assemblies with CLSCompliant</source>
+        <target state="translated">Označte sestavení atributem CLSCompliant.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithAssemblyVersionTitle">
+        <source>Mark assemblies with assembly version</source>
+        <target state="translated">Označte sestavení číslem verze.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithAssemblyVersionDescription">
+        <source>The .NET Framework uses the version number to uniquely identify an assembly, and to bind to types in strongly named assemblies. The version number is used together with version and publisher policy. By default, applications run only with the assembly version with which they were built.</source>
+        <target state="translated">Rozhraní .NET Framework používá číslo verze k jednoznačné identifikaci sestavení a k vytvoření vazby s typy v sestaveních se silným názvem. Číslo verze se používá společně se zásadami verze a vydavatele. Aplikace standardně běží jen s verzí sestavení, se kterou byly sestaveny.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithAssemblyVersionMessage">
+        <source>Mark assemblies with assembly version</source>
+        <target state="translated">Označte sestavení číslem verze.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleTitle">
+        <source>Mark assemblies with ComVisible</source>
+        <target state="translated">Označte sestavení atributem ComVisible.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleDescription">
+        <source>ComVisibleAttribute determines how COM clients access managed code. Good design dictates that assemblies explicitly indicate COM visibility. COM visibility can be set for the whole assembly and then overridden for individual types and type members. If this attribute is not present, the contents of the assembly are visible to COM clients.</source>
+        <target state="translated">Atribut ComVisible určuje, jak klienti modelu COM přistupují ke spravovanému kódu. Správný návrh vyžaduje, aby sestavení explicitně označovala viditelnost modelu COM. Viditelnost modelu COM lze nastavit pro celé sestavení a následně přepsat pro jednotlivé typy a členy typů. Pokud tento atribut neexistuje, je obsah sestavení viditelný klientům modelu COM.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
+        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
+        <target state="translated">Protože sestavení {0} zpřístupňuje externě viditelné typy, označte ho pomocí ComVisible(false) na úrovni sestavení a pak označte všechny typy v tomto sestavení, které mají být zpřístupněny klientům modelu COM, pomocí ComVisible(true).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
+        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
+        <target state="translated">Zvažte změnu atributu ComVisible u sestavení {0} na false a jeho připojení na úrovni typu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageTitle">
+        <source>Mark attributes with AttributeUsageAttribute</source>
+        <target state="translated">Označte atributy atributem AttributeUsage.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
+        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
+        <target state="translated">Když definujete vlastní atribut, označte ho atributem AttributeUsage, který označuje, kde ve zdrojovém kódu se dá tento vlastní atribut použít. Význam a zamýšlené použití atributu určí jeho platné umístění v kódu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
+        <source>Specify AttributeUsage on {0}.</source>
+        <target state="translated">Určete AttributeUsage pro {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
+        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
+        <target state="translated">Přestože atribut {0} dědí AttributeUsage od svého základního typu, měli byste zvážit explicitní určení AttributeUsage u tohoto typu kvůli zlepšení přehlednosti a dokumentace kódu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
+        <source>Define accessors for attribute arguments</source>
+        <target state="translated">Definujte přístupové objekty pro argumenty atributů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
+        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
+        <target state="translated">Atributy mohou definovat povinné argumenty, které musí být zadané, když atribut použijete u nějakého cíle. Označují se také jako poziční argumenty, protože se konstruktorům atributů předávají jako poziční parametry. Pro každý povinný argument má tento atribut poskytovat také odpovídající vlastnost jen pro čtení, aby se hodnota argumentu dala načíst v době provádění. Atributy můžou definovat rovněž nepovinné argumenty, které se označují také jako pojmenované argumenty. Tyto argumenty se předávají konstruktorům atributů pomocí názvu a mají mít odpovídající vlastnost pro čtení a zápis.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
+        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}.</source>
+        <target state="translated">Přidejte přístupový objekt veřejné vlastnosti jen pro čtení pro poziční argument {0} atributu {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsMessageRemoveSetter">
+        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}.</source>
+        <target state="translated">Odeberte z {0} metodu setter nebo omezte její přístupnost, protože odpovídá pozičnímu argumentu {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility">
+        <source>If {0} is the property accessor for positional argument {1}, make it public.</source>
+        <target state="translated">Pokud je {0} přístupový objekt vlastnosti pozičního argumentu {1}, nastavte ho jako veřejný.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertiesWhereAppropriateTitle">
+        <source>Use properties where appropriate</source>
+        <target state="translated">Tam, kde je to vhodné, použijte vlastnosti.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertiesWhereAppropriateDescription">
+        <source>A public or protected method has a name that starts with ""Get"", takes no parameters, and returns a value that is not an array. The method might be a good candidate to become a property.</source>
+        <target state="translated">Veřejná nebo chráněná metoda má název, který začíná na Get, nepřebírá žádné parametry a vrací hodnotu, která není polem. Tato metoda může být vhodným kandidátem na vlastnost.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertiesWhereAppropriateMessage">
+        <source>Use properties where appropriate</source>
+        <target state="translated">Tam, kde je to vhodné, použijte vlastnosti.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsTitle">
+        <source>Mark enums with FlagsAttribute</source>
+        <target state="translated">Označte výčty atributem FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsDescription">
+        <source>An enumeration is a value type that defines a set of related named constants. Apply FlagsAttribute to an enumeration when its named constants can be meaningfully combined.</source>
+        <target state="translated">Výčet je typ hodnoty, který definuje sadu souvisejících pojmenovaných konstant. Použijte u výčtu atribut FlagsAttribute, pokud se jeho pojmenované konstanty dají smysluplně kombinovat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsMessage">
+        <source>Mark enums with FlagsAttribute</source>
+        <target state="translated">Označte výčty atributem FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesTitle">
+        <source>Interface methods should be callable by child types</source>
+        <target state="translated">Metody rozhraní mají být volatelné podřízenými typy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesDescription">
+        <source>An unsealed externally visible type provides an explicit method implementation of a public interface and does not provide an alternative externally visible method that has the same name.</source>
+        <target state="translated">Nezapečetěný externě viditelný typ poskytuje explicitní implementaci metody veřejného rozhraní a neposkytuje alternativní externě viditelnou metodu, která má stejný název.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesMessage">
+        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes.</source>
+        <target state="translated">Zapečeťte {0} (rozbíjející změna, pokud se předtím tato třída dodala), implementujte metodu neexplicitně nebo implementujte novou metodu, která zveřejňuje funkčnost {1} a je viditelná pro odvozené třídy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesTitle">
+        <source>Override methods on comparable types</source>
+        <target state="translated">Přepište metody u srovnatelných typů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesDescription">
+        <source>A public or protected type implements the System.IComparable interface. It does not override Object.Equals nor does it overload the language-specific operator for equality, inequality, less than, less than or equal, greater than or greater than or equal.</source>
+        <target state="translated">Veřejný nebo chráněný typ implementuje rozhraní System.IComparable. Nepřepisuje Object.Equals ani nepřetěžuje jazykově specifický operátor pro je rovno, není rovno, je menší než, je menší než nebo rovno, je větší než nebo je větší než nebo rovno.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesMessageEquals">
+        <source>{0} should override Equals since it implements IComparable.</source>
+        <target state="translated">{0} má přepisovat Je rovno, protože implementuje rozhraní IComparable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesMessageOperator">
+        <source>{0} should define operator(s) '{1}' since it implements IComparable.</source>
+        <target state="translated">{0} má definovat operátory {1}, protože implementuje rozhraní IComparable.</target>
+        <note>1 is a comma-separated list</note>
+      </trans-unit>
+      <trans-unit id="MovePInvokesToNativeMethodsClassTitle">
+        <source>Move pinvokes to native methods class</source>
+        <target state="translated">Přesuňte volání nespravovaného kódu do třídy nativních metod.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MovePInvokesToNativeMethodsClassDescription">
+        <source>Platform Invocation methods, such as those that are marked by using the System.Runtime.InteropServices.DllImportAttribute attribute, or methods that are defined by using the Declare keyword in Visual Basic, access unmanaged code. These methods should be of the NativeMethods, SafeNativeMethods, or UnsafeNativeMethods class.</source>
+        <target state="translated">Metody volání nespravovaného kódu, například označené atributem System.Runtime.InteropServices.DllImportAttribute, nebo metody definované klíčovým slovem Declare ve Visual Basicu, mají přístup k nespravovanému kódu. Tyto metody mají být třídy NativeMethods, SafeNativeMethods nebo UnsafeNativeMethods.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MovePInvokesToNativeMethodsClassMessage">
+        <source>Move pinvokes to native methods class</source>
+        <target state="translated">Přesuňte volání nespravovaného kódu do třídy nativních metod.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldDifferByMoreThanCaseTitle">
+        <source>Identifiers should differ by more than case</source>
+        <target state="translated">Identifikátory se mají lišit nejen velikostí písmen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldDifferByMoreThanCaseDescription">
+        <source>Identifiers for namespaces, types, members, and parameters cannot differ only by case because languages that target the common language runtime are not required to be case-sensitive.</source>
+        <target state="translated">Identifikátory názvových prostorů, typů, členů a parametrů se nemůžou lišit jen velikostí písmen, protože jazyky, jejichž cílem je modul CLR (Common Language Runtime), nemusejí rozlišovat malá a velká písmena.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldDifferByMoreThanCaseMessage">
+        <source>Names of '{0}' and '{1}' should differ by more than case.</source>
+        <target state="translated">Názvy {0} a {1} by se měly lišit nejen velikostí písmen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixTitle">
+        <source>Identifiers should have correct prefix</source>
+        <target state="translated">Identifikátory mají mít správnou předponu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixDescription">
+        <source>The name of an externally visible interface does not start with an uppercase ""I"". The name of a generic type parameter on an externally visible type or method does not start with an uppercase ""T"".</source>
+        <target state="translated">Název externě viditelného rozhraní nezačíná velkým písmenem I. Název parametru obecného typu u externě viditelného typu nebo metody nezačíná velkým písmenem I.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageInterface">
+        <source>Prefix interface name {0} with 'I'.</source>
+        <target state="translated">Vložte před název rozhraní {0} předponu I.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageTypeParameter">
+        <source>Prefix generic type parameter name {0} with 'T'.</source>
+        <target state="translated">Vložte před název parametru obecného typu {0} předponu T.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonConstantFieldsShouldNotBeVisibleTitle">
+        <source>Non-constant fields should not be visible</source>
+        <target state="translated">Nekonstantní pole nemají být viditelná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonConstantFieldsShouldNotBeVisibleDescription">
+        <source>Static fields that are neither constants nor read-only are not thread-safe. Access to such a field must be carefully controlled and requires advanced programming techniques to synchronize access to the class object.</source>
+        <target state="translated">Statická pole, která nejsou ani konstantní, ani jen pro čtení, nejsou bezpečná pro přístup z více vláken. Přístup k takovému poli musí být pečlivě řízený a vyžaduje pokročilé programovací techniky, aby se synchronizoval s objektem třídy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonConstantFieldsShouldNotBeVisibleMessage">
+        <source>Non-constant fields should not be visible</source>
+        <target state="translated">Nekonstantní pole nemají být viditelná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsTitle">
+        <source>Do not mark enums with FlagsAttribute</source>
+        <target state="translated">Neoznačujte výčty atributem FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsDescription">
+        <source>An externally visible enumeration is marked by using FlagsAttribute, and it has one or more values that are not powers of two or a combination of the other defined values on the enumeration.</source>
+        <target state="translated">Externě viditelný výčet je označený atributem FlagsAttribute a obsahuje jednu nebo více hodnot, které nejsou mocninami čísla 2 ani kombinací jiných definovaných hodnot výčtu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsMessage">
+        <source>Do not mark enums with FlagsAttribute</source>
+        <target state="translated">Neoznačujte výčty atributem FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesTitle">
+        <source>Operator overloads have named alternates</source>
+        <target state="translated">Přetížení operátorů mají pojmenované alternativy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesDescription">
+        <source>An operator overload was detected, and the expected named alternative method was not found. The named alternative member provides access to the same functionality as the operator and is provided for developers who program in languages that do not support overloaded operators.</source>
+        <target state="translated">Bylo zjištěno přetížení operátoru, přičemž se nenašla očekávaná pojmenovaná alternativní metoda. Pojmenovaný alternativní člen poskytuje přístup ke stejné funkčnosti jako tento operátor a je určený vývojářům programujícím v jazycích, které nepodporují přetížené operátory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageDefault">
+        <source>Provide a method named '{0}' as a friendly alternate for operator {1}.</source>
+        <target state="translated">Zadejte metodu s názvem {0} jako vhodnou alternativu pro operátor {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageProperty">
+        <source>Provide a property named '{0}' as a friendly alternate for operator {1}.</source>
+        <target state="translated">Zadejte vlastnost s názvem {0} jako vhodnou alternativu pro operátor {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageMultiple">
+        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}.</source>
+        <target state="translated">Zadejte metodu s názvem {0} nebo {1} jako alternativu pro operátor {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageVisibility">
+        <source>Mark {0} as public because it is a friendly alternate for operator {1}.</source>
+        <target state="translated">Označte {0} jako veřejný, protože jde o vhodnou alternativu pro operátor {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsTitle">
+        <source>Operators should have symmetrical overloads</source>
+        <target state="translated">Operátory mají mít symetrická přetížení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
+        <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
+        <target state="translated">Některý typ implementuje operátor rovnosti nebo nerovnosti, ale neimplementuje opačný operátor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
+        <source>Operators should have symmetrical overloads</source>
+        <target state="translated">Operátory mají mít symetrická přetížení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
+        <source>Collection properties should be read only</source>
+        <target state="translated">Vlastnosti kolekce mají být jen pro čtení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionPropertiesShouldBeReadOnlyDescription">
+        <source>A writable collection property allows a user to replace the collection with a different collection. A read-only property stops the collection from being replaced but still allows the individual members to be set.</source>
+        <target state="translated">Zapisovatelná vlastnost kolekce umožňuje uživateli nahradit takovou kolekci jinou kolekcí. Vlastnost jen pro čtení zabraňuje nahrazení kolekce, ale přesto umožňuje nastavení jednotlivých členů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionPropertiesShouldBeReadOnlyMessage">
+        <source>Change '{0}' to be read-only by removing the property setter.</source>
+        <target state="translated">Odeberte metodu Set vlastnosti {0} a nastavte ji jen pro čtení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle">
+        <source>Overload operator equals on overriding value type Equals</source>
+        <target state="translated">Operátor přetížení je roven přepisující hodnotě typu Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription">
+        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals</source>
+        <target state="translated">Ve většině programovacích jazyků neexistuje výchozí implementace operátoru rovnosti (==) pro typy hodnot. Pokud váš programovací jazyk podporuje přetížení operátorů, měli byste zvážit implementaci operátoru rovnosti. Jeho chování by mělo být identické jako Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
+        <source>Overload operator equals on overriding value type Equals</source>
+        <target state="translated">Operátor přetížení je roven přepisující hodnotě typu Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
+        <source>Pass system uri objects instead of strings</source>
+        <target state="translated">Místo řetězců předávejte objekty systémových identifikátorů URI.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PassSystemUriObjectsInsteadOfStringsDescription">
+        <source>A call is made to a method that has a string parameter whose name contains "uri", "URI", "urn", "URN", "url", or "URL". The declaring type of the method contains a corresponding method overload that has a System.Uri parameter.</source>
+        <target state="translated">Volá se metoda obsahující řetězcový parametr, jehož název obsahuje uri, URI, urn, URN, url nebo URL. Deklarující typ této metody obsahuje přetížení odpovídající metody s parametrem System.Uri.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PassSystemUriObjectsInsteadOfStringsMessage">
+        <source>Modify '{0}' to call '{1}' instead of '{2}'.</source>
+        <target state="translated">Změňte {0} tak, aby se místo {2} volalo {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="translated">Typ {0} by měl implementovat rozhraní IEquatable&lt;T&gt;, protože přepisuje metodu Equals</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="translated">Při přepisu Object.Equals implementujte IEquatable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CancellationTokenParametersMustComeLastTitle">
+        <source>CancellationToken parameters must come last</source>
+        <target state="translated">Parametry CancellationToken musí být poslední.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CancellationTokenParametersMustComeLastMessage">
+        <source>Method '{0}' should take CancellationToken as the last parameter</source>
+        <target state="translated">Metoda {0} má převzít CancellationToken jako poslední parametr.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableTitle">
+        <source>Constructor make noninheritable base class inheritable</source>
+        <target state="translated">Konstruktor činí z nedědičné základní třídy dědičnou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableDescription">
+        <source>When a base class is noninheritable because its constructor is internal, a derived class should not make it inheritable by having a public or protected constructor.</source>
+        <target state="translated">Pokud je základní třída nedědičná, protože její konstruktor je interní, odvozená třída by z ní neměla činit dědičnou třídu tím, že má veřejný nebo chráněný konstruktor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableMessage">
+        <source>Constructor make noninheritable base class inheritable</source>
+        <target state="translated">Konstruktor činí z nedědičné základní třídy dědičnou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainTypeNamesTitle">
+        <source>Identifier contains type name</source>
+        <target state="translated">Identifikátor obsahuje název typu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainTypeNamesDescription">
+        <source>Names of parameters and members are better used to communicate their meaning than to describe their type, which is expected to be provided by development tools. For names of members, if a data type name must be used, use a language-independent name instead of a language-specific one.</source>
+        <target state="translated">Názvy parametrů a členů se používají spíše k vyjádření jejich významu než k popisu jejich typu, což se očekává od vývojových nástrojů. Pokud se pro názvy členů musí použít název datového typu, použijte místo jazykově specifického názvu nějaký název nezávislý na jazyku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainTypeNamesMessage">
+        <source>Identifier '{0}' contains type name</source>
+        <target state="translated">Identifikátor {0} obsahuje název typu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CreatePropertyAccessorForParameter">
+        <source>Create a property accessor.</source>
+        <target state="translated">Vytvořte přístupový objekt vlastnosti.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeGetterPublic">
+        <source>Make the getter of the property public</source>
+        <target state="translated">Nastavte metodu getter vlastnosti jako veřejnou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeSetterNonPublic">
+        <source>Make the setter of the property non-public</source>
+        <target state="translated">Nastavte metodu setter vlastnosti jako neveřejnou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddAssemblyLevelComVisibleFalse">
+        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
+        <target state="translated">Protože sestavení {0} zpřístupňuje externě viditelné typy, označte ho pomocí ComVisible(false) na úrovni sestavení a pak označte všechny typy v tomto sestavení, které mají být zpřístupněny klientům modelu COM, pomocí ComVisible(true).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ChangeAssemblyLevelComVisibleToFalse">
+        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
+        <target state="translated">Zvažte změnu atributu ComVisible u sestavení {0} na false a jeho připojení na úrovni typu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementComparable">
+        <source>Implement Equality and Comparison methods and operators</source>
+        <target state="translated">Implementujte metody rovnosti a porovnání a operátory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementEquatable">
+        <source>Implement IEquatable</source>
+        <target state="translated">Implementujte rozhraní IEquatable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableInterface">
+        <source>Implement IDisposable Interface</source>
+        <target state="translated">Implementujte rozhraní IDisposable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsCodeFix">
+        <source>Remove FlagsAttribute from enum.</source>
+        <target state="translated">Odeberte z výčtu atribut FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsCodeFix">
+        <source>Apply FlagsAttribute to enum.</source>
+        <target state="translated">Použijte u výčtu atribut FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldZeroValueFlagsMultipleZeroCodeFix">
+        <source>Remove all members that have the value zero except for one member that is named 'None'.</source>
+        <target state="translated">Odeberte všechny členy, které mají nulovou hodnotu, s výjimkou jednoho člena s názvem None.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldZeroValueFlagsRenameCodeFix">
+        <source>Rename zero-valued enum field to 'None'.</source>
+        <target state="translated">Přejmenujte pole výčtu s nulovou hodnotou na None.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldZeroValueNotFlagsNoZeroValueCodeFix">
+        <source>Add a zero-valued member 'None' to enum.</source>
+        <target state="translated">Přidejte k výčtu člena None s nulovou hodnotou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHavePublicConstructorsCodeFix">
+        <source>Change the accessibility of public constructors to protected.</source>
+        <target state="translated">Změňte přístupnost veřejných konstruktorů na chráněnou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesTitle">
+        <source>Do not declare static members on generic types</source>
+        <target state="translated">Nedeklarujte statické členy u obecných typů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesDescription">
+        <source>When a static member of a generic type is called, the type argument must be specified for the type. When a generic instance member that does not support inference is called, the type argument must be specified for the member. In these two cases, the syntax for specifying the type argument is different and easily confused.</source>
+        <target state="translated">Při volání statického člena obecného typu musí být pro tento typ zadaný argument typu. Při volání člena obecné instance, který nepodporuje rozhraní, musí být pro tohoto člena zadaný argument typu. Syntaxe pro zadání argumentu typu je v těchto dvou případech odlišná a snadno se zaměňuje.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesMessage">
+        <source>Do not declare static members on generic types</source>
+        <target state="translated">Nedeklarujte statické členy u obecných typů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
+        <source>Generic interface should also be implemented</source>
+        <target state="needs-review-translation">Kolekce mají implementovat obecné rozhraní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="needs-review-translation">Kvůli rozšíření použitelnosti kolekce implementujte některé z obecných rozhraní kolekce. Tato kolekce se pak dá použít k naplnění obecných typů kolekcí.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="needs-review-translation">Kolekce {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné kolekce by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumStorageShouldBeInt32Title">
+        <source>Enum Storage should be Int32</source>
+        <target state="translated">Úložiště výčtu má být typu Int32.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumStorageShouldBeInt32Description">
+        <source>An enumeration is a value type that defines a set of related named constants. By default, the System.Int32 data type is used to store the constant value. Although you can change this underlying type, it is not required or recommended for most scenarios.</source>
+        <target state="translated">Výčet je typ hodnoty, který definuje sadu souvisejících pojmenovaných konstant. K uložení konstantní hodnoty se standardně používá datový typ System.Int32. Přestože tento podkladový typ můžete změnit, ve většině situací se to nevyžaduje ani nedoporučuje.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumStorageShouldBeInt32Message">
+        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}.</source>
+        <target state="translated">Pokud je to možné, nastavte podkladový typ {0} na System.Int32 místo na {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEventsWhereAppropriateTitle">
+        <source>Use events where appropriate</source>
+        <target state="translated">Tam, kde je to vhodné, použijte události.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEventsWhereAppropriateDescription">
+        <source>This rule detects methods that have names that ordinarily would be used for events. If a method is called in response to a clearly defined state change, the method should be invoked by an event handler. Objects that call the method should raise events instead of calling the method directly.</source>
+        <target state="translated">Toto pravidlo zjišťuje metody s názvy, které by se běžně použily pro události. Pokud se v odpovědi na jasně definovanou změnu stavu volá metoda, měla by být vyvolána obslužnou rutinou události. Objekty, které tuto metodu volají, by místo přímého volání metody měly vyvolávat události.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEventsWhereAppropriateMessage">
+        <source>Consider making '{0}' an event.</source>
+        <target state="translated">Zvažte převedení {0} na událost.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsTitle">
+        <source>Implement standard exception constructors</source>
+        <target state="translated">Implementujte standardní konstruktory výjimek.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsDescription">
+        <source>Failure to provide the full set of constructors can make it difficult to correctly handle exceptions.</source>
+        <target state="translated">Neúplná sada konstruktorů může znesnadnit správné ošetření výjimek.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
+        <source>Add the following constructor to {0}: {1}.</source>
+        <target state="translated">Přidejte k {0} následující konstruktor: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
+        <source>Change the accessibility of {0} to {1}.</source>
+        <target state="translated">Změňte přístupnost {0} na {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
+        <source>Nested types should not be visible</source>
+        <target state="translated">Vnořené typy nemají být viditelné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleDescription">
+        <source>A nested type is a type that is declared in the scope of another type. Nested types are useful to encapsulate private implementation details of the containing type. Used for this purpose, nested types should not be externally visible.</source>
+        <target state="translated">Vnořený typ je typ, který je deklarovaný v oboru jiného typu. Vnořené typy se používají k zapouzdření privátních podrobností implementace obsahujícího typu. Pokud se vnořené typy používají k tomuto účelu, neměly by být externě viditelné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleMessageDefault">
+        <source>Do not nest type {0}. Alternatively, change its accessibility so that it is not externally visible.</source>
+        <target state="translated">Nevnořujte typ {0}. Alternativně změňte jeho přístupnost tak, aby nebyl externě viditelný.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleMessageVisualBasicModule">
+        <source>Do not nest type {0}. Alternatively, change its accessibility so that it is not externally visible. If this type is defined in a Visual Basic Module, it will be considered a nested type to other .NET languages. In that case, consider moving the type outside of the Module.</source>
+        <target state="translated">Nevnořujte typ {0}. Alternativně změňte jeho přístupnost tak, aby nebyl externě viditelný. Pokud je tento typ definovaný v nějakém modulu Visual Basicu, budou ho jiné jazyky rozhraní .NET považovat za vnořený. V takovém případě zvažte přesunutí typu mimo tento modul.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidEmptyInterfacesTitle">
+        <source>Avoid empty interfaces</source>
+        <target state="translated">Vyhněte se prázdným rozhraním.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidEmptyInterfacesDescription">
+        <source>Interfaces define members that provide a behavior or usage contract. The functionality that is described by the interface can be adopted by any type, regardless of where the type appears in the inheritance hierarchy. A type implements an interface by providing implementations for the members of the interface. An empty interface does not define any members; therefore, it does not define a contract that can be implemented.</source>
+        <target state="translated">Rozhraní definují členy poskytující kontrakt chování nebo použití. Funkčnost popsaná tímto rozhraním může být přijala jakýmkoli typem bez ohledu na to, kde v hierarchii dědičnosti se tento typ vyskytuje. Typ implementuje rozhraní poskytováním implementací pro členy tohoto rozhraní. Prázdné rozhraní nedefinuje žádné členy; nedefinuje proto kontrakt, který je možné implementovat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidEmptyInterfacesMessage">
+        <source>Avoid empty interfaces</source>
+        <target state="translated">Vyhněte se prázdným rozhraním.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideObsoleteAttributeMessageTitle">
+        <source>Provide ObsoleteAttribute message</source>
+        <target state="translated">Zadejte zprávu ObsoleteAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideObsoleteAttributeMessageDescription">
+        <source>A type or member is marked by using a System.ObsoleteAttribute attribute that does not have its ObsoleteAttribute.Message property specified. When a type or member that is marked by using ObsoleteAttribute is compiled, the Message property of the attribute is displayed. This gives the user information about the obsolete type or member.</source>
+        <target state="translated">Typ nebo člen je označený atributem System.ObsoleteAttribute, u kterého není zadaná vlastnost ObsoleteAttribute.Message. Když se typ nebo člen označený atributem ObsoleteAttribute zkompiluje, zobrazí se vlastnost Message tohoto atributu. Uživatel je tak informován o zastaralém typu nebo členovi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideObsoleteAttributeMessageMessage">
+        <source>Provide a message for the ObsoleteAttribute that marks {0} as Obsolete</source>
+        <target state="translated">Zadejte pro atribut ObsoleteAttribute zprávu, která {0} označí jako zastaralý.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyTitle">
+        <source>Properties should not be write only</source>
+        <target state="translated">Vlastnosti nemají být jen pro zápis.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyDescription">
+        <source>Although it is acceptable and often necessary to have a read-only property, the design guidelines prohibit the use of write-only properties. This is because letting a user set a value, and then preventing the user from viewing that value, does not provide any security. Also, without read access, the state of shared objects cannot be viewed, which limits their usefulness.</source>
+        <target state="translated">Přestože je přijatelné a občas nezbytné mít vlastnost jen pro čtení, zakazují pravidla návrhu používání vlastností jen pro zápis. Když totiž uživateli umožníte nastavit hodnotu, ale zabráníte mu v jejím zobrazení, nezajistíte tím žádné zabezpečení. Bez přístupu ke čtení navíc nelze stav sdílených objektů zobrazit, což omezuje jejich užitečnost.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageAddGetter">
+        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method.</source>
+        <target state="translated">Protože vlastnost {0} je jen pro zápis, buď přidejte metodu getter vlastnosti s přístupností, která je větší nebo stejná jako její metoda setter, nebo tuto vlastnost převeďte na metodu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible">
+        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter.</source>
+        <target state="translated">Protože metoda getter vlastnosti {0} je méně viditelná než její metoda setter, buď zvyšte přístupnost její metody getter, nebo snižte přístupnost její metody setter.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeclareTypesInNamespacesTitle">
+        <source>Declare types in namespaces</source>
+        <target state="translated">Deklarujte typy v názvových prostorech.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeclareTypesInNamespacesDescription">
+        <source>Types are declared in namespaces to prevent name collisions and as a way to organize related types in an object hierarchy.</source>
+        <target state="translated">Typy jsou deklarované v názvových prostorech, což zabraňuje kolizím názvů a umožňuje uspořádat související typy do hierarchie objektů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeclareTypesInNamespacesMessage">
+        <source>Declare types in namespaces</source>
+        <target state="translated">Deklarujte typy v názvových prostorech.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareVisibleInstanceFieldsTitle">
+        <source>Do not declare visible instance fields</source>
+        <target state="translated">Nedeklarujte viditelná pole instance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareVisibleInstanceFieldsDescription">
+        <source>The primary use of a field should be as an implementation detail. Fields should be private or internal and should be exposed by using properties.</source>
+        <target state="translated">Pole se má primárně používat jako detail implementace. Pole mají být privátní nebo interní a zpřístupněná pomocí vlastností.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareVisibleInstanceFieldsMessage">
+        <source>Do not declare visible instance fields</source>
+        <target state="translated">Nedeklarujte viditelná pole instance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsTitle">
+        <source>Uri parameters should not be strings</source>
+        <target state="translated">Parametry identifikátoru URI nemají být řetězce.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsDescription">
+        <source>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</source>
+        <target state="translated">Pokud metoda přebírá řetězcovou reprezentaci identifikátoru URI, mělo by být zadané odpovídající přetížení přebírající instanci třídy URI, která tyto služby poskytuje zabezpečeným způsobem.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsMessage">
+        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object.</source>
+        <target state="translated">Změňte typ parametru {0} metody {1} z řetězce na System.Uri, nebo pro {1} zadejte přetížení, které {0} umožňuje předat jako objekt System.Uri.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
+        <source>Uri return values should not be strings</source>
+        <target state="translated">Návratové hodnoty identifikátoru URI nemají být řetězce.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
+        <source>This rule assumes that the method returns a URI. A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.</source>
+        <target state="translated">Toto pravidlo předpokládá, že metoda vrací identifikátor URI. Řetězcová reprezentace identifikátoru URI je náchylná k chybám při parsování a kódování a může vést k ohrožení zabezpečení. Třída System.Uri poskytuje tyto služby zabezpečeným způsobem.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
+        <source>Change the return type of method {0} from string to System.Uri.</source>
+        <target state="translated">Změňte návratový typ metody {0} z řetězce na System.Uri.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
+        <source>Uri properties should not be strings</source>
+        <target state="translated">Vlastnosti identifikátoru URI nemají být řetězce.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
+        <source>This rule assumes that the property represents a Uniform Resource Identifier (URI). A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.</source>
+        <target state="translated">Toto pravidlo předpokládá, že vlastnost reprezentuje identifikátor URI (Uniform Resource Identifier). Řetězcová reprezentace identifikátoru URI je náchylná k chybám při parsování a kódování a může vést k ohrožení zabezpečení. Třída System.Uri poskytuje tyto služby zabezpečeným způsobem.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
+        <source>Change the type of property {0} from string to System.Uri.</source>
+        <target state="translated">Změňte typ vlastnosti {0} z řetězce na System.Uri.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyTitle">
+        <source>Implement IDisposable Correctly</source>
+        <target state="translated">Implementujte IDisposable správně.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyDescription">
+        <source>All IDisposable types should implement the Dispose pattern correctly.</source>
+        <target state="translated">Všechny typy IDisposable by měly implementovat vzor Dispose správně.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
+        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'.</source>
+        <target state="translated">Odebrete IDisposable ze seznamu rozhraní, která implementuje {0}, protože už jej implementuje základní typ {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
+        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.</source>
+        <target state="translated">Odeberte {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty true.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
+        <source>Ensure that '{0}' is declared as public and sealed.</source>
+        <target state="translated">Zajistěte, aby metoda {0} byla deklarovaná jako veřejná a zapečetěná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageRenameDispose">
+        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed.</source>
+        <target state="translated">Přejmenujte metodu {0} na Dispose a zajistěte, aby byla deklarovaná jako veřejná a zapečetěná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeBoolSignature">
+        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed.</source>
+        <target state="translated">Zajistěte, aby metoda {0} byla deklarovaná jako chráněná, virtuální a nezapečetěná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeImplementation">
+        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.</source>
+        <target state="translated">Upravte {0} tak, že volá Dispose(true), pak volá GC.SupressFinalize na aktuální instanci objektu (this nebo Me ve Visual Basicu) a potom se vrací.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeImplementation">
+        <source>Modify '{0}' so that it calls Dispose(false) and then returns.</source>
+        <target state="translated">Upravte {0} tak, že volá Dispose(false) a potom se vrací.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageProvideDisposeBool">
+        <source>Provide an overridable implementation of Dispose(bool) on '{0}' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.</source>
+        <target state="translated">Poskytněte přepisovatelnou implementaci Dispose(bool) na {0} nebo označte typ jako zapečetěný. Volání Dispose(false) by mělo vyčistit jenom nativní prostředky. Volání Dispose(true) by mělo vyčistit prostředky spravované i nativní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionsShouldBePublicTitle">
+        <source>Exceptions should be public</source>
+        <target state="translated">Výjimky mají být veřejné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionsShouldBePublicDescription">
+        <source>An internal exception is visible only inside its own internal scope. After the exception falls outside the internal scope, only the base exception can be used to catch the exception. If the internal exception is inherited from T:System.Exception, T:System.SystemException, or T:System.ApplicationException, the external code will not have sufficient information to know what to do with the exception.</source>
+        <target state="translated">Interní výjimka je viditelná jenom uvnitř svého vlastního interního oboru. Pokud tato výjimka spadá mimo interní obor, dá se k jejímu zachycení použít jenom základní výjimka. Pokud je interní výjimka zděděná od T:System.Exception, T:System.SystemException nebo T:System.ApplicationException, nebude mít externí kód dost informací o tom, co se má s touto výjimkou udělat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionsShouldBePublicMessage">
+        <source>Exceptions should be public</source>
+        <target state="translated">Výjimky mají být veřejné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsTitle">
+        <source>Do not raise exceptions in unexpected locations</source>
+        <target state="translated">Nevyvolávejte výjimky na neočekávaných místech.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsDescription">
+        <source>A method that is not expected to throw exceptions throws an exception.</source>
+        <target state="translated">Metoda, u které se neočekává vyvolání výjimek, vyvolá výjimku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsMessagePropertyGetter">
+        <source>{0} creates an exception of type {1}, an exception type that should not be raised in a property. If this exception instance might be raised, use a different exception type, convert this property into a method, or change this property's logic so that it no longer raises an exception.</source>
+        <target state="translated">{0} vytváří výjimku typu {1}, což je typ výjimky, která by neměla být ve vlastnosti vyvolána. Pokud se tato instance výjimky může vyvolat, použijte jiný typ výjimky, převeďte tuto vlastnost na metodu nebo změňte logiku této vlastnosti tak, aby už nevyvolávala výjimku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsMessageHasAllowedExceptions">
+        <source>{0} creates an exception of type {1}, an exception type that should not be raised in this type of method. If this exception instance might be raised, either use a different exception type or change this method's logic so that it no longer raises an exception.</source>
+        <target state="translated">{0} vytváří výjimku typu {1}, což je typ výjimky, která by neměla být v tomto typu metody vyvolána. Pokud se tato instance výjimky může vyvolat, buď použijte jiný typ výjimky, nebo změňte logiku této metody tak, aby už nevyvolávala výjimku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsMessageNoAllowedExceptions">
+        <source>{0} creates an exception of type {1}. Exceptions should not be raised in this type of method. If this exception instance might be raised, change this method's logic so it no longer raises an exception.</source>
+        <target state="translated">{0} vytváří výjimku typu {1}. V tomto typu metody by se neměly vyvolávat výjimky. Pokud se tato instance výjimky může vyvolat, změňte logiku této metody tak, aby už nevyvolávala výjimku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresTitle">
+        <source>Identifiers should not contain underscores</source>
+        <target state="translated">Identifikátory nemají obsahovat podtržítka.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresDescription">
+        <source>By convention, identifier names do not contain the underscore (_) character. This rule checks namespaces, types, members, and parameters.</source>
+        <target state="translated">Podle dohody nemají názvy identifikátorů obsahovat znaky podtržítka (_). Toto pravidlo kontroluje názvové prostory, typy, členy a parametry.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageAssembly">
+        <source>Remove the underscores from assembly name {0}.</source>
+        <target state="translated">Odeberte podtržítka z názvu sestavení {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageNamespace">
+        <source>Remove the underscores from namespace name '{0}'.</source>
+        <target state="translated">Odeberte podtržítka z názvu názvového prostoru {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageType">
+        <source>Remove the underscores from type name {0}.</source>
+        <target state="translated">Odeberte podtržítka z názvu typu {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMember">
+        <source>Remove the underscores from member name {0}.</source>
+        <target state="translated">Odeberte podtržítka z názvu člena {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter">
+        <source>On type {0}, remove the underscores from generic type parameter name {1}.</source>
+        <target state="translated">U typu {0} odeberte podtržítka z názvu parametru obecného typu {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter">
+        <source>On method {0}, remove the underscores from generic type parameter name {1}.</source>
+        <target state="translated">U metody {0} odeberte podtržítka z názvu parametru obecného typu {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMemberParameter">
+        <source>In member {0}, remove the underscores from parameter name {1}.</source>
+        <target state="translated">U člena {0} odeberte podtržítka z názvu parametru {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageDelegateParameter">
+        <source>In delegate {0}, remove the underscores from parameter name {1}.</source>
+        <target state="translated">V delegátovi {0} odeberte podtržítka z názvu parametru {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixTitle">
+        <source>Identifiers should have correct suffix</source>
+        <target state="translated">Identifikátory mají mít správnou příponu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixDescription">
+        <source>By convention, the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, have a suffix that is associated with the base type or interface.</source>
+        <target state="translated">Názvy typů, které rozšiřují určité základní typy nebo implementují určitá rozhraní, nebo typy, které jsou od těchto typů odvozené, mají mít podle dohody příponu, která je přidružená k tomuto základnímu typu nebo rozhraní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
+        <source>Rename {0} to end in '{1}'.</source>
+        <target state="translated">Přejmenujte {0} tak, aby název končil na {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
+        <source>Rename {0} to end in either 'Collection' or '{1}'.</source>
+        <target state="translated">Přejmenujte {0} tak, aby název končil buď na Collection, nebo na {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">
+        <source>Identifiers should not have incorrect suffix</source>
+        <target state="translated">Identifikátory nemají mít nesprávnou příponu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixDescription">
+        <source>By convention, only the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, should end with specific reserved suffixes. Other type names should not use these reserved suffixes.</source>
+        <target state="translated">Na určité rezervované přípony mají podle dohody končit jenom názvy typů, které rozšiřují určité základní typy nebo implementují určitá rozhraní, nebo typy, které jsou od těchto typů odvozené. Jiné typy by tyto rezervované přípony neměly používat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNoAlternate">
+        <source>Rename type name {0} so that it does not end in '{1}'.</source>
+        <target state="translated">Přejmenujte název typu {0} tak, aby nekončil na {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberNewerVersion">
+        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces.</source>
+        <target state="translated">Buď nahraďte příponu {0} v názvu člena {1} navrhovanou číselnou alternativou 2, nebo zadejte výstižnější příponu, která ho odliší od člena, kterého nahrazuje.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNewerVersion">
+        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces.</source>
+        <target state="translated">Buď nahraďte příponu {0} v názvu typu {1} navrhovanou číselnou alternativou 2, nebo zadejte výstižnější příponu, která ho odliší od typu, kterého nahrazuje.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate">
+        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely.</source>
+        <target state="translated">Buď nahraďte příponu {0} v názvu člena {1} navrhovanou alternativou {2}, nebo příponu úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
+        <source>Flags enums should have plural names</source>
+        <target state="translated">Výčty příznaků mají mít názvy v množném čísle.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FlagsEnumsShouldHavePluralNamesDescription">
+        <source>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</source>
+        <target state="translated">Veřejný výčet obsahuje atribut System.FlagsAttribute, ale jeho název nekončí na s. Typy, které jsou označené atributem FlagsAttribute, mají názvy v množném čísle, protože tento atribut označuje, že se dá zadat více než jedna hodnota.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FlagsEnumsShouldHavePluralNamesMessage">
+        <source>Flags enums should have plural names</source>
+        <target state="translated">Výčty příznaků mají mít názvy v množném čísle.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsTitle">
+        <source>Identifiers should not match keywords</source>
+        <target state="translated">Identifikátory se nemají shodovat s klíčovými slovy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsDescription">
+        <source>A namespace name or a type name matches a reserved keyword in a programming language. Identifiers for namespaces and types should not match keywords that are defined by languages that target the common language runtime.</source>
+        <target state="translated">Název názvového prostoru nebo název typu se shoduje s rezervovaným klíčovým slovem programovacího jazyka. Identifikátory názvových prostorů a typů by se neměly shodovat s klíčovými slovy definovanými jazyky, jejichž cílem je modul CLR (Common Language Runtime).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageMemberParameter">
+        <source>In virtual/interface member {0}, rename parameter {1} so that it no longer conflicts with the reserved language keyword '{2}'. Using a reserved keyword as the name of a parameter on a virtual/interface member makes it harder for consumers in other languages to override/implement the member.</source>
+        <target state="translated">Přejmenujte parametr {1} ve virtuálním členovi nebo členovi rozhraní {0} tak, aby už nebyl v konfliktu s rezervovaným klíčovým slovem {2} jazyka. Použití rezervovaného klíčového slova jako názvu parametru u virtuálního člena nebo člena rozhraní znesnadňuje konzumentům v jiných jazycích přepis nebo implementaci tohoto člena.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageMember">
+        <source>Rename virtual/interface member {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a virtual/interface member makes it harder for consumers in other languages to override/implement the member.</source>
+        <target state="translated">Přejmenujte virtuálního člena nebo člena rozhraní {0} tak, aby už nebyl v konfliktu s rezervovaným klíčovým slovem {1} jazyka. Použití rezervovaného klíčového slova jako názvu virtuálního člena nebo člena rozhraní znesnadňuje konzumentům v jiných jazycích přepis nebo implementaci tohoto člena.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageType">
+        <source>Rename type {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a type makes it harder for consumers in other languages to use the type.</source>
+        <target state="translated">Přejmenujte typ {0} tak, aby už nebyl v konfliktu s rezervovaným klíčovým slovem {1} jazyka. Použití rezervovaného klíčového slova jako názvu typu znesnadňuje konzumentům v jiných jazycích použití tohoto typu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageNamespace">
+        <source>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</source>
+        <target state="translated">Přejmenujte názvový prostor {0} tak, aby už nebyl v konfliktu s rezervovaným klíčovým slovem {1} jazyka. Použití rezervovaného klíčového slova jako názvu názvového prostoru znesnadňuje konzumentům v jiných jazycích použití tohoto názvového prostoru.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesTitle">
+        <source>Only FlagsAttribute enums should have plural names</source>
+        <target state="translated">Názvy v množném čísle mají mít jenom výčty FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesDescription">
+        <source>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</source>
+        <target state="translated">Názvy v množném čísle podle zásad vytváření názvů označují, že lze současně zadat více než jednu hodnotu výčtu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesMessage">
+        <source>Only FlagsAttribute enums should have plural names</source>
+        <target state="translated">Názvy v množném čísle mají mít jenom výčty FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyNamesShouldNotMatchGetMethodsTitle">
+        <source>Property names should not match get methods</source>
+        <target state="translated">Názvy vlastností se nemají shodovat s metodami Get.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyNamesShouldNotMatchGetMethodsDescription">
+        <source>The name of a public or protected member starts with ""Get"" and otherwise matches the name of a public or protected property. ""Get"" methods and properties should have names that clearly distinguish their function.</source>
+        <target state="translated">Název veřejného nebo chráněného člena začíná na Get a také jinak se shoduje s názvem veřejné nebo chráněné vlastnosti. Metody a vlastnosti Get by měly mít název, který jasně rozlišuje jejich funkci.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyNamesShouldNotMatchGetMethodsMessage">
+        <source>The property name '{0}' is confusing given the existence of method '{1}'. Rename or remove one of these members.</source>
+        <target state="translated">Název vlastnosti {0} je matoucí vzhledem k existenci metody {1}. Přejmenujte nebo odeberte jednoho z těchto členů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesTitle">
+        <source>Type names should not match namespaces</source>
+        <target state="translated">Názvy typů se nemají shodovat s názvovými prostory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesDescription">
+        <source>Type names should not match the names of namespaces that are defined in the .NET Framework class library. Violating this rule can reduce the usability of the library.</source>
+        <target state="translated">Názvy typů by se neměly shodovat s názvy názvových prostorů, které jsou definované v knihovně tříd rozhraní .NET Framework. Porušení tohoto pravidla může omezit použitelnost knihovny.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesMessageDefault">
+        <source>The type name {0} conflicts in whole or in part with the namespace name '{1}'. Change either name to eliminate the conflict.</source>
+        <target state="translated">Název typu {0} koliduje úplně nebo částečně s názvem názvového prostoru {1}. Změnou některého názvu zabraňte tomuto konfliktu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesMessageSystem">
+        <source>The type name {0} conflicts in whole or in part with the namespace name '{1}' defined in the .NET Framework. Rename the type to eliminate the conflict.</source>
+        <target state="translated">Název typu {0} koliduje úplně nebo částečně s názvem názvového prostoru {1} definovaným v rozhraní .NET Framework. Přejmenováním typu zabraňte tomuto konfliktu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ParameterNamesShouldMatchBaseDeclarationTitle">
+        <source>Parameter names should match base declaration</source>
+        <target state="translated">Názvy parametrů se mají shodovat se základní deklarací.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ParameterNamesShouldMatchBaseDeclarationDescription">
+        <source>Consistent naming of parameters in an override hierarchy increases the usability of the method overrides. A parameter name in a derived method that differs from the name in the base declaration can cause confusion about whether the method is an override of the base method or a new overload of the method.</source>
+        <target state="translated">Konzistentní pojmenování parametrů v hierarchii přepisů zvyšuje použitelnost přepisů metod. Název parametru v odvozené metodě, který se liší od názvu v základní deklaraci, může způsobit zmatek v tom, jestli je tato metoda přepisem základní metody, nebo nové přetížení této metody.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ParameterNamesShouldMatchBaseDeclarationMessage">
+        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}.</source>
+        <target state="translated">V členovi {0} změňte název parametru {1} na {2}, aby se shodoval s identifikátorem deklarovaným v {3}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsTitle">
+        <source>Use preferred terms</source>
+        <target state="translated">Používejte preferované termíny.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsDescription">
+        <source>The name of an externally visible identifier includes a term for which an alternative, preferred term exists. Alternatively, the name includes the term ""Flag"" or ""Flags"".</source>
+        <target state="translated">Název externě viditelných identifikátorů obsahuje termín, pro který existuje alternativní preferovaný termín. Název může také obsahovat termín Flag nebo Flags.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageAssembly">
+        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'.</source>
+        <target state="translated">Nahraďte termín {0} v názvu sestavení {1} preferovanou alternativou {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageNamespace">
+        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'.</source>
+        <target state="translated">Nahraďte termín {0} v názvu názvového prostoru {1} preferovanou alternativou {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberParameter">
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">V členovi {0} nahraďte termín {1} v názvu parametru {2} preferovanou alternativou {3}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageDelegateParameter">
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">V delegátovi {0} nahraďte termín {1} v názvu parametru {2} preferovanou alternativou {3}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">U typu {0} nahraďte termín {1} v názvu parametru obecného typu {2} preferovanou alternativou {3}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">U metody {0} nahraďte termín {1} v názvu parametru obecného typu {2} preferovanou alternativou {3}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageType">
+        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'.</source>
+        <target state="translated">Nahraďte termín {0} v názvu typu {1} preferovanou alternativou {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMember">
+        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'.</source>
+        <target state="translated">Nahraďte termín {0} v názvu člena {1} preferovanou alternativou {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
+        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">Nahraďte termín {0} v názvu sestavení {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
+        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">Nahraďte termín {0} v názvu názvového prostoru {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">V členovi {0} nahraďte termín {1} v názvu parametru {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">V delegátovi {0} nahraďte termín {1} v názvu parametru {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">U typu {0} nahraďte termín {1} v názvu parametru obecného typu {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">U metody {0} nahraďte termín {1} v názvu parametru obecného typu {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
+        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">Nahraďte termín {0} v názvu typu {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
+        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">Nahraďte termín {0} v názvu člena {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
+        <source>Override equals and operator equals on value types</source>
+        <target state="translated">Přepište Equals a operátor rovnosti u typů hodnot.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesDescription">
+        <source>For value types, the inherited implementation of Equals uses the Reflection library and compares the contents of all fields. Reflection is computationally expensive, and comparing every field for equality might be unnecessary. If you expect users to compare or sort instances, or to use instances as hash table keys, your value type should implement Equals.</source>
+        <target state="translated">Zděděná implementace Equals používá pro typy hodnot knihovnu reflexe a porovnává obsah všech polí. Reflexe je výpočetně náročná a porovnání rovnosti u každého pole může být zbytečné. Pokud očekáváte, že uživatelé budou porovnávat nebo řadit instance, nebo používat instance jako klíče zatřiďovací tabulky, měl by typ hodnoty implementovat Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals">
+        <source>{0} should override Equals.</source>
+        <target state="translated">{0} má přepsat Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality">
+        <source>{0} should override the equality (==) and inequality (!=) operators.</source>
+        <target state="translated">{0} má přepsat operátory rovnosti (==) a nerovnosti (!=).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotReturnArraysTitle">
+        <source>Properties should not return arrays</source>
+        <target state="translated">Vlastnosti nemají vracet pole.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotReturnArraysDescription">
+        <source>Arrays that are returned by properties are not write-protected, even when the property is read-only. To keep the array tamper-proof, the property must return a copy of the array. Typically, users will not understand the adverse performance implications of calling such a property.</source>
+        <target state="translated">Pole, která jsou vracena vlastnostmi, nejsou chráněná proti zápisu, i když je vlastnost určená jen pro čtení. Aby se pole nedalo zfalšovat, musí vlastnost vracet kopii tohoto pole. Uživatelé zpravidla neporozumí nepříznivým výkonovým aspektům, které má volání takové vlastnosti.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotReturnArraysMessage">
+        <source>Properties should not return arrays</source>
+        <target state="translated">Vlastnosti nemají vracet pole.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesTitle">
+        <source>Assemblies should have valid strong names</source>
+        <target state="translated">Sestavení mají mít platné silné názvy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesDescription">
+        <source>The strong name protects clients from unknowingly loading an assembly that has been tampered with. Assemblies without strong names should not be deployed outside very limited scenarios. If you share or distribute assemblies that are not correctly signed, the assembly can be tampered with, the common language runtime might not load the assembly, or the user might have to disable verification on his or her computer.</source>
+        <target state="translated">Silný název chrání klienty před nevědomým načtením sestavení, které bylo zfalšováno. S výjimkou velmi specifických situací by se sestavení bez silných názvů neměla nasazovat. Pokud sdílíte nebo distribuujete sestavení, která nejsou správně podepsána, můžou být zfalšována, modul CLR (Common Language Rutime) nemusí sestavení načíst nebo uživatel bude na počítači muset zakázat ověřování.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNoStrongName">
+        <source>Sign {0} with a strong name key.</source>
+        <target state="translated">Podepište {0} klíčem se silným názvem.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNotValid">
+        <source>Verify that {0} has a valid strong name before deploying.</source>
+        <target state="translated">Před nasazením ověřte, že má {0} platný silný název.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsTitle">
+        <source>Override GetHashCode on overriding Equals</source>
+        <target state="translated">Přepište GetHashCode při přepisu Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsDescription">
+        <source>GetHashCode returns a value, based on the current instance, that is suited for hashing algorithms and data structures such as a hash table. Two objects that are the same type and are equal must return the same hash code.</source>
+        <target state="translated">GetHashCode vrací hodnotu na základě aktuální instance, která je vhodná pro algoritmy hash a datové struktury, jako je zatřiďovací tabulka. Dva objekty, které jsou stejného typu a rovnají se, musejí vracet stejný kód hash.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsMessage">
+        <source>Override GetHashCode on overriding Equals</source>
+        <target state="translated">Přepište GetHashCode při přepisu Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsTitle">
+        <source>Override Equals on overloading operator equals</source>
+        <target state="translated">Přepište Equals při přetížení operátorů rovnosti.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsDescription">
+        <source>A public type implements the equality operator but does not override Object.Equals.</source>
+        <target state="translated">Veřejný typ implementuje operátor rovnosti, ale nepřepisuje Object.Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsMessage">
+        <source>Override Equals on overloading operator equals</source>
+        <target state="translated">Přepište Equals při přetížení operátorů rovnosti.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Since_0_redefines_operator_1_it_should_also_redefine_operator_2">
+        <source>Since '{0}' redefines operator '{1}', it should also redefine operator '{2}'</source>
+        <target state="translated">Protože {0} mění definici operátoru {1}, má rovněž měnit definici operátoru {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Generate_missing_operators">
+        <source>Generate missing operators</source>
+        <target state="translated">Vygenerujte chybějící operátory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsCodeActionTitle">
+        <source>Override object.Equals</source>
+        <target state="translated">Přepište object.Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnImplementingIEquatableCodeActionTitle">
+        <source>Override object.Equals</source>
+        <target state="translated">Přepište object.Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsCodeActionTitle">
+        <source>Override object.GetHashCode</source>
+        <target state="translated">Přepište object.GetHashCode.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeExceptionPublic">
+        <source>Make exception public</source>
+        <target state="translated">Nastavte výjimku jako veřejnou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesFix1">
+        <source>Make '{0}' protected.</source>
+        <target state="translated">Nastavte {0} jako chráněnou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesFix2">
+        <source>Change '{0}' to a public interface implementation.</source>
+        <target state="translated">Změňte {0} na implementaci veřejného rozhraní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesFix3">
+        <source>Make the containing type '{0}' sealed.</source>
+        <target state="translated">Nastavte obsahující typ {0} jako zapečetěný.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StaticHolderTypeIsNotStatic">
+        <source>Type '{0}' is a static holder type but is neither static nor NotInheritable</source>
+        <target state="translated">Typ {0} je typ statický typ držitele, ale není ani statický, ani nedědičný.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StaticHolderTypesShouldBeStaticOrNotInheritable">
+        <source>Static holder types should be Static or NotInheritable</source>
+        <target state="translated">Statické typy držitelů mají být statické nebo nedědičné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeClassStatic">
+        <source>Make Class Static</source>
+        <target state="translated">Nastavte třídu jako statickou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideObjectEqualsMessage">
+        <source>Type {0} should override Equals because it implements IEquatable&lt;T&gt;</source>
+        <target state="translated">Typ {0} by měl přepisovat metodu Equals, protože implementuje IEquatable&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideObjectEqualsTitle">
+        <source>Override Object.Equals(object) when implementing IEquatable&lt;T&gt;</source>
+        <target state="translated">Při implementaci IEquatable&lt;T&gt; přepište Object.Equals(object)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIntegralOrStringArgumentForIndexersDescription">
+        <source>Indexers, that is, indexed properties, should use integer or string types for the index. These types are typically used for indexing data structures and increase the usability of the library. Use of the Object type should be restricted to those cases where the specific integer or string type cannot be specified at design time. If the design requires other types for the index, reconsider whether the type represents a logical data store. If it does not represent a logical data store, use a method.</source>
+        <target state="translated">Indexery, neboli indexované vlastnosti, mají pro index používat celočíselný nebo řetězcový typ. Tyto typy se zpravidla používají pro indexování datových struktur a zvyšují použitelnost knihovny. Použití objektového typu by se mělo omezit na případy, kdy se při návrhu nedá určit konkrétní celočíselný nebo řetězcový typ. Pokud návrh vyžaduje pro index jiné typy, znovu zvažte, jestli tento typ představuje logické datové úložiště. Pokud nepředstavuje logické datové úložiště, použijte metodu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIntegralOrStringArgumentForIndexersMessage">
+        <source>Use Integral Or String Argument For Indexers</source>
+        <target state="translated">Použijte pro indexery integrální nebo řetězcový argument.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIntegralOrStringArgumentForIndexersTitle">
+        <source>Use Integral Or String Argument For Indexers</source>
+        <target state="translated">Použijte pro indexery integrální nebo řetězcový argument.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDirectlyAwaitATaskDescription">
+        <source>When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.</source>
+        <target state="translated">Když asynchronní metoda čeká přímo na Task, bude se pokračovat ve stejném vlákně, v jakém se vytvořila daná úloha. Zvažte možnost zavolat Task.ConfigureAwait(Boolean), čímž dáte najevo, že hodláte pokračovat. Když pro úlohu zavoláte ConfigureAwait(false), můžete ve fondu vláken naplánovat pokračování a vyhnout se tak vzájemnému zablokování ve vláknu uživatelského rozhraní. Pro knihovny, které nejsou závislé na aplikacích, je vhodné předat false. Volání ConfigureAwait(true) pro danou úlohu se chová stejně, jako když se explicitně nezavolá ConfigureAwait. Když tuto metodu explicitně zavoláte, dáváte čtenářům najevo, že se záměrně chystáte pokračovat v původním kontextu synchronizace.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDirectlyAwaitATaskMessage">
+        <source>Consider calling ConfigureAwait on the awaited task</source>
+        <target state="translated">Zvažte možnost zavolat ConfigureAwait pro očekávanou úlohu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDirectlyAwaitATaskTitle">
+        <source>Consider calling ConfigureAwait on the awaited task</source>
+        <target state="translated">Zvažte možnost zavolat ConfigureAwait pro očekávanou úlohu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppendConfigureAwaitFalse">
+        <source>Append .ConfigureAwait(false)</source>
+        <target state="translated">Připojte .ConfigureAwait(false).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsDescription">
+        <source>When a type T overrides Object.Equals(object), the implementation must cast the object argument to the correct type T before performing the comparison. If the type implements IEquatable&lt;T&gt;, and therefore offers the method T.Equals(T), and if the argument is known at compile time to be of type T, then the compiler can call IEquatable&lt;T&gt;.Equals(T) instead of Object.Equals(object), and no cast is necessary, improving performance.</source>
+        <target state="translated">Když typ T přepisuje Object.Equals(object), implementace musí před porovnáním přetypovat argument objektu na správný typ T. Pokud typ implementuje rozhraní IEquatable&lt;T&gt; a tím nabízí metodu T.Equals(T) a pokud je při kompilaci známo, že argument je typu T, kompilátor může zavolat IEquatable&lt;T&gt;.Equals(T) místo Object.Equals(object). Díky tomu není nutné nic přetypovávat, což zvyšuje výkon.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideObjectEqualsDescription">
+        <source>When a type T implements the interface IEquatable&lt;T&gt;, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the "principle of least surprise".</source>
+        <target state="translated">Když typ T implementuje rozhraní IEquatable&lt;T&gt;, informuje uživatele, který ve zdrojovém kódu vidí volání metody Equals, že instance daného typu se dá porovnat s instancí jiného typu. U uživatele může dojít k nedorozumění, pokud jeho pokus o porovnání typu s instancí jiného typu způsobí chybu při kompilaci. To porušuje tzv. princip minimálního překvapení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RenameToTitle">
+        <source>Rename to '{0}'</source>
+        <target state="translated">Přejmenujte na {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHideBaseClassMethodsDescription">
+        <source>A method in a base type is hidden by an identically named method in a derived type when the parameter signature of the derived method differs only by types that are more weakly derived than the corresponding types in the parameter signature of the base method.</source>
+        <target state="translated">Některá metoda v základním typu je skrytá identicky pojmenovanou metodou v odvozeném typu, kdy se podpis parametru odvozené metody odlišuje jenom typy, které jsou odvozené slaběji než odpovídající typy v podpisu parametru základní metody.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHideBaseClassMethodsMessage">
+        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'.</source>
+        <target state="translated">Změňte nebo odeberte {0}, protože skrývá konkrétnější metodu základní třídy: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHideBaseClassMethodsTitle">
+        <source>Do not hide base class methods</source>
+        <target state="translated">Neskrývejte metody základní třídy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="translated">Odeberte {0} a nahraďte jeho použití obecným EventHandlerem, třeba EventHandler&lt;T&gt;, kde T je platné EventArgs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForDelegateDescription">
+        <source>A type contains a delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.</source>
+        <target state="translated">Typ obsahuje delegáta, který vrací hodnotu void, jehož podpis obsahuje dva parametry (prvním je objekt a druhým je typ, který se dá přiřadit k EventArgs), přičemž cílem obsahujícího sestavení je Microsoft .NET Framework 2.0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="translated">Změňte událost {0} tak, aby nahradila typ {1} obecným EventHandlerem, třeba EventHandler&lt;T&gt;, kde T je platné EventArgs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEventDescription">
+        <source>A delegate that handles a public or protected event does not have the correct signature, return type, or parameter names.</source>
+        <target state="translated">Delegát, který zpracovává veřejnou nebo chráněnou událost, nemá správný podpis, návratový typ nebo názvy parametrů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEvent2Message">
+        <source>Change the event '{0}' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).</source>
+        <target state="translated">Explicitním definováním typu události (například Event MyEvent As EventHandler(Of MyEventArgs)) změňte událost {0} tak, aby používala obecnou obslužnou rutinu EventHandler.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEvent2Description">
+        <source>A type contains an event that declares an EventHandler delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.</source>
+        <target state="translated">Typ obsahuje událost, která deklaruje delegáta EventHandler, který vrací hodnotu void, jehož podpis obsahuje dva parametry (prvním je objekt a druhým je typ, který se dá přiřadit k EventArgs), přičemž cílem obsahujícího sestavení je Microsoft .NET Framework 2.0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesMessageBoth">
+        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable.</source>
+        <target state="translated">{0} má definovat operátory {1} a Rovná se, protože implementuje rozhraní IComparable.</target>
+        <note>1 is a comma-separated list</note>
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsTitle">
+        <source>Avoid calling problematic methods</source>
+        <target state="translated">Nevolejte problematické metody</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsDescription">
+        <source>A member calls a potentially dangerous or problematic method.</source>
+        <target state="translated">Člen volá potenciálně nebezpečnou nebo problematickou metodu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemGCCollect">
+        <source>Remove the call to GC.Collect from {0}. It is usually unnecessary to force garbage collection, and doing so can severely degrade performance.</source>
+        <target state="translated">Odeberte volání do GC.Collect z {0}. Obvykle není nutné vynucovat uvolňování paměti a pokud to uděláte, může se výkon velmi snížit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadResume">
+        <source>Remove the call to Thread.Resume from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
+        <target state="translated">Odeberte volání do Thread.Resume z {0}. Pozastavení a obnovení vláken může být nebezpečné, pokud systém provádí kritickou operaci, třeba spouští konstruktor třídy důležitého typu systému nebo překládá zabezpečení sdíleného sestavení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadSuspend">
+        <source>Remove the call to Thread.Suspend from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
+        <target state="translated">Odeberte volání do Thread.Suspend z {0}. Pozastavení a obnovení vláken může být nebezpečné, pokud systém provádí kritickou operaci, třeba spouští konstruktor třídy důležitého typu systému nebo překládá zabezpečení sdíleného sestavení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemTypeInvokeMember">
+        <source>Remove the call to System.Type.InvokeMember with BindingFlags.NonPublic from {0}. Taking a dependency on a private member increases the chance of a breaking change in the future.</source>
+        <target state="translated">Odeberte volání do System.Type.InvokeMember s BindingFlags.NonPublic z {0}. Využití závislosti u privátního členu zvyšuje možnost, že v budoucnu bude nutné provést výraznou změnu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageCoInitializeSecurity">
+        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called after the runtime has been initialized. The workaround is to write an unmanaged shim that will call the routine and then activate and call into managed code. You can do this using an export from a mixed-mode C++ DLL, by registering a managed component for use by COM, or by using the runtime hosting API.</source>
+        <target state="translated">{0} je deklarace metody P/Invoke do rozhraní API OLE32, kterou nelze spolehlivě volat po inicializaci modulu runtime. Alternativním řešením je vytvořit nespravovaný kód shim, který zavolá rutinu a potom aktivuje a zavolá spravovaný kód. To můžete udělat pomocí exportu z knihovny DDL C++ ve smíšeném režimu, registrací spravované komponenty pro použití modelem COM nebo pomocí rozhraní API, které je hostitelem modulu runtime.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket">
+        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</source>
+        <target state="translated">{0} je deklarace metody P/Invoke do rozhraní API OLE32, kterou nelze spolehlivě volat oproti objektu volatelnému za běhu (spravovaný objekt, který zabaluje objekt modelu COM). Objekty volatelné za běhu dynamicky načítají ukazatele rozhraní, takže nahodile může dojít ke ztrátě efektu volání. Objekty volatelné za běhu pro daný objekt modelu COM se také sdílí napříč doménou, takže volání by mohlo ovlivnit ostatní uživatele. U ukazatele rozhraní, který provádí příslušná volání CoSetProxyBlanket, nahraďte toto volání objektem modelu COM nativní obálky.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
+        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}.</source>
+        <target state="translated">Odeberte volání do SafeHandle.DangerousGetHandle z {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
+        <source>Remove the call to Assembly.LoadFrom from {0}.</source>
+        <target state="translated">Odeberte volání do Assembly.LoadFrom z {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
+        <source>Remove the call to Assembly.LoadFile from {0}.</source>
+        <target state="translated">Odeberte volání do Assembly.LoadFile z {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
+        <source>Remove the call to Assembly.LoadWithPartialName from {0}.</source>
+        <target state="translated">Odeberte volání do Assembly.LoadWithPartialName z {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CategoryReliability">
+        <source>Reliability</source>
+        <target state="translated">Spolehlivost</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUsingCrefTagsWithAPrefixTitle">
+        <source>Avoid using cref tags with a prefix</source>
+        <target state="translated">Nepoužívejte značky cref s předponou</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUsingCrefTagsWithAPrefixDescription">
+        <source>Use of cref tags with prefixes should be avoided, since it prevents the compiler from verifying references and the IDE from updating references during refactorings. It is permissible to suppress this error at a single documentation site if the cref must use a prefix because the type being mentioned is not findable by the compiler. For example, if a cref is mentioning a special attribute in the full framework but you're in a file that compiles against the portable framework, or if you want to reference a type at higher layer of Roslyn, you should suppress the error. You should not suppress the error just because you want to take a shortcut and avoid using the full syntax.</source>
+        <target state="translated">Značky cref s předponami byste neměli používat, protože brání kompilátoru v ověření odkazů a integrovanému vývojovému prostředí (IDE) v aktualizaci odkazů při refaktoringu. Pokud je nutné značku cref použít s předponou, protože kompilátor nemůže vyhledat zmiňovaný typ, můžete tuto chybu potlačit na jednom webu s dokumentací. Pokud například značka cref zmiňuje speciální atribut v plné verzi prostředí, ale vy jste v souboru, který se kompiluje proti přenosnému prostředí, nebo pokud chcete odkazovat na typ na vyšší vrstvě Roslynu, měli byste tuto chybu potlačit. Chybu byste neměli potlačovat jenom z důvodu, že si chcete ušetřit práci a vyhnout se použití úplné syntaxe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUsingCrefTagsWithAPrefixMessage">
+        <source>Avoid using cref tags with a prefix</source>
+        <target state="translated">Nepoužívejte značky cref s předponou</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDeadConditionalCodeAlwaysTruFalseOrNullMessage">
+        <source>'{0}' is always '{1}'. Remove or refactor the condition(s) to avoid dead code.</source>
+        <target state="translated">{0} bude vždy {1}. Odeberte nebo refaktorujte podmínku tak, abyste se vyhnuli mrtvému kódu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDeadConditionalCodeNeverNullMessage">
+        <source>'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.</source>
+        <target state="translated">{0} nikdy nebude {1}. Odeberte nebo refaktorujte podmínku tak, abyste se vyhnuli mrtvému kódu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDeadConditionalCodeTitle">
+        <source>Avoid dead conditional code</source>
+        <target state="translated">Vyhněte se mrtvému podmíněnému kódu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveClassCouplingDescription">
+        <source>This rule measures class coupling by counting the number of unique type references that a symbol contains. Symbols that have a high degree of class coupling can be difficult to maintain. It is a good practice to have types and methods that exhibit low coupling and high cohesion. To fix this violation, try to redesign the code to reduce the number of types to which it is coupled.</source>
+        <target state="translated">Toto pravidlo měří párování tříd tak, že počítá jedinečné odkazy na typy obsažené v symbolu. Symboly s vysokým stupněm párování tříd může být složité udržovat. Doporučeným postupem je používat typy a metody s nízkým párováním a vysokou kohezí. Pokud chcete porušení tohoto pravidla opravit, zkuste kód přepracovat tak, aby se snížil počet typů, na které se páruje.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveClassCouplingMessage">
+        <source>'{0}' is coupled with '{1}' different types from '{2}' different namespaces. Rewrite or refactor the code to decrease its class coupling below '{3}'.</source>
+        <target state="translated">{0} se páruje s {1} různými typy z {2} různých oborů názvů. Přepište nebo refaktorujte kód tak, aby se párování tříd snížilo pod {3}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveClassCouplingTitle">
+        <source>Avoid excessive class coupling</source>
+        <target state="translated">Vyhněte se nadměrnému párování tříd</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveComplexityDescription">
+        <source>Cyclomatic complexity measures the number of linearly independent paths through the method, which is determined by the number and complexity of conditional branches. A low cyclomatic complexity generally indicates a method that is easy to understand, test, and maintain. The cyclomatic complexity is calculated from a control flow graph of the method and is given as follows: `cyclomatic complexity = the number of edges - the number of nodes + 1`, where a node represents a logic branch point and an edge represents a line between nodes.</source>
+        <target state="translated">Cyklomatická složitost měří počet lineárně nezávislých cest přes metodu, který se určuje jako počet a složitost podmíněných větví. Nízká cyklomatická složitost obecně naznačuje, že metodě je snadné porozumět a že se dá snadno testovat a udržovat. Cyklomatická složitost se počítá z grafu toků řízení metody a je daná tímto vztahem: cyklomatická složitost = počet hran − počet uzlů + 1, kde uzel představuje bod logické větve a hrana představuje čáru mezi uzly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveComplexityMessage">
+        <source>'{0}' has a cyclomatic complexity of '{1}'. Rewrite or refactor the code to decrease its complexity below '{2}'.</source>
+        <target state="translated">{0} má cyklomatickou složitost na úrovni {1}. Přepište nebo refaktorujte kód tak, aby se složitost snížila pod úroveň {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveComplexityTitle">
+        <source>Avoid excessive complexity</source>
+        <target state="translated">Vyhněte se nadměrné složitosti</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveInheritanceDescription">
+        <source>Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.</source>
+        <target state="translated">Hluboce vnořené hierarchie typů můžou být složité na sledování, pochopení a údržbu. Toto pravidlo omezuje analýzu na hierarchie ve stejném modulu. Pokud chcete porušení tohoto pravidla opravit, odvoďte typ od základního typu, který je méně hluboko v hierarchii dědičnosti, nebo eliminujte některé z mezilehlých základních typů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveInheritanceMessage">
+        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'</source>
+        <target state="translated">{0} má hierarchii objektů, která v definujícím modulu dosahuje hloubky {1} úrovní. Pokud je to možné, eliminujte v hierarchii základní třídy tak, aby se počet úrovní v hierarchii snížil pod {2}: {3}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveInheritanceTitle">
+        <source>Avoid excessive inheritance</source>
+        <target state="translated">Vyhněte se nadměrné dědičnosti</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnmantainableCodeDescription">
+        <source>The maintainability index is calculated by using the following metrics: lines of code, program volume, and cyclomatic complexity. Program volume is a measure of the difficulty of understanding of a symbol that is based on the number of operators and operands in the code. Cyclomatic complexity is a measure of the structural complexity of the type or method. A low maintainability index indicates that code is probably difficult to maintain and would be a good candidate to redesign.</source>
+        <target state="translated">Index udržovatelnosti se počítá pomocí těchto metrik: řádky kódu, objem programu a cyklomatická složitost. Objem programu je míra, jak obtížné je porozumět symbolu založenému na počtu operátorů a operandů v kódu. Cyklomatická složitost je míra strukturální složitosti typu nebo metody. Nízký index udržovatelnosti může znamenat, že kód bude pravděpodobně obtížné udržovat a byl by vhodným kandidátem na změnu návrhu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnmantainableCodeMessage">
+        <source>'{0}' has a maintainability index of '{1}'. Rewrite or refactor the code to increase its maintainability index (MI) above '{2}'.</source>
+        <target state="translated">{0} má index udržovatelnosti {1}. Přepište nebo refaktorujte kód tak, aby se index udržovatelnosti zvýšil nad {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnmantainableCodeTitle">
+        <source>Avoid unmaintainable code</source>
+        <target state="translated">Vyhněte se neudržovatelnému kódu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidEntryInCodeMetricsConfigFileDescription">
+        <source>Invalid entry in code metrics rule specification file</source>
+        <target state="translated">Neplatná položka v souboru specifikace pravidel metrik kódu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidEntryInCodeMetricsConfigFileMessage">
+        <source>Invalid entry '{0}' in code metrics rule specification file '{1}'</source>
+        <target state="translated">Neplatná položka {0} v souboru specifikace pravidel metrik kódu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
+        <source>Invalid entry in code metrics rule specification file</source>
+        <target state="translated">Neplatná položka v souboru specifikace pravidel metrik kódu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesTitle">
+        <source>Variable names should not match field names</source>
+        <target state="translated">Názvy proměnných se nemají shodovat s názvy polí.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesDescription">
+        <source>An instance method declares a parameter or a local variable whose name matches an instance field of the declaring type, leading to errors.</source>
+        <target state="translated">Metoda instance deklaruje parametr nebo lokální proměnnou, jejíž název se shoduje s polem instance deklarujícího typu, což způsobí chyby.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageLocal">
+        <source>{0}, a variable declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
+        <target state="translated">Proměnná {0} deklarovaná v {1} má stejný název jako pole instance u tohoto typu. Změňte název jedné z těchto položek.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageParameter">
+        <source>{0}, a parameter declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
+        <target state="translated">Parametr {0} deklarovaný v {1} má stejný název jako pole instance u tohoto typu. Změňte název jedné z těchto položek.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewUnusedParametersTitle">
+        <source>Review unused parameters</source>
+        <target state="translated">Zkontrolujte nepoužité parametry.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewUnusedParametersDescription">
+        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
+        <target state="translated">Vyhněte se v kódu nepoužitým parametrům. Pokud parametr nelze odebrat, změňte jeho název tak, aby začínal podtržítkem, za kterým volitelně následuje celé číslo, například _, _1, _2 atd. Tyto řetězce se považují za názvy speciálních symbolů pro vyřazení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewUnusedParametersMessage">
+        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
+        <target state="translated">Parametr {0} metody {1} se vůbec nepoužívá. Odeberte tento parametr nebo ho použijte v těle metody.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveUnusedParameterMessage">
+        <source>Remove unused parameter</source>
+        <target state="translated">Odebrat nepoužívaný parametr</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsTitle">
+        <source>Do not ignore method results</source>
+        <target state="translated">Neignorujte výsledky metod.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsDescription">
+        <source>A new object is created but never used; or a method that creates and returns a new string is called and the new string is never used; or a COM or P/Invoke method returns an HRESULT or error code that is never used.</source>
+        <target state="translated">Je vytvořený nový objekt, který se vůbec nepoužívá; nebo se volá metoda, která vytváří a vrací nový řetězec, který se vůbec nepoužívá; nebo metoda COM či P/Invoke vrací HRESULT nebo kód chyby, který se vůbec nepoužívá.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageObjectCreation">
+        <source>{0} creates a new instance of {1} which is never used. Pass the instance as an argument to another method, assign the instance to a variable, or remove the object creation if it is unnecessary.</source>
+        <target state="translated">{0} vytváří novou instanci {1}, která se vůbec nepoužívá. Předejte tuto instanci jako argument jiné metodě, přiřaďte tuto instanci proměnné nebo odeberte vytvoření objektu, pokud je nepotřebný.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageStringCreation">
+        <source>{0} calls {1} but does not use the new string instance that the method returns. Pass the instance as an argument to another method, assign the instance to a variable, or remove the call if it is unnecessary.</source>
+        <target state="translated">{0} volá {1}, ale nepoužívá novou instanci řetězce, kterou tato metoda vrací. Předejte tuto instanci jako argument jiné metodě, přiřaďte tuto instanci proměnné nebo odeberte volání, pokud je nepotřebné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageHResultOrErrorCode">
+        <source>{0} calls {1} but does not use the HRESULT or error code that the method returns. This could lead to unexpected behavior in error conditions or low-resource situations. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">{0} volá {1}, ale nepoužívá HRESULT ani kód chyby, který tato metoda vrací. To může vést k neočekávanému chování při výskytu chyby nebo nedostatku prostředků. Použijte výsledek v podmíněném příkazu, přiřaďte výsledek proměnné nebo ho předejte jako argument jiné metodě.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageTryParse">
+        <source>{0} calls {1} but does not explicitly check whether the conversion succeeded. Either use the return value in a conditional statement or verify that the call site expects that the out argument will be set to the default value when the conversion fails.</source>
+        <target state="translated">{0} volá {1}, ale explicitně nekontroluje, jestli byl převod úspěšný. Buď použijte návratovou hodnotu v podmíněném příkazu, nebo ověřte, jestli volající web očekává, že se výstupní argument nastaví na výchozí hodnotu, když se převod nepodaří.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUninstantiatedInternalClassesTitle">
+        <source>Avoid uninstantiated internal classes</source>
+        <target state="translated">Vyhněte se interním třídám bez vytvořené instance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUninstantiatedInternalClassesDescription">
+        <source>An instance of an assembly-level type is not created by code in the assembly.</source>
+        <target state="translated">Instance typu na úrovni sestavení není vytvořená kódem v tomto sestavení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUninstantiatedInternalClassesMessage">
+        <source>{0} is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).</source>
+        <target state="translated">{0} je interní třída, jejíž instance není zjevně vůbec vytvořená. V takovém případě odeberte tento kód ze sestavení. Pokud má tato třída obsahovat jenom statické členy, nastavte ji jako statickou (sdílenou ve Visual Basicu).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnusedPrivateFieldsTitle">
+        <source>Avoid unused private fields</source>
+        <target state="translated">Vyhněte se nepoužitým privátním polím.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnusedPrivateFieldsDescription">
+        <source>Private fields were detected that do not appear to be accessed in the assembly.</source>
+        <target state="translated">Byla zjištěna privátní pole, která se podle všeho v tomto sestavení nepoužívají.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnusedPrivateFieldsMessage">
+        <source>Unused field '{0}'.</source>
+        <target state="translated">Nepoužité pole {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessagePureMethod">
+        <source>{0} calls {1} but does not use the value the method returns. Because {1} is marked as a Pure method, it cannot have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">{0} volá {1}, ale nepoužívá hodnotu, kterou tato metoda vrací. Protože {1} je označená jako metoda Pure, nemůže mít vedlejší účinky. Použijte výsledek v podmíněném příkazu, přiřaďte výsledek proměnné nebo ho předejte jako argument jiné metodě.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseNameOfInPlaceOfStringDescription">
+        <source>Using nameof helps keep your code valid when refactoring.</source>
+        <target state="translated">Použití nameof pomůže zachovat platnost vašeho kódu při refaktoringu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseNameOfInPlaceOfStringMessage">
+        <source>Use nameof in place of string literal '{0}'</source>
+        <target state="translated">Namísto řetězcového literálu {0} použijte nameof.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseNameOfInPlaceOfStringTitle">
+        <source>Use nameof to express symbol names</source>
+        <target state="translated">K vyjádření názvů symbolů použijte nameof</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPropertySelfAssignmentMessage">
+        <source>The property {0} should not be assigned to itself.</source>
+        <target state="translated">Vlastnost {0} nesmí být přiřazena sama k sobě.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPropertySelfAssignmentTitle">
+        <source>Do not assign a property to itself.</source>
+        <target state="translated">Nepřiřazujte vlastnost k ní samotné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticCodeFix">
+        <source>Make static</source>
+        <target state="translated">Nastavit jako statickou</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticCodeFix_WarningAnnotation">
+        <source>Some references to '{0}' could not be fixed, they should be fixed manually.</source>
+        <target state="translated">Některé odkazy na {0} nešlo opravit. Měly by se opravit ručně.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateTitle">
+        <source>Use literals where appropriate</source>
+        <target state="translated">Tam, kde je to vhodné, použijte literály</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateDescription">
+        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.</source>
+        <target state="translated">Pole je deklarováno jako statické a jen ke čtení (ve Visual Basicu jako Shared a ReadOnly) a je inicializováno pomocí hodnoty, kterou lze při kompilaci vypočítat. Vzhledem k tomu, že hodnotu přidruženou k cílovému poli je možné při kompilaci vypočítat, změňte deklaraci na pole const (Const ve Visual Basicu), aby se tato hodnota vypočítala při kompilaci, a nikoli za běhu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
+        <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
+        <target state="translated">Pole {0} se deklarovalo jako readonly, ale je inicializované pomocí konstantní hodnoty. Označte toto pole místo toho jako const.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
+        <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
+        <target state="translated">Pole {0} se deklarovalo jako readonly, ale je inicializované pomocí prázdného řetězce (""). Označte toto pole místo toho jako const.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyTitle">
+        <source>Do not initialize unnecessarily</source>
+        <target state="translated">Nepoužívejte inicializaci zbytečně</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyDescription">
+        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
+        <target state="translated">Před spuštění konstruktoru modul CLR (Common Language Runtime) iniciuje u všech polí nastavení výchozích hodnot. Ve většině případů je nastavení pole na výchozí hodnotu v konstruktoru nadbytečné, snižuje výkon a navyšuje náklady na údržbu. Jediným případem, kdy nadbytečné není, je tehdy, když konstruktor volá jiný konstruktor stejné třídy nebo konstruktor základní třídy a ten u pole nastaví nevýchozí hodnotu. V této situaci je změna hodnoty pole zpět na výchozí hodnotu vhodná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyMessage">
+        <source>Do not initialize unnecessarily</source>
+        <target state="translated">Nepoužívejte inicializaci zbytečně</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
+        <source>Prefer jagged arrays over multidimensional</source>
+        <target state="translated">Upřednostnění vícenásobných polí před multidimenzionálními</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalDescription">
+        <source>A jagged array is an array whose elements are arrays. The arrays that make up the elements can be of different sizes, leading to less wasted space for some sets of data.</source>
+        <target state="translated">Vícenásobné pole je pole, jehož prvky jsou pole. Pole, která tvoří tyto prvky, mohou mít různou velikost, což u některých sad dat může vést k lépe využitému místu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageDefault">
+        <source>{0} is a multidimensional array. Replace it with a jagged array if possible.</source>
+        <target state="translated">{0} je multidimenzionální pole. Pokud je to možné, nahraďte ho vícenásobným polem.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageReturn">
+        <source>{0} returns a multidimensional array of {1}. Replace it with a jagged array if possible.</source>
+        <target state="translated">{0} vrací multidimenzionální pole {1}. Pokud je to možné, nahraďte ho vícenásobným polem.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageBody">
+        <source>{0} uses a multidimensional array of {1}. Replace it with a jagged array if possible.</source>
+        <target state="translated">{0} používá multidimenzionální pole {1}. Pokud je to možné, nahraďte ho vícenásobným polem.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticTitle">
+        <source>Mark members as static</source>
+        <target state="translated">Označení členů jako statických</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticDescription">
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="translated">Členy, které nemají přístup k datům instance nebo volají metody instance, je možné označit jako statické. Po označení metod jako statických bude kompilátor pro tyto členy generovat nevirtuální lokality volání. Tím u kódu citlivého na výkon získáte měřitelný nárůst výkonu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticMessage">
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="translated">Člen {0} nemá přístup k datům instance a je možné ho označit jako statický.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersTitle">
+        <source>Review visible event handlers</source>
+        <target state="translated">Kontrola viditelných obslužných rutin událostí</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersDescription">
+        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
+        <target state="translated">Zjistila se veřejná nebo chráněná metoda zpracování událostí. Metody zpracování událostí by neměly být vystaveny, pokud to není nezbytně nutné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
+        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
+        <target state="translated">Nastavte metodu {0} tak, aby nebyla externě viditelná, nebo se ujistěte, že se jedná o neškodný kód.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
+        <source>Consider making {0} not externally visible.</source>
+        <target state="translated">Nastavte metodu {0} tak, aby nebyla externě viditelná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
+        <source>Seal methods that satisfy private interfaces</source>
+        <target state="translated">Zapečetění metod, které vyhovují privátním rozhraním</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesDescription">
+        <source>An inheritable public type provides an overridable method implementation of an internal (Friend in Visual Basic) interface. To fix a violation of this rule, prevent the method from being overridden outside the assembly.</source>
+        <target state="translated">Dědičný veřejný typ poskytuje přepisovatelnou implementaci metody interního rozhraní (Friend ve Visual Basicu). Pokud chcete opravit porušení tohoto pravidla, zabraňte tomu, aby se metoda přepisovala mimo sestavení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesMessage">
+        <source>Seal methods that satisfy private interfaces</source>
+        <target state="translated">Zapečetění metod, které vyhovují privátním rozhraním</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveEmptyFinalizers">
+        <source>Remove empty Finalizers</source>
+        <target state="translated">Odebrání prázdných finalizačních metod</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveEmptyFinalizersDescription">
+        <source>Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.</source>
+        <target state="translated">Pokud je to možné, neměli byste používat finalizační metody, abyste předešli dalším nárokům na výkon v rámci sledování doby života objektu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructors">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">Nevolejte přepsatelné metody v konstruktorech</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
+        <source>Virtual methods defined on the class should not be called from constructors. If a derived class has overridden the method, the derived class version will be called (before the derived class constructor is called).</source>
+        <target state="translated">Virtuální metody definované u třídy byste neměli volat z konstruktorů. Pokud odvozená třída přepsala metodu, bude se volat verze odvozené třídy (před voláním konstruktoru odvozené třídy).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsMessage">
+        <source>Re-throwing caught exception changes stack information.</source>
+        <target state="translated">Opakované vyvolání zachycené výjimky změní informace zásobníku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsTitle">
+        <source>Rethrow to preserve stack details.</source>
+        <target state="translated">Vyvolejte výjimku znovu, aby se zachovaly detaily zásobníku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeDeclaringTypeInternal">
+        <source>Make declaring type internal.</source>
+        <target state="translated">Nastavte deklarační typ jako interní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeDeclaringTypeSealed">
+        <source>Make declaring type sealed.</source>
+        <target state="translated">Nastavte deklarační typ jako zapečetěný.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMemberNotOverridable">
+        <source>Make member not overridable.</source>
+        <target state="translated">Nastavte člen jako nepřepisovatelný.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInExceptionClausesDescription">
+        <source>When an exception is raised in a finally clause, the new exception hides the active exception. This makes the original error difficult to detect and debug.</source>
+        <target state="translated">Při vyvolání výjimky v klauzuli finally nová výjimka skryje aktivní výjimku. V takovém případě je totiž obtížné zjistit a ladit původní chybu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInExceptionClausesMessageFinally">
+        <source>Do not raise an exception from within a finally clause. </source>
+        <target state="translated">Nevyvolávejte výjimku z klauzule finally. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInExceptionClausesTitle">
+        <source>Do not raise exceptions in finally clauses</source>
+        <target state="translated">Nevyvolávejte výjimky v klauzulích finally</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateCodeActionTitle">
+        <source>Change to constant</source>
+        <target state="translated">Změna na konstantu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateElementInitializationDescription">
+        <source>Indexed elements in objects initializers must initialize unique elements. A duplicate index might overwrite a previous element initialization.</source>
+        <target state="translated">Indexované prvky v inicializátorech objektů musí inicializovat jedinečné prvky. Duplicitní index může přepsat předchozí inicializaci prvku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateElementInitializationMessage">
+        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
+        <target state="translated">Prvek s indexem [{0}] už je inicializovaný. Předchozí inicializace tohoto prvku mohou být přepsány.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateElementInitializationTitle">
+        <source>Do not duplicate indexed element initializations</source>
+        <target state="translated">Neduplikujte inicializace indexovaných prvků.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
+        <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
+        <target state="translated">Externě viditelná metoda přistupuje přes ukazatel k datům jednoho ze svých atributů odkazů bez ověření, jestli argument není null (Nothing v jazyce Visual Basic). Ve všech argumentech odkazů, které se předávají externě viditelným metodám, by se měla kontrolovat hodnota null. V případě potřeby vyvolejte ArgumentNullException, když je argument null, nebo přidejte předběžnou podmínku Code Contract, která vyhodnocuje argument, který není null. Pokud je metoda navržená tak, že ji budou volat jen známá sestavení, měli byste ji převést na interní metodu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
+        <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.</source>
+        <target state="translated">Dříve, než v externě viditelné metodě {0} použijete parametr {1}, ověřte, že tento parametr není null. V případě potřeby vyvolejte ArgumentNullException, když je argument null, nebo přidejte předběžnou podmínku Code Contract, která vyhodnocuje argument, který není null.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">
+        <source>Validate arguments of public methods</source>
+        <target state="translated">Ověřte argumenty veřejných metod</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

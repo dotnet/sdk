@@ -1,0 +1,1862 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ru" original="../MicrosoftNetCoreAnalyzersResources.resx">
+    <body>
+      <trans-unit id="AddNonSerializedAttributeCodeActionTitle">
+        <source>Add the 'NonSerialized' attribute to this field.</source>
+        <target state="translated">Добавьте атрибут "NonSerialized" в это поле.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddSerializableAttributeCodeActionTitle">
+        <source>Add Serializable attribute</source>
+        <target state="translated">Добавить атрибут Serializable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
+        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
+        <target state="translated">PreserveSigAttribute указывает, что метод возвратит HRESULT, а не выдаст исключение. Поэтому важно использовать результат HRESULT, возвращенный этим методом, чтобы можно было обнаружить ошибки. В общем случае для этого служит вызов Marshal.ThrowExceptionForHR.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
+        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
+        <target state="translated">Используйте HRESULT, возвращенный методом "{0}", и вызовите Marshal.ThrowExceptionForHR.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
+        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
+        <target state="translated">Всегда используйте значение, которое возвращают методы, помеченные атрибутом PreserveSigAttribute</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherMode">
+        <source>Do Not Use Unsafe Cipher Modes</source>
+        <target state="translated">Не использовать небезопасные режимы шифрования</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherModeDescription">
+        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
+        <target state="translated">Эти режимы являются уязвимыми для атак. Используйте только утвержденные режимы (CBC, CTS).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherModeMessage">
+        <source>It uses an unsafe Cipher Mode {0}</source>
+        <target state="translated">Он использует небезопасный режим шифрования {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
+        <source>The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.</source>
+        <target state="translated">Параметр строкового литерала атрибута анализируется неправильно для URL-адреса, GUID или версии.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
+        <target state="translated">В конструкторе "{0}" измените аргумент "{1}", который сейчас равен "{2}", на значение, обеспечивающее правильный анализ в качестве "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
+        <target state="translated">В конструкторе "{0}" измените аргумент "{1}", который сейчас равен пустой строке (""), на значение, обеспечивающее правильный анализ в качестве "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
+        <source>Attribute string literals should parse correctly</source>
+        <target state="translated">Синтаксический анализ строковых литералов атрибута должен осуществляться правильно</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesDescription">
+        <source>The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.</source>
+        <target state="translated">Эта библиотека классов платформы .NET Framework предоставляет методы для извлечения настраиваемых атрибутов. По умолчанию эти методы выполняют поиск по иерархии наследования атрибутов. Запечатывание атрибута устраняет поиск по иерархии наследования и позволяет повысить производительность.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesMessage">
+        <source>Avoid unsealed attributes</source>
+        <target state="translated">Избегайте незапечатанных атрибутов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesTitle">
+        <source>Avoid unsealed attributes</source>
+        <target state="translated">Избегайте незапечатанных атрибутов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidZeroLengthArrayAllocationsMessage">
+        <source>Avoid unnecessary zero-length array allocations.  Use {0} instead.</source>
+        <target state="translated">Старайтесь не выделять массивы нулевой длины без необходимости.  Вместо этого используйте {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
+        <source>Avoid zero-length array allocations.</source>
+        <target state="translated">Старайтесь не выделять массивы нулевой длины.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
+        <source>Ensure BinaryFormatter.Binder is set before calling BinaryFormatter.Deserialize</source>
+        <target state="translated">Убедитесь, что BinaryFormatter.Binder задан перед вызовом BinaryFormatter.Deserialize</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
+        <source>Do not call BinaryFormatter.Deserialize without first setting BinaryFormatter.Binder</source>
+        <target state="translated">Не вызывайте BinaryFormatter.Deserialize, не задав предварительно BinaryFormatter.Binder</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedDescription">
+        <source>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.</source>
+        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных. Если вместо этого нужно обнаружить десериализацию BinaryFormatter без задания SerializationBinder, отключите правило CA2300 и включите правила CA2301 и CA2302.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer BinaryFormatter</source>
+        <target state="translated">Не используйте небезопасный десериализатор BinaryFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
+        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</source>
+        <target state="translated">Метод, являющийся реализацией Dispose, не вызывает GC.SuppressFinalize, метод, не являющийся реализацией Dispose, вызывает GC.SuppressFinalize, либо метод вызывает GC.SuppressFinalize и передает нечто иное (Me в Visual Basic).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotCalled">
+        <source>Change {0} to call {1}. This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.</source>
+        <target state="translated">Замените {0} вызовом {1}. В результате для производных типов, использующих метод завершения, отпадет необходимость в повторной реализации "IDisposable" для вызова этого метода.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotCalledWithFinalizer">
+        <source>Change {0} to call {1}. This will prevent unnecessary finalization of the object once it has been disposed and it has fallen out of scope.</source>
+        <target state="translated">Замените {0} вызовом {1}. Это предотвратит ненужное завершение объекта после его высвобождения и выхода из области видимости.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotPassedThis">
+        <source>{0} calls {1} on something other than itself. Change the call site to pass 'this' ('Me' in Visual Basic) instead.</source>
+        <target state="translated">{0} вызывает {1} для другого объекта, а не для себя. Измените место вызова, чтобы передать вместо него "this" ("Me" в Visual Basic).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageOutsideDispose">
+        <source>{0} calls {1}, a method that is typically only called within an implementation of 'IDisposable.Dispose'. Refer to the IDisposable pattern for more information.</source>
+        <target state="translated">{0} вызывает {1}, метод, который обычно вызывается только внутри реализации "IDisposable.Dispose". Дополнительные сведения см. в шаблоне IDisposable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyTitle">
+        <source>Dispose methods should call SuppressFinalize</source>
+        <target state="translated">Методы Dispose должны вызывать SuppressFinalize</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CategoryReliability">
+        <source>Reliability</source>
+        <target state="translated">Надежность</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
+        <source>HttpClients should enable certificate revocation list checks</source>
+        <target state="translated">Для клиентов HTTP (HttpClients) следует включить проверки списка отзыва сертификатов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyDisableHttpClientCRLCheckMessage">
+        <source>HttpClient is created without enabling CheckCertificateRevocationList</source>
+        <target state="translated">HttpClient создается без включения CheckCertificateRevocationList.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyInstallRootCert">
+        <source>Do Not Add Certificates To Root Store</source>
+        <target state="translated">Не добавлять сертификаты в корневое хранилище</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyInstallRootCertMessage">
+        <source>Adding certificates to the operating system's trusted root certificates increases the risk of incorrectly authenticating an illegitimate certificate</source>
+        <target state="translated">Добавление сертификатов в доверенные корневые сертификаты операционной системы увеличивает риск неправильной проверки подлинности сертификатов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIV">
+        <source>Do not use CreateEncryptor with non-default IV</source>
+        <target state="translated">Не используйте CreateEncryptor с вектором инициализации, отличным от значения по умолчанию.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage">
+        <source>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</source>
+        <target state="translated">Для симметричного шифрования используется вектор инициализации, отличный от значения по умолчанию, что может привести к воспроизводимости.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
+        <source>Use Secure Cookies In ASP.Net Core</source>
+        <target state="translated">Использовать защищенные файлы cookie в ASP.NET Core</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
+        <source>Set CookieOptions.Secure = true when setting a cookie</source>
+        <target state="translated">Установить значение true для параметра CookieOptions.Secure при настройке файла cookie</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseWeakKDFInsufficientIterationCount">
+        <source>Do Not Use Weak Key Derivation Function With Insufficient Iteration Count</source>
+        <target state="translated">Не использовать ненадежную функцию формирования ключа с недостаточным числом итераций</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseWeakKDFInsufficientIterationCountMessage">
+        <source>Use at least {0} iterations when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
+        <target state="translated">Используйте число итераций не меньше {0} при формировании криптографического ключа из пароля. По умолчанию значение IterationCount для Rfc2898DeriveByte равно всего 1000</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsDescription">
+        <source>Older protocol versions of Transport Layer Security (TLS) are less secure than TLS 1.2 and TLS 1.3, and are more likely to have new vulnerabilities. Avoid older protocol versions to minimize risk.</source>
+        <target state="translated">Более старые версии протокола TLS менее безопасны, чем TLS 1.2 и TLS 1.3 и скорее всего имеют новые уязвимости. Избегайте использования ранних версий протокола, чтобы минимизировать риски.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsMessage">
+        <source>Transport Layer Security protocol version '{0}' is deprecated.  Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">Версия протокола TLS "{0}" является устаревшей. Используйте "None", чтобы операционная система самостоятельно выбрала версию протокола.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsTitle">
+        <source>Do not use deprecated SslProtocols values</source>
+        <target state="translated">Не используйте устаревшие значения параметра SslProtocols</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
+        <source>A type that implements System.IDisposable declares fields that are of types that also implement IDisposable. The Dispose method of the field is not called by the Dispose method of the declaring type. To fix a violation of this rule, call Dispose on fields that are of types that implement IDisposable if you are responsible for allocating and releasing the unmanaged resources held by the field.</source>
+        <target state="translated">Тип, который реализует System.IDisposable, объявляет поля, относящиеся к типам, которые также реализуют IDisposable. Метод Dispose поля не вызывается методом Dispose объявляющего типа. Чтобы устранить нарушение этого правила, вызовите Dispose для полей, относящихся к типам, которые реализуют IDisposable, если вы отвечаете за выделение и освобождение неуправляемых ресурсов, хранящихся в поле.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedMessage">
+        <source>'{0}' contains field '{1}' that is of IDisposable type '{2}', but it is never disposed. Change the Dispose method on '{0}' to call Close or Dispose on this field.</source>
+        <target state="translated">"{0}" содержит поле "{1}", которое имеет тип IDisposable "{2}", но никогда не удаляется. Измените метод Dispose для "{0}" на вызов Close или Dispose для этого поля.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedTitle">
+        <source>Disposable fields should be disposed</source>
+        <target state="translated">Следует высвобождать высвобождаемые поля</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerDescription">
+        <source>A type that implements System.IDisposable and has fields that suggest the use of unmanaged resources does not implement a finalizer, as described by Object.Finalize.</source>
+        <target state="translated">Тип, который реализует System.IDisposable и имеет поля, предполагающие использование неуправляемых ресурсов, не реализует метод завершения, как описано Object.Finalize.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerMessage">
+        <source>Disposable types should declare finalizer</source>
+        <target state="translated">Высвобождаемые типы должны объявлять методы завершения</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerTitle">
+        <source>Disposable types should declare finalizer</source>
+        <target state="translated">Высвобождаемые типы должны объявлять методы завершения</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeDescription">
+        <source>A type that implements System.IDisposable inherits from a type that also implements IDisposable. The Dispose method of the inheriting type does not call the Dispose method of the parent type. To fix a violation of this rule, call base.Dispose in your Dispose method.</source>
+        <target state="translated">Тип, который реализует System.IDisposable, наследует от типа, который также реализует IDisposable. Метод Dispose наследующего типа не вызывает метод Dispose родительского типа. Чтобы устранить нарушение этого правила, вызовите base.Dispose в методе Dispose.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
+        <target state="translated">Убедитесь, что метод "{0}" вызывает "{1}" во всех возможных путях потока управления.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
+        <source>Dispose methods should call base class dispose</source>
+        <target state="translated">Метод Dispose должен вызывать базовый класс Dispose</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeDescription">
+        <source>If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.</source>
+        <target state="translated">Если освобождаемый объект не высвобождается явно до того, как все ссылки на него оказываются вне области имен, объект будет высвобожден в некоторый заранее не определенный момент, когда сборщик мусора запустит завершающий метод объекта. Так как может возникнуть событие исключения, препятствующее выполнению метода завершения объекта, объект будет ликвидирован в явной форме.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <target state="translated">Используйте рекомендуемый шаблон удаления, чтобы убедиться, что объект, созданный "{0}", удален по всем путям. Если это возможно, заключите создание в оператор "using" или объявление "using". В противном случае используйте шаблон try-finally с выделенной локальной переменной, объявляемой до области try, и безусловным вызовом Dispose для отличного от NULL значения в области "finally", например "x?.Dispose()". Если объект явно удаляется в области try или владение удаления передается другому объекту или методу, назначьте "null" локальной переменной сразу после подобной операции, чтобы предотвратить двойное удаление в "finally".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <target state="translated">Используйте рекомендуемый шаблон удаления, чтобы убедиться, что объект, созданный "{0}", удален по всем путям исключений. Если это возможно, заключите создание в оператор "using" или объявление "using". В противном случае используйте шаблон try-finally с выделенной локальной переменной, объявляемой до области try, и безусловным вызовом Dispose для отличного от NULL значения в области "finally", например "x?.Dispose()". Если объект явно удаляется в области try или владение удаления передается другому объекту или методу, назначьте "null" локальной переменной сразу после подобной операции, чтобы предотвратить двойное удаление в "finally".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
+        <target state="translated">Вызовите System.IDisposable.Dispose для объекта, созданного "{0}", прежде чем все ссылки на него будут вне области действия.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
+        <source>Object created by '{0}' is not disposed along all exception paths. Call System.IDisposable.Dispose on the object before all references to it are out of scope.</source>
+        <target state="translated">Объект, созданный "{0}", не уничтожается во всех путях исключений. Следует вызвать метод System.IDisposable.Dispose для этого объекта до того, как все ссылки на него будут находиться вне области действия.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeTitle">
+        <source>Dispose objects before losing scope</source>
+        <target state="translated">Ликвидировать объекты перед потерей области</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPath">
+        <source>Do Not Add Archive Item's Path To The Target File System Path</source>
+        <target state="translated">Не добавлять путь к элементу архива в целевой путь к файловой системе.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathDescription">
+        <source>When extracting files from an archive and using the archive item's path, check if the path is safe. Archive path can be relative and can lead to file system access outside of the expected file system target path, leading to malicious config changes and remote code execution via lay-and-wait technique.</source>
+        <target state="translated">При извлечении файлов из архива и при использовании пути к элементу архива проверьте, является ли путь безопасным. Путь к архиву может быть относительным, а также может вести к объекту файловой системы, находящемуся за пределами ожидаемого целевого пути файловой системы, и использоваться злоумышленниками для вредоносного изменения конфигурации и для удаленного выполнения кода с использованием метода "затаиться и ждать".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage">
+        <source>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</source>
+        <target state="translated">Если создается путь для "{0}" в методе "{1}" из относительного пути к элементу архива для извлечения файла и если источник представляет собой недоверенный ZIP-архив, обязательно очистите относительный путь к элементу архива "{2}" в методе "{3}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURL">
+        <source>Do Not Add Schema By URL</source>
+        <target state="translated">Не добавляйте схему по URL-адресу</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURLDescription">
+        <source>This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">Эта внутренняя перегрузка метода XmlSchemaCollection.Add включает обработку DTD в используемом экземпляре модуля чтения XML, а также использует UrlResolver для разрешения внешних сущностей XML. Результатом является раскрытие информации. Содержимое из файловой системы или общих папок на компьютере, обрабатывающем XML-код, может быть раскрыто для злоумышленника. Кроме того, злоумышленник может использовать этот вектор для проведения атак типа "отказ в обслуживании".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURLMessage">
+        <source>This overload of the Add method is potentially unsafe because it may resolve dangerous external references</source>
+        <target state="translated">Эта перегрузка метода Add потенциально небезопасна, так как может разрешать опасные внешние ссылки</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="translated">Не вызывать опасные методы десериализации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
+        <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
+        <target state="translated">Небезопасная десериализация — это уязвимость, которая возникает, когда недоверенные данные используются для нарушения логики работы приложения, проведения атак типа "отказ в обслуживании" или даже для выполнения произвольного кода при его десериализации. Злоумышленники часто используют эти возможности десериализации, контролируя недоверенные данные, которые десериализуются приложением, в частности, путем вызова опасных методов в ходе десериализации. При успешном проведении атак с небезопасной десериализацией злоумышленник может провести атаки типа "отказ в обслуживании", обойти проверку подлинности и выполнить код удаленно.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
+        <target state="translated">При десериализации экземпляра класса {0} метод {1} может вызывать опасный метод {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
+        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
+        <target state="translated">Когда конструктор вызывает виртуальный метод, конструктор может не выполняться для экземпляра, вызывающего этот метод.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">Не вызывайте переопределяемые методы в конструкторах</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">Не вызывайте переопределяемые методы в конструкторах</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
+        <source>Do not call {0} on an {1} value</source>
+        <target state="translated">Не вызывайте {0} для значения {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
+        <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
+        <target state="translated">Не вызывайте ToImmutableCollection для значения ImmutableCollection</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
+        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
+        <target state="translated">Не создавайте общие обработчики catch в коде, получающем исключения поврежденного состояния.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
+        <source>Do not catch corrupted state exceptions in general handlers.</source>
+        <target state="translated">Не перехватывайте исключения поврежденного состояния в общих обработчиках.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
+        <source>Do not catch corrupted state exceptions in general handlers.</source>
+        <target state="translated">Не перехватывайте исключения поврежденного состояния в общих обработчиках.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
+        <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
+        <target state="translated">Не создавайте задачи, если не используете одну из перегрузок, принимающих TaskScheduler. По умолчанию расписание составляется с использованием TaskScheduler.Current, что приведет к взаимоблокировкам. Используйте TaskScheduler.Default при составлении расписания для пула потоков либо явно передайте TaskScheduler.Current, чтобы прояснить свои намерения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerMessage">
+        <source>Do not create tasks without passing a TaskScheduler</source>
+        <target state="translated">Не создавайте задачи без передачи TaskScheduler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
+        <source>Do not create tasks without passing a TaskScheduler</source>
+        <target state="translated">Не создавайте задачи без передачи TaskScheduler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidation">
+        <source>Do Not Disable Certificate Validation</source>
+        <target state="translated">Не отключайте проверку сертификатов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidationDescription">
+        <source>A certificate can help authenticate the identity of the server. Clients should validate the server certificate to ensure requests are sent to the intended server. If the ServerCertificateValidationCallback always returns 'true', any certificate will pass validation.</source>
+        <target state="translated">Сертификат может помочь подлинность сервера. Клиенты должны проверять сертификаты серверов, чтобы убедиться, что запросы отправляются нужному серверу. Если функция ServerCertificateValidationCallback всегда возвращает значение true, сертификат всегда успешно проходит проверку.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidationMessage">
+        <source>The ServerCertificateValidationCallback is set to a function that accepts any server certificate, by always returning true. Ensure that server certificates are validated to verify the identity of the server receiving requests.</source>
+        <target state="translated">В качестве значения параметра ServerCertificateValidationCallback задается функция, которая принимает любой сертификат сервера, всегда возвращая значение true. Убедитесь, что сертификаты серверов проверяются, чтобы подтвердить подлинность сервера, принимающего запросы.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHttpClientCRLCheckDescription">
+        <source>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</source>
+        <target state="translated">Если при использовании HttpClient не указан обработчик для конкретной платформы (WinHttpHandler, CurlHandler или HttpClientHandler) и свойство CheckCertificateRevocationList имеет значение true (истина), то отозванные сертификаты будут приниматься клиентом HttpClient как действительные.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderChecking">
+        <source>Do Not Disable HTTP Header Checking</source>
+        <target state="translated">Не отключайте проверку заголовков HTTP</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderCheckingDescription">
+        <source>HTTP header checking enables encoding of the carriage return and newline characters, \r and \n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.</source>
+        <target state="translated">Проверка заголовков HTTP позволяет кодировать символы возврата каретки и новой строки \r и \n, находящиеся в заголовках ответов. Такая кодировка позволяет избежать атак путем внедрения, использующих приложение, которое возвращает ненадежные данные из заголовка.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderCheckingMessage">
+        <source>Do not disable HTTP header checking</source>
+        <target state="translated">Не отключайте проверку заголовков HTTP</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidation">
+        <source>Do Not Disable Request Validation</source>
+        <target state="translated">Не отключайте проверку запросов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidationDescription">
+        <source>Request validation is a feature in ASP.NET that examines HTTP requests and determines whether they contain potentially dangerous content. This check adds protection from markup or code in the URL query string, cookies, or posted form values that might have been added for malicious purposes. So, it is generally desirable and should be left enabled for defense in depth.</source>
+        <target state="translated">Проверка запросов — это функция ASP.NET, которая анализирует HTTP-запросы и определяет, содержат ли они потенциально опасное содержимое. Эта проверка улучшает защиту от разметки или кода в строке запроса URL-адреса, файлах cookie или значениях опубликованной формы, которые могли быть добавлены злоумышленником. Таким образом, в общем случае эта проверка желательна, и ее следует оставить включенной, чтобы обеспечить полноценную защиту.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidationMessage">
+        <source>{0} has request validation disabled</source>
+        <target state="translated">Для метода {0} проверка запросов отключена.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCrypto">
+        <source>Do Not Disable SChannel Use of Strong Crypto</source>
+        <target state="translated">Не отключайте стойкое шифрование в защищенном канале</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCryptoDescription">
+        <source>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</source>
+        <target state="translated">Начиная с .NET Framework 4.6 в классах System.Net.ServicePointManager и System.Net.Security.SslStream рекомендуется использовать новые протоколы. В старых протоколах обнаружены уязвимости, и они не поддерживаются. При установке значения true для параметра Switch.System.Net.DontEnableSchUseStrongCrypto будет включена проверка использования устаревшего протокола с наличием уязвимостей и не будет выполнен перенос протокола.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
+        <source>{0} disables TLS 1.2 and enables SSLv3</source>
+        <target state="translated">{0} отключает TLS 1.2 и включает SSLv3</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">
+        <source>Do not set Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols to true.  Setting this switch limits Windows Communication Framework (WCF) to using Transport Layer Security (TLS) 1.0, which is insecure and obsolete.</source>
+        <target state="translated">Не задавайте для Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols значение TRUE. Если задать этот параметр, Windows Communication Framework (WCF) сможет использовать только протокол TLS 1.0, что является небезопасным и устаревшим.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsTitle">
+        <source>Do not disable ServicePointManagerSecurityProtocols</source>
+        <target state="translated">Не отключайте ServicePointManagerSecurityProtocols</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificate">
+        <source>Do not hard-code certificate</source>
+        <target state="translated">Не используйте жестко заданный сертификат.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificateDescription">
+        <source>Hard-coded certificates in source code are vulnerable to being exploited.</source>
+        <target state="translated">Жестко задаваемые сертификаты в исходном коде представляют собой уязвимость, которой может воспользоваться злоумышленник.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificateMessage">
+        <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</source>
+        <target state="translated">Обнаружена потенциальная уязвимость безопасности, заключающаяся в том, что "{0}" в методе "{1}" может быть испорчен с использованием жестко заданного сертификата из "{2}" в методе "{3}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKey">
+        <source>Do not hard-code encryption key</source>
+        <target state="translated">Не используйте жестко заданный ключ шифрования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKeyDescription">
+        <source>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</source>
+        <target state="translated">Свойство .Key симметричного алгоритма и параметр rgbKey метода не могут быть жестко заданными значениями.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKeyMessage">
+        <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</source>
+        <target state="translated">Обнаружена потенциальная уязвимость безопасности, заключающаяся в том, что "{0}" в методе "{1}" может быть испорчен с использованием жестко заданного ключа из "{2}" в методе "{3}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInstallRootCertDescription">
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="translated">По умолчанию в хранилище сертификатов Доверенных корневых центров сертификации настроен набор общедоступных центров сертификации, удовлетворяющих требованиям программы корневых сертификатов Майкрософт. Поскольку все доверенные корневые ЦС могут создавать сертификаты для любого домена, злоумышленник может выбрать слабозащищенный или обязательный центр сертификации, который вы устанавливали для отражения атаки. Всего один слабозащищенный, вредоносный или обязательный ЦС может скомпрометировать всю систему. Что еще хуже, эти атаки могут пройти незамеченными.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
+        <source>An object is said to have a weak identity when it can be directly accessed across application domain boundaries. A thread that tries to acquire a lock on an object that has a weak identity can be blocked by a second thread in a different application domain that has a lock on the same object.</source>
+        <target state="translated">Слабо идентифицируемым называется объект, к которому можно обратиться напрямую через границы домена приложения. Поток, пытающийся получить блокировку для слабо идентифицируемого объекта, может быть заблокирован вторым потоком в другом домене приложения, получившим блокировку того же объекта.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityMessage">
+        <source>Do not lock on objects with weak identity</source>
+        <target state="translated">Не блокируйте слабо идентифицируемые объекты</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityTitle">
+        <source>Do not lock on objects with weak identity</source>
+        <target state="translated">Не блокируйте слабо идентифицируемые объекты</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersDescription">
+        <source>A method passes a string literal as a parameter to a constructor or method in the .NET Framework class library and that string should be localizable. To fix a violation of this rule, replace the string literal with a string retrieved through an instance of the ResourceManager class.</source>
+        <target state="translated">Метод передает строковый литерал в качестве параметра конструктору или методу в библиотеке классов .NET Framework, и эта строка должна быть локализуемой. Чтобы устранить нарушение этого правила, замените строковый литерал строкой, полученной через экземпляр класса ResourceManager.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersMessage">
+        <source>Method '{0}' passes a literal string as parameter '{1}' of a call to '{2}'. Retrieve the following string(s) from a resource table instead: "{3}".</source>
+        <target state="translated">Метод "{0}" передает строку-литерал, как параметр "{1}" при вызове "{2}". Вместо этого выполните поиск следующих строк в таблице ресурсов: "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersTitle">
+        <source>Do not pass literals as localized parameters</source>
+        <target state="translated">Не передавать литералы в качестве локализованных параметров</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesDescription">
+        <source>An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.</source>
+        <target state="translated">Пользовательский код никогда не должен порождать исключение типа, который является недостаточно определенным либо зарезервирован средой выполнения. Это затрудняет обнаружение и отладку исходной ошибки. Если экземпляр этого исключения может быть порожден, используйте другой тип исключения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
+        <source>Exception type {0} is reserved by the runtime.</source>
+        <target state="translated">Тип исключения {0} зарезервирован средой выполнения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
+        <source>Exception type {0} is not sufficiently specific.</source>
+        <target state="translated">Тип исключения {0} является недостаточно определенным.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
+        <source>Do not raise reserved exception types</source>
+        <target state="translated">Не порождайте исключения зарезервированных типов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClass">
+        <source>Do Not Refer Self In Serializable Class</source>
+        <target state="translated">Не ссылайтесь на самого себя в сериализуемом классе</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClassDescription">
+        <source>This can allow an attacker to DOS or exhaust the memory of the process.</source>
+        <target state="translated">Это позволяет злоумышленнику провести DDOS-атаку или вызвать переполнение памяти процесса.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClassMessage">
+        <source>{0} participates in a potential reference cycle</source>
+        <target state="translated">{0} участвует в потенциальном ссылочном цикле</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFields">
+        <source>Do Not Serialize Types With Pointer Fields</source>
+        <target state="translated">Не сериализуйте типы с полями указателей</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFieldsDescription">
+        <source>Pointers are not "type safe" in the sense that you cannot guarantee the correctness of the memory they point at. So, serializing types with pointer fields is dangerous, as it may allow an attacker to control the pointer.</source>
+        <target state="translated">Указатели не являются "типобезопасными" в том смысле, что невозможно гарантировать правильность памяти, на которую они указывают. Таким образом, сериализация типов с полями указателей опасна, так как она может позволить злоумышленнику контролировать указатель.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
+        <source>Pointer field {0} on serializable type.</source>
+        <target state="translated">Поле указателя {0} для сериализуемого типа.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSAS">
+        <source>Do Not Use Account Shared Access Signature</source>
+        <target state="translated">Не использовать подписанный URL-адрес учетной записи</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSASDescription">
+        <source>Shared Access Signatures(SAS) are a vital part of the security model for any application using Azure Storage, they should provide limited and safe permissions to your storage account to clients that don't have the account key. All of the operations available via a service SAS are also available via an account SAS, that is, account SAS is too powerful. So it is recommended to use Service SAS to delegate access more carefully.</source>
+        <target state="translated">Подписанные URL-адреса (SAS) являются критически важной частью модели безопасности для любого приложения, использующего службу хранилища Azure, они должны предоставлять ограниченные и безопасные разрешения для вашей учетной записи хранения для клиентов, не имеющих ключа учетной записи. Все операции, доступные через SAS службы, также доступны через SAS учетной записи, то есть учетная запись SAS обладает слишком широкими полномочиями. Поэтому рекомендуется использовать SAS службы для более аккуратного делегирования доступа.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSASMessage">
+        <source>Use Service SAS instead of Account SAS for fine grained access control and container-level access policy</source>
+        <target state="translated">Используйте SAS службы вместо SAS учетной записи для детализированного контроля доступа и политики доступа на уровне контейнеров.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
+        <source>Do Not Use Broken Cryptographic Algorithms</source>
+        <target state="translated">Не используйте взломанные алгоритмы шифрования</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithmsDescription">
+        <source>An attack making it computationally feasible to break this algorithm exists. This allows attackers to break the cryptographic guarantees it is designed to provide. Depending on the type and application of this cryptographic algorithm, this may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA512, SHA384, or SHA256. Replace digital signature uses with RSA with a key length greater than or equal to 2048-bits, or ECDSA with a key length greater than or equal to 256 bits.</source>
+        <target state="translated">С точки зрения вычислений существует атака, позволяющая взломать данный алгоритм. Это позволяет злоумышленникам нарушить предоставляемые им гарантии шифрования. В зависимости от типа и способа применения алгоритма шифрования злоумышленники могут считать или незаконно изменить зашифрованные сообщения, подделать цифровые подписи, незаконно изменить хэшированное содержимое, а также скомпрометировать любую систему шифрования, основанную на этом алгоритме. Замените средства шифрования на алгоритм AES (допустимы AES-256, AES-192 и AES-128) с длиной ключа не меньше 128 бит. Замените средства хэширования на хэш-функцию из семейства SHA-2, например SHA512, SHA384 или SHA256. Замените средства цифровой подписи на RSA с длиной ключа не меньше 2048 бит или ECDSA с длиной ключа не меньше 256 бит.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithmsMessage">
+        <source>{0} uses a broken cryptographic algorithm {1}</source>
+        <target state="translated">{0} использует взломанный алгоритм шифрования {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
+        <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
+        <target state="translated">Для непустых коллекций методы CountAsync() и LongCountAsync() перечисляют всю последовательность, а метод AnyAsync() останавливается на первом элементе или на первом элементе, который соответствует условию.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
+        <target state="translated">{0}() используется там, где можно было бы использовать AnyAsync() для повышения производительности.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
+        <source>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</source>
+        <target state="translated">Не используйте методы CountAsync() и LongCountAsync(), если можно использовать метод AnyAsync()</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedDescription">
+        <source>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</source>
+        <target state="translated">Для непустых коллекций методы Count() и LongCount() перечисляют всю последовательность, а метод Any() останавливается на первом элементе или на первом элементе, который соответствует условию.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
+        <source>{0}() is used where Any() could be used instead to improve performance.</source>
+        <target state="translated">{0}() используется там, где можно было бы использовать Any() для повышения производительности.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
+        <source>Do not use Count() or LongCount() when Any() can be used</source>
+        <target state="translated">Не используйте методы Count() и LongCount(), если можно использовать метод Any()</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
+        <source>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</source>
+        <target state="translated">Для предотвращения атак перебором по словарю в симметричном шифровании всегда нужно использовать невоспроизводимый вектор инициализации.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocols">
+        <source>Do Not Use Deprecated Security Protocols</source>
+        <target state="translated">Не используйте нерекомендуемые протоколы безопасности</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocolsDescription">
+        <source>Using a deprecated security protocol rather than the system default is risky.</source>
+        <target state="translated">Использование нерекомендуемого протокола безопасности вместо заданного по умолчанию в системе является рискованным.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocolsMessage">
+        <source>Hard-coded use of deprecated security protocol {0}</source>
+        <target state="translated">Жестко заданное использование нерекомендуемого протокола безопасности {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSA">
+        <source>Do Not Use Digital Signature Algorithm (DSA)</source>
+        <target state="translated">Не использовать алгоритм DSA</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSADescription">
+        <source>DSA is too weak to use.</source>
+        <target state="translated">Алгоритм DSA является слишком ненадежным для использования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSAMessage">
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
+        <target state="translated">Алгоритм асимметричного шифрования {0} является ненадежным. Перейдите на алгоритм RSA с размером ключа не менее 2048 бит или на алгоритмы ECDH или ECDSA</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
+        <source>This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.</source>
+        <target state="translated">Эта коллекция индексируется напрямую. В этом случае применение LINQ приводит к ненужным выделениям и нагрузке на ЦП.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
+        <target state="translated">Не используйте метод Enumerable для индексируемых коллекций. Вместо этого используйте непосредственно коллекцию</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
+        <target state="translated">Не используйте метод Enumerable для индексируемых коллекций. Вместо этого используйте непосредственно коллекцию</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomness">
+        <source>Do not use insecure randomness</source>
+        <target state="translated">Не используйте небезопасные генераторы случайных чисел.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomnessDescription">
+        <source>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</source>
+        <target state="translated">Использование криптографически слабого генератора псевдослучайных чисел может позволить злоумышленнику предсказать, какое значение, важное для обеспечения безопасности, будет сформировано. Используйте криптографически надежный генератор случайных чисел, если требуется непрогнозируемое значение, или убедитесь, что слабые псевдослучайные числа не используются для обеспечения безопасности.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomnessMessage">
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
+        <target state="translated">{0} является небезопасным генератором случайных чисел. Если случайные числа требуются для обеспечения безопасности, используйте криптографически безопасные генераторы случайных чисел.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseMD5">
+        <source>Do not use insecure cryptographic algorithm MD5.</source>
+        <target state="translated">Не используйте небезопасный алгоритм шифрования MD5.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseMD5Description">
+        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
+        <target state="translated">Этот тип реализует криптографически небезопасную хэш-функцию MD5. С точки зрения вычислений для алгоритмов MD5 и HMACMD5 возможны хэш-конфликты. Замените на хэш-алгоритм из семейства SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
+        <source>Do not use obsolete key derivation function</source>
+        <target state="translated">Не используйте устаревшую функцию формирования ключа.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithmDescription">
+        <source>Password-based key derivation should use PBKDF2 with SHA-2. Avoid using PasswordDeriveBytes since it generates a PBKDF1 key. Avoid using Rfc2898DeriveBytes.CryptDeriveKey since it doesn't use the iteration count or salt.</source>
+        <target state="translated">При формировании ключа на основе пароля должен использоваться стандарт PBKDF2 с SHA-2. Не используйте метод PasswordDeriveBytes, так как он формирует ключ PBKDF1. Также не используйте метод Rfc2898DeriveBytes.CryptDeriveKey, так как он не использует счетчик итераций и соль.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithmMessage">
+        <source>Call to obsolete key derivation function {0}.{1}</source>
+        <target state="translated">Вызов устаревшей функции формирования ключа {0}.{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseSHA1">
+        <source>Do not use insecure cryptographic algorithm SHA1.</source>
+        <target state="translated">Не используйте небезопасный алгоритм шифрования SHA1.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseSHA1Description">
+        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
+        <target state="translated">Этот тип реализует криптографически небезопасную хэш-функцию SHA1. С точки зрения вычислений для алгоритмов SHA-1 и SHA-0 возможны хэш-конфликты. Замените на хэш-алгоритм из семейства SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
+        <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
+        <target state="translated">Периодическая активность с более высокой частотой заставит ЦП переключаться в активный режим и помешает работе энергосберегающих таймеров простоя, которые отключают дисплей и жесткие диски.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesMessage">
+        <source>Do not use timers that prevent power state changes</source>
+        <target state="translated">Не используйте таймеры, препятствующие изменению состояния электропитания</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesTitle">
+        <source>Do not use timers that prevent power state changes</source>
+        <target state="translated">Не используйте таймеры, препятствующие изменению состояния электропитания</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPath">
+        <source>Do not use unsafe DllImportSearchPath value</source>
+        <target state="translated">Не используйте небезопасное значение DllImportSearchPath.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPathDescription">
+        <source>There could be a malicious DLL in the default DLL search directories. Or, depending on where your application is run from, there could be a malicious DLL in the application's directory. Use a DllImportSearchPath value that specifies an explicit search path instead. The DllImportSearchPath flags that this rule looks for can be configured in .editorconfig.</source>
+        <target state="translated">В каталогах поиска DLL по умолчанию может присутствовать вредоносная библиотека DLL. Или в зависимости от места запуска приложения вредоносная библиотека DLL может присутствовать в каталоге приложения. Вместо этого используйте значение DllImportSearchPath, определяющее путь поиска явным образом. Флаги DllImportSearchPath, поиск которых осуществляет это правило, могут быть настроены в файле EDITORCONFIG.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPathMessage">
+        <source>Use of unsafe DllImportSearchPath value {0}</source>
+        <target state="translated">Использование небезопасного значения DllImportSearchPath {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
+        <source>Do Not Use Weak Cryptographic Algorithms</source>
+        <target state="translated">Не используйте слабые алгоритмы шифрования</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithmsDescription">
+        <source>Cryptographic algorithms degrade over time as attacks become for advances to attacker get access to more computation. Depending on the type and application of this cryptographic algorithm, further degradation of the cryptographic strength of it may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA-2 512, SHA-2 384, or SHA-2 256.</source>
+        <target state="translated">Алгоритмы шифрования постепенно устаревают, так как злоумышленники получают в свое распоряжение все большие вычислительные мощности, а их атаки становятся все изощреннее. В зависимости от типа и способа применения алгоритма шифрования снижение его криптографической стойкости может позволить злоумышленникам считать или незаконно изменить зашифрованные сообщения, подделать цифровые подписи, незаконно изменить хэшированное содержимое, а также скомпрометировать любую систему шифрования, основанную на этом алгоритме. Замените средства шифрования на алгоритм AES (допустимы AES-256, AES-192 и AES-128) с длиной ключа не меньше 128 бит. Замените средства хэширования на хэш-функцию из семейства SHA-2, например SHA-2 512, SHA-2 384 или SHA-2 256.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithmsMessage">
+        <source>{0} uses a weak cryptographic algorithm {1}</source>
+        <target state="translated">{0} использует слабый алгоритм шифрования {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithm">
+        <source>Do Not Use Weak Key Derivation Function Algorithm</source>
+        <target state="translated">Не используйте слабый алгоритм функции формирования ключа.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithmDescription">
+        <source>Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.</source>
+        <target state="translated">Некоторые реализации класса Rfc2898DeriveBytes позволяют указать алгоритм хэша в параметре конструктора или перезаписать его в свойстве HashAlgorithm. Если алгоритм хэша указан, это должен быть алгоритм SHA-256 или выше.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
+        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
+        <target state="translated">{0} создан со слабым хэш-алгоритмом. Для создания надежного ключа из пароля используйте алгоритмы SHA256, SHA384 или SHA512.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
+        <source>When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).</source>
+        <target state="translated">При формировании криптографических ключей из предоставленных пользователем входных данных, таких как пароль, используйте достаточное число итераций (не менее 100 тыс.).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseXslTransform">
+        <source>Do Not Use XslTransform</source>
+        <target state="translated">Не используйте XslTransform.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseXslTransformMessage">
+        <source>Do not use XslTransform. It does not restrict potentially dangerous external references.</source>
+        <target state="translated">Не используйте XslTransform. Он не ограничивает потенциально опасные внешние ссылки.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
+        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
+        <target state="translated">Завершение должно распространяться через иерархию наследования. Для этого типы должны вызывать метод Finalize своего базового класса в своем собственном методе Finalize.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
+        <source>Finalizers should call base class finalizer</source>
+        <target state="translated">Методы завершения должны вызывать метод завершения базового класса</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
+        <source>Finalizers should call base class finalizer</source>
+        <target state="translated">Методы завершения должны вызывать метод завершения базового класса</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardCodedSecurityProtocolMessage">
+        <source>Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.</source>
+        <target state="translated">Не встраивайте SecurityProtocolType {0}. Используйте SecurityProtocolType.SystemDefault, чтобы операционная система выбрала оптимальный протокол TSL.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardCodedSecurityProtocolTitle">
+        <source>Avoid hardcoding SecurityProtocolType value</source>
+        <target state="translated">Не встраивайте значение SecurityProtocolType.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsDescription">
+        <source>Current Transport Layer Security protocol versions may become deprecated if vulnerabilities are found. Avoid hardcoding SslProtocols values to keep your application secure. Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">Текущие версии протокола TLS могут стать нерекомендуемыми при обнаружении уязвимостей. Не следует жестко задавать значения параметра SslProtocols, чтобы в будущем приложение также оставалось безопасным. Используйте значение "None", чтобы операционная система самостоятельно выбрала версию протокола.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsMessage">
+        <source>Avoid hardcoding SslProtocols '{0}' to ensure your application remains secure in the future. Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">Не следует жестко задавать значение параметра SslProtocols "{0}", чтобы в будущем приложение также оставалось безопасным. Используйте значение "None", чтобы операционная система самостоятельно выбрала версию протокола.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsTitle">
+        <source>Avoid hardcoded SslProtocols values</source>
+        <target state="translated">Не следует жестко задавать значение параметра SslProtocols</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyDescription">
+        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
+        <target state="translated">Чтобы устранить нарушение этого правила, сделайте метод GetObjectData видимым и переопределяемым и убедитесь, что все поля экземпляра включены в процесс сериализации или явно помечены атрибутом NonSerializedAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
+        <source>Add an implementation of GetObjectData to type {0}.</source>
+        <target state="translated">Добавьте реализацию GetObjectData к типу {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
+        <source>Make {0}.GetObjectData virtual and overridable.</source>
+        <target state="translated">Сделайте {0}.GetObjectData виртуальным и переопределяемым.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
+        <target state="translated">Увеличьте уровень доступности {0}.GetObjectData, чтобы он был видим для производных типов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyTitle">
+        <source>Implement ISerializable correctly</source>
+        <target state="translated">Правильно реализуйте ISerializable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
+        <source>Implement Serialization constructor</source>
+        <target state="translated">Реализовать конструктор сериализации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsDescription">
+        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
+        <target state="translated">Чтобы устранить нарушение этого правила, реализуйте конструктор сериализации. Для запечатанного класса сделайте конструктор закрытым; в противном случае сделайте его защищенным.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
+        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
+        <target state="translated">Добавьте конструктор к {0} со следующей сигнатурой: "protected {0}(SerializationInfo info, StreamingContext context)".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
+        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
+        <target state="translated">Объявите конструктор сериализации {0} запечатанного типа как частный.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
+        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
+        <target state="translated">Объявите конструктор сериализации {0} незапечатанного типа как защищенный.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsTitle">
+        <source>Implement serialization constructors</source>
+        <target state="translated">Реализуйте конструкторы сериализации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
+        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
+        <target state="translated">У метода, обрабатывающего событие сериализации, нет правильной сигнатуры, типа возвращаемого значения или видимости.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
+        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он более не был универсальным.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
+        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он принимал единственный параметр типа "System.Runtime.Serialization.StreamingContext".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
+        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените тип его возвращаемого значения с {1} на void (Sub в Visual Basic).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
+        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, сделайте его не статическим методом (Shared в Visual Basic), а методом экземпляра.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
+        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените его доступность частной.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
+        <source>Implement serialization methods correctly</source>
+        <target state="translated">Правильно реализуйте методы сериализации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
+        <source>A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
+        <target state="translated">Ссылочный тип объявляет явный статический конструктор. Чтобы устранить нарушение этого правила, инициализируйте все статические данные при объявлении конструктора и удалите его.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeReferenceTypeStaticFieldsInlineTitle">
+        <source>Initialize reference type static fields inline</source>
+        <target state="translated">Используйте встроенную инициализацию статических полей ссылочных типов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeStaticFieldsInlineMessage">
+        <source>Initialize all static fields in '{0}' when those fields are declared and remove the explicit static constructor</source>
+        <target state="translated">Инициализируйте все статические поля в "{0}" при их объявлении и удалите явный статический конструктор.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeValueTypeStaticFieldsInlineDescription">
+        <source>A value type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
+        <target state="translated">Тип значения объявляет явный статический конструктор. Чтобы устранить нарушение этого правила, инициализируйте все статические данные при объявлении конструктора и удалите его.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeValueTypeStaticFieldsInlineTitle">
+        <source>Initialize value type static fields inline</source>
+        <target state="translated">Используйте встроенную инициализацию статических полей типов значений</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
+        <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
+        <target state="translated">Выполняется вызов конструктора по умолчанию (без параметров) для типа исключения, который является ArgumentException или производным от него, либо в параметризованный конструктор для типа исключения, который является ArgumentException или производным от него, передается неправильный строковый аргумент.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
+        <source>Method {0} passes parameter name '{1}' as the {2} argument to a {3} constructor. Replace this argument with a descriptive message and pass the parameter name in the correct position.</source>
+        <target state="translated">Метод {0} передает имя параметра "{1}" в качестве аргумента {2} в конструктор {3}. Замените этот аргумент описательным сообщением и передайте имя этого параметра в правильном положении.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName">
+        <source>Method {0} passes '{1}' as the {2} argument to a {3} constructor. Replace this argument with one of the method's parameter names. Note that the provided parameter name should have the exact casing as declared on the method.</source>
+        <target state="translated">Метод {0} передает "{1}" в качестве аргумента {2} в конструктор {3}. Замените этот аргумент одним из имен параметров метода. Заметьте, что предоставленное имя параметра должно использовать те же прописные и строчные буквы, как объявлено в методе.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
+        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
+        <target state="translated">Вызывайте конструктор {0}, который содержит сообщение и (или) параметр paramName.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
+        <source>Instantiate argument exceptions correctly</source>
+        <target state="translated">Правильно создавайте экземпляры исключений аргументов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных с помощью JavaScriptSerializer, который был инициализирован с указанием SimpleTypeResolver. Убедитесь, что JavaScriptSerializer был инициализирован без указания JavaScriptTypeResolver или с указанием JavaScriptTypeResolver, который ограничивает типы объектов в десериализованном графе объектов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
+        <source>Ensure JavaScriptSerializer is not initialized with SimpleTypeResolver before deserializing</source>
+        <target state="translated">Убедитесь, что JavaScriptSerializer не был инициализирован с SimpleTypeResolver до десериализации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных с помощью JavaScriptSerializer, который был инициализирован с указанием SimpleTypeResolver. Инициализируйте JavaScriptSerializer без указания JavaScriptTypeResolver или с указанием JavaScriptTypeResolver, который ограничивает типы объектов в десериализованном графе объектов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
+        <source>Do not deserialize with JavaScriptSerializer using a SimpleTypeResolver</source>
+        <target state="translated">Не выполняйте десериализацию в JavaScriptSerializer с помощью SimpleTypeResolver</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSerializerMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">При десериализации ненадежных входных данных разрешать десериализацию произвольных типов небезопасно. При использовании десериализации JsonSerializer укажите TypeNameHandling.None, а для значений, отличных от None, ограничьте десериализованные типы с помощью SerializationBinder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSerializerTitle">
+        <source>Do not deserialize with JsonSerializer using an insecure configuration</source>
+        <target state="translated">Не выполняйте десериализацию с JsonSerializer при использовании небезопасной конфигурации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSettingsMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">При десериализации ненадежных входных данных разрешение десериализации произвольных типов является небезопасным. При использовании JsonSerializerSettings укажите TypeNameHandling.None, а для значений, отличных от None, ограничьте десериализованные типы с помощью SerializationBinder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSettingsTitle">
+        <source>Do not use insecure JsonSerializerSettings</source>
+        <target state="translated">Не используйте небезопасный JsonSerializerSettings</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSerializerMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">При десериализации ненадежных входных данных разрешать десериализацию произвольных типов небезопасно. При использовании десериализации JsonSerializer укажите TypeNameHandling.None, а для значений, отличных от None, ограничьте десериализованные типы с помощью SerializationBinder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSerializerTitle">
+        <source>Ensure that JsonSerializer has a secure configuration when deserializing</source>
+        <target state="translated">Убедитесь, что конфигурация JsonSerializer является безопасной при десериализации.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSettingsMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, ensure TypeNameHandling.None is specified, or for values other than None, ensure a SerializationBinder is specified to restrict deserialized types.</source>
+        <target state="translated">При десериализации ненадежных входных данных разрешение десериализации произвольных типов является небезопасным. При использовании JsonSerializerSettings убедитесь, что указан TypeNameHandling.None, а для значений, отличных от None, убедитесь, что указан SerializationBinder для ограничения десериализованных типов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSettingsTitle">
+        <source>Ensure that JsonSerializerSettings are secure</source>
+        <target state="translated">Убедитесь, что JsonSerializerSettings безопасны.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingDescription">
+        <source>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.  If you need to instead detect Json.NET deserialization when a SerializationBinder isn't specified, then disable rule CA2326, and enable rules CA2327, CA2328, CA2329, and CA2330.</source>
+        <target state="translated">Десериализация JSON при использовании значения TypeNameHandling, отличного от "None", может быть небезопасной. Если необходимо обнаружить десериализацию Json.NET в том случае, если SerializationBinder не указан, отключите правило CA2326 и включите правила CA2327, CA2328, CA2329 и CA2330.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingMessage">
+        <source>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.</source>
+        <target state="translated">Десериализация JSON при использовании значения TypeNameHandling, отличного от "None", может быть небезопасной.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingTitle">
+        <source>Do not use TypeNameHandling values other than None</source>
+        <target state="translated">Не используйте значения TypeNameHandling, отличные от "None"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LosFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LosFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer LosFormatter</source>
+        <target state="translated">Не используйте небезопасный десериализатор LosFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsDescription">
+        <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
+        <target state="translated">Поле экземпляра типа, который не может быть сериализован, объявлено в типе, который может быть сериализован.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsMessage">
+        <source>Field {0} is a member of type {1} which is serializable but is of type {2} which is not serializable</source>
+        <target state="translated">Поле {0} является членом сериализуемого типа {1}, но имеет несериализуемый тип {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsTitle">
+        <source>Mark all non-serializable fields</source>
+        <target state="translated">Пометьте все несериализуемые поля</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageDescription">
+        <source>The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.</source>
+        <target state="translated">Атрибут NeutralResourcesLanguage сообщает ResourceManager о языке, использованном при отображении ресурсов нейтральной культуры для сборки. Это ускоряет поиск для первого загружаемого вами ресурса и может уменьшить рабочий набор.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageMessage">
+        <source>Mark assemblies with NeutralResourcesLanguageAttribute</source>
+        <target state="translated">Пометьте сборки с помощью NeutralResourcesLanguageAttribute</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageTitle">
+        <source>Mark assemblies with NeutralResourcesLanguageAttribute</source>
+        <target state="translated">Пометьте сборки с помощью NeutralResourcesLanguageAttribute</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsDescription">
+        <source>The Boolean data type has multiple representations in unmanaged code.</source>
+        <target state="translated">Логический тип данных имеет несколько представлений в неуправляемом коде.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsMessageDefault">
+        <source>Add the MarshalAsAttribute to parameter {0} of P/Invoke {1}. If the corresponding unmanaged parameter is a 4-byte Win32 'BOOL', use [MarshalAs(UnmanagedType.Bool)]. For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</source>
+        <target state="translated">Добавьте MarshalAsAttribute к параметру {0} P/Invoke {1}. Если соответствующий неуправляемый параметр является 4-байтным Win32 "BOOL", используйте [MarshalAs(UnmanagedType.Bool)]. Для 1-байтного "bool" C++ используйте MarshalAs(UnmanagedType.U1).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsMessageReturn">
+        <source>Add the MarshalAsAttribute to the return type of P/Invoke {0}. If the corresponding unmanaged return type is a 4-byte Win32 'BOOL', use MarshalAs(UnmanagedType.Bool). For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</source>
+        <target state="translated">Добавьте MarshalAsAttribute к типу возвращаемого значения P/Invoke {0}. Если соответствующий неуправляемый тип возвращаемого значения является 4-байтным Win32 "BOOL", используйте MarshalAs(UnmanagedType.Bool). Для 1-байтного "bool" C++ используйте MarshalAs(UnmanagedType.U1).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsTitle">
+        <source>Mark boolean PInvoke arguments with MarshalAs</source>
+        <target state="translated">Пометьте логические аргументы PInvoke с помощью MarshalAs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableDescription">
+        <source>To be recognized by the common language runtime as serializable, types must be marked by using the SerializableAttribute attribute even when the type uses a custom serialization routine through implementation of the ISerializable interface.</source>
+        <target state="translated">Чтобы среда CLR распознавала типы как сериализуемые, они должны быть помечены с помощью атрибута SerializableAttribute, даже если тип использует настраиваемую процедуру сериализации посредством реализации интерфейса ISerializable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableMessage">
+        <source>Add [Serializable] to {0} as this type implements ISerializable</source>
+        <target state="translated">Добавьте [Serializable] к {0}, так как этот тип реализует ISerializable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableTitle">
+        <source>Mark ISerializable types with serializable</source>
+        <target state="translated">Пометить типы ISerializable атрибутом serializable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeDisableHttpClientCRLCheck">
+        <source>Ensure HttpClient certificate revocation list check is not disabled</source>
+        <target state="translated">Проверка списка отзыва сертификатов HttpClient не должна быть отключена.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeDisableHttpClientCRLCheckMessage">
+        <source>HttpClient may be created without enabling CheckCertificateRevocationList</source>
+        <target state="translated">HttpClient может создаваться без включения CheckCertificateRevocationList.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeInstallRootCert">
+        <source>Ensure Certificates Are Not Added To Root Store</source>
+        <target state="translated">Убедитесь, что сертификаты не добавлены в корневое хранилище</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeInstallRootCertMessage">
+        <source>Adding certificates to the operating system's trusted root certificates is insecure. Ensure that the target store is not root store.</source>
+        <target state="translated">Добавление сертификатов в доверенные корневые сертификаты операционной системы небезопасно. Убедитесь, что целевое хранилище не находится в корневом хранилище.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
+        <source>Use CreateEncryptor with the default IV </source>
+        <target state="translated">Используйте CreateEncryptor с вектором инициализации по умолчанию. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
+        <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
+        <target state="translated">Для шифрования используется вектор инициализации, не являющийся значением по умолчанию. Этот вектор потенциально может быть воспроизводимым. Используйте вектор инициализации по умолчанию.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseSecureCookiesASPNetCore">
+        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
+        <target state="translated">Убедитесь в использовании защищенных файлов cookie в ASP.NET Core.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
+        <source>Ensure that CookieOptions.Secure = true when setting a cookie</source>
+        <target state="translated">Убедитесь, что для параметра CookieOptions.Secure установлено значение true при настройке файла cookie.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseWeakKDFInsufficientIterationCount">
+        <source>Ensure Sufficient Iteration Count When Using Weak Key Derivation Function</source>
+        <target state="translated">Обеспечение достаточного числа итераций при использовании ненадежной функции формирования ключа</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseWeakKDFInsufficientIterationCountMessage">
+        <source>Ensure that the iteration count is at least {0} when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
+        <target state="translated">Убедитесь, что число итераций составляет не меньше {0} при формировании криптографического ключа из пароля. По умолчанию значение IterationCount для Rfc2898DeriveByte равно всего 1000</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttribute">
+        <source>Miss HttpVerb attribute for action methods</source>
+        <target state="translated">Отсутствует атрибут HttpVerb для методов действия.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttributeDescription">
+        <source>All the methods that create, edit, delete, or otherwise modify data do so in the [HttpPost] overload of the method, which needs to be protected with the anti forgery attribute from request forgery. Performing a GET operation should be a safe operation that has no side effects and doesn't modify your persisted data.</source>
+        <target state="translated">Все методы, которые создают, изменяют, удаляют или иным образом модифицируют данные, делают это в перегрузке [HttpPost] метода, которую необходимо защитить от подделки запроса с помощью атрибута для защиты от подделки. Выполнение операции GET должно быть безопасным, не должно иметь побочных эффектов и не должно изменять сохраненные данные.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttributeMessage">
+        <source>Action method {0} needs to specify the Http request kind explictly</source>
+        <target state="translated">В методе действия {0} необходимо указать тип HTTP-запроса явным образом.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
+        <source>Ensure NetDataContractSerializer.Binder is set before deserializing</source>
+        <target state="translated">Убедитесь, что NetDataContractSerializer.Binder задан перед десериализацией</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
+        <source>Do not deserialize without first setting NetDataContractSerializer.Binder</source>
+        <target state="translated">Не десериализируйте, не задав предварительно NetDataContractSerializer.Binder</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedDescription">
+        <source>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect NetDataContractSerializer deserialization without a SerializationBinder set, then disable rule CA2310, and enable rules CA2311 and CA2312.</source>
+        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных. Если вместо этого нужно обнаружить десериализацию NetDataContractSerializer без задания SerializationBinder, отключите правило CA2310 и включите правила CA2311 и CA2312.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedTitle">
+        <source>Do not use insecure deserializer NetDataContractSerializer</source>
+        <target state="translated">Не используйте небезопасный десериализатор NetDataContractSerializer</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseDescription">
+        <source>Strings should be normalized to uppercase. A small group of characters cannot make a round trip when they are converted to lowercase. To make a round trip means to convert the characters from one locale to another locale that represents character data differently, and then to accurately retrieve the original characters from the converted characters.</source>
+        <target state="translated">Строки следует нормализовать до прописных букв. Небольшая группа символов не может выполнить круговой путь, если они преобразованы в нижний регистр. Круговой путь заключается в преобразовании символов из одного языкового стандарта в другой, где символьные данные представлены иначе, и последующем точном извлечении исходных символов из преобразованных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
+        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
+        <target state="translated">В методе "{0}" замените вызов "{1}" на "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseTitle">
+        <source>Normalize strings to uppercase</source>
+        <target state="translated">Нормализуйте строки до прописных букв</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ObjectStateFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ObjectStateFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer ObjectStateFormatter</source>
+        <target state="translated">Не используйте небезопасный десериализатор ObjectStateFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
+        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
+        <target state="translated">Это правило оценивает каждый параметр и возвращает значение P/Invoke, а затем проверяет правильность размера параметра при маршалировании в неуправляемый код на 32- и 64-разрядных операционных системах.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
+        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
+        <target state="translated">Как объявлено в вашем коде, параметр {0} для P/Invoke {1} будет иметь размер {2} байт для платформ {3}. Это неправильно, так как текущее объявление в машинном коде для данного API указывает, что его размер должен быть {4} байт для платформ {3}. Обратитесь к документации по пакету SDK для платформы MSDN и выясните, какой тип данных следует использовать вместо {5}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
+        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
+        <target state="translated">Как объявлено в вашем коде, тип возвращаемого значения для P/Invoke {0} будет иметь размер {1} байт для платформ {2}. Это неправильно, так как текущее объявление в машинном коде для данного API указывает, что его размер должен быть {3} байт для платформ {2}. Обратитесь к документации по пакету SDK для платформы MSDN и выясните, какой тип данных следует использовать вместо {4}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
+        <source>PInvoke declarations should be portable</source>
+        <target state="translated">Объявления PInvoke должны быть переносимыми</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleDescription">
+        <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
+        <target state="translated">Общий или защищенный метод в общем типе имеет атрибут System.Runtime.InteropServices.DllImportAttribute (также реализуемый ключевым словом Declare в Visual Basic). Предоставлять такие методы не следует.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleMessage">
+        <source>P/Invoke method '{0}' should not be visible</source>
+        <target state="translated">Метод P/Invoke "{0}" не должен быть видимым</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleTitle">
+        <source>P/Invokes should not be visible</source>
+        <target state="translated">Методы P/Invoke не должны быть видимыми</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
+        <source>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</source>
+        <target state="translated">Передаваемый в System.String.Format аргумент формата не содержит элемент формата, соответствующий каждому из аргументов объекта, или наоборот.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
+        <source>Provide correct arguments to formatting methods</source>
+        <target state="translated">Задайте правильные аргументы для методов форматирования</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
+        <source>Provide correct arguments to formatting methods</source>
+        <target state="translated">Задайте правильные аргументы для методов форматирования</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
+        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
+        <target state="translated">Тип имеет поле, помеченное атрибутом System.Runtime.Serialization.OptionalFieldAttribute, и не предоставляет методы для обработки событий десериализации.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
+        <target state="translated">Добавьте метод "private void OnDeserialized(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializedAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
+        <target state="translated">Добавьте метод "private void OnDeserializing(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializingAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
+        <source>Provide deserialization methods for optional fields</source>
+        <target state="translated">Обеспечьте наличие методов десериализации в необязательных полях</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveRedundantCall">
+        <source>Remove redundant call</source>
+        <target state="translated">Удалить избыточный вызов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsDescription">
+        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
+        <target state="translated">Исключение выдается повторно и явно указывается в операторе throw. Если исключение порождается повторно путем его указания в операторе throw, список вызовов метода между исходным методом, породившим исключение, и текущим методом теряется.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsMessage">
+        <source>Rethrow to preserve stack details</source>
+        <target state="translated">Повторно порождайте исключения для сохранения сведений стека</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsTitle">
+        <source>Rethrow to preserve stack details</source>
+        <target state="translated">Повторно порождайте исключения для сохранения сведений стека</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
+        <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению DLL, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
+        <source>Review code for DLL injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению DLL </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
+        <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению пути к файлу, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
+        <source>Review code for file path injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению пути к файлу </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForInformationDisclosureVulnerabilitiesMessage">
+        <source>Potential information disclosure vulnerability was found where '{0}' in method '{1}' may contain unintended information from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к раскрытию информации, где "{0}" в методе "{1}" может содержать нежелательные сведения из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForInformationDisclosureVulnerabilitiesTitle">
+        <source>Review code for information disclosure vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к раскрытию информации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
+        <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению LDAP, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
+        <source>Review code for LDAP injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению LDAP</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
+        <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к открытому перенаправлению, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
+        <source>Review code for open redirect vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к открытому перенаправлению</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
+        <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению команд процесса, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
+        <source>Review code for process command injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению команд процесса</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
+        <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению регулярных выражений, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
+        <source>Review code for regex injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению регулярных выражений</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
+        <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению кода SQL, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
+        <source>Review code for SQL injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению кода SQL</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
+        <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению кода XAML, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
+        <source>Review code for XAML injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению кода XAML</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
+        <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению кода XML, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
+        <source>Review code for XML injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению кода XML</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
+        <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к внедрению кода XPath, где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
+        <source>Review code for XPath injection vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к внедрению кода XPath</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
+        <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">Обнаружена потенциальная уязвимость к межсайтовым сценариям (XSS), где "{0}" в методе "{1}" может быть испорчен пользовательскими данными из "{2}" в методе "{3}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">
+        <source>Review code for XSS vulnerabilities</source>
+        <target state="translated">Проверьте код на наличие уязвимостей к межсайтовым сценариям (XSS)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesDescription">
+        <source>SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.</source>
+        <target state="translated">SQL-запросы, напрямую использующие введенные пользователем сведения, могут быть подвержены атакам путем внедрения кода SQL. Проверьте этот SQL-запрос на наличие уязвимостей и рассмотрите возможность использования параметризованного SQL-запроса.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
+        <target state="translated">Проверьте, принимает ли строка запроса, переданная в "{0}" в "{1}", вводимые пользователем сведения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
+        <source>Review SQL queries for security vulnerabilities</source>
+        <target state="translated">Проверка запросов SQL на уязвимости безопасности</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookie">
+        <source>Set HttpOnly to true for HttpCookie</source>
+        <target state="translated">Установите для параметра HttpOnly объекта HttpCookie значение true</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookieDescription">
+        <source>As a defense in depth measure, ensure security sensitive HTTP cookies are marked as HttpOnly. This indicates web browsers should disallow scripts from accessing the cookies. Injected malicious scripts are a common way of stealing cookies.</source>
+        <target state="translated">В качестве меры углубленной защиты убедитесь, что файлы cookie HTTP с конфиденциальной информацией о безопасности помечены как HttpOnly. Это означает, что веб-браузеры должны запретить сценариям доступ к файлам cookie. Внедрение вредоносных сценариев является распространенным способом кражи файлов cookie.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookieMessage">
+        <source>HttpCookie.HttpOnly is set to false or not set at all when using an HttpCookie. Ensure security sensitive cookies are marked as HttpOnly to prevent malicious scripts from stealing the cookies</source>
+        <target state="translated">HttpCookie.HttpOnly имеет значение false или значение не задано при использовании HttpCookie. Убедитесь, что файлы cookie с конфиденциальными сведениями безопасности помечены как HttpOnly, чтобы избежать кражи файлов cookie вредоносными сценариями.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKey">
+        <source>Set ViewStateUserKey For Classes Derived From Page</source>
+        <target state="translated">Задайте ViewStateUserKey для классов, производных от Page</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKeyDescription">
+        <source>Setting the ViewStateUserKey property can help you prevent attacks on your application by allowing you to assign an identifier to the view-state variable for individual users so that they cannot use the variable to generate an attack. Otherwise, there will be cross-site request forgery vulnerabilities.</source>
+        <target state="translated">Задание свойства ViewStateUserKey может помочь предотвратить атаки на приложение, позволяя назначить идентификатор переменной состояния просмотра для отдельных пользователей, чтобы они не могли использовать переменную для атаки. В противном случае будут иметь место уязвимости к подделке межсайтовых запросов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKeyMessage">
+        <source>The class {0} derived from System.Web.UI.Page does not set the ViewStateUserKey property in the OnInit method or Page_Init method</source>
+        <target state="translated">В классе {0}, производном от System.Web.UI.Page, не установлено свойство ViewStateUserKey в методах OnInit и Page_Init.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoDescription">
+        <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="translated">Метод или конструктор вызывает элемент, который имеет перегрузку, принимающую параметр System.Globalization.CultureInfo, при этом данный метод или конструктор не вызывает перегрузку, принимающую параметр CultureInfo. Если объект CultureInfo или System.IFormatProvider не задан, значение по умолчанию, предоставленное перегруженным элементом, может не оказывать требуемое вам воздействие для всех языковых стандартов. Если результат выводится пользователю, укажите "CultureInfo.CurrentCulture" в качестве параметра "CultureInfo". В противном случае, если результат сохраняется и используется программным обеспечением, например при сохранении его на диск или в базу данных, укажите "CultureInfo.InvariantCulture".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoMessage">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">Поведение "{0}" может изменяться в зависимости от параметров языкового стандарта текущего пользователя. Замените этот вызов в "{1}" на вызов "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoTitle">
+        <source>Specify CultureInfo</source>
+        <target state="translated">Укажите CultureInfo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderDescription">
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
+        <target state="translated">Метод или конструктор вызывает один или несколько элементов, которые имеют перегрузки, принимающие параметр System.IFormatProvider, при этом данный метод или конструктор не вызывает перегрузку, принимающую параметр IFormatProvider. Если объект System.Globalization.CultureInfo или IFormatProvider не задан, значение по умолчанию, предоставленное перегруженным элементом, может не оказывать требуемое вам воздействие для всех языковых стандартов. Если результат зависит от вводимых пользователям данных или предоставляемых ему выходных данных, укажите "CultureInfo.CurrentCulture" в качестве параметра "IFormatProvider". В противном случае, если результат сохраняется и используется программным обеспечением, например при загрузке его с диска или из базы данных и при сохранении в этих расположениях, укажите "CultureInfo.InvariantCulture".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">Поведение "{0}" может изменяться в зависимости от параметров языкового стандарта текущего пользователя. Замените этот вызов в "{1}" на вызов "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternateString">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">Поведение "{0}" может изменяться в зависимости от параметров языкового стандарта текущего пользователя. Замените этот вызов в "{1}" на вызов "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageUICulture">
+        <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
+        <target state="translated">"{0}" передает "{1}" в "{2}" в качестве параметра "IFormatProvider". Это свойство возвращает язык и региональные параметры, не подходящие для методов форматирования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageUICultureString">
+        <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
+        <target state="translated">"{0}" передает "{1}" в "{2}" в качестве параметра "IFormatProvider". Это свойство возвращает язык и региональные параметры, не подходящие для методов форматирования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderTitle">
+        <source>Specify IFormatProvider</source>
+        <target state="translated">Укажите IFormatProvider</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsDescription">
+        <source>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</source>
+        <target state="translated">Член вызова неуправляемого кода разрешает вызовы с неполным доверием, имеет строковый параметр и не маршалирует строку явным образом. Это может привести к уязвимости системы безопасности.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
+        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
+        <target state="translated">Чтобы уменьшить угрозу безопасности, маршалируйте поле {0} как Юникод, установив значение StructLayout.CharSet для StructLayout.CharSet в {1} либо явно маршалировав поле как UnmanagedType.LPWStr. Если необходимо маршалировать эту строку как ANSI или зависящую от системы, используйте атрибут BestFitMapping для отключения сопоставления путем автоматического подбора, а также включите параметр ThrowOnUnmappableChar.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
+        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
+        <target state="translated">Чтобы уменьшить угрозу безопасности, маршалируйте поле {0} как Юникод, установив значение StructLayout.CharSet для StructLayout.CharSet в {1} либо явно маршалировав поле как UnmanagedType.LPWStr. Если необходимо маршалировать эту строку как ANSI или зависящую от системы, явно укажите MarshalAs, используйте атрибут BestFitMapping для отключения сопоставления путем автоматического подбора, а также включите параметр ThrowOnUnmappableChar для обеспечения дополнительной безопасности.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
+        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
+        <target state="translated">Чтобы уменьшить угрозу безопасности, маршалируйте параметр {0} как Юникод, установив значение CharSet.Unicode для DllImport.CharSet либо явно маршалировав параметр как UnmanagedType.LPWStr. Если необходимо маршалировать эту строку как ANSI или зависящую от системы, установите BestFitMapping=false; для обеспечения дополнительной безопасности также установите ThrowOnUnmappableChar=true.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
+        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
+        <target state="translated">Чтобы уменьшить угрозу безопасности, маршалируйте параметр {0} как Юникод, установив значение CharSet.Unicode для DllImport.CharSet либо явно маршалировав параметр как UnmanagedType.LPWStr. Если необходимо маршалировать эту строку как ANSI или зависящую от системы, явно укажите MarshalAs и установите BestFitMapping=false; для обеспечения дополнительной безопасности также установите ThrowOnUnmappableChar=true.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
+        <source>Specify marshaling for P/Invoke string arguments</source>
+        <target state="translated">Укажите маршалинг для строковых аргументов P/Invoke</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonDescription">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="translated">Операция сравнения строк использует перегрузку метода, не задающую параметр StringComparison. Если результат будет отображаться для пользователя, например при сортировке элементов в списке, задайте для параметра "StringComparison" значение "StringComparison.CurrentCulture" или "StringComparison.CurrentCultureIgnoreCase". При сравнении идентификаторов, не чувствительных к регистру, таких как пути к файлам, переменные среды или разделы и значения реестра, используйте "StringComparison.OrdinalIgnoreCase". В противном случае укажите "StringComparison.Ordinal" при сравнении чувствительных к регистру идентификаторов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonMessage">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">Поведение "{0}" может изменяться в зависимости от параметров языкового стандарта текущего пользователя. Замените этот вызов в "{1}" на вызов "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonTitle">
+        <source>Specify StringComparison</source>
+        <target state="translated">Укажите StringComparison</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
+        <source>Comparing strings by using the String.Length property or the String.IsNullOrEmpty method is significantly faster than using Equals.</source>
+        <target state="translated">Сравнение строк с помощью свойства String.Length или метода String.IsNullOrEmpty выполняется значительно быстрее, чем при использовании Equals.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
+        <target state="translated">Проверяйте наличие пустых строк, используя свойство "string.Length" или метод "string.IsNullOrEmpty" вместо проверки равенства.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
+        <source>Test for empty strings using string length</source>
+        <target state="translated">Проверяйте наличие пустых строк, используя длину строки</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyDescription">
+        <source>This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.</source>
+        <target state="translated">Это выражение проверяет значение на соответствие Single.Nan или Double.Nan. Используйте Single.IsNan(Single) или Double.IsNan(Double) для проверки значения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyMessage">
+        <source>Test for NaN correctly</source>
+        <target state="translated">Правильно выполняйте проверку NaN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyTitle">
+        <source>Test for NaN correctly</source>
+        <target state="translated">Правильно выполняйте проверку NaN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArrayEmpty">
+        <source>Use Array.Empty</source>
+        <target state="translated">Используйте Array.Empty</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryToken">
+        <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
+        <target state="translated">Используйте маркеры для защиты от подделки в контроллерах MVC ASP.NET Core.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryTokenDescription">
+        <source>Handling a POST, PUT, PATCH, or DELETE request without validating an antiforgery token may be vulnerable to cross-site request forgery attacks. A cross-site request forgery attack can send malicious requests from an authenticated user to your ASP.NET Core MVC controller.</source>
+        <target state="translated">Обработка запроса POST, PUT, PATCH или DELETE без проверки маркера для защиты от подделки может стать уязвимой для атак с использованием подделки межсайтовых запросов. Атаки с использованием подделки межсайтовых запросов позволяют отправлять вредоносные запросы от пользователя, прошедшего проверку подлинности, в контроллер MVC ASP.NET Core.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryTokenMessage">
+        <source>Method {0} handles a {1} request without performing antiforgery token validation. You also need to ensure that your HTML form sends an antiforgery token.</source>
+        <target state="translated">Метод {0} обрабатывает запрос {1} без проверки маркера для защиты от подделки. Также убедитесь в том, что HTML-форма отправляет маркер для защиты от подделки.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicy">
+        <source>Use Container Level Access Policy</source>
+        <target state="translated">Использовать политику доступа на уровне контейнера</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicyDescription">
+        <source>No access policy identifier is specified, making tokens non-revocable.</source>
+        <target state="translated">Идентификатор политики доступа не указан. Невозможно отозвать токены.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicyMessage">
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
+        <target state="translated">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, при его создании примените политику доступа на уровне контейнера.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
+        <source>Use DefaultDllImportSearchPaths attribute for P/Invokes</source>
+        <target state="translated">Используйте атрибут DefaultDllImportSearchPaths для P/Invokes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttributeDescription">
+        <source>By default, P/Invokes using DllImportAttribute probe a number of directories, including the current working directory for the library to load. This can be a security issue for certain applications, leading to DLL hijacking.</source>
+        <target state="translated">По умолчанию P/Invokes, использующий атрибут DllImportAttribute, проверяет наличие загружаемой библиотеки в нескольких каталогах, включая рабочий каталог. Это может быть проблемой безопасности для некоторых приложений и привести к захвату DLL.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
+        <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
+        <target state="translated">Метод {0} не использовал атрибут DefaultDllImportSearchPaths для P/Invokes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIndexer">
+        <source>Use indexer</source>
+        <target state="translated">Использовать индексатор</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
+        <source>An operating system invoke method is defined and a method that has the equivalent functionality is located in the .NET Framework class library.</source>
+        <target state="translated">Определен метод вызова операционной системы, а метод с аналогичной функциональностью находится в библиотеке классов платформы .NET Framework.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiMessage">
+        <source>Use managed equivalents of win32 api</source>
+        <target state="translated">Используйте управляемые эквиваленты API Win32</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiTitle">
+        <source>Use managed equivalents of win32 api</source>
+        <target state="translated">Используйте управляемые эквиваленты API Win32</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonDescription">
+        <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
+        <target state="translated">Нелингвистическая операция сравнения строк не задает для параметра StringComparison значение Ordinal или OrdinalIgnoreCase. Задав явным образом значение StringComparison.Ordinal или StringComparison.OrdinalIgnoreCase для параметра, можно сделать код более быстродействующим, корректным и надежным.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
+        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
+        <target state="translated">{0} передает "{1}" в {2} в качестве параметра "StringComparer". Чтобы выполнить нелингвистическое сравнение, укажите "StringComparer.Ordinal" или "StringComparer.OrdinalIgnoreCase".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
+        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
+        <target state="translated">{0} передает "{1}" в {2} в качестве параметра "StringComparison". Чтобы выполнить нелингвистическое сравнение, укажите "StringComparison.Ordinal" или "StringComparison.OrdinalIgnoreCase".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonTitle">
+        <source>Use ordinal stringcomparison</source>
+        <target state="translated">Используйте stringcomparison по порядковым номерам</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
+        <source>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</source>
+        <target state="translated">Enumerable.Count() может выполнять перечисление последовательности, в то время как свойство Length/Count предполагает прямой доступ.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
+        <source>Use the "{0}" property instead of Enumerable.Count().</source>
+        <target state="translated">Используйте свойство "{0}" вместо Enumerable.Count().</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
+        <source>Use Length/Count property instead of Count() when available</source>
+        <target state="translated">Используйте свойство Length/Count вместо Count(), если оно доступно</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySize">
+        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="translated">Использовать алгоритм шифрования RSA с достаточным размером ключа</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySizeDescription">
+        <source>Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.</source>
+        <target state="translated">Алгоритмы шифрования уязвимы для атак методом подбора, если размер используемого ключа слишком мал.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySizeMessage">
+        <source>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="translated">Размер ключа для алгоритма асимметричного шифрования {0} меньше 2048 бит. Перейдите на алгоритм RSA с размером ключа не менее 2048 бит или на алгоритмы ECDH или ECDSA.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSecureCookiesASPNetCoreDescription">
+        <source>Applications available over HTTPS must use secure cookies.</source>
+        <target state="translated">Приложения, доступные через HTTPS, должны использовать защищенные файлы cookie.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnly">
+        <source>Use SharedAccessProtocol HttpsOnly</source>
+        <target state="translated">Использовать SharedAccessProtocol HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnlyDescription">
+        <source>HTTPS encrypts network traffic. Use HttpsOnly, rather than HttpOrHttps, to ensure network traffic is always encrypted to help prevent disclosure of sensitive data.</source>
+        <target state="translated">При использовании HTTPS сетевой трафик шифруется. Чтобы гарантировать, что сетевой трафик всегда будет зашифрован, а конфиденциальные данные не будут раскрыты, используйте HttpsOnly, а не HttpOrHttps.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
+        <target state="translated">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, укажите SharedAccessProtocol.HttpsOnly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="new">Use ValueTasks correctly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderDescription">
+        <source>Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.</source>
+        <target state="translated">Обработка XML-кода из ненадежных данных может привести к загрузке опасных внешних ссылок, что следует ограничить, используя XmlReader с безопасным сопоставителем или отключив обработку DTD.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXml">
+        <source>Use XmlReader For DataSet Read Xml</source>
+        <target state="translated">Использовать XmlReader для чтения XML из набора данных</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDeserialize">
+        <source>Use XmlReader For Deserialize</source>
+        <target state="translated">Использовать XmlReader для десериализации</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForSchemaRead">
+        <source>Use XmlReader For Schema Read</source>
+        <target state="translated">Использовать XmlReader для чтения схемы</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForValidatingReader">
+        <source>Use XmlReader For Validating Reader</source>
+        <target state="translated">Использовать XmlReader для проверяющего модуля чтения</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForXPathDocument">
+        <source>Use XmlReader For XPathDocument</source>
+        <target state="translated">Использовать XmlReader для XPathDocument</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderMessage">
+        <source>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</source>
+        <target state="translated">Эта перегрузка метода {0}.{1} потенциально небезопасна, используйте вместо этого перегрузку, которая принимает экземпляр XmlReader</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

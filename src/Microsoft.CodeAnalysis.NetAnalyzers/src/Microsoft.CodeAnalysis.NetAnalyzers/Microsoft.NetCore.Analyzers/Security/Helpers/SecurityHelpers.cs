@@ -1,0 +1,181 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Resources;
+using Analyzer.Utilities;
+using Microsoft.CodeAnalysis;
+
+#pragma warning disable CA1054 // Uri parameters should not be strings
+
+namespace Microsoft.NetCore.Analyzers.Security.Helpers
+{
+    internal static class SecurityHelpers
+    {
+        /// <summary>
+        /// Creates a DiagnosticDescriptor with <see cref="LocalizableResourceString"/>s from <see cref="MicrosoftNetCoreAnalyzersResources"/>.
+        /// </summary>
+        /// <param name="id">Diagnostic identifier.</param>
+        /// <param name="titleResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's title.</param>
+        /// <param name="messageResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's message.</param>
+        /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
+        /// <param name="descriptionResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's descrption.</param>
+        /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
+        /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
+        /// <returns>new DiagnosticDescriptor</returns>
+        public static DiagnosticDescriptor CreateDiagnosticDescriptor(
+            string id,
+            string titleResourceStringName,
+            string messageResourceStringName,
+            RuleLevel ruleLevel,
+            bool isPortedFxCopRule,
+            bool isDataflowRule,
+            string? descriptionResourceStringName = null)
+        {
+            return CreateDiagnosticDescriptor(
+                id,
+                typeof(MicrosoftNetCoreAnalyzersResources),
+                titleResourceStringName,
+                messageResourceStringName,
+                ruleLevel,
+                isPortedFxCopRule,
+                isDataflowRule,
+                descriptionResourceStringName);
+        }
+
+        /// <summary>
+        /// Creates a DiagnosticDescriptor with <see cref="LocalizableResourceString"/>s from the specified resource source type.
+        /// </summary>
+        /// <param name="id">Diagnostic identifier.</param>
+        /// <param name="resourceSource">Type containing the resource strings.</param>
+        /// <param name="titleResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's title.</param>
+        /// <param name="messageResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's message.</param>
+        /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
+        /// <param name="descriptionResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's descrption.</param>
+        /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
+        /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
+        /// <returns>new DiagnosticDescriptor</returns>
+        public static DiagnosticDescriptor CreateDiagnosticDescriptor(
+            string id,
+            Type resourceSource,
+            string titleResourceStringName,
+            string messageResourceStringName,
+            RuleLevel ruleLevel,
+            bool isPortedFxCopRule,
+            bool isDataflowRule,
+            string? descriptionResourceStringName = null)
+        {
+            return DiagnosticDescriptorHelper.Create(
+                id,
+                GetResourceString(resourceSource, titleResourceStringName),
+                GetResourceString(resourceSource, messageResourceStringName),
+                DiagnosticCategory.Security,
+                ruleLevel,
+                descriptionResourceStringName != null ? GetResourceString(resourceSource, descriptionResourceStringName) : null,
+                isPortedFxCopRule,
+                isDataflowRule,
+                isEnabledByDefaultInFxCopAnalyzers: ruleLevel != RuleLevel.Disabled);
+        }
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> BinaryFormatterDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize",
+                "DeserializeMethodResponse",
+                "UnsafeDeserialize",
+                "UnsafeDeserializeMethodResponse");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Runtime.Serialization.NetDataContractSerializer"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> NetDataContractSerializerDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize",
+                "ReadObject");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Web.Script.Serialization.JavaScriptSerializer"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> JavaScriptSerializerDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize",
+                "DeserializeObject");
+
+        private static readonly ImmutableDictionary<Type, ResourceManager> ResourceManagerMapping =
+            ImmutableDictionary.CreateRange<Type, ResourceManager>(
+                new[]
+                {
+                    (typeof(MicrosoftNetCoreAnalyzersResources), MicrosoftNetCoreAnalyzersResources.ResourceManager),
+                    (typeof(MicrosoftNetCoreAnalyzersResources), MicrosoftNetCoreAnalyzersResources.ResourceManager),
+                }.Select(o => new KeyValuePair<Type, ResourceManager>(o.Item1, o.ResourceManager)));
+
+        /// <summary>
+        /// Methods using a <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> parameter for <see cref="T:Newtonsoft.Json.JsonSerializer"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> JsonSerializerInstantiateWithSettingsMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Create",
+                "CreateDefault");
+
+        /// <summary>
+        /// Methods using a <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> parameter for <see cref="T:Newtonsoft.Json.JsonConvert"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> JsonConvertWithSettingsMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "DeserializeObject",
+                "DeserializeAnonymousType",
+                "PopulateObject");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:Newtonsoft.Json.JsonSerializer"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> JsonSerializerDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize",
+                "Populate");
+
+        /// <summary>
+        /// Gets a <see cref="LocalizableResourceString"/> from <see cref="MicrosoftNetCoreAnalyzersResources"/>.
+        /// </summary>
+        /// <param name="resourceSource">Type containing the resource strings.</param>
+        /// <param name="name">Name of the resource string to retrieve.</param>
+        /// <returns>The corresponding <see cref="LocalizableResourceString"/>.</returns>
+        private static LocalizableResourceString GetResourceString(Type resourceSource, string name)
+        {
+            if (resourceSource == null)
+            {
+                throw new ArgumentNullException(nameof(resourceSource));
+            }
+
+            if (!ResourceManagerMapping.TryGetValue(resourceSource, out ResourceManager resourceManager))
+            {
+                throw new ArgumentException($"No mapping found for {resourceSource}", nameof(resourceSource));
+            }
+
+#if DEBUG
+            if (resourceManager.GetString(name, System.Globalization.CultureInfo.InvariantCulture) == null)
+            {
+                throw new ArgumentException($"Resource string '{name}' not found in {resourceSource}", nameof(name));
+            }
+#endif
+
+            LocalizableResourceString localizableResourceString = new LocalizableResourceString(name, resourceManager, resourceSource);
+            return localizableResourceString;
+        }
+    }
+}

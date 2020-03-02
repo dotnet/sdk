@@ -1,0 +1,1862 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ja" original="../MicrosoftNetCoreAnalyzersResources.resx">
+    <body>
+      <trans-unit id="AddNonSerializedAttributeCodeActionTitle">
+        <source>Add the 'NonSerialized' attribute to this field.</source>
+        <target state="translated">このフィールドに、'NonSerialized' 属性を追加します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddSerializableAttributeCodeActionTitle">
+        <source>Add Serializable attribute</source>
+        <target state="translated">Serializable 属性を追加する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
+        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
+        <target state="translated">PreserveSigAttribute は、メソッドが例外をスローするのではなく HRESULT を返すことを示します。そのため、エラーを検出できるように、メソッドによって返された HRESULT を使用することが重要です。一般に、これは Marshal.ThrowExceptionForHR を呼び出すことによって行われます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
+        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
+        <target state="translated">メソッド '{0}' によって返される hresult を使用し、Marshal.ThrowExceptionForHR を呼び出します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
+        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
+        <target state="translated">PreserveSigAttribute に設定されたメソッドから返される値を常に使用します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherMode">
+        <source>Do Not Use Unsafe Cipher Modes</source>
+        <target state="translated">安全ではない暗号モードを使用しないでください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherModeDescription">
+        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
+        <target state="translated">これらのモードは、攻撃に対して脆弱です。承認されたモード (CBC、CTS) のみを使用してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApprovedCipherModeMessage">
+        <source>It uses an unsafe Cipher Mode {0}</source>
+        <target state="translated">安全ではない暗号モード {0} を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
+        <source>The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.</source>
+        <target state="translated">属性の文字列リテラル パラメーターが URL、GUID、またはバージョンを正しく解析しません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
+        <target state="translated">'{0}' のコンストラクター内にある引数 '{1}' の値 (現在は "{2}") を、'{3}' として正しく解析できる値に変更してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
+        <target state="translated">'{0}' のコンストラクター内にある引数 '{1}' の値は現在空の文字列 ("") になっています。'{2}' として正しく解析できる値に変更してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
+        <source>Attribute string literals should parse correctly</source>
+        <target state="translated">属性文字列リテラルは、正しく解析する必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesDescription">
+        <source>The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.</source>
+        <target state="translated">.NET Framework クラス ライブラリには、カスタム属性を取得するためのメソッドが用意されています。既定では、これらのメソッドは属性継承階層を検索します。属性をシールすると、継承階層全体を検索しなくなるため、パフォーマンスが向上します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesMessage">
+        <source>Avoid unsealed attributes</source>
+        <target state="translated">アンシールド属性を使用しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnsealedAttributesTitle">
+        <source>Avoid unsealed attributes</source>
+        <target state="translated">アンシールド属性を使用しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidZeroLengthArrayAllocationsMessage">
+        <source>Avoid unnecessary zero-length array allocations.  Use {0} instead.</source>
+        <target state="translated">不要な長さ 0 の配列の割り当てを避けます。代わりに {0} を使用してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
+        <source>Avoid zero-length array allocations.</source>
+        <target state="translated">長さ 0 の配列の割り当てを避けます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">SerializationBinder なしで信頼されていないデータを逆シリアル化して、逆シリアル化されたオブジェクト グラフ内でオブジェクトの型を制限する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
+        <source>Ensure BinaryFormatter.Binder is set before calling BinaryFormatter.Deserialize</source>
+        <target state="translated">BinaryFormatter.Deserialize を呼び出す前に BinaryFormatter.Binder が設定されていることを確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">SerializationBinder なしで信頼されていないデータを逆シリアル化して、逆シリアル化されたオブジェクト グラフ内でオブジェクトの型を制限する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
+        <source>Do not call BinaryFormatter.Deserialize without first setting BinaryFormatter.Binder</source>
+        <target state="translated">BinaryFormatter.Binder を設定せずに BinaryFormatter.Deserialize を呼び出さない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedDescription">
+        <source>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.</source>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません。代わりに、SerializationBinder が設定されていない BinaryFormatter 逆シリアル化を検出する必要がある場合、ルール CA2300 を無効にし、ルール CA2301 と CA2302 を有効にします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BinaryFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer BinaryFormatter</source>
+        <target state="translated">安全でないデシリアライザー BinaryFormatter を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
+        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</source>
+        <target state="translated">Dispose の実装であるメソッドは GC.SuppressFinalize を呼び出しません。または、Dispose の実装ではないメソッドは GC.SuppressFinalize を呼び出します。または、メソッドは GC.SuppressFinalize を呼び出し、this (Visual Basic では Me) 以外のものを渡します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotCalled">
+        <source>Change {0} to call {1}. This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.</source>
+        <target state="translated">{1} を呼び出すように {0} を変更します。これにより、ファイナライザーを導入する派生型で、その呼び出しのために 'IDisposable' を再実装する必要がなくなります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotCalledWithFinalizer">
+        <source>Change {0} to call {1}. This will prevent unnecessary finalization of the object once it has been disposed and it has fallen out of scope.</source>
+        <target state="translated">{1} を呼び出すように {0} を変更します。これにより、オブジェクトが破棄されてスコープ外になった場合の、不要な終了処理を回避できます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageNotPassedThis">
+        <source>{0} calls {1} on something other than itself. Change the call site to pass 'this' ('Me' in Visual Basic) instead.</source>
+        <target state="translated">{0} が、それ以外に対して {1} を呼び出します。呼び出しサイトを変更して、'this' (Visual Basic では 'Me') を渡します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyMessageOutsideDispose">
+        <source>{0} calls {1}, a method that is typically only called within an implementation of 'IDisposable.Dispose'. Refer to the IDisposable pattern for more information.</source>
+        <target state="translated">{0} は、通常 'IDisposable.Dispose' の実装内でのみ呼び出されるメソッド {1} を呼び出しています。詳細については、IDisposable パターンを参照してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallGCSuppressFinalizeCorrectlyTitle">
+        <source>Dispose methods should call SuppressFinalize</source>
+        <target state="translated">Dispose メソッドは、SuppressFinalize を呼び出す必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CategoryReliability">
+        <source>Reliability</source>
+        <target state="translated">信頼性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
+        <source>HttpClients should enable certificate revocation list checks</source>
+        <target state="translated">HttpClients では証明書失効リストの確認を有効にする必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyDisableHttpClientCRLCheckMessage">
+        <source>HttpClient is created without enabling CheckCertificateRevocationList</source>
+        <target state="translated">HttpClient は、CheckCertificateRevocationList を有効にせずに作成されました</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyInstallRootCert">
+        <source>Do Not Add Certificates To Root Store</source>
+        <target state="translated">ルート ストアに証明書を追加しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyInstallRootCertMessage">
+        <source>Adding certificates to the operating system's trusted root certificates increases the risk of incorrectly authenticating an illegitimate certificate</source>
+        <target state="translated">オペレーティング システムの信頼されたルート証明書に証明書を追加すると、不正な証明書を誤って認証するリスクが高くなります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIV">
+        <source>Do not use CreateEncryptor with non-default IV</source>
+        <target state="translated">既定以外の IV で CreateEncryptor を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage">
+        <source>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</source>
+        <target state="translated">対称暗号化で既定以外の初期化ベクトルが使用されています。これは反復使用できる可能性があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
+        <source>Use Secure Cookies In ASP.Net Core</source>
+        <target state="translated">ASP.Net Core で安全な Cookie を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
+        <source>Set CookieOptions.Secure = true when setting a cookie</source>
+        <target state="translated">Cookie を設定する場合は、CookieOptions.Secure = true と設定してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseWeakKDFInsufficientIterationCount">
+        <source>Do Not Use Weak Key Derivation Function With Insufficient Iteration Count</source>
+        <target state="translated">反復回数が十分でない弱いキー派生関数は使用しないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefinitelyUseWeakKDFInsufficientIterationCountMessage">
+        <source>Use at least {0} iterations when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
+        <target state="translated">パスワードから暗号化キーを派生させる場合は、少なくとも {0} 回の反復を使用してください。既定では、Rfc2898DeriveByte の IterationCount は 1000 のみです</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsDescription">
+        <source>Older protocol versions of Transport Layer Security (TLS) are less secure than TLS 1.2 and TLS 1.3, and are more likely to have new vulnerabilities. Avoid older protocol versions to minimize risk.</source>
+        <target state="translated">トランスポート層セキュリティ (TLS) の以前のプロトコル バージョンは、TLS 1.2 および TLS 1.3 よりも安全性が低く、新しい脆弱性が見つかる可能性が高くなります。リスクを最小限に抑えるため、以前のプロトコル バージョンは使用しないでください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsMessage">
+        <source>Transport Layer Security protocol version '{0}' is deprecated.  Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">トランスポート層セキュリティ プロトコルのバージョン '{0}' は非推奨です。オペレーティング システムがバージョンを選択できるようにするには、'None' を使用します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeprecatedSslProtocolsTitle">
+        <source>Do not use deprecated SslProtocols values</source>
+        <target state="translated">SslProtocols の非推奨の値を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
+        <source>A type that implements System.IDisposable declares fields that are of types that also implement IDisposable. The Dispose method of the field is not called by the Dispose method of the declaring type. To fix a violation of this rule, call Dispose on fields that are of types that implement IDisposable if you are responsible for allocating and releasing the unmanaged resources held by the field.</source>
+        <target state="translated">System.IDisposable を実装する型は、IDisposable も実装する型のフィールドを宣言します。フィールドの Dispose メソッドは、宣言する型の Dispose メソッドによって呼び出されません。フィールドが保持する管理されていないリソースの割り当てと解放を自分が担当している場合、このルールの違反を修正するには、IDisposable を実装する型のフィールドに Dispose を呼び出します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedMessage">
+        <source>'{0}' contains field '{1}' that is of IDisposable type '{2}', but it is never disposed. Change the Dispose method on '{0}' to call Close or Dispose on this field.</source>
+        <target state="translated">'{0}' には IDisposable 型 '{2}' のフィールド '{1}' が含まれますが、破棄されることはありません。'{0}' 上の Dispose メソッドを変更して、このフィールドで Close または Dispose を呼び出します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableFieldsShouldBeDisposedTitle">
+        <source>Disposable fields should be disposed</source>
+        <target state="translated">破棄可能なフィールドは破棄しなければなりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerDescription">
+        <source>A type that implements System.IDisposable and has fields that suggest the use of unmanaged resources does not implement a finalizer, as described by Object.Finalize.</source>
+        <target state="translated">System.IDisposable を実装し、アンマネージ リソースの使用を推奨するフィールドを持っている型は、Object.Finalize で記述されているようにファイナライザーを実装しません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerMessage">
+        <source>Disposable types should declare finalizer</source>
+        <target state="translated">破棄可能な型はファイナライザーを宣言しなければなりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposableTypesShouldDeclareFinalizerTitle">
+        <source>Disposable types should declare finalizer</source>
+        <target state="translated">破棄可能な型はファイナライザーを宣言しなければなりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeDescription">
+        <source>A type that implements System.IDisposable inherits from a type that also implements IDisposable. The Dispose method of the inheriting type does not call the Dispose method of the parent type. To fix a violation of this rule, call base.Dispose in your Dispose method.</source>
+        <target state="translated">System.IDisposable を実装する型は、IDisposable も実装する型から継承されます。継承する型の Dispose メソッドは、親の型の Dispose メソッドを呼び出しません。このルールの違反を修正するには、Dispose メソッドで base.Dispose を呼び出します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
+        <target state="translated">考えられるすべての制御フロー パスで、メソッド '{0}' が '{1}' を呼び出すようにしてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
+        <source>Dispose methods should call base class dispose</source>
+        <target state="translated">Dispose メソッドが基底クラスの Dispose を呼び出す必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeDescription">
+        <source>If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.</source>
+        <target state="translated">破棄可能なオブジェクトは、自身へのすべての参照がスコープ外になる前に明示的に破棄されなかった場合、ガベージ コレクターがそのオブジェクトのファイナライザーを実行した際に不特定の時点で破棄されます。ただし例外的なイベントが起こってオブジェクトのファイナライザーの実行が妨げられる場合もあるため、オブジェクトの破棄は明示的に行ってください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <target state="translated">推奨された dispose パターンを使用して、'{0}' が作成したオブジェクトがすべてのパスで破棄されるようにします。可能なら、'using' ステートメントまたは 'using' 宣言内で作成をラップします。または、try-finally パターンを、try 領域の前で宣言された専用のローカル変数と、'finally' 領域の非 null 値での条件なしの Dispose の呼び出し (例: 'x?.Dispose()') とともに使用します。オブジェクトが try 領域内で明示的に破棄されるか、dispose の所有権が他のオブジェクトまたはメソッドに移される場合、その操作のすぐ後で 'null' をローカル変数に割り当てて、'finally' 内での dispose の重複を回避します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <target state="translated">推奨された dispose パターンを使用して、'{0}' が作成したオブジェクトがすべての例外パスで破棄されるようにします。可能なら、'using' ステートメントまたは 'using' 宣言内で作成をラップします。または、try-finally パターンを、try 領域の前で宣言された専用のローカル変数と、'finally' 領域の非 null 値での条件なしの Dispose の呼び出し (例: 'x?.Dispose()') とともに使用します。オブジェクトが try 領域内で明示的に破棄されるか、dispose の所有権が他のオブジェクトまたはメソッドに移される場合、その操作のすぐ後で 'null' をローカル変数に割り当てて、'finally' 内での dispose の重複を回避します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
+        <target state="translated">'{0}' が作成したオブジェクトへの参照がすべてスコープ外になる前に、そのオブジェクトの System.IDisposable.Dispose を呼び出してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
+        <source>Object created by '{0}' is not disposed along all exception paths. Call System.IDisposable.Dispose on the object before all references to it are out of scope.</source>
+        <target state="translated">'{0}' に作成されたオブジェクトが破棄されない例外パスがあります。オブジェクトへの参照がすべてスコープ外になる前に、このオブジェクトの System.IDisposable.Dispose を呼び出してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisposeObjectsBeforeLosingScopeTitle">
+        <source>Dispose objects before losing scope</source>
+        <target state="translated">スコープを失う前にオブジェクトを破棄</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPath">
+        <source>Do Not Add Archive Item's Path To The Target File System Path</source>
+        <target state="translated">アーカイブ項目のパスをターゲット ファイル システム パスに追加しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathDescription">
+        <source>When extracting files from an archive and using the archive item's path, check if the path is safe. Archive path can be relative and can lead to file system access outside of the expected file system target path, leading to malicious config changes and remote code execution via lay-and-wait technique.</source>
+        <target state="translated">アーカイブからファイルを抽出し、アーカイブ アイテムのパスを使用するときは、パスが安全であるかどうかを確認します。アーカイブ パスは相対パスの場合があり、想定されるファイル システムのターゲット パス以外でファイル システムへのアクセスが可能になる可能性があります。これは、lay-and-wait の技法によって悪意のある構成変更とリモート コードの実行につながります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage">
+        <source>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</source>
+        <target state="translated">'メソッド {1} の {0}' のパスを相対アーカイブ アイテムのパスから作成してファイルを抽出し、ソースが信頼されていない zip アーカイブである場合は、'メソッド {3} の相対アーカイブ アイテムのパス {2}' をサニタイズしてください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURL">
+        <source>Do Not Add Schema By URL</source>
+        <target state="translated">URL でスキーマを追加しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURLDescription">
+        <source>This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
+        <target state="translated">XmlSchemaCollection.Add メソッドのこのオーバーロードは、使用される XML リーダー インスタンスでの DTD の処理を内部的に有効にし、外部の XML エンティティの解決に UrlResolver を使用します。結果として情報が漏えいします。XML を処理するマシンのファイル システムまたはネットワーク共有からのコンテンツが攻撃者に対して流出する可能性があります。また、攻撃者はこれを DoS ベクターとして使用する可能性もあります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAddSchemaByURLMessage">
+        <source>This overload of the Add method is potentially unsafe because it may resolve dangerous external references</source>
+        <target state="translated">Add メソッドのこのオーバーロードは、危険な外部参照を解決することが考えられるため、安全ではない可能性があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="translated">逆シリアル化で危険なメソッドを呼び出さないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
+        <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
+        <target state="translated">安全でない逆シリアル化は、アプリケーションのロジックを悪用したり、サービス拒否 (DoS) 攻撃を仕掛けたり、逆シリアル化されたときに任意のコードを実行したりすることさえあるために、信頼できないデータが使用される場合に発生する脆弱性です。 悪意のあるユーザーが、自分の管理下にある信頼できないデータをアプリケーションで逆シリアル化しているときに、これらの逆シリアル化機能を悪用することがよくあります。 具体的には、逆シリアル化の過程で危険なメソッドを呼び出します。 安全でない逆シリアル化攻撃が成功すると、攻撃者は DoS 攻撃、認証回避、リモートでのコード実行などの攻撃を仕掛ける可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
+        <target state="translated">クラス {0} のインスタンスを逆シリアル化すると、メソッド {1} が危険なメソッド{2} を呼び出す可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
+        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
+        <target state="translated">コンストラクターが仮想メソッドを呼び出すときに、メソッドを呼び出すインスタンスのコンストラクターは実行されていない可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">コンストラクターのオーバーライド可能なメソッドを呼び出しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">コンストラクターのオーバーライド可能なメソッドを呼び出しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
+        <source>Do not call {0} on an {1} value</source>
+        <target state="translated">{1} 値で {0} を呼び出さないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
+        <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
+        <target state="translated">ImmutableCollection 値で ToImmutableCollection を呼び出さないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
+        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
+        <target state="translated">破損状態例外を受け取るコード内に汎用キャッチ ハンドラーを作成しないでください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
+        <source>Do not catch corrupted state exceptions in general handlers.</source>
+        <target state="translated">汎用ハンドラーの破損状態例外をキャッチしません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
+        <source>Do not catch corrupted state exceptions in general handlers.</source>
+        <target state="translated">汎用ハンドラーの破損状態例外をキャッチしません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
+        <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
+        <target state="translated">TaskScheduler を受け取るいずれかのオーバーロードを使用しない限り、タスクを作成しません。既定では、TaskScheduler.Current にスケジュールしますが、デッドロックにつながります。TaskScheduler.Default を使用してスレッド プールにスケジュールするか、明示的に TaskScheduler.Current を渡して、意図を明確にします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerMessage">
+        <source>Do not create tasks without passing a TaskScheduler</source>
+        <target state="translated">TaskScheduler を渡さずにタスクを作成しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
+        <source>Do not create tasks without passing a TaskScheduler</source>
+        <target state="translated">TaskScheduler を渡さずにタスクを作成しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidation">
+        <source>Do Not Disable Certificate Validation</source>
+        <target state="translated">証明書の検証を無効にしません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidationDescription">
+        <source>A certificate can help authenticate the identity of the server. Clients should validate the server certificate to ensure requests are sent to the intended server. If the ServerCertificateValidationCallback always returns 'true', any certificate will pass validation.</source>
+        <target state="translated">証明書を使用すると、サーバーの ID を認証できます。クライアントは、サーバー証明書を検証し、要求が意図したとおりのサーバーに送信されるようにする必要があります。ServerCertificateValidationCallback が常時 'true' を返す場合、すべての証明書が検証に成功します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableCertificateValidationMessage">
+        <source>The ServerCertificateValidationCallback is set to a function that accepts any server certificate, by always returning true. Ensure that server certificates are validated to verify the identity of the server receiving requests.</source>
+        <target state="translated">ServerCertificateValidationCallback は、常時 true を返すことによってあらゆるサーバー証明書を受け入れる関数に設定されます。要求を受信するサーバーの ID を確認するサーバー証明書が検証されるようにします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHttpClientCRLCheckDescription">
+        <source>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</source>
+        <target state="translated">CheckCertificateRevocationList プロパティが true に設定されている場合、プラットフォーム固有のハンドラー (WinHttpHandler、CurlHandler、HttpClientHandler のいずれか) を指定せずに HttpClient を使用すると、失効した証明書が有効な証明書として HttpClient に受け入れられます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderChecking">
+        <source>Do Not Disable HTTP Header Checking</source>
+        <target state="translated">HTTP ヘッダーのチェックを無効にしない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderCheckingDescription">
+        <source>HTTP header checking enables encoding of the carriage return and newline characters, \r and \n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.</source>
+        <target state="translated">HTTP ヘッダーのチェックでは、応答ヘッダーに含まれる復帰や改行文字のエンコードを有効にします。\r\nこのエンコードは、ヘッダーに含まれる信頼されていないデータをエコーするアプリケーションを悪用するインジェクション攻撃を回避するのに役立ちます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableHTTPHeaderCheckingMessage">
+        <source>Do not disable HTTP header checking</source>
+        <target state="translated">HTTP ヘッダーのチェックを無効にしない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidation">
+        <source>Do Not Disable Request Validation</source>
+        <target state="translated">要求の検証を無効にしない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidationDescription">
+        <source>Request validation is a feature in ASP.NET that examines HTTP requests and determines whether they contain potentially dangerous content. This check adds protection from markup or code in the URL query string, cookies, or posted form values that might have been added for malicious purposes. So, it is generally desirable and should be left enabled for defense in depth.</source>
+        <target state="translated">要求の検証は、HTTP 要求を調べ、危険性のあるコンテンツが含まれているかどうかを判断する ASP.NET の機能です。この確認により、不正な目的のために追加された可能性がある、URL クエリ文字列内のマークアップやコード、Cookie、投稿されたフォームの値から保護することができます。そのため、この機能は一般的に望ましいものであり、多重の防御のために有効にしておくべきです。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableRequestValidationMessage">
+        <source>{0} has request validation disabled</source>
+        <target state="translated">メソッド {0} の要求の検証が無効です</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCrypto">
+        <source>Do Not Disable SChannel Use of Strong Crypto</source>
+        <target state="translated">SChannel による強力な暗号の使用を無効にしません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCryptoDescription">
+        <source>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</source>
+        <target state="translated">.NET Framework 4.6 以降、System.Net.ServicePointManager クラスと System.Net.Security.SslStream クラスで新しいプロトコルを使用することをお勧めします。古いプロトコルは、プロトコルの脆弱性があるため、サポートされていません。Switch.System.Net.DontEnableSchUseStrongCrypto を true に設定すると、古くて脆弱な暗号のチェックが使用され、プロトコルの移行がオプトアウトされます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
+        <source>{0} disables TLS 1.2 and enables SSLv3</source>
+        <target state="translated">{0} は、TLS 1.2 を無効にして、SSLv3 を有効にします</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">
+        <source>Do not set Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols to true.  Setting this switch limits Windows Communication Framework (WCF) to using Transport Layer Security (TLS) 1.0, which is insecure and obsolete.</source>
+        <target state="translated">Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols を true に設定しないでください。このスイッチを設定すると、Windows Communication Framework (WCF) で、古く安全ではないトラスポート層セキュリティ (TLS) 1.0 しか使用できなくなります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsTitle">
+        <source>Do not disable ServicePointManagerSecurityProtocols</source>
+        <target state="translated">ServicePointManagerSecurityProtocols を無効にしないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificate">
+        <source>Do not hard-code certificate</source>
+        <target state="translated">証明書をハードコーディングしない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificateDescription">
+        <source>Hard-coded certificates in source code are vulnerable to being exploited.</source>
+        <target state="translated">ソース コード内のハードコーディングされた証明書は、悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeCertificateMessage">
+        <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</source>
+        <target state="translated">潜在的なセキュリティの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのハードコーディングされた証明書によって汚染される可能性があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKey">
+        <source>Do not hard-code encryption key</source>
+        <target state="translated">暗号化キーをハードコーディングしない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKeyDescription">
+        <source>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</source>
+        <target state="translated">SymmetricAlgorithm の .Key プロパティまたはメソッドの rgbKey パラメーターをハードコーディングされた値にすることはできません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHardCodeEncryptionKeyMessage">
+        <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</source>
+        <target state="translated">潜在的なセキュリティの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのハードコーディングされたキーによって汚染される可能性があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInstallRootCertDescription">
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="translated">既定では、信頼されたルート証明機関の証明書ストアは、Microsoft ルート証明書プログラムの要件を満たす一連の公的 CA で構成されています。すべての信頼されたルート CA は任意のドメインの証明書を発行できますが、攻撃者はユーザー自身がインストールする脆弱な CA または制御可能な CA を攻撃対象として選択できます。脆弱な CA、悪意のあるCA、制御可能な CA が 1 つでもあると、システム全体のセキュリティが弱体化します。さらに悪いことに、こうした攻撃はまったく気付かずに、しかも簡単に行うことができます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
+        <source>An object is said to have a weak identity when it can be directly accessed across application domain boundaries. A thread that tries to acquire a lock on an object that has a weak identity can be blocked by a second thread in a different application domain that has a lock on the same object.</source>
+        <target state="translated">オブジェクトは、アプリケーション ドメイン境界を超えて直接アクセスできる場合に、弱い ID を持つと言われます。弱い ID を持つオブジェクトに対するロックを取得しようとするスレッドが、同じオブジェクトに対するロックを持っている別のアプリケーション ドメイン内の 2 番目のスレッドによってブロックされることがあります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityMessage">
+        <source>Do not lock on objects with weak identity</source>
+        <target state="translated">弱い ID を伴うオブジェクト上でロックしません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotLockOnObjectsWithWeakIdentityTitle">
+        <source>Do not lock on objects with weak identity</source>
+        <target state="translated">弱い ID を伴うオブジェクト上でロックしません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersDescription">
+        <source>A method passes a string literal as a parameter to a constructor or method in the .NET Framework class library and that string should be localizable. To fix a violation of this rule, replace the string literal with a string retrieved through an instance of the ResourceManager class.</source>
+        <target state="translated">メソッドは文字列リテラルをパラメーターとして .NET Framework クラス ライブラリ内のコンストラクターまたはメソッドに渡し、その文字列はローカライズ可能である必要があります。このルールの違反を修正するには、文字列リテラルを、ResourceManager クラスのインスタンスを使用して取得した文字列で置き換えます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersMessage">
+        <source>Method '{0}' passes a literal string as parameter '{1}' of a call to '{2}'. Retrieve the following string(s) from a resource table instead: "{3}".</source>
+        <target state="translated">メソッド '{0}' は、リテラル文字列を '{2}' への呼び出しのパラメーター '{1}' として渡します。これを変更して、リソース テーブルから次の文字列を取得してください: "{3}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassLiteralsAsLocalizedParametersTitle">
+        <source>Do not pass literals as localized parameters</source>
+        <target state="translated">ローカライズされるパラメーターとしてリテラルを渡さない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesDescription">
+        <source>An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.</source>
+        <target state="translated">十分に特定されていない種類の例外またはランタイムによって予約されている種類の例外は、ユーザー コードで発生することはありません。これにより、元のエラーの検出およびデバッグが困難になります。この例外インスタンスがスローされる可能性がある場合は、別の例外の種類を使用してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
+        <source>Exception type {0} is reserved by the runtime.</source>
+        <target state="translated">例外の種類 {0} は、ランタイムによって予約されています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
+        <source>Exception type {0} is not sufficiently specific.</source>
+        <target state="translated">例外の種類 {0} は十分に特定されていません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
+        <source>Do not raise reserved exception types</source>
+        <target state="translated">予約された例外の種類を発生させません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClass">
+        <source>Do Not Refer Self In Serializable Class</source>
+        <target state="translated">シリアル化可能なクラスで自己参照しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClassDescription">
+        <source>This can allow an attacker to DOS or exhaust the memory of the process.</source>
+        <target state="translated">これにより、攻撃者が DOS を実行したり、プロセスのメモリを消費したりできるようになります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotReferSelfInSerializableClassMessage">
+        <source>{0} participates in a potential reference cycle</source>
+        <target state="translated">{0} で潜在的な参照サイクルが生じています</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFields">
+        <source>Do Not Serialize Types With Pointer Fields</source>
+        <target state="translated">ポインター フィールドを持つ型をシリアル化しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFieldsDescription">
+        <source>Pointers are not "type safe" in the sense that you cannot guarantee the correctness of the memory they point at. So, serializing types with pointer fields is dangerous, as it may allow an attacker to control the pointer.</source>
+        <target state="translated">ポインターは、自身がポイントするメモリの正しさを保証できないという意味で「タイプ セーフ」ではありません。そのため、攻撃者によるポインターの制御が可能になる場合があるので、ポインター フィールドを持つ型をシリアル化することは危険です。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
+        <source>Pointer field {0} on serializable type.</source>
+        <target state="translated">シリアル化可能な型のポインター フィールド {0} です。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSAS">
+        <source>Do Not Use Account Shared Access Signature</source>
+        <target state="translated">アカウントの Shared Access Signature を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSASDescription">
+        <source>Shared Access Signatures(SAS) are a vital part of the security model for any application using Azure Storage, they should provide limited and safe permissions to your storage account to clients that don't have the account key. All of the operations available via a service SAS are also available via an account SAS, that is, account SAS is too powerful. So it is recommended to use Service SAS to delegate access more carefully.</source>
+        <target state="translated">Shared Access Signatures (SAS) は、Azure Storage を使用しているすべてのアプリケーションのセキュリティ モデルに不可欠な部分であり、アカウント キーを持たないクライアントにストレージ アカウントへの制限された安全なアクセス許可を提供する必要があります。サービス SAS を通じて利用可能なすべての操作は、アカウント SAS を通じて利用することもできます。つまり、アカウント SAS は強力すぎるということです。このため、サービス SAS を使用してアクセスをより慎重に委任することをお勧めします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAccountSASMessage">
+        <source>Use Service SAS instead of Account SAS for fine grained access control and container-level access policy</source>
+        <target state="translated">詳細に設定されたアクセス制御とコンテナーレベルのアクセス ポリシーには、アカウント SAS の代わりにサービス SAS を使用してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
+        <source>Do Not Use Broken Cryptographic Algorithms</source>
+        <target state="translated">破られた暗号アルゴリズムを使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithmsDescription">
+        <source>An attack making it computationally feasible to break this algorithm exists. This allows attackers to break the cryptographic guarantees it is designed to provide. Depending on the type and application of this cryptographic algorithm, this may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA512, SHA384, or SHA256. Replace digital signature uses with RSA with a key length greater than or equal to 2048-bits, or ECDSA with a key length greater than or equal to 256 bits.</source>
+        <target state="translated">このアルゴリズムを破ることをコンピューター的に実現する攻撃が存在します。これによって攻撃者は、提供されるはずの暗号化による保証を破ることが可能になります。この暗号アルゴリズムの種類とアプリケーションによっては、攻撃者は、暗号化されたメッセージの読み取り、暗号化されたメッセージの改ざん、デジタル署名の偽造、ハッシュされたコンテンツの改ざん、またはこのアルゴリズムに基づく暗号システムの侵害を実行できるようになる可能性があります。暗号化の使用を、キーの長さが 128 ビット以上の AES アルゴリズム (AES-256、AES-192、および AES-128 が使用可能) に置き換えます。ハッシュの使用を、SHA512、SHA384、SHA256 などの SHA-2 ファミリのハッシュ関数に置き換えます。デジタル署名の使用を、キーの長さが 2048 ビット以上の RSA か、キーの長さが 256 ビット以上の ECDSA に置き換えます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseBrokenCryptographicAlgorithmsMessage">
+        <source>{0} uses a broken cryptographic algorithm {1}</source>
+        <target state="translated">{0} が、破られた暗号アルゴリズム {1} を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
+        <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
+        <target state="translated">空ではないコレクションで、CountAsync() と LongCountAsync() ではシーケンス全体が列挙されますが、AnyAsync() では最初の項目または条件を満たす最初の項目で停止します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
+        <target state="translated">パフォーマンスを向上させるために AnyAsync() を代わりに使用できるところで {0}() が使用されています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
+        <source>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</source>
+        <target state="translated">AnyAsync() を使用できる場合は、CountAsync() または LongCountAsync() を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedDescription">
+        <source>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</source>
+        <target state="translated">空はでないコレクションで、Count() と LongCount() ではシーケンス全体が列挙されますが、Any() では最初の項目または条件を満たす最初の項目で停止します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
+        <source>{0}() is used where Any() could be used instead to improve performance.</source>
+        <target state="translated">パフォーマンスを向上させるために Any() を代わりに使用できるところで {0}() が使用されています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
+        <source>Do not use Count() or LongCount() when Any() can be used</source>
+        <target state="translated">Any() を使用できる場合は、Count() または LongCount() を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
+        <source>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</source>
+        <target state="translated">対称暗号化では、辞書攻撃を防ぐために、反復不能な初期化ベクトルを常に使用する必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocols">
+        <source>Do Not Use Deprecated Security Protocols</source>
+        <target state="translated">非推奨のセキュリティ プロトコルを使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocolsDescription">
+        <source>Using a deprecated security protocol rather than the system default is risky.</source>
+        <target state="translated">システムの既定値ではなく、非推奨のセキュリティ プロトコルを使用することは安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDeprecatedSecurityProtocolsMessage">
+        <source>Hard-coded use of deprecated security protocol {0}</source>
+        <target state="translated">非推奨のセキュリティ プロトコル {0} のハードコーディングされた使用</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSA">
+        <source>Do Not Use Digital Signature Algorithm (DSA)</source>
+        <target state="translated">デジタル署名アルゴリズム (DSA) を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSADescription">
+        <source>DSA is too weak to use.</source>
+        <target state="translated">DSA は脆弱であるため使用しません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseDSAMessage">
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
+        <target state="translated">非対称暗号化アルゴリズム {0} が脆弱です。キー サイズが少なくとも 2048 の RSA、ECDH、または ECDSA アルゴリズムに切り替えてください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
+        <source>This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.</source>
+        <target state="translated">このコレクションは、直接インデックス可能です。ここで LINQ を実行すると、不要な割り当てと CPU 作業が生じます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
+        <target state="translated">インデックス可能なコレクションで Enumerable メソッドを使用しません。代わりに、コレクションを直接使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
+        <target state="translated">インデックス可能なコレクションで Enumerable メソッドを使用しません。代わりに、コレクションを直接使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomness">
+        <source>Do not use insecure randomness</source>
+        <target state="translated">安全でないランダム度を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomnessDescription">
+        <source>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</source>
+        <target state="translated">暗号強度の低い擬似乱数ジェネレーターを使用すると、セキュリティ上注意が必要などのような値が生成されるかを攻撃者が予測できる可能性があります。予測できない値が必要な場合は暗号強度の高い乱数ジェネレーターを使用するか、または暗号強度の低い擬似乱数がセキュリティ上注意が必要な形で使用されていないことを確認してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseInsecureRandomnessMessage">
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
+        <target state="translated">{0} は安全でない乱数ジェネレーターです。セキュリティにランダム度が必要な場合に、暗号化によってセキュリティで保護された乱数ジェネレーターを使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseMD5">
+        <source>Do not use insecure cryptographic algorithm MD5.</source>
+        <target state="translated">安全でない暗号アルゴリズム MD5 を使用しない。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseMD5Description">
+        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
+        <target state="translated">この型は、暗号として安全でないハッシュ関数である MD5 を実装しています。MD5 と HMACMD5 アルゴリズムでは、計算上、ハッシュの競合が起こる可能性があります。この使用を SHA-2 ファミリのハッシュ アルゴリズム (SHA512、SHA384、SHA256) に置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
+        <source>Do not use obsolete key derivation function</source>
+        <target state="translated">非推奨のキー派生関数を使用しないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithmDescription">
+        <source>Password-based key derivation should use PBKDF2 with SHA-2. Avoid using PasswordDeriveBytes since it generates a PBKDF1 key. Avoid using Rfc2898DeriveBytes.CryptDeriveKey since it doesn't use the iteration count or salt.</source>
+        <target state="translated">パスワードベースのキーの派生では、PBKDF2 を SHA-2 と一緒に使用してください。PBKDF1 キーが生成されてしまうため、PasswordDeriveBytes を使用しないでください。反復カウントまたは salt を使用していないため、Rfc2898DeriveBytes.CryptDeriveKey を使用しないでください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseObsoleteKDFAlgorithmMessage">
+        <source>Call to obsolete key derivation function {0}.{1}</source>
+        <target state="translated">非推奨のキー派生関数 {0}.{1} への呼び出し</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseSHA1">
+        <source>Do not use insecure cryptographic algorithm SHA1.</source>
+        <target state="translated">安全でない暗号アルゴリズム SHA1 を使用しない。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseSHA1Description">
+        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
+        <target state="translated">この型は、暗号として安全でないハッシュ関数である SHA1 を実装しています。SHA-1 と SHA-0 アルゴリズムでは、計算上、ハッシュの競合が起こる可能性があります。この使用を SHA-2 ファミリのハッシュ アルゴリズム (SHA512、SHA384、SHA256) に置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
+        <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
+        <target state="translated">頻度の高い定期的な動作は CPU のビジー状態を維持し、画面およびハード ディスクの電源を切る節電アイドル タイマーに影響します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesMessage">
+        <source>Do not use timers that prevent power state changes</source>
+        <target state="translated">電源の状態の変更を妨げるタイマーを使用しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesTitle">
+        <source>Do not use timers that prevent power state changes</source>
+        <target state="translated">電源の状態の変更を妨げるタイマーを使用しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPath">
+        <source>Do not use unsafe DllImportSearchPath value</source>
+        <target state="translated">安全でない DllImportSearchPath 値を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPathDescription">
+        <source>There could be a malicious DLL in the default DLL search directories. Or, depending on where your application is run from, there could be a malicious DLL in the application's directory. Use a DllImportSearchPath value that specifies an explicit search path instead. The DllImportSearchPath flags that this rule looks for can be configured in .editorconfig.</source>
+        <target state="translated">既定の DLL 検索ディレクトリ内に悪意のある DLL が存在する可能性があります。または、アプリケーションが実行されている場所に応じて、アプリケーションのディレクトリに悪意のある DLL が存在する可能性があります。代わりに、明示的な検索パスを指定する DllImportSearchPath 値を使用してください。この規則で検索される DllImportSearchPath フラグは、.editorconfig で構成できます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseUnsafeDllImportSearchPathMessage">
+        <source>Use of unsafe DllImportSearchPath value {0}</source>
+        <target state="translated">安全でない DllImportSearchPath 値 {0} の使用</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
+        <source>Do Not Use Weak Cryptographic Algorithms</source>
+        <target state="translated">脆弱な暗号アルゴリズムを使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithmsDescription">
+        <source>Cryptographic algorithms degrade over time as attacks become for advances to attacker get access to more computation. Depending on the type and application of this cryptographic algorithm, further degradation of the cryptographic strength of it may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA-2 512, SHA-2 384, or SHA-2 256.</source>
+        <target state="translated">攻撃が進化し、攻撃者がアクセスできる計算が増えるにつれ、暗号アルゴリズムは徐々に弱まっていきます。この暗号アルゴリズムの種類とアプリケーションによっては、暗号の強度がさらに弱くなると、攻撃者は、暗号化されたメッセージの読み取り、暗号化されたメッセージの改ざん、デジタル署名の偽造、ハッシュされたコンテンツの改ざん、またはこのアルゴリズムに基づく暗号システムの侵害を実行できるようになる可能性があります。暗号化の使用を、キーの長さが 128 ビット以上の AES アルゴリズム (AES-256、AES-192、および AES-128 が使用可能) に置き換えます。ハッシュの使用を、SHA-2 512、SHA-2 384、SHA-2 256 などの SHA-2 ファミリのハッシュ関数に置き換えます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakCryptographicAlgorithmsMessage">
+        <source>{0} uses a weak cryptographic algorithm {1}</source>
+        <target state="translated">{0} が、脆弱な暗号アルゴリズム {1} を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithm">
+        <source>Do Not Use Weak Key Derivation Function Algorithm</source>
+        <target state="translated">弱いキー派生関数アルゴリズムを使用しないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithmDescription">
+        <source>Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.</source>
+        <target state="translated">Rfc2898DeriveBytes クラスの一部の実装では、ハッシュ アルゴリズムをコンストラクターのパラメーターで指定するか、HashAlgorithm プロパティで上書きすることができます。ハッシュ アルゴリズムが指定されている場合、SHA-256 またはそれ以上でなければなりません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
+        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
+        <target state="translated">{0} は弱いハッシュ アルゴリズムを使用して作成されました。SHA256、SHA384、SHA512 を使用してパスワードから強力なキーを作成してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
+        <source>When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).</source>
+        <target state="translated">パスワードなど、ユーザーが指定した入力から暗号化キーを派生させる場合は、十分な反復回数を使用してください (少なくとも 10 万)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseXslTransform">
+        <source>Do Not Use XslTransform</source>
+        <target state="translated">XslTransform を使用しないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseXslTransformMessage">
+        <source>Do not use XslTransform. It does not restrict potentially dangerous external references.</source>
+        <target state="translated">XslTransform を使用しないでください。危険性のある外部参照は制限されません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
+        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
+        <target state="translated">終了処理は、継承階層を通じて伝達される必要があります。これを保証するには、型が独自の Finalize メソッド内で基底クラスの Finalize メソッドを呼び出す必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
+        <source>Finalizers should call base class finalizer</source>
+        <target state="translated">ファイナライザーは基底クラスのファイナライザーを呼び出さなければなりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
+        <source>Finalizers should call base class finalizer</source>
+        <target state="translated">ファイナライザーは基底クラスのファイナライザーを呼び出さなければなりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardCodedSecurityProtocolMessage">
+        <source>Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.</source>
+        <target state="translated">SecurityProtocolType {0} をハードコードしないでください。代わりに、SecurityProtocolType.SystemDefault を使用して、オペレーティング システムが使用する最適なトランスポート層セキュリティ プロトコルを選択できるようにします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardCodedSecurityProtocolTitle">
+        <source>Avoid hardcoding SecurityProtocolType value</source>
+        <target state="translated">SecurityProtocolType の値をハードコードしない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsDescription">
+        <source>Current Transport Layer Security protocol versions may become deprecated if vulnerabilities are found. Avoid hardcoding SslProtocols values to keep your application secure. Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">現在のトランスポート層セキュリティ プロトコルのバージョンに脆弱性が見つかると、非推奨になる可能性があります。アプリケーションのセキュリティを維持するために、SslProtocols の値をハードコードしないでください。オペレーティング システムがバージョンを選択できるようにするには、'None' を使用します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsMessage">
+        <source>Avoid hardcoding SslProtocols '{0}' to ensure your application remains secure in the future. Use 'None' to let the Operating System choose a version.</source>
+        <target state="translated">今後のアプリケーションのセキュリティを確保するため、SslProtocols '{0}' をハードコードしないでください。オペレーティング システムがバージョンを選択できるようにするには、'None' を使用します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HardcodedSslProtocolsTitle">
+        <source>Avoid hardcoded SslProtocols values</source>
+        <target state="translated">ハードコードされた SslProtocols の値を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyDescription">
+        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
+        <target state="translated">このルールの違反を修正するには、GetObjectData メソッドを参照可能およびオーバーライド可能にして、すべてのインスタンス フィールドがシリアル化プロセスに含まれるか、NonSerializedAttribute 属性を使用して明示的にマークされるようにしてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
+        <source>Add an implementation of GetObjectData to type {0}.</source>
+        <target state="translated">GetObjectData の実装を型 {0} に追加します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
+        <source>Make {0}.GetObjectData virtual and overridable.</source>
+        <target state="translated">{0}.GetObjectData を仮想およびオーバーライド可能にします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
+        <target state="translated">派生型に公開するため、{0}.GetObjectData のアクセシビリティを上げます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementISerializableCorrectlyTitle">
+        <source>Implement ISerializable correctly</source>
+        <target state="translated">ISerializable を正しく実装します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
+        <source>Implement Serialization constructor</source>
+        <target state="translated">シリアル化コンストラクターを実装する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsDescription">
+        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
+        <target state="translated">このルールの違反を修正するには、シリアル化コンストラクターを実装します。シール クラスの場合はコンストラクターを private にします。そうでない場合、protected にします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
+        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
+        <target state="translated">次のシグネチャと共にコンストラクターを {0} に追加します: 'protected {0}(SerializationInfo 情報、StreamingContext コンテキスト)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
+        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
+        <target state="translated">シールド型である {0} のシリアル化コンストラクターを private として宣言します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
+        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
+        <target state="translated">アンシールド型である {0} のシリアル化コンストラクターを protected として宣言します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationConstructorsTitle">
+        <source>Implement serialization constructors</source>
+        <target state="translated">シリアル化コンストラクターを実装します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
+        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
+        <target state="translated">シリアル化イベントを処理するメソッドには、正しいシグネチャ、戻り値の型、または可視性がありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、ジェネリックにならないようにシグネチャを変更してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、'System.Runtime.Serialization.StreamingContext' という型の単一のパラメーターを受け取るようにシグネチャを変更してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、戻り値の型を {1} から void (Visual Basic では Sub) に変更してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、静的 (Visual Basic では共有) からインスタンス メソッドに変更してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、アクセシビリティをプライベートに変更してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
+        <source>Implement serialization methods correctly</source>
+        <target state="translated">シリアル化メソッドを正しく実装します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
+        <source>A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
+        <target state="translated">参照型が明示的な静的コンストラクターを宣言します。この規則の違反を修正するには、すべての静的データを宣言時に初期化し、静的コンストラクターを削除します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeReferenceTypeStaticFieldsInlineTitle">
+        <source>Initialize reference type static fields inline</source>
+        <target state="translated">参照型の静的フィールドをインラインで初期化します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeStaticFieldsInlineMessage">
+        <source>Initialize all static fields in '{0}' when those fields are declared and remove the explicit static constructor</source>
+        <target state="translated">'{0}' のすべての静的フィールドを宣言時に初期化し、明示的な静的コンストラクターを削除します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeValueTypeStaticFieldsInlineDescription">
+        <source>A value type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.</source>
+        <target state="translated">値型が明示的な静的コンストラクターを宣言します。この規則の違反を修正するには、すべての静的データを宣言時に初期化し、静的コンストラクターを削除します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitializeValueTypeStaticFieldsInlineTitle">
+        <source>Initialize value type static fields inline</source>
+        <target state="translated">値型の静的フィールドをインラインで初期化します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
+        <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
+        <target state="translated">ArgumentException またはそれから派生した例外の種類の既定の (パラメーターのない) コンストラクターに対して呼び出しが行われます。または、正しくない文字列引数が、ArgumentException またはそれから派生した例外の種類のパラメーター化されたコンストラクターに渡されます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
+        <source>Method {0} passes parameter name '{1}' as the {2} argument to a {3} constructor. Replace this argument with a descriptive message and pass the parameter name in the correct position.</source>
+        <target state="translated">メソッド {0} は、パラメーター名 '{1}' を {2} 引数として {3} コンストラクターに渡します。この引数を説明メッセージに置き換え、正しい位置にパラメーター名を渡してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName">
+        <source>Method {0} passes '{1}' as the {2} argument to a {3} constructor. Replace this argument with one of the method's parameter names. Note that the provided parameter name should have the exact casing as declared on the method.</source>
+        <target state="translated">メソッド {0} は、'{1}' を {2} 引数として {3} コンストラクターに渡します。この引数をメソッドのいずれかのパラメーター名に置き換えてください。指定されたパラメーター名は、メソッドで宣言されている大文字と小文字の区別を正確に含んでいなければなりません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
+        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
+        <target state="translated">メッセージおよび paramName パラメーターまたはそのいずれかを含む {0} コンストラクターを呼び出します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
+        <source>Instantiate argument exceptions correctly</source>
+        <target state="translated">引数の例外を正しくインスタンス化します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
+        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver が指定されずに JavaScriptSerializer が初期化されていること、または逆シリアル化されたオブジェクト グラフ内のオブジェクトの型を制限する JavaScriptTypeResolver で初期化されていることをご確認ください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
+        <source>Ensure JavaScriptSerializer is not initialized with SimpleTypeResolver before deserializing</source>
+        <target state="translated">逆シリアル化する前に JavaScriptSerializer が SimpleTypeResolver で初期化されていないことを確認します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
+        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver を指定せずに JavaScriptSerializer を初期化するか、逆シリアル化されたオブジェクト グラフ内のオブジェクトの型を制限する JavaScriptTypeResolver で初期化します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
+        <source>Do not deserialize with JavaScriptSerializer using a SimpleTypeResolver</source>
+        <target state="translated">SimpleTypeResolver を使用して JavaScriptSerializer で逆シリアル化できません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSerializerMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">信頼されていない入力を逆シリアル化するときに、任意の型の逆シリアル化を許可することは安全ではありません。逆シリアル化 JsonSerializer を使用する場合は TypeNameHandling.None を使用し、None 以外の値の場合は SerializationBinder を使用して逆シリアル化の種類を制限します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSerializerTitle">
+        <source>Do not deserialize with JsonSerializer using an insecure configuration</source>
+        <target state="translated">安全でない構成を使用している JsonSerializer で逆シリアル化をしない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSettingsMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">信頼されていない入力を逆シリアル化するときに、任意の型の逆シリアル化を許可することは安全ではありません。JsonSerializerSettings を使用する場合は TypeNameHandling.None を使用し、None 以外の値の場合は SerializationBinder を使用して逆シリアル化の種類を制限します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetInsecureSettingsTitle">
+        <source>Do not use insecure JsonSerializerSettings</source>
+        <target state="translated">安全でない JsonSerializerSettings を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSerializerMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
+        <target state="translated">信頼されていない入力を逆シリアル化するときに、任意の型の逆シリアル化を許可することは安全ではありません。逆シリアル化 JsonSerializer を使用する場合は TypeNameHandling.None を使用し、None 以外の値の場合は SerializationBinder を使用して逆シリアル化の種類を制限します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSerializerTitle">
+        <source>Ensure that JsonSerializer has a secure configuration when deserializing</source>
+        <target state="translated">逆シリアル化するときに JsonSerializer に安全な構成があることを確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSettingsMessage">
+        <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, ensure TypeNameHandling.None is specified, or for values other than None, ensure a SerializationBinder is specified to restrict deserialized types.</source>
+        <target state="translated">信頼されていない入力を逆シリアル化するときに、任意の型の逆シリアル化を許可することは安全ではありません。JsonSerializerSettings を使用する場合は TypeNameHandling.None が指定されていること、None 以外の値の場合は SerializationBinder を指定して逆シリアル化の種類が制限されていることをご確認ください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetMaybeInsecureSettingsTitle">
+        <source>Ensure that JsonSerializerSettings are secure</source>
+        <target state="translated">JsonSerializerSettings がセキュリティで保護されていることの確認</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingDescription">
+        <source>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.  If you need to instead detect Json.NET deserialization when a SerializationBinder isn't specified, then disable rule CA2326, and enable rules CA2327, CA2328, CA2329, and CA2330.</source>
+        <target state="translated">None 以外の TypeNameHandling 値を使用する場合の JSON の逆シリアル化は、安全でない可能性があります。SerializationBinder が指定されていないときに Json.NET の逆シリアル化を検出する必要がある場合は、規則 CA2326 を無効にして、規則 CA2327、CA2328、CA2329、CA2330 を有効にしてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingMessage">
+        <source>Deserializing JSON when using a TypeNameHandling value other than None can be insecure.</source>
+        <target state="translated">None 以外の TypeNameHandling 値を使用する場合の JSON の逆シリアル化は、安全でない可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonNetTypeNameHandlingTitle">
+        <source>Do not use TypeNameHandling values other than None</source>
+        <target state="translated">None 以外の TypeNameHandling 値を使用しないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LosFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LosFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer LosFormatter</source>
+        <target state="translated">安全でないデシリアライザー LosFormatter を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsDescription">
+        <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
+        <target state="translated">シリアル化可能ではない型のインスタンス フィールドが、シリアル化可能な型で宣言されています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsMessage">
+        <source>Field {0} is a member of type {1} which is serializable but is of type {2} which is not serializable</source>
+        <target state="translated">フィールド {0} はシリアル化可能な型 {1} のメンバーですが、そのフィールド自体はシリアル化可能ではない型 {2} です</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAllNonSerializableFieldsTitle">
+        <source>Mark all non-serializable fields</source>
+        <target state="translated">すべてのシリアル化不可能なフィールドを設定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageDescription">
+        <source>The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.</source>
+        <target state="translated">NeutralResourcesLanguage 属性は、アセンブリ用のニュートラル カルチャのリソースを表示するために使用された言語を ResourceManager に通知します。これにより、最初に読み込むリソースのルックアップのパフォーマンスが向上し、ワーキング セットを減らすことができます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageMessage">
+        <source>Mark assemblies with NeutralResourcesLanguageAttribute</source>
+        <target state="translated">アセンブリに NeutralResourcesLanguageAttribute を設定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithNeutralResourcesLanguageTitle">
+        <source>Mark assemblies with NeutralResourcesLanguageAttribute</source>
+        <target state="translated">アセンブリに NeutralResourcesLanguageAttribute を設定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsDescription">
+        <source>The Boolean data type has multiple representations in unmanaged code.</source>
+        <target state="translated">ブール型には、アンマネージ コードで複数の表現があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsMessageDefault">
+        <source>Add the MarshalAsAttribute to parameter {0} of P/Invoke {1}. If the corresponding unmanaged parameter is a 4-byte Win32 'BOOL', use [MarshalAs(UnmanagedType.Bool)]. For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</source>
+        <target state="translated">P/Invoke {1} のパラメーター {0} に MarshalAsAttribute を追加します。対応するアンマネージ パラメーターが 4 バイトの Win32 'BOOL' である場合は、[MarshalAs(UnmanagedType.Bool)] を使用してください。1 バイト C++ 'bool' の場合は、MarshalAs(UnmanagedType.U1) を使用してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsMessageReturn">
+        <source>Add the MarshalAsAttribute to the return type of P/Invoke {0}. If the corresponding unmanaged return type is a 4-byte Win32 'BOOL', use MarshalAs(UnmanagedType.Bool). For a 1-byte C++ 'bool', use MarshalAs(UnmanagedType.U1).</source>
+        <target state="translated">P/Invoke {0} の戻り値の型に MarshalAsAttribute を追加します。対応するアンマネージ戻り値の型が 4 バイトの Win32 'BOOL' である場合は、MarshalAs(UnmanagedType.Bool) を使用してください。1 バイト C++ 'bool' の場合は、MarshalAs(UnmanagedType.U1) を使用してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkBooleanPInvokeArgumentsWithMarshalAsTitle">
+        <source>Mark boolean PInvoke arguments with MarshalAs</source>
+        <target state="translated">ブール型の PInvoke 引数を MarshalAs に設定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableDescription">
+        <source>To be recognized by the common language runtime as serializable, types must be marked by using the SerializableAttribute attribute even when the type uses a custom serialization routine through implementation of the ISerializable interface.</source>
+        <target state="translated">共通言語ランタイムからシリアル化可能として認識されるには、型が ISerializable インターフェイスの実装によりカスタムのシリアル化ルーチンを使用する場合でも、SerializableAttribute 属性を使用して型をマークする必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableMessage">
+        <source>Add [Serializable] to {0} as this type implements ISerializable</source>
+        <target state="translated">この型は ISerializable を実装するため、[Serializable] を {0} に追加します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkISerializableTypesWithSerializableTitle">
+        <source>Mark ISerializable types with serializable</source>
+        <target state="translated">ISerializable 型を serializable に設定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeDisableHttpClientCRLCheck">
+        <source>Ensure HttpClient certificate revocation list check is not disabled</source>
+        <target state="translated">HttpClient 証明書失効リストの確認が無効になっていないことをご確認ください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeDisableHttpClientCRLCheckMessage">
+        <source>HttpClient may be created without enabling CheckCertificateRevocationList</source>
+        <target state="translated">HttpClient は、CheckCertificateRevocationList を有効にせずに作成できます</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeInstallRootCert">
+        <source>Ensure Certificates Are Not Added To Root Store</source>
+        <target state="translated">証明書がルート ストアに追加されていないことを確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeInstallRootCertMessage">
+        <source>Adding certificates to the operating system's trusted root certificates is insecure. Ensure that the target store is not root store.</source>
+        <target state="translated">オペレーティング システムの信頼されたルート証明書に証明書を追加することは安全ではありません。ターゲット ストアがルート ストアでないことを確認してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
+        <source>Use CreateEncryptor with the default IV </source>
+        <target state="translated">既定の IV で CreateEncryptor を使用する </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
+        <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
+        <target state="translated">暗号化で既定以外の初期化ベクトルが使用されており、これは反復使用できる可能性があります。必ず既定のものをご使用ください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseSecureCookiesASPNetCore">
+        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
+        <target state="translated">ASP.Net Core で安全な Cookie を使用することを確認します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
+        <source>Ensure that CookieOptions.Secure = true when setting a cookie</source>
+        <target state="translated">Cookie を設定する場合は、CookieOptions.Secure = true になっていることを確認してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseWeakKDFInsufficientIterationCount">
+        <source>Ensure Sufficient Iteration Count When Using Weak Key Derivation Function</source>
+        <target state="translated">弱いキー派生関数を使用する場合は十分な反復回数を確保してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MaybeUseWeakKDFInsufficientIterationCountMessage">
+        <source>Ensure that the iteration count is at least {0} when deriving a cryptographic key from a password. By default, Rfc2898DeriveByte's IterationCount is only 1000</source>
+        <target state="translated">パスワードから暗号化キーを派生させる場合は、反復回数が少なくとも {0} 回であることを確認してください。既定では、Rfc2898DeriveByte の IterationCount は 1000 のみです</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttribute">
+        <source>Miss HttpVerb attribute for action methods</source>
+        <target state="translated">アクション メソッドの HttpVerb 属性がない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttributeDescription">
+        <source>All the methods that create, edit, delete, or otherwise modify data do so in the [HttpPost] overload of the method, which needs to be protected with the anti forgery attribute from request forgery. Performing a GET operation should be a safe operation that has no side effects and doesn't modify your persisted data.</source>
+        <target state="translated">データの作成、編集、削除、または変更を行うすべてのメソッドでは、メソッドの [HttpPost] オーバーロードでそれらの操作が実行されます。これは、リクエスト フォージェリからの偽造防止属性を使用して保護する必要があります。取得操作の実行は副作用がなく、持続データを変更しない安全な操作である必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissHttpVerbAttributeMessage">
+        <source>Action method {0} needs to specify the Http request kind explictly</source>
+        <target state="translated">アクション メソッド {0} では、HTTP 要求の種類を明示的に指定する必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">SerializationBinder なしで信頼されていないデータを逆シリアル化して、逆シリアル化されたオブジェクト グラフ内でオブジェクトの型を制限する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
+        <source>Ensure NetDataContractSerializer.Binder is set before deserializing</source>
+        <target state="translated">逆シリアル化の前に NetDataContractSerializer.Binder が設定されていることを確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
+        <target state="translated">SerializationBinder なしで信頼されていないデータを逆シリアル化して、逆シリアル化されたオブジェクト グラフ内でオブジェクトの型を制限する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
+        <source>Do not deserialize without first setting NetDataContractSerializer.Binder</source>
+        <target state="translated">NetDataContractSerializer.Binder を設定せずに逆シリアル化しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedDescription">
+        <source>The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect NetDataContractSerializer deserialization without a SerializationBinder set, then disable rule CA2310, and enable rules CA2311 and CA2312.</source>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません。代わりに、SerializationBinder が設定されていない NetDataContractSerializer 逆シリアル化を検出する必要がある場合、ルール CA2310 を無効にし、ルール CA2311 と CA2312 を有効にします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NetDataContractSerializerMethodUsedTitle">
+        <source>Do not use insecure deserializer NetDataContractSerializer</source>
+        <target state="translated">安全でないデシリアライザー NetDataContractSerializer を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseDescription">
+        <source>Strings should be normalized to uppercase. A small group of characters cannot make a round trip when they are converted to lowercase. To make a round trip means to convert the characters from one locale to another locale that represents character data differently, and then to accurately retrieve the original characters from the converted characters.</source>
+        <target state="translated">文字列は、大文字に標準化する必要があります。一部の文字は、小文字に変換した場合、ラウンド トリップできなくなります。ラウンド トリップとは、文字をあるロケールから、文字データを異なる方式で表す別のロケールに変換した後、変換された文字から元の文字を正確に取得することを意味します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
+        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
+        <target state="translated">メソッド '{0}' で、'{1}' の呼び出しを '{2}' に置き換えます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NormalizeStringsToUppercaseTitle">
+        <source>Normalize strings to uppercase</source>
+        <target state="translated">文字列を大文字に標準化します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ObjectStateFormatterMethodUsedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ObjectStateFormatterMethodUsedTitle">
+        <source>Do not use insecure deserializer ObjectStateFormatter</source>
+        <target state="translated">安全でないデシリアライザー ObjectStateFormatter を使用しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
+        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
+        <target state="translated">この規則では、各パラメーターのサイズと P/Invoke の戻り値を評価し、32 ビットおよび 64 ビットのオペレーティング システム上のアンマネージ コードにマーシャリングされた場合にパラメーターのサイズが正しいことを確認します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
+        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
+        <target state="translated">コードで宣言されているとおり、P/Invoke {1} のパラメーター {0} は {3} プラットフォームで {2} バイトになります。この API の実際のネイティブ宣言は {3} プラットフォームで {4} バイトでなければならないことを示しているため、この状態は正しくありません。{5} の代わりにどのデータ型を使用する必要があるかを判断するには、MSDN のプラットフォーム SDK ドキュメントを参照してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
+        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
+        <target state="translated">コードで宣言されているとおり、P/Invoke {0} の戻り値の型は {2} プラットフォームで {1} バイトになります。この API の実際のネイティブ宣言は {2} プラットフォームで {3} バイトでなければならないことを示しているため、この状態は正しくありません。{4} の代わりにどのデータ型を使用する必要があるかを判断するには、MSDN のプラットフォーム SDK ドキュメントを参照してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
+        <source>PInvoke declarations should be portable</source>
+        <target state="translated">PInvoke 宣言はポータブルでなければなりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleDescription">
+        <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
+        <target state="translated">パブリック型にあるパブリック メソッドまたは保護されたメソッドには、System.Runtime.InteropServices.DllImportAttribute 属性 (Visual Basic では、Declare キーワードによっても実装されています) があります。このようなメソッドは公開しないでください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleMessage">
+        <source>P/Invoke method '{0}' should not be visible</source>
+        <target state="translated">P/Invoke メソッド '{0}' は参照可能にすることはできません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PInvokesShouldNotBeVisibleTitle">
+        <source>P/Invokes should not be visible</source>
+        <target state="translated">P/Invokes は参照可能にすることはできません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
+        <source>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</source>
+        <target state="translated">System.String.Format に渡される書式引数には、各オブジェクト引数に対応する書式項目が含まれていないか、各書式項目に対応するオブジェクト引数が含まれていません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
+        <source>Provide correct arguments to formatting methods</source>
+        <target state="translated">書式設定メソッドに正しい引数を指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
+        <source>Provide correct arguments to formatting methods</source>
+        <target state="translated">書式設定メソッドに正しい引数を指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
+        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
+        <target state="translated">型には System.Runtime.Serialization.OptionalFieldAttribute 属性を使用してマークされているフィールドがあり、型は逆シリアル化イベントの処理メソッドを提供しません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
+        <target state="translated">'private void OnDeserialized(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializedAttribute に属性指定します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
+        <target state="translated">'private void OnDeserializing(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializingAttribute に属性指定します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
+        <source>Provide deserialization methods for optional fields</source>
+        <target state="translated">省略可能なフィールドに、逆シリアル化メソッドを指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveRedundantCall">
+        <source>Remove redundant call</source>
+        <target state="translated">冗長な呼び出しを削除する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsDescription">
+        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
+        <target state="translated">例外が再スローされ、その例外が throw ステートメント内に明示的に指定されます。throw ステートメント内で例外を指定することによって例外が再スローされる場合、例外をスローした元のメソッドと現在のメソッドの間のメソッド呼び出しのリストは失われます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsMessage">
+        <source>Rethrow to preserve stack details</source>
+        <target state="translated">スタック詳細を保持するために再度スローします</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsTitle">
+        <source>Rethrow to preserve stack details</source>
+        <target state="translated">スタック詳細を保持するために再度スローします</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
+        <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な DLL インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
+        <source>Review code for DLL injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、DLL インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
+        <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的なファイル パス インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
+        <source>Review code for file path injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、ファイル パス インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForInformationDisclosureVulnerabilitiesMessage">
+        <source>Potential information disclosure vulnerability was found where '{0}' in method '{1}' may contain unintended information from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な情報漏えいの脆弱性が見つかりました。メソッド '{1}' の '{0}' に、メソッド '{3}' の '{2}' からの意図しない情報が含まれる可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForInformationDisclosureVulnerabilitiesTitle">
+        <source>Review code for information disclosure vulnerabilities</source>
+        <target state="translated">コードをレビューし、情報漏えいの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
+        <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な LDAP インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
+        <source>Review code for LDAP injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、LDAP インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
+        <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的なオープン リダイレクトの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
+        <source>Review code for open redirect vulnerabilities</source>
+        <target state="translated">コードをレビューし、オープン リダイレクトの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
+        <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的なプロセス コマンド インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
+        <source>Review code for process command injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、プロセス コマンド インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
+        <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な正規表現インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
+        <source>Review code for regex injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、正規表現インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
+        <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な SQL インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
+        <source>Review code for SQL injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、SQL インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
+        <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な XAML インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
+        <source>Review code for XAML injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、XAML インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
+        <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な XML インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
+        <source>Review code for XML injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、XML インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
+        <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的な XPath インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
+        <source>Review code for XPath injection vulnerabilities</source>
+        <target state="translated">コードをレビューし、XPath インジェクションの脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
+        <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
+        <target state="translated">潜在的なクロスサイト スクリプト (XSS) の脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">
+        <source>Review code for XSS vulnerabilities</source>
+        <target state="translated">コードをレビューし、XSS の脆弱性を確認する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesDescription">
+        <source>SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.</source>
+        <target state="translated">ユーザー入力を直接使用する SQL クエリは、SQL インジェクション攻撃に対して脆弱である可能性があります。この SQL クエリをレビューして潜在的な脆弱性を確認し、パラメーター化された SQL クエリの使用を検討してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
+        <target state="translated">'{1}' の '{0}' に渡されたクエリ文字列が任意のユーザー入力を受け入れるかどうかを確認します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
+        <source>Review SQL queries for security vulnerabilities</source>
+        <target state="translated">SQL クエリのセキュリティ脆弱性を確認</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookie">
+        <source>Set HttpOnly to true for HttpCookie</source>
+        <target state="translated">HttpCookie で HttpOnly を true に設定する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookieDescription">
+        <source>As a defense in depth measure, ensure security sensitive HTTP cookies are marked as HttpOnly. This indicates web browsers should disallow scripts from accessing the cookies. Injected malicious scripts are a common way of stealing cookies.</source>
+        <target state="translated">高度な防御手段として、セキュリティ上注意が必要な HTTP Cookie が、必ず HttpOnly としてマークされるようにしてください。これは、スクリプトから Cookie へのアクセスを Web ブラウザーで許可してはならないことを示しています。挿入された悪意のあるスクリプトは、Cookie を盗むための一般的な方法です。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetHttpOnlyForHttpCookieMessage">
+        <source>HttpCookie.HttpOnly is set to false or not set at all when using an HttpCookie. Ensure security sensitive cookies are marked as HttpOnly to prevent malicious scripts from stealing the cookies</source>
+        <target state="translated">HttpCookie を使用している場合、HttpCookie.HttpOnly は false に設定されるか、まったく設定されません。悪意のあるスクリプトによって Cookie が盗まれないようにするために、セキュリティ上注意が必要な Cookie が、必ず HttpOnly としてマークされるようにしてください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKey">
+        <source>Set ViewStateUserKey For Classes Derived From Page</source>
+        <target state="translated">ページから派生したクラスに ViewStateUserKey を設定する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKeyDescription">
+        <source>Setting the ViewStateUserKey property can help you prevent attacks on your application by allowing you to assign an identifier to the view-state variable for individual users so that they cannot use the variable to generate an attack. Otherwise, there will be cross-site request forgery vulnerabilities.</source>
+        <target state="translated">ViewStateUserKey プロパティを設定すると、識別子を個別のユーザーの view-state 変数に割り当てて、ユーザーが変数を使用した攻撃を実行できないようにすることで、アプリケーションに対する攻撃を防ぐことができます。そうしない場合、クロスサイト リクエスト フォージェリの脆弱性の危険性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SetViewStateUserKeyMessage">
+        <source>The class {0} derived from System.Web.UI.Page does not set the ViewStateUserKey property in the OnInit method or Page_Init method</source>
+        <target state="translated">System.Web.UI.Page から派生したクラス {0} は、OnInit メソッドまたは Page_Init メソッドで ViewStateUserKey プロパティを設定しません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoDescription">
+        <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="translated">メソッドまたはコンストラクターは、System.Globalization.CultureInfo パラメーターを受け取るオーバーロードを持つメンバーを呼び出します。CultureInfo パラメーターを受け取るオーバーロードは呼び出しません。CultureInfo または System.IFormatProvider オブジェクトが指定されない場合、オーバーロードされたメンバーによって指定される既定値は、一部のロケールでは期待どおりの効果がないことがあります。結果がユーザーに表示される場合は、'CultureInfo' パラメーターとして 'CultureInfo.CurrentCulture' を指定してください。そうではなく、結果がソフトウェアによって格納およびアクセスされる場合 (結果がディスクやデータベースに永続的に保存される場合など) は、'CultureInfo.InvariantCulture' を指定します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoMessage">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' の動作は、現在のユーザーのロケール設定によって異なる場合があります。'{1}' 内のこの呼び出しを '{2}' への呼び出しに置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureInfoTitle">
+        <source>Specify CultureInfo</source>
+        <target state="translated">CultureInfo を指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderDescription">
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
+        <target state="translated">メソッドまたはコンストラクターは、System.IFormatProvider パラメーターを受け取るオーバーロードを持つ 1 つ以上のメンバーを呼び出します。IFormatProvider パラメーターを受け取るオーバーロードは呼び出しません。System.Globalization.CultureInfo または IFormatProvider オブジェクトが指定されない場合、オーバーロードされたメンバーによって指定される既定値は、一部のロケールでは期待どおりの効果がないことがあります。結果がユーザーからの入力およびユーザーに表示される出力に基づく場合、'IFormatProvider' として 'CultureInfo.CurrentCulture' を指定します。そうではなく、結果がソフトウェアによって格納およびアクセスされる場合 (結果がディスク/データベースから読み込まれる場合やディスク/データベースに永続的に保存される場合など) は、'CultureInfo.InvariantCulture' を指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' の動作は、現在のユーザーのロケール設定によって異なる場合があります。'{1}' 内のこの呼び出しを '{2}' への呼び出しに置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternateString">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' の動作は、現在のユーザーのロケール設定によって異なる場合があります。'{1}' 内のこの呼び出しを '{2}' への呼び出しに置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageUICulture">
+        <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
+        <target state="translated">'{0}' は '{1}' を 'IFormatProvider' パラメーターとして '{2}' に渡します。このプロパティは、書式設定メソッドに不適切なカルチャを返します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageUICultureString">
+        <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
+        <target state="translated">'{0}' は '{1}' を 'IFormatProvider' パラメーターとして '{2}' に渡します。このプロパティは、書式設定メソッドに不適切なカルチャを返します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderTitle">
+        <source>Specify IFormatProvider</source>
+        <target state="translated">IFormatProvider を指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsDescription">
+        <source>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</source>
+        <target state="translated">プラットフォーム呼び出しメンバーは、部分的に信頼された呼び出し元を許可し、文字列パラメーターを持ち、文字列を明示的にはマーシャリングしません。このために、セキュリティの脆弱性が生じる場合があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
+        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
+        <target state="translated">セキュリティ上の問題を軽減するには、{1} の StructLayout.CharSet on を CharSet.Unicode に設定するか、またはフィールドを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、フィールド {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、BestFitMapping 属性を使用して最適なマッピングを無効にし、セキュリティ強化のために ThrowOnUnmappableChar が有効に設定されていることを確認します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
+        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
+        <target state="translated">セキュリティ上の問題を軽減するには、{1} の StructLayout.CharSet on を CharSet.Unicode に設定するか、またはフィールドを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、フィールド {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、MarshalAs を明示的に指定し、BestFitMapping 属性を使用して最適なマッピングを無効にし、セキュリティ強化のために ThrowOnUnmappableChar を有効にします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
+        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
+        <target state="translated">セキュリティ上の問題を軽減するには、DllImport.CharSet を CharSet.Unicode に設定するか、またはパラメーターを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、パラメーター {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、セキュリティ強化のために BestFitMapping=false と設定し、さらに ThrowOnUnmappableChar=true と設定します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
+        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
+        <target state="translated">セキュリティ上の問題を軽減するには、DllImport.CharSet を CharSet.Unicode に設定するか、またはパラメーターを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、パラメーター {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、MarshalAs を明示的に指定し、セキュリティ強化のために BestFitMapping=false と設定し、さらに ThrowOnUnmappableChar=true と設定します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
+        <source>Specify marshaling for P/Invoke string arguments</source>
+        <target state="translated">P/Invoke 文字列引数に対してマーシャリングを指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonDescription">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="translated">文字列比較操作では、StringComparison パラメーターを設定しないメソッド オーバーロードを使用します。結果がユーザーに表示される場合 (リスト ボックスに表示するために項目のリストを並べ替える場合など) は、'StringComparison' パラメーターとして 'StringComparison.CurrentCulture' または 'StringComparison.CurrentCultureIgnoreCase' を指定します。大文字と小文字が区別されない識別子 (ファイル パス、環境変数、レジストリのキーと値など) を比較する場合は、'StringComparison.OrdinalIgnoreCase' を指定します。そうではなく、大文字と小文字が区別される識別子を比較する場合は、'StringComparison.Ordinal' を指定します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonMessage">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
+        <target state="translated">'{0}' の動作は、現在のユーザーのロケール設定によって異なる場合があります。'{1}' 内のこの呼び出しを '{2}' への呼び出しに置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonTitle">
+        <source>Specify StringComparison</source>
+        <target state="translated">StringComparison を指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
+        <source>Comparing strings by using the String.Length property or the String.IsNullOrEmpty method is significantly faster than using Equals.</source>
+        <target state="translated">String.Length プロパティまたは String.IsNullOrEmpty メソッドを使用して文字列を比較すると、Equals を使用した場合よりも処理速度が大幅に向上します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
+        <target state="translated">等値チェックの代わりに 'string.Length' プロパティまたは 'string.IsNullOrEmpty' メソッドを使用して空の文字列をテストしてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
+        <source>Test for empty strings using string length</source>
+        <target state="translated">文字列の長さを使用して空の文字列をテストします</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyDescription">
+        <source>This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.</source>
+        <target state="translated">この式は、Single.Nan または Double.Nan に対して値をテストします。Single.IsNan(Single) または Double.IsNan(Double) を使用して、値をテストしてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyMessage">
+        <source>Test for NaN correctly</source>
+        <target state="translated">NaN に対して正しくテストします</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestForNaNCorrectlyTitle">
+        <source>Test for NaN correctly</source>
+        <target state="translated">NaN に対して正しくテストします</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArrayEmpty">
+        <source>Use Array.Empty</source>
+        <target state="translated">Array.Empty を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryToken">
+        <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
+        <target state="translated">ASP.NET Core MVC コントローラーで偽造防止トークンを使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryTokenDescription">
+        <source>Handling a POST, PUT, PATCH, or DELETE request without validating an antiforgery token may be vulnerable to cross-site request forgery attacks. A cross-site request forgery attack can send malicious requests from an authenticated user to your ASP.NET Core MVC controller.</source>
+        <target state="translated">偽造防止トークンを検証せずに POST、PUT、PATCH、DELETE 要求を処理すると、クロスサイト リクエスト フォージェリ攻撃に対して脆弱になる可能性があります。クロスサイト リクエスト フォージェリ攻撃では、認証されたユーザーから ASP.NET Core MVC コントローラーに悪意のある要求が送信される可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAutoValidateAntiforgeryTokenMessage">
+        <source>Method {0} handles a {1} request without performing antiforgery token validation. You also need to ensure that your HTML form sends an antiforgery token.</source>
+        <target state="translated">メソッド {0} では、偽造防止トークンの検証を実行せずに {1} 要求が処理されます。また、HTML フォームで偽造防止トークンが送信されるようにする必要もあります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicy">
+        <source>Use Container Level Access Policy</source>
+        <target state="translated">コンテナー レベルのアクセス ポリシーを使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicyDescription">
+        <source>No access policy identifier is specified, making tokens non-revocable.</source>
+        <target state="translated">アクセス ポリシー識別子が指定されていません。トークンが取消可能ではなくなります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseContainerLevelAccessPolicyMessage">
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
+        <target state="translated">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SAS の作成時にコンテナーレベルのアクセス ポリシーを使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
+        <source>Use DefaultDllImportSearchPaths attribute for P/Invokes</source>
+        <target state="translated">P/Invoke に対して DefaultDllImportSearchPaths 属性を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttributeDescription">
+        <source>By default, P/Invokes using DllImportAttribute probe a number of directories, including the current working directory for the library to load. This can be a security issue for certain applications, leading to DLL hijacking.</source>
+        <target state="translated">既定では、DllImportAttribute を使用している P/Invoke は、ライブラリが読み込むための現在の作業ディレクトリを含むいくつかのディレクトリを精査します。これは特定のアプリケーションでセキュリティ上の問題を引き起こし、DLL のハイジャックにつながる可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
+        <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
+        <target state="translated">メソッド {0} で、P/Invoke に対して DefaultDllImportSearchPaths 属性が使用されませんでした。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIndexer">
+        <source>Use indexer</source>
+        <target state="translated">インデクサーを使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
+        <source>An operating system invoke method is defined and a method that has the equivalent functionality is located in the .NET Framework class library.</source>
+        <target state="translated">オペレーティング システムの呼び出しメソッドが定義されており、同等の機能を持つメソッドが .NET Framework クラス ライブラリにあります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiMessage">
+        <source>Use managed equivalents of win32 api</source>
+        <target state="translated">Win32 API に相当するマネージ API を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseManagedEquivalentsOfWin32ApiTitle">
+        <source>Use managed equivalents of win32 api</source>
+        <target state="translated">Win32 API に相当するマネージ API を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonDescription">
+        <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
+        <target state="translated">非言語的な文字列比較操作では、StringComparison パラメーターが Ordinal にも OrdinalIgnoreCase にも設定されません。パラメーターを StringComparison.Ordinal または StringComparison.OrdinalIgnoreCase に明示的に設定することによって、コードは多くの場合、高速で正確になり、信頼性が向上します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
+        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
+        <target state="translated">{0} は '{1}' を 'StringComparer' パラメーターとして {2} に渡します。非言語的な比較を実行するには、代わりに 'StringComparer.Ordinal' または 'StringComparer.OrdinalIgnoreCase' を指定してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
+        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
+        <target state="translated">{0} は '{1}' を 'StringComparison' パラメーターとして {2} に渡します。非言語的な比較を実行するには、代わりに 'StringComparison.Ordinal' または 'StringComparison.OrdinalIgnoreCase' を指定してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseOrdinalStringComparisonTitle">
+        <source>Use ordinal stringcomparison</source>
+        <target state="translated">順序を示す StringComparison を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
+        <source>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</source>
+        <target state="translated">Enumerable.Count() は、Length または Count プロパティが直接アクセスの場合、シーケンスを列挙する可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
+        <source>Use the "{0}" property instead of Enumerable.Count().</source>
+        <target state="translated">Enumerable.Count() の代わりに "{0}" プロパティを使用します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
+        <source>Use Length/Count property instead of Count() when available</source>
+        <target state="translated">使用可能な場合は Count() の代わりに Length または Count プロパティを使用</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySize">
+        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="translated">十分なキー サイズの Rivest–Shamir–Adleman (RSA) アルゴリズムを使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySizeDescription">
+        <source>Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.</source>
+        <target state="translated">暗号化アルゴリズムは、小さすぎるキー サイズが使用されていると、ブルート フォース攻撃に対して脆弱になります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRSAWithSufficientKeySizeMessage">
+        <source>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="translated">非対称暗号化アルゴリズム {0} のキー サイズが 2048 未満です。キー サイズが少なくとも 2048 の RSA、ECDH、または ECDSA アルゴリズムに切り替えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSecureCookiesASPNetCoreDescription">
+        <source>Applications available over HTTPS must use secure cookies.</source>
+        <target state="translated">HTTPS 経由で使用できるアプリケーションは、セキュリティで保護された Cookie を使用する必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnly">
+        <source>Use SharedAccessProtocol HttpsOnly</source>
+        <target state="translated">SharedAccessProtocol HttpsOnly を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnlyDescription">
+        <source>HTTPS encrypts network traffic. Use HttpsOnly, rather than HttpOrHttps, to ensure network traffic is always encrypted to help prevent disclosure of sensitive data.</source>
+        <target state="translated">HTTPS はネットワークトラフィックを暗号化します。ネットワークトラフィックが常に暗号化されるようにするには、HttpsOnly を HttpOrHttps ではなくを使用します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
+        <target state="translated">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SharedAccessProtocol を指定します。 HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="new">Use ValueTasks correctly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderDescription">
+        <source>Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.</source>
+        <target state="translated">信頼されていないデータから XML を処理すると、危険な外部参照を読み込む可能性があります。XmlReader を安全なリゾルバーと共に使用するか、DTD 処理を無効にして使用することにより、この処理を制限する必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDataSetReadXml">
+        <source>Use XmlReader For DataSet Read Xml</source>
+        <target state="translated">DataSet Read Xml に XmlReader を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForDeserialize">
+        <source>Use XmlReader For Deserialize</source>
+        <target state="translated">逆シリアル化に XmlReader を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForSchemaRead">
+        <source>Use XmlReader For Schema Read</source>
+        <target state="translated">スキーマの読み取りに XmlReader を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForValidatingReader">
+        <source>Use XmlReader For Validating Reader</source>
+        <target state="translated">リーダーの検証に XmlReader を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderForXPathDocument">
+        <source>Use XmlReader For XPathDocument</source>
+        <target state="translated">XPathDocument に XmlReader を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseXmlReaderMessage">
+        <source>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</source>
+        <target state="translated">{0}.{1} メソッドのこのオーバーロードは、安全ではない可能性があります。代わりに XmlReader インスタンスを使用するオーバーロードを使用してください</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

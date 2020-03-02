@@ -1,0 +1,2092 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../MicrosoftCodeQualityAnalyzersResources.resx">
+    <body>
+      <trans-unit id="AppendConfigureAwaitTrue">
+        <source>Append .ConfigureAwait(true)</source>
+        <target state="translated">.ConfigureAwait(true) 추가</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
+        <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
+        <target state="translated">동일한 문의 기호 및 해당 멤버(필드/속성)에 할당하는 것은 권장되지 않습니다. 멤버 액세스가 할당 전 기호의 이전 값을 사용하려는 것인지 이 문의 할당에서 새 값을 사용하려는 것인지 명확하지 않습니다. 명확성을 위해 할당을 개별 문으로 분할하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
+        <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
+        <target state="translated">'{0}' 기호와 해당 멤버 '{1}'이(가) 모두 동일한 문에 할당되어 있으므로 의도하지 않은 개체의 멤버를 할당할 위험이 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
+        <source>Assigning symbol and its member in the same statement.</source>
+        <target state="translated">동일한 문에 기호 및 해당 멤버 할당</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAsyncVoidTitle">
+        <source>Avoid Async Void</source>
+        <target state="translated">Async Void를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAsyncVoidDescription">
+        <source>#N/A</source>
+        <target state="translated">#N/A</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAsyncVoidMessage">
+        <source>Avoid Async Void</source>
+        <target state="translated">Async Void를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AsyncMethodNamesShouldEndInAsyncTitle">
+        <source>Async Method Names Should End in Async</source>
+        <target state="translated">비동기 메서드 이름은 Async로 끝나야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AsyncMethodNamesShouldEndInAsyncDescription">
+        <source>#N/A</source>
+        <target state="translated">#N/A</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AsyncMethodNamesShouldEndInAsyncMessage">
+        <source>Async Method Names Should End in Async</source>
+        <target state="translated">비동기 메서드 이름은 Async로 끝나야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
+        <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
+        <target state="translated">setter 내에서 속성을 할당하지 마세요. 이 호출로 인해 무한 재귀가 발생할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageSure">
+        <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
+        <target state="translated">setter 내에서 속성을 할당하지 마세요. 이 호출로 인해 무한 재귀가 발생합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionTitle">
+        <source>Avoid infinite recursion</source>
+        <target state="translated">무한 재귀 방지</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersDescription">
+        <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
+        <target state="translated">'out' 또는 'ref'를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험, 값 형식과 참조 형식이 어떻게 다른지에 대한 이해 및 반환 값이 여러 개인 메서드 처리가 필요합니다. 또한 'out' 매개 변수와 'ref' 매개 변수의 차이점은 널리 이해되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersMessage">
+        <source>Avoid 'out' parameters as they are not designed for general audience.</source>
+        <target state="translated">'out' 매개 변수는 일반용으로 설계되지 않았으므로 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersTitle">
+        <source>Avoid out parameters</source>
+        <target state="translated">out 매개 변수를 사용하지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
+        <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
+        <target state="translated">System.Exception이나 System.SystemException과 같은 일반 예외 또는 허용되지 않는 예외 형식이 catch 문에서 catch되거나, 일반 catch 절이 사용됩니다. 일반 예외와 허용되지 않는 예외는 catch되면 안 됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
+        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
+        <target state="translated">'{0}'을(를) 수정하여 좀 더 구체적인 허용되는 예외 형식을 catch하거나 해당 예외를 다시 throw합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
+        <source>Do not catch general exception types</source>
+        <target state="translated">일반적인 예외 형식을 catch하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
+        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 전달하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesDescription">
+        <source>#N/A</source>
+        <target state="translated">#N/A</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
+        <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 전달하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
+        <source>An enumeration's values should not start with the type name of the enumeration.</source>
+        <target state="translated">열거형의 값은 열거형의 형식 이름으로 시작하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
+        <source>Do not prefix enum values with the name of the enum type '{0}'. </source>
+        <target state="translated">열거형 값에 열거형 형식 '{0}'의 이름을 접두사로 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
+        <source>Do not prefix enum values with type name</source>
+        <target state="translated">열거형 값에 형식 이름을 접두사로 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesTitle">
+        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 저장하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesDescription">
+        <source>#N/A</source>
+        <target state="translated">#N/A</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage">
+        <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
+        <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 저장하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
+        <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
+        <target state="translated">이 비트 초기화에서 필드 참조 '{0}'이(가) 중복되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
+        <target state="translated">열거형 멤버 '{0}'의 상수 값 '{1}'이(가) '{2}' 멤버와 같습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
+        <source>Enums values should not be duplicated</source>
+        <target state="translated">열거형 값은 중복되어서는 안 됨</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
+        <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
+        <target state="translated">'{0}' 형식에서 종료자를 제거하고 Dispose(bool disposing)를 재정의한 후 종료 논리를 'disposing'이 false인 코드 경로에 추가하세요. 그렇지 않으면, 기본 형식 '{1}'도 종료자를 제공할 때 중복된 Dispose 호출이 발생할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
+        <source>Propagate CancellationTokens When Possible</source>
+        <target state="translated">가능한 경우 취소 토큰을 전파하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropagateCancellationTokensWhenPossibleDescription">
+        <source>#N/A</source>
+        <target state="translated">#N/A</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropagateCancellationTokensWhenPossibleMessage">
+        <source>Propagate CancellationTokens When Possible</source>
+        <target state="translated">가능한 경우 취소 토큰을 전파하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMixBlockingAndAsyncTitle">
+        <source>Don't Mix Blocking and Async</source>
+        <target state="translated">차단과 비동기를 조합하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMixBlockingAndAsyncDescription">
+        <source>#N/A</source>
+        <target state="translated">#N/A</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMixBlockingAndAsyncMessage">
+        <source>Don't Mix Blocking and Async</source>
+        <target state="translated">차단과 비동기를 조합하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
+        <source>Types that own disposable fields should be disposable</source>
+        <target state="translated">삭제 가능한 필드가 있는 형식은 삭제해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableDescription">
+        <source>A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.</source>
+        <target state="translated">클래스는 System.IDisposable 형식인 인스턴스 필드를 선언하고 구현하지만, IDisposable을 구현하지 않습니다. IDisposable 필드를 선언하는 클래스는 관리되지 않는 리소스를 간접적으로 소유하며, IDisposable 인터페이스를 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableMessageNonBreaking">
+        <source>Type '{0}' owns disposable field(s) '{1}' but is not disposable</source>
+        <target state="translated">삭제 가능한 필드 '{1}'이(가) 있는 '{0}' 형식을 삭제할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesTitle">
+        <source>Use generic event handler instances</source>
+        <target state="translated">제네릭 이벤트 처리기 인스턴스를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueTitle">
+        <source>Enums should have zero value</source>
+        <target state="translated">열거형에는 0 값이 있어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueDescription">
+        <source>The default value of an uninitialized enumeration, just as other value types, is zero. A nonflags-attributed enumeration should define a member by using the value of zero so that the default value is a valid value of the enumeration. If an enumeration that has the FlagsAttribute attribute applied defines a zero-valued member, its name should be ""None"" to indicate that no values have been set in the enumeration.</source>
+        <target state="translated">다른 값 형식과 마찬가지로 초기화되지 않은 열거형의 기본값은 0입니다. 플래그가 없는 특성을 가진 열거형이 0 값을 사용하여 멤버를 정의하므로 기본값은 유효한 열거형 값입니다. FlagsAttribute 특성이 적용된 열거형이 0 값을 가진 멤버를 정의하는 경우 멤버 이름이 ""None""으로 명명되어 열거형에 값이 설정되지 않았음을 표시해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsRename">
+        <source>In enum {0}, change the name of {1} to 'None'.</source>
+        <target state="translated">{0} 열거형에서 {1}의 이름을 'None'으로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsMultipleZeros">
+        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'.</source>
+        <target state="translated">{0}에서 'None'으로 명명된 하나의 멤버를 제외하고 0 값을 가진 모든 멤버를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue">
+        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'.</source>
+        <target state="translated">제안된 이름 'None'과 0 값을 가진 멤버를 {0}에 추가하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
+        <source>Abstract types should not have constructors</source>
+        <target state="translated">추상 형식에는 생성자를 사용하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
+        <source>Constructors on abstract types can be called only by derived types. Because public constructors create instances of a type, and you cannot create instances of an abstract type, an abstract type that has a public constructor is incorrectly designed.</source>
+        <target state="translated">파생 형식만 추상 형식의 생성자를 호출할 수 있습니다. 공용 생성자에서 형식의 인스턴스를 만들고 사용자는 추상 형식의 인스턴스를 만들 수 없으므로 공용 생성자가 있는 추상 형식은 잘못 디자인되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
+        <source>Abstract type {0} should not have constructors</source>
+        <target state="translated">{0} 추상 형식에는 생성자를 사용하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithClsCompliantTitle">
+        <source>Mark assemblies with CLSCompliant</source>
+        <target state="translated">CLSCompliant로 어셈블리를 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithClsCompliantDescription">
+        <source>The Common Language Specification (CLS) defines naming restrictions, data types, and rules to which assemblies must conform if they will be used across programming languages. Good design dictates that all assemblies explicitly indicate CLS compliance by using CLSCompliantAttribute . If this attribute is not present on an assembly, the assembly is not compliant.</source>
+        <target state="translated">CLS(공용 언어 사양)는 명명 제한, 데이터 형식 및 어셈블리가 프로그래밍 언어에 사용될 경우 준수해야 할 규칙을 정의합니다. 설계 시 CLSCompliantAttribute를 사용하여 모든 어셈블리가 명시적으로 CLS를 준수함을 나타내는 것이 좋습니다. 이 특성이 어셈블리에 표시되지 않는 경우는 어셈블리가 비규격 상태입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithClsCompliantMessage">
+        <source>Mark assemblies with CLSCompliant</source>
+        <target state="translated">CLSCompliant로 어셈블리를 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithAssemblyVersionTitle">
+        <source>Mark assemblies with assembly version</source>
+        <target state="translated">어셈블리 버전으로 어셈블리를 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithAssemblyVersionDescription">
+        <source>The .NET Framework uses the version number to uniquely identify an assembly, and to bind to types in strongly named assemblies. The version number is used together with version and publisher policy. By default, applications run only with the assembly version with which they were built.</source>
+        <target state="translated">.NET Framework에서는 어셈블리를 고유하게 식별하고 강력한 이름의 어셈블리에서 형식에 바인딩하기 위해 버전 번호를 사용합니다. 버전 번호는 버전 및 게시자 정책과 함께 사용됩니다. 기본적으로 애플리케이션은 빌드 시 사용된 어셈블리 버전에서만 실행됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithAssemblyVersionMessage">
+        <source>Mark assemblies with assembly version</source>
+        <target state="translated">어셈블리 버전으로 어셈블리를 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleTitle">
+        <source>Mark assemblies with ComVisible</source>
+        <target state="translated">ComVisible로 어셈블리를 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleDescription">
+        <source>ComVisibleAttribute determines how COM clients access managed code. Good design dictates that assemblies explicitly indicate COM visibility. COM visibility can be set for the whole assembly and then overridden for individual types and type members. If this attribute is not present, the contents of the assembly are visible to COM clients.</source>
+        <target state="translated">ComVisibleAttribute는 COM 클라이언트가 관리 코드에 액세스하는 방법을 결정합니다. 어셈블리가 명시적으로 COM 표시 유형 지정하는 것이 좋습니다. COM 표시 유형은 전체 어셈블리에 대해 설정된 다음 개별 형식과 형식 멤버에 대해 재정의될 수 있습니다. 이 특성이 표시되지 않는 경우 어셈블리 콘텐츠는 COM 클라이언트에 표시되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
+        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
+        <target state="translated">{0}이(가) 외부에 표시되는 형식을 노출하므로 어셈블리 수준에서 ComVisible(false)로 표시한 다음 COM 클라이언트에서 ComVisible(true)로 노출되어야 하는 어셈블리 내에서 모든 형식을 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
+        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
+        <target state="translated">{0}에서 ComVisible 특성을 false로 변경하고 형식 수준에서 선택하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageTitle">
+        <source>Mark attributes with AttributeUsageAttribute</source>
+        <target state="translated">AttributeUsageAttribute로 특성을 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
+        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
+        <target state="translated">사용자 지정 특성을 정의하는 경우 AttributeUsageAttribute를 사용하여 표시하고 사용자 지정 특성이 적용될 수 있는 소스 코드 위치를 나타내세요. 특성의 의미와 용도가 해당 특성의 유효한 코드 위치를 결정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
+        <source>Specify AttributeUsage on {0}.</source>
+        <target state="translated">{0}에서 AttributeUsage를 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
+        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
+        <target state="translated">{0} 특성이 해당 특성의 기본 형식에서 AttributeUsage를 상속해도 형식에서 AttributeUsage를 명시적으로 지정하여 코드 가독성과 문서 품질을 향상시켜야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
+        <source>Define accessors for attribute arguments</source>
+        <target state="translated">특성 인수의 접근자를 정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
+        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
+        <target state="translated">특성은 대상에 특성을 적용할 때 지정되어야 하는 필수 인수를 정의할 수 있습니다. 필수 인수는 위치 매개 변수로 특성 생성자에 제공되기 때문에 위치 인수라고도 알려져 있습니다. 모든 필수 인수에 대해 특성은 인수 값이 실행 시간에 검색될 수 있도록 해당 읽기 전용 속성도 제공해야 합니다. 특성은 명명된 인수라고도 알려진 선택적 인수를 정의할 수도 있습니다. 선택적 인수는 특성 생성자에 이름별로 제공되며 해당 읽기/쓰기 속성을 가지고 있어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
+        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}.</source>
+        <target state="translated">{1} 특성의 위치 인수 {0}에 public 읽기 전용 속성 접근자를 추가하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsMessageRemoveSetter">
+        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}.</source>
+        <target state="translated">속성 setter가 위치 인수 {1}에 해당하므로 {0}에서 이 속성 setter를 제거하거나 해당 접근성을 낮추세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility">
+        <source>If {0} is the property accessor for positional argument {1}, make it public.</source>
+        <target state="translated">{0}이(가) 위치 인수 {1}에 대한 속성 접근자인 경우 public으로 만드세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertiesWhereAppropriateTitle">
+        <source>Use properties where appropriate</source>
+        <target state="translated">적합한 속성 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertiesWhereAppropriateDescription">
+        <source>A public or protected method has a name that starts with ""Get"", takes no parameters, and returns a value that is not an array. The method might be a good candidate to become a property.</source>
+        <target state="translated">public 또는 protected 메서드는 ""Get""으로 시작하는 이름을 가지며 매개 변수를 사용하지 않고 배열이 아닌 값을 반환합니다. 이 메서드는 속성에 사용하기 적합할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePropertiesWhereAppropriateMessage">
+        <source>Use properties where appropriate</source>
+        <target state="translated">적합한 속성 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsTitle">
+        <source>Mark enums with FlagsAttribute</source>
+        <target state="translated">FlagsAttribute로 열거형을 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsDescription">
+        <source>An enumeration is a value type that defines a set of related named constants. Apply FlagsAttribute to an enumeration when its named constants can be meaningfully combined.</source>
+        <target state="translated">열거형은 관련된 명명된 상수의 집합을 정의하는 값 형식입니다. 명명된 상수가 의미 있게 결합될 수 있을 때 FlagsAttribute를 열거형에 적용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsMessage">
+        <source>Mark enums with FlagsAttribute</source>
+        <target state="translated">FlagsAttribute로 열거형을 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesTitle">
+        <source>Interface methods should be callable by child types</source>
+        <target state="translated">인터페이스 메서드는 자식 형식에서 호출할 수 있어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesDescription">
+        <source>An unsealed externally visible type provides an explicit method implementation of a public interface and does not provide an alternative externally visible method that has the same name.</source>
+        <target state="translated">봉인되지 않고 외부에 표시되는 형식은 공용 인터페이스의 명시적 메서드 구현을 제공하며 동일한 이름의 외부에 표시되는 대체 메서드를 제공하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesMessage">
+        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes.</source>
+        <target state="translated">{0}을(를) sealed로 설정(이 클래스가 이전에 함께 제공된 경우 새롭게 변경)하거나, 메서드를 비명시적으로 구현하거나, '{1}'의 기능을 노출하여 파생 클래스에 표시하는 새 메서드를 구현하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesTitle">
+        <source>Override methods on comparable types</source>
+        <target state="translated">비교 가능한 형식에서 메서드를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesDescription">
+        <source>A public or protected type implements the System.IComparable interface. It does not override Object.Equals nor does it overload the language-specific operator for equality, inequality, less than, less than or equal, greater than or greater than or equal.</source>
+        <target state="translated">public 또는 protected 형식은 System.IComparable 인터페이스를 구현합니다. Object.Equals를 재정의하지도 않고 같음, 같지 않음, 작음, 작거나 같음, 큼, 크거나 같음에 대한 언어 특정 연산자를 오버로드하지도 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesMessageEquals">
+        <source>{0} should override Equals since it implements IComparable.</source>
+        <target state="translated">{0}은(는) IComparable을 구현하므로 Equals를 재정의해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesMessageOperator">
+        <source>{0} should define operator(s) '{1}' since it implements IComparable.</source>
+        <target state="translated">{0}은(는) IComparable을 구현하므로 연산자 '{1}'을(를) 정의해야 합니다.</target>
+        <note>1 is a comma-separated list</note>
+      </trans-unit>
+      <trans-unit id="MovePInvokesToNativeMethodsClassTitle">
+        <source>Move pinvokes to native methods class</source>
+        <target state="translated">PInvoke를 네이티브 메서드 클래스로 이동하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MovePInvokesToNativeMethodsClassDescription">
+        <source>Platform Invocation methods, such as those that are marked by using the System.Runtime.InteropServices.DllImportAttribute attribute, or methods that are defined by using the Declare keyword in Visual Basic, access unmanaged code. These methods should be of the NativeMethods, SafeNativeMethods, or UnsafeNativeMethods class.</source>
+        <target state="translated">System.Runtime.InteropServices.DllImportAttribute 특성을 사용하여 표시되거나 Visual Basic에서 선언 키워드를 사용하여 정의되는 메서드와 같은 플랫폼 호출 메서드는 비관리 코드에 액세스합니다. 이러한 메서드는 NativeMethods, SafeNativeMethods 또는 UnsafeNativeMethods 클래스여야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MovePInvokesToNativeMethodsClassMessage">
+        <source>Move pinvokes to native methods class</source>
+        <target state="translated">PInvoke를 네이티브 메서드 클래스로 이동하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldDifferByMoreThanCaseTitle">
+        <source>Identifiers should differ by more than case</source>
+        <target state="translated">식별자에 대/소문자만 다른 이름을 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldDifferByMoreThanCaseDescription">
+        <source>Identifiers for namespaces, types, members, and parameters cannot differ only by case because languages that target the common language runtime are not required to be case-sensitive.</source>
+        <target state="translated">공용 언어 런타임을 대상으로 하는 언어가 대/소문자를 구분하지 않으므로 네임스페이스, 형식, 멤버 및 매개 변수에 대한 식별자는 대/소문자만 다른 이름을 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldDifferByMoreThanCaseMessage">
+        <source>Names of '{0}' and '{1}' should differ by more than case.</source>
+        <target state="translated">'{0}' 및 '{1}'에 대/소문자만 다른 이름을 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixTitle">
+        <source>Identifiers should have correct prefix</source>
+        <target state="translated">식별자에는 올바른 접두사를 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixDescription">
+        <source>The name of an externally visible interface does not start with an uppercase ""I"". The name of a generic type parameter on an externally visible type or method does not start with an uppercase ""T"".</source>
+        <target state="translated">외부에 표시되는 인터페이스의 이름은 대문자 ""I""로 시작하지 않습니다. 외부에 표시되는 형식의 제네릭 형식 매개 변수 또는 메서드의 이름은 대문자 ""T""로 시작하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageInterface">
+        <source>Prefix interface name {0} with 'I'.</source>
+        <target state="translated">인터페이스 이름 {0}에 'I'를 접두사로 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageTypeParameter">
+        <source>Prefix generic type parameter name {0} with 'T'.</source>
+        <target state="translated">제네릭 형식 매개 변수 이름 {0}에 'T'를 접두사로 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonConstantFieldsShouldNotBeVisibleTitle">
+        <source>Non-constant fields should not be visible</source>
+        <target state="translated">비상수 필드는 표시할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonConstantFieldsShouldNotBeVisibleDescription">
+        <source>Static fields that are neither constants nor read-only are not thread-safe. Access to such a field must be carefully controlled and requires advanced programming techniques to synchronize access to the class object.</source>
+        <target state="translated">상수도 아니고 읽기 전용도 아닌 정적 필드는 스레드로부터 안전하지 않습니다. 이러한 필드에 액세스하려면 신중한 제어와 액세스를 클래스 개체에 동기화할 수 있는 고급 프로그래밍 기술이 필요합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonConstantFieldsShouldNotBeVisibleMessage">
+        <source>Non-constant fields should not be visible</source>
+        <target state="translated">비상수 필드는 표시할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsTitle">
+        <source>Do not mark enums with FlagsAttribute</source>
+        <target state="translated">FlagsAttribute로 열거형을 표시하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsDescription">
+        <source>An externally visible enumeration is marked by using FlagsAttribute, and it has one or more values that are not powers of two or a combination of the other defined values on the enumeration.</source>
+        <target state="translated">외부에 표시되는 열거형은 FlagsAttribute를 사용하여 표시되며 2의 거듭제곱 또는 열거형에서 정의된 다른 값의 조합이 아닌 하나 이상의 값을 가집니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsMessage">
+        <source>Do not mark enums with FlagsAttribute</source>
+        <target state="translated">FlagsAttribute로 열거형을 표시하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesTitle">
+        <source>Operator overloads have named alternates</source>
+        <target state="translated">연산자 오버로드에는 명명된 대체 항목이 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesDescription">
+        <source>An operator overload was detected, and the expected named alternative method was not found. The named alternative member provides access to the same functionality as the operator and is provided for developers who program in languages that do not support overloaded operators.</source>
+        <target state="translated">연산자 오버로드가 검색되었으며 필요한 명명된 대체 메서드는 발견되지 않았습니다. 명명된 대체 멤버는 연산자와 동일한 기능에 대한 액세스를 제공하며 해당 멤버는 오버로드된 연산자를 지원하지 않는 언어로 프로그래밍하는 개발자에게 제공됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageDefault">
+        <source>Provide a method named '{0}' as a friendly alternate for operator {1}.</source>
+        <target state="translated">{1} 연산자의 대체 항목으로 이름이 '{0}'인 메서드를 제공하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageProperty">
+        <source>Provide a property named '{0}' as a friendly alternate for operator {1}.</source>
+        <target state="translated">{1} 연산자의 대체 항목으로 이름이 '{0}'인 속성을 제공하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageMultiple">
+        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}.</source>
+        <target state="translated">{2} 연산자의 대체 항목으로 이름이 '{0}' 또는 '{1}'인 메서드를 제공하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageVisibility">
+        <source>Mark {0} as public because it is a friendly alternate for operator {1}.</source>
+        <target state="translated">{0}은(는) {1} 연산자의 대체 항목이므로 public으로 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsTitle">
+        <source>Operators should have symmetrical overloads</source>
+        <target state="translated">연산자에는 대칭 오버로드가 있어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
+        <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
+        <target state="translated">형식은 같음 또는 같지 않음 연산자를 구현하지만 반대 연산자는 구현하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
+        <source>Operators should have symmetrical overloads</source>
+        <target state="translated">연산자에는 대칭 오버로드가 있어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
+        <source>Collection properties should be read only</source>
+        <target state="translated">컬렉션 속성은 읽기 전용이어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionPropertiesShouldBeReadOnlyDescription">
+        <source>A writable collection property allows a user to replace the collection with a different collection. A read-only property stops the collection from being replaced but still allows the individual members to be set.</source>
+        <target state="translated">쓰기 가능한 컬렉션 속성은 사용자가 컬렉션을 다른 컬렉션으로 바꿀 수 있도록 허용합니다. 읽기 전용 속성을 사용하면 컬렉션을 더 이상 바꿀 수 없지만 계속해서 개별 멤버를 설정할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionPropertiesShouldBeReadOnlyMessage">
+        <source>Change '{0}' to be read-only by removing the property setter.</source>
+        <target state="translated">속성 setter를 제거하여 '{0}'을(를) 읽기 전용으로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle">
+        <source>Overload operator equals on overriding value type Equals</source>
+        <target state="translated">값 형식 Equals를 재정의할 때 같음 연산자를 오버로드하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription">
+        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals</source>
+        <target state="translated">대부분의 프로그래밍 언어에서는 값 형식에 대한 같음 연산자(==)를 기본적으로 구현하지 않습니다. 사용 중인 프로그래밍 언어에서 연산자 오버로드를 지원하는 경우 같음 연산자를 구현하세요. 해당 연산자의 동작은 Equals의 동작과 같아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
+        <source>Overload operator equals on overriding value type Equals</source>
+        <target state="translated">값 형식 Equals를 재정의할 때 같음 연산자를 오버로드하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
+        <source>Pass system uri objects instead of strings</source>
+        <target state="translated">문자열 대신 시스템 uri 개체를 전달하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PassSystemUriObjectsInsteadOfStringsDescription">
+        <source>A call is made to a method that has a string parameter whose name contains "uri", "URI", "urn", "URN", "url", or "URL". The declaring type of the method contains a corresponding method overload that has a System.Uri parameter.</source>
+        <target state="translated">이름에 "uri", "URI", "urn", "URN", "url" 또는 "URL"이 포함된 문자열 매개 변수가 있는 메서드를 호출합니다. 메서드의 선언 형식은 System.Uri 매개 변수가 있는 해당 메서드 오버로드를 포함합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PassSystemUriObjectsInsteadOfStringsMessage">
+        <source>Modify '{0}' to call '{1}' instead of '{2}'.</source>
+        <target state="translated">'{0}'을(를) 수정하여 '{2}' 대신 '{1}'을(를) 호출하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="translated">{0} 형식은 Equals를 재정의하므로 IEquatable&lt;T&gt;를 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="translated">Object.Equals를 재정의할 때 IEquatable을 구현하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CancellationTokenParametersMustComeLastTitle">
+        <source>CancellationToken parameters must come last</source>
+        <target state="translated">CancellationToken 매개 변수는 마지막에 위치해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CancellationTokenParametersMustComeLastMessage">
+        <source>Method '{0}' should take CancellationToken as the last parameter</source>
+        <target state="translated">메서드 '{0}'은(는) CancellationToken을(를) 마지막 매개 변수로 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableTitle">
+        <source>Constructor make noninheritable base class inheritable</source>
+        <target state="translated">생성자가 상속할 수 없는 기본 클래스를 상속할 수 있도록 만듭니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableDescription">
+        <source>When a base class is noninheritable because its constructor is internal, a derived class should not make it inheritable by having a public or protected constructor.</source>
+        <target state="translated">기본 클래스의 생성자가 내부 생성자이기 때문에 클래스를 상속할 수 없는 경우 파생 클래스가 public 또는 protected 생성자를 사용하여 해당 기본 클래스를 상속하도록 만들 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstructorMakeNoninheritableBaseClassInheritableMessage">
+        <source>Constructor make noninheritable base class inheritable</source>
+        <target state="translated">생성자가 상속할 수 없는 기본 클래스를 상속할 수 있도록 만듭니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainTypeNamesTitle">
+        <source>Identifier contains type name</source>
+        <target state="translated">식별자가 형식 이름을 포함합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainTypeNamesDescription">
+        <source>Names of parameters and members are better used to communicate their meaning than to describe their type, which is expected to be provided by development tools. For names of members, if a data type name must be used, use a language-independent name instead of a language-specific one.</source>
+        <target state="translated">매개 변수 및 멤버 이름은 형식을 설명하기보다 의미를 통신하는 데 유용하게 사용되며, 개발 도구에서 이러한 이름을 제공해야 합니다. 멤버 이름의 경우, 데이터 형식 이름을 사용해야 하는 상황에서는 특정 언어 이름 대신 언어 독립 이름을 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainTypeNamesMessage">
+        <source>Identifier '{0}' contains type name</source>
+        <target state="translated">식별자 '{0}'이(가) 형식 이름을 포함합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CreatePropertyAccessorForParameter">
+        <source>Create a property accessor.</source>
+        <target state="translated">속성 접근자를 만드세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeGetterPublic">
+        <source>Make the getter of the property public</source>
+        <target state="translated">속성의 getter를 public으로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeSetterNonPublic">
+        <source>Make the setter of the property non-public</source>
+        <target state="translated">속성의 setter를 non-public으로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AddAssemblyLevelComVisibleFalse">
+        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
+        <target state="translated">{0}이(가) 외부에 표시되는 형식을 노출하므로 어셈블리 수준에서 ComVisible(false)로 표시한 다음 COM 클라이언트에서 ComVisible(true)로 노출되어야 하는 어셈블리 내에서 모든 형식을 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ChangeAssemblyLevelComVisibleToFalse">
+        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
+        <target state="translated">{0}에서 ComVisible 특성을 false로 변경하고 형식 수준에서 선택하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementComparable">
+        <source>Implement Equality and Comparison methods and operators</source>
+        <target state="translated">같음 및 비교 메서드와 연산자를 구현하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementEquatable">
+        <source>Implement IEquatable</source>
+        <target state="translated">IEquatable을 구현하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableInterface">
+        <source>Implement IDisposable Interface</source>
+        <target state="translated">IDisposable 인터페이스를 구현하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotMarkEnumsWithFlagsCodeFix">
+        <source>Remove FlagsAttribute from enum.</source>
+        <target state="translated">열거형에서 FlagsAttribute를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkEnumsWithFlagsCodeFix">
+        <source>Apply FlagsAttribute to enum.</source>
+        <target state="translated">열거형에 FlagsAttribute를 적용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldZeroValueFlagsMultipleZeroCodeFix">
+        <source>Remove all members that have the value zero except for one member that is named 'None'.</source>
+        <target state="translated">'None'으로 명명된 하나의 멤버를 제외하고 0 값을 가진 모든 멤버를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldZeroValueFlagsRenameCodeFix">
+        <source>Rename zero-valued enum field to 'None'.</source>
+        <target state="translated">값이 0인 열거형 필드의 이름을 'None'으로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumsShouldZeroValueNotFlagsNoZeroValueCodeFix">
+        <source>Add a zero-valued member 'None' to enum.</source>
+        <target state="translated">값이 0인 멤버 'None'을 열거형에 추가하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AbstractTypesShouldNotHavePublicConstructorsCodeFix">
+        <source>Change the accessibility of public constructors to protected.</source>
+        <target state="translated">public 생성자의 접근성을 protected로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesTitle">
+        <source>Do not declare static members on generic types</source>
+        <target state="translated">제네릭 형식에서 정적 멤버를 선언하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesDescription">
+        <source>When a static member of a generic type is called, the type argument must be specified for the type. When a generic instance member that does not support inference is called, the type argument must be specified for the member. In these two cases, the syntax for specifying the type argument is different and easily confused.</source>
+        <target state="translated">제네릭 형식의 정적 멤버가 호출되면 해당 형식에 대한 형식 인수를 지정해야 합니다. 유추를 지원하지 않는 제네릭 인스턴스 멤버가 호출되면 해당 멤버에 대한 형식 인수를 지정해야 합니다. 이 두 가지 경우에서 형식 인수를 지정하기 위한 구문은 다양하며 혼동되기 쉽습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareStaticMembersOnGenericTypesMessage">
+        <source>Do not declare static members on generic types</source>
+        <target state="translated">제네릭 형식에서 정적 멤버를 선언하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
+        <source>Generic interface should also be implemented</source>
+        <target state="needs-review-translation">컬렉션은 제네릭 인터페이스를 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="needs-review-translation">컬렉션의 유용성을 확대하려면 제네릭 컬렉션 인터페이스 중 하나를 구현하세요. 그러면 컬렉션을 제네릭 컬렉션 형식을 전파하는 데 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="needs-review-translation">컬렉션 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 컬렉션의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumStorageShouldBeInt32Title">
+        <source>Enum Storage should be Int32</source>
+        <target state="translated">열거형 스토리지는 Int32여야 합니다</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumStorageShouldBeInt32Description">
+        <source>An enumeration is a value type that defines a set of related named constants. By default, the System.Int32 data type is used to store the constant value. Although you can change this underlying type, it is not required or recommended for most scenarios.</source>
+        <target state="translated">열거형은 관련된 명명된 상수의 집합을 정의하는 값 형식입니다. 기본적으로 상수 값을 저장하는 데 System.Int32 데이터 형식이 사용됩니다. 기본 형식을 변경할 수는 있지만 대부분의 시나리오에서 필요하거나 권장되는 작업이 아닙니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumStorageShouldBeInt32Message">
+        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}.</source>
+        <target state="translated">가능한 경우 {1} 대신 {0} System.Int32의 기본 형식을 만드세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEventsWhereAppropriateTitle">
+        <source>Use events where appropriate</source>
+        <target state="translated">적합한 이벤트를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEventsWhereAppropriateDescription">
+        <source>This rule detects methods that have names that ordinarily would be used for events. If a method is called in response to a clearly defined state change, the method should be invoked by an event handler. Objects that call the method should raise events instead of calling the method directly.</source>
+        <target state="translated">이 규칙은 일반적으로 이벤트에 사용되는 이름을 가진 메서드를 검색합니다. 명확하게 정의된 상태 변경에 대한 응답으로 메서드가 호출되는 경우 이벤트 처리기에서 호출되어야 합니다. 해당 메서드를 호출하는 개체는 메서드를 직접 호출하는 대신 이벤트를 발생시켜야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEventsWhereAppropriateMessage">
+        <source>Consider making '{0}' an event.</source>
+        <target state="translated">'{0}'을(를) 이벤트로 만드세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsTitle">
+        <source>Implement standard exception constructors</source>
+        <target state="translated">표준 예외 생성자를 구현하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsDescription">
+        <source>Failure to provide the full set of constructors can make it difficult to correctly handle exceptions.</source>
+        <target state="translated">생성자의 전체 집합을 제공하지 못하면 예외를 올바르게 처리하는 것이 어려울 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
+        <source>Add the following constructor to {0}: {1}.</source>
+        <target state="translated">{1} 생성자를 {0}에 추가하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
+        <source>Change the accessibility of {0} to {1}.</source>
+        <target state="translated">{0}의 접근성을 {1}(으)로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
+        <source>Nested types should not be visible</source>
+        <target state="translated">중첩 형식을 표시하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleDescription">
+        <source>A nested type is a type that is declared in the scope of another type. Nested types are useful to encapsulate private implementation details of the containing type. Used for this purpose, nested types should not be externally visible.</source>
+        <target state="translated">중첩 형식은 다른 형식의 범위에서 선언된 형식입니다. 중첩 형식은 포함하는 형식의 프라이빗 구현 세부 정보를 캡슐화하는 데 유용합니다. 이러한 용도로 사용되는 중첩 형식은 외부에 표시하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleMessageDefault">
+        <source>Do not nest type {0}. Alternatively, change its accessibility so that it is not externally visible.</source>
+        <target state="translated">{0} 형식을 중첩하지 마세요. 대신 형식이 외부에 표시되지 않도록 접근성을 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NestedTypesShouldNotBeVisibleMessageVisualBasicModule">
+        <source>Do not nest type {0}. Alternatively, change its accessibility so that it is not externally visible. If this type is defined in a Visual Basic Module, it will be considered a nested type to other .NET languages. In that case, consider moving the type outside of the Module.</source>
+        <target state="translated">{0} 형식을 중첩하지 마세요. 대신 형식이 외부에 표시되지 않도록 접근성을 변경하세요. 이 형식이 Visual Basic 모듈에 정의된 경우 다른 .NET 언어에 대해 중첩 형식으로 간주됩니다. 이 경우 형식을 모듈 외부로 이동하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidEmptyInterfacesTitle">
+        <source>Avoid empty interfaces</source>
+        <target state="translated">빈 인터페이스를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidEmptyInterfacesDescription">
+        <source>Interfaces define members that provide a behavior or usage contract. The functionality that is described by the interface can be adopted by any type, regardless of where the type appears in the inheritance hierarchy. A type implements an interface by providing implementations for the members of the interface. An empty interface does not define any members; therefore, it does not define a contract that can be implemented.</source>
+        <target state="translated">인터페이스는 동작 또는 사용 계약을 제공하는 멤버를 정의합니다. 인터페이스에서 설명하는 기능은 상속 계층 구조에서 형식이 표시되는 위치와 상관없이 모든 형식에서 적용할 수 있습니다. 형식은 인터페이스의 멤버에 대한 구현을 제공하여 인터페이스를 구현합니다. 빈 인터페이스는 멤버를 정의하지 않으므로 구현될 수 있는 계약을 정의하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidEmptyInterfacesMessage">
+        <source>Avoid empty interfaces</source>
+        <target state="translated">빈 인터페이스를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideObsoleteAttributeMessageTitle">
+        <source>Provide ObsoleteAttribute message</source>
+        <target state="translated">ObsoleteAttribute 메시지를 제공하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideObsoleteAttributeMessageDescription">
+        <source>A type or member is marked by using a System.ObsoleteAttribute attribute that does not have its ObsoleteAttribute.Message property specified. When a type or member that is marked by using ObsoleteAttribute is compiled, the Message property of the attribute is displayed. This gives the user information about the obsolete type or member.</source>
+        <target state="translated">형식 또는 멤버가 지정된 ObsoleteAttribute.Message 속성이 없는 System.ObsoleteAttribute 특성을 사용하여 표시됩니다. ObsoleteAttribute를 사용하여 표시된 형식 또는 멤버가 컴파일되면 해당 특성의 메시지 속성이 표시됩니다. 이를 통해 사용되지 않는 형식 또는 멤버에 대한 사용자 정보를 얻을 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideObsoleteAttributeMessageMessage">
+        <source>Provide a message for the ObsoleteAttribute that marks {0} as Obsolete</source>
+        <target state="translated">{0}을(를) 사용되지 않는 것으로 표시하는 ObsoleteAttribute에 대한 메시지를 제공하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyTitle">
+        <source>Properties should not be write only</source>
+        <target state="translated">속성은 쓰기 전용이 아니어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyDescription">
+        <source>Although it is acceptable and often necessary to have a read-only property, the design guidelines prohibit the use of write-only properties. This is because letting a user set a value, and then preventing the user from viewing that value, does not provide any security. Also, without read access, the state of shared objects cannot be viewed, which limits their usefulness.</source>
+        <target state="translated">읽기 전용 속성은 사용할 수 있으며 필수로 사용해야 하는 경우가 많지만 디자인 지침에서는 쓰기 전용 속성 사용을 금지합니다. 쓰기 전용 속성 사용을 금지하는 이유는 값을 설정한 사용자가 해당 값을 보지 못하는 경우 보안 문제가 발생하기 때문입니다. 또한 읽기 권한이 없어 공유된 개체의 상태를 볼 수 없는 경우 개체의 유용성이 떨어집니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageAddGetter">
+        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method.</source>
+        <target state="translated">{0} 속성이 쓰기 전용이므로 setter보다 크거나 같은 접근성을 가진 속성 getter를 추가하거나 이 속성을 메서드로 변환하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible">
+        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter.</source>
+        <target state="translated">{0}의 속성 getter가 setter보다 표시 수준이 낮으므로 getter의 접근성을 높이거나 setter의 접근성을 낮추세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeclareTypesInNamespacesTitle">
+        <source>Declare types in namespaces</source>
+        <target state="translated">네임스페이스에서 형식을 선언하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeclareTypesInNamespacesDescription">
+        <source>Types are declared in namespaces to prevent name collisions and as a way to organize related types in an object hierarchy.</source>
+        <target state="translated">이름 충돌을 방지하고 개체 계층 구조에서 관련된 형식을 구성하기 위해 네임스페이스에서 형식이 선언됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeclareTypesInNamespacesMessage">
+        <source>Declare types in namespaces</source>
+        <target state="translated">네임스페이스에서 형식을 선언하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareVisibleInstanceFieldsTitle">
+        <source>Do not declare visible instance fields</source>
+        <target state="translated">표시되는 인스턴스 필드를 선언하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareVisibleInstanceFieldsDescription">
+        <source>The primary use of a field should be as an implementation detail. Fields should be private or internal and should be exposed by using properties.</source>
+        <target state="translated">기본적으로 필드는 구현 세부 정보로 사용해야 합니다. 필드는 private 또는 internal이어야 하며 속성을 사용하여 표시해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareVisibleInstanceFieldsMessage">
+        <source>Do not declare visible instance fields</source>
+        <target state="translated">표시되는 인스턴스 필드를 선언하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsTitle">
+        <source>Uri parameters should not be strings</source>
+        <target state="translated">URI 매개 변수는 문자열이 아니어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsDescription">
+        <source>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</source>
+        <target state="translated">메서드가 URI의 문자열 표현을 사용하는 경우 URI 클래스의 인스턴스를 사용하는 해당 오버로드를 제공하여 서비스를 안전하게 제공해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsMessage">
+        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object.</source>
+        <target state="translated">{1} 메서드의 {0} 매개 변수 형식을 문자열에서 System.Uri로 변경하거나 {0}을(를) System.Uri 개체로 전달하는 {1}에 오버로드를 제공하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
+        <source>Uri return values should not be strings</source>
+        <target state="translated">URI 반환 값은 문자열이 아니어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
+        <source>This rule assumes that the method returns a URI. A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.</source>
+        <target state="translated">이 규칙은 메서드가 URI를 반환한다고 가정합니다. URI의 문자열 표현은 오류를 구문 분석하거나 인코딩하기 쉬우며 이로 인해 보안이 취약해질 수 있습니다. System.Uri 클래스는 이러한 서비스를 안전하게 제공합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
+        <source>Change the return type of method {0} from string to System.Uri.</source>
+        <target state="translated">{0} 메서드의 반환 형식을 문자열에서 Sysyem.Uri로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
+        <source>Uri properties should not be strings</source>
+        <target state="translated">URI 속성은 문자열이 아니어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
+        <source>This rule assumes that the property represents a Uniform Resource Identifier (URI). A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.</source>
+        <target state="translated">이 규칙은 속성이 URI(Uniform Resource Identifier)를 나타낸다고 가정합니다. URI의 문자열 표현은 오류를 구문 분석하거나 인코딩하기 쉬우며 이로 인해 보안이 취약해질 수 있습니다. System.Uri 클래스는 이러한 서비스를 안전하게 제공합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
+        <source>Change the type of property {0} from string to System.Uri.</source>
+        <target state="translated">{0} 속성의 형식을 문자열에서 System.Uri로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyTitle">
+        <source>Implement IDisposable Correctly</source>
+        <target state="translated">IDisposable 인터페이스를 올바르게 구현하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyDescription">
+        <source>All IDisposable types should implement the Dispose pattern correctly.</source>
+        <target state="translated">모든 IDisposable 형식은 Dispose 패턴을 올바르게 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
+        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'.</source>
+        <target state="translated">기본 형식 '{1}'에서 이미 구현되었으므로 '{0}'에서 구현된 인터페이스 목록의 IDisposable을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
+        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.</source>
+        <target state="translated">'{0}'을(를) 제거하고 Dispose(bool disposing)를 재정의한 후 삭제 논리를 'disposing'이 true인 코드 경로에 추가하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
+        <source>Ensure that '{0}' is declared as public and sealed.</source>
+        <target state="translated">'{0}'이(가) public 및 sealed로 선언되었는지 확인하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageRenameDispose">
+        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed.</source>
+        <target state="translated">'{0}'의 이름을 'Dispose'로 바꾸고 public 및 sealed로 선언되었는지 확인합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeBoolSignature">
+        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed.</source>
+        <target state="translated">'{0}'이(가) protected, virtual 및 unsealed로 선언되었는지 확인하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeImplementation">
+        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.</source>
+        <target state="translated">Dispose(true)를 호출한 다음, 현재 개체 인스턴스(Visual Basic의 경우 'this' 또는 'Me')에서 GC.SuppressFinalize를 호출한 후 반환하도록 '{0}'을(를) 수정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeImplementation">
+        <source>Modify '{0}' so that it calls Dispose(false) and then returns.</source>
+        <target state="translated">Dispose(false)를 호출한 후 반환하도록 '{0}'을(를) 수정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIDisposableCorrectlyMessageProvideDisposeBool">
+        <source>Provide an overridable implementation of Dispose(bool) on '{0}' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.</source>
+        <target state="translated">'{0}'에 Dispose(bool)의 재정의 가능한 구현을 제공하거나 형식을 sealed로 표시합니다. Dispose(false)에 대한 호출은 네이티브 리소스만 정리해야 하지만 Dispose(true)에 대한 호출은 관리되는 리소스와 네이티브 리소스 모두를 정리해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionsShouldBePublicTitle">
+        <source>Exceptions should be public</source>
+        <target state="translated">예외는 public이어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionsShouldBePublicDescription">
+        <source>An internal exception is visible only inside its own internal scope. After the exception falls outside the internal scope, only the base exception can be used to catch the exception. If the internal exception is inherited from T:System.Exception, T:System.SystemException, or T:System.ApplicationException, the external code will not have sufficient information to know what to do with the exception.</source>
+        <target state="translated">내부 예외는 내부 범위에서만 표시됩니다. 이 예외가 내부 범위를 벗어난 후 예외를 catch하려면 기본 예외만 사용할 수 있습니다. 내부 예외가 T:System.Exception, T:System.SystemException 또는 T:System.ApplicationException에서 상속되는 경우 외부 코드에는 예외를 사용하여 수행해야 하는 작업에 대한 충분한 정보가 제공되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionsShouldBePublicMessage">
+        <source>Exceptions should be public</source>
+        <target state="translated">예외는 public이어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsTitle">
+        <source>Do not raise exceptions in unexpected locations</source>
+        <target state="translated">예기치 않은 위치에서 예외를 발생시키지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsDescription">
+        <source>A method that is not expected to throw exceptions throws an exception.</source>
+        <target state="translated">예외를 throw할 수 없는 메서드가 예외를 throw합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsMessagePropertyGetter">
+        <source>{0} creates an exception of type {1}, an exception type that should not be raised in a property. If this exception instance might be raised, use a different exception type, convert this property into a method, or change this property's logic so that it no longer raises an exception.</source>
+        <target state="translated">{0}이(가) 속성에서 발생하지 않아야 하는 예외 형식인 {1} 형식의 예외를 만듭니다. 이 예외 인스턴스가 발생하는 경우 예외가 더 이상 발생하지 않도록 다른 예외 형식을 사용하고 이 속성을 메서드로 변환하거나 이 속성의 논리를 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsMessageHasAllowedExceptions">
+        <source>{0} creates an exception of type {1}, an exception type that should not be raised in this type of method. If this exception instance might be raised, either use a different exception type or change this method's logic so that it no longer raises an exception.</source>
+        <target state="translated">{0}이(가) 이 메서드의 형식에서 발생하지 않아야 하는 예외 형식인 {1} 형식의 예외를 만듭니다. 이 예외 인스턴스가 발생하는 경우 더 이상 예외가 발생하지 않도록 다른 예외 형식을 사용하거나 이 메서드의 논리를 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInUnexpectedLocationsMessageNoAllowedExceptions">
+        <source>{0} creates an exception of type {1}. Exceptions should not be raised in this type of method. If this exception instance might be raised, change this method's logic so it no longer raises an exception.</source>
+        <target state="translated">{0}이(가) {1} 형식의 예외를 만듭니다. 예외는 이 메서드의 형식에서 발생하지 않아야 합니다. 이 예외 인스턴스가 발생하는 경우 더 이상 예외가 발생하지 않도록 이 메서드의 논리를 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresTitle">
+        <source>Identifiers should not contain underscores</source>
+        <target state="translated">식별자에는 밑줄을 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresDescription">
+        <source>By convention, identifier names do not contain the underscore (_) character. This rule checks namespaces, types, members, and parameters.</source>
+        <target state="translated">규칙에 따라 식별자 이름은 밑줄(_) 문자를 포함하지 않습니다. 이 규칙은 네임스페이스, 형식, 멤버 및 매개 변수를 검사합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageAssembly">
+        <source>Remove the underscores from assembly name {0}.</source>
+        <target state="translated">어셈블리 이름 {0}에서 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageNamespace">
+        <source>Remove the underscores from namespace name '{0}'.</source>
+        <target state="translated">네임스페이스 이름 '{0}'에서 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageType">
+        <source>Remove the underscores from type name {0}.</source>
+        <target state="translated">형식 이름 {0}에서 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMember">
+        <source>Remove the underscores from member name {0}.</source>
+        <target state="translated">멤버 이름 {0}에서 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter">
+        <source>On type {0}, remove the underscores from generic type parameter name {1}.</source>
+        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter">
+        <source>On method {0}, remove the underscores from generic type parameter name {1}.</source>
+        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMemberParameter">
+        <source>In member {0}, remove the underscores from parameter name {1}.</source>
+        <target state="translated">{0} 멤버에서 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageDelegateParameter">
+        <source>In delegate {0}, remove the underscores from parameter name {1}.</source>
+        <target state="translated">{0} 대리자에서 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixTitle">
+        <source>Identifiers should have correct suffix</source>
+        <target state="translated">식별자에는 올바른 접미사를 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixDescription">
+        <source>By convention, the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, have a suffix that is associated with the base type or interface.</source>
+        <target state="translated">규칙에 따라 특정 기본 형식을 확장하거나 특정 인터페이스를 구현하는 형식 또는 이러한 형식에서 파생된 형식의 이름은 기본 형식 또는 인터페이스와 연결된 접미사를 사용합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
+        <source>Rename {0} to end in '{1}'.</source>
+        <target state="translated">{0}이(가) '{1}'(으)로 끝나도록 이름을 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
+        <source>Rename {0} to end in either 'Collection' or '{1}'.</source>
+        <target state="translated">{0}이(가) 'Collection' 또는 '{1}'(으)로 끝나도록 이름을 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">
+        <source>Identifiers should not have incorrect suffix</source>
+        <target state="translated">식별자에는 올바른 접미사를 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixDescription">
+        <source>By convention, only the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, should end with specific reserved suffixes. Other type names should not use these reserved suffixes.</source>
+        <target state="translated">규칙에 따라 특정 기본 형식을 확장하거나 특정 인터페이스를 구현하는 형식 또는 이러한 형식에서 파생된 형식의 이름의 끝에만 예약된 특정 접미사를 사용할 수 있습니다. 다른 형식 이름에는 이러한 예약된 접미사를 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNoAlternate">
+        <source>Rename type name {0} so that it does not end in '{1}'.</source>
+        <target state="translated">'{1}'(으)로 끝나지 않도록 {0} 형식의 이름을 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberNewerVersion">
+        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces.</source>
+        <target state="translated">멤버 이름 {1}의 접미사 '{0}'을(를) 대체 가능한 제안된 숫자 '2'로 바꾸거나 대체될 멤버와 구별되는 보다 의미 있는 접미사를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNewerVersion">
+        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces.</source>
+        <target state="translated">형식 이름 {1}의 접미사 '{0}'을(를) 대체 가능한 제안된 숫자 '2'로 바꾸거나 대체될 형식과 구별되는 보다 의미 있는 접미사를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate">
+        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely.</source>
+        <target state="translated">멤버 이름 '{1}'의 접미사 '{0}'을(를) 대체 가능한 제안된 접미사 '{2}'(으)로 바꾸거나 접미사를 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
+        <source>Flags enums should have plural names</source>
+        <target state="translated">플래그 열거형에는 복수형 이름을 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FlagsEnumsShouldHavePluralNamesDescription">
+        <source>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</source>
+        <target state="translated">Public 열거형에는 System.FlagsAttribute 특성이 있으며 이 특성의 이름이 ""s""로 끝나지 않습니다. FlagsAttribute를 사용하여 표시되는 형식의 경우 이 특성이 하나 이상의 값이 지정될 수 있을 나타내므로 복수형의 이름을 사용합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FlagsEnumsShouldHavePluralNamesMessage">
+        <source>Flags enums should have plural names</source>
+        <target state="translated">플래그 열거형에는 복수형 이름을 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsTitle">
+        <source>Identifiers should not match keywords</source>
+        <target state="translated">식별자는 키워드와 달라야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsDescription">
+        <source>A namespace name or a type name matches a reserved keyword in a programming language. Identifiers for namespaces and types should not match keywords that are defined by languages that target the common language runtime.</source>
+        <target state="translated">프로그래밍 언어에서 네임스페이스 이름 또는 형식 이름이 예약된 키워드와 일치합니다. 네임스페이스와 형식에 대한 식별자는 공용 언어 런타임을 대상으로 하는 언어가 정의하는 키워드와 달라야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageMemberParameter">
+        <source>In virtual/interface member {0}, rename parameter {1} so that it no longer conflicts with the reserved language keyword '{2}'. Using a reserved keyword as the name of a parameter on a virtual/interface member makes it harder for consumers in other languages to override/implement the member.</source>
+        <target state="translated">가상/인터페이스 멤버 {0}에서 예약된 언어 키워드 '{2}'과(와) 더 이상 충돌하지 않도록 매개 변수 {1}의 이름을 바꾸세요. 가상/인터페이스 멤버에서 예약된 키워드를 매개 변수의 이름으로 사용하면 다른 언어 소비자가 해당 멤버를 재정의/구현하기 어렵습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageMember">
+        <source>Rename virtual/interface member {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a virtual/interface member makes it harder for consumers in other languages to override/implement the member.</source>
+        <target state="translated">예약된 언어 키워드 '{1}'과(와) 더 이상 충돌하지 않도록 가상/인터페이스 멤버 {0}의 이름을 바꾸세요. 예약된 키워드를 가상/인터페이스 멤버의 이름으로 사용하면 다른 언어 소비자가 해당 멤버를 재정의/구현하기 어렵습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageType">
+        <source>Rename type {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a type makes it harder for consumers in other languages to use the type.</source>
+        <target state="translated">예약된 언어 키워드 '{1}'과(와) 더 이상 충돌하지 않도록 형식{0}의 이름을 바꾸세요. 예약된 키워드를 형식의 이름으로 사용하면 다른 언어 소비자가 형식을 사용하기 어렵습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageNamespace">
+        <source>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</source>
+        <target state="translated">예약된 언어 키워드 '{1}'과(와) 더 이상 충돌하지 않으려면 네임스페이스 {0}의 이름을 바꾸세요. 예약된 키워드를 네임스페이스의 이름으로 사용하면 다른 언어 소비자가 네임스페이스를 사용하기 어렵습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesTitle">
+        <source>Only FlagsAttribute enums should have plural names</source>
+        <target state="translated">FlagsAttribute 열거형만 복수형 이름을 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesDescription">
+        <source>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</source>
+        <target state="translated">명명 규칙은 열거형의 복수형 이름이 하나 이상의 열거형 값이 동시에 지정될 수 있다는 것을 표시함을 나타냅니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesMessage">
+        <source>Only FlagsAttribute enums should have plural names</source>
+        <target state="translated">FlagsAttribute 열거형만 복수형 이름을 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyNamesShouldNotMatchGetMethodsTitle">
+        <source>Property names should not match get methods</source>
+        <target state="translated">속성 이름은 get 메서드와 달라야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyNamesShouldNotMatchGetMethodsDescription">
+        <source>The name of a public or protected member starts with ""Get"" and otherwise matches the name of a public or protected property. ""Get"" methods and properties should have names that clearly distinguish their function.</source>
+        <target state="translated">Public 또는 protected 멤버의 이름이 ""Get""으로 시작하고 나머지 부분이 public 또는 protected 속성의 이름과 일치합니다. ""Get"" 메서드 및 속성은 기능과 완전히 다른 이름을 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertyNamesShouldNotMatchGetMethodsMessage">
+        <source>The property name '{0}' is confusing given the existence of method '{1}'. Rename or remove one of these members.</source>
+        <target state="translated">'{1}' 메서드가 있으므로 속성 이름 '{0}'이(가) 혼동됩니다. 이 멤버 중 하나의 이름을 바꾸거나 멤버를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesTitle">
+        <source>Type names should not match namespaces</source>
+        <target state="translated">형식 이름은 네임스페이스와 달라야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesDescription">
+        <source>Type names should not match the names of namespaces that are defined in the .NET Framework class library. Violating this rule can reduce the usability of the library.</source>
+        <target state="translated">형식 이름은 .NET Framework 클래스 라이브러리에서 정의된 네임스페이스의 이름과 달라야 합니다. 이 규칙을 위반하면 라이브러리의 유용성이 감소할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesMessageDefault">
+        <source>The type name {0} conflicts in whole or in part with the namespace name '{1}'. Change either name to eliminate the conflict.</source>
+        <target state="translated">형식 이름 {0}이(가) 네임스페이스 이름 '{1}'과(와) 전부 또는 부분적으로 충돌합니다. 충돌이 발생하지 않도록 둘 중 하나의 이름을 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TypeNamesShouldNotMatchNamespacesMessageSystem">
+        <source>The type name {0} conflicts in whole or in part with the namespace name '{1}' defined in the .NET Framework. Rename the type to eliminate the conflict.</source>
+        <target state="translated">형식 이름 {0}이(가) .NET Framework에서 정의된 네임스페이스 이름 '{1}'과(와) 전부 또는 부분적으로 충돌합니다. 충돌이 발생하지 않도록 형식의 이름을 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ParameterNamesShouldMatchBaseDeclarationTitle">
+        <source>Parameter names should match base declaration</source>
+        <target state="translated">매개 변수 이름은 기본 선언과 일치해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ParameterNamesShouldMatchBaseDeclarationDescription">
+        <source>Consistent naming of parameters in an override hierarchy increases the usability of the method overrides. A parameter name in a derived method that differs from the name in the base declaration can cause confusion about whether the method is an override of the base method or a new overload of the method.</source>
+        <target state="translated">재정의 계층 구조에서 일관성 있는 매개 변수의 명명 규칙을 사용하면 메서드 재정의의 유용성이 증가합니다. 기본 선언의 이름과 다른 파생된 메서드의 매개 변수 이름으로 인해 이 메서드가 기본 메서드의 재정의인지 메서드의 새 오버로드인지 혼동이 발생할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ParameterNamesShouldMatchBaseDeclarationMessage">
+        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}.</source>
+        <target state="translated">{3}에 선언된 식별자와 일치하도록 멤버 {0}의 매개 변수 이름 {1}을(를) {2}(으)로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsTitle">
+        <source>Use preferred terms</source>
+        <target state="translated">기본 설정 용어를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsDescription">
+        <source>The name of an externally visible identifier includes a term for which an alternative, preferred term exists. Alternatively, the name includes the term ""Flag"" or ""Flags"".</source>
+        <target state="translated">외부에 표시되는 식별자의 이름에는 대체 가능한 기본 설정 용어가 포함됩니다. 또는 이름에 ""Flag"" 또는 ""Flags"" 용어가 포함됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageAssembly">
+        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'.</source>
+        <target state="translated">어셈블리 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageNamespace">
+        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'.</source>
+        <target state="translated">네임스페이스 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberParameter">
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">{0} 멤버에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageDelegateParameter">
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">{0} 대리자에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
+        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageType">
+        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'.</source>
+        <target state="translated">형식 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMember">
+        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'.</source>
+        <target state="translated">멤버 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
+        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">어셈블리 이름 {1}의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
+        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">네임스페이스 이름 '{1}'의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">{0} 멤버에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">{0} 대리자에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
+        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">형식 이름 {1}의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
+        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely.</source>
+        <target state="translated">멤버 이름 {1}의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
+        <source>Override equals and operator equals on value types</source>
+        <target state="translated">값 형식에서 Equals 또는 같음 연산자를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesDescription">
+        <source>For value types, the inherited implementation of Equals uses the Reflection library and compares the contents of all fields. Reflection is computationally expensive, and comparing every field for equality might be unnecessary. If you expect users to compare or sort instances, or to use instances as hash table keys, your value type should implement Equals.</source>
+        <target state="translated">값 형식의 경우 Equals의 상속된 구현에서 리플렉션 라이브러리를 사용하고 모든 필드의 콘텐츠를 비교합니다. 리플렉션은 계산을 많이 해야 하는 작업이며 모든 필드가 같은지 비교할 필요가 없습니다. 사용자가 인스턴스를 비교 또는 정리하거나 해시 테이블 키로 인스턴스를 사용할 것으로 예상하는 경우 값 형식이 Equals를 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals">
+        <source>{0} should override Equals.</source>
+        <target state="translated">{0}은(는) Equals를 재정의해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality">
+        <source>{0} should override the equality (==) and inequality (!=) operators.</source>
+        <target state="translated">{0}은(는) 같음(==) 및 같지 않음(!=) 연산자를 재정의해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotReturnArraysTitle">
+        <source>Properties should not return arrays</source>
+        <target state="translated">속성은 배열을 반환하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotReturnArraysDescription">
+        <source>Arrays that are returned by properties are not write-protected, even when the property is read-only. To keep the array tamper-proof, the property must return a copy of the array. Typically, users will not understand the adverse performance implications of calling such a property.</source>
+        <target state="translated">속성이 반환하는 배열은 이 속성이 읽기 전용인 경우에도 쓰기가 금지되지 않습니다. 배열이 변조되는 것을 방지하려면 속성이 배열의 복사본을 반환해야 합니다. 일반적으로 사용자는 이러한 속성의 호출로 인해 발생하는 성능 저하를 이해하지 못합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PropertiesShouldNotReturnArraysMessage">
+        <source>Properties should not return arrays</source>
+        <target state="translated">속성은 배열을 반환하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesTitle">
+        <source>Assemblies should have valid strong names</source>
+        <target state="translated">어셈블리에는 유효하고 강력한 이름을 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesDescription">
+        <source>The strong name protects clients from unknowingly loading an assembly that has been tampered with. Assemblies without strong names should not be deployed outside very limited scenarios. If you share or distribute assemblies that are not correctly signed, the assembly can be tampered with, the common language runtime might not load the assembly, or the user might have to disable verification on his or her computer.</source>
+        <target state="translated">강력한 이름을 사용하면 클라이언트가 자신도 모르게 변조된 어셈블리를 로드하는 상황으로부터 보호받을 수 있습니다. 강력한 이름을 사용하지 않은 어셈블리는 매우 제한된 시나리오 외부에 배포될 수 없습니다. 올바르게 서명하지 않은 어셈블리를 공유하거나 배포하는 경우 어셈블리가 변조될 수 있으며 공용 언어 런타임이 어셈블리를 로드하지 못하거나 사용자가 컴퓨터에서 확인 절차를 사용하지 않도록 설정해야 할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNoStrongName">
+        <source>Sign {0} with a strong name key.</source>
+        <target state="translated">강력한 이름의 키로 {0}을(를) 서명하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssembliesShouldHaveValidStrongNamesMessageNotValid">
+        <source>Verify that {0} has a valid strong name before deploying.</source>
+        <target state="translated">{0}을(를) 배포하기 전에 유효하고 강력한 이름이 사용되었는지 확인하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsTitle">
+        <source>Override GetHashCode on overriding Equals</source>
+        <target state="translated">Equals를 재정의할 때 GetHashCode를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsDescription">
+        <source>GetHashCode returns a value, based on the current instance, that is suited for hashing algorithms and data structures such as a hash table. Two objects that are the same type and are equal must return the same hash code.</source>
+        <target state="translated">GetHashCode는 현재 인스턴스를 기반으로 값을 반환하며 이 값은 해시 알고리즘과 해시 테이블과 같은 데이터 구조에 적합합니다. 형식이 같은 동일한 개체 2개는 동일한 해시 코드를 반환해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsMessage">
+        <source>Override GetHashCode on overriding Equals</source>
+        <target state="translated">Equals를 재정의할 때 GetHashCode를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsTitle">
+        <source>Override Equals on overloading operator equals</source>
+        <target state="translated">같음 연산자를 오버로드할 때 Equals를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsDescription">
+        <source>A public type implements the equality operator but does not override Object.Equals.</source>
+        <target state="translated">public 형식이 같음 연산자를 구현하지만 Object.Equals를 재정의하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsMessage">
+        <source>Override Equals on overloading operator equals</source>
+        <target state="translated">같음 연산자를 오버로드할 때 Equals를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Since_0_redefines_operator_1_it_should_also_redefine_operator_2">
+        <source>Since '{0}' redefines operator '{1}', it should also redefine operator '{2}'</source>
+        <target state="translated">'{0}'이(가) '{1}' 연산자를 다시 정의하므로 '{2}' 연산자도 다시 정의해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Generate_missing_operators">
+        <source>Generate missing operators</source>
+        <target state="translated">누락된 연산자를 생성하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnOverloadingOperatorEqualsCodeActionTitle">
+        <source>Override object.Equals</source>
+        <target state="translated">object.Equals를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideEqualsOnImplementingIEquatableCodeActionTitle">
+        <source>Override object.Equals</source>
+        <target state="translated">object.Equals를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideGetHashCodeOnOverridingEqualsCodeActionTitle">
+        <source>Override object.GetHashCode</source>
+        <target state="translated">object.GetHashCode를 재정의하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeExceptionPublic">
+        <source>Make exception public</source>
+        <target state="translated">예외를 public으로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesFix1">
+        <source>Make '{0}' protected.</source>
+        <target state="translated">'{0}'을(를) protected로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesFix2">
+        <source>Change '{0}' to a public interface implementation.</source>
+        <target state="translated">'{0}'을(를) 공용 인터페이스 구현으로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesFix3">
+        <source>Make the containing type '{0}' sealed.</source>
+        <target state="translated">포함하는 형식 '{0}'을(를) sealed로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StaticHolderTypeIsNotStatic">
+        <source>Type '{0}' is a static holder type but is neither static nor NotInheritable</source>
+        <target state="translated">'{0}' 형식은 정적 소유자 형식이지만 Static 또는 NotInheritable이 아닙니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StaticHolderTypesShouldBeStaticOrNotInheritable">
+        <source>Static holder types should be Static or NotInheritable</source>
+        <target state="translated">정적 소유자 형식은 Static 또는 NotInheritable이어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeClassStatic">
+        <source>Make Class Static</source>
+        <target state="translated">클래스를 Static으로 설정</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideObjectEqualsMessage">
+        <source>Type {0} should override Equals because it implements IEquatable&lt;T&gt;</source>
+        <target state="translated">{0} 형식은 IEquatable&lt;T&gt;를 구현하므로 Equals를 재정의해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideObjectEqualsTitle">
+        <source>Override Object.Equals(object) when implementing IEquatable&lt;T&gt;</source>
+        <target state="translated">IEquatable&lt;T&gt;를 구현할 때 Object.Equals(개체)를 재정의합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIntegralOrStringArgumentForIndexersDescription">
+        <source>Indexers, that is, indexed properties, should use integer or string types for the index. These types are typically used for indexing data structures and increase the usability of the library. Use of the Object type should be restricted to those cases where the specific integer or string type cannot be specified at design time. If the design requires other types for the index, reconsider whether the type represents a logical data store. If it does not represent a logical data store, use a method.</source>
+        <target state="translated">인덱싱된 속성인 인덱서는 인덱스에 정수 또는 문자열 형식을 사용해야 합니다. 이러한 형식은 일반적으로 인덱싱 데이터 구조에 사용되며 라이브러리의 유용성을 향상시킵니다. 디자인 타임에 특정 정수 또는 문자열 형식이 지정될 수 없는 경우 개체 형식 사용이 제한되어야 합니다. 디자인에 다른 인덱스 형식이 필요한 경우 형식이 논리 데이터 저장소를 나타내는지 확인하세요. 논리 데이터 저장소를 나타내지 않는 경우 메서드를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIntegralOrStringArgumentForIndexersMessage">
+        <source>Use Integral Or String Argument For Indexers</source>
+        <target state="translated">인덱서에 정수 또는 문자열 인수를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseIntegralOrStringArgumentForIndexersTitle">
+        <source>Use Integral Or String Argument For Indexers</source>
+        <target state="translated">인덱서에 정수 또는 문자열 인수를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDirectlyAwaitATaskDescription">
+        <source>When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.</source>
+        <target state="translated">비동기 메서드가 작업을 바로 대기하는 경우 작업을 만든 스레드와 같은 스레드에서 연속이 발생합니다. 연속에 대한 의도를 알리려면 Task.ConfigureAwait(Boolean) 호출을 고려합니다. 작업에 대해 ConfigureAwait(false)를 호출하여 스레드 풀에 대한 연속을 예약함으로써 UI 스레드에서의 교착 상태를 방지합니다. 앱과 관계없는 라이브러리의 경우 false를 전달하는 것이 좋은 옵션이 됩니다. 작업에 대해 ConfigureAwait(true)를 호출하는 것은 명시적으로 ConfigureAwait를 호출하지 않는 것과 동작이 같습니다. 이 메서드를 명시적으로 호출하여 판독기에 원래 동기화 컨텍스트에서 의도적으로 연속을 수행하려는 것임을 알립니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDirectlyAwaitATaskMessage">
+        <source>Consider calling ConfigureAwait on the awaited task</source>
+        <target state="translated">대기된 작업에 대해 ConfigureAwait 호출을 고려하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDirectlyAwaitATaskTitle">
+        <source>Consider calling ConfigureAwait on the awaited task</source>
+        <target state="translated">대기된 작업에 대해 ConfigureAwait 호출 고려</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppendConfigureAwaitFalse">
+        <source>Append .ConfigureAwait(false)</source>
+        <target state="translated">.ConfigureAwait(false)를 추가하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsDescription">
+        <source>When a type T overrides Object.Equals(object), the implementation must cast the object argument to the correct type T before performing the comparison. If the type implements IEquatable&lt;T&gt;, and therefore offers the method T.Equals(T), and if the argument is known at compile time to be of type T, then the compiler can call IEquatable&lt;T&gt;.Equals(T) instead of Object.Equals(object), and no cast is necessary, improving performance.</source>
+        <target state="translated">형식 T가 Object.Equals(object)를 재정의하면 해당 구현은 비교를 수행하기 전에 개체 인수를 올바른 형식 T로 캐스트해야 합니다. 해당 형식이 IEquatable&lt;T&gt;를 구현하므로 T.Equals(T) 메서드를 제공하는 경우 및 인수가 컴파일 시간에 형식 T로 알려지는 경우 컴파일러는 Object.Equals(object) 대신 IEquatable&lt;T&gt;.Equals(T)를 호출할 수 있고, 캐스트가 필요하지 않으므로 성능이 향상됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideObjectEqualsDescription">
+        <source>When a type T implements the interface IEquatable&lt;T&gt;, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the "principle of least surprise".</source>
+        <target state="translated">형식 T가 인터페이스 IEquatable&lt;T&gt;를 구현하면 소스 코드에서 Equals 메서드에 대한 호출을 확인하는 사용자에게 이 형식의 인스턴스가 다른 형식의 인스턴스와 같을 수 있음을 알려줍니다. 사용자는 이 형식과 다른 형식의 인스턴스를 동일하게 만드는 시도가 컴파일에 실패하는 경우 혼란을 겪을 수 있습니다. 이 경우는 "최소 놀람의 원칙"을 위반합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RenameToTitle">
+        <source>Rename to '{0}'</source>
+        <target state="translated">'{0}'(으)로 이름을 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHideBaseClassMethodsDescription">
+        <source>A method in a base type is hidden by an identically named method in a derived type when the parameter signature of the derived method differs only by types that are more weakly derived than the corresponding types in the parameter signature of the base method.</source>
+        <target state="translated">파생 메서드의 매개 변수 시그니처가 기본 메서드의 매개 변수 시그니처에서 해당 형식보다 더 약하게 파생된 형식과만 다른 경우 기본 형식의 메서드는 파생 형식의 이름이 동일한 메서드에 의해 숨겨집니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHideBaseClassMethodsMessage">
+        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'.</source>
+        <target state="translated">더 구체적인 기본 클래스 메서드인 '{1}'이(가) 숨겨지므로 '{0}'을(를) 변경하거나 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotHideBaseClassMethodsTitle">
+        <source>Do not hide base class methods</source>
+        <target state="translated">기본 클래스 메서드를 숨기지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="translated">'{0}'을(를) 제거하고 대신 제네릭 EventHandler를 사용합니다(예: EventHandler&lt;T&gt;). 여기서 T는 유효한 EventArgs입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForDelegateDescription">
+        <source>A type contains a delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.</source>
+        <target state="translated">형식이 void를 반환하는 대리자를 포함하며 이 형식의 시그니처는 매개 변수 2개(개체 및 EventArgs에 할당할 수 있는 형식) 및 포함하는 어셈블리 대상 Microsoft .NET Framework 2.0을 포함합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="translated">'{0}' 이벤트를 변경하여 '{1}' 형식을 제네릭 EventHandler로 바꿉니다(예: EventHandler&lt;T&gt;). 여기서 T는 유효한 EventArgs입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEventDescription">
+        <source>A delegate that handles a public or protected event does not have the correct signature, return type, or parameter names.</source>
+        <target state="translated">public 또는 protected 이벤트를 처리하는 대리자에 올바른 시그니처, 반환 형식 또는 매개 변수 이름이 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEvent2Message">
+        <source>Change the event '{0}' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).</source>
+        <target state="translated">Event MyEvent As EventHandler(Of MyEventArgs)와 같이 이벤트 형식을 명시적으로 정의하여 제네릭 EventHandler를 사용하도록 이벤트 '{0}'을(를) 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseGenericEventHandlerInstancesForEvent2Description">
+        <source>A type contains an event that declares an EventHandler delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.</source>
+        <target state="translated">형식이 void를 반환하는 EventHandler 대리자를 선언하는 이벤트를 포함하며 이 형식의 시그니처는 매개 변수 2개(개체 및 EventArgs에 할당할 수 있는 형식) 및 포함하는 어셈블리 대상 Microsoft .NET Framework 2.0을 포함합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverrideMethodsOnComparableTypesMessageBoth">
+        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable.</source>
+        <target state="translated">{0}은(는) IComparable을 구현하므로 '{1}' 및 같음 연산자를 정의해야 합니다.</target>
+        <note>1 is a comma-separated list</note>
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsTitle">
+        <source>Avoid calling problematic methods</source>
+        <target state="translated">문제가 있는 메서드를 호출하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsDescription">
+        <source>A member calls a potentially dangerous or problematic method.</source>
+        <target state="translated">멤버가 잠재적으로 위험하거나 문제가 있는 메서드를 호출합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemGCCollect">
+        <source>Remove the call to GC.Collect from {0}. It is usually unnecessary to force garbage collection, and doing so can severely degrade performance.</source>
+        <target state="translated">{0}에서 GC.Collect에 대한 호출을 제거하세요. 이러한 호출은 일반적으로 불필요한 가비지를 수집하므로 성능을 크게 떨어뜨릴 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadResume">
+        <source>Remove the call to Thread.Resume from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
+        <target state="translated">{0}에서 Thread.Resume에 대한 호출을 제거하세요. 시스템에서 중요한 시스템 형식의 클래스 생성자를 실행하고 있거나 공유 어셈블리의 보안을 확인하고 있는 경우처럼 중요한 작업을 수행하는 동안 스레드를 일시 중단하고 다시 시작하면 위험할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemThreadingThreadSuspend">
+        <source>Remove the call to Thread.Suspend from {0}. Suspending and resuming threads can be dangerous if the system is in the middle of a critical operation such as executing a class constructor of an important system type or resolving security for a shared assembly.</source>
+        <target state="translated">{0}에서 Thread.Suspend에 대한 호출을 제거하세요. 시스템에서 중요한 시스템 형식의 클래스 생성자를 실행하고 있거나 공유 어셈블리의 보안을 확인하고 있는 경우처럼 중요한 작업을 수행하는 동안 스레드를 일시 중단하고 다시 시작하면 위험할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemTypeInvokeMember">
+        <source>Remove the call to System.Type.InvokeMember with BindingFlags.NonPublic from {0}. Taking a dependency on a private member increases the chance of a breaking change in the future.</source>
+        <target state="translated">{0}에서 BindingFlags.NonPublic을 사용하는 System.Type.InvokeMember에 대한 호출을 제거하세요. private 멤버에서 종속성을 사용하면 나중에 크게 바뀔 가능성이 큽니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageCoInitializeSecurity">
+        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called after the runtime has been initialized. The workaround is to write an unmanaged shim that will call the routine and then activate and call into managed code. You can do this using an export from a mixed-mode C++ DLL, by registering a managed component for use by COM, or by using the runtime hosting API.</source>
+        <target state="translated">{0}은(는) OLE32 API에 대한 P/Invoke 선언으로, 런타임이 초기화된 후에는 안정적으로 호출할 수 없습니다. 이 문제를 해결하려면 루틴을 호출하는 관리되지 않는 shim을 작성한 후 관리 코드를 활성화하여 호출해야 합니다. COM에서 사용할 수 있도록 관리되는 구성 요소를 등록하거나 런타임 호스팅 API를 사용하면 혼합 모드 C++ DLL의 내보내기를 통해 이를 수행할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket">
+        <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</source>
+        <target state="translated">{0}는 런타임 호출 가능 래퍼 (COM 개체를 래핑하는 관리 되는 개체)에 대 한 안정적으로 호출 될 수 없습니다 OLE32 API에는 P/Invoke 선언 이다. 런타임 호출 가능 래퍼는 동적으로 호출의 효과 임의로 손실 될 수 있습니다 그래서 인터페이스 포인터를 가져옵니다. 통화 가능 하 게 다른 사용자에 영향을 미칠 수 있도록 지정된 된 COM 개체에 대 한 런타임 호출 가능 래퍼 또한 응용 프로그램 도메인에 걸쳐 공유 됩니다. 이 호출을 적절 한 CoSetProxyBlanket 호출을 수행 하는 인터페이스 포인터에 대 한 네이티브 래퍼 COM 개체를 바꿉니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
+        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}.</source>
+        <target state="translated">{0}에서 SafeHandle.DangerousGetHandle에 대한 호출을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
+        <source>Remove the call to Assembly.LoadFrom from {0}.</source>
+        <target state="translated">{0}에서 Assembly.LoadFrom에 대한 호출을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
+        <source>Remove the call to Assembly.LoadFile from {0}.</source>
+        <target state="translated">{0}에서 Assembly.LoadFile에 대한 호출을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
+        <source>Remove the call to Assembly.LoadWithPartialName from {0}.</source>
+        <target state="translated">{0}에서 Assembly.LoadWithPartialName에 대한 호출을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CategoryReliability">
+        <source>Reliability</source>
+        <target state="translated">안정성</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUsingCrefTagsWithAPrefixTitle">
+        <source>Avoid using cref tags with a prefix</source>
+        <target state="translated">접두사와 cref 태그를 동시에 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUsingCrefTagsWithAPrefixDescription">
+        <source>Use of cref tags with prefixes should be avoided, since it prevents the compiler from verifying references and the IDE from updating references during refactorings. It is permissible to suppress this error at a single documentation site if the cref must use a prefix because the type being mentioned is not findable by the compiler. For example, if a cref is mentioning a special attribute in the full framework but you're in a file that compiles against the portable framework, or if you want to reference a type at higher layer of Roslyn, you should suppress the error. You should not suppress the error just because you want to take a shortcut and avoid using the full syntax.</source>
+        <target state="translated">컴파일러에서 참조를 확인할 수 없으며 IDE에서 리팩터링하는 동안 참조를 업데이트할 수 없으므로 cref 태그와 접두사를 함께 사용하지 않아야 합니다. 언급된 형식을 컴파일러에서 찾을 수 없어 cref 태그와 접두사를 함께 사용해야 하는 경우 단일 문서 사이트에서 이 오류를 표시하지 않을 수 있습니다. 예를 들어 cref가 전체 프레임워크에서 특수한 특성을 언급하고 있지만, 사용자가 이식 가능한 프레임워크에 대해 컴파일하는 파일을 사용 중이거나 Roslyn의 상위 레이어에서 형식을 참조하려는 경우 이 오류를 무시해야 합니다. 작업을 빠르고 쉽게 완료하기 위해 전체 구문을 사용하지 않으려는 의도로 이 오류를 무시할 수는 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUsingCrefTagsWithAPrefixMessage">
+        <source>Avoid using cref tags with a prefix</source>
+        <target state="translated">접두사와 cref 태그를 동시에 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDeadConditionalCodeAlwaysTruFalseOrNullMessage">
+        <source>'{0}' is always '{1}'. Remove or refactor the condition(s) to avoid dead code.</source>
+        <target state="translated">'{0}'은(는) 항상 '{1}'입니다. 데드 코드를 방지하려면 조건을 제거하거나 리팩터링합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDeadConditionalCodeNeverNullMessage">
+        <source>'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.</source>
+        <target state="translated">'{0}'은(는) '{1}'이(가) 아닙니다. 데드 코드를 방지하려면 조건을 제거하거나 리팩터링합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDeadConditionalCodeTitle">
+        <source>Avoid dead conditional code</source>
+        <target state="translated">데드 조건부 코드 방지</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveClassCouplingDescription">
+        <source>This rule measures class coupling by counting the number of unique type references that a symbol contains. Symbols that have a high degree of class coupling can be difficult to maintain. It is a good practice to have types and methods that exhibit low coupling and high cohesion. To fix this violation, try to redesign the code to reduce the number of types to which it is coupled.</source>
+        <target state="translated">이 규칙은 기호에 포함된 고유한 unique type references that a symbol contains. Symbols that have a high degree of class coupling can be difficult to maintain. It is a good practice to have types and methods that exhibit low coupling and high cohesion. To fix this violation, try to redesign the code to reduce the number of types to which it is coupled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveClassCouplingMessage">
+        <source>'{0}' is coupled with '{1}' different types from '{2}' different namespaces. Rewrite or refactor the code to decrease its class coupling below '{3}'.</source>
+        <target state="translated">'{0}'이(가) '{2}'개의 다른 네임스페이스에 있는 '{1}'개의 다른 형식과 결합되어 있습니다. 코드를 다시 작성하거나 리팩터링하여 클래스 결합 수준을 '{3}' 이하로 낮추세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveClassCouplingTitle">
+        <source>Avoid excessive class coupling</source>
+        <target state="translated">클래스를 지나치게 많이 결합하지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveComplexityDescription">
+        <source>Cyclomatic complexity measures the number of linearly independent paths through the method, which is determined by the number and complexity of conditional branches. A low cyclomatic complexity generally indicates a method that is easy to understand, test, and maintain. The cyclomatic complexity is calculated from a control flow graph of the method and is given as follows: `cyclomatic complexity = the number of edges - the number of nodes + 1`, where a node represents a logic branch point and an edge represents a line between nodes.</source>
+        <target state="translated">순환 복잡성은 조건부 분기의 개수 및 복잡성에 따라 결정되는 메서드를 통해 선형 독립 경로 수를 측정합니다. 낮은 순환 복잡성은 일반적으로 이해, 테스트 및 유지 관리하기 쉬운 메서드를 나타냅니다. 순환 종속성은 메서드의 제어 흐름 그래프에서 계산되고 다음과 같이 지정됩니다. '순환 복잡성 = 에지 수 - 노드 수 + 1'. 여기서 노드는 논리 분기 지점을 나타내고 에지는 노드 사이 줄을 나타냅니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveComplexityMessage">
+        <source>'{0}' has a cyclomatic complexity of '{1}'. Rewrite or refactor the code to decrease its complexity below '{2}'.</source>
+        <target state="translated">'{0}'의 순환 복잡성이 '{1}'입니다. 코드를 다시 작성하거나 리펙터링하여 복잡성을 '{2}' 이하로 줄이세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveComplexityTitle">
+        <source>Avoid excessive complexity</source>
+        <target state="translated">지나치게 복잡하게 만들지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveInheritanceDescription">
+        <source>Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.</source>
+        <target state="translated">계층 구조가 많이 중첩된 형식은 추적, 이해 및 유지 관리하기 어려울 수 있습니다. 이 규칙은 분석을 같은 모듈 내의 계층 구조로 제한합니다. 이 규칙의 위반을 해결하려면 상속 계층 구조에서 수준이 낮은 기본 형식에서 형식을 파생하거나 중간 기본 형식 중 일부를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveInheritanceMessage">
+        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'</source>
+        <target state="translated">'{0}'의 개체 계층 구조 '{1}' 수준이 정의 모듈 내에서 깊습니다els deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveInheritanceTitle">
+        <source>Avoid excessive inheritance</source>
+        <target state="translated">상속성을 너무 많이 사용하지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnmantainableCodeDescription">
+        <source>The maintainability index is calculated by using the following metrics: lines of code, program volume, and cyclomatic complexity. Program volume is a measure of the difficulty of understanding of a symbol that is based on the number of operators and operands in the code. Cyclomatic complexity is a measure of the structural complexity of the type or method. A low maintainability index indicates that code is probably difficult to maintain and would be a good candidate to redesign.</source>
+        <target state="translated">유지 관리 인덱스는 코드, 프로그램 볼륨 및 순환 복잡성 줄과 같은 메트릭을 사용하여 계산됩니다. 프로그램 볼륨은 코드에 있는 연산자 및 피연산자 개수에 따른 기호 이해도의 측정값입니다. 순환 복잡성은 형식이나 메서드에 대한 구조적 복잡성의 측정값입니다. 낮은 유지 관리 인덱스는 코드를 유지 관리하기 어려울 수 있어 다시 설계하기 좋은 후보임을 나타냅니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnmantainableCodeMessage">
+        <source>'{0}' has a maintainability index of '{1}'. Rewrite or refactor the code to increase its maintainability index (MI) above '{2}'.</source>
+        <target state="translated">'{0}'의 유지 관리 인덱스가 '{1}'입니다. 코드를 다시 작성하거나 리펙터링하여 MI(유지 관리 인덱스)를 '{2}' 이상으로 늘리세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnmantainableCodeTitle">
+        <source>Avoid unmaintainable code</source>
+        <target state="translated">유지 관리할 수 없는 코드는 사용하지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidEntryInCodeMetricsConfigFileDescription">
+        <source>Invalid entry in code metrics rule specification file</source>
+        <target state="translated">코드 메트릭 규칙 사양 파일의 잘못된 항목</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidEntryInCodeMetricsConfigFileMessage">
+        <source>Invalid entry '{0}' in code metrics rule specification file '{1}'</source>
+        <target state="translated">코드 메트릭 규칙 사용 파일 '{1}'의 잘못된 항목 '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
+        <source>Invalid entry in code metrics rule specification file</source>
+        <target state="translated">코드 메트릭 규착 사양 파일의 잘못된 항목</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesTitle">
+        <source>Variable names should not match field names</source>
+        <target state="translated">변수 이름과 필드 이름이 일치하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesDescription">
+        <source>An instance method declares a parameter or a local variable whose name matches an instance field of the declaring type, leading to errors.</source>
+        <target state="translated">인스턴스 메서드가 매개 변수 또는 지역 변수를 선언하며 지역 변수의 이름이 선언 형식의 인스턴스 필드와 일치하여 오류가 발생합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageLocal">
+        <source>{0}, a variable declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
+        <target state="translated">{1}에서 선언된 변수 {0}의 이름이 이 형식의 인스턴스 필드와 일치합니다. 이 항목 중 하나의 이름을 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageParameter">
+        <source>{0}, a parameter declared in {1}, has the same name as an instance field on the type. Change the name of one of these items.</source>
+        <target state="translated">{1}에서 선언된 매개 변수 {0}의 이름이 이 형식의 인스턴스 필드와 일치합니다. 이 항목 중 하나의 이름을 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewUnusedParametersTitle">
+        <source>Review unused parameters</source>
+        <target state="translated">사용하지 않는 매개 변수를 검토하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewUnusedParametersDescription">
+        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
+        <target state="translated">코드에 사용되지 않는 매개 변수를 사용하지 않도록 합니다. 매개 변수를 제거할 수 없는 경우 이름을 변경하여 밑줄로 시작하고 필요에 따라 뒤에 정수가 있도록 합니다(예: '_', '_1', '_2' 등). 해당 이름은 특수 무시 기호 이름으로 처리됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewUnusedParametersMessage">
+        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
+        <target state="translated">{1} 메서드의 {0} 매개 변수가 사용되지 않았습니다. 매개 변수를 제거하거나 메서드 본문에 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveUnusedParameterMessage">
+        <source>Remove unused parameter</source>
+        <target state="translated">사용하지 않는 매개 변수를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsTitle">
+        <source>Do not ignore method results</source>
+        <target state="translated">메서드 결과를 무시하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsDescription">
+        <source>A new object is created but never used; or a method that creates and returns a new string is called and the new string is never used; or a COM or P/Invoke method returns an HRESULT or error code that is never used.</source>
+        <target state="translated">새 개체가 만들어졌으나 사용되지 않았습니다. 또는 새 문자열을 만들고 반환한 메서드가 호출되었으며 새 문자열이 사용되지 않았습니다. 또는 COM 또는 P/Invoke가 사용되지 않는 HRESULT 또는 오류 코드를 반환합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageObjectCreation">
+        <source>{0} creates a new instance of {1} which is never used. Pass the instance as an argument to another method, assign the instance to a variable, or remove the object creation if it is unnecessary.</source>
+        <target state="translated">{0}이(가) 사용되지 않는 {1}의 새 인스턴스를 만듭니다. 인스턴스를 다른 메서드에 인수로 전달하고 변수에 할당하거나 불필요한 경우 개체 만들기를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageStringCreation">
+        <source>{0} calls {1} but does not use the new string instance that the method returns. Pass the instance as an argument to another method, assign the instance to a variable, or remove the call if it is unnecessary.</source>
+        <target state="translated">{0}이(가) {1}을(를) 호출하지만 메서드가 반환하는 새 문자열 인스턴스를 사용하지 않습니다. 인스턴스를 다른 메서드에 인수로 전달하고 변수에 할당하거나 불필요한 경우 호출을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageHResultOrErrorCode">
+        <source>{0} calls {1} but does not use the HRESULT or error code that the method returns. This could lead to unexpected behavior in error conditions or low-resource situations. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">{0}이(가) {1}을(를) 호출하지만 메서드가 반환하는 HRESULT 또는 오류 코드를 사용하지 않습니다. 이로 인해 오류 상태의 예기치 않은 동작이 발생하거나 리소스가 부족해질 수 있습니다. 결과를 조건문에 사용하거나 변수에 할당하거나 다른 메서드에 인수로 전달하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageTryParse">
+        <source>{0} calls {1} but does not explicitly check whether the conversion succeeded. Either use the return value in a conditional statement or verify that the call site expects that the out argument will be set to the default value when the conversion fails.</source>
+        <target state="translated">{0}이(가) {1}을(를) 호출하지만 변환 성공 여부를 명시적으로 검사하지 않습니다. 반환 값을 조건문에 사용하거나, 변환에 실패하면 out 인수가 기본값으로 설정되도록 호출 사이트가 지정되어 있는지 확인하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUninstantiatedInternalClassesTitle">
+        <source>Avoid uninstantiated internal classes</source>
+        <target state="translated">인스턴스화되지 않는 내부 클래스를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUninstantiatedInternalClassesDescription">
+        <source>An instance of an assembly-level type is not created by code in the assembly.</source>
+        <target state="translated">어셈블리 수준 형식의 인스턴스는 어셈블리 코드에서 만들어지지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUninstantiatedInternalClassesMessage">
+        <source>{0} is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).</source>
+        <target state="translated">{0}은(는) 인스턴스화되지 않는 내부 클래스입니다. 어셈블리에서 해당 코드를 제거하세요. 이 클래스가 정적 멤버만 포함하는 경우 static(Visual Basic의 경우 Shared)으로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnusedPrivateFieldsTitle">
+        <source>Avoid unused private fields</source>
+        <target state="translated">사용하지 않는 프라이빗 필드를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnusedPrivateFieldsDescription">
+        <source>Private fields were detected that do not appear to be accessed in the assembly.</source>
+        <target state="translated">어셈블리 내부에서 액세스되지 않는 프라이빗 필드가 발견되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnusedPrivateFieldsMessage">
+        <source>Unused field '{0}'.</source>
+        <target state="translated">사용하지 않는 필드 '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessagePureMethod">
+        <source>{0} calls {1} but does not use the value the method returns. Because {1} is marked as a Pure method, it cannot have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">{0}이(가) {1}을(를) 호출하지만 메서드가 반환하는 값을 사용하지 않습니다. {1}이(가) 순수 메서드로 표시되어 있으므로 의도하지 않은 결과가 발생하지 않습니다. 결과를 조건문에 사용하거나 변수에 할당하거나 다른 메서드에 인수로 전달하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseNameOfInPlaceOfStringDescription">
+        <source>Using nameof helps keep your code valid when refactoring.</source>
+        <target state="translated">nameof를 사용하면 리팩터링 시 코드를 유효하게 유지할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseNameOfInPlaceOfStringMessage">
+        <source>Use nameof in place of string literal '{0}'</source>
+        <target state="translated">문자열 리터럴 '{0}' 대신 nameof 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseNameOfInPlaceOfStringTitle">
+        <source>Use nameof to express symbol names</source>
+        <target state="translated">기호 이름을 표시하기 위해 nameof 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPropertySelfAssignmentMessage">
+        <source>The property {0} should not be assigned to itself.</source>
+        <target state="translated">{0} 속성을 자체에 할당하면 안 됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPropertySelfAssignmentTitle">
+        <source>Do not assign a property to itself.</source>
+        <target state="translated">속성을 자체에 할당하면 안 됨</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticCodeFix">
+        <source>Make static</source>
+        <target state="translated">정적으로 만들기</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticCodeFix_WarningAnnotation">
+        <source>Some references to '{0}' could not be fixed, they should be fixed manually.</source>
+        <target state="translated">'{0}'에 대한 일부 참조를 수정할 수 없습니다. 수동으로 수정해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateTitle">
+        <source>Use literals where appropriate</source>
+        <target state="translated">적합한 리터럴을 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateDescription">
+        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.</source>
+        <target state="translated">필드가 static 및 읽기 전용(Visual Basic의 경우 Shared 및 ReadOnly)으로 선언되었으며 컴파일 시간에 계산할 수 있는 값을 사용하여 초기화되었습니다. 대상 필드에 할당된 값을 컴파일 시간에 계산할 수 있으므로 이 값이 런타임 대신 컴파일 시간에 계산될 수 있도록 선언을 const(Visual Basic의 경우 Const)로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
+        <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
+        <target state="translated">'{0}' 필드가 'readonly'로 선언되었지만 상수 값으로 초기화되었습니다. 대신 이 필드를 'const'로 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
+        <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
+        <target state="translated">'{0}' 필드가 'readonly'로 선언되었지만 빈 문자열("")로 초기화되었습니다. 대신 이 필드를 'const'로 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyTitle">
+        <source>Do not initialize unnecessarily</source>
+        <target state="translated">불필요한 초기화를 수행하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyDescription">
+        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
+        <target state="translated">공용 언어 런타임은 생성자를 실행하기 전에 모든 필드를 기본값으로 초기화합니다. 대부분의 경우 생성자에서 필드를 기본값으로 초기화하는 것은 중복되는 작업이며 이로 인해 성능이 저하되고 유지 관리 비용이 추가로 발생합니다. 생성자가 동일한 클래스의 다른 생성자 또는 기본 클래스 생성자를 호출하고 해당 생성자가 필드를 기본값이 아닌 값으로 초기화하는 경우는 중복되는 작업이 아닙니다. 이 경우 필드 값을 기본값으로 초기화하는 작업이 적합할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyMessage">
+        <source>Do not initialize unnecessarily</source>
+        <target state="translated">불필요한 초기화를 수행하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
+        <source>Prefer jagged arrays over multidimensional</source>
+        <target state="translated">다차원 배열보다 가변 배열을 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalDescription">
+        <source>A jagged array is an array whose elements are arrays. The arrays that make up the elements can be of different sizes, leading to less wasted space for some sets of data.</source>
+        <target state="translated">요소가 배열인 배열이 가변 배열입니다. 요소를 구성하는 배열의 크기는 다양하기 때문에 일부 데이터 집합의 공간을 절약할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageDefault">
+        <source>{0} is a multidimensional array. Replace it with a jagged array if possible.</source>
+        <target state="translated">{0}은(는) 다차원 배열입니다. 가능한 경우 가변 배열로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageReturn">
+        <source>{0} returns a multidimensional array of {1}. Replace it with a jagged array if possible.</source>
+        <target state="translated">{0}이(가) {1}의 다차원 배열을 반환합니다. 가능한 경우 가변 배열로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJaggedArraysOverMultidimensionalMessageBody">
+        <source>{0} uses a multidimensional array of {1}. Replace it with a jagged array if possible.</source>
+        <target state="translated">{0}이(가) {1}의 다차원 배열을 사용합니다. 가능한 경우 가변 배열로 바꾸세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticTitle">
+        <source>Mark members as static</source>
+        <target state="translated">멤버를 static으로 표시하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticDescription">
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="translated">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 이와 같은 멤버에 비가상 호출 사이트를 내보냅니다. 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkMembersAsStaticMessage">
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="translated">'{0}' 멤버는 인스턴스 데이터에 액세스하지 않으며 static으로 표시할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersTitle">
+        <source>Review visible event handlers</source>
+        <target state="translated">표시되는 이벤트 처리기를 검토하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersDescription">
+        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
+        <target state="translated">public 또는 protected 이벤트 처리 메서드가 검색되었습니다. 이벤트 처리 메서드는 필요한 경우에만 표시해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
+        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
+        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하거나 심각하지 않은 코드인지 확인하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
+        <source>Consider making {0} not externally visible.</source>
+        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
+        <source>Seal methods that satisfy private interfaces</source>
+        <target state="translated">private 인터페이스를 만족하는 메서드를 봉인하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesDescription">
+        <source>An inheritable public type provides an overridable method implementation of an internal (Friend in Visual Basic) interface. To fix a violation of this rule, prevent the method from being overridden outside the assembly.</source>
+        <target state="translated">상속 가능한 public 형식은 내부(Visual Basic의 경우 Friend) 인터페이스의 재정의 가능한 메서드 구현을 제공합니다. 이 규칙 위반 문제를 해결하려면 어셈블리 외부에서 메서드가 재정의되지 않도록 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesMessage">
+        <source>Seal methods that satisfy private interfaces</source>
+        <target state="translated">private 인터페이스를 만족하는 메서드를 봉인하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveEmptyFinalizers">
+        <source>Remove empty Finalizers</source>
+        <target state="translated">빈 종료자를 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveEmptyFinalizersDescription">
+        <source>Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.</source>
+        <target state="translated">개체 수명 추적과 관련된 추가적인 성능 오버헤드를 피하기 위해 가능하면 종료자를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructors">
+        <source>Do not call overridable methods in constructors</source>
+        <target state="translated">생성자에서 재정의 가능한 메서드를 호출하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
+        <source>Virtual methods defined on the class should not be called from constructors. If a derived class has overridden the method, the derived class version will be called (before the derived class constructor is called).</source>
+        <target state="translated">클래스에 정의된 가상 메서드는 생성자에서 호출하면 안 됩니다. 파생 클래스가 메서드를 재정의하면 파생 클래스 생성자가 호출되기 전에 파생 클래스 버전이 호출됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsMessage">
+        <source>Re-throwing caught exception changes stack information.</source>
+        <target state="translated">catch한 예외를 다시 throw하면 스택 정보가 변경됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RethrowToPreserveStackDetailsTitle">
+        <source>Rethrow to preserve stack details.</source>
+        <target state="translated">스택 정보를 유지하려면 다시 throw하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeDeclaringTypeInternal">
+        <source>Make declaring type internal.</source>
+        <target state="translated">선언 형식을 internal로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeDeclaringTypeSealed">
+        <source>Make declaring type sealed.</source>
+        <target state="translated">선언 형식을 sealed로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMemberNotOverridable">
+        <source>Make member not overridable.</source>
+        <target state="translated">멤버를 not overridable로 설정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInExceptionClausesDescription">
+        <source>When an exception is raised in a finally clause, the new exception hides the active exception. This makes the original error difficult to detect and debug.</source>
+        <target state="translated">finally 절에서 예외가 발생하는 경우 새로운 예외가 활성 예외를 숨깁니다. 이로 인해 원래 오류를 감지하거나 디버그하기 어려워집니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInExceptionClausesMessageFinally">
+        <source>Do not raise an exception from within a finally clause. </source>
+        <target state="translated">finally 절 내에서 예외를 발생시키지 마세요. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotRaiseExceptionsInExceptionClausesTitle">
+        <source>Do not raise exceptions in finally clauses</source>
+        <target state="translated">finally 절에서 예외를 발생시키지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseLiteralsWhereAppropriateCodeActionTitle">
+        <source>Change to constant</source>
+        <target state="translated">상수로 변경하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateElementInitializationDescription">
+        <source>Indexed elements in objects initializers must initialize unique elements. A duplicate index might overwrite a previous element initialization.</source>
+        <target state="translated">개체 이니셜라이저의 인덱싱된 요소는 고유한 요소를 초기화해야 합니다. 중복된 인덱스는 이전 요소의 초기화를 덮어쓸 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateElementInitializationMessage">
+        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
+        <target state="translated">인덱스 [{0}]의 요소가 이미 초기화되었습니다. 이 요소의 이전 초기화는 덮어쓰일 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidDuplicateElementInitializationTitle">
+        <source>Do not duplicate indexed element initializations</source>
+        <target state="translated">인덱싱된 요소의 초기화는 복제하면 안 됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
+        <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
+        <target state="translated">외부에 표시되는 메서드는 인수가 null(Visual Basic의 Nothing)인지 확인하지 않고 참조 인수 중 하나를 역참조합니다. 외부에 표시되는 메서드에 전달되는 모든 참조 인수가 null인지 확인해야 합니다. 필요한 경우 인수가 null이면 ArgumentNullException을 throw하고, 그렇지 않으면 null이 아닌 인수를 어설션하는 코드 계약 사전 조건을 추가합니다. 메서드가 알려진 어셈블리에서만 호출되도록 설계되어 있으면 메서드를 internal로 설정해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
+        <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.</source>
+        <target state="translated">외부에 표시되는 메서드 '{0}'에서 사용하기 전에 '{1}' 매개 변수가 null이 아닌지 유효성을 검사합니다. 필요한 경우 인수가 null이면 ArgumentNullException을 throw하고, 그렇지 않으면 null이 아닌 인수를 어설션하는 코드 계약 사전 조건을 추가합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">
+        <source>Validate arguments of public methods</source>
+        <target state="translated">public 메서드의 인수에 대한 유효성을 검사하세요.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
