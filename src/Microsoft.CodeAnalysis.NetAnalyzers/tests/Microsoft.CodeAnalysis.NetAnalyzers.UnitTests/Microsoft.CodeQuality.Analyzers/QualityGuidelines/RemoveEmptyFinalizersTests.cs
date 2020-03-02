@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpRemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicRemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests

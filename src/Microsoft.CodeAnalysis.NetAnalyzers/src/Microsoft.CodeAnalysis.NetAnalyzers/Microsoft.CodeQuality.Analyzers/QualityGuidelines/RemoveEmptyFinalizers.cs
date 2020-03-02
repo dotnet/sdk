@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
-using System.Linq;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
-    public abstract class AbstractRemoveEmptyFinalizersAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class RemoveEmptyFinalizersAnalyzer : DiagnosticAnalyzer
     {
         public const string RuleId = "CA1821";
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.RemoveEmptyFinalizers), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -32,31 +33,29 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCodeBlockAction(codeBlockContext =>
+            analysisContext.RegisterCompilationStartAction(context =>
             {
-                if (codeBlockContext.OwningSymbol.Kind != SymbolKind.Method)
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute, out var conditionalAttributeType))
                 {
                     return;
                 }
 
-                var methodSymbol = (IMethodSymbol)codeBlockContext.OwningSymbol;
-                if (!methodSymbol.IsDestructor())
+                context.RegisterOperationBlockAction(context =>
                 {
-                    return;
-                }
-
-                var methodBody = methodSymbol.DeclaringSyntaxReferences.First().GetSyntax();
-
-                if (IsEmptyFinalizer(methodBody, codeBlockContext))
-                {
-                    codeBlockContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
-                }
+                    if (context.OperationBlocks.Length == 1 &&
+                        context.OperationBlocks[0] is IBlockOperation blockOperation &&
+                        context.OwningSymbol is IMethodSymbol methodSymbol &&
+                        methodSymbol.IsDestructor() &&
+                        !blockOperation.HasAnyExplicitDescendant(op => CanDescendIntoOperation(op, conditionalAttributeType)))
+                    {
+                        context.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
+                    }
+                });
             });
         }
 
-        protected static bool InvocationIsConditional(IMethodSymbol methodSymbol, INamedTypeSymbol? conditionalAttributeSymbol) =>
-            methodSymbol.HasAttribute(conditionalAttributeSymbol);
-
-        protected abstract bool IsEmptyFinalizer(SyntaxNode methodBody, CodeBlockAnalysisContext analysisContext);
+        private static bool CanDescendIntoOperation(IOperation operation, INamedTypeSymbol conditionalAttributeType)
+            => operation.Kind != OperationKind.Throw &&
+                (operation.Kind != OperationKind.Invocation || !((IInvocationOperation)operation).TargetMethod.HasAttribute(conditionalAttributeType));
     }
 }
