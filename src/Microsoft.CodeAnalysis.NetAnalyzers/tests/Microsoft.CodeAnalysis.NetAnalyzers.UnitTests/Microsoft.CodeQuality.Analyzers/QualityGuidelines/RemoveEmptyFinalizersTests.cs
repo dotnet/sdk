@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -183,10 +184,12 @@ public class Class1
             GetCA1821CSharpResultAt(11, 3));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3336")]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirective()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 public class Class1
 {
 #if DEBUG
@@ -200,7 +203,19 @@ public class Class1
     }
 #endif
 }
-");
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((CSharpParseOptions)project.ParseOptions).WithPreprocessorSymbols("DEBUG");
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
         }
 
         [Fact]
