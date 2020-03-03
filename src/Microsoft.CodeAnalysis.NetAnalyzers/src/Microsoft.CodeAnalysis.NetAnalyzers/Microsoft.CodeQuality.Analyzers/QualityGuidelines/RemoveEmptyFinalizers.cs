@@ -42,11 +42,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 context.RegisterOperationBlockAction(context =>
                 {
-                    if (context.OperationBlocks.Length == 1 &&
-                        context.OperationBlocks[0] is IBlockOperation blockOperation &&
-                        context.OwningSymbol is IMethodSymbol methodSymbol &&
-                        methodSymbol.IsDestructor() &&
-                        !blockOperation.HasAnyExplicitDescendant(op => CanDescendIntoOperation(op, conditionalAttributeType)))
+                    if (context.OperationBlocks.Length != 1 ||
+                        !(context.OperationBlocks[0] is IBlockOperation blockOperation) ||
+                        !(context.OwningSymbol is IMethodSymbol methodSymbol) ||
+                        !methodSymbol.IsDestructor())
+                    {
+                        return;
+                    }
+
+                    var isMethodSurroundedWithDirective = blockOperation.Syntax.Parent.ContainsDirectives;
+
+                    if (!blockOperation.HasAnyExplicitDescendant(op => CanDescendIntoOperation(op, conditionalAttributeType, isMethodSurroundedWithDirective)))
                     {
                         context.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
                     }
@@ -54,8 +60,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             });
         }
 
-        private static bool CanDescendIntoOperation(IOperation operation, INamedTypeSymbol conditionalAttributeType)
-            => operation.Kind != OperationKind.Throw &&
-                (operation.Kind != OperationKind.Invocation || !((IInvocationOperation)operation).TargetMethod.HasAttribute(conditionalAttributeType));
+        private static bool CanDescendIntoOperation(IOperation operation, INamedTypeSymbol conditionalAttributeType, bool isMethodSurroundedWithDirective)
+        {
+            if (operation.Kind == OperationKind.Throw)
+            {
+                return false;
+            }
+
+            if (operation.Kind == OperationKind.Invocation)
+            {
+                return isMethodSurroundedWithDirective
+                    ? true
+                    : !((IInvocationOperation)operation).TargetMethod.HasAttribute(conditionalAttributeType);
+            }
+
+            return true;
+        }
     }
 }
