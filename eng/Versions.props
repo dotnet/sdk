@@ -27,9 +27,6 @@
     <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
     <SystemReflectionMetadataVersion>1.8.0</SystemReflectionMetadataVersion>
     <MicrosoftDotNetSignToolVersion>5.0.0-beta.20118.1</MicrosoftDotNetSignToolVersion>
-    <MicrosoftWindowsDesktopAppVersion>5.0.0-preview.1.20127.5</MicrosoftWindowsDesktopAppVersion>
-    <MicrosoftNETSdkWindowsDesktopVersion>
-    </MicrosoftNETSdkWindowsDesktopVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/core-setup -->
@@ -125,6 +122,10 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
     <MicrosoftNETSdkWindowsDesktopPackageVersion>5.0.0-preview.1.20127.4</MicrosoftNETSdkWindowsDesktopPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
+    <MicrosoftWindowsDesktopAppVersion>5.0.0-preview.1.20127.5</MicrosoftWindowsDesktopAppVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
