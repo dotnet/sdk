@@ -2,12 +2,14 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.TemplateSearch.Common
 {
     internal class BlobStoreSourceFileProvider : ISearchInfoFileProvider
     {
+        private const int CachedFileValidityInHours = 1;
         private static readonly Uri _searchMetadataUri = new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409");
         private static readonly string _localSourceSearchFileOverrideEnvVar = "DOTNET_NEW_SEARCH_FILE_OVERRIDE";
         private static readonly string _useLocalSearchFileIfPresentEnvVar = "DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY";
@@ -39,16 +41,44 @@ namespace Microsoft.TemplateSearch.Common
             else
             {
                 // prefer a search file from cloud storage.
-                bool cloudResult = await TryAcquireFileFromCloudAsync(paths, metadataFileTargetLocation);
-
-                if (cloudResult)
+                // only download the file if it's been long enough since the last time it was downloaded.
+                if (ShouldDownloadFileFromCloud(environmentSettings, metadataFileTargetLocation))
                 {
+                    bool cloudResult = await TryAcquireFileFromCloudAsync(paths, metadataFileTargetLocation);
+
+                    if (cloudResult)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    // the file exists and is new enough to not download again.
                     return true;
                 }
 
                 // no cloud store file was available. Use a local file if possible.
                 return TryUseLocalSearchFile(paths, metadataFileTargetLocation);
             }
+        }
+
+        private bool ShouldDownloadFileFromCloud(IEngineEnvironmentSettings environmentSettings, string metadataFileTargetLocation)
+        {
+            IPhysicalFileSystem fileSystem = environmentSettings.Host.FileSystem;
+            if(fileSystem is IFileLastWriteTimeSource lastWriteTimeSource)
+            {
+                if (fileSystem.FileExists(metadataFileTargetLocation))
+                {
+                    DateTime utcNow = DateTime.UtcNow;
+                    DateTime lastWriteTimeUtc = lastWriteTimeSource.GetLastWriteTimeUtc(metadataFileTargetLocation);
+                    if(lastWriteTimeUtc.AddHours(CachedFileValidityInHours) > utcNow)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         private bool TryUseLocalSearchFile(Paths paths, string metadataFileTargetLocation)
