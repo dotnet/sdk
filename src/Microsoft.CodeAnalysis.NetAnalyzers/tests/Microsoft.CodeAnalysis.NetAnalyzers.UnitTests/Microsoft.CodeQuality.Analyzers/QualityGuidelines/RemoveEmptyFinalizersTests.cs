@@ -266,7 +266,7 @@ public class Class1
                     (solution, projectId) =>
                     {
                         var project = solution.GetProject(projectId);
-                        var parseOptions = ((CSharpParseOptions)project.ParseOptions).WithPreprocessorSymbols("DEBUG");
+                        var parseOptions = ((CSharpParseOptions)project.ParseOptions).WithPreprocessorSymbols("RELEASE");
 
                         return project.WithParseOptions(parseOptions)
                             .Solution;
@@ -291,7 +291,7 @@ End Class
                     (solution, projectId) =>
                     {
                         var project = solution.GetProject(projectId);
-                        var parseOptions = ((VisualBasicParseOptions)project.ParseOptions).WithPreprocessorSymbols(new KeyValuePair<string, object>("DEBUG", true));
+                        var parseOptions = ((VisualBasicParseOptions)project.ParseOptions).WithPreprocessorSymbols(new KeyValuePair<string, object>("RELEASE", true));
 
                         return project.WithParseOptions(parseOptions)
                             .Solution;
