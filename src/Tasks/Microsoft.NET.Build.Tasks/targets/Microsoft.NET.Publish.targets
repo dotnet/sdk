@@ -456,7 +456,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             ILLink;
                             CreateReadyToRunImages;
                             GeneratePublishDependencyFile;
-                            BundlePublishDirectory">
+                            GenerateSingleFileBundle">
   </Target>
 
   <PropertyGroup>
@@ -923,10 +923,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        BundlePublishDirectory
+                                        GenerateSingleFileBundle
 
-    Bundle the _ResolvedFileToPublish* items one file in PublishDir
-    (except those marked ExcludeFromSingleFile)
+    Bundle the ResolvedFileToPublish items into one file in PublishDir
+    (except those marked ExcludeFromSingleFile) 
     ============================================================
     -->
   <Target Name="_ComputeFilesToBundle"
@@ -939,7 +939,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="BundlePublishDirectory" 
+  <Target Name="GenerateSingleFileBundle" 
           Condition="'$(PublishSingleFile)' == 'true'"
           DependsOnTargets="_ComputeFilesToBundle" 
           Inputs="@(_FilesToBundle)"
