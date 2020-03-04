@@ -31,7 +31,7 @@
 
       <CoreSetupBlobRootUrl Condition="'$(CoreSetupBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</CoreSetupBlobRootUrl>
       <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
-      <DotnetToolsetBlobRootUrl Condition="'$(DotnetToolsetBlobRootUrl)' == ''">https://dotnetfeed.blob.core.windows.net/dotnet-toolset/</DotnetToolsetBlobRootUrl>
+      <DotnetToolsetBlobRootUrl Condition="'$(DotnetToolsetBlobRootUrl)' == ''">https://dotnetfeed.blob.core.windows.net/dotnet-core/</DotnetToolsetBlobRootUrl>
 
       <CoreSetupRid Condition="'$(CoreSetupRid)' == ''">$(HostRid)</CoreSetupRid>
       <CoreSetupRid Condition=" ('$(HostOSName)' == 'win' or '$(HostOSName)' == 'osx' or '$(HostOSName)' == 'freebsd') and '$(DotNetBuildFromSource)' != 'true' ">$(HostMonikerRid)</CoreSetupRid>
@@ -228,7 +228,7 @@
       </BundledInstallerComponent>
 
       <BundledLayoutComponent Include="ToolsetArchive">
-        <BaseUrl>$(DotnetToolsetBlobRootUrl)Toolset/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
+        <BaseUrl>$(DotnetToolsetBlobRootUrl)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
         <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
         <RelativeLayoutPath>sdk/$(Version)</RelativeLayoutPath>
       </BundledLayoutComponent>
