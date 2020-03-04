@@ -1,4 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
@@ -10,6 +14,9 @@ namespace Microsoft.TemplateSearch.Common
     internal class BlobStoreSourceFileProvider : ISearchInfoFileProvider
     {
         private const int CachedFileValidityInHours = 1;
+        private const string ETagFileSuffix = ".etag";
+        private const string ETagHeaderName = "ETag";
+        private const string IfNoneMatchHeaderName = "If-None-Match";
         private static readonly Uri _searchMetadataUri = new Uri("https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409");
         private static readonly string _localSourceSearchFileOverrideEnvVar = "DOTNET_NEW_SEARCH_FILE_OVERRIDE";
         private static readonly string _useLocalSearchFileIfPresentEnvVar = "DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY";
@@ -103,22 +110,44 @@ namespace Microsoft.TemplateSearch.Common
 
         // Attempt to get the search metadata file from cloud storage and place it in the expected search location.
         // Return true on success, false on failure.
+        // Implement If-None-Match/ETag headers to avoid re-downloading the same content over and over again.
         private async Task<bool> TryAcquireFileFromCloudAsync(Paths paths, string searchMetadataFileLocation)
         {
             try
             {
                 using (HttpClient client = new HttpClient())
-                using (HttpResponseMessage response = client.GetAsync(_searchMetadataUri).Result)
                 {
-                    if (response.IsSuccessStatusCode)
+                    string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
+                    if(paths.FileExists(etagFileLocation))
                     {
-                        string resultText = await response.Content.ReadAsStringAsync();
-                        paths.WriteAllText(searchMetadataFileLocation, resultText);
-
-                        return true;
+                        string etagValue = paths.ReadAllText(etagFileLocation);
+                        client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
                     }
+                    using (HttpResponseMessage response = client.GetAsync(_searchMetadataUri).Result)
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string resultText = await response.Content.ReadAsStringAsync();
+                            paths.WriteAllText(searchMetadataFileLocation, resultText);
 
-                    return false;
+                            IEnumerable<string> etagValues;
+                            if(response.Headers.TryGetValues(ETagHeaderName, out etagValues))
+                            {
+                                if(etagValues.Count() == 1)
+                                {
+                                    paths.WriteAllText(etagFileLocation, etagValues.First());
+                                }
+                            }
+
+                            return true;
+                        }
+                        else if(response.StatusCode == HttpStatusCode.NotModified)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
                 }
             }
             catch
