@@ -471,39 +471,6 @@
 
   </Target>
 
-  <Target Name="VerifyApphostTemplateIsIdentifcal" Condition=" '$(HostOSName)' == 'osx' "
-          AfterTargets="LayoutAppHostTemplate"
-          DependsOnTargets="DownloadBundledComponents">
-
-    <PropertyGroup>
-      <NETCoreAppHostpkgPath>$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)</NETCoreAppHostpkgPath> 
-      <NETCoreAppHostpkgExtractPath>$(IntermediateOutputPath)AppHostpkgExtract\</NETCoreAppHostpkgExtractPath>
-    </PropertyGroup>
-
-    <!-- The folder cannot exist for pkgutil to run -->
-    <RemoveDir Directories="$(NETCoreAppHostpkgExtractPath)" />
-
-    <Exec Command="pkgutil --expand-full '$(NETCoreAppHostpkgPath)' '$(NETCoreAppHostpkgExtractPath)'" />
-
-    <ItemGroup>
-      <AllFilesOfAppHostPkg Include="$(NETCoreAppHostpkgExtractPath)\**\*.*" />
-      <ApphostInPkg
-          Include="@(AllFilesOfAppHostPkg)"
-          Condition="'%(FileName)%(Extension)' == '$(AppHostExecutableName)'"/>
-    </ItemGroup>
-
-    <Error Condition="@(ApphostInPkg->Distinct()->Count()) != 1"
-           Text="Failed to determine the $(NETCoreAppHostPackageName) executable in @(AllFilesOfAppHostPkg)" />
-
-    <Exec Command="diff '@(NativeRestoredAppHostNETCore->Distinct())' '@(ApphostInPkg->Distinct())' " ContinueOnError='true'>
-      <Output TaskParameter="ExitCode" PropertyName="DiffErrorCode"/>
-    </Exec>
-
-    <Error Text="The apphost from .pkg package and nupkg restore are not identical. There for cannot be notarized. File paths are '@(NativeRestoredAppHostNETCore->Distinct())' and '@(ApphostInPkg->Distinct())'"
-          Condition="'$(DiffErrorCode)' > '0'" />
-
-  </Target>
-
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
