@@ -96,7 +96,6 @@
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.2.20153.3" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
       <Sha>b32f8af739ca8e656457757bf1b1b10319269e2e</Sha>
-      <Sha>b32f8af739ca8e656457757bf1b1b10319269e2e</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
