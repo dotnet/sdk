@@ -1,6 +1,6 @@
 <Project>
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == ''"
+          Condition="'$(DISABLE_CROSSGEN)' == '' and !('$(Architecture)' == 'arm64' and '$(OSName)' == 'win')"
           DependsOnTargets="SetSdkBrandingInfo">
     
     <PropertyGroup>
