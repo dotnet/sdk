@@ -3,12 +3,6 @@
 using Microsoft.CodeAnalysis.Diagnostics;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotHaveIncorrectSuffixAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldNotHaveIncorrectSuffixFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotHaveIncorrectSuffixAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicIdentifiersShouldNotHaveIncorrectSuffixFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {

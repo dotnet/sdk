@@ -4,12 +4,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferJaggedArraysOverMultidimensionalAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpPreferJaggedArraysOverMultidimensionalFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferJaggedArraysOverMultidimensionalAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicPreferJaggedArraysOverMultidimensionalFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {

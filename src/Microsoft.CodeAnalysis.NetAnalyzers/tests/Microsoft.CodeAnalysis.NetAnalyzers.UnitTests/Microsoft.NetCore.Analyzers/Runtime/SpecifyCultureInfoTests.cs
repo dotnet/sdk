@@ -3,12 +3,6 @@
 using Microsoft.CodeAnalysis.Diagnostics;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.SpecifyCultureInfoAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyCultureInfoFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.SpecifyCultureInfoAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicSpecifyCultureInfoFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {

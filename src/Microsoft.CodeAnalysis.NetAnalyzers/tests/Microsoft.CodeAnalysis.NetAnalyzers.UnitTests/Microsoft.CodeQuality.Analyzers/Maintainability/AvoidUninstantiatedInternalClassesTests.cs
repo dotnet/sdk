@@ -4,12 +4,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Test.Utilities;
 
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUninstantiatedInternalClassesAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidUninstantiatedInternalClassesFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUninstantiatedInternalClassesAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidUninstantiatedInternalClassesFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
