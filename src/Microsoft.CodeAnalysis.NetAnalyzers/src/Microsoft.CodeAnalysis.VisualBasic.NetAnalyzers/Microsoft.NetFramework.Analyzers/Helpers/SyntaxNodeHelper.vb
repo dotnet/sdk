@@ -248,7 +248,7 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
             Dim declaration As MethodBlockSyntax = node.AncestorsAndSelf().OfType(Of MethodBlockSyntax)().FirstOrDefault()
 
             If (declaration IsNot Nothing) Then
-                Return CType(semanticModel.GetDeclaredSymbol(declaration), IMethodSymbol)
+                Return semanticModel.GetDeclaredSymbol(declaration)
             End If
 
             Dim constructor As SubNewStatementSyntax = node.AncestorsAndSelf().OfType(Of SubNewStatementSyntax)().FirstOrDefault()
