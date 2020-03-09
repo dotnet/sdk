@@ -2015,6 +2015,40 @@ End Class",
                     "MyFieldEx"));
         }
 
+        [Fact]
+        public async Task CA1711_EnumFlagSuffix_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum SomeEnumFlag
+{
+    X,
+}",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlag", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagSuffix));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum SomeEnumFlag
+    X
+End Enum",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlag", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagSuffix));
+        }
+
+        [Fact]
+        public async Task CA1711_EnumFlagsSuffix_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum SomeEnumFlags
+{
+    X,
+}",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlags", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagsSuffix));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum SomeEnumFlags
+    X
+End Enum",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlags", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagsSuffix));
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)

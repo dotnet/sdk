@@ -85,6 +85,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal const string CoreSuffix = "Core";
         internal const string QueueSuffix = "Queue";
         internal const string StackSuffix = "Stack";
+        internal const string FlagSuffix = "Flag";
+        internal const string FlagsSuffix = "Flags";
 
         // Dictionary that maps from a type name suffix to the set of base types from which
         // a type with that suffix is permitted to derive.
@@ -193,6 +195,23 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 symbolAnalysisContext.ReportDiagnostic(
                                     namedTypeSymbol.CreateDiagnostic(TypeNewerVersionRule, NewSuffix, name));
                                 return;
+                            }
+
+                            if (namedTypeSymbol.TypeKind == TypeKind.Enum)
+                            {
+                                if (name.HasSuffix(FlagSuffix))
+                                {
+                                    symbolAnalysisContext.ReportDiagnostic(
+                                        namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, FlagSuffix));
+                                    return;
+                                }
+
+                                if (name.HasSuffix(FlagsSuffix))
+                                {
+                                    symbolAnalysisContext.ReportDiagnostic(
+                                        namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, FlagsSuffix));
+                                    return;
+                                }
                             }
                         }, SymbolKind.NamedType);
                 });
