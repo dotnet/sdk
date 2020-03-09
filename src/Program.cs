@@ -129,8 +129,12 @@ namespace Microsoft.CodeAnalysis.Tools
                 // register an assembly loader that will load assemblies from the msbuild path with
                 // equal or higher version numbers than requested.
                 LooseVersionAssemblyLoader.Register(msBuildInstance.MSBuildPath);
-
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
+
+                if (logLevel == LogLevel.Trace)
+                {
+                    logger.LogInformation(Resources.Using_msbuildexe_located_in_0, msBuildInstance.MSBuildPath);
+                }
 
                 var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
 
