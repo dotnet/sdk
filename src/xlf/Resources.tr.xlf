@@ -162,6 +162,11 @@
         <target state="new">Formatted code file '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Using_msbuildexe_located_in_0">
+        <source>Using MSBuild.exe located in '{0}'</source>
+        <target state="new">Using MSBuild.exe located in '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
         <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
         <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
