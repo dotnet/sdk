@@ -238,6 +238,46 @@ End Class",
             }.RunAsync();
         }
 
+        [Fact, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
+        public async Task CA1806_LinqMethods_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Class1
+{
+    public bool Method1(IEnumerable<int> ienum, List<object> list)
+    {
+        var filteredList = ienum.Where(x => x > 42).Select(x => x.ToString()).ToList();
+
+        Method2(ienum.Min());
+
+        return list.OfType<string>().Any();
+    }
+
+    public void Method2(int val) {}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Linq
+Imports System.Collections.Generic
+
+Public Class Class1
+    Public Function Method1(ByVal ienum As IEnumerable(Of Integer), ByVal list As List(Of Object)) As Boolean
+        Dim filteredList = ienum.Where(Function(x) x > 42).[Select](Function(x) x.ToString()).ToList()
+
+        Method2(ienum.Min())
+
+        Return list.OfType(Of String)().Any()
+    End Function
+
+    Public Sub Method2(ByVal val As Integer)
+    End Sub
+End Class
+");
+        }
+
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
@@ -710,12 +750,12 @@ using System.Collections.Generic;
 
 public class Class1
 {
-    public void Method1(IEnumerable<int> enumerable, List<object> list)
+    public void Method1(IEnumerable<int> ienum, List<object> list)
     {
-        enumerable.Any(x => x > 42);
-        enumerable.Cast<object>();
+        ienum.Any(x => x > 42);
+        ienum.Cast<object>();
         Enumerable.Empty<int>();
-        enumerable.Where(x => x > 42).Select(x => x.ToString()).ToList();
+        ienum.Where(x => x > 42).Select(x => x.ToString()).ToList();
 
         list.OfType<string>();
     }
@@ -725,6 +765,27 @@ public class Class1
                 GetCSharpLinqMethodResultAt(11, 9, "Method1", "Empty"),
                 GetCSharpLinqMethodResultAt(12, 9, "Method1", "ToList"),
                 GetCSharpLinqMethodResultAt(14, 9, "Method1", "OfType"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Linq
+Imports System.Collections.Generic
+
+Public Class Class1
+    Public Sub Method1(ByVal ienum As IEnumerable(Of Integer), ByVal list As List(Of Object))
+        ienum.Any(Function(x) x > 42)
+        ienum.Cast(Of Object)()
+        Enumerable.Empty(Of Integer)()
+        ienum.Where(Function(x) x > 42).[Select](Function(x) x.ToString()).ToList()
+
+        list.OfType(Of String)()
+    End Sub
+End Class
+",
+                GetBasicLinqMethodResultAt(7, 9, "Method1", "Any"),
+                GetBasicLinqMethodResultAt(8, 9, "Method1", "Cast"),
+                GetBasicLinqMethodResultAt(9, 9, "Method1", "Empty"),
+                GetBasicLinqMethodResultAt(10, 9, "Method1", "ToList"),
+                GetBasicLinqMethodResultAt(12, 9, "Method1", "OfType"));
         }
 
         #endregion
