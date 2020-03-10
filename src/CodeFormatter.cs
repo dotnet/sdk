@@ -33,7 +33,8 @@ namespace Microsoft.CodeAnalysis.Tools
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions options,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool createBinaryLog = false)
         {
             var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, fileMatcher, reportPath) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
@@ -45,7 +46,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using (var workspace = await OpenWorkspaceAsync(
-                workspaceFilePath, workspaceType, fileMatcher, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
+                workspaceFilePath, workspaceType, fileMatcher, logWorkspaceWarnings, logger, cancellationToken, createBinaryLog).ConfigureAwait(false))
             {
                 if (workspace is null)
                 {
@@ -147,7 +148,8 @@ namespace Microsoft.CodeAnalysis.Tools
             Matcher fileMatcher,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool createBinaryLog = false)
         {
             if (workspaceType == WorkspaceType.Folder)
             {
@@ -156,7 +158,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 return folderWorkspace;
             }
 
-            return await OpenMSBuildWorkspaceAsync(workspacePath, workspaceType, logWorkspaceWarnings, logger, cancellationToken);
+            return await OpenMSBuildWorkspaceAsync(workspacePath, workspaceType, logWorkspaceWarnings, logger, cancellationToken, createBinaryLog);
         }
 
         private static async Task<Workspace> OpenMSBuildWorkspaceAsync(
@@ -164,7 +166,8 @@ namespace Microsoft.CodeAnalysis.Tools
             WorkspaceType workspaceType,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool createBinaryLog = false)
         {
             var properties = new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -178,6 +181,7 @@ namespace Microsoft.CodeAnalysis.Tools
             };
 
             var workspace = MSBuildWorkspace.Create(properties);
+            workspace.ProduceBinaryLog = createBinaryLog;
 
             if (workspaceType == WorkspaceType.Solution)
             {
