@@ -50,11 +50,12 @@ jobs:
                     /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                     /p:PB_PublishType=$(_PublishType)
                     /p:DotNetPublishUsingPipelines=true
+                    /p:PublishToAzure=$(_PublishToAzure)
         - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         - _PerfIterations: 25
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
-      - script: eng\common\CIBuild.cmd
+      - script: eng\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
@@ -81,7 +82,7 @@ jobs:
       #       HelixAccessToken: ''
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
-      - script: eng\common\CIBuild.cmd
+      - script: eng\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
@@ -110,7 +111,7 @@ jobs:
       #       HelixAccessToken: ''
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
-      - script: eng\common\CIBuild.cmd
+      - script: eng\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
