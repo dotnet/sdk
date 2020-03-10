@@ -97,6 +97,11 @@
         <target state="translated">Ne pas intercepter les types d'exception générale</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
+        <source>{0} calls {1} but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="new">{0} calls {1} but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">Ne pas passer de lambdas asynchrones en tant que types délégués retournant void</target>

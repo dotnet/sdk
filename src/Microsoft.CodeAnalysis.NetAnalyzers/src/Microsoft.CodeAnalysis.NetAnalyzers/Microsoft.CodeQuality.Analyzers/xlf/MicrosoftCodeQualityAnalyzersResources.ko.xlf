@@ -97,6 +97,11 @@
         <target state="translated">일반적인 예외 형식을 catch하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
+        <source>{0} calls {1} but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="new">{0} calls {1} but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 전달하지 마세요.</target>

@@ -701,6 +701,32 @@ Public Class B
 End Class");
         }
 
+        [Fact, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
+        public async Task CA1806_LinqMethods_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Class1
+{
+    public void Method1(IEnumerable<int> enumerable, List<object> list)
+    {
+        enumerable.Any(x => x > 42);
+        enumerable.Cast<object>();
+        Enumerable.Empty<int>();
+        enumerable.Where(x => x > 42).Select(x => x.ToString()).ToList();
+
+        list.OfType<string>();
+    }
+}",
+                GetCSharpLinqMethodResultAt(9, 9, "Method1", "Any"),
+                GetCSharpLinqMethodResultAt(10, 9, "Method1", "Cast"),
+                GetCSharpLinqMethodResultAt(11, 9, "Method1", "Empty"),
+                GetCSharpLinqMethodResultAt(12, 9, "Method1", "ToList"),
+                GetCSharpLinqMethodResultAt(14, 9, "Method1", "OfType"));
+        }
+
         #endregion
 
         #region Helpers
@@ -747,6 +773,16 @@ End Class");
 
         private static DiagnosticResult GetBasicPureMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.PureMethodRule)
+                .WithLocation(line, column)
+                .WithArguments(containingMethodName, invokedMethodName);
+
+        private static DiagnosticResult GetCSharpLinqMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+            => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.LinqMethodRule)
+                .WithLocation(line, column)
+                .WithArguments(containingMethodName, invokedMethodName);
+
+        private static DiagnosticResult GetBasicLinqMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+            => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.LinqMethodRule)
                 .WithLocation(line, column)
                 .WithArguments(containingMethodName, invokedMethodName);
 

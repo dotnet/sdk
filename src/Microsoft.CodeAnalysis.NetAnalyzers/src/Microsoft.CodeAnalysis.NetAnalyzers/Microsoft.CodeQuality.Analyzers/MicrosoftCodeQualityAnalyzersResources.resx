@@ -1370,4 +1370,7 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotIgnoreMethodResultsMessageLinqMethod" xml:space="preserve">
+    <value>{0} calls {1} but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
+  </data>
 </root>
