@@ -75,6 +75,6 @@
   <String Id="InstallationNoteTitle">Примечание по установке</String>
   <String Id="InstallationNote">В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты.
   </String>
-  <String Id="VisualStudioWarning">Если вы планируете использовать .NET Core 3.1 с Visual Studio, требуется Visual Studio 2019 16.4 или более поздней версии. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Подробнее&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Если вы планируете использовать .NET Core 3.1 с Visual Studio, требуется Visual Studio 2019 16.4 или более поздней версии. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Подробнее&lt;/A&gt;.
   </String>
 </WixLocalization>

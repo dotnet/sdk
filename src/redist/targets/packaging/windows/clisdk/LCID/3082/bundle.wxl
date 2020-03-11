@@ -75,6 +75,6 @@ Recursos
   <String Id="InstallationNoteTitle">Nota de instalación</String>
   <String Id="InstallationNote">Se ejecutará un comando durante el proceso de instalación que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. La operación tardará hasta un minuto en completarse.
   </String>
-  <String Id="VisualStudioWarning">Si planea usar .NET Core 3.1 con Visual Studio, se requiere Visual Studio 2019 16.4 o una versión más reciente. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Más información&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si planea usar .NET Core 3.1 con Visual Studio, se requiere Visual Studio 2019 16.4 o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Más información&lt;/A&gt;.
   </String>
 </WixLocalization>

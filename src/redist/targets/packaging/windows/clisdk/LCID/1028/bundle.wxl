@@ -75,6 +75,6 @@
   <String Id="InstallationNoteTitle">安裝附註</String>
   <String Id="InstallationNote">安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。
   </String>
-  <String Id="VisualStudioWarning">若您打算透過 Visual Studio 使用 .NET Core 3.1，則需要 Visual Studio 2019 16.4 或更新版本。&lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;深入了解&lt;/A&gt;。
+  <String Id="VisualStudioWarning">若您打算透過 Visual Studio 使用 .NET Core 3.1，則需要 Visual Studio 2019 16.4 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;。
   </String>
 </WixLocalization>

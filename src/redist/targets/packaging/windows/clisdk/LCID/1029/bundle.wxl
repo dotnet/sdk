@@ -75,6 +75,6 @@ Zdroje informací
   <String Id="InstallationNoteTitle">Poznámka k instalaci</String>
   <String Id="InstallationNote">Během procesu instalace se spustí příkaz, který zlepší rychlost obnovení projektu a povolí offline přístup. Akce se dokončí přibližně za minutu.
   </String>
-  <String Id="VisualStudioWarning">Pokud plánujete používání .NET Core 3.1 se sadou Visual Studio, potřebujete Visual Studio 2019 16.4 nebo novější. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Další informace&lt;/A&gt;
+  <String Id="VisualStudioWarning">Pokud plánujete používání .NET Core 3.1 se sadou Visual Studio, potřebujete Visual Studio 2019 16.4 nebo novější. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Další informace&lt;/A&gt;
   </String>
 </WixLocalization>
