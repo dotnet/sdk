@@ -103,7 +103,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>5.0.0-preview.2.20159.14</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>5.0.0-preview.2.20160.9</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore-Tooling -->
