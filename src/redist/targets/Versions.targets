@@ -2,7 +2,7 @@
   <PropertyGroup>
     <VersionMajor>3</VersionMajor>
     <VersionMinor>1</VersionMinor>
-    <VersionSDKMinor>2</VersionSDKMinor>
+    <VersionSDKMinor>3</VersionSDKMinor>
     <VersionPatch>00</VersionPatch>
     <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">preview</ReleaseSuffix>
     <!--
