@@ -22,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Design,
-            RuleLevel.IdeSuggestion,
+            RuleLevel.Disabled,
             description: s_localizableDescription,
             isPortedFxCopRule: true,
             isDataflowRule: false);
