@@ -1370,4 +1370,13 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotPassTypesByReferenceMessage" xml:space="preserve">
+    <value>Consider a design that does not require that '{0}' be a reference parameter.</value>
+  </data>
+  <data name="DoNotPassTypesByReferenceTitle" xml:space="preserve">
+    <value>Do not pass types by reference</value>
+  </data>
+  <data name="DoNotPassTypesByReferenceDescription" xml:space="preserve">
+    <value>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</value>
+  </data>
 </root>
