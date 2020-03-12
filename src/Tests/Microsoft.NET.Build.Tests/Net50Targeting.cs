@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact(Skip="Need NuGet support for net5.0 TFM")]
+        [Fact]
         public void Net50TargetFrameworkParsesAsNetCoreAppTargetFrameworkIdentifier()
         {
             var testProject = new TestProject()
@@ -37,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var getValuesCommand = new GetValuesCommand(Log, testAsset.TestRoot, testProject.TargetFrameworks, "TargetFrameworkIdentifier");
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), testProject.TargetFrameworks, "TargetFrameworkIdentifier");
             getValuesCommand.Execute()
                 .Should()
                 .Pass();
