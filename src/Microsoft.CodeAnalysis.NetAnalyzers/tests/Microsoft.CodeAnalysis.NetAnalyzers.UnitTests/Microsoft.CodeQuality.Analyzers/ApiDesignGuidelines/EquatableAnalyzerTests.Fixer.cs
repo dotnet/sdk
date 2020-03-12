@@ -5,9 +5,6 @@ using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableAnalyzer,
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
