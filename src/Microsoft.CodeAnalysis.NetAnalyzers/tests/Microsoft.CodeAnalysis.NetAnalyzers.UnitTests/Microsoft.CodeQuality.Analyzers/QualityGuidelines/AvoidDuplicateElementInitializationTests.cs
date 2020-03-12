@@ -2,7 +2,6 @@
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines;
 using Test.Utilities;
 using Xunit;
 

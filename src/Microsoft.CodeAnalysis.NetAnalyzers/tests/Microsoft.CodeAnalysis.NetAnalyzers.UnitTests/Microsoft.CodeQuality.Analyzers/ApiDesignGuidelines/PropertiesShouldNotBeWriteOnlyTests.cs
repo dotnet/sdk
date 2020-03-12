@@ -4,12 +4,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertiesShouldNotBeWriteOnlyAnalyzer,
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertiesShouldNotBeWriteOnlyFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertiesShouldNotBeWriteOnlyAnalyzer,
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertiesShouldNotBeWriteOnlyFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {

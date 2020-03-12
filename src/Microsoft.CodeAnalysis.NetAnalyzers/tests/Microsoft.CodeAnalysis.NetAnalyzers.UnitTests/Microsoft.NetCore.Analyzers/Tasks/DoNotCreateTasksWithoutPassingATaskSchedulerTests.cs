@@ -4,12 +4,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotCreateTasksWithoutPassingATaskSchedulerFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Tasks.BasicDoNotCreateTasksWithoutPassingATaskSchedulerFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {

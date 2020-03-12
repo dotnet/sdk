@@ -4,12 +4,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.SpecifyStringComparisonAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyStringComparisonFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.SpecifyStringComparisonAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicSpecifyStringComparisonFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
