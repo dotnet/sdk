@@ -33,41 +33,41 @@
       <Uri>https://github.com/dotnet/CliCommandLineParser</Uri>
       <Sha>0e89c2116ad28e404ba56c14d1c3f938caa25a01</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="16.6.0-preview-20126-02">
+    <Dependency Name="Microsoft.Build" Version="16.6.0-preview-20160-02">
       <Uri>https://github.com/microsoft/msbuild</Uri>
-      <Sha>13cfe7fc5a97772e4045671c71fa31a3c0856af0</Sha>
+      <Sha>06567a7988c47e0ffe1ae5ad8831b7dd783a79e0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="16.6.0-preview-20126-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="16.6.0-preview-20160-02">
       <Uri>https://github.com/microsoft/msbuild</Uri>
-      <Sha>13cfe7fc5a97772e4045671c71fa31a3c0856af0</Sha>
+      <Sha>06567a7988c47e0ffe1ae5ad8831b7dd783a79e0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="11.0.0-beta.20157.3">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="11.0.0-beta.20160.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>e372692c37f1e7e794b2f12b5968e86055f5aab1</Sha>
+      <Sha>61746151b0f7b69c6042f12f9204ae6edc5832ac</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-2.20153.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>6f2112b58316c97c4f1b97e0f282aef4346947fc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.0-preview.3.20158.5">
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.0-preview.3.20161.6">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>aebb921320f084ff68c3fa1cf6a175678a6983f3</Sha>
+      <Sha>88b134f8772c6965d259459e01eb19d4fade9690</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20156.7">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20159.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>89579a87b9e8701a79e3584fa8bfd4e4efedcc7e</Sha>
+      <Sha>03447d46a3bacfe293eef734ff4b7351168cab6b</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="5.6.0-preview.1.6478">
+    <Dependency Name="NuGet.Build.Tasks" Version="5.6.0-preview.2.6489">
       <Uri>https://github.com/NuGet/NuGet.Client</Uri>
-      <Sha>64f2febf7d1de8b0228eca5afed97a96c5a30bba</Sha>
+      <Sha>5433d816f748d4ad78b75fc320397d8117f57771</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="16.6.0-preview-20200305-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>53da99a8a1ed39d1df63429fc2d61011fb57fb23</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Web" Version="5.0.100-preview.2.20155.1">
+    <Dependency Name="Microsoft.NET.Sdk.Web" Version="5.0.100-preview.3.20160.2">
       <Uri>https://github.com/aspnet/websdk</Uri>
-      <Sha>97c00e24a3add64165c7353c64f89cb53afee044</Sha>
+      <Sha>009682acf24cd472654123a0e4e27683cf5b9987</Sha>
     </Dependency>
     <Dependency Name="ILLink.Tasks" Version="0.1.6-prerelease.20152.3">
       <Uri>https://github.com/mono/linker</Uri>
@@ -89,27 +89,27 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b3f81350c856cfd5079c52349024a8f55d0c009a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.3.20157.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.3.20160.8">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>3111a61afaba37d05cea1536e4938b305bf9de86</Sha>
+      <Sha>58f3842510bbbcca6193d94dacb92dedcee92c68</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.3.20157.2" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.3.20160.6" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>b3a6983e25e396bb06c99520b4a0252231024828</Sha>
+      <Sha>9fc9a31b407870d01c128c7802aa8b15e7c9cb56</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20128.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20160.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4d9720ccb07cc01068c2f7c19cb2ded64c44b1a1</Sha>
+      <Sha>9a9422d109520d942711e07fae8c662c20e7b6e9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20128.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20160.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4d9720ccb07cc01068c2f7c19cb2ded64c44b1a1</Sha>
+      <Sha>9a9422d109520d942711e07fae8c662c20e7b6e9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.20128.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.20160.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4d9720ccb07cc01068c2f7c19cb2ded64c44b1a1</Sha>
+      <Sha>9a9422d109520d942711e07fae8c662c20e7b6e9</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
