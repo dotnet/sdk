@@ -13,6 +13,13 @@ namespace Microsoft.DotNet.Build.Tasks
 {
     public sealed class Crossgen : ToolTask
     {
+        public Crossgen()
+        {
+            // Disable partial NGEN to avoid excess JIT-compilation.
+            // The intention is to pre-compile as much as possible.
+            EnvironmentVariables = new string[] { "COMPlus_PartialNGen=0" };
+        }
+
         [Required]
         public string SourceAssembly { get;set; }
 
