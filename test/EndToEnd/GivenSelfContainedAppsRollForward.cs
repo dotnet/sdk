@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.TestFramework;
@@ -157,7 +154,7 @@ namespace EndToEnd
                 .Element(ns + "TargetFramework")
                 .Value;
 
-            SupportedNetCoreAppVersions.Versions.Select(v => $"netcoreapp{v}")
+            TargetFrameworkHelper.GetNetAppTargetFrameworks(SupportedNetCoreAppVersions.Versions)
                 .Should().Contain(targetFramework, $"the {nameof(SupportedNetCoreAppVersions)}.{nameof(SupportedNetCoreAppVersions.Versions)} property should include the default version " +
                 "of .NET Core created by \"dotnet new\"");
         }
@@ -184,12 +181,9 @@ namespace EndToEnd
                 .Element(ns + "TargetFramework")
                 .Value;
 
-            SupportedAspNetCoreVersions.Versions.Select(v => $"netcoreapp{v}")
+            TargetFrameworkHelper.GetNetAppTargetFrameworks(SupportedAspNetCoreVersions.Versions)
                 .Should().Contain(targetFramework, $"the {nameof(SupportedAspNetCoreVersions)} should include the default version " +
-                "of Microsoft.AspNetCore.App used by the templates created by \"dotnet new web\"");
-
-           
+                "of Microsoft.AspNetCore.App used by the templates created by \"dotnet new web\"");           
         }
-
     }
 }
