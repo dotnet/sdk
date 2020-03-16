@@ -135,8 +135,8 @@ namespace N
                     ExpectedDiagnostics =
                     {
                         GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("N.C", "N.c")),
-                        GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.C.x", "N.C.X"), ("Test0.cs", 4, 26), ("Test0.cs", 8, 26)),
-                        GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), ("Test0.cs", 12, 26), ("Test1.cs", 7, 26)),
+                        GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.C.x", "N.C.X"), ("/0/Test0.cs", 4, 26), ("/0/Test0.cs", 8, 26)),
+                        GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), ("/0/Test0.cs", 12, 26), ("/0/Test1.cs", 7, 26)),
                     }
                 }
             }.RunAsync();
