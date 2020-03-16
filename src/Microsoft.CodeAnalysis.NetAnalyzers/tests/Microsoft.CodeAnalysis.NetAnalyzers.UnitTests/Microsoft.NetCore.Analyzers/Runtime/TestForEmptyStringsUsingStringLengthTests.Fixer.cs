@@ -84,8 +84,8 @@ public class A
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -116,8 +116,8 @@ End Class
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
         }
 
@@ -192,8 +192,8 @@ public class A
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -224,8 +224,8 @@ End Class
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
         }
 
@@ -299,8 +299,8 @@ public class A
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -331,8 +331,8 @@ End Class
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
         }
 
@@ -406,8 +406,8 @@ public class A
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -438,8 +438,8 @@ End Class
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
         }
 
@@ -836,8 +836,8 @@ public class A
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -872,8 +872,8 @@ End Class
 ",
                     },
                 },
-                CodeFixIndex = c_StringLengthCodeActionIndex,
-                CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
         }
     }
