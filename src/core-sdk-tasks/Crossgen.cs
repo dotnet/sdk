@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 return $"{GetReadyToRun()} {GetPlatformAssemblyPaths()} {GetDiasymReaderPath()} {GetCreateSymbols()}";
             }
 
-            return $"{GetReadyToRun()} {GetInPath()} {GetOutPath()} {GetPlatformAssemblyPaths()} {GetJitPath()}";
+            return $"{GetReadyToRun()} {GetMissingDependenciesOk()} {GetInPath()} {GetOutPath()} {GetPlatformAssemblyPaths()} {GetJitPath()}";
         }
 
         private string GetCreateSymbols()
@@ -200,6 +200,11 @@ namespace Microsoft.DotNet.Build.Tasks
         private string GetJitPath()
         {
             return $"-JITPath {JITPath}";
+        }
+
+        private string GetMissingDependenciesOk()
+        {
+            return "-MissingDependenciesOK";
         }
 
         protected override void LogToolCommand(string message)
