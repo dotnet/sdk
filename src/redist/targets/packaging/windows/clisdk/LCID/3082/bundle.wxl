@@ -56,7 +56,7 @@ Se instaló lo siguiente en: "[DOTNETHOME]"
     • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 Este producto recopila datos de uso
-    • Para más información y declinar la participación, visite https://aka.ms/dotnet-cli-telemetry
+    • Para obtener más información y declinar la participación, visite https://aka.ms/dotnet-cli-telemetry
 
 Recursos
     • Documentación de .NET https://aka.ms/dotnet-docs
@@ -68,13 +68,13 @@ Recursos
     .NET es una multiplataforma de código abierto admitida por Microsoft. Puede usarla para compilar su próxima aplicación con C#, F# o VB. Esperamos que la disfrute.</String>
   <String Id="LearnMoreTitle">Más información sobre .NET</String>
   <String Id="ResourcesHeader">Recursos</String>
-  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentación principal&lt;/A&gt;</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentación de .NET&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentación del SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Declaración de privacidad&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;CLUF de la biblioteca .NET&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Nota de instalación</String>
   <String Id="InstallationNote">Se ejecutará un comando durante el proceso de instalación que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. La operación tardará hasta un minuto en completarse.
   </String>
-  <String Id="VisualStudioWarning">Si planea usar .NET Core 3.1 con Visual Studio, se requiere Visual Studio 2019 16.4 o una versión más reciente. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Más información&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si planea usar .NET 5.0 con Visual Studio, se requiere Visual Studio 2019 16.6 o una versión más reciente. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Más información&lt;/A&gt;.
   </String>
 </WixLocalization>
