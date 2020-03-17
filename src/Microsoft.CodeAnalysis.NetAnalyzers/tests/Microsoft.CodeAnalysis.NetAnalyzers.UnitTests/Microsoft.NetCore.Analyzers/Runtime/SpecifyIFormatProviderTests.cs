@@ -915,6 +915,30 @@ End Class
 ");
         }
 
+        [Fact]
+        [WorkItem(3378, "https://github.com/dotnet/roslyn-analyzers/issues/3378")]
+        public async Task CA1305_GuidToString_NoDiagnostics()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+public class SomeClass
+{
+    public string SomeMethod(Guid g)
+    {
+        return g.ToString() + g.ToString(""D"");
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Public Class SomeClass
+    Public Function SomeMethod(ByVal g As Guid) As String
+        Return g.ToString() + g.ToString(""D"")
+    End Function
+End Class
+");
+        }
+
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
             VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
                 .WithLocation(line, column)
