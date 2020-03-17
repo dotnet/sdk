@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             {
                 new object[] { "-h", "--help" },
                 new object[] { "sometest.dll -s test.settings", "sometest.dll --settings:test.settings" },
-                new object[] { "sometest.dll -t", "sometest.dll --listtests -- RunConfiguration.DotNetHostPath=dotnet.exe" },
+                new object[] { "sometest.dll -t -- RunConfiguration.DotNetHostPath=dotnet.exe", "sometest.dll --listtests -- RunConfiguration.DotNetHostPath=dotnet.exe" },
                 new object[] { "sometest.dll --list-tests", "sometest.dll --listtests" },
                 new object[] { "sometest.dll --filter", "sometest.dll --testcasefilter" },
                 new object[] { "sometest.dll -l trx", "sometest.dll --logger:trx" },
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 new object[] { @"sometest.dll --results-directory c:\temp\", @"sometest.dll --resultsdirectory:c:\temp\" },
                 new object[] { @"sometest.dll -s testsettings -t -a c:\path -f net451 -d log.txt --results-directory c:\temp\", @"sometest.dll --settings:testsettings --listtests --testadapterpath:c:\path --framework:net451 --diag:log.txt --resultsdirectory:c:\temp\" },
                 new object[] { @"sometest.dll -s:testsettings -t -a:c:\path -f:net451 -d:log.txt --results-directory:c:\temp\", @"sometest.dll --settings:testsettings --listtests --testadapterpath:c:\path --framework:net451 --diag:log.txt --resultsdirectory:c:\temp\" },
-                new object[] { @"sometest.dll --settings testsettings -t --test-adapter-path c:\path --framework net451 --diag log.txt --results-directory c:\temp\", @"sometest.dll --settings:testsettings --listtests --testadapterpath:c:\path --framework:net451 --diag:log.txt --resultsdirectory:c:\temp\ -- RunConfiguration.DisableAppDomain=true" }
+                new object[] { @"sometest.dll --settings testsettings -t --test-adapter-path c:\path --framework net451 --diag log.txt --results-directory c:\temp\ -- RunConfiguration.DisableAppDomain=true", @"sometest.dll --settings:testsettings --listtests --testadapterpath:c:\path --framework:net451 --diag:log.txt --resultsdirectory:c:\temp\ -- RunConfiguration.DisableAppDomain=true" }
             };
 
             public static IEnumerable<object[]> VerbosityTestCases { get; } = new List<object[]>
