@@ -19,7 +19,7 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 namespace Microsoft.NetCore.Analyzers.Security
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    class DoNotDisableHttpClientCRLCheck : DiagnosticAnalyzer
+    internal class DoNotDisableHttpClientCRLCheck : DiagnosticAnalyzer
     {
         internal static DiagnosticDescriptor DefinitelyDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5399",
