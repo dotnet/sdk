@@ -930,6 +930,18 @@
   <data name="DoNotUseObsoleteKDFAlgorithmMessage" xml:space="preserve">
     <value>Call to obsolete key derivation function {0}.{1}</value>
   </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesDescription" xml:space="preserve">
+    <value>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesComparerMessage" xml:space="preserve">
+    <value>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesMethodMessage" xml:space="preserve">
+    <value>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesTitle" xml:space="preserve">
+    <value>Do not use ReferenceEquals with value types</value>
+  </data>
   <data name="DoNotUseSHA1" xml:space="preserve">
     <value>Do not use insecure cryptographic algorithm SHA1.</value>
   </data>
