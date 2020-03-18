@@ -164,7 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
     }
 
-    class SuffixInfo
+    internal class SuffixInfo
     {
         public string Suffix { get; private set; }
         public bool CanSuffixBeCollection { get; private set; }
