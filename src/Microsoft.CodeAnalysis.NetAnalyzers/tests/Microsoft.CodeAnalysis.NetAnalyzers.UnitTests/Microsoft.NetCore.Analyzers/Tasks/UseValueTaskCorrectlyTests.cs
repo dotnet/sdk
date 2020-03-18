@@ -290,6 +290,29 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
+        public async Task NoDiagnostics_NullConditional()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public ValueTask NullConditional(C c) => c?.ReturnsValueTask() ?? default;
+                    public async Task NullConditionalWithAwait(C c) => await (c?.ReturnsValueTask() ?? default);
+
+                    public ValueTask<T> NullConditionalOfT<T>(C c) => c?.ReturnsValueTaskOfT<T>() ?? default;
+                    public async Task<T> NullConditionalWithAwaitOfT<T>(C c) => await (c?.ReturnsValueTaskOfT<T>() ?? default);
+
+                    public ValueTask NullConditionalWithSecondaryCall(C c) => c?.ReturnsValueTask() ?? Helpers.ReturnsValueTask();
+                    public ValueTask<T> NullConditionalWithSecondaryCallOfT<T>(C c) => c?.ReturnsValueTaskOfT<T>() ?? Helpers.ReturnsValueTaskOfT<T>();
+
+                    private ValueTask ReturnsValueTask() => default;
+                    private ValueTask<T> ReturnsValueTaskOfT<T>() => default;
+                }"));
+        }
+
+        [Fact]
         public async Task NoDiagnostics_Switch()
         {
             await new VerifyCS.Test
@@ -1071,6 +1094,36 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 GetCSharpResultAt(13, 31, UseValueTasksCorrectlyAnalyzer.GeneralRule),
                 GetCSharpResultAt(14, 39, UseValueTasksCorrectlyAnalyzer.GeneralRule),
                 GetCSharpResultAt(15, 36, UseValueTasksCorrectlyAnalyzer.GeneralRule)
+            );
+        }
+
+        [Fact]
+        public async Task Diagnostics_Discards()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public void Discards()
+                    {
+                        _ = Helpers.ReturnsValueTask();
+                        _ = Helpers.ReturnsValueTaskOfT<string>();
+                        _ = Helpers.ReturnsValueTaskOfInt();
+
+                        _ = Helpers.ReturnsValueTask().Preserve();
+                        _ = Helpers.ReturnsValueTaskOfT<string>().Preserve();
+                        _ = Helpers.ReturnsValueTaskOfInt().Preserve();
+
+                        _ = Helpers.ReturnsValueTask().AsTask();
+                        _ = Helpers.ReturnsValueTaskOfT<string>().AsTask();
+                        _ = Helpers.ReturnsValueTaskOfInt().AsTask();
+                    }
+                }"),
+                GetCSharpResultAt(9, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule),
+                GetCSharpResultAt(10, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule),
+                GetCSharpResultAt(11, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule)
             );
         }
 

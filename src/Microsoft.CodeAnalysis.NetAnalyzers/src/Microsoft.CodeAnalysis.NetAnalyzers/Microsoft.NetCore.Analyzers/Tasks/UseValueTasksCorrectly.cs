@@ -142,21 +142,6 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 // The "0.9% case" is delegating to and returning another call's returned awaitable. Also good.
                                 return;
 
-                            case OperationKind.Conditional:
-                                // This is a branch of a ternary, so consider the ternary expression instead.
-                                operation = operation.Parent;
-                                continue;
-
-                            case OperationKind.SwitchExpressionArm when operation.Parent.Parent is ISwitchExpressionOperation:
-                                // This is a case of a switch expression arm, so consider the switch expression instead.
-                                operation = operation.Parent.Parent;
-                                continue;
-
-                            case OperationKind.ExpressionStatement:
-                                // Warn! This is a statement. The result should have been used.
-                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
-                                return;
-
                             case OperationKind.Argument:
                                 // The "0.09% case" is passing the result of a call directly as an argument to another method.
                                 // This could later result in a problem, as now there's a parameter inside the callee that's
@@ -177,9 +162,27 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 }
                                 goto default;
 
+                            // At this point, we're "in the weeds", but there are still some rare-but-used valid patterns to check for.
+
+                            case OperationKind.Coalesce:
+                            case OperationKind.Conditional:
+                            case OperationKind.ConditionalAccess:
+                            case OperationKind.SwitchExpression:
+                            case OperationKind.SwitchExpressionArm:
+                                // This is a ternary, null conditional, or switch expression, so consider the parent expression instead.
+                                operation = operation.Parent;
+                                continue;
+
                             default:
                                 // Handle atypical / difficult cases that require more analysis.
                                 HandleAtypicalValueTaskUsage(operationContext, debugType, operation, invocation);
+                                return;
+
+                            case OperationKind.ExpressionStatement:
+                            case OperationKind.Discard:
+                            case OperationKind.DiscardPattern:
+                                // Warn! This is a statement or discard. The result should have been used.
+                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
                                 return;
                         }
                     }
