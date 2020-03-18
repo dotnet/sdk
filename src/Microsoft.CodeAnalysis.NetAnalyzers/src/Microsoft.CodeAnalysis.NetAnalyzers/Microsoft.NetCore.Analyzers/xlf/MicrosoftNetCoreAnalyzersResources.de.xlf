@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">Verwenden Sie keine unsicheren Verschlüsselungsmodi.</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="needs-review-translation">Verwenden Sie keine unsicheren Verschlüsselungsmodi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">Diese Modi sind für Angriffe anfällig. Verwenden Sie nur zugelassene Modi (CBC, CTS).</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="needs-review-translation">Diese Modi sind für Angriffe anfällig. Verwenden Sie nur zugelassene Modi (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">Ein unsicherer Verschlüsselungsmodus ({0}) wird verwendet.</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="needs-review-translation">Ein unsicherer Verschlüsselungsmodus ({0}) wird verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
