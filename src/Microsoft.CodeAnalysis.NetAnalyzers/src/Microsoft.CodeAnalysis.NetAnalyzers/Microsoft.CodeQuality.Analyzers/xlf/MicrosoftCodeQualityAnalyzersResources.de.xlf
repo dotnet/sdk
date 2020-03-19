@@ -157,6 +157,21 @@
         <target state="translated">Enumerationswerte dürfen nicht dupliziert werden</target>
         <note />
       </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
+        <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
+        <target state="new">Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Entfernen Sie den Finalizer vom Typ "{0}", setzen Sie "Dispose(bool disposing)" außer Kraft, und platzieren Sie die Finalisierungslogik im Codepfad, wenn "disposing" FALSE lautet. Andernfalls kann es zu doppelten Dispose-Aufrufen kommen, weil der Basistyp "{1}" ebenfalls einen Finalizer bereitstellt.</target>
