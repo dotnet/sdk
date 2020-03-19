@@ -60,7 +60,7 @@ End Class");
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class BaseClass
 {
-    public virtual void Method1(ref string s) // issue here...
+    public virtual void Method1(ref string {|CA1045:s|}) // issue here...
     {
     }
 }
@@ -70,12 +70,11 @@ public class Class1 : BaseClass
     public override void Method1(ref string s) // ... but not here
     {
     }
-}",
-                GetCA1045CSharpResultAt(4, 44, "s"));
+}");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class BaseClass
-    Public Overridable Sub Method1(ByRef s As String) ' issue here...
+    Public Overridable Sub Method1(ByRef {|CA1045:s|} As String) ' issue here...
     End Sub
 End Class
 
@@ -85,8 +84,7 @@ Public Class Class1
     Public Overrides Sub Method1(ByRef s As String) ' ... but not here
     End Sub
 End Class
-",
-                GetCA1045BasicResultAt(3, 42, "s"));
+");
         }
 
         [Fact]
@@ -95,7 +93,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface Interface1
 {
-    void Method1(ref string s); // issue here...
+    void Method1(ref string {|CA1045:s|}); // issue here...
 }
 
 public class Class1 : Interface1
@@ -103,12 +101,11 @@ public class Class1 : Interface1
     public void Method1(ref string s) // ... but not here
     {
     }
-}",
-                GetCA1045CSharpResultAt(4, 29, "s"));
+}");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface Interface1
-    Sub Method1(ByRef s As String) ' issue here...
+    Sub Method1(ByRef {|CA1045:s|} As String) ' issue here...
 End Interface
 
 Public Class Class1
@@ -116,19 +113,27 @@ Public Class Class1
 
     Public Sub Method1(ByRef s As String) Implements Interface1.Method1 ' ... but not here
     End Sub
-End Class",
-                GetCA1045BasicResultAt(3, 23, "s"));
+End Class");
         }
 
         [Fact]
-        public async Task CA1045_VBNET_ByRefOutParameter_NoDiagnostic()
+        public async Task CA1045_OutParameter_NoDiagnostic()
         {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Class1
+{
+    private void Method1(out string s)
+    {
+        s = string.Empty;
+    }
+}");
+
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Public Class Class1
-    Public Sub Method1(s As String, <Out> ByRef c As Class1)
-        c = Nothing
+    Public Sub Method1(s As String, <Out> ByRef c1 As Class1, ByRef {|CA1045:c2|} As Class1)
+        c1 = Nothing
     End Sub
 End Class");
         }
@@ -143,29 +148,39 @@ using System.Runtime.InteropServices;
 public class Class1
 {
     [DllImport(""Advapi32.dll"", CharSet=CharSet.Auto)]
-    public static extern Boolean FileEncryptionStatus(String filename, ref UInt32 status);
-}",
-                GetCA1045CSharpResultAt(8, 83, "status"));
+    public static extern Boolean FileEncryptionStatus(String filename, ref UInt32 {|CA1045:status|});
+}");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
 
 Public Class Class1
     <DllImport(""Advapi32.dll"", CharSet:=CharSet.Auto)>
-    Public Shared Function FileEncryptionStatus(ByVal filename As String, ByRef status As UInteger) As Boolean
+    Public Shared Function FileEncryptionStatus(ByVal filename As String, ByRef {|CA1045:status|} As UInteger) As Boolean
     End Function
-End Class",
-                GetCA1045BasicResultAt(6, 81, "status"));
+End Class");
+        }
+
+        [Fact]
+        public async Task CA1045_InParameter_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class Class1
+{
+    private void Method1(in Class1 c)
+    {
+    }
+}");
         }
 
         private static DiagnosticResult GetCA1045CSharpResultAt(int line, int column, string parameterName)
             => VerifyCS.Diagnostic()
-                .WithLocation(line, column)
+                .WithSpan(startLine: line, startColumn: column, endLine: line, endColumn: column + parameterName.Length)
                 .WithArguments(parameterName);
 
         private static DiagnosticResult GetCA1045BasicResultAt(int line, int column, string parameterName)
             => VerifyVB.Diagnostic()
-                .WithLocation(line, column)
+                .WithSpan(startLine: line, startColumn: column, endLine: line, endColumn: column + parameterName.Length)
                 .WithArguments(parameterName);
     }
 }
