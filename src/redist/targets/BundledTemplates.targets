@@ -57,8 +57,9 @@
     <Bundled50Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)" />
     <Bundled50Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)" />
     <Bundled50Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor50Templates)" />
-    <Bundled50Templates Include="Microsoft.DotNet.Web.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor50Templates)" />
-    <Bundled50Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor50Templates)" />
+    <!-- Pin the aspnetcore templates until https://github.com/dotnet/aspnetcore/pull/19860 is resolved. -->
+    <Bundled50Templates Include="Microsoft.DotNet.Web.ProjectTemplates.5.0" PackageVersion="5.0.0-preview.2.318.dev" />
+    <Bundled50Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" PackageVersion="5.0.0-preview.2.318.dev" />
     <Bundled50Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates50PackageVersion)" />
   </ItemGroup>
   <ItemGroup>
