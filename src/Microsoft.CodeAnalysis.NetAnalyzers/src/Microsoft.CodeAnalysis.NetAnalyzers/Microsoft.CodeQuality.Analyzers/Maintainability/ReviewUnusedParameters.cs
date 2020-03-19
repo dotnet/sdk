@@ -44,17 +44,22 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             context.RegisterCompilationStartAction(compilationStartContext =>
             {
-                INamedTypeSymbol? eventsArgSymbol = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationStartContext.Compilation);
+
+                INamedTypeSymbol? eventsArgSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
 
                 // Ignore conditional methods (FxCop compat - One conditional will often call another conditional method as its only use of a parameter)
-                INamedTypeSymbol? conditionalAttributeSymbol = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
+                INamedTypeSymbol? conditionalAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
 
                 // Ignore methods with special serialization attributes (FxCop compat - All serialization methods need to take 'StreamingContext')
-                INamedTypeSymbol? onDeserializingAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializingAttribute);
-                INamedTypeSymbol? onDeserializedAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializedAttribute);
-                INamedTypeSymbol? onSerializingAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializingAttribute);
-                INamedTypeSymbol? onSerializedAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializedAttribute);
-                INamedTypeSymbol? obsoleteAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+                INamedTypeSymbol? onDeserializingAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializingAttribute);
+                INamedTypeSymbol? onDeserializedAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializedAttribute);
+                INamedTypeSymbol? onSerializingAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializingAttribute);
+                INamedTypeSymbol? onSerializedAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializedAttribute);
+                INamedTypeSymbol? obsoleteAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+
+                INamedTypeSymbol? serializationInfoType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationSerializationInfo);
+                INamedTypeSymbol? streamingContextType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationStreamingContext);
 
                 ImmutableHashSet<INamedTypeSymbol?> attributeSetForMethodsToIgnore = ImmutableHashSet.Create(
                     conditionalAttributeSymbol,
@@ -76,7 +81,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     symbolStartContext.RegisterOperationBlockStartAction(startOperationBlockContext =>
                     {
                         if (startOperationBlockContext.OwningSymbol is IMethodSymbol method &&
-                            ShouldAnalyzeMethod(method, startOperationBlockContext, eventsArgSymbol, attributeSetForMethodsToIgnore))
+                            ShouldAnalyzeMethod(method, startOperationBlockContext, eventsArgSymbol, attributeSetForMethodsToIgnore, serializationInfoType, streamingContextType))
                         {
                             AddParameters(method, parameterUsageMap);
                         }
@@ -162,7 +167,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             IMethodSymbol method,
             OperationBlockStartAnalysisContext startOperationBlockContext,
             INamedTypeSymbol? eventsArgSymbol,
-            ImmutableHashSet<INamedTypeSymbol?> attributeSetForMethodsToIgnore)
+            ImmutableHashSet<INamedTypeSymbol?> attributeSetForMethodsToIgnore,
+            INamedTypeSymbol? serializationInfoType,
+            INamedTypeSymbol? streamingContextType)
 #pragma warning restore RS1012 // Start action has no registered actions.
         {
             // We only care about methods with parameters.
@@ -185,6 +192,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             // Ignore property accessors.
             if (method.IsPropertyAccessor())
+            {
+                return false;
+            }
+
+            // Ignore serialization special methods
+            if (method.IsSerializationConstructor(serializationInfoType, streamingContextType) ||
+                method.IsGetObjectData(serializationInfoType, streamingContextType))
             {
                 return false;
             }

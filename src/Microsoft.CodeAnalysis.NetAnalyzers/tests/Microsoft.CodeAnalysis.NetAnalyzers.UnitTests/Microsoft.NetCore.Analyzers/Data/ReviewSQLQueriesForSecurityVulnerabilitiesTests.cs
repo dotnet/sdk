@@ -3,7 +3,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Data.ReviewSqlQueriesForSecurityVulnerabilities,
