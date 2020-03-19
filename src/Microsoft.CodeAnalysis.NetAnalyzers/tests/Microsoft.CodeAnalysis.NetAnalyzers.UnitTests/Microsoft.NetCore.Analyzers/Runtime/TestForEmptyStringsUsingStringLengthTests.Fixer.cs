@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class TestForEmptyStringsUsingStringLengthFixerTests
     {
-        const int c_StringLengthCodeActionIndex = 1;
+        private const int c_StringLengthCodeActionIndex = 1;
         [Fact]
         public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmpty()
         {
