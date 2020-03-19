@@ -14,6 +14,8 @@ namespace Microsoft.TemplateEngine.Core.Util
     {
         private Stream _source;
         private readonly Stream _target;
+        private byte[] _bom;
+        private Boolean _isBomNeeded;
         private readonly TrieEvaluator<OperationTerminal> _trie;
         private Encoding _encoding;
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>>();
@@ -72,12 +74,15 @@ namespace Microsoft.TemplateEngine.Core.Util
             CurrentBuffer = new byte[bufferSize];
             CurrentBufferLength = source.Read(CurrentBuffer, 0, CurrentBuffer.Length);
 
-            byte[] bom;
-            Encoding encoding = EncodingUtil.Detect(CurrentBuffer, CurrentBufferLength, out bom);
+            Encoding encoding = EncodingUtil.Detect(CurrentBuffer, CurrentBufferLength, out _bom);
             Encoding = encoding;
-            CurrentBufferPosition = bom.Length;
-            CurrentSequenceNumber = bom.Length;
-            target.Write(bom, 0, bom.Length);
+            CurrentBufferPosition = _bom.Length;
+            CurrentSequenceNumber = _bom.Length;
+            if (_bom.Length > 0)
+            {
+                _isBomNeeded = true;
+            }
+
 
             bool explicitOnConfigurationRequired = false;
             Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
@@ -128,7 +133,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 Buffer.BlockCopy(CurrentBuffer, CurrentBufferPosition, tmp, 0, CurrentBufferLength - CurrentBufferPosition);
                 int nRead = _source.Read(tmp, CurrentBufferLength - CurrentBufferPosition, tmp.Length - CurrentBufferLength);
                 CurrentBuffer = tmp;
-                CurrentBufferLength += nRead - bom.Length;
+                CurrentBufferLength += nRead - _bom.Length;
                 CurrentBufferPosition = 0;
                 CurrentSequenceNumber = 0;
             }
@@ -136,12 +141,12 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public bool AdvanceBuffer(int bufferPosition)
         {
-            if(CurrentBufferLength == 0 || bufferPosition == 0)
+            if (CurrentBufferLength == 0 || bufferPosition == 0)
             {
                 return false;
             }
 
-            //The number of bytes away from the current buffer position being 
+            //The number of bytes away from the current buffer position being
             //  retargeted to the buffer head
             int netMove = bufferPosition - CurrentBufferPosition;
             //Since the CurrentSequenceNumber and CurrentBufferPosition are
@@ -203,12 +208,17 @@ namespace Microsoft.TemplateEngine.Core.Util
 //Console.WriteLine("UnmatchedBlock");
 //string text = System.Text.Encoding.UTF8.GetString(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite).Replace("\0", "\\0");
 //Console.WriteLine(text);
+                            if (_isBomNeeded)
+                            {
+                                _target.Write(_bom, 0, _bom.Length);
+                                _isBomNeeded = false;
+                            }
                             _target.Write(CurrentBuffer, handoffBufferPosition - toWrite - matchLength, toWrite);
                             bytesWrittenSinceLastFlush += toWrite;
                             nextSequenceNumberThatCouldBeWritten = posedPosition - matchLength + 1;
                         }
 
-                        if(operation.Id == null || (Config.Flags.TryGetValue(operation.Id, out bool opEnabledFlag) && opEnabledFlag))
+                        if (operation.Id == null || (Config.Flags.TryGetValue(operation.Id, out bool opEnabledFlag) && opEnabledFlag))
                         {
                             CurrentSequenceNumber += handoffBufferPosition - CurrentBufferPosition;
                             CurrentBufferPosition = handoffBufferPosition;
@@ -269,7 +279,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
 
                 //We ran out of data in the buffer, so attempt to advance
-                //  if we fail, 
+                //  if we fail,
                 if (!AdvanceBuffer(bufferPositionToAdvanceTo))
                 {
                     int posedPosition = CurrentSequenceNumber;
