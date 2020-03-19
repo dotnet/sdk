@@ -594,9 +594,6 @@ class C
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
     private static extern StringBuilder Method4();
-
-    [DllImport(""user32.dll"", CharSet = CharSet.Ansi)]
-    private static extern string Method10(); // correct marshaling on return type
 }
 ",
                 CSharpResult2101(7, 6),
