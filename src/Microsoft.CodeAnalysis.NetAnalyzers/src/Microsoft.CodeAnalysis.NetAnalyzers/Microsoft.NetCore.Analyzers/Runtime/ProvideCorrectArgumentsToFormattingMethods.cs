@@ -29,7 +29,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -287,7 +287,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         else if (ch == '}')
                         {
                             if (pos < len && format[pos] == '}')  // Treat as escape character for }}
+                            {
                                 pos++;
+                            }
                             else
                             {
                                 pos--;

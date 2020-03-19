@@ -182,7 +182,7 @@
           "id": "CA1821",
           "shortDescription": "Remove empty Finalizers",
           "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
           "properties": {
             "category": "Performance",
@@ -1057,7 +1057,7 @@
           "id": "CA1067",
           "shortDescription": "Override Object.Equals(object) when implementing IEquatable<T>",
           "fullDescription": "When a type T implements the interface IEquatable<T>, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the \"principle of least surprise\".",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1067",
           "properties": {
             "category": "Design",
@@ -1714,7 +1714,7 @@
           "id": "CA1816",
           "shortDescription": "Dispose methods should call SuppressFinalize",
           "fullDescription": "A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1816",
           "properties": {
             "category": "Usage",
@@ -1772,7 +1772,7 @@
         "CA1822": {
           "id": "CA1822",
           "shortDescription": "Mark members as static",
-          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
+          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1822",
           "properties": {
@@ -1983,6 +1983,25 @@
             ]
           }
         },
+        "CA2012": {
+          "id": "CA2012",
+          "shortDescription": "Use ValueTasks correctly",
+          "fullDescription": "ValueTasks must only be consumed once, generally by directly awaiting them.  Attempts to consume a ValueTask multiple times may result in an exception or corruption.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2012",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "UseValueTasksCorrectlyAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
@@ -2008,7 +2027,7 @@
           "id": "CA2101",
           "shortDescription": "Specify marshaling for P/Invoke string arguments",
           "fullDescription": "A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2101",
           "properties": {
             "category": "Globalization",
@@ -2388,7 +2407,7 @@
           "id": "CA2241",
           "shortDescription": "Provide correct arguments to formatting methods",
           "fullDescription": "The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2241",
           "properties": {
             "category": "Usage",
@@ -2408,7 +2427,7 @@
           "id": "CA2242",
           "shortDescription": "Test for NaN correctly",
           "fullDescription": "This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2242",
           "properties": {
             "category": "Usage",
@@ -2466,7 +2485,7 @@
           "id": "CA2245",
           "shortDescription": "Do not assign a property to itself.",
           "fullDescription": "The property {0} should not be assigned to itself.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2245",
           "properties": {
             "category": "Usage",
@@ -4203,7 +4222,7 @@
           "id": "CA1821",
           "shortDescription": "Remove empty Finalizers",
           "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
           "properties": {
             "category": "Performance",

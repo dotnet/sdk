@@ -157,8 +157,8 @@ public sealed class C : B, IFace
 }",
                     },
                 },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = "MakeDeclaringTypeSealed",
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = "MakeDeclaringTypeSealed",
             }.RunAsync();
         }
 
@@ -211,8 +211,8 @@ internal class C : B, IFace
 }",
                     },
                 },
-                CodeFixIndex = 2,
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
+                CodeActionIndex = 2,
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 
@@ -265,8 +265,8 @@ internal abstract class C : B, IFace
 }",
                     },
                 },
-                CodeFixIndex = 1, // sealed option is not available because class is abstract
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
+                CodeActionIndex = 1, // sealed option is not available because class is abstract
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 
@@ -354,8 +354,8 @@ internal class C : B, IFace
 }",
                     },
                 },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 
@@ -402,8 +402,8 @@ internal abstract class C : B, IFace
 }",
                     },
                 },
-                CodeFixIndex = 0, // sealed option is not available because type is abstract
-                CodeFixEquivalenceKey = "MakeDeclaringTypeInternal",
+                CodeActionIndex = 0, // sealed option is not available because type is abstract
+                CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
             }.RunAsync();
         }
 

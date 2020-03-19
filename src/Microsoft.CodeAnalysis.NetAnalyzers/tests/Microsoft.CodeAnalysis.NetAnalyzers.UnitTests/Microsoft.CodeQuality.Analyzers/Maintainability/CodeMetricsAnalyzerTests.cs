@@ -803,6 +803,51 @@ CA1506: 2
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_Configuration_CSharp_Linq()
+        {
+            var source = @"
+using System.Linq;
+using System.Collections.Generic;
+class C
+{
+    IEnumerable<int> TestCa1506()
+    {
+        var ints = new[] { 1, 2 };
+        return from a in ints
+               from b in ints
+               from c in ints
+               from d in ints
+               from e in ints
+               from f in ints
+               from g in ints 
+               from h in ints
+               from i in ints
+               from j in ints
+               from k in ints
+               from l in ints
+               from m in ints
+               from n in ints
+               from o in ints
+               from p in ints
+               select p;
+    }
+}
+";
+            string additionalText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+";
+            DiagnosticResult[] expected = new[] {
+                // Test0.cs(4,7): warning CA1506: 'C' is coupled with '4' different types from '3' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
+                GetCSharpCA1506ExpectedDiagnostic(4, 7, "C", 4, 3, 3),
+                // Test0.cs(4,10): warning CA1506: 'TestCa1506' is coupled with '4' different types from '3' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
+                GetCSharpCA1506ExpectedDiagnostic(6, 22, "TestCa1506", 4, 3, 3)};
+            await VerifyCSharpAsync(source, additionalText, expected);
+        }
+
         [Fact]
         public async Task CA1506_Configuration_Basic_VerifyDiagnostic()
         {
@@ -903,6 +948,128 @@ CA1506(Type): 10
                 // Test0.vb(3,17): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetBasicCA1506ExpectedDiagnostic(3, 17, "M1", 4, 2, 3)};
             await VerifyBasicAsync(source, additionalText, expected);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_CountCorrectlyGenericTypes()
+        {
+            await VerifyCSharpAsync(@"
+using System.Collections.Generic;
+
+public class A {}
+public class B {}
+
+public class C
+{
+    private IEnumerable<A> a;
+    private IEnumerable<B> b;
+}",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+",
+                GetCSharpCA1506ExpectedDiagnostic(7, 14, "C", 3, 2, 3));
+
+            await VerifyBasicAsync(@"
+Imports System.Collections.Generic
+
+Public Class A
+End Class
+
+Public Class B
+End Class
+
+Public Class C
+    Private a As IEnumerable(Of A)
+    Private b As IEnumerable(Of B)
+End Class",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+",
+    GetCSharpCA1506ExpectedDiagnostic(10, 14, "C", 3, 2, 3));
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_LinqAnonymousType()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+public static class Ca1506Tester
+{
+    public static IEnumerable<int> TestCa1506()
+    {
+        var ints = new[] { 1, 2 };
+        return from a in ints
+               from b in ints
+               from c in ints
+               from d in ints
+               from e in ints
+               from f in ints
+               from g in ints
+               from h in ints
+               from i in ints
+               from j in ints
+               from k in ints
+               from l in ints
+               from m in ints
+               from n in ints
+               from o in ints
+               from p in ints
+               select p;
+    }
+}");
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_ExcludeCompilerGeneratedTypes()
+        {
+            await VerifyCSharpAsync(@"
+[System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+public class A {}
+
+[System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")]
+public class B {}
+
+public class C
+{
+    private A a;
+    private B b;
+}",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 1
+");
+
+            await VerifyBasicAsync(@"
+Imports System.Collections.Generic
+
+<System.Runtime.CompilerServices.CompilerGeneratedAttribute>
+Public Class A
+End Class
+
+<System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")>
+Public Class B
+End Class
+
+Public Class C
+    Private a As A
+    Private b As B
+End Class",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 1
+");
         }
 
         #endregion

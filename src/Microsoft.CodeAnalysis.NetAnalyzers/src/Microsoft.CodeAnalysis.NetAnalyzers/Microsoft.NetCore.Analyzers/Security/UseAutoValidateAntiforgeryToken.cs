@@ -140,7 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     break;
 
                                 case IFieldReferenceOperation fieldReferenceOperation:
-                                    var fieldSymbol = (IFieldSymbol)fieldReferenceOperation.Field;
+                                    var fieldSymbol = fieldReferenceOperation.Field;
 
                                     if (fieldSymbol.Type.TypeKind == TypeKind.Delegate)
                                     {

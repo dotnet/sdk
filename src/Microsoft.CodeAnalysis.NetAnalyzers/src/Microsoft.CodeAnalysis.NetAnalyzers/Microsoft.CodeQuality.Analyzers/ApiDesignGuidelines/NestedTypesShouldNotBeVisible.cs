@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -50,12 +51,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.RegisterCompilationStartAction(
                 compilationStartContext =>
                 {
-                    Compilation compilation = compilationStartContext.Compilation;
+                    var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationStartContext.Compilation);
 
-                    INamedTypeSymbol? enumeratorType = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerator);
-                    INamedTypeSymbol? dataSetType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataDataSet);
-                    INamedTypeSymbol? dataTableType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataDataTable);
-                    INamedTypeSymbol? dataRowType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataDataRow);
+                    INamedTypeSymbol? enumeratorType = wellKnownTypeProvider.Compilation.GetSpecialType(SpecialType.System_Collections_IEnumerator);
+                    INamedTypeSymbol? dataSetType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataDataSet);
+                    INamedTypeSymbol? dataTableType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataDataTable);
+                    INamedTypeSymbol? dataRowType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataDataRow);
 
                     compilationStartContext.RegisterSymbolAction(
                         symbolAnalysisContext =>
@@ -98,6 +99,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             // FxCop allowed public nested enums to accommodate .NET types such as
                             // Environment.SpecialFolders.
                             if (nestedType.TypeKind == TypeKind.Enum)
+                            {
+                                return;
+                            }
+
+                            // Allow builder pattern
+                            if (nestedType.Name.EndsWith("Builder", StringComparison.Ordinal) &&
+                                containingType.ContainingType == null &&
+                                !containingType.InstanceConstructors.Any(ctor => ctor.IsExternallyVisible()))
                             {
                                 return;
                             }
