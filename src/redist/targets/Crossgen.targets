@@ -87,6 +87,14 @@
 
       <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
       <RemainingFolders Remove="$(PublishDir)FSharp\**\*" />
+
+      <!-- RemainingFolders should be ordered so that dependencies are first looked up in the leaf folders. 
+        Currently it is not ordered and crossgen is picking the wrong dlls when resolving dependencies: https://github.com/dotnet/core-sdk/pull/6774
+        As a partial solution, we remove the root folder from the list and put it back to the end.
+        Remove the following 2 lines when resolving this issue: https://github.com/dotnet/core-sdk/issues/6877 -->
+      <RemainingFolders Remove="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+      <RemainingFolders Include="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+
     </ItemGroup>
 
     <!-- Crossgen does not support generating symbols on Mac  -->
