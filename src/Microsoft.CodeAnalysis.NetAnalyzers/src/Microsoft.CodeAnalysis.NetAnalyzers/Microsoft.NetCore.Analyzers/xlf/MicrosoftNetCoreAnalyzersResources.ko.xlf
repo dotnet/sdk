@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">안전하지 않은 암호화 모드를 사용하지 마세요.</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="needs-review-translation">안전하지 않은 암호화 모드를 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">이러한 모드는 공격에 취약합니다. 승인된 모드(CBC, CTS)만 사용하세요.</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="needs-review-translation">이러한 모드는 공격에 취약합니다. 승인된 모드(CBC, CTS)만 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">안전하지 않은 암호화 모드 {0}을(를) 사용합니다.</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="needs-review-translation">안전하지 않은 암호화 모드 {0}을(를) 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -735,6 +735,26 @@
       <trans-unit id="DoNotUseObsoleteKDFAlgorithmMessage">
         <source>Call to obsolete key derivation function {0}.{1}</source>
         <target state="translated">사용되지 않는 키 파생 함수 {0}.{1}에 대한 호출</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="new">Do not use ReferenceEquals with value types</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseSHA1">

@@ -287,7 +287,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         else if (ch == '}')
                         {
                             if (pos < len && format[pos] == '}')  // Treat as escape character for }}
+                            {
                                 pos++;
+                            }
                             else
                             {
                                 pos--;

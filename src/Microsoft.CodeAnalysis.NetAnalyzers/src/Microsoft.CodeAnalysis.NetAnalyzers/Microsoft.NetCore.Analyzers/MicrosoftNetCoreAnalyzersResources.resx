@@ -775,13 +775,13 @@
     <value>Do not use TypeNameHandling values other than None</value>
   </data>
   <data name="ApprovedCipherMode" xml:space="preserve">
-    <value>Do Not Use Unsafe Cipher Modes</value>
+    <value>Review cipher mode usage with cryptography experts</value>
   </data>
   <data name="ApprovedCipherModeDescription" xml:space="preserve">
-    <value>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</value>
+    <value>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</value>
   </data>
   <data name="ApprovedCipherModeMessage" xml:space="preserve">
-    <value>It uses an unsafe Cipher Mode {0}</value>
+    <value>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</value>
   </data>
   <data name="DefinitelyInstallRootCert" xml:space="preserve">
     <value>Do Not Add Certificates To Root Store</value>
@@ -929,6 +929,18 @@
   </data>
   <data name="DoNotUseObsoleteKDFAlgorithmMessage" xml:space="preserve">
     <value>Call to obsolete key derivation function {0}.{1}</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesDescription" xml:space="preserve">
+    <value>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesComparerMessage" xml:space="preserve">
+    <value>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesMethodMessage" xml:space="preserve">
+    <value>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</value>
+  </data>
+  <data name="DoNotUseReferenceEqualsWithValueTypesTitle" xml:space="preserve">
+    <value>Do not use ReferenceEquals with value types</value>
   </data>
   <data name="DoNotUseSHA1" xml:space="preserve">
     <value>Do not use insecure cryptographic algorithm SHA1.</value>

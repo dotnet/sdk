@@ -15,8 +15,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public class DoNotDirectlyAwaitATaskTests
     {
-        [Fact]
-        public async Task CSharpSimpleAwaitTask()
+        [Theory]
+        [InlineData("Task")]
+        [InlineData("Task<int>")]
+        [InlineData("ValueTask")]
+        [InlineData("ValueTask<int>")]
+        public async Task CSharpSimpleAwaitTask(string typeName)
         {
             var code = @"
 using System.Threading.Tasks;
@@ -25,7 +29,7 @@ public class C
 {
     public async Task M()
     {
-        Task t = null;
+        " + typeName + @" t = default;
         await t;
     }
 }
@@ -33,54 +37,24 @@ public class C
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(9, 15));
         }
 
-        [Fact]
-        public async Task BasicSimpleAwaitTask()
+        [Theory]
+        [InlineData("Task")]
+        [InlineData("Task(Of Integer)")]
+        [InlineData("ValueTask")]
+        [InlineData("ValueTask(Of Integer)")]
+        public async Task BasicSimpleAwaitTask(string typeName)
         {
             var code = @"
 Imports System.Threading.Tasks
 
 Public Class C
     Public Async Function M() As Task
-        Dim t As Task
+        Dim t As " + typeName + @"
         Await t
     End Function
 End Class
 ";
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(7, 15));
-        }
-
-        [Fact]
-        public async Task CSharpSimpleAwaitTaskOfT()
-        {
-            var code = @"
-using System.Threading.Tasks;
-
-public class C
-{
-    public async Task M()
-    {
-        Task<int> t = null;
-        int x = await t;
-    }
-}
-";
-            await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(9, 23));
-        }
-
-        [Fact]
-        public async Task BasicSimpleAwaitTaskOfT()
-        {
-            var code = @"
-Imports System.Threading.Tasks
-
-Public Class C
-    Public Async Function M() As Task
-        Dim t As Task(Of Integer)
-        Dim x As Integer = Await t
-    End Function
-End Class
-";
-            await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(7, 34));
         }
 
         [Fact]
@@ -97,6 +71,15 @@ public class C
     {
         Task t = null;
         await t.ConfigureAwait(false);
+
+        Task<int> tg = null;
+        await tg.ConfigureAwait(false);
+
+        ValueTask vt = default;
+        await vt.ConfigureAwait(false);
+
+        ValueTask<int> vtg = default;
+        await vtg.ConfigureAwait(false);
 
         SomeAwaitable s = null;
         await s;
@@ -141,6 +124,15 @@ Public Class C
     Public Async Function M() As Task
         Dim t As Task = Nothing
         Await t.ConfigureAwait(False)
+
+        Dim tg As Task(Of Integer) = Nothing
+        Await tg.ConfigureAwait(False)
+
+        Dim vt As ValueTask
+        Await vt.ConfigureAwait(False)
+
+        Dim vtg As ValueTask(Of Integer) = Nothing
+        Await vtg.ConfigureAwait(False)
 
         Dim s As SomeAwaitable = Nothing
         Await s
@@ -187,6 +179,13 @@ public class C
         await await t; // both have warnings.
         await await t.ConfigureAwait(false); // outer await is wrong.
         await (await t).ConfigureAwait(false); // inner await is wrong.
+        await (await t.ConfigureAwait(false)).ConfigureAwait(false); // both correct.
+
+        ValueTask<ValueTask> vt = default;
+        await await vt; // both have warnings.
+        await await vt.ConfigureAwait(false); // outer await is wrong.
+        await (await vt).ConfigureAwait(false); // inner await is wrong
+        await (await vt.ConfigureAwait(false)).ConfigureAwait(false); // both correct.
     }
 }
 ";
@@ -194,7 +193,11 @@ public class C
                 GetCSharpResultAt(9, 15),
                 GetCSharpResultAt(9, 21),
                 GetCSharpResultAt(10, 15),
-                GetCSharpResultAt(11, 22));
+                GetCSharpResultAt(11, 22),
+                GetCSharpResultAt(15, 15),
+                GetCSharpResultAt(15, 21),
+                GetCSharpResultAt(16, 15),
+                GetCSharpResultAt(17, 22));
         }
 
         [Fact]
@@ -209,6 +212,13 @@ Public Class C
         Await Await t ' both have warnings.
         Await Await t.ConfigureAwait(False) ' outer await is wrong.
         Await (Await t).ConfigureAwait(False) ' inner await is wrong.
+        Await (Await t.ConfigureAwait(False)).ConfigureAwait(False) ' both correct.
+
+        Dim vt As ValueTask(Of ValueTask)
+        Await Await vt ' both have warnings.
+        Await Await vt.ConfigureAwait(False) ' outer await is wrong.
+        Await (Await vt).ConfigureAwait(False) ' inner await is wrong.
+        Await (Await vt.ConfigureAwait(False)).ConfigureAwait(False) ' both correct.
     End Function
 End Class
 ";
@@ -216,7 +226,11 @@ End Class
                 GetBasicResultAt(7, 15),
                 GetBasicResultAt(7, 21),
                 GetBasicResultAt(8, 15),
-                GetBasicResultAt(9, 22));
+                GetBasicResultAt(9, 22),
+                GetBasicResultAt(13, 15),
+                GetBasicResultAt(13, 21),
+                GetBasicResultAt(14, 15),
+                GetBasicResultAt(15, 22));
         }
 
         [Fact]

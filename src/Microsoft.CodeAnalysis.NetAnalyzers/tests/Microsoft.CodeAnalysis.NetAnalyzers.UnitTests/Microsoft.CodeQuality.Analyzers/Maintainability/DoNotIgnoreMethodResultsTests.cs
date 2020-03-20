@@ -136,7 +136,7 @@ End Class",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -158,7 +158,7 @@ public class Test
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -192,7 +192,7 @@ End Class",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -215,7 +215,7 @@ public class Test
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -510,7 +510,7 @@ End Module
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -539,7 +539,7 @@ public class Test
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -578,7 +578,7 @@ End Class",
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -607,7 +607,7 @@ public class Test
 
             await new VerifyVB.Test
             {
-                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithxunit : AdditionalMetadataReferences.DefaultWithNUnit,
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =

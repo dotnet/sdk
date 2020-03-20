@@ -16,16 +16,16 @@ namespace Microsoft.NetFramework.Analyzers
         /// </summary>
         private sealed class MvcAttributeSymbols
         {
-            INamedTypeSymbol? ValidateAntiforgeryTokenAttributeSymbol { get; set; }
-            INamedTypeSymbol? HttpGetAttributeSymbol { get; set; }
-            INamedTypeSymbol? HttpPostAttributeSymbol { get; set; }
-            INamedTypeSymbol? HttpPutAttributeSymbol { get; set; }
-            INamedTypeSymbol? HttpDeleteAttributeSymbol { get; set; }
-            INamedTypeSymbol? HttpPatchAttributeSymbol { get; set; }
-            INamedTypeSymbol? AcceptVerbsAttributeSymbol { get; set; }
-            INamedTypeSymbol? NonActionAttributeSymbol { get; set; }
-            INamedTypeSymbol? ChildActionOnlyAttributeSymbol { get; set; }
-            INamedTypeSymbol? HttpVerbsSymbol { get; set; }
+            private INamedTypeSymbol? ValidateAntiforgeryTokenAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpGetAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpPostAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpPutAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpDeleteAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpPatchAttributeSymbol { get; set; }
+            private INamedTypeSymbol? AcceptVerbsAttributeSymbol { get; set; }
+            private INamedTypeSymbol? NonActionAttributeSymbol { get; set; }
+            private INamedTypeSymbol? ChildActionOnlyAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpVerbsSymbol { get; set; }
 
             public MvcAttributeSymbols(Compilation compilation)
             {

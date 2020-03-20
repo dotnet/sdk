@@ -86,6 +86,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
+                var guidType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
+
                 var stringFormatMembers = stringType.GetMembers("Format").OfType<IMethodSymbol>();
 
                 var stringFormatMemberWithStringAndObjectParameter = stringFormatMembers.GetFirstOrDefaultMemberWithParameterInfos(
@@ -138,7 +140,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                          (targetMethod.Name == ToStringMethodName &&
                             (stringType != null && stringType.Equals(targetMethod.ContainingType)) ||
                             (charType != null && charType.Equals(targetMethod.ContainingType)) ||
-                            (boolType != null && boolType.Equals(targetMethod.ContainingType)))))
+                            (boolType != null && boolType.Equals(targetMethod.ContainingType)) ||
+                            (guidType != null && guidType.Equals(targetMethod.ContainingType)))))
                     {
                         return;
                     }
