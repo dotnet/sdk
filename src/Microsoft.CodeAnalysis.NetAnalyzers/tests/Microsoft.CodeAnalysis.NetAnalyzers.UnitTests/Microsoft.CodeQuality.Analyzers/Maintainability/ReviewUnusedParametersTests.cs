@@ -965,6 +965,20 @@ Public Class C
 End Class");
         }
 
+        [Fact]
+        [WorkItem(2846, "https://github.com/dotnet/roslyn-analyzers/issues/2846")]
+        public async Task CA1801_MethodThrowArrowExpression_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class Class1
+{
+    public int Method1(int value) => throw new NotImplementedException();
+}
+");
+        }
+
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
