@@ -28,7 +28,26 @@ namespace EndToEnd
             }
         }
 
-        
+        public static IEnumerable<string> TargetFrameworkShortFolderVersion
+        {
+            get
+            {
+                var targetFrameworkShortFolderVersion = new List<string>();
+                foreach (var v in Versions)
+                {
+                    if (Version.Parse(v).Major >= 5)
+                    {
+                        targetFrameworkShortFolderVersion.Add($"net{v}");
+                    }
+                    else
+                    {
+                        targetFrameworkShortFolderVersion.Add($"netcoreapp{v}");
+                    }
+                }
+
+                return targetFrameworkShortFolderVersion;
+            }
+        }
     }
 
     public class SupportedAspNetCoreVersions : IEnumerable<object[]>
