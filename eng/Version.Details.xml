@@ -53,9 +53,9 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>a2d8852186643561d783e5ea6c9bc65fc97810ce</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20169.10">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20170.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>f203ede3fe3c58ae9f5e7a586f7e084a0ee4c6a7</Sha>
+      <Sha>dcbab464643d971765e77562d2d0854c6ae112f7</Sha>
     </Dependency>
     <Dependency Name="NuGet.Build.Tasks" Version="5.6.0-preview.2.6489">
       <Uri>https://github.com/NuGet/NuGet.Client</Uri>
