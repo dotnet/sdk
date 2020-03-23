@@ -99,8 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 continue;
                             }
 
-                            var ops = cfg.DescendantOperations().ToArray();
-                            foreach (var operation in ops)
+                            foreach (var operation in cfg.DescendantOperations())
                             {
                                 // Skip implicit operations.
                                 // However, 'IsNull' operations are compiler generated operations corresponding to
