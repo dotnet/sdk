@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -10,7 +11,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     /// <summary>
     /// CA2109: Review visible event handlers
     /// </summary>
-    public abstract class ReviewVisibleEventHandlersAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class ReviewVisibleEventHandlersAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2109";
 
@@ -39,17 +41,43 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                                                                              isDataflowRule: false,
                                                                              isEnabledByDefaultInFxCopAnalyzers: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
-        //ImmutableArray.Create(SecurityRule, DefaultRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(SecurityRule, DefaultRule);
 
-#pragma warning disable RS1025 // Configure generated code analysis
         public override void Initialize(AnalysisContext analysisContext)
-#pragma warning restore RS1025 // Configure generated code analysis
         {
             analysisContext.EnableConcurrentExecution();
+            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            // TODO: Configure generated code analysis.
-            //analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            analysisContext.RegisterCompilationStartAction(context =>
+            {
+                var eventArgsType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
+                var securityPermissionAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSecurityPermissionsSecurityPermissionAttribute);
+
+                context.RegisterSymbolAction(context =>
+                {
+                    var method = (IMethodSymbol)context.Symbol;
+
+                    // FxCop compat: only analyze externally visible symbols by default.
+                    if (!method.MatchesConfiguredVisibility(context.Options, DefaultRule, context.CancellationToken))
+                    {
+                        return;
+                    }
+
+                    if (method.IsOverride || method.IsImplementationOfAnyInterfaceMember())
+                    {
+                        return;
+                    }
+
+                    if (method.HasEventHandlerSignature(eventArgsType))
+                    {
+                        var rule = method.HasAttribute(securityPermissionAttributeType)
+                            ? SecurityRule
+                            : DefaultRule;
+
+                        context.ReportDiagnostic(method.CreateDiagnostic(rule, method.Name));
+                    }
+                }, SymbolKind.Method);
+            });
         }
     }
 }
