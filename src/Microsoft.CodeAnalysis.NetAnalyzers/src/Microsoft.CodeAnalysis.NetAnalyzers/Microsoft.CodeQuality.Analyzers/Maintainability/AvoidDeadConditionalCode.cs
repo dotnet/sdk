@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -98,7 +99,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 continue;
                             }
 
-                            foreach (var operation in cfg.DescendantOperations())
+                            var ops = cfg.DescendantOperations().ToArray();
+                            foreach (var operation in ops)
                             {
                                 // Skip implicit operations.
                                 // However, 'IsNull' operations are compiler generated operations corresponding to
@@ -151,9 +153,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         }
 
                                         var originalOperation = operationRoot.SemanticModel.GetOperation(operation.Syntax, operationBlockContext.CancellationToken);
-                                        if (originalOperation is IAssignmentOperation)
+                                        if (originalOperation is IAssignmentOperation ||
+                                            originalOperation is IVariableDeclaratorOperation)
                                         {
-                                            // Skip compiler generated IsNull operation for assignment within a using.
+                                            // Skip compiler generated IsNull operation for assignment/variable declaration within a using.
                                             continue;
                                         }
 
