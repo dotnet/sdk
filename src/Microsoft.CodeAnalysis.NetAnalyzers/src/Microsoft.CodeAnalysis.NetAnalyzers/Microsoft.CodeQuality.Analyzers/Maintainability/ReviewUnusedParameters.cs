@@ -204,10 +204,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             // Ignore event handler methods "Handler(object, MyEventArgs)"
-            if (method.Parameters.Length == 2 &&
-                method.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                // UWP has specific EventArgs not inheriting from System.EventArgs. It was decided to go for a suffix match rather than a whitelist.
-                (method.Parameters[1].Type.Inherits(eventsArgSymbol) || method.Parameters[1].Type.Name.EndsWith("EventArgs", StringComparison.Ordinal)))
+            if (method.HasEventHandlerSignature(eventsArgSymbol))
             {
                 return false;
             }

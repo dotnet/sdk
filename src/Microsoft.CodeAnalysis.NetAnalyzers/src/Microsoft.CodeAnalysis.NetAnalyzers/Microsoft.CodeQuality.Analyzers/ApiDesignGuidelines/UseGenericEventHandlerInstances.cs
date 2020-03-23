@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -95,31 +94,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     static bool IsDelegateTypeWithInvokeMethod(INamedTypeSymbol namedType) =>
                         namedType.TypeKind == TypeKind.Delegate && namedType.DelegateInvokeMethod != null;
 
-                    bool IsEventArgsParameter(IParameterSymbol parameter)
-                    {
-                        var type = parameter.Type;
-                        if (IsAssignableTo(type, eventArgs, context.Compilation))
-                        {
-                            return true;
-                        }
-
-                        // FxCop compat: Struct with name ending with "EventArgs" are allowed.
-                        if (type.IsValueType)
-                        {
-                            return type.Name.EndsWith("EventArgs", StringComparison.Ordinal);
-                        }
-
-                        return false;
-                    }
-
-                    bool IsValidNonGenericEventHandler(IMethodSymbol delegateInvokeMethod)
-                    {
-                        return delegateInvokeMethod.ReturnsVoid &&
-                            delegateInvokeMethod.Parameters.Length == 2 &&
-                            delegateInvokeMethod.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                            IsEventArgsParameter(delegateInvokeMethod.Parameters[1]);
-                    }
-
                     context.RegisterSymbolAction(symbolContext =>
                     {
                         // Note all the descriptors/rules for this analyzer have the same ID and category and hence
@@ -127,7 +101,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         var namedType = (INamedTypeSymbol)symbolContext.Symbol;
                         if (namedType.MatchesConfiguredVisibility(symbolContext.Options, RuleForDelegates, symbolContext.CancellationToken) &&
                             IsDelegateTypeWithInvokeMethod(namedType) &&
-                            IsValidNonGenericEventHandler(namedType.DelegateInvokeMethod))
+                            namedType.DelegateInvokeMethod.HasEventHandlerSignature(eventArgs))
                         {
                             // CA1003: Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs
                             symbolContext.ReportDiagnostic(namedType.CreateDiagnostic(RuleForDelegates, namedType.Name));
@@ -159,7 +133,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 // CA1003: Change the event '{0}' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).
                                 symbolContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(RuleForEvents2, eventSymbol.Name));
                             }
-                            else if (!IsValidNonGenericEventHandler(eventType.DelegateInvokeMethod))
+                            else if (!eventType.DelegateInvokeMethod.HasEventHandlerSignature(eventArgs))
                             {
                                 // CA1003: Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs
                                 symbolContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(RuleForEvents, eventSymbol.Name, eventType.ToDisplayString()));
