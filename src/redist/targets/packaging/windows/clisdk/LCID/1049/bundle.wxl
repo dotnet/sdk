@@ -49,32 +49,32 @@
   <String Id="FilesInUseCancelButton">Отм&amp;ена</String>
   <String Id="FirstTimeWelcomeMessage">Установка выполнена.
 
-В "[DOTNETHOME]" установлены следующие компоненты.
-    • Пакет SDK для .NET Core [DOTNETSDKVERSION]
-    • Среда выполнения .NET Core [DOTNETRUNTIMEVERSION]
+В "[DOTNETHOME]" установлены следующие компоненты:
+    • Пакет SDK для .NET [DOTNETSDKVERSION]
+    • Среда выполнения .NET [DOTNETRUNTIMEVERSION]
     • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
-    • Среда выполнения .NET Core для Windows Desktop [WINFORMSANDWPFVERSION]
+    • Среда выполнения .NET для Windows Desktop [WINFORMSANDWPFVERSION]
 
 Этот продукт собирает данные об использовании.
     • Дополнительные сведения и отказ: https://aka.ms/dotnet-cli-telemetry
 
 Ресурсы
-    • Документация по .NET Core: https://aka.ms/dotnet-docs
+    • Документация по .NET: https://aka.ms/dotnet-docs
     • Документация по SDK: https://aka.ms/dotnet-sdk-docs
     • Заметки о выпуске: https://aka.ms/netcore3releasenotes
     • Учебники: https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">Пакет SDK для .NET</String>
+  <String Id="WelcomeHeaderMessage">Пакет SDK для .NET</String>
   <String Id="WelcomeDescription">
-    .NET Core — это кроссплатформенное решение с открытым кодом, поддерживаемое корпорацией Майкрософт. Создавайте с его помощью приложения на C#, F# и Visual Basic. Надеемся, оно вам понравится!</String>
+    .NET — это кроссплатформенное решение с открытым кодом, поддерживаемое корпорацией Майкрософт. Создавайте с его помощью приложения на C#, F# и Visual Basic. Надеемся, оно вам понравится!</String>
   <String Id="LearnMoreTitle">Дополнительные сведения о .NET</String>
   <String Id="ResourcesHeader">Ресурсы</String>
-  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Документация по продукту Core&lt;/A&gt;</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Документация по .NET&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Документация по пакету SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Заявление о конфиденциальности&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Лицензионное соглашение для библиотеки .NET&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Примечание по установке</String>
   <String Id="InstallationNote">В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты.
   </String>
-  <String Id="VisualStudioWarning">Если вы планируете использовать .NET Core 3.1 с Visual Studio, требуется Visual Studio 2019 16.4 или более поздней версии. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Подробнее&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Если вы планируете использовать .NET 5.0 с Visual Studio, требуется Visual Studio 2019 версии 16.6 или более поздней. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Подробнее&lt;/A&gt;.
   </String>
 </WixLocalization>

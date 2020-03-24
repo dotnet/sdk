@@ -51,12 +51,12 @@
 
 下列項目已安裝在: '[DOTNETHOME]'
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Runtime [ASPNETCOREVERSION]
-    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+    • .NET 執行階段 [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core 執行階段 [ASPNETCOREVERSION]
+    • .NET Windows Desktop 執行階段 [WINFORMSANDWPFVERSION]
 
-此產品會收集使用方式資料
-    • 如需詳細資訊或退出，請前往 https://aka.ms/dotnet-cli-telemetry
+此產品會收集使用量資料
+    • 如需詳細資訊並退出，請前往 https://aka.ms/dotnet-cli-telemetry
 
 資源
     • 如需 .NET 文件，請前往 https://aka.ms/dotnet-docs
@@ -65,16 +65,16 @@
     • 如需教學課程，請前往 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET 是 Microsoft 支援的跨平台開放原始碼。您可以用它以 C#、F# 或 VB 建置下一個應用程式。希望您會喜歡!</String>
+    .NET 是 Microsoft 支援的跨平台開放原始碼。您可以使用 .NET 以 C#、F# 或 VB 建置下一個應用程式。希望您會喜歡!</String>
   <String Id="LearnMoreTitle">深入了解 .NET</String>
   <String Id="ResourcesHeader">資源</String>
-  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;核心文件&lt;/A&gt;</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET 文件&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK 文件&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;隱私權聲明&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;.NET 程式庫 EULA&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">安裝附註</String>
   <String Id="InstallationNote">安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。
   </String>
-  <String Id="VisualStudioWarning">若您打算透過 Visual Studio 使用 .NET Core 3.1，則需要 Visual Studio 2019 16.4 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;。
+  <String Id="VisualStudioWarning">若您打算透過 Visual Studio 使用 .NET 5.0，則需要 Visual Studio 2019 16.6 或更新版本。&lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;深入了解&lt;/A&gt;。
   </String>
 </WixLocalization>
