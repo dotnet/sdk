@@ -53,35 +53,20 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         public Dictionary<string, string> AdditionalItems { get; } = new Dictionary<string, string>();
 
-        private static string GetShortTargetFrameworkIdentifier(string targetFramework)
-        {
-            int identifierLength = 0;
-            for (; identifierLength < targetFramework.Length; identifierLength++)
-            {
-                if (!char.IsLetter(targetFramework[identifierLength]))
-                {
-                    break;
-                }
-            }
-
-            string identifier = targetFramework.Substring(0, identifierLength);
-            return identifier;
-        }
-
-        public IEnumerable<string> ShortTargetFrameworkIdentifiers
+        public IEnumerable<string> TargetFrameworkIdentifiers
         {
             get
             {
                 if (!IsSdkProject)
                 {
                     //  Assume .NET Framework
-                    yield return "net";
+                    yield return ".NETFramework";
                     yield break;
                 }
 
                 foreach (var target in TargetFrameworks.Split(';'))
                 {
-                    yield return GetShortTargetFrameworkIdentifier(target);
+                    yield return NuGetFramework.Parse(target).Framework;
                 }
             }
         }
@@ -96,9 +81,9 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 }
 
                 //  Currently can't build projects targeting .NET Framework on non-Windows: https://github.com/dotnet/sdk/issues/335
-                foreach (var identifier in ShortTargetFrameworkIdentifiers)
+                foreach (var identifier in TargetFrameworkIdentifiers)
                 {
-                    if (identifier.Equals("net", StringComparison.OrdinalIgnoreCase))
+                    if (identifier.Equals(".NETFramework", StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -404,8 +389,17 @@ namespace {this.Name}
             bool needsReferenceAssemblyPackages = false;
             if (IsSdkProject)
             {
-                foreach (var shortFrameworkName in TargetFrameworks.Split(';').Where(tf => GetShortTargetFrameworkIdentifier(tf) == "net"))
+                
+                foreach (var shortFrameworkName in TargetFrameworks.Split(';')
+                    //.Where(tf => GetShortTargetFrameworkIdentifier(tf) == "net")
+                    )
                 {
+                    var nugetFramework = NuGetFramework.Parse(shortFrameworkName);
+                    if (nugetFramework.Framework != ".NETFramework")
+                    {
+                        continue;
+                    }
+
                     //  Normalize version to the form used in the reference assemblies path
                     var version = NuGetFramework.Parse(shortFrameworkName).Version;
                     version = new Version(version.Major, version.Minor, version.Build);
