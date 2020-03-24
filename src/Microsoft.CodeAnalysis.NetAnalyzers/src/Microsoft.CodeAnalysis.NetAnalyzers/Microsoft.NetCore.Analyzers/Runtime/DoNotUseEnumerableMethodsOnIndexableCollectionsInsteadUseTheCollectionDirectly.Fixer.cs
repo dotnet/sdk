@@ -87,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                     diagnostic);
         }
 
-        private Task<Document> UseCollectionDirectly(Document document, SyntaxNode root, SyntaxNode invocationNode, SyntaxNode collectionSyntax, string methodName)
+        private static Task<Document> UseCollectionDirectly(Document document, SyntaxNode root, SyntaxNode invocationNode, SyntaxNode collectionSyntax, string methodName)
         {
             var generator = SyntaxGenerator.GetGenerator(document);
 
