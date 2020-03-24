@@ -13,40 +13,6 @@ namespace EndToEnd
 {
     public partial class GivenSelfContainedAppsRollForward : TestBase
     {
-
-        [Theory]
-        //  MemberData is used instead of InlineData here so we can access it in another test to
-        //  verify that we are covering the latest release of .NET Core
-        [ClassData(typeof(SupportedNetCoreAppVersions))]
-        public void ItRollsForwardToTheLatestNetCoreVersion(string minorVersion)
-        {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0")
-            {
-                //  https://github.com/dotnet/core-sdk/issues/621
-                return;
-            }
-            ItRollsForwardToTheLatestVersion(TestProjectCreator.NETCorePackageName, minorVersion);
-        }
-
-        [Theory]
-        [ClassData(typeof(SupportedAspNetCoreVersions))]
-        public void ItRollsForwardToTheLatestAspNetCoreAppVersion(string minorVersion)
-        {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0")
-            {
-                //  https://github.com/dotnet/core-sdk/issues/621
-                return;
-            }
-            ItRollsForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAppPackageName, minorVersion);
-        }
-
-        [Theory]
-        [ClassData(typeof(SupportedAspNetCoreAllVersions))]
-        public void ItRollsForwardToTheLatestAspNetCoreAllVersion(string minorVersion)
-        {
-            ItRollsForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
-        }
-
         internal void ItRollsForwardToTheLatestVersion(string packageName, string minorVersion)
         {
             var testProjectCreator = new TestProjectCreator()
