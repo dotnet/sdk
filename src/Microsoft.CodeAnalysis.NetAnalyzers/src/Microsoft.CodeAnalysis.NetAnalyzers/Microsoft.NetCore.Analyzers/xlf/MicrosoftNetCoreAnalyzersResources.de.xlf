@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">Verwenden Sie keine unsicheren Verschlüsselungsmodi.</target>
+        <target state="translated">Verwendung des Verschlüsselungsmodus mit Kryptografieexperten überprüfen</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Diese Modi sind für Angriffe anfällig. Verwenden Sie nur zugelassene Modi (CBC, CTS).</target>
+        <target state="translated">Diese Verschlüsselungsmodi sind möglicherweise anfällig für Angriffe. Erwägen Sie die Verwendung empfohlener Modi (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Ein unsicherer Verschlüsselungsmodus ({0}) wird verwendet.</target>
+        <target state="translated">Überprüfen Sie die Verwendung des Verschlüsselungsmodus "{0}" mit Kryptografieexperten. Erwägen Sie die Verwendung empfohlener Modi (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -739,22 +739,22 @@
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</target>
+        <target state="translated">Übergeben Sie ein Argument mit dem Werttyp "{0}" nicht an die Equals-Methode für "ReferenceEqualityComparer". Aufgrund von Wertboxing gibt dieser Aufruf von "Equals" immer FALSE zurück.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</target>
+        <target state="translated">Für mit einem Werttyp typisierte Argumente erfolgt für jeden Aufruf dieser Methode ein eindeutiges Boxing, daher ist das Ergebnis immer FALSE.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</target>
+        <target state="translated">Übergeben Sie kein Argument mit dem Werttyp "{0}" an "ReferenceEquals". Aufgrund von Wertboxing gibt dieser Aufruf von "ReferenceEquals" immer FALSE zurück.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
-        <target state="new">Do not use ReferenceEquals with value types</target>
+        <target state="translated">ReferenceEquals nicht mit Werttypen verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseSHA1">
@@ -1814,32 +1814,32 @@
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
-        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <target state="translated">Von Memberaufrufen zurückgegebene ValueTasks sind so konzipiert, dass sie direkt erwartet werden sollten. Versuche, einen ValueTask mehrmals zu nutzen oder direkt auf das Ergebnis zuzugreifen, bevor er offiziell abgeschlossen wurde, können zu einer Ausnahme oder zur Beschädigung führen. Das Ignorieren eines solchen ValueTask ist wahrscheinlich ein Hinweis auf einen Funktionsfehler und kann zu Leistungseinbußen führen.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
         <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
-        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <target state="translated">Auf die Ergebnisse von ValueTask-Instanzen darf nur dann direkt zugegriffen werden, wenn die Instanz bereits abgeschlossen ist. Im Gegensatz zu Tasks wird beim Aufruf von "Result" oder "GetAwaiter().GetResult()" für einen ValueTask nicht unbedingt eine Sperre eingerichtet, bis der Vorgang abgeschlossen ist. Wenn Sie nicht einfach auf die Instanz warten können, sollten Sie zunächst die zugehörige IsCompleted-Eigenschaft überprüfen (oder durch Assertion bestätigen, dass sie TRUE lautet, sofern Sie sich dessen sicher sind).</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
         <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
-        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <target state="translated">ValueTask-Instanzen dürfen nur einmal verwendet werden, z. B. über einen await-Vorgang. Das mehrfache Verwenden derselben ValueTask-Instanz kann zu Ausnahmen und zur Datenbeschädigung führen.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_General">
         <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
-        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <target state="translated">Von Methodenaufrufen zurückgegebene ValueTask-Instanzen müssen direkt erwartet, zurückgegeben oder als Argument an einen anderen Methodenaufruf übergeben werden. Eine andere Verwendung, z. B. das Speichern einer Instanz an einem lokalen Speicherort oder in einem Feld, ist wahrscheinlich ein Hinweis auf einen Fehler, weil ValueTask-Instanzen immer nur einmal verwendet werden dürfen.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
         <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
-        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <target state="translated">Von Methodenaufrufen zurückgegebene ValueTask-Instanzen müssen immer verwendet werden, normalerweise erwartet. Ein anderes Vorgehen stellt häufig einen Funktionsfehler oder dar oder kann zumindest zu Leistungseinbußen führen, wenn die Zielmethode Objekte für die Verwendung mit ValueTasks in Pools gruppiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyTitle">
         <source>Use ValueTasks correctly</source>
-        <target state="new">Use ValueTasks correctly</target>
+        <target state="translated">ValueTasks ordnungsgemäß verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

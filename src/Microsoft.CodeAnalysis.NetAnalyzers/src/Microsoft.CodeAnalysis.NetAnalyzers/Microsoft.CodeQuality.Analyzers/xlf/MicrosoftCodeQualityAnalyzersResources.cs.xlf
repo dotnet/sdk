@@ -719,17 +719,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Generic interface should also be implemented</source>
-        <target state="needs-review-translation">Kolekce mají implementovat obecné rozhraní.</target>
+        <target state="translated">Mělo by se také implementovat obecné rozhraní</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="needs-review-translation">Kvůli rozšíření použitelnosti kolekce implementujte některé z obecných rozhraní kolekce. Tato kolekce se pak dá použít k naplnění obecných typů kolekcí.</target>
+        <target state="translated">Jestli chcete rozšířit použitelnost typu, implementujte jedno z obecných rozhraní. To platí především pro kolekce, protože se pak dají použít k naplnění obecných typů kolekce.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="needs-review-translation">Kolekce {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné kolekce by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
+        <target state="translated">Typ {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné typy by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">

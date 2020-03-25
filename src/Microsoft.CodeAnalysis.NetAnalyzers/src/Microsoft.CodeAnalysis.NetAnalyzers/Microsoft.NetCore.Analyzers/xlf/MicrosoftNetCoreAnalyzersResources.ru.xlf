@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">Не использовать небезопасные режимы шифрования</target>
+        <target state="translated">Проверьте используемый режим шифрования с экспертами по криптографии</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Эти режимы являются уязвимыми для атак. Используйте только утвержденные режимы (CBC, CTS).</target>
+        <target state="translated">Эти режимы шифрования могут быть уязвимы для атак. Используйте рекомендуемые режимы (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Он использует небезопасный режим шифрования {0}</target>
+        <target state="translated">Проверьте используемый режим шифрования "{0}" с экспертами по криптографии. Используйте рекомендуемые режимы (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -739,22 +739,22 @@
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</target>
+        <target state="translated">Не передавайте аргумент с типом значения "{0}" методу "Equals" в "ReferenceEqualityComparer". Из-за упаковки-преобразования значения этот вызов "Equals" будет всегда возвращать "false".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</target>
+        <target state="translated">При каждом вызове этого метода отдельно выполняется упаковка-преобразование типизированных аргументов типа значения. Поэтому результат всегда равен false.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</target>
+        <target state="translated">Не передавайте аргумент с типом значения "{0}" в "ReferenceEquals". Из-за упаковки-преобразования значения этот вызов "ReferenceEquals" будет всегда возвращать "false".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
-        <target state="new">Do not use ReferenceEquals with value types</target>
+        <target state="translated">Не используйте ReferenceEquals с типами значений</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseSHA1">
@@ -1814,32 +1814,32 @@
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
-        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <target state="translated">ValueTask, возвращаемые в результате вызова членов, должны ожидаться напрямую. Попытки использовать ValueTask несколько раз или получить прямой доступ к результату, прежде чем он будет получен, могут привести к выдаче исключения или повреждению данных. Пропуск такого ValueTask, вероятно, свидетельствует о функциональной ошибке и может привести к снижению производительности.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
         <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
-        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <target state="translated">Прямой доступ к результатам экземпляров ValueTask не должен осуществляться, если обработка экземпляра не была завершена. В отличие от Tasks, вызов Result или GetAwaiter().GetResult() для ValueTask может не блокироваться до завершения операции. Если вы не можете просто ожидать экземпляр, проверьте свойство IsCompleted экземпляра (или убедитесь, что оно имеет значение true, если оно должно иметь такое значение).</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
         <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
-        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <target state="translated">Экземпляры ValueTask следует использовать только один раз, например через await. Использование одного и того же экземпляра ValueTask несколько раз может привести к выдаче исключений и повреждению данных.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_General">
         <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
-        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <target state="translated">Экземпляры ValueTask, возвращаемые из вызовов методов, необходимо непосредственно ожидать, возвращать или передавать в качестве аргумента в другой вызов метода. Другое использование экземпляров (например, сохранение экземпляра в локальной переменной или в поле), вероятно, свидетельствует об ошибке, так как экземпляры ValueTask всегда должны использоваться только один раз.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
         <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
-        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <target state="translated">Экземпляры ValueTask, возвращаемые из вызовов методов, всегда должны использоваться (как правило, они должны ожидаться). Если они не используются, это часто является функциональной ошибкой, но, даже если ошибки нет, это может привести к снижению производительности, если целевой метод добавляет экземпляры ValueTasks в пулы объектов для использования.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyTitle">
         <source>Use ValueTasks correctly</source>
-        <target state="new">Use ValueTasks correctly</target>
+        <target state="translated">Используйте ValueTasks правильно</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">
