@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.TestFramework;
@@ -16,40 +13,6 @@ namespace EndToEnd
 {
     public partial class GivenSelfContainedAppsRollForward : TestBase
     {
-
-        [Theory]
-        //  MemberData is used instead of InlineData here so we can access it in another test to
-        //  verify that we are covering the latest release of .NET Core
-        [ClassData(typeof(SupportedNetCoreAppVersions))]
-        public void ItRollsForwardToTheLatestNetCoreVersion(string minorVersion)
-        {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0")
-            {
-                //  https://github.com/dotnet/core-sdk/issues/621
-                return;
-            }
-            ItRollsForwardToTheLatestVersion(TestProjectCreator.NETCorePackageName, minorVersion);
-        }
-
-        [Theory]
-        [ClassData(typeof(SupportedAspNetCoreVersions))]
-        public void ItRollsForwardToTheLatestAspNetCoreAppVersion(string minorVersion)
-        {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0")
-            {
-                //  https://github.com/dotnet/core-sdk/issues/621
-                return;
-            }
-            ItRollsForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAppPackageName, minorVersion);
-        }
-
-        [Theory]
-        [ClassData(typeof(SupportedAspNetCoreAllVersions))]
-        public void ItRollsForwardToTheLatestAspNetCoreAllVersion(string minorVersion)
-        {
-            ItRollsForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
-        }
-
         internal void ItRollsForwardToTheLatestVersion(string packageName, string minorVersion)
         {
             var testProjectCreator = new TestProjectCreator()
@@ -184,12 +147,9 @@ namespace EndToEnd
                 .Element(ns + "TargetFramework")
                 .Value;
 
-            SupportedAspNetCoreVersions.Versions.Select(v => $"netcoreapp{v}")
+            TargetFrameworkHelper.GetNetAppTargetFrameworks(SupportedAspNetCoreVersions.Versions)
                 .Should().Contain(targetFramework, $"the {nameof(SupportedAspNetCoreVersions)} should include the default version " +
-                "of Microsoft.AspNetCore.App used by the templates created by \"dotnet new web\"");
-
-           
+                "of Microsoft.AspNetCore.App used by the templates created by \"dotnet new web\"");           
         }
-
     }
 }
