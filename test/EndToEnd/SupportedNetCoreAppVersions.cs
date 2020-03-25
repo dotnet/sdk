@@ -30,6 +30,27 @@ namespace EndToEnd
             "3.1",
             "5.0"
         };
+
+        public static IEnumerable<string> TargetFrameworkShortFolderVersion
+        {
+            get
+            {
+                var targetFrameworkShortFolderVersion = new List<string>();
+                foreach (var v in Versions)
+                {
+                    if (Version.Parse(v).Major >= 5)
+                    {
+                        targetFrameworkShortFolderVersion.Add($"net{v}");
+                    }
+                    else
+                    {
+                        targetFrameworkShortFolderVersion.Add($"netcoreapp{v}");
+                    }
+                }
+
+                return targetFrameworkShortFolderVersion;
+            }
+        }
     }
 
     public class SupportedAspNetCoreVersions : IEnumerable<object[]>
@@ -50,3 +71,4 @@ namespace EndToEnd
             SupportedAspNetCoreVersions.Versions.Where(v => new Version(v).Major < 3);
     }
 }
+

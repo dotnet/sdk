@@ -13,6 +13,13 @@ namespace Microsoft.DotNet.Build.Tasks
 {
     public sealed class Crossgen : ToolTask
     {
+        public Crossgen()
+        {
+            // Disable partial NGEN to avoid excess JIT-compilation.
+            // The intention is to pre-compile as much as possible.
+            EnvironmentVariables = new string[] { "COMPlus_PartialNGen=0" };
+        }
+
         [Required]
         public string SourceAssembly { get;set; }
 
@@ -136,7 +143,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 return $"{GetReadyToRun()} {GetPlatformAssemblyPaths()} {GetDiasymReaderPath()} {GetCreateSymbols()}";
             }
 
-            return $"{GetReadyToRun()} {GetInPath()} {GetOutPath()} {GetPlatformAssemblyPaths()} {GetJitPath()}";
+            return $"{GetReadyToRun()} {GetMissingDependenciesOk()} {GetInPath()} {GetOutPath()} {GetPlatformAssemblyPaths()} {GetJitPath()}";
         }
 
         private string GetCreateSymbols()
@@ -193,6 +200,11 @@ namespace Microsoft.DotNet.Build.Tasks
         private string GetJitPath()
         {
             return $"-JITPath {JITPath}";
+        }
+
+        private string GetMissingDependenciesOk()
+        {
+            return "-MissingDependenciesOK";
         }
 
         protected override void LogToolCommand(string message)
