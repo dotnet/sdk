@@ -96,5 +96,10 @@ namespace Microsoft.TemplateEngine.Utils
         {
             return File.GetLastWriteTimeUtc(file);
         }
+
+        public void SetLastWriteTimeUtc(string file, DateTime lastWriteTimeUtc)
+        {
+            File.SetLastWriteTimeUtc(file, lastWriteTimeUtc);
+        }
     }
 }

@@ -237,5 +237,15 @@ namespace Microsoft.TemplateEngine.Mocks
 
             return _files[file].LastWriteTimeUtc;
         }
+
+        public void SetLastWriteTimeUtc(string file, DateTime lastWriteTimeUtc)
+        {
+            if (!FileExists(file))
+            {
+                throw new Exception($"File {file} doesn't exist");
+            }
+
+            _files[file].LastWriteTimeUtc = lastWriteTimeUtc;
+        }
     }
 }
