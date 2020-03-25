@@ -2,7 +2,7 @@
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">[WixBundleName] 安装程序</String>
   <String Id="Title">[BUNDLEMONIKER]</String>
-  <String Id="ConfirmCancelMessage">您确定要取消吗?</String>
+  <String Id="ConfirmCancelMessage">是否确实要取消?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">上一版本</String>
   <String Id="HelpHeader">安装程序帮助</String>
   <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 安装、修复、卸载
@@ -51,9 +51,9 @@
 
 下列项安装于: “[DOTNETHOME]”
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Runtime [ASPNETCOREVERSION]
-    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+    • .NET 运行时 [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core 运行时 [ASPNETCOREVERSION]
+    • .NET Windows Desktop 运行时 [WINFORMSANDWPFVERSION]
 
 此产品会收集用法数据
     • 详细信息和选择退出选项: https://aka.ms/dotnet-cli-telemetry
@@ -68,13 +68,13 @@
     .NET 是开源、跨平台的，且由 Microsoft 提供支持。通过它，可使用 C#、F# 或 VB 构建你的下一个应用。希望你喜欢它!</String>
   <String Id="LearnMoreTitle">了解有关 .NET 的详细信息</String>
   <String Id="ResourcesHeader">资源</String>
-  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Core 文档&lt;/A&gt;</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET 文档&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK 文档&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;隐私声明&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;.NET 库 EULA&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">安装说明</String>
   <String Id="InstallationNote">将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。
   </String>
-  <String Id="VisualStudioWarning">如果计划结合使用 .NET Core 3.1 和 Visual Studio，需要 Visual Studio 2019 16.4 或更高版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;了解详细信息&lt;/A&gt;。
+  <String Id="VisualStudioWarning">如果计划结合使用 .NET 5.0 和 Visual Studio，需要 Visual Studio 2019 16.6 或更高版本。&lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;了解详细信息&lt;/A&gt;。
   </String>
 </WixLocalization>
