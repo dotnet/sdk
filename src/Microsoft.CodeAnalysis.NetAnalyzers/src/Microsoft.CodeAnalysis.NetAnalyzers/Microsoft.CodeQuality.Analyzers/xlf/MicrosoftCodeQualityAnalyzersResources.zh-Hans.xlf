@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">建议不要在同一语句中分配符号及其成员(字段/属性)。因为不清楚此语句中成员访问要使用分配前的符号旧值还是由分配得来的新值。为清楚起见，请考虑将分配拆分到独立语句中。</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">在同一语句中分配了符号 "{0}" 及其成员 "{1}"。可能为该成员分配意外的对象。</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">在同一语句中分配符号及其成员。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">在 catch 语句中捕获到了 System.Exception 或 System.SystemException 等常规异常，或者已使用常规 catch 子句。不应捕获常规异常。</target>
+        <target state="translated">在 catch 语句中捕获到了 System.Exception 或 System.SystemException 等常规异常或不允许的异常类型，或者已使用常规 catch 子句。不应捕获常规异常和不允许的异常。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">请修改“{0}”以捕获更具体的异常类型，或者重新抛出该异常。</target>
+        <target state="translated">请修改“{0}”以捕获更具体的允许异常类型，或者重新抛出该异常。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">集合应实现泛型接口</target>
+        <target state="translated">还应实现泛型接口</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">要扩展某个集合的可用性，请实现泛型集合接口之一。然后，可将该集合用于填充泛型集合类型。</target>
+        <target state="translated">若要扩大类型的可用性，请实现其中一个泛型接口。对于集合尤其如此，因为它们随后可用于填充泛型集合类型。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">集合“{0}”直接或间接继承“{1}”，而不实现“{2}”。公共可用的集合应实现通用版本以扩大可用性。</target>
+        <target state="translated">类型“{0}”直接或间接继承“{1}”，而不实现“{2}”。公共可见的类型应实现通用版本以扩大可用性。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">虽然字段“{0}”声明为 "static readonly"，但它是用常量值初始化的。请将此字段标记为 "const"。</target>
+        <target state="translated">字段“{0}”声明为 "readonly"，但它是用常量值初始化的。请将此字段标记为 "const"。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">虽然字段“{0}”声明为 "static readonly"，但它是用空字符串 ("") 初始化的。请将此字段标记为 "const"。</target>
+        <target state="translated">字段“{0}”声明为 "readonly"，但它是用空字符串("")初始化的。请将此字段标记为 "const"。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">不访问实例数据或调用实例方法的成员可标记为 static (在 Visual Basic 中为 Shared)。将方法标记为 static 后，编译器将向这些成员发出非虚拟调用站点。这样可以使对性能比较敏感的代码获得显著的性能提升。</target>
+        <target state="translated">不访问实例数据或调用实例方法的成员可标记为 static。将方法标记为 static 后，编译器将向这些成员发出非虚拟调用站点。这样可使对性能比较敏感的代码获得显著的性能提升。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">成员 {0} 不访问实例数据，可标记为 static (在 Visual Basic 中为 Shared)</target>
+        <target state="translated">成员“{0}”不访问实例数据，可标记为 static</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

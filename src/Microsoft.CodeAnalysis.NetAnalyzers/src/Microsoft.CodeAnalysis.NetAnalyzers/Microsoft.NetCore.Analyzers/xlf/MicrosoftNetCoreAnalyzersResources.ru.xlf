@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">Не использовать небезопасные режимы шифрования</target>
+        <target state="translated">Проверьте используемый режим шифрования с экспертами по криптографии</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Эти режимы являются уязвимыми для атак. Используйте только утвержденные режимы (CBC, CTS).</target>
+        <target state="translated">Эти режимы шифрования могут быть уязвимы для атак. Используйте рекомендуемые режимы (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Он использует небезопасный режим шифрования {0}</target>
+        <target state="translated">Проверьте используемый режим шифрования "{0}" с экспертами по криптографии. Используйте рекомендуемые режимы (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -159,12 +159,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
         <source>HttpClients should enable certificate revocation list checks</source>
-        <target state="new">HttpClients should enable certificate revocation list checks</target>
+        <target state="translated">Для клиентов HTTP (HttpClients) следует включить проверки списка отзыва сертификатов.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheckMessage">
         <source>HttpClient is created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient is created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">HttpClient создается без включения CheckCertificateRevocationList.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyInstallRootCert">
@@ -179,12 +179,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIV">
         <source>Do not use CreateEncryptor with non-default IV</source>
-        <target state="new">Do not use CreateEncryptor with non-default IV</target>
+        <target state="translated">Не используйте CreateEncryptor с вектором инициализации, отличным от значения по умолчанию.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage">
         <source>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</source>
-        <target state="new">Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</target>
+        <target state="translated">Для симметричного шифрования используется вектор инициализации, отличный от значения по умолчанию, что может привести к воспроизводимости.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
@@ -414,7 +414,7 @@
       </trans-unit>
       <trans-unit id="DoNotDisableHttpClientCRLCheckDescription">
         <source>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</source>
-        <target state="new">Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</target>
+        <target state="translated">Если при использовании HttpClient не указан обработчик для конкретной платформы (WinHttpHandler, CurlHandler или HttpClientHandler) и свойство CheckCertificateRevocationList имеет значение true (истина), то отозванные сертификаты будут приниматься клиентом HttpClient как действительные.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableHTTPHeaderChecking">
@@ -474,32 +474,32 @@
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
-        <target state="new">Do not hard-code certificate</target>
+        <target state="translated">Не используйте жестко заданный сертификат.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateDescription">
         <source>Hard-coded certificates in source code are vulnerable to being exploited.</source>
-        <target state="new">Hard-coded certificates in source code are vulnerable to being exploited.</target>
+        <target state="translated">Жестко задаваемые сертификаты в исходном коде представляют собой уязвимость, которой может воспользоваться злоумышленник.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</source>
-        <target state="new">Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</target>
+        <target state="translated">Обнаружена потенциальная уязвимость безопасности, заключающаяся в том, что "{0}" в методе "{1}" может быть испорчен с использованием жестко заданного сертификата из "{2}" в методе "{3}"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKey">
         <source>Do not hard-code encryption key</source>
-        <target state="needs-review-translation">Не используйте жестко заданный ключ шифрования.</target>
+        <target state="translated">Не используйте жестко заданный ключ шифрования.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyDescription">
         <source>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</source>
-        <target state="needs-review-translation">Свойство .Key симметричного алгоритма и параметр rgbKey метода не могут быть жестко заданными значениями.</target>
+        <target state="translated">Свойство .Key симметричного алгоритма и параметр rgbKey метода не могут быть жестко заданными значениями.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</source>
-        <target state="needs-review-translation">Обнаружена потенциальная уязвимость безопасности, заключающаяся в том, что "{0}" в методе "{1}" может быть изменен с использованием жестко заданного ключа из "{2}" в методе "{3}".</target>
+        <target state="translated">Обнаружена потенциальная уязвимость безопасности, заключающаяся в том, что "{0}" в методе "{1}" может быть испорчен с использованием жестко заданного ключа из "{2}" в методе "{3}"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
@@ -619,37 +619,37 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
         <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">Для непустых коллекций методы CountAsync() и LongCountAsync() перечисляют всю последовательность, а метод AnyAsync() останавливается на первом элементе или на первом элементе, который соответствует условию.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where AnyAsync() could be used instead to improve performance.</target>
+        <target state="translated">{0}() используется там, где можно было бы использовать AnyAsync() для повышения производительности.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
         <source>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</source>
-        <target state="new">Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</target>
+        <target state="translated">Не используйте методы CountAsync() и LongCountAsync(), если можно использовать метод AnyAsync()</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedDescription">
         <source>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">Для непустых коллекций методы Count() и LongCount() перечисляют всю последовательность, а метод Any() останавливается на первом элементе или на первом элементе, который соответствует условию.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
         <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where Any() could be used instead to improve performance.</target>
+        <target state="translated">{0}() используется там, где можно было бы использовать Any() для повышения производительности.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
         <source>Do not use Count() or LongCount() when Any() can be used</source>
-        <target state="new">Do not use Count() or LongCount() when Any() can be used</target>
+        <target state="translated">Не используйте методы Count() и LongCount(), если можно использовать метод Any()</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
         <source>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</source>
-        <target state="new">Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</target>
+        <target state="translated">Для предотвращения атак перебором по словарю в симметричном шифровании всегда нужно использовать невоспроизводимый вектор инициализации.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDeprecatedSecurityProtocols">
@@ -704,7 +704,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessDescription">
         <source>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</source>
-        <target state="needs-review-translation">Использование криптографически слабого генератора псевдослучайных чисел может позволить злоумышленнику предсказать, какое значение, чувствительное к безопасности, будет создаваться. Используйте криптографически надежный генератор случайных чисел, если требуется непрогнозируемое значение, или убедитесь, что слабые псевдослучайные числа не используются для обеспечения безопасности.</target>
+        <target state="translated">Использование криптографически слабого генератора псевдослучайных чисел может позволить злоумышленнику предсказать, какое значение, важное для обеспечения безопасности, будет сформировано. Используйте криптографически надежный генератор случайных чисел, если требуется непрогнозируемое значение, или убедитесь, что слабые псевдослучайные числа не используются для обеспечения безопасности.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
@@ -1154,12 +1154,12 @@
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheck">
         <source>Ensure HttpClient certificate revocation list check is not disabled</source>
-        <target state="new">Ensure HttpClient certificate revocation list check is not disabled</target>
+        <target state="translated">Проверка списка отзыва сертификатов HttpClient не должна быть отключена.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheckMessage">
         <source>HttpClient may be created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient may be created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">HttpClient может создаваться без включения CheckCertificateRevocationList.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeInstallRootCert">
@@ -1174,12 +1174,12 @@
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
         <source>Use CreateEncryptor with the default IV </source>
-        <target state="new">Use CreateEncryptor with the default IV </target>
+        <target state="translated">Используйте CreateEncryptor с вектором инициализации по умолчанию. </target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
         <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
-        <target state="new">The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</target>
+        <target state="translated">Для шифрования используется вектор инициализации, не являющийся значением по умолчанию. Этот вектор потенциально может быть воспроизводимым. Используйте вектор инициализации по умолчанию.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
@@ -1219,7 +1219,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1229,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">Метод "{0}" небезопасен при десериализации ненадежных данных без SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
+        <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
@@ -1744,17 +1744,17 @@
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
         <source>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</source>
-        <target state="new">Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</target>
+        <target state="translated">Enumerable.Count() может выполнять перечисление последовательности, в то время как свойство Length/Count предполагает прямой доступ.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
         <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="new">Use the "{0}" property instead of Enumerable.Count().</target>
+        <target state="translated">Используйте свойство "{0}" вместо Enumerable.Count().</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
         <source>Use Length/Count property instead of Count() when available</source>
-        <target state="new">Use Length/Count property instead of Count() when available</target>
+        <target state="translated">Используйте свойство Length/Count вместо Count(), если оно доступно</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">

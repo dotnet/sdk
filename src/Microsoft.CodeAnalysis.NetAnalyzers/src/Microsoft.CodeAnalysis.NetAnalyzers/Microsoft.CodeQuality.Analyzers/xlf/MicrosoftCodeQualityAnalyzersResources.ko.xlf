@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">동일한 문의 기호 및 해당 멤버(필드/속성)에 할당하는 것은 권장되지 않습니다. 멤버 액세스가 할당 전 기호의 이전 값을 사용하려는 것인지 이 문의 할당에서 새 값을 사용하려는 것인지 명확하지 않습니다. 명확성을 위해 할당을 개별 문으로 분할하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">'{0}' 기호와 해당 멤버 '{1}'이(가) 모두 동일한 문에 할당되어 있으므로 의도하지 않은 개체의 멤버를 할당할 위험이 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">동일한 문에 기호 및 해당 멤버 할당</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">System.Exception 또는 System.SystemException과 같은 일반 예외가 catch 문에서 catch되거나, 일반 catch 절이 사용됩니다. 일반 예외는 catch되면 안 됩니다.</target>
+        <target state="translated">System.Exception이나 System.SystemException과 같은 일반 예외 또는 허용되지 않는 예외 형식이 catch 문에서 catch되거나, 일반 catch 절이 사용됩니다. 일반 예외와 허용되지 않는 예외는 catch되면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">'{0}'을(를) 수정하여 좀 더 구체적인 예외 유형을 catch하거나 예외를 다시 throw합니다.</target>
+        <target state="translated">'{0}'을(를) 수정하여 좀 더 구체적인 허용되는 예외 형식을 catch하거나 해당 예외를 다시 throw합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">컬렉션은 제네릭 인터페이스를 구현해야 합니다.</target>
+        <target state="translated">제네릭 인터페이스도 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">컬렉션의 유용성을 확대하려면 제네릭 컬렉션 인터페이스 중 하나를 구현하세요. 그러면 컬렉션을 제네릭 컬렉션 형식을 전파하는 데 사용할 수 있습니다.</target>
+        <target state="translated">형식의 유용성을 확대하려면 제네릭 인터페이스 중 하나를 구현하세요. 제네릭 컬렉션 형식을 채우는 데 사용할 수 있는 컬렉션의 경우에는 특히 그렇습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">컬렉션 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 컬렉션의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
+        <target state="translated">형식 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 형식의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">'{0}' 필드가 'static readonly'로 선언되었지만 상수 값으로 초기화되었습니다. 이 필드를 'const'로 표시하세요.</target>
+        <target state="translated">'{0}' 필드가 'readonly'로 선언되었지만 상수 값으로 초기화되었습니다. 대신 이 필드를 'const'로 표시하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">'{0}' 필드가 'static readonly'로 선언되었지만 빈 문자열("")로 초기화되었습니다. 이 필드를 'const'로 표시하세요.</target>
+        <target state="translated">'{0}' 필드가 'readonly'로 선언되었지만 빈 문자열("")로 초기화되었습니다. 대신 이 필드를 'const'로 표시하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static(Visual Basic의 경우 Shared)으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 멤버에 대한 비가상 호출 사이트를 내보냅니다. 따라서 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상시킬 수 있습니다.</target>
+        <target state="translated">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 이와 같은 멤버에 비가상 호출 사이트를 내보냅니다. 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">{0} 멤버가 인스턴스 데이터에 액세스하지 않으며 static(Visual Basic의 경우 Shared)으로 표시될 수 있습니다.</target>
+        <target state="translated">'{0}' 멤버는 인스턴스 데이터에 액세스하지 않으며 static으로 표시할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

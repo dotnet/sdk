@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">Não Usar Modos de Criptografia Inseguros</target>
+        <target state="translated">Examine o uso do modo de criptografia com especialistas em criptografia</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Esses modos são vulneráveis a ataques. Use somente modos aprovados (CBC, CTS).</target>
+        <target state="translated">Esses modos de criptografia podem ser vulneráveis a ataques. Considere o uso dos modos recomendados (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Ele usa um Modo de Criptografia inseguro {0}</target>
+        <target state="translated">Examine o uso do modo de criptografia '{0}' com especialistas em criptografia. Considere o uso dos modos recomendados (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objeto desserializado.</target>
+        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objetos desserializado.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objeto desserializado.</target>
+        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objetos desserializado.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -159,12 +159,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
         <source>HttpClients should enable certificate revocation list checks</source>
-        <target state="new">HttpClients should enable certificate revocation list checks</target>
+        <target state="translated">Os HttpClients devem habilitar as verificações da lista de certificados revogados</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheckMessage">
         <source>HttpClient is created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient is created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">HttpClient é criado sem habilitar CheckCertificateRevocationList</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyInstallRootCert">
@@ -179,12 +179,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIV">
         <source>Do not use CreateEncryptor with non-default IV</source>
-        <target state="new">Do not use CreateEncryptor with non-default IV</target>
+        <target state="translated">Não usar CreateEncryptor com IV não padrão</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage">
         <source>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</source>
-        <target state="new">Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</target>
+        <target state="translated">A criptografia simétrica usa um vetor de inicialização não padrão, que pode ser repetido</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
@@ -414,7 +414,7 @@
       </trans-unit>
       <trans-unit id="DoNotDisableHttpClientCRLCheckDescription">
         <source>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</source>
-        <target state="new">Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</target>
+        <target state="translated">Usar HttpClient sem fornecer um manipulador específico de plataforma (WinHttpHandler ou CurlHandler ou HttpClientHandler) em que a propriedade CheckCertificateRevocationList está definida como true permitirá que os certificados revogados sejam aceitos pelo HttpClient como válidos.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableHTTPHeaderChecking">
@@ -474,32 +474,32 @@
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
-        <target state="new">Do not hard-code certificate</target>
+        <target state="translated">Não embutir o certificado em código</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateDescription">
         <source>Hard-coded certificates in source code are vulnerable to being exploited.</source>
-        <target state="new">Hard-coded certificates in source code are vulnerable to being exploited.</target>
+        <target state="translated">Os certificados embutidos em código no código-fonte são suscetíveis à exploração.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</source>
-        <target state="new">Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</target>
+        <target state="translated">Foi localizada uma possível vulnerabilidade de segurança na qual '{0}' no método '{1}' pode ter sido afetado pelo certificado embutido em código de '{2}' no método '{3}'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKey">
         <source>Do not hard-code encryption key</source>
-        <target state="needs-review-translation">Não Codificar a Chave de Criptografia</target>
+        <target state="translated">Não embutir a chave de criptografia em código</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyDescription">
         <source>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</source>
-        <target state="needs-review-translation">A propriedade .Key de SymmetricAlgorithm ou o parâmetro rgbKey de um método nunca devem ser um valor codificado.</target>
+        <target state="translated">A propriedade .Key de SymmetricAlgorithm ou o parâmetro rgbKey de um método nunca devem ser um valor embutido em código.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</source>
-        <target state="needs-review-translation">Foi localizada uma possível vulnerabilidade de segurança na qual '{0}' no método '{1}' pode ter sido afetado pela chave codificada de '{2}' no método '{3}'</target>
+        <target state="translated">Foi localizada uma possível vulnerabilidade de segurança na qual '{0}' no método '{1}' pode ter sido afetado pela chave embutida em código de '{2}' no método '{3}'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
@@ -619,37 +619,37 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
         <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">Para coleções não vazias, CountAsync() e LongCountAsync() enumeram toda a sequência, enquanto AnyAsync() é interrompido no primeiro item ou no primeiro item que satisfaz uma condição.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where AnyAsync() could be used instead to improve performance.</target>
+        <target state="translated">{0}() é usado onde AnyAsync() poderia ser usado em seu lugar para melhorar o desempenho.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
         <source>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</source>
-        <target state="new">Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</target>
+        <target state="translated">Não usar CountAsync() ou LongCountAsync() quando AnyAsync() puder ser usado</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedDescription">
         <source>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">Para coleções não vazias, Count() e LongCount() enumeram toda a sequência, enquanto Any() é interrompido no primeiro item ou no primeiro item que satisfaz uma condição.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
         <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where Any() could be used instead to improve performance.</target>
+        <target state="translated">{0}() é usado onde Any() poderia ser usado em seu lugar para melhorar o desempenho.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
         <source>Do not use Count() or LongCount() when Any() can be used</source>
-        <target state="new">Do not use Count() or LongCount() when Any() can be used</target>
+        <target state="translated">Não usar Count() ou LongCount() quando Any() puder ser usado</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
         <source>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</source>
-        <target state="new">Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</target>
+        <target state="translated">A criptografia simétrica sempre deve usar um vetor de inicialização que não possa ser repetido para evitar ataques de dicionário.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDeprecatedSecurityProtocols">
@@ -704,7 +704,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessDescription">
         <source>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</source>
-        <target state="needs-review-translation">O uso de um gerador de números pseudoaleatórios criptograficamente fraco pode permitir que um invasor preveja qual valor de segurança confidencial será gerado. Use um gerador de números aleatórios criptograficamente forte se for necessário um valor imprevisível ou garanta que os números pseudoaleatórios fracos não sejam usados de uma maneira sensível à segurança.</target>
+        <target state="translated">O uso de um gerador de números pseudoaleatórios criptograficamente fracos pode permitir que um invasor preveja qual valor sensível à segurança será gerado. Use um gerador de números aleatórios criptograficamente fortes se for necessário um valor imprevisível ou garanta que os números pseudoaleatórios fracos não sejam usados de uma maneira sensível à segurança.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
@@ -1004,7 +1004,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis com um JavaScriptSerializer inicializado com um SimpleTypeResolver. Verifique se o JavaScriptSerializer é inicializado sem um JavaScriptTypeResolver especificado ou inicializado com um JavaScriptTypeResolver que limita os tipos de objetos no gráfico de objeto desserializado.</target>
+        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis com um JavaScriptSerializer inicializado com um SimpleTypeResolver. Verifique se o JavaScriptSerializer é inicializado sem um JavaScriptTypeResolver especificado ou inicializado com um JavaScriptTypeResolver que limita os tipos de objetos no grafo de objetos desserializado.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1014,7 +1014,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis com um JavaScriptSerializer inicializado com um SimpleTypeResolver. Inicialize o JavaScriptSerializer sem um JavaScriptTypeResolver especificado ou inicialize com um JavaScriptTypeResolver que limita os tipos de objetos no gráfico de objeto desserializado.</target>
+        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis com um JavaScriptSerializer inicializado com um SimpleTypeResolver. Inicialize o JavaScriptSerializer sem um JavaScriptTypeResolver especificado ou inicialize com um JavaScriptTypeResolver que limita os tipos de objetos no grafo de objetos desserializado.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1154,12 +1154,12 @@
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheck">
         <source>Ensure HttpClient certificate revocation list check is not disabled</source>
-        <target state="new">Ensure HttpClient certificate revocation list check is not disabled</target>
+        <target state="translated">Certifique-se de que a verificação da lista de certificados revogados do HttpClient não está desabilitada</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheckMessage">
         <source>HttpClient may be created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient may be created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">HttpClient pode ser criado sem habilitar CheckCertificateRevocationList</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeInstallRootCert">
@@ -1174,12 +1174,12 @@
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
         <source>Use CreateEncryptor with the default IV </source>
-        <target state="new">Use CreateEncryptor with the default IV </target>
+        <target state="translated">Usar CreateEncryptor com o IV padrão </target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
         <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
-        <target state="new">The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</target>
+        <target state="translated">O vetor de inicialização não padrão, que pode ser repetido, é usado na criptografia. Use o padrão.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
@@ -1219,7 +1219,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objeto desserializado.</target>
+        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objetos desserializado.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1229,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objeto desserializado.</target>
+        <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objetos desserializado.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
@@ -1744,17 +1744,17 @@
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
         <source>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</source>
-        <target state="new">Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</target>
+        <target state="translated">Enumerable.Count() potencialmente enumera a sequência enquanto uma propriedade Length/Count é um acesso direto.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
         <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="new">Use the "{0}" property instead of Enumerable.Count().</target>
+        <target state="translated">Use a propriedade "{0}" em vez de Enumerable.Count().</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
         <source>Use Length/Count property instead of Count() when available</source>
-        <target state="new">Use Length/Count property instead of Count() when available</target>
+        <target state="translated">Usar a propriedade Length/Count em vez de Count() quando disponível</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">

@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">同じステートメントにシンボルとそのメンバー (フィールドとプロパティ) を代入することは推奨されていません。メンバー アクセスが、代入前のシンボルの古い値を使用するのか、このステートメントの代入からの新しい値を使用するのかが明確ではありません。わかりやすくするために、代入を個別のステートメントに分割することをご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">シンボル '{0}' とそのメンバー '{1}' の両方が同じステートメントに割り当てられています。意図しないオブジェクトのメンバーが割り当てられているおそれがあります。</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">同じステートメントにシンボルとそのメンバーを割り当てています。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">System.Exception または System.SystemException などの一般的な例外は catch ステートメントでキャッチされます。または一般的な catch 句を使用します。一般的な例外をキャッチしないでください。</target>
+        <target state="translated">System.Exception や System.SystemException などの一般的な例外、または許可されていない例外の種類は catch ステートメントでキャッチされます。または一般的な catch 句を使用します。一般的な例外と許可されていない例外をキャッチしないでください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">'{0}' を変更して特定の例外の種類をさらにキャッチするか、例外を再スローします。</target>
+        <target state="translated">'{0}' を変更して特定の許可された例外の種類をさらにキャッチするか、例外を再スローします。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">コレクションは、ジェネリック インターフェイスを実装しなければなりません</target>
+        <target state="translated">ジェネリック インターフェイスも実装する必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">コレクションの操作性を拡充するために、ジェネリック コレクション インターフェイスの 1 つを実装します。次に、コレクションを使用して、ジェネリック コレクション型を設定できます。</target>
+        <target state="translated">型の操作性を拡充するには、ジェネリック インターフェイスの 1 つを実装します。これは特にコレクションの場合に有効です。これらを使用してジェネリック コレクション型にデータを設定できるようになるためです。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">コレクション '{0}' は、'{2}' を実装することなく '{1}' を直接または間接的に継承します。公開されているコレクションは、操作性の拡充のためジェネリック バージョンを実装する必要があります。</target>
+        <target state="translated">型 '{0}' は、'{2}' を実装することなく '{1}' を直接または間接的に継承します。公開されている型は、操作性の拡充のためジェネリック バージョンを実装する必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">フィールド '{0}' は 'static readonly' として宣言されていますが、定数値を伴って初期化されています。代わりに、このフィールドを 'const' として設定してください。</target>
+        <target state="translated">フィールド '{0}' は 'readonly' として宣言されていますが、定数値を指定して初期化されています。代わりに、このフィールドを 'const' として設定してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">フィールド '{0}' は 'static readonly' として宣言されていますが、空の文字列 ("") を伴って初期化されています。代わりに、このフィールドを 'const' として設定してください。</target>
+        <target state="translated">フィールド '{0}' は 'readonly' として宣言されていますが、空の文字列 ("") を指定して初期化されています。代わりに、このフィールドを 'const' として設定してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">インスタンス データにアクセスしないメンバーまたはインスタンス メソッドを呼び出さないメンバーは、static (Visual Basic では Shared) に設定できます。メソッドを static に設定すると、コンパイラはこれらのメンバーに対する非仮想呼び出しサイトを出力します。これにより、パフォーマンスを要求されるコードでは、大幅にパフォーマンスが改善されます。</target>
+        <target state="translated">インスタンス データにアクセスしないメンバーまたはインスタンス メソッドを呼び出さないメンバーは、static にマークできます。メソッドを static にマークすると、コンパイラではこれらのメンバーに対する非仮想呼び出しサイトを出力します。これにより、パフォーマンスを要求されるコードでは、大幅にパフォーマンスが改善されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">メンバー {0} はインスタンス データにアクセスしないため、static (Visual Basic では Shared) に設定できます</target>
+        <target state="translated">メンバー '{0}' はインスタンス データにアクセスしないため、static にマークできます</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

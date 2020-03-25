@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">L'affectation à un symbole et à son membre (champ/propriété) dans la même instruction n'est pas recommandée. Il est difficile de déterminer si l'accès membre était destiné à utiliser l'ancienne valeur du symbole avant l'assignation ou la nouvelle valeur de l'assignation dans cette instruction. Pour plus de clarté, divisez les assignations en instructions distinctes.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">Le symbole '{0}' et son membre '{1}' sont tous deux affectés dans la même instruction. Vous risquez d'affecter le membre d'un objet non souhaité.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">Affectation du symbole et de son membre dans la même instruction.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">Une exception générale de type System.Exception ou System.SystemException est interceptée dans une instruction catch, ou une clause catch générale est utilisée. Les exceptions générales ne doivent pas être interceptées.</target>
+        <target state="translated">Une exception générale comme System.Exception ou System.SystemException, ou un type d'exception interdit, est interceptée dans une instruction catch, ou une clause catch générale est utilisée. Les exceptions générales ou interdites ne doivent pas être interceptées.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">Modifiez '{0}' pour intercepter un type d'exception plus spécifique ou relevez l'exception.</target>
+        <target state="translated">Modifiez '{0}' pour intercepter un type d'exception autorisé plus spécifique ou levez une nouvelle fois l'exception.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">Les collections doivent implémenter une interface générique</target>
+        <target state="translated">Une interface générique doit également être implémentée</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Pour étendre la facilité d'utilisation d'une collection, implémentez l'une des interfaces de collection génériques. Vous pouvez ensuite utiliser la collection pour remplir les types de collection génériques.</target>
+        <target state="translated">Pour étendre l'efficacité d'utilisation d'un type, implémentez l'une des interfaces génériques. Cela est particulièrement vrai pour les collections, car elles peuvent ensuite être utilisées pour remplir les types de collection génériques.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">La collection '{0}' hérite directement ou indirectement de '{1}' sans implémenter '{2}'. Les collections visibles par tous doivent implémenter la version générique pour en étendre l'usage.</target>
+        <target state="translated">Le type '{0}' hérite directement ou indirectement de '{1}' sans implémenter '{2}'. Les types visibles de manière publique doivent implémenter la version générique pour étendre leur efficacité d'utilisation.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Le champ '{0}' est déclaré comme étant 'static readonly' mais il est initialisé avec une valeur de constante. À la place, marquez ce champ comme étant un champ 'const'.</target>
+        <target state="translated">Le champ '{0}' est déclaré comme étant 'readonly' mais il est initialisé avec une valeur de constante. À la place, marquez ce champ comme étant un champ 'const'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Le champ '{0}' est déclaré comme étant 'static readonly' mais il est initialisé avec une chaîne vide (""). À la place, marquez ce champ comme étant un champ 'const'.</target>
+        <target state="translated">Le champ '{0}' est déclaré comme étant 'readonly' mais il est initialisé avec une chaîne vide (""). À la place, marquez ce champ comme étant un champ 'const'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Les membres qui n'accèdent pas aux données d'instance ou qui n'appellent pas de méthodes d'instance peuvent être marqués comme étant static (Shared en Visual Basic). Une fois que vous avez marqué les méthodes comme étant static, le compilateur émet des sites d'appel non virtuels pour ces membres. Cela peut apporter un gain de performances mesurable pour le code qui en dépend.</target>
+        <target state="translated">Les membres qui n'accèdent pas aux données d'instance ou qui n'appellent pas de méthodes d'instance peuvent être marqués comme étant static. Une fois que vous avez marqué les méthodes comme étant static, le compilateur émet des sites d'appel non virtuels pour ces membres. Cela peut apporter un gain de performances mesurable pour le code qui en dépend.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Le membre {0} n'accède pas aux données d'instance et peut être marqué comme étant static (Shared en Visual Basic)</target>
+        <target state="translated">Le membre '{0}' n'accède pas aux données d'instance et peut être marqué comme étant static</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

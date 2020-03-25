@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">안전하지 않은 암호화 모드를 사용하지 마세요.</target>
+        <target state="translated">암호화 전문가와 암호화 모드 사용 현황 검토</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">이러한 모드는 공격에 취약합니다. 승인된 모드(CBC, CTS)만 사용하세요.</target>
+        <target state="translated">이 암호화 모드는 공격에 취약할 수 있습니다. 권장 모드(CBC, CTS)를 사용하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">안전하지 않은 암호화 모드 {0}을(를) 사용합니다.</target>
+        <target state="translated">암호화 전문가와 암호화 모드 '{0}'의 사용 현황을 검토합니다. 권장 모드(CBC, CTS)를 사용하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">deserialize된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 deserialize하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
+        <target state="translated">역직렬화된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 역직렬화하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">deserialize된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 deserialize하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
+        <target state="translated">역직렬화된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 역직렬화하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -159,12 +159,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
         <source>HttpClients should enable certificate revocation list checks</source>
-        <target state="new">HttpClients should enable certificate revocation list checks</target>
+        <target state="translated">HttpClients에서 인증서 해지 목록 확인을 사용하도록 설정해야 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheckMessage">
         <source>HttpClient is created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient is created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">CheckCertificateRevocationList를 사용하지 않고 HttpClient가 생성됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyInstallRootCert">
@@ -179,12 +179,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIV">
         <source>Do not use CreateEncryptor with non-default IV</source>
-        <target state="new">Do not use CreateEncryptor with non-default IV</target>
+        <target state="translated">기본이 아닌 IV와 함께 CreateEncryptor 사용 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage">
         <source>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</source>
-        <target state="new">Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</target>
+        <target state="translated">대칭형 암호화는 잠재적으로 반복할 수 있는, 기본이 아닌 초기화 벡터를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
@@ -414,7 +414,7 @@
       </trans-unit>
       <trans-unit id="DoNotDisableHttpClientCRLCheckDescription">
         <source>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</source>
-        <target state="new">Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</target>
+        <target state="translated">CheckCertificateRevocationList 속성이 true로 설정된 플랫폼별 처리기(WinHttpHandler 또는 CurlHandler 또는 HttpClientHandler)를 제공하지 않고 HttpClient를 사용하면 해지된 인증서를 HttpClient에서 유효한 것으로 사용할 수 있도록 허용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableHTTPHeaderChecking">
@@ -474,32 +474,32 @@
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
-        <target state="new">Do not hard-code certificate</target>
+        <target state="translated">인증서 하드 코딩 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateDescription">
         <source>Hard-coded certificates in source code are vulnerable to being exploited.</source>
-        <target state="new">Hard-coded certificates in source code are vulnerable to being exploited.</target>
+        <target state="translated">소스 코드의 하드 코딩된 인증서는 악용될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</source>
-        <target state="new">Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</target>
+        <target state="translated">'{1}' 메서드의 '{0}'이(가) '{3}' 메서드의 '{2}'에서 하드 코딩된 인증서에 의해 오염될 수 있는 잠재적인 보안 취약성이 발견되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKey">
         <source>Do not hard-code encryption key</source>
-        <target state="needs-review-translation">암호화 키 하드 코딩 안 함</target>
+        <target state="translated">암호화 키 하드 코딩 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyDescription">
         <source>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</source>
-        <target state="needs-review-translation">SymmetricAlgorithm의 .Key 속성 또는 메서드의 rgbKey 매개 변수는 하드 코딩된 값이어서는 안 됩니다.</target>
+        <target state="translated">SymmetricAlgorithm의 .Key 속성 또는 메서드의 rgbKey 매개 변수는 하드 코딩된 값이어서는 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</source>
-        <target state="needs-review-translation">'{1}' 메서드의 '{0}'이(가) '{3}' 메서드의 '{2}'에서 하드 코딩된 키에 의해 감염될 수 있는 잠재적인 보안 취약성이 발견되었습니다.</target>
+        <target state="translated">'{1}' 메서드의 '{0}'이(가) '{3}' 메서드의 '{2}'에서 하드 코딩된 키에 의해 오염될 수 있는 잠재적인 보안 취약성이 발견되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
@@ -619,37 +619,37 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
         <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">비어 있지 않은 컬렉션의 경우 CountAsync() 및 LongCountAsync()는 전체 시퀀스를 열거하고, AnyAsync()는 첫 번째 항목 또는 조건을 충족하는 첫 번째 항목에서 중지합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where AnyAsync() could be used instead to improve performance.</target>
+        <target state="translated">{0}()는 성능 개선을 위해 AnyAsync()를 대신 사용할 수 있는 경우에 사용됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
         <source>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</source>
-        <target state="new">Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</target>
+        <target state="translated">AnyAsync()를 사용할 수 있는 경우 CountAsync() 또는 LongCountAsync() 사용 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedDescription">
         <source>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">비어 있지 않은 컬렉션의 경우 Count() 및 LongCount()는 전체 시퀀스를 열거하고, Any()는 첫 번째 항목 또는 조건을 충족하는 첫 번째 항목에서 중지합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
         <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where Any() could be used instead to improve performance.</target>
+        <target state="translated">{0}()는 성능 개선을 위해 Any()를 대신 사용할 수 있는 경우에 사용됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
         <source>Do not use Count() or LongCount() when Any() can be used</source>
-        <target state="new">Do not use Count() or LongCount() when Any() can be used</target>
+        <target state="translated">Any()를 사용할 수 있는 경우 Count() 또는 LongCount() 사용 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
         <source>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</source>
-        <target state="new">Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</target>
+        <target state="translated">대칭형 암호화는 항상 반복할 수 없는 초기화 벡터를 사용하여 사전 공격을 방지해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDeprecatedSecurityProtocols">
@@ -704,7 +704,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessDescription">
         <source>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</source>
-        <target state="needs-review-translation">암호화가 약한 의사 난수 생성기를 사용하면 공격자가 생성되는 보안에 중요한 값을 예측할 수 있습니다. 예측 불가능한 값이 필요한 경우 암호화가 강한 난수 생성기를 사용하거나, 약한 의사 난수가 보안에 중요한 방식으로 사용되지 않도록 하세요.</target>
+        <target state="translated">암호화가 약한 의사 난수 생성기를 사용하면 공격자가 생성되는 보안에 중요한 값을 예측할 수 있습니다. 예측 불가능한 값이 필요한 경우 암호화가 강한 난수 생성기를 사용하거나, 약한 의사 난수가 보안에 중요한 방식으로 사용되지 않도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
@@ -1004,7 +1004,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">SimpleTypeResolver로 초기화된 JavaScriptSerializer로 신뢰할 수 없는 데이터를 deserialize하는 경우 '{0}' 메서드는 안전하지 않습니다. JavaScriptSerializer가 JavaScriptTypeResolver가 지정되지 않은 상태로 초기화되었거나 deserialize된 개체 그래프에서 해당 개체 형식을 제한하는 JavaScriptTypeResolver로 초기화되었는지 확인하세요.</target>
+        <target state="translated">SimpleTypeResolver로 초기화된 JavaScriptSerializer로 신뢰할 수 없는 데이터를 역직렬화하는 경우 '{0}' 메서드는 안전하지 않습니다. JavaScriptSerializer가 JavaScriptTypeResolver가 지정되지 않은 상태로 초기화되었거나 역직렬화된 개체 그래프에서 해당 개체 형식을 제한하는 JavaScriptTypeResolver로 초기화되었는지 확인하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1014,7 +1014,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">SimpleTypeResolver로 초기화된 JavaScriptSerializer로 신뢰할 수 없는 데이터를 deserialize하는 경우 '{0}' 메서드는 안전하지 않습니다. JavaScriptTypeResolver가 지정되지 않은 상태로 JavaScriptSerializer를 초기화하거나 deserialize된 개체 그래프에서 해당 개체 형식을 제한하는 JavaScriptTypeResolver로 초기화하세요.</target>
+        <target state="translated">SimpleTypeResolver로 초기화된 JavaScriptSerializer로 신뢰할 수 없는 데이터를 역직렬화하는 경우 '{0}' 메서드는 안전하지 않습니다. JavaScriptTypeResolver가 지정되지 않은 상태로 JavaScriptSerializer를 초기화하거나 역직렬화된 개체 그래프에서 해당 개체 형식을 제한하는 JavaScriptTypeResolver로 초기화하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1024,12 +1024,12 @@
       </trans-unit>
       <trans-unit id="JsonNetInsecureSerializerMessage">
         <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
-        <target state="translated">신뢰할 수 없는 입력을 deserialize하는 경우 deserialize되는 임의 형식을 허용하는 것은 안전하지 않습니다. JsonSerializer를 deserialize하는 경우 TypeNameHandling.None을 사용하고, 또는 None 이외의 값에 대해 SerializationBinder를 사용하여 deserialize된 형식을 제한하세요.</target>
+        <target state="translated">신뢰할 수 없는 입력을 역직렬화하는 경우 역직렬화되는 임의 형식을 허용하는 것은 안전하지 않습니다. JsonSerializer를 역직렬화하는 경우 TypeNameHandling.None을 사용하고, 또는 None 이외의 값에 대해 SerializationBinder를 사용하여 역직렬화된 형식을 제한하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="JsonNetInsecureSerializerTitle">
         <source>Do not deserialize with JsonSerializer using an insecure configuration</source>
-        <target state="translated">안전하지 않은 구성을 사용하여 JsonSerializer로 deserialize 안 함</target>
+        <target state="translated">안전하지 않은 구성을 사용하여 JsonSerializer로 역직렬화 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="JsonNetInsecureSettingsMessage">
@@ -1044,12 +1044,12 @@
       </trans-unit>
       <trans-unit id="JsonNetMaybeInsecureSerializerMessage">
         <source>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</source>
-        <target state="translated">신뢰할 수 없는 입력을 deserialize하는 경우 deserialize되는 임의 형식을 허용하는 것은 안전하지 않습니다. JsonSerializer를 deserialize하는 경우 TypeNameHandling.None을 사용하고, 또는 None 이외의 값에 대해 SerializationBinder를 사용하여 deserialize된 형식을 제한하세요.</target>
+        <target state="translated">신뢰할 수 없는 입력을 역직렬화하는 경우 역직렬화되는 임의 형식을 허용하는 것은 안전하지 않습니다. JsonSerializer를 역직렬화하는 경우 TypeNameHandling.None을 사용하고, 또는 None 이외의 값에 대해 SerializationBinder를 사용하여 역직렬화된 형식을 제한하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="JsonNetMaybeInsecureSerializerTitle">
         <source>Ensure that JsonSerializer has a secure configuration when deserializing</source>
-        <target state="translated">deserialize할 때 JsonSerializer에 보안 구성이 있는지 확인</target>
+        <target state="translated">역직렬화할 때 JsonSerializer에 보안 구성이 있는지 확인</target>
         <note />
       </trans-unit>
       <trans-unit id="JsonNetMaybeInsecureSettingsMessage">
@@ -1154,12 +1154,12 @@
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheck">
         <source>Ensure HttpClient certificate revocation list check is not disabled</source>
-        <target state="new">Ensure HttpClient certificate revocation list check is not disabled</target>
+        <target state="translated">HttpClient 인증서 해지 목록 확인을 사용할 수 있는지 확인합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheckMessage">
         <source>HttpClient may be created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient may be created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">CheckCertificateRevocationList를 사용하지 않고 HttpClient가 생성될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeInstallRootCert">
@@ -1174,12 +1174,12 @@
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
         <source>Use CreateEncryptor with the default IV </source>
-        <target state="new">Use CreateEncryptor with the default IV </target>
+        <target state="translated">기본 IV와 함께 CreateEncryptor 사용 </target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
         <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
-        <target state="new">The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</target>
+        <target state="translated">잠재적으로 반복할 수 있는, 기본이 아닌 초기화 벡터가 암호화에 사용됩니다. 기본 초기화 벡터를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
@@ -1219,7 +1219,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">deserialize된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 deserialize하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
+        <target state="translated">역직렬화된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 역직렬화하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1229,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">deserialize된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 deserialize하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
+        <target state="translated">역직렬화된 개체 그래프에서 개체 형식을 제한하기 위해 SerializationBinder 없이 신뢰할 수 없는 데이터를 역직렬화하는 경우 '{0}' 메서드는 안전하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
@@ -1744,17 +1744,17 @@
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
         <source>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</source>
-        <target state="new">Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</target>
+        <target state="translated">Length/Count 속성이 직접 액세스인 동안 Enumerable.Count()는 잠재적으로 시퀀스를 열거합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
         <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="new">Use the "{0}" property instead of Enumerable.Count().</target>
+        <target state="translated">Enumerable.Count() 대신 "{0}" 속성을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
         <source>Use Length/Count property instead of Count() when available</source>
-        <target state="new">Use Length/Count property instead of Count() when available</target>
+        <target state="translated">사용 가능한 경우 Count() 대신 Length/Count 속성을 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">

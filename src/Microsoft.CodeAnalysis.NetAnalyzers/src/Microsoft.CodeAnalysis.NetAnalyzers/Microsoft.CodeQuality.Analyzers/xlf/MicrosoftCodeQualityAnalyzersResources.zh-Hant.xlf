@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">不建議在相同的陳述式中指派給符號及其成員 (欄位/屬性)。如果成員存取要在指派之前使用符號的舊值，或在此陳述式的指派中有新值，則不明確。為清晰起見，請考慮將指派分割為不同的陳述式。</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">符號 '{0}' 及其成員 '{1}' 兩者都指派在相同的陳述式中。您有指派非預期物件成員的風險。</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">在相同的陳述式中指派符號及其成員。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">在 catch 陳述式中捕捉到了 System.Exception 或 System.SystemException 等一般例外狀況，或是使用了一般 catch 子句。不應捕捉到一般例外狀況。</target>
+        <target state="translated">在 catch 陳述式中捕捉到了 System.Exception 或 System.SystemException 等一般例外狀況或不允許的例外狀況類型，或是使用了一般 catch 子句。不應捕捉到一般例外狀況。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">請修改 '{0}' 來捕捉更具體的例外狀況類型，或重新擲回例外狀況。</target>
+        <target state="translated">請修改 '{0}' 來捕捉更具體的允許例外狀況類型，或重新擲回例外狀況。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">集合應實作泛型介面</target>
+        <target state="translated">應同時實作一般介面</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">若要放寬集合的可用性，請實作其中一個泛型集合介面。接著，可使用該集合填入泛型集合類型。</target>
+        <target state="translated">若要擴大類型的可用性，請實作其中一個一般介面。這項做法特別適用於集合，原因是可以讓集合用於填入一般集合類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">集合 '{0}' 沒有實作 '{2}' 便直接或間接繼承 '{1}'。公開可見的集合應實作一般版本以擴大可用性。</target>
+        <target state="translated">類型 '{0}' 未實作 '{2}' 便直接或間接繼承 '{1}'。公開顯示的類型應實作一般版本以擴大可用性。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">欄位 '{0}' 宣告為 'static readonly'，但卻使用了常數值進行初始化。將此欄位改標記為 'const'。</target>
+        <target state="translated">欄位 '{0}' 宣告為 'readonly'，但卻使用了常數值進行初始化。將此欄位改標記為 'const'。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">欄位 '{0}' 宣告為 'static readonly'，但卻使用了空字串 ("") 進行初始化。將此欄位改標記為 'const'。</target>
+        <target state="translated">欄位 '{0}' 宣告為 'readonly'，但卻使用了空字串 ("") 進行初始化。將此欄位改標記為 'const'。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">不會存取執行個體資料或呼叫執行個體方法的成員，可標記為 Static (在 Visual Basic 中為 Shared)。當您將方法標記為靜態之後，編譯器會發出這些成員的非虛擬呼叫位置。如此即可讓重視效能的程式碼能獲得可觀的效能。</target>
+        <target state="translated">不會存取執行個體資料或呼叫執行個體方法的成員，可標記為靜態。當您將方法標記為靜態之後，編譯器會對這些成員發出非虛擬呼叫位置。您如此即可針對重視效能的程式碼，取得可衡量的效能提升。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">成員 {0} 不會存取執行個體資料，且可標記為 Static (在 VisualBasic 中為 Shared)</target>
+        <target state="translated">成員 '{0}' 不會存取執行個體資料，因而可標記為靜態</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">Bir simgeye ve aynı deyimdeki üyesine (alan/özellik) atama önerilmez. Üye erişiminin bu deyimde simgenin atamadan önceki eski değerini kullanması veya bu deyimdeki yeni değeri kullanmasının amaçlandığı belirlenemiyor. Daha net olması için atamaları ayrı ifadelere bölmeniz faydalı olabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">'{0}' sembolü ve '{1}' üyesi aynı deyimde atandı. İstenmeyen bir nesnenin üyesini atıyor olabilirsiniz.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">Sembol ve üyesi aynı deyimde atanıyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">System.Exception veya System.SystemException gibi genel bir ifade bir catch ifadesinde yakalandı ya da genel bir catch clause is used. General exceptions should not be caught.</target>
+        <target state="translated">System.Exception veya System.SystemException gibi genel bir ifade veya izin verilmeyen bir özel durum türü bir catch ifadesinde yakalandı ya da genel bir catch ifadesi kullanıldı. Genel özel durumlar yakalanmamalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">Daha belirli bir özel durum türünü yakalamak için '{0}' öğesini değiştirin veya özel durumu yeniden oluşturun.</target>
+        <target state="translated">Daha belirli bir izin verilen özel durum türünü yakalamak için '{0}' öğesini değiştirin veya özel durumu yeniden oluşturun.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">Koleksiyonlar genel arabirim uygulamalıdır</target>
+        <target state="translated">Genel arabirim de uygulanmalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Bir koleksiyonun kullanılabilirliğini genişletmek için genel koleksiyon arabirimlerinden birini uygulayın. Daha sonra, genel koleksiyon türlerinin doldurulması için koleksiyon kullanılabilir.</target>
+        <target state="translated">Bir türün kullanılabilirliğini genişletmek için genel arabirimlerden birini uygulayın. Bu arabirimler daha sonra genel koleksiyon türlerini doldurmak için kullanılabileceğinden bu durum özellikle koleksiyonlar için geçerlidir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">'{0}' koleksiyonu, '{2}' uygulamaksızın doğrudan veya dolaylı olarak '{1}' devralır. Genel olarak görülebilir koleksiyonlar, kullanılabilirliği genişletmek için genel sürümü uygulamalıdır.</target>
+        <target state="translated">'{0}' türü, '{2}' uygulamaksızın doğrudan veya dolaylı olarak şunu devralır: '{1}'. Genel olarak görülebilir türler, kullanılabilirliği genişletmek için genel sürümü uygulamalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">'{0}' alanı 'static readonly' olarak bildirilmiş ama sabit bir değerle başlatılıyor. Bunun yerine, bu alanı 'const' olarak işaretleyin.</target>
+        <target state="translated">'{0}' alanı 'readonly' olarak bildirilmiş ama sabit bir değerle başlatılıyor. Bunun yerine, bu alanı 'const' olarak işaretleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">'{0}' alanı 'static readonly' olarak bildirilmiş ama boş bir dizeyle ("") başlatılıyor. Bunun yerine, bu alanı 'const' olarak işaretleyin.</target>
+        <target state="translated">'{0}' alanı 'readonly' olarak bildirilmiş ama boş bir dizeyle ("") başlatılıyor. Bunun yerine, bu alanı 'const' olarak işaretleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Örnek verilerine erişmeyen veya örnek yöntemlerini çağırmayan üyeler statik (Visual Basic’te Shared) olarak işaretlenebilir. Yöntemleri statik olarak işaretledikten sonra, derleyici bu üyelere yönelik sanal olmayan çağrı konumlarını gösterir. Bu, performans açısından duyarlı kod için önemli ölçüde performans kazanımı sağlar.</target>
+        <target state="translated">Örnek verilerine erişmeyen veya örnek yöntemlerini çağırmayan üyeler statik olarak işaretlenebilir. Yöntemleri statik olarak işaretledikten sonra, derleyici bu üyelere yönelik sanal olmayan çağrı konumlarını gösterir. Bu, performans açısından duyarlı kod için önemli ölçüde performans kazanımı sağlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">{0} üyesi örnek verilerine erişmiyor ve statik (Visual Basic’te Shared) olarak işaretlenebilir</target>
+        <target state="translated">'{0}' adlı üye örnek verilerine erişmiyor ve statik olarak işaretlenebilir</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

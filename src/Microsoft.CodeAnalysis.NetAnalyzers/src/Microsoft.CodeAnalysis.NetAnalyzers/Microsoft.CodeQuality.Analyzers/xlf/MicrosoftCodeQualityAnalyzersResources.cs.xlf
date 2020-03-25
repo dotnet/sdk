@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">Přiřazení symbolu a jeho členu (pole/vlastnost) ve stejném příkazu se nedoporučuje. Není jasné, zda by měl přístup člena v tomto příkazu použít starou hodnotu symbolu před přiřazením nebo novou hodnotu z přiřazení. Kvůli lepší přehlednosti zvažte rozdělení přiřazení do samostatných příkazů.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">Symbol {0} a jeho člen {1} jsou oba přiřazeny ve stejném příkazu. Hrozí riziko přiřazení člena nezamýšleného objektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">Přiřazení symbolu a jeho členu v témže příkazu</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">Obecná výjimka (například System.Exception nebo System.SystemException) se zachytává příkazem catch nebo se používá obecná klauzule catch. Obecné výjimky by se neměly zachytávat.</target>
+        <target state="translated">Obecná výjimka, třeba System.Exception, System.SystemException, nebo nepovolený typ výjimky se zachytávají příkazem catch nebo se používá obecná klauzule catch. Obecné a nepovolené výjimky by se neměly zachytávat.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">Upravte {0} na zachycení specifičtějšího typu výjimky nebo znovu vyvolejte výjimku.</target>
+        <target state="translated">Pokud chcete zachytit konkrétnější povolený typ výjimky, upravte {0} nebo výjimku vyvolejte znovu.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">Kolekce mají implementovat obecné rozhraní.</target>
+        <target state="translated">Mělo by se také implementovat obecné rozhraní</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Kvůli rozšíření použitelnosti kolekce implementujte některé z obecných rozhraní kolekce. Tato kolekce se pak dá použít k naplnění obecných typů kolekcí.</target>
+        <target state="translated">Jestli chcete rozšířit použitelnost typu, implementujte jedno z obecných rozhraní. To platí především pro kolekce, protože se pak dají použít k naplnění obecných typů kolekce.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">Kolekce {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné kolekce by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
+        <target state="translated">Typ {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné typy by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Pole {0} je deklarováno jako static readonly, ale je inicializováno pomocí konstantní hodnoty. Označte toto pole raději jako const.</target>
+        <target state="translated">Pole {0} se deklarovalo jako readonly, ale je inicializované pomocí konstantní hodnoty. Označte toto pole místo toho jako const.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Pole {0} je deklarováno jako static readonly, ale je inicializováno pomocí prázdného řetězce (""). Označte toto pole raději jako const.</target>
+        <target state="translated">Pole {0} se deklarovalo jako readonly, ale je inicializované pomocí prázdného řetězce (""). Označte toto pole místo toho jako const.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Členy, které nemají přístup k datům instance nebo volají metody instance, je možné označit jako statické (Shared ve Visual Basicu). Po označení metod jako statických bude kompilátor generovat nevirtuální lokality volání pro tyto členy. Tím získáte měřitelný nárůst výkonu u kódu citlivého na výkon.</target>
+        <target state="translated">Členy, které nemají přístup k datům instance nebo volají metody instance, je možné označit jako statické. Po označení metod jako statických bude kompilátor pro tyto členy generovat nevirtuální lokality volání. Tím u kódu citlivého na výkon získáte měřitelný nárůst výkonu.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Člen {0} nemá přístup k datům instance a je možné ho označit jako statický (Shared ve Visual Basicu).</target>
+        <target state="translated">Člen {0} nemá přístup k datům instance a je možné ho označit jako statický.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">Przypisywanie do symbolu i jego składowej (pole/właściwość) w tej samej instrukcji nie jest zalecane. W takiej sytuacji nie jest jasne, czy dostęp do składowej miał obejmować użycie starej wartości symbolu przed przypisaniem, czy nowej wartości z przypisania w tej instrukcji. W celu zachowania jednoznaczności rozważ rozdzielenie przypisań na oddzielne instrukcje.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">Symbol „{0}” i jego składowa „{1}” są przypisane w tej samej instrukcji. Istnieje ryzyko przypisania składowej niezamierzonego obiektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">Przypisywanie symbolu i jego składowej w tej samej instrukcji.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">W instrukcji catch przechwycono wyjątek ogólny, taki jak System.Exception lub System.SystemException, lub jest używana ogólna klauzula catch. Wyjątki ogólne nie powinny być przechwytywane.</target>
+        <target state="translated">W instrukcji catch przechwycono wyjątek ogólny, taki jak System.Exception lub System.SystemException albo wyjątek niedozwolonego typu, lub jest używana ogólna klauzula catch. Wyjątki ogólne i niedozwolone nie powinny być przechwytywane.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">Zmodyfikuj element „{0}”, aby przechwytywać dokładniej określony typ wyjątku, lub ponownie zgłoś wyjątek.</target>
+        <target state="translated">Zmodyfikuj element „{0}”, aby przechwytywać dokładniej określony dozwolony typ wyjątku, lub ponownie zgłoś wyjątek.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -674,17 +674,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Collections should implement generic interface</source>
-        <target state="translated">Kolekcje powinny implementować interfejs ogólny</target>
+        <target state="translated">Interfejs ogólny powinien być także zaimplementowany</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Aby zwiększyć użyteczność kolekcji, zaimplementuj jeden z ogólnych interfejsów kolekcji. Wtedy w kolekcji będzie można umieszczać typy ogólne.</target>
+        <target state="translated">Aby rozszerzyć przydatność typu, zaimplementuj jeden z interfejsów ogólnych. Jest to szczególnie prawdziwe w przypadku kolekcji, które można następnie wykorzystać do wypełniania ogólnych typów kolekcji.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">Kolekcja „{0}” bezpośrednio lub pośrednio dziedziczy element „{1}” bez implementowania elementu „{2}”. Kolekcje widoczne publicznie powinny dziedziczyć wersję ogólną w celu rozszerzenia użyteczności.</target>
+        <target state="translated">Typ „{0}” bezpośrednio lub pośrednio dziedziczy element „{1}” bez implementowania elementu „{2}”. Typy widoczne publicznie powinny dziedziczyć wersję ogólną w celu rozszerzenia użyteczności.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Pole „{0}” zostało zadeklarowane jako statyczne pole tylko do odczytu, ale zainicjowano je za pomocą wartości stałej. Zamiast tego oznacz to pole jako pole wartości stałej.</target>
+        <target state="translated">Pole „{0}” zostało zadeklarowane jako „readonly”, ale zainicjowano je za pomocą wartości stałej. Zamiast tego oznacz to pole jako „const”.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Pole „{0}” zostało zadeklarowane jako statyczne pole tylko do odczytu, ale zainicjowano je za pomocą pustego ciągu (""). Zamiast tego oznacz to pole jako pole wartości stałej.</target>
+        <target state="translated">Pole „{0}” zostało zadeklarowane jako „readonly”, ale zainicjowano je za pomocą pustego ciągu (""). Zamiast tego oznacz to pole jako „const”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1904,12 +1904,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Elementy członkowskie, które nie uzyskują dostępu do danych wystąpienia lub metod wywołania wystąpienia można oznaczyć jako statyczne (Shared w języku Visual Basic). Po oznaczeniu metod jako statyczne kompilator będzie emitować niewirtualne miejsca wywołań do tych elementów członkowskich. Może to spowodować wymierną poprawę wydajności kodu wrażliwego na zmiany wydajności.</target>
+        <target state="translated">Składowe, które nie uzyskują dostępu do danych wystąpienia ani nie wywołują metod wystąpienia, można oznaczyć jako statyczne. Po oznaczeniu metod jako statycznych kompilator będzie emitować niewirtualne miejsca wywołań do tych składowych. Może to spowodować wymierną poprawę wydajności kodu wrażliwego na zmiany wydajności.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Element członkowski {0} nie uzyskuje dostępu do danych wystąpień i może zostać oznaczony jako statyczny (Shared w języku VisualBasic).</target>
+        <target state="translated">Składowa „{0}” nie uzyskuje dostępu do danych wystąpienia i może zostać oznaczona jako statyczna</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">
