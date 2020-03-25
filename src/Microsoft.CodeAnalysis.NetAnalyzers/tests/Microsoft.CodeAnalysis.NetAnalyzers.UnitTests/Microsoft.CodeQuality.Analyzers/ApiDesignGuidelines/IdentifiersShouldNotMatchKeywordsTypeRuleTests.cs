@@ -155,6 +155,76 @@ End Class
                 GetBasicResultAt(3, 21, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "C.Protected", "Protected"));
         }
 
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method, Property")]
+        public async Task UserOptionDoesNotIncludeNamedType_NoDiagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"public class @class {}",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class [Class]
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        public async Task UserOptionIncludesNamedType_Diagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"public class @class {}",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpResultAt(1, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "class", "class"), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class [Class]
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"), },
+                },
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
